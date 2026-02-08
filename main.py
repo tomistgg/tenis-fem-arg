@@ -80,7 +80,6 @@ def get_itf_players(tournament_key, driver):
                 for player in players:
                     full_name = f"{player.get('givenName', '')} {player.get('familyName', '')}".strip().upper()
                     if full_name:
-                        # Matchear nombre ITF con el Nombre a Mostrar
                         matched_name = NAME_LOOKUP.get(full_name, full_name)
                         final_list[matched_name] = suffix
     return final_list
@@ -115,13 +114,12 @@ def get_all_rankings(date_str):
     for p in all_players:
         if not p.get('player'): continue
         wta_name = p.get('player', {}).get('fullName').strip().upper()
-        # Matchear nombre WTA con el Nombre a Mostrar
         display_name = NAME_LOOKUP.get(wta_name, wta_name)
         ranking_results.append({
             "Player": display_name, 
             "Rank": p.get('ranking'), 
             "Country": p.get('player', {}).get('countryCode', ''), 
-            "Key": display_name # Usamos el display name como llave de unión
+            "Key": display_name 
         })
     return ranking_results
 
@@ -141,7 +139,6 @@ def scrape_tournament_players(url):
         p_name = tag.get('data-tracking-player-name')
         if p_name:
             name_key = p_name.strip().upper()
-            # Matchear nombre Scraped con el Nombre a Mostrar
             matched_name = NAME_LOOKUP.get(name_key, name_key)
             if current_state == "MAIN": main_draw.add(matched_name)
             elif current_state == "QUAL": qualifying.add(matched_name)
@@ -192,7 +189,6 @@ def main():
                             schedule_map[p_key][week] += f"<br>{entry}"
                     else:
                         schedule_map[p_key][week] = entry
-                
                 time.sleep(random.uniform(2, 4))
 
     finally:
@@ -203,17 +199,20 @@ def main():
     
     consolidated_players = {}
     for p in players_data:
+        # FILTRO: Solo procesar jugadoras Argentinas
+        if p['Country'] != "ARG":
+            continue
+            
         name = p['Player']
         if name not in consolidated_players or p['Rank'] < consolidated_players[name]['Rank']:
             consolidated_players[name] = p
 
     for p_name in sorted(consolidated_players.keys(), key=lambda x: consolidated_players[x]['Rank']):
         p = consolidated_players[p_name]
-        is_arg = "is-arg" if p['Country'] == "ARG" else "is-other"
-        row = f'<tr class="{is_arg}" data-name="{p["Player"].lower()}">'
+        row = f'<tr class="is-arg" data-name="{p["Player"].lower()}">'
         row += f'<td class="sticky-col col-rank">{p["Rank"]}</td>'
         row += f'<td class="sticky-col col-name">{p["Player"]}</td>'
-        row += f'<td><span class="{"arg-pill" if p["Country"] == "ARG" else ""}">{p["Country"]}</span></td>'
+        row += f'<td><span class="arg-pill">{p["Country"]}</span></td>'
         for week in week_keys:
             val = schedule_map.get(p['Key'], {}).get(week, "—")
             row += f'<td class="col-week">{"<b>" if "(Q)" not in val and val != "—" else ""}{val}{"</b>" if "(Q)" not in val and val != "—" else ""}</td>'
@@ -236,8 +235,7 @@ def main():
             .main-content {{ flex: 1; padding: 40px; overflow-y: auto; background: #f8fafc; }}
             .content-card {{ background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; }}
             .table-nav {{ display: flex; justify-content: space-between; padding: 20px; border-bottom: 1px solid #e2e8f0; }}
-            input {{ padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; width: 250px; }}
-            #toggleBtn {{ background: #75AADB; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }}
+            input {{ padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; }}
             .table-wrapper {{ overflow-x: auto; }}
             table {{ width: 100%; border-collapse: collapse; }}
             th {{ position: sticky; top: 0; background: white; padding: 15px; font-size: 11px; border-bottom: 2px solid #e2e8f0; }}
@@ -259,8 +257,7 @@ def main():
             <h1>Próximos Torneos</h1>
             <div class="content-card">
                 <div class="table-nav">
-                    <input type="text" id="s" placeholder="Buscar..." oninput="filter()">
-                    <button id="toggleBtn" onclick="toggleMode()">Mostrar Todas</button>
+                    <input type="text" id="s" placeholder="Buscar jugadora..." oninput="filter()">
                 </div>
                 <div class="table-wrapper">
                     <table>
@@ -279,27 +276,18 @@ def main():
         </div>
     </div>
     <script>
-        let mode = 'arg';
-        function toggleMode() {{
-            mode = (mode === 'arg') ? 'all' : 'arg';
-            document.getElementById('toggleBtn').innerText = mode === 'arg' ? "Mostrar Todas" : "Mostrar ARG";
-            filter();
-        }}
         function filter() {{
             const q = document.getElementById('s').value.toLowerCase();
             document.querySelectorAll('#tb tr').forEach(row => {{
                 const matches = row.getAttribute('data-name').includes(q);
-                const isArg = row.classList.contains('is-arg');
-                row.classList.toggle('hidden', !(matches && (mode === 'all' || isArg)));
+                row.classList.toggle('hidden', !matches);
             }});
         }}
-        window.onload = filter;
     </script>
     </body>
     </html>
     """
     with open("index.html", "w", encoding="utf-8") as f: f.write(html_template)
-    print("Hecho.")
 
 if __name__ == "__main__":
     main()
