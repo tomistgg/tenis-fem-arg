@@ -222,30 +222,46 @@ def main():
             @font-face {{ font-family: 'Montserrat'; src: url('Montserrat-SemiBold.ttf'); }}
             body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; height: 100vh; overflow: hidden; }}
             .app-container {{ display: flex; width: 100%; height: 100%; }}
-            .sidebar {{ width: 260px; background: #1e293b; color: white; display: flex; flex-direction: column; flex-shrink: 0; }}
-            .sidebar-header {{ padding: 25px 20px; font-size: 20px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #334155; }}
-            .menu-item {{ padding: 15px 20px; cursor: pointer; color: #cbd5e1; }}
+            
+            .sidebar {{ width: 180px; background: #1e293b; color: white; display: flex; flex-direction: column; flex-shrink: 0; }}
+            .sidebar-header {{ padding: 25px 15px; font-size: 15px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #334155; }}
+            .menu-item {{ padding: 15px 20px; cursor: pointer; color: #cbd5e1; font-size: 14px; }}
             .menu-item.active {{ background: #75AADB; color: white; font-weight: bold; }}
             
             .main-content {{ flex: 1; overflow-y: auto; background: #f8fafc; padding: 20px; }}
             .dual-layout {{ display: flex; min-height: 80vh; gap: 40px; position: relative; }}
-            .dual-layout::after {{
+            
+            .column-main {{ flex: 0 0 70%; display: flex; flex-direction: column; align-items: flex-start; position: relative; min-width: 0; }}
+            .column-entry {{ flex: 1; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }}
+            
+            .column-main::after {{
                 content: "";
                 position: absolute;
-                left: 50%;
+                right: -20px;
                 top: 50px;
                 bottom: 20px;
                 width: 1px;
                 background: #cbd5e1;
             }}
-
-            .column {{ flex: 1; display: flex; flex-direction: column; align-items: flex-start; }}
+            .header-row {{ 
+                width: 100%; 
+                margin-bottom: 20px; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center;
+                position: relative; 
+                height: 40px;
+            }}
+            h1 {{ margin: 0; font-size: 22px; color: #1e293b; }}
             
-            .header-row {{ width: 100%; margin-bottom: 20px; }}
-            h1 {{ margin: 0 0 10px 0; font-size: 22px; color: #1e293b; text-align: left; }}
+            .search-container {{ 
+                position: absolute; 
+                left: 0; 
+                top: 50%; 
+                transform: translateY(-50%); 
+            }}
             
-            .search-container {{ margin-bottom: 15px; }}
-            input {{ padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; width: 220px; font-family: inherit; }}
+            input {{ padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; width: 200px; font-family: inherit; }}
             
             .content-card {{ 
                 background: white; 
@@ -274,14 +290,12 @@ def main():
             
             td {{ padding: 8px 12px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 13px; border-right: 1px solid #f1f5f9; }}
             
-            /* Columnas fijas para tabla de la izquierda */
             .sticky-col {{ position: sticky; background: white !important; z-index: 2; }}
             th.sticky-col {{ z-index: 11; background: #75AADB !important; color: white; }}
-            .col-rank {{ left: 0; width: 40px; }}
-            .col-name {{ left: 40px; width: 150px; text-align: left; font-weight: bold; color: #334155; }}
-            .col-week {{ width: 150px; }}
+            .col-rank {{ left: 0; width: 45px; }}
+            .col-name {{ left: 45px; width: 140px; text-align: left; font-weight: bold; color: #334155; }}
+            .col-week {{ width: 150px; overflow: hidden; text-overflow: ellipsis; }}
 
-            /* Columnas para tabla de la derecha */
             .col-pos {{ width: 50px; }}
             .col-entry-name {{ text-align: left; font-weight: bold; }}
             .col-country {{ width: 60px; }}
@@ -300,12 +314,12 @@ def main():
         <div class="main-content">
             <div class="dual-layout">
                 
-                <div class="column">
+                <div class="column-main">
                     <div class="header-row">
-                        <h1>Próximos Torneos</h1>
                         <div class="search-container">
                             <input type="text" id="s" placeholder="Buscar tenista..." oninput="filter()">
                         </div>
+                        <h1>Próximos Torneos</h1>
                     </div>
                     <div class="content-card">
                         <div class="table-wrapper">
@@ -323,10 +337,10 @@ def main():
                     </div>
                 </div>
 
-                <div class="column">
+                <div class="column-entry">
                     <div class="header-row">
                         <h1>Entry List</h1>
-                        <div style="height: 41px;"></div> </div>
+                    </div>
                     <div class="content-card">
                         <div class="table-wrapper">
                             <table>
