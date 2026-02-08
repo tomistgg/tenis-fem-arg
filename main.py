@@ -62,11 +62,34 @@ def get_itf_players(tournament_key, driver):
         raw_content = driver.find_element("tag name", "body").text
         start = raw_content.find('[')
         end = raw_content.rfind(']') + 1
-        if start == -1: return {}
+        if start == -1: return [], {}
+        
         data = json.loads(raw_content[start:end])
+        
+        # We need to extract the first item of the list which contains the 'entryClassifications'
+        # as seen in your example.txt
+        root_data = data[0].get("entryClassifications", []) if data else []
+        
+        # name_map for the Left Table (Argentinian players)
+        name_map = {}
+        for classification in root_data:
+            desc = classification.get("entryClassification", "").upper()
+            code = classification.get("entryClassificationCode", "")
+            if "WITHDRAWAL" in desc: continue 
+            
+            for entry in classification.get("entries") or []:
+                pos = entry.get("positionDisplay", "")
+                suffix = "" if code == "MDA" else (f" (ALT {pos})" if code == "ALT" or "ALTERNATE" in desc else " (Q)")
+                players = entry.get("players") or []
+                for p in players:
+                    full_name = f"{p.get('givenName', '')} {p.get('familyName', '')}".strip().upper()
+                    matched_name = NAME_LOOKUP.get(full_name, full_name)
+                    name_map[matched_name] = suffix
+                        
+        return root_data, name_map 
     except Exception as e:
         print(f"Error en {tournament_key}: {e}")
-        return {}
+        return [], {}
 
     final_list = {}
     if not isinstance(data, list): return {}
@@ -160,9 +183,9 @@ def main():
         itf_items = get_dynamic_itf_calendar(driver)
         monday_map = {
             "2026-02-16": "Semana 16 Febrero",
-            "2026-02-23": "Semana 23 Febrero",
-            "2026-03-02": "Semana 2 Marzo",
-            "2026-03-09": "Semana 9 Marzo"
+            #"2026-02-23": "Semana 23 Febrero",
+            #"2026-03-02": "Semana 2 Marzo",
+            #"2026-03-09": "Semana 9 Marzo"
         }
 
         for item in itf_items:
@@ -175,50 +198,82 @@ def main():
         ranking_date = (datetime.now() - timedelta(days=datetime.now().weekday())).strftime("%Y-%m-%d")
         players_data = get_all_rankings(ranking_date)
         schedule_map = {}
-        
-        # --- FIX 1: Initialize tournament_store here ---
         tournament_store = {} 
 
         dropdown_html = ""
-        first_tournament = None
-
         for week, tourneys in TOURNAMENT_GROUPS.items():
             dropdown_html += f'<optgroup label="{week}">'
             for t_name in tourneys.values():
                 dropdown_html += f'<option value="{t_name}">{t_name}</option>'
             dropdown_html += '</optgroup>'
-
+                
         for week, tourneys in TOURNAMENT_GROUPS.items():
             print(f"Procesando {week}...")
             for key, t_name in tourneys.items():
+                
                 if key.startswith("http"):
                     status_dict = scrape_tournament_players(key)
+                    tourney_players_list = []
+                    for p_name, suffix in status_dict.items():
+                        p_info = next((item for item in players_data if item["Player"] == p_name), {"Rank": 999, "Country": "-"})
+                        tourney_players_list.append({
+                            "pos": "-", 
+                            "name": format_player_name(p_name),
+                            "country": p_info["Country"], 
+                            "rank": f"WTA {p_info['Rank']}",
+                            "type": "QUAL" if "(Q)" in suffix else "MAIN"
+                        })
+                        p_key = p_name.upper()
+                        if p_key not in schedule_map: schedule_map[p_key] = {}
+                        schedule_map[p_key][week] = f"{t_name}{suffix}"
+
                 else:
-                    status_dict = get_itf_players(key, driver)
-                
-                # --- FIX 2: Populate both maps INSIDE the loop ---
-                tourney_players_list = []
-                for p_key, suffix in status_dict.items():
-                    # Schedule Map (For the Left Table)
-                    if p_key not in schedule_map: schedule_map[p_key] = {}
-                    entry = f"{t_name}{suffix}"
-                    if week in schedule_map[p_key]:
-                        if entry not in schedule_map[p_key][week]:
-                            schedule_map[p_key][week] += f"<br>{entry}"
-                    else:
-                        schedule_map[p_key][week] = entry
+                    itf_entries, itf_name_map = get_itf_players(key, driver)
+                    tourney_players_list = []
                     
-                    # Store Map (For the Right Table / Entry List)
-                    p_info = next((item for item in players_data if item["Player"] == p_key), {"Rank": 999, "Country": "-"})
-                    tourney_players_list.append({
-                        "name": format_player_name(p_key),
-                        "rank": p_info["Rank"],
-                        "country": p_info["Country"],
-                        "type": "QUAL" if "(Q)" in suffix else "MAIN"
-                    })
-                
-                tournament_store[t_name] = tourney_players_list
-                time.sleep(random.uniform(2, 4))
+                    for classification in itf_entries:
+                        class_code = classification.get("entryClassificationCode", "")
+                        is_qual = "QUALIFYING" in classification.get("entryClassification", "").upper()
+                        
+                        for entry in classification.get("entries") or []:
+                            pos = entry.get("positionDisplay", "-")
+                            players = entry.get("players") or []
+                            if not players: continue
+                            
+                            p_node = players[0]
+                            f_name = f"{p_node.get('givenName', '')} {p_node.get('familyName', '')}".strip()
+                            
+                            wta = p_node.get("atpWtaRank", "")
+                            itf_rank = p_node.get("itfBTRank")
+                            wtn = p_node.get("worldRating", "")
+                            
+                            if wta and str(wta).strip() != "":
+                                erank_str = f"WTA {wta}"
+                            elif itf_rank is not None and str(itf_rank).strip() != "":
+                                erank_str = f"ITF {itf_rank}"
+                            elif wtn and str(wtn).strip() != "":
+                                erank_str = f"WTN {wtn}"
+                            else:
+                                erank_str = "-"
+                                
+                            if class_code == "JR":
+                                erank_str += " [JE]"
+                                
+                            tourney_players_list.append({
+                                "pos": pos,
+                                "name": format_player_name(f_name),
+                                "country": p_node.get("nationalityCode", "-"),
+                                "rank": erank_str,
+                                "type": "QUAL" if is_qual else "MAIN"
+                            })
+
+                    tournament_store[t_name] = tourney_players_list
+
+                    for p_name, suffix in itf_name_map.items():
+                        if p_name not in schedule_map: schedule_map[p_name] = {}
+                        schedule_map[p_name][week] = f"{t_name}{suffix}"
+
+                time.sleep(random.uniform(1, 2))
 
     finally:
         driver.quit()
@@ -325,7 +380,7 @@ def main():
                                         <th style="width:50px">Pos.</th>
                                         <th>Jugadora</th>
                                         <th style="width:55px">País</th>
-                                        <th style="width:60px">E-Rank</th> 
+                                        <th style="width:90px">E-Rank</th> 
                                     </tr>
                                 </thead>
                                 <tbody id="entry-body"></tbody>
@@ -351,18 +406,18 @@ def main():
                 const body = document.getElementById('entry-body');
                 if (!tournamentData[sel]) return;
 
-                const players = tournamentData[sel].sort((a, b) => (a.rank || 999) - (b.rank || 999));
+                const players = tournamentData[sel];
                 
                 let html = '<tr class="divider-row"><td colspan="4">MAIN DRAW</td></tr>';
                 const mainDraw = players.filter(p => p.type === 'MAIN');
-                mainDraw.forEach((p, index) => {{
-                    html += `<tr><td>${{index + 1}}</td><td style="text-align:left; font-weight:bold;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
+                mainDraw.forEach((p) => {{
+                    html += `<tr><td>${{p.pos}}</td><td style="text-align:left; font-weight:bold;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
                 }});
                 
                 html += '<tr class="divider-row"><td colspan="4">QUALIFYING</td></tr>';
                 const qualDraw = players.filter(p => p.type === 'QUAL');
-                qualDraw.forEach((p, index) => {{
-                    html += `<tr><td>${{index + 1}}</td><td style="text-align:left;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
+                qualDraw.forEach((p) => {{
+                    html += `<tr><td>${{p.pos}}</td><td style="text-align:left;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
                 }});
                 
                 body.innerHTML = html;
