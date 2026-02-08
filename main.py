@@ -162,7 +162,7 @@ def main():
             "2026-02-16": "Semana 16 Febrero",
             "2026-02-23": "Semana 23 Febrero",
             "2026-03-02": "Semana 2 Marzo",
-            "2026-03-09": "Semana 9 Marzo"
+            #"2026-03-09": "Semana 9 Marzo"
         }
 
         for item in itf_items:
@@ -217,26 +217,46 @@ def main():
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Tenistas Argentinas - Próximos Torneos</title>
+        <title>Próximos Torneos</title>
         <style>
             @font-face {{ font-family: 'Montserrat'; src: url('Montserrat-SemiBold.ttf'); }}
             body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; height: 100vh; overflow: hidden; }}
             .app-container {{ display: flex; width: 100%; height: 100%; }}
-            .sidebar {{ width: 260px; background: #1e293b; color: white; display: flex; flex-direction: column; }}
+            .sidebar {{ width: 260px; background: #1e293b; color: white; display: flex; flex-direction: column; flex-shrink: 0; }}
             .sidebar-header {{ padding: 25px 20px; font-size: 20px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #334155; }}
             .menu-item {{ padding: 15px 20px; cursor: pointer; color: #cbd5e1; }}
             .menu-item.active {{ background: #75AADB; color: white; font-weight: bold; }}
             
-            .main-content {{ flex: 1; padding: 20px 40px; overflow-y: auto; background: #f8fafc; }}
+            .main-content {{ flex: 1; overflow-y: auto; background: #f8fafc; padding: 20px; }}
+            .dual-layout {{ display: flex; min-height: 80vh; gap: 40px; position: relative; }}
+            .dual-layout::after {{
+                content: "";
+                position: absolute;
+                left: 50%;
+                top: 50px;
+                bottom: 20px;
+                width: 1px;
+                background: #cbd5e1;
+            }}
+
+            .column {{ flex: 1; display: flex; flex-direction: column; align-items: flex-start; }}
             
-            .header-row {{ display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 20px; }}
-            h1 {{ margin: 0; font-size: 24px; color: #1e293b; text-align: center; flex-grow: 1; }}
-            .search-container {{ position: absolute; left: 0; }}
+            .header-row {{ width: 100%; margin-bottom: 20px; }}
+            h1 {{ margin: 0 0 10px 0; font-size: 22px; color: #1e293b; text-align: left; }}
+            
+            .search-container {{ margin-bottom: 15px; }}
             input {{ padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; width: 220px; font-family: inherit; }}
             
-            .content-card {{ background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; }}
-            .table-wrapper {{ overflow-x: auto; }}
-            table {{ width: 100%; border-collapse: collapse; table-layout: fixed; }}
+            .content-card {{ 
+                background: white; 
+                border-radius: 12px; 
+                box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
+                overflow: hidden; 
+                width: 100%; 
+            }}
+            
+            .table-wrapper {{ overflow-x: auto; width: 100%; }}
+            table {{ border-collapse: collapse; width: 100%; table-layout: fixed; }}
             
             th {{ 
                 position: sticky; top: 0; 
@@ -249,19 +269,24 @@ def main():
                 border-right: 1px solid rgba(255,255,255,0.3); 
                 z-index: 10; 
                 text-transform: uppercase;
+                text-align: center;
             }}
             
-            td {{ padding: 6px 12px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 13px; border-right: 1px solid #f1f5f9; }}
+            td {{ padding: 8px 12px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 13px; border-right: 1px solid #f1f5f9; }}
             
+            /* Columnas fijas para tabla de la izquierda */
             .sticky-col {{ position: sticky; background: white !important; z-index: 2; }}
-            th.sticky-col {{ 
-                z-index: 11; 
-                background: #75AADB !important; /* Mismo color que los otros th */
-                color: white;
-            }}
-            .col-rank {{ left: 0; width: 60px; }}
-            .col-name {{ left: 60px; width: 220px; text-align: left; font-weight: bold; color: #334155; }}
-            .col-week {{ width: 200px; }}
+            th.sticky-col {{ z-index: 11; background: #75AADB !important; color: white; }}
+            .col-rank {{ left: 0; width: 40px; }}
+            .col-name {{ left: 40px; width: 150px; text-align: left; font-weight: bold; color: #334155; }}
+            .col-week {{ width: 150px; }}
+
+            /* Columnas para tabla de la derecha */
+            .col-pos {{ width: 50px; }}
+            .col-entry-name {{ text-align: left; font-weight: bold; }}
+            .col-country {{ width: 60px; }}
+            .col-rank-e {{ width: 70px; }}
+
             tr.hidden {{ display: none; }}
             tr:hover td {{ background: #f8fafc; }}
         </style>
@@ -273,25 +298,56 @@ def main():
             <div class="menu-item active">Próximos Torneos</div>
         </div>
         <div class="main-content">
-            <div class="header-row">
-                <div class="search-container">
-                    <input type="text" id="s" placeholder="Buscar tenista..." oninput="filter()">
+            <div class="dual-layout">
+                
+                <div class="column">
+                    <div class="header-row">
+                        <h1>Próximos Torneos</h1>
+                        <div class="search-container">
+                            <input type="text" id="s" placeholder="Buscar tenista..." oninput="filter()">
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="sticky-col col-rank">Rank</th>
+                                        <th class="sticky-col col-name">Jugadora</th>
+                                        {"".join([f'<th class="col-week">{w}</th>' for w in week_keys])}
+                                    </tr>
+                                </thead>
+                                <tbody id="tb">{table_rows}</tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                <h1>Próximos Torneos</h1>
-            </div>
-            <div class="content-card">
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th class="sticky-col col-rank">Rank</th>
-                                <th class="sticky-col col-name">Jugadora</th>
-                                {"".join([f'<th class="col-week">{w}</th>' for w in week_keys])}
-                            </tr>
-                        </thead>
-                        <tbody id="tb">{table_rows}</tbody>
-                    </table>
+
+                <div class="column">
+                    <div class="header-row">
+                        <h1>Entry List</h1>
+                        <div style="height: 41px;"></div> </div>
+                    <div class="content-card">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="col-pos">Pos.</th>
+                                        <th class="col-entry-name">Jugadora</th>
+                                        <th class="col-country">País</th>
+                                        <th class="col-rank-e">Rank-E</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="entry-body">
+                                    <tr>
+                                        <td colspan="4" style="color: #94a3b8; padding: 40px;">No hay datos seleccionados</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>

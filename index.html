@@ -3,26 +3,46 @@
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Tenistas Argentinas - Próximos Torneos</title>
+        <title>Próximos Torneos</title>
         <style>
             @font-face { font-family: 'Montserrat'; src: url('Montserrat-SemiBold.ttf'); }
             body { font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; height: 100vh; overflow: hidden; }
             .app-container { display: flex; width: 100%; height: 100%; }
-            .sidebar { width: 260px; background: #1e293b; color: white; display: flex; flex-direction: column; }
+            .sidebar { width: 260px; background: #1e293b; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
             .sidebar-header { padding: 25px 20px; font-size: 20px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #334155; }
             .menu-item { padding: 15px 20px; cursor: pointer; color: #cbd5e1; }
             .menu-item.active { background: #75AADB; color: white; font-weight: bold; }
             
-            .main-content { flex: 1; padding: 20px 40px; overflow-y: auto; background: #f8fafc; }
+            .main-content { flex: 1; overflow-y: auto; background: #f8fafc; padding: 20px; }
+            .dual-layout { display: flex; min-height: 80vh; gap: 40px; position: relative; }
+            .dual-layout::after {
+                content: "";
+                position: absolute;
+                left: 50%;
+                top: 50px;
+                bottom: 20px;
+                width: 1px;
+                background: #cbd5e1;
+            }
+
+            .column { flex: 1; display: flex; flex-direction: column; align-items: flex-start; }
             
-            .header-row { display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 20px; }
-            h1 { margin: 0; font-size: 24px; color: #1e293b; text-align: center; flex-grow: 1; }
-            .search-container { position: absolute; left: 0; }
+            .header-row { width: 100%; margin-bottom: 20px; }
+            h1 { margin: 0 0 10px 0; font-size: 22px; color: #1e293b; text-align: left; }
+            
+            .search-container { margin-bottom: 15px; }
             input { padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; width: 220px; font-family: inherit; }
             
-            .content-card { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; }
-            .table-wrapper { overflow-x: auto; }
-            table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+            .content-card { 
+                background: white; 
+                border-radius: 12px; 
+                box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
+                overflow: hidden; 
+                width: 100%; 
+            }
+            
+            .table-wrapper { overflow-x: auto; width: 100%; }
+            table { border-collapse: collapse; width: 100%; table-layout: fixed; }
             
             th { 
                 position: sticky; top: 0; 
@@ -35,19 +55,24 @@
                 border-right: 1px solid rgba(255,255,255,0.3); 
                 z-index: 10; 
                 text-transform: uppercase;
+                text-align: center;
             }
             
-            td { padding: 6px 12px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 13px; border-right: 1px solid #f1f5f9; }
+            td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 13px; border-right: 1px solid #f1f5f9; }
             
+            /* Columnas fijas para tabla de la izquierda */
             .sticky-col { position: sticky; background: white !important; z-index: 2; }
-            th.sticky-col { 
-                z-index: 11; 
-                background: #75AADB !important; /* Mismo color que los otros th */
-                color: white;
-            }
-            .col-rank { left: 0; width: 60px; }
-            .col-name { left: 60px; width: 220px; text-align: left; font-weight: bold; color: #334155; }
-            .col-week { width: 200px; }
+            th.sticky-col { z-index: 11; background: #75AADB !important; color: white; }
+            .col-rank { left: 0; width: 40px; }
+            .col-name { left: 40px; width: 150px; text-align: left; font-weight: bold; color: #334155; }
+            .col-week { width: 150px; }
+
+            /* Columnas para tabla de la derecha */
+            .col-pos { width: 50px; }
+            .col-entry-name { text-align: left; font-weight: bold; }
+            .col-country { width: 60px; }
+            .col-rank-e { width: 70px; }
+
             tr.hidden { display: none; }
             tr:hover td { background: #f8fafc; }
         </style>
@@ -59,25 +84,56 @@
             <div class="menu-item active">Próximos Torneos</div>
         </div>
         <div class="main-content">
-            <div class="header-row">
-                <div class="search-container">
-                    <input type="text" id="s" placeholder="Buscar tenista..." oninput="filter()">
+            <div class="dual-layout">
+                
+                <div class="column">
+                    <div class="header-row">
+                        <h1>Próximos Torneos</h1>
+                        <div class="search-container">
+                            <input type="text" id="s" placeholder="Buscar tenista..." oninput="filter()">
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="sticky-col col-rank">Rank</th>
+                                        <th class="sticky-col col-name">Jugadora</th>
+                                        <th class="col-week">Semana 16 Febrero</th><th class="col-week">Semana 23 Febrero</th><th class="col-week">Semana 2 Marzo</th><th class="col-week">Semana 9 Marzo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tb"><tr data-name="solana sierra"><td class="sticky-col col-rank">63</td><td class="sticky-col col-name">Solana Sierra</td><td class="col-week">WTA 1000 Dubai (Q)</td><td class="col-week"><b>WTA 250 Austin</b></td><td class="col-week"><b>WTA 1000 Indian Wells</b></td><td class="col-week">—</td></tr><tr data-name="lourdes carle"><td class="sticky-col col-rank">156</td><td class="sticky-col col-name">Lourdes Carle</td><td class="col-week">—</td><td class="col-week">WTA 500 Merida (Q)</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="julia riera"><td class="sticky-col col-rank">187</td><td class="sticky-col col-name">Julia Riera</td><td class="col-week">—</td><td class="col-week"><b>WTA 125 Antalya 1</b></td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="jazmín ortenzi"><td class="sticky-col col-rank">214</td><td class="sticky-col col-name">Jazmín Ortenzi</td><td class="col-week">—</td><td class="col-week">WTA 125 Antalya 1 (Q)</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="luisina giovannini"><td class="sticky-col col-rank">245</td><td class="sticky-col col-name">Luisina Giovannini</td><td class="col-week"><b>W15 Antalya</b></td><td class="col-week"><b>W35 Antalya</b></td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="victoria bosio"><td class="sticky-col col-rank">334</td><td class="sticky-col col-name">Victoria Bosio</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="martina capurro"><td class="sticky-col col-rank">394</td><td class="sticky-col col-name">Martina Capurro</td><td class="col-week">WTA 125 Midland (Q)<br>W15 Palm Coast, FL</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="nicole fossa huergo"><td class="sticky-col col-rank">422</td><td class="sticky-col col-name">Nicole Fossa Huergo</td><td class="col-week">W100 Bengaluru (Q)</td><td class="col-week">W75 Trnava (ALT 82)<br>W75 Porto (ALT 91)<br>W35 Antalya (Q)</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="carla markus"><td class="sticky-col col-rank">473</td><td class="sticky-col col-name">Carla Markus</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="florencia urrutia"><td class="sticky-col col-rank">498</td><td class="sticky-col col-name">Florencia Urrutia</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="justina gonzález daniele"><td class="sticky-col col-rank">602</td><td class="sticky-col col-name">Justina González Daniele</td><td class="col-week">—</td><td class="col-week"><b>W35 Antalya (ALT 39)<br>W35 Monastir (ALT 93)<br>W35 Arcadia, CA (ALT 23)</b></td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="berta bonardi"><td class="sticky-col col-rank">630</td><td class="sticky-col col-name">Berta Bonardi</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="luciana moyano"><td class="sticky-col col-rank">708</td><td class="sticky-col col-name">Luciana Moyano</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="agustina chlpac"><td class="sticky-col col-rank">892</td><td class="sticky-col col-name">Agustina Chlpac</td><td class="col-week">W15 Monastir (Q)</td><td class="col-week"><b>W35 Monastir (ALT 192)<br>W15 Leimen (ALT 69)</b></td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="julieta estable"><td class="sticky-col col-rank">895</td><td class="sticky-col col-name">Julieta Estable</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="candela vázquez"><td class="sticky-col col-rank">910</td><td class="sticky-col col-name">Candela Vázquez</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="lucia peyré"><td class="sticky-col col-rank">1039</td><td class="sticky-col col-name">Lucia Peyré</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="josefina estévez"><td class="sticky-col col-rank">1086</td><td class="sticky-col col-name">Josefina Estévez</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="luna cinalli"><td class="sticky-col col-rank">1097</td><td class="sticky-col col-name">Luna Cinalli</td><td class="col-week">W15 Antalya (Q)</td><td class="col-week">W35 Antalya (Q)</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="marina bulbarella"><td class="sticky-col col-rank">1148</td><td class="sticky-col col-name">Marina Bulbarella</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="lourdes ayala"><td class="sticky-col col-rank">1196</td><td class="sticky-col col-name">Lourdes Ayala</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="victoria gobbi"><td class="sticky-col col-rank">1233</td><td class="sticky-col col-name">Victoria Gobbi</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="camila markus"><td class="sticky-col col-rank">1246</td><td class="sticky-col col-name">Camila Markus</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="pilar beveraggi"><td class="sticky-col col-rank">1248</td><td class="sticky-col col-name">Pilar Beveraggi</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="paula ormaechea"><td class="sticky-col col-rank">1294</td><td class="sticky-col col-name">Paula Ormaechea</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="melina maruca"><td class="sticky-col col-rank">1426</td><td class="sticky-col col-name">Melina Maruca</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="sol larraya guidi"><td class="sticky-col col-rank">1453</td><td class="sticky-col col-name">Sol Larraya Guidi</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="isabel arabarco"><td class="sticky-col col-rank">1481</td><td class="sticky-col col-name">Isabel Arabarco</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="valentina bruno"><td class="sticky-col col-rank">1481</td><td class="sticky-col col-name">Valentina Bruno</td><td class="col-week">W15 Antalya (Q)</td><td class="col-week"><b>W35 Antalya (ALT 168)</b></td><td class="col-week">—</td><td class="col-week">—</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                <h1>Próximos Torneos</h1>
-            </div>
-            <div class="content-card">
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th class="sticky-col col-rank">Rank</th>
-                                <th class="sticky-col col-name">Jugadora</th>
-                                <th class="col-week">Semana 16 Febrero</th><th class="col-week">Semana 23 Febrero</th><th class="col-week">Semana 2 Marzo</th><th class="col-week">Semana 9 Marzo</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tb"><tr data-name="solana sierra"><td class="sticky-col col-rank">63</td><td class="sticky-col col-name">Solana Sierra</td><td class="col-week">WTA 1000 Dubai (Q)</td><td class="col-week"><b>WTA 250 Austin</b></td><td class="col-week"><b>WTA 1000 Indian Wells</b></td><td class="col-week">—</td></tr><tr data-name="lourdes carle"><td class="sticky-col col-rank">156</td><td class="sticky-col col-name">Lourdes Carle</td><td class="col-week">—</td><td class="col-week">WTA 500 Merida (Q)</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="julia riera"><td class="sticky-col col-rank">187</td><td class="sticky-col col-name">Julia Riera</td><td class="col-week">—</td><td class="col-week"><b>WTA 125 Antalya 1</b></td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="jazmín ortenzi"><td class="sticky-col col-rank">214</td><td class="sticky-col col-name">Jazmín Ortenzi</td><td class="col-week">—</td><td class="col-week">WTA 125 Antalya 1 (Q)</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="luisina giovannini"><td class="sticky-col col-rank">245</td><td class="sticky-col col-name">Luisina Giovannini</td><td class="col-week"><b>W15 Antalya</b></td><td class="col-week"><b>W35 Antalya</b></td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="victoria bosio"><td class="sticky-col col-rank">334</td><td class="sticky-col col-name">Victoria Bosio</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="martina capurro"><td class="sticky-col col-rank">394</td><td class="sticky-col col-name">Martina Capurro</td><td class="col-week">WTA 125 Midland (Q)<br>W15 Palm Coast, FL</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="nicole fossa huergo"><td class="sticky-col col-rank">422</td><td class="sticky-col col-name">Nicole Fossa Huergo</td><td class="col-week">W100 Bengaluru (Q)</td><td class="col-week">W75 Trnava (ALT 82)<br>W75 Porto (ALT 91)<br>W35 Antalya (Q)</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="carla markus"><td class="sticky-col col-rank">473</td><td class="sticky-col col-name">Carla Markus</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="florencia urrutia"><td class="sticky-col col-rank">498</td><td class="sticky-col col-name">Florencia Urrutia</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="justina gonzález daniele"><td class="sticky-col col-rank">602</td><td class="sticky-col col-name">Justina González Daniele</td><td class="col-week">—</td><td class="col-week"><b>W35 Antalya (ALT 39)<br>W35 Monastir (ALT 93)<br>W35 Arcadia, CA (ALT 23)</b></td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="berta bonardi"><td class="sticky-col col-rank">630</td><td class="sticky-col col-name">Berta Bonardi</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="luciana moyano"><td class="sticky-col col-rank">708</td><td class="sticky-col col-name">Luciana Moyano</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="agustina chlpac"><td class="sticky-col col-rank">892</td><td class="sticky-col col-name">Agustina Chlpac</td><td class="col-week">W15 Monastir (Q)</td><td class="col-week"><b>W35 Monastir (ALT 192)<br>W15 Leimen (ALT 69)</b></td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="julieta estable"><td class="sticky-col col-rank">895</td><td class="sticky-col col-name">Julieta Estable</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="candela vázquez"><td class="sticky-col col-rank">910</td><td class="sticky-col col-name">Candela Vázquez</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="lucia peyré"><td class="sticky-col col-rank">1039</td><td class="sticky-col col-name">Lucia Peyré</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="josefina estévez"><td class="sticky-col col-rank">1086</td><td class="sticky-col col-name">Josefina Estévez</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="luna cinalli"><td class="sticky-col col-rank">1097</td><td class="sticky-col col-name">Luna Cinalli</td><td class="col-week">W15 Antalya (Q)</td><td class="col-week">W35 Antalya (Q)</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="marina bulbarella"><td class="sticky-col col-rank">1148</td><td class="sticky-col col-name">Marina Bulbarella</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="lourdes ayala"><td class="sticky-col col-rank">1196</td><td class="sticky-col col-name">Lourdes Ayala</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="victoria gobbi"><td class="sticky-col col-rank">1233</td><td class="sticky-col col-name">Victoria Gobbi</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="camila markus"><td class="sticky-col col-rank">1246</td><td class="sticky-col col-name">Camila Markus</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="pilar beveraggi"><td class="sticky-col col-rank">1248</td><td class="sticky-col col-name">Pilar Beveraggi</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="paula ormaechea"><td class="sticky-col col-rank">1294</td><td class="sticky-col col-name">Paula Ormaechea</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="melina maruca"><td class="sticky-col col-rank">1426</td><td class="sticky-col col-name">Melina Maruca</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="sol larraya guidi"><td class="sticky-col col-rank">1453</td><td class="sticky-col col-name">Sol Larraya Guidi</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="isabel arabarco"><td class="sticky-col col-rank">1481</td><td class="sticky-col col-name">Isabel Arabarco</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td><td class="col-week">—</td></tr><tr data-name="valentina bruno"><td class="sticky-col col-rank">1481</td><td class="sticky-col col-name">Valentina Bruno</td><td class="col-week">W15 Antalya (Q)</td><td class="col-week"><b>W35 Antalya (ALT 168)</b></td><td class="col-week">—</td><td class="col-week">—</td></tr></tbody>
-                    </table>
+
+                <div class="column">
+                    <div class="header-row">
+                        <h1>Entry List</h1>
+                        <div style="height: 41px;"></div> </div>
+                    <div class="content-card">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="col-pos">Pos.</th>
+                                        <th class="col-entry-name">Jugadora</th>
+                                        <th class="col-country">País</th>
+                                        <th class="col-rank-e">Rank-E</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="entry-body">
+                                    <tr>
+                                        <td colspan="4" style="color: #94a3b8; padding: 40px;">No hay datos seleccionados</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
