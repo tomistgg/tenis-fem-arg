@@ -9,6 +9,21 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+import os
+
+def load_player_mapping(filename="player_aliases.json"):
+    if not os.path.exists(filename):
+        print(f"Alerta: No se encontró {filename}.")
+        return {}
+    with open(filename, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+PLAYER_MAPPING = load_player_mapping()
+
+NAME_LOOKUP = {}
+for display_name, aliases in PLAYER_MAPPING.items():
+    for alias in aliases:
+        NAME_LOOKUP[alias.strip().upper()] = display_name.upper()
 
 TOURNAMENT_GROUPS = {
     "Semana 16 Febrero": {
@@ -35,14 +50,12 @@ TOURNAMENT_GROUPS = {
 API_URL = "https://api.wtatennis.com/tennis/players/ranked"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"}
 
-
 def get_itf_players(tournament_key, driver):
     url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetAcceptanceList?tournamentKey={tournament_key}&circuitCode=WT"
     try:
         driver.get(url)
         time.sleep(random.uniform(4, 6))
         raw_content = driver.find_element("tag name", "body").text
-        
         start = raw_content.find('[')
         end = raw_content.rfind(']') + 1
         if start == -1: return {}
@@ -53,25 +66,23 @@ def get_itf_players(tournament_key, driver):
 
     final_list = {}
     if not isinstance(data, list): return {}
-    
     for item in data:
         if not isinstance(item, dict): continue
         for classification in item.get("entryClassifications") or []:
             desc = classification.get("entryClassification", "").upper()
             code = classification.get("entryClassificationCode", "")
             if "WITHDRAWAL" in desc: break 
-            
             for entry in classification.get("entries") or []:
                 pos = entry.get("positionDisplay", "")
                 suffix = "" if code == "MDA" else (f" (ALT {pos})" if code == "ALT" or "ALTERNATE" in desc else " (Q)")
-                
                 players = entry.get("players")
                 if not players or not isinstance(players, list): continue
-                
                 for player in players:
                     full_name = f"{player.get('givenName', '')} {player.get('familyName', '')}".strip().upper()
                     if full_name:
-                        final_list[full_name] = suffix
+                        # Matchear nombre ITF con el Nombre a Mostrar
+                        matched_name = NAME_LOOKUP.get(full_name, full_name)
+                        final_list[matched_name] = suffix
     return final_list
 
 def get_dynamic_itf_calendar(driver):
@@ -99,7 +110,20 @@ def get_all_rankings(date_str):
             page += 1
             time.sleep(0.1)
         except: break
-    return [{"Player": p.get('player', {}).get('fullName').strip(), "Rank": p.get('ranking'), "Country": p.get('player', {}).get('countryCode', ''), "Key": p.get('player', {}).get('fullName').strip().upper()} for p in all_players if p.get('player')]
+    
+    ranking_results = []
+    for p in all_players:
+        if not p.get('player'): continue
+        wta_name = p.get('player', {}).get('fullName').strip().upper()
+        # Matchear nombre WTA con el Nombre a Mostrar
+        display_name = NAME_LOOKUP.get(wta_name, wta_name)
+        ranking_results.append({
+            "Player": display_name, 
+            "Rank": p.get('ranking'), 
+            "Country": p.get('player', {}).get('countryCode', ''), 
+            "Key": display_name # Usamos el display name como llave de unión
+        })
+    return ranking_results
 
 def scrape_tournament_players(url):
     try:
@@ -117,8 +141,10 @@ def scrape_tournament_players(url):
         p_name = tag.get('data-tracking-player-name')
         if p_name:
             name_key = p_name.strip().upper()
-            if current_state == "MAIN": main_draw.add(name_key)
-            elif current_state == "QUAL": qualifying.add(name_key)
+            # Matchear nombre Scraped con el Nombre a Mostrar
+            matched_name = NAME_LOOKUP.get(name_key, name_key)
+            if current_state == "MAIN": main_draw.add(matched_name)
+            elif current_state == "QUAL": qualifying.add(matched_name)
     final_list = {p: " (Q)" for p in qualifying}
     final_list.update({p: "" for p in main_draw})
     return final_list
@@ -174,7 +200,15 @@ def main():
 
     table_rows = ""
     week_keys = list(TOURNAMENT_GROUPS.keys())
+    
+    consolidated_players = {}
     for p in players_data:
+        name = p['Player']
+        if name not in consolidated_players or p['Rank'] < consolidated_players[name]['Rank']:
+            consolidated_players[name] = p
+
+    for p_name in sorted(consolidated_players.keys(), key=lambda x: consolidated_players[x]['Rank']):
+        p = consolidated_players[p_name]
         is_arg = "is-arg" if p['Country'] == "ARG" else "is-other"
         row = f'<tr class="{is_arg}" data-name="{p["Player"].lower()}">'
         row += f'<td class="sticky-col col-rank">{p["Rank"]}</td>'
