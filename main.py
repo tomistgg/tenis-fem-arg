@@ -155,6 +155,7 @@ def main():
     for week, tourneys in TOURNAMENT_GROUPS.items():
         print(f"Procesando {week}...")
         for key, t_name in tourneys.items():
+            time.sleep(20)
             if key.startswith("http"):
                 status_dict = scrape_tournament_players(key)
             else:
