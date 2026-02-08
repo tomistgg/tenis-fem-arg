@@ -10,6 +10,12 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import os
+import re
+
+# We only use this for Player Names now
+def format_player_name(text):
+    if not text: return ""
+    return " ".join([word.capitalize() for word in text.split()])
 
 def load_player_mapping(filename="player_aliases.json"):
     if not os.path.exists(filename):
@@ -27,23 +33,23 @@ for display_name, aliases in PLAYER_MAPPING.items():
 
 TOURNAMENT_GROUPS = {
     "Semana 16 Febrero": {
-        "https://www.wtatennis.com/tournaments/dubai/player-list": "WTA 1000 DUBAI",
-        "https://www.wtatennis.com/tournaments/2051/midland-125/2026/player-list": "WTA 125 MIDLAND",
-        "https://www.wtatennis.com/tournaments/1156/oeiras-125-indoor-2/2026/player-list": "WTA 125 OEIRAS 2",
-        "https://www.wtatennis.com/tournaments/1157/les-sables-d-olonne-125/2026/player-list": "WTA 125 LES SABLES",
+        "https://www.wtatennis.com/tournaments/dubai/player-list": "WTA 1000 Dubai",
+        "https://www.wtatennis.com/tournaments/2051/midland-125/2026/player-list": "WTA 125 Midland",
+        "https://www.wtatennis.com/tournaments/1156/oeiras-125-indoor-2/2026/player-list": "WTA 125 Oeiras 2",
+        "https://www.wtatennis.com/tournaments/1157/les-sables-d-olonne-125/2026/player-list": "WTA 125 Les Sables",
     },
     "Semana 23 Febrero": {
-        "https://www.wtatennis.com/tournaments/2085/m-rida/2026/player-list": "WTA 500 MERIDA",
-        "https://www.wtatennis.com/tournaments/2082/austin/2026/player-list": "WTA 250 AUSTIN",
-        "https://www.wtatennis.com/tournaments/1124/antalya-125-1/2026/player-list": "WTA 125 ANTALYA 1",
+        "https://www.wtatennis.com/tournaments/2085/m-rida/2026/player-list": "WTA 500 Merida",
+        "https://www.wtatennis.com/tournaments/2082/austin/2026/player-list": "WTA 250 Austin",
+        "https://www.wtatennis.com/tournaments/1124/antalya-125-1/2026/player-list": "WTA 125 Antalya 1",
     },
     "Semana 2 Marzo": {
-        "https://www.wtatennis.com/tournaments/609/indian-wells/2026/player-list": "WTA 1000 INDIAN WELLS",
-        "https://www.wtatennis.com/tournaments/1107/antalya-125-2/2026/player-list": "WTA 125 ANTALYA 2",
+        "https://www.wtatennis.com/tournaments/609/indian-wells/2026/player-list": "WTA 1000 Indian Wells",
+        "https://www.wtatennis.com/tournaments/1107/antalya-125-2/2026/player-list": "WTA 125 Antalya 2",
     },
     "Semana 9 Marzo": {
-        "https://www.wtatennis.com/tournaments/1161/austin-125-1/2026/player-list": "WTA 125 AUSTIN",
-        "https://www.wtatennis.com/tournaments/1125/antalya-125-3/2026/player-list": "WTA 125 ANTALYA 3",
+        "https://www.wtatennis.com/tournaments/1161/austin-125-1/2026/player-list": "WTA 125 Austin",
+        "https://www.wtatennis.com/tournaments/1125/antalya-125-3/2026/player-list": "WTA 125 Antalya 3",
     }
 }
 
@@ -166,7 +172,7 @@ def main():
             monday_date = (s_date - timedelta(days=s_date.weekday())).strftime('%Y-%m-%d')
             if monday_date in monday_map:
                 week_label = monday_map[monday_date]
-                TOURNAMENT_GROUPS[week_label][item['tournamentKey'].lower()] = item['tournamentName'].upper()
+                TOURNAMENT_GROUPS[week_label][item['tournamentKey'].lower()] = item['tournamentName']
 
         ranking_date = (datetime.now() - timedelta(days=datetime.now().weekday())).strftime("%Y-%m-%d")
         players_data = get_all_rankings(ranking_date)
@@ -199,20 +205,18 @@ def main():
     
     consolidated_players = {}
     for p in players_data:
-        # FILTRO: Solo procesar jugadoras Argentinas
-        if p['Country'] != "ARG":
-            continue
-            
+        if p['Country'] != "ARG": continue
         name = p['Player']
         if name not in consolidated_players or p['Rank'] < consolidated_players[name]['Rank']:
             consolidated_players[name] = p
 
     for p_name in sorted(consolidated_players.keys(), key=lambda x: consolidated_players[x]['Rank']):
         p = consolidated_players[p_name]
-        row = f'<tr class="is-arg" data-name="{p["Player"].lower()}">'
+        # Format only the player name
+        player_display = format_player_name(p['Player'])
+        row = f'<tr class="is-arg" data-name="{player_display.lower()}">'
         row += f'<td class="sticky-col col-rank">{p["Rank"]}</td>'
-        row += f'<td class="sticky-col col-name">{p["Player"]}</td>'
-        row += f'<td><span class="arg-pill">{p["Country"]}</span></td>'
+        row += f'<td class="sticky-col col-name">{player_display}</td>'
         for week in week_keys:
             val = schedule_map.get(p['Key'], {}).get(week, "—")
             row += f'<td class="col-week">{"<b>" if "(Q)" not in val and val != "—" else ""}{val}{"</b>" if "(Q)" not in val and val != "—" else ""}</td>'
@@ -232,19 +236,22 @@ def main():
             .sidebar-header {{ padding: 25px 20px; font-size: 20px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #334155; }}
             .menu-item {{ padding: 15px 20px; cursor: pointer; color: #cbd5e1; }}
             .menu-item.active {{ background: #75AADB; color: white; font-weight: bold; }}
-            .main-content {{ flex: 1; padding: 40px; overflow-y: auto; background: #f8fafc; }}
+            .main-content {{ flex: 1; padding: 20px 40px; overflow-y: auto; background: #f8fafc; }}
+            .header-row {{ display: flex; align-items: center; justify-content: flex-start; gap: 30px; margin-bottom: 20px; }}
+            h1 {{ margin: 0; font-size: 24px; color: #1e293b; }}
             .content-card {{ background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; }}
-            .table-nav {{ display: flex; justify-content: space-between; padding: 20px; border-bottom: 1px solid #e2e8f0; }}
-            input {{ padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; }}
+            .table-nav {{ display: flex; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }}
+            input {{ padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; width: 250px; font-family: inherit; }}
             .table-wrapper {{ overflow-x: auto; }}
-            table {{ width: 100%; border-collapse: collapse; }}
-            th {{ position: sticky; top: 0; background: white; padding: 15px; font-size: 11px; border-bottom: 2px solid #e2e8f0; }}
-            td {{ padding: 12px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 13px; }}
+            table {{ width: 100%; border-collapse: collapse; table-layout: fixed; }}
+            th {{ position: sticky; top: 0; background: white; padding: 10px 15px; font-size: 11px; border-bottom: 2px solid #e2e8f0; border-right: 1px solid #e2e8f0; z-index: 10; }}
+            td {{ padding: 6px 12px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 13px; border-right: 1px solid #f1f5f9; }}
             .sticky-col {{ position: sticky; background: white !important; z-index: 2; }}
-            .col-rank {{ left: 0; width: 50px; }}
-            .col-name {{ left: 50px; width: 180px; text-align: left; font-weight: bold; }}
+            .col-rank {{ left: 0; width: 60px; }}
+            .col-name {{ left: 60px; width: 220px; text-align: left; font-weight: bold; color: #334155; }}
+            .col-week {{ width: 200px; }}
             tr.hidden {{ display: none; }}
-            .arg-pill {{ background: #75AADB; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; }}
+            tr:hover td {{ background: #f8fafc; }}
         </style>
     </head>
     <body>
@@ -254,19 +261,20 @@ def main():
             <div class="menu-item active">Próximos Torneos</div>
         </div>
         <div class="main-content">
-            <h1>Próximos Torneos</h1>
-            <div class="content-card">
-                <div class="table-nav">
-                    <input type="text" id="s" placeholder="Buscar jugadora..." oninput="filter()">
+            <div class="header-row">
+                <div class="table-nav" style="padding: 0; border: none;">
+                    <input type="text" id="s" placeholder="Buscar tenista..." oninput="filter()">
                 </div>
+                <h1>Próximos Torneos</h1>
+            </div>
+            <div class="content-card">
                 <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
                                 <th class="sticky-col col-rank">Rank</th>
                                 <th class="sticky-col col-name">Jugadora</th>
-                                <th>País</th>
-                                {"".join([f'<th>{w}</th>' for w in week_keys])}
+                                {"".join([f'<th class="col-week">{w}</th>' for w in week_keys])}
                             </tr>
                         </thead>
                         <tbody id="tb">{table_rows}</tbody>
