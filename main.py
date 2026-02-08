@@ -10,9 +10,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import os
-import re
 
-# We only use this for Player Names now
 def format_player_name(text):
     if not text: return ""
     return " ".join([word.capitalize() for word in text.split()])
@@ -184,7 +182,6 @@ def main():
                 if key.startswith("http"):
                     status_dict = scrape_tournament_players(key)
                 else:
-                    print(f"Consultando ITF: {t_name}")
                     status_dict = get_itf_players(key, driver)
                 
                 for p_key, suffix in status_dict.items():
@@ -202,19 +199,12 @@ def main():
 
     table_rows = ""
     week_keys = list(TOURNAMENT_GROUPS.keys())
-    
-    consolidated_players = {}
-    for p in players_data:
-        if p['Country'] != "ARG": continue
-        name = p['Player']
-        if name not in consolidated_players or p['Rank'] < consolidated_players[name]['Rank']:
-            consolidated_players[name] = p
+    consolidated_players = {p['Player']: p for p in players_data if p['Country'] == "ARG"}
 
     for p_name in sorted(consolidated_players.keys(), key=lambda x: consolidated_players[x]['Rank']):
         p = consolidated_players[p_name]
-        # Format only the player name
         player_display = format_player_name(p['Player'])
-        row = f'<tr class="is-arg" data-name="{player_display.lower()}">'
+        row = f'<tr data-name="{player_display.lower()}">'
         row += f'<td class="sticky-col col-rank">{p["Rank"]}</td>'
         row += f'<td class="sticky-col col-name">{player_display}</td>'
         for week in week_keys:
@@ -236,17 +226,39 @@ def main():
             .sidebar-header {{ padding: 25px 20px; font-size: 20px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #334155; }}
             .menu-item {{ padding: 15px 20px; cursor: pointer; color: #cbd5e1; }}
             .menu-item.active {{ background: #75AADB; color: white; font-weight: bold; }}
+            
             .main-content {{ flex: 1; padding: 20px 40px; overflow-y: auto; background: #f8fafc; }}
-            .header-row {{ display: flex; align-items: center; justify-content: flex-start; gap: 30px; margin-bottom: 20px; }}
-            h1 {{ margin: 0; font-size: 24px; color: #1e293b; }}
+            
+            .header-row {{ display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 20px; }}
+            h1 {{ margin: 0; font-size: 24px; color: #1e293b; text-align: center; flex-grow: 1; }}
+            .search-container {{ position: absolute; left: 0; }}
+            input {{ padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; width: 220px; font-family: inherit; }}
+            
             .content-card {{ background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; }}
-            .table-nav {{ display: flex; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }}
-            input {{ padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; width: 250px; font-family: inherit; }}
             .table-wrapper {{ overflow-x: auto; }}
             table {{ width: 100%; border-collapse: collapse; table-layout: fixed; }}
-            th {{ position: sticky; top: 0; background: white; padding: 10px 15px; font-size: 11px; border-bottom: 2px solid #e2e8f0; border-right: 1px solid #e2e8f0; z-index: 10; }}
+            
+            th {{ 
+                position: sticky; top: 0; 
+                background: #75AADB !important; 
+                color: white; 
+                padding: 10px 15px; 
+                font-size: 11px; 
+                font-weight: bold;
+                border-bottom: 2px solid #5da5df; 
+                border-right: 1px solid rgba(255,255,255,0.3); 
+                z-index: 10; 
+                text-transform: uppercase;
+            }}
+            
             td {{ padding: 6px 12px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 13px; border-right: 1px solid #f1f5f9; }}
+            
             .sticky-col {{ position: sticky; background: white !important; z-index: 2; }}
+            th.sticky-col {{ 
+                z-index: 11; 
+                background: #75AADB !important; /* Mismo color que los otros th */
+                color: white;
+            }}
             .col-rank {{ left: 0; width: 60px; }}
             .col-name {{ left: 60px; width: 220px; text-align: left; font-weight: bold; color: #334155; }}
             .col-week {{ width: 200px; }}
@@ -262,7 +274,7 @@ def main():
         </div>
         <div class="main-content">
             <div class="header-row">
-                <div class="table-nav" style="padding: 0; border: none;">
+                <div class="search-container">
                     <input type="text" id="s" placeholder="Buscar tenista..." oninput="filter()">
                 </div>
                 <h1>Próximos Torneos</h1>
