@@ -176,6 +176,13 @@ def main():
         players_data = get_all_rankings(ranking_date)
         schedule_map = {}
 
+        dropdown_html = '<option value="">Seleccionar torneo...</option>'
+        for week, tourneys in TOURNAMENT_GROUPS.items():
+            dropdown_html += f'<optgroup label="{week}">'
+            for t_name in tourneys.values():
+                dropdown_html += f'<option value="{t_name}">{t_name}</option>'
+            dropdown_html += '</optgroup>'
+
         for week, tourneys in TOURNAMENT_GROUPS.items():
             print(f"Procesando {week}...")
             for key, t_name in tourneys.items():
@@ -224,8 +231,8 @@ def main():
             .app-container {{ display: flex; width: 100%; height: 100%; }}
             
             .sidebar {{ width: 180px; background: #1e293b; color: white; display: flex; flex-direction: column; flex-shrink: 0; }}
-            .sidebar-header {{ padding: 25px 15px; font-size: 15px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #334155; }}
-            .menu-item {{ padding: 15px 20px; cursor: pointer; color: #cbd5e1; font-size: 14px; }}
+            .sidebar-header {{ padding: 25px 15px; font-size: 15px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #475569; }}
+            .menu-item {{ padding: 15px 20px; cursor: pointer; color: #cbd5e1; font-size: 14px; border-bottom: 1px solid #334155; }}
             .menu-item.active {{ background: #75AADB; color: white; font-weight: bold; }}
             
             .main-content {{ flex: 1; overflow-y: auto; background: #f8fafc; padding: 20px; }}
@@ -241,34 +248,47 @@ def main():
                 top: 50px;
                 bottom: 20px;
                 width: 1px;
-                background: #cbd5e1;
+                background: #94a3b8;
             }}
             .header-row {{ 
                 width: 100%; 
                 margin-bottom: 20px; 
                 display: flex; 
+                flex-direction: column;
                 align-items: center; 
-                justify-content: center;
                 position: relative; 
-                height: 40px;
+                gap: 10px;
             }}
             h1 {{ margin: 0; font-size: 22px; color: #1e293b; }}
             
-            .search-container {{ 
-                position: absolute; 
-                left: 0; 
-                top: 50%; 
-                transform: translateY(-50%); 
+            .search-container {{ position: absolute; left: 0; top: 50%; transform: translateY(-50%); }}
+            input, select {{
+                padding: 8px 12px; 
+                border-radius: 8px; 
+                border: 2px solid #94a3b8; 
+                font-family: inherit; 
+                font-size: 13px;
+                width: 250px;
+                box-sizing: border-box;
             }}
-            
-            input {{ padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; width: 200px; font-family: inherit; }}
-            
+
+            select {{ 
+                background: white; 
+                font-weight: bold; 
+                cursor: pointer;
+                appearance: none; 
+                background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 10px center;
+            }}
+
             .content-card {{ 
                 background: white; 
                 border-radius: 12px; 
                 box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
                 overflow: hidden; 
                 width: 100%; 
+                border: 1px solid #94a3b8;
             }}
             
             .table-wrapper {{ overflow-x: auto; width: 100%; }}
@@ -281,28 +301,34 @@ def main():
                 padding: 10px 15px; 
                 font-size: 11px; 
                 font-weight: bold;
-                border-bottom: 2px solid #5da5df; 
-                border-right: 1px solid rgba(255,255,255,0.3); 
+                border-bottom: 2px solid #1e293b; 
+                border-right: 1px solid #1e293b; 
                 z-index: 10; 
                 text-transform: uppercase;
                 text-align: center;
             }}
             
-            td {{ padding: 8px 12px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 13px; border-right: 1px solid #f1f5f9; }}
+            td {{ 
+                padding: 8px 12px; 
+                border-bottom: 1px solid #94a3b8; 
+                text-align: center; 
+                font-size: 13px; 
+                border-right: 1px solid #94a3b8; 
+            }}
             
             .sticky-col {{ position: sticky; background: white !important; z-index: 2; }}
             th.sticky-col {{ z-index: 11; background: #75AADB !important; color: white; }}
-            .col-rank {{ left: 0; width: 45px; }}
-            .col-name {{ left: 45px; width: 140px; text-align: left; font-weight: bold; color: #334155; }}
+            .col-rank {{ left: 0; width: 45px; border-right: 1px solid #1e293b !important; }}
+            .col-name {{ left: 45px; width: 140px; text-align: left; font-weight: bold; color: #334155; border-right: 1px solid #1e293b !important; }}
             .col-week {{ width: 150px; overflow: hidden; text-overflow: ellipsis; }}
 
-            .col-pos {{ width: 50px; }}
-            .col-entry-name {{ text-align: left; font-weight: bold; }}
-            .col-country {{ width: 60px; }}
+            .col-pos {{ width: 50px; border-right: 1px solid #1e293b !important; }}
+            .col-entry-name {{ text-align: left; font-weight: bold; border-right: 1px solid #94a3b8; }}
+            .col-country {{ width: 60px; border-right: 1px solid #94a3b8; }}
             .col-rank-e {{ width: 70px; }}
 
             tr.hidden {{ display: none; }}
-            tr:hover td {{ background: #f8fafc; }}
+            tr:hover td {{ background: #f1f5f9; }}
         </style>
     </head>
     <body>
@@ -339,26 +365,24 @@ def main():
 
                 <div class="column-entry">
                     <div class="header-row">
-                        <h1>Entry List</h1>
+                        <h1>Entry List</h1> <div class="search-container-static"> <select id="tSelect" onchange="updateEntryList()">
+                                {dropdown_html}
+                            </select>
+                        </div>
                     </div>
                     <div class="content-card">
-                        <div class="table-wrapper">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th class="col-pos">Pos.</th>
-                                        <th class="col-entry-name">Jugadora</th>
-                                        <th class="col-country">País</th>
-                                        <th class="col-rank-e">Rank-E</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="entry-body">
-                                    <tr>
-                                        <td colspan="4" style="color: #94a3b8; padding: 40px;">No hay datos seleccionados</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width:50px">Rank</th>
+                                    <th>Jugadora</th>
+                                    <th style="width:55px">País</th>
+                                </tr>
+                            </thead>
+                            <tbody id="entry-body">
+                                <tr><td colspan="3" style="padding: 40px; color: #94a3b8;">Selecciona un torneo</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -372,6 +396,26 @@ def main():
                 const matches = row.getAttribute('data-name').includes(q);
                 row.classList.toggle('hidden', !matches);
             }});
+        }}
+        function updateEntryList() {{
+            const sel = document.getElementById('tSelect').value;
+            const body = document.getElementById('entry-body');
+            
+            if (!sel || !tournamentData[sel]) return;
+            
+            const players = tournamentData[sel].sort((a,b) => (a.rank || 9999) - (b.rank || 9999));
+            
+            let html = '<tr class="divider-row"><td colspan="3">MAIN DRAW</td></tr>';
+            players.filter(p => p.type === 'MAIN').forEach(p => {{
+                html += `<tr><td>${{p.rank}}</td><td style="text-align:left; font-weight:bold;">${{p.name}}</td><td>${{p.country}}</td></tr>`;
+            }});
+            
+            html += '<tr class="divider-row"><td colspan="3">QUALIFYING</td></tr>';
+            players.filter(p => p.type === 'QUAL').forEach(p => {{
+                html += `<tr><td>${{p.rank}}</td><td style="text-align:left;">${{p.name}}</td><td>${{p.country}}</td></tr>`;
+            }});
+            
+            body.innerHTML = html;
         }}
     </script>
     </body>
