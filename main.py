@@ -1,6 +1,7 @@
 import requests
 import time
 import json
+import random
 import pandas as pd
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
@@ -9,8 +10,6 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
-# --- CONFIGURATION ---
-# Mantenemos las WTA fijas, el script añadirá las ITF dinámicamente
 TOURNAMENT_GROUPS = {
     "Semana 16 Febrero": {
         "https://www.wtatennis.com/tournaments/dubai/player-list": "WTA 1000 DUBAI",
@@ -36,28 +35,56 @@ TOURNAMENT_GROUPS = {
 API_URL = "https://api.wtatennis.com/tennis/players/ranked"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"}
 
-# --- HELPER FUNCTIONS ---
 
-def get_dynamic_itf_calendar():
-    """Usa Selenium para obtener el calendario ITF y mapearlo a semanas."""
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-    
-    itf_tourneys = []
+def get_itf_players(tournament_key, driver):
+    url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetAcceptanceList?tournamentKey={tournament_key}&circuitCode=WT"
     try:
-        print("Obteniendo calendario ITF dinámico...")
+        driver.get(url)
+        time.sleep(random.uniform(4, 6))
+        raw_content = driver.find_element("tag name", "body").text
+        
+        start = raw_content.find('[')
+        end = raw_content.rfind(']') + 1
+        if start == -1: return {}
+        data = json.loads(raw_content[start:end])
+    except Exception as e:
+        print(f"Error en {tournament_key}: {e}")
+        return {}
+
+    final_list = {}
+    if not isinstance(data, list): return {}
+    
+    for item in data:
+        if not isinstance(item, dict): continue
+        for classification in item.get("entryClassifications") or []:
+            desc = classification.get("entryClassification", "").upper()
+            code = classification.get("entryClassificationCode", "")
+            if "WITHDRAWAL" in desc: break 
+            
+            for entry in classification.get("entries") or []:
+                pos = entry.get("positionDisplay", "")
+                suffix = "" if code == "MDA" else (f" (ALT {pos})" if code == "ALT" or "ALTERNATE" in desc else " (Q)")
+                
+                players = entry.get("players")
+                if not players or not isinstance(players, list): continue
+                
+                for player in players:
+                    full_name = f"{player.get('givenName', '')} {player.get('familyName', '')}".strip().upper()
+                    if full_name:
+                        final_list[full_name] = suffix
+    return final_list
+
+def get_dynamic_itf_calendar(driver):
+    try:
         url = "https://www.itftennis.com/tennis/api/TournamentApi/GetCalendar?circuitCode=WT&dateFrom=2026-02-16&dateTo=2026-03-31&skip=0&take=500"
         driver.get(url)
         time.sleep(5)
-        content = driver.find_element("tag name", "body").text
-        data = json.loads(content)
-        itf_tourneys = data.get('items', [])
+        raw_content = driver.find_element("tag name", "body").text
+        data = json.loads(raw_content)
+        return data.get('items', [])
     except Exception as e:
-        print(f"Error cargando calendario ITF: {e}")
-    finally:
-        driver.quit()
-    return itf_tourneys
+        print(f"Error calendario: {e}")
+        return []
 
 def get_all_rankings(date_str):
     all_players, page = [], 0
@@ -70,34 +97,9 @@ def get_all_rankings(date_str):
             if not items: break
             all_players.extend(items)
             page += 1
-            time.sleep(0.05)
+            time.sleep(0.1)
         except: break
     return [{"Player": p.get('player', {}).get('fullName').strip(), "Rank": p.get('ranking'), "Country": p.get('player', {}).get('countryCode', ''), "Key": p.get('player', {}).get('fullName').strip().upper()} for p in all_players if p.get('player')]
-
-def get_itf_players(tournament_key):
-    url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetAcceptanceList?tournamentKey={tournament_key}&circuitCode=WT"
-    try:
-        r = requests.get(url, headers=HEADERS, timeout=15)
-        data = r.json()
-    except Exception as e:
-        print(f"Error en {tournament_key}: {e}")
-        return {}
-
-    final_list = {}
-    for item in data:
-        for classification in item.get("entryClassifications", []):
-            desc = classification.get("entryClassification", "").upper()
-            code = classification.get("entryClassificationCode", "")
-            if "WITHDRAWAL" in desc: break 
-            for entry in classification.get("entries", []):
-                pos = entry.get("positionDisplay", "")
-                if code == "MDA": suffix = ""
-                elif code == "ALT" or "ALTERNATE" in desc: suffix = f" (ALT {pos})"
-                else: suffix = " (Q)"
-                for player in (entry.get("players") or []):
-                    full_name = f"{player['givenName']} {player['familyName']}".strip().upper()
-                    final_list[full_name] = suffix
-    return final_list
 
 def scrape_tournament_players(url):
     try:
@@ -121,56 +123,55 @@ def scrape_tournament_players(url):
     final_list.update({p: "" for p in main_draw})
     return final_list
 
-# --- MAIN PROCESS ---
-
 def main():
-    # 1. ACTUALIZACIÓN DINÁMICA DE TOURNAMENT_GROUPS CON ITF
-    itf_items = get_dynamic_itf_calendar()
-    
-    # Mapa de lunes para asignar a los grupos existentes
-    monday_map = {
-        "2026-02-16": "Semana 16 Febrero",
-        "2026-02-23": "Semana 23 Febrero",
-        "2026-03-02": "Semana 2 Marzo",
-        "2026-03-09": "Semana 9 Marzo"
-    }
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
-    for item in itf_items:
-        s_date = pd.to_datetime(item['startDate'])
-        # Encontrar el lunes de esa semana
-        monday_date = (s_date - timedelta(days=s_date.weekday())).strftime('%Y-%m-%d')
-        
-        if monday_date in monday_map:
-            week_label = monday_map[monday_date]
-            t_key = item['tournamentKey'].lower()
-            t_name = item['tournamentName'].upper()
-            # Añadir al diccionario global
-            TOURNAMENT_GROUPS[week_label][t_key] = t_name
+    try:
+        itf_items = get_dynamic_itf_calendar(driver)
+        monday_map = {
+            "2026-02-16": "Semana 16 Febrero",
+            "2026-02-23": "Semana 23 Febrero",
+            "2026-03-02": "Semana 2 Marzo",
+            "2026-03-09": "Semana 9 Marzo"
+        }
 
-    # 2. PROCESO ORIGINAL
-    ranking_date = (datetime.now() - timedelta(days=datetime.now().weekday())).strftime("%Y-%m-%d")
-    players_data = get_all_rankings(ranking_date)
-    schedule_map = {}
-    
-    for week, tourneys in TOURNAMENT_GROUPS.items():
-        print(f"Procesando {week}...")
-        for key, t_name in tourneys.items():
-            time.sleep(20)
-            if key.startswith("http"):
-                status_dict = scrape_tournament_players(key)
-            else:
-                status_dict = get_itf_players(key)
-            
-            for p_key, suffix in status_dict.items():
-                if p_key not in schedule_map: schedule_map[p_key] = {}
-                entry = f"{t_name}{suffix}"
-                if week in schedule_map[p_key]:
-                    if entry not in schedule_map[p_key][week]:
-                        schedule_map[p_key][week] += f"<br>{entry}"
+        for item in itf_items:
+            s_date = pd.to_datetime(item['startDate'])
+            monday_date = (s_date - timedelta(days=s_date.weekday())).strftime('%Y-%m-%d')
+            if monday_date in monday_map:
+                week_label = monday_map[monday_date]
+                TOURNAMENT_GROUPS[week_label][item['tournamentKey'].lower()] = item['tournamentName'].upper()
+
+        ranking_date = (datetime.now() - timedelta(days=datetime.now().weekday())).strftime("%Y-%m-%d")
+        players_data = get_all_rankings(ranking_date)
+        schedule_map = {}
+
+        for week, tourneys in TOURNAMENT_GROUPS.items():
+            print(f"Procesando {week}...")
+            for key, t_name in tourneys.items():
+                if key.startswith("http"):
+                    status_dict = scrape_tournament_players(key)
                 else:
-                    schedule_map[p_key][week] = entry
+                    print(f"Consultando ITF: {t_name}")
+                    status_dict = get_itf_players(key, driver)
+                
+                for p_key, suffix in status_dict.items():
+                    if p_key not in schedule_map: schedule_map[p_key] = {}
+                    entry = f"{t_name}{suffix}"
+                    if week in schedule_map[p_key]:
+                        if entry not in schedule_map[p_key][week]:
+                            schedule_map[p_key][week] += f"<br>{entry}"
+                    else:
+                        schedule_map[p_key][week] = entry
+                
+                time.sleep(random.uniform(2, 4))
 
-    # 3. GENERACIÓN DE HTML (Tu template original)
+    finally:
+        driver.quit()
+
     table_rows = ""
     week_keys = list(TOURNAMENT_GROUPS.keys())
     for p in players_data:
@@ -184,7 +185,6 @@ def main():
             row += f'<td class="col-week">{"<b>" if "(Q)" not in val and val != "—" else ""}{val}{"</b>" if "(Q)" not in val and val != "—" else ""}</td>'
         table_rows += row + "</tr>"
 
-    # --- 6. TEMPLATE FINAL ---
     html_template = f"""
     <!DOCTYPE html>
     <html lang="es">
@@ -212,6 +212,7 @@ def main():
             .col-rank {{ left: 0; width: 50px; }}
             .col-name {{ left: 50px; width: 180px; text-align: left; font-weight: bold; }}
             tr.hidden {{ display: none; }}
+            .arg-pill {{ background: #75AADB; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; }}
         </style>
     </head>
     <body>
@@ -264,6 +265,7 @@ def main():
     </html>
     """
     with open("index.html", "w", encoding="utf-8") as f: f.write(html_template)
-    print("Hecho: index.html generado.")
+    print("Hecho.")
 
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+    main()
