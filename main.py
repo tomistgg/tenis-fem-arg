@@ -229,7 +229,7 @@ def main():
                             schedule_map[p_key] = {}
 
                         if week in schedule_map[p_key]:
-                            schedule_map[p_key][week] += f"<br>{t_name}{suffix}"
+                            schedule_map[p_key][week] += f'<div style="margin-top: 3px;">{t_name}{suffix}</div>'
                         else:
                             schedule_map[p_key][week] = f"{t_name}{suffix}"
                 else:
@@ -335,6 +335,7 @@ def main():
             .main-content {{ flex: 1; overflow-y: auto; background: #f8fafc; padding: 20px; }}
             .dual-layout {{ display: flex; min-height: 80vh; gap: 40px; position: relative; }}
             .column-main {{ flex: 0 0 70%; display: flex; flex-direction: column; align-items: flex-start; position: relative; min-width: 0; }}
+            .column-main table {{ table-layout: fixed; width: 100%; }}
             .column-entry {{ flex: 1; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }}
             .column-main::after {{ content: ""; position: absolute; right: -20px; top: 50px; bottom: 20px; width: 1px; background: #94a3b8; }}
             .header-row {{ width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; gap: 10px; }}
@@ -349,10 +350,12 @@ def main():
             td {{ padding: 8px 12px; border-bottom: 1px solid #94a3b8; text-align: center; font-size: 13px; border-right: 1px solid #94a3b8; }}
             .column-entry td {{ font-size: 12px; padding: 6px 10px; }}
             .sticky-col {{ position: sticky; background: white !important; z-index: 2; }}
+            .row-arg {{ background-color: #e0f2fe !important; }}
+            td.col-week {{ width: 150px; font-size: 11px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
             th.sticky-col {{ z-index: 11; background: #75AADB !important; color: white; }}
-            .col-rank {{ left: 0; width: 45px; border-right: 1px solid #1e293b !important; }}
-            .col-name {{ left: 45px; width: 140px; text-align: left; font-weight: bold; color: #334155; border-right: 1px solid #1e293b !important; }}
-            .col-week {{ width: 150px; overflow: hidden; text-overflow: ellipsis; }}
+            .col-rank {{ left: 0; width: 30px; border-right: 1px solid #1e293b !important; min-width: 45px; max-width: 45px; }}
+            .col-name {{ left: 45px; width: 140px; min-width: 140px; max-width: 140px; text-align: left; font-weight: bold; color: #334155; border-right: 1px solid #1e293b !important; }}
+            .col-week {{ width: 130px; font-size: 11px; font-weight: bold; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
             .divider-row td {{ background: #e2e8f0; font-weight: bold; text-align: center; padding: 5px 15px; font-size: 11px; border-right: none; }}
             tr.hidden {{ display: none; }}
             tr:hover td {{ background: #f1f5f9; }}
@@ -434,20 +437,29 @@ def main():
                 const players = tournamentData[sel];
                 let html = '';
 
-                const mainDraw = players.filter(p => p.type === 'MAIN');
-                if (mainDraw.length > 0) {{
-                    mainDraw.forEach((p) => {{
-                        html += `<tr><td>${{p.pos}}</td><td style="text-align:left; font-weight:bold;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
-                    }});
-                }}
-                
-                const qualDraw = players.filter(p => p.type === 'QUAL');
-                if (qualDraw.length > 0) {{
-                    html += '<tr class="divider-row"><td colspan="4">QUALIFYING</td></tr>';
-                    qualDraw.forEach((p) => {{
-                        html += `<tr><td>${{p.pos}}</td><td style="text-align:left;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
-                    }});
-                }}
+                const sections = [
+                    {{ data: players.filter(p => p.type === 'MAIN'), header: false }},
+                    {{ data: players.filter(p => p.type === 'QUAL'), header: 'QUALIFYING' }}
+                ];
+
+                sections.forEach(section => {{
+                    if (section.data.length > 0) {{
+                        if (section.header) {{
+                            html += `<tr class="divider-row"><td colspan="4">${{section.header}}</td></tr>`;
+                        }}
+                        section.data.forEach((p) => {{
+                            const argClass = p.country === 'ARG' ? 'class="row-arg"' : '';
+                            const nameStyle = p.type === 'MAIN' ? 'style="text-align:left; font-weight:bold;"' : 'style="text-align:left;"';
+                            
+                            html += `<tr ${{argClass}}>
+                                        <td>${{p.pos}}</td>
+                                        <td ${{nameStyle}}>${{p.name}}</td>
+                                        <td>${{p.country}}</td>
+                                        <td>${{p.rank}}</td>
+                                    </tr>`;
+                        }});
+                    }}
+                }});
                 
                 body.innerHTML = html;
             }}
