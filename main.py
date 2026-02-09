@@ -147,12 +147,13 @@ def get_all_rankings(date_str):
         })
     return ranking_results
 
-def scrape_tournament_players(url):
+def scrape_tournament_players(url, players_data):
     try:
         r = requests.get(url, headers=HEADERS, timeout=15)
         soup = BeautifulSoup(r.text, 'html.parser')
-    except: return {}
-    main_draw, qualifying = set(), set()
+    except: return [], {}
+    
+    main_draw_names, qualifying_names = set(), set()
     current_state = "MAIN" 
     for tag in soup.find_all(True):
         text = tag.get_text().strip()
@@ -164,11 +165,37 @@ def scrape_tournament_players(url):
         if p_name:
             name_key = p_name.strip().upper()
             matched_name = NAME_LOOKUP.get(name_key, name_key)
-            if current_state == "MAIN": main_draw.add(matched_name)
-            elif current_state == "QUAL": qualifying.add(matched_name)
-    final_list = {p: " (Q)" for p in qualifying}
-    final_list.update({p: "" for p in main_draw})
-    return final_list
+            if current_state == "MAIN": main_draw_names.add(matched_name)
+            elif current_state == "QUAL": qualifying_names.add(matched_name)
+    
+    tourney_players_list = []
+    
+    def process_wta_section(names, section_type):
+        temp_list = []
+        for p_name in names:
+            p_info = next((item for item in players_data if item["Player"] == p_name), {"Rank": 9999, "Country": "-"})
+            temp_list.append({
+                "pos": "-", 
+                "name": format_player_name(p_name),
+                "country": p_info["Country"], 
+                "rank": f"WTA {p_info['Rank']}" if p_info['Rank'] != 9999 else "-",
+                "type": section_type,
+                "rank_num": p_info['Rank']
+            })
+        # Sort by rank for the position
+        temp_list.sort(key=lambda x: x["rank_num"])
+        for idx, p in enumerate(temp_list, 1):
+            p["pos"] = str(idx)
+        return temp_list
+
+    tourney_players_list.extend(process_wta_section(main_draw_names, "MAIN"))
+    tourney_players_list.extend(process_wta_section(qualifying_names, "QUAL"))
+
+    # Suffix map for schedule table
+    schedule_suffix_map = {p: "" for p in main_draw_names}
+    schedule_suffix_map.update({p: " (Q)" for p in qualifying_names})
+    
+    return tourney_players_list, schedule_suffix_map
 
 def main():
     chrome_options = Options()
@@ -211,19 +238,11 @@ def main():
         for week, tourneys in TOURNAMENT_GROUPS.items():
             print(f"Procesando {week}...")
             for key, t_name in tourneys.items():
-
                 if key.startswith("http"):
-                    status_dict = scrape_tournament_players(key)
-                    tourney_players_list = []
+                    tourney_players_list, status_dict = scrape_tournament_players(key, players_data)
+                    tournament_store[key] = tourney_players_list
+                    
                     for p_name, suffix in status_dict.items():
-                        p_info = next((item for item in players_data if item["Player"] == p_name), {"Rank": 999, "Country": "-"})
-                        tourney_players_list.append({
-                            "pos": "-", 
-                            "name": format_player_name(p_name),
-                            "country": p_info["Country"], 
-                            "rank": f"WTA {p_info['Rank']}",
-                            "type": "QUAL" if "(Q)" in suffix else "MAIN"
-                        })
                         p_key = p_name.upper()
                         if p_key not in schedule_map: 
                             schedule_map[p_key] = {}
@@ -442,7 +461,6 @@ def main():
         </div>
         <script>
             const tournamentData = {json.dumps(tournament_store)};
-            
             function filter() {{
                 const q = document.getElementById('s').value.toLowerCase();
                 document.querySelectorAll('#tb tr').forEach(row => {{
@@ -450,39 +468,24 @@ def main():
                     row.classList.toggle('hidden', !matches);
                 }});
             }}
-
             function updateEntryList() {{
                 const sel = document.getElementById('tSelect').value;
                 const body = document.getElementById('entry-body');
                 if (!tournamentData[sel]) return;
-
                 const players = tournamentData[sel];
                 let html = '';
-
-                const sections = [
-                    {{ data: players.filter(p => p.type === 'MAIN'), header: false }},
-                    {{ data: players.filter(p => p.type === 'QUAL'), header: 'QUALIFYING' }}
-                ];
-
-                sections.forEach(section => {{
-                    if (section.data.length > 0) {{
-                        if (section.header) {{
-                            html += `<tr class="divider-row"><td colspan="4">${{section.header}}</td></tr>`;
-                        }}
-                        section.data.forEach((p) => {{
-                            const argClass = p.country === 'ARG' ? 'class="row-arg"' : '';
-                            const nameStyle = p.type === 'MAIN' ? 'style="text-align:left; font-weight:bold;"' : 'style="text-align:left;"';
-                            
-                            html += `<tr ${{argClass}}>
-                                        <td>${{p.pos}}</td>
-                                        <td ${{nameStyle}}>${{p.name}}</td>
-                                        <td>${{p.country}}</td>
-                                        <td>${{p.rank}}</td>
-                                    </tr>`;
-                        }});
-                    }}
-                }});
+                const main = players.filter(p => p.type === 'MAIN');
+                const qual = players.filter(p => p.type === 'QUAL');
                 
+                main.forEach(p => {{
+                    html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{p.pos}}</td><td style="text-align:left;font-weight:bold;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
+                }});
+                if (qual.length > 0) {{
+                    html += `<tr class="divider-row"><td colspan="4">QUALIFYING</td></tr>`;
+                    qual.forEach(p => {{
+                        html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{p.pos}}</td><td style="text-align:left;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
+                    }});
+                }}
                 body.innerHTML = html;
             }}
         </script>
