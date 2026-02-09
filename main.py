@@ -252,7 +252,11 @@ def main():
                             if not players: continue
                             
                             p_node = players[0]
-                            f_name = f"{p_node.get('givenName', '')} {p_node.get('familyName', '')}".strip()
+                            given_name = p_node.get('givenName', '')
+                            family_name = p_node.get('familyName', '')
+                            raw_f_name = f"{given_name} {family_name}".strip()
+
+                            lookup_name = raw_f_name.upper()
                             
                             wta = p_node.get("atpWtaRank", "")
                             itf_rank = p_node.get("itfBTRank")
@@ -273,7 +277,7 @@ def main():
 
                             tourney_players_list.append({
                                 "pos": pos,
-                                "name": format_player_name(f_name),
+                                "name": raw_f_name,
                                 "country": p_node.get("nationalityCode", "-"),
                                 "rank": erank_str,
                                 "type": section_type,
