@@ -10,6 +10,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import os
+import unicodedata
 
 def format_player_name(text):
     if not text: return ""
@@ -94,13 +95,16 @@ def build_tournament_groups():
         tournament_id = tournament["tournamentGroup"]["id"]
         raw_name = tournament["tournamentGroup"]["name"]
         
+        nfkd_form = unicodedata.normalize('NFKD', raw_name)
+        clean_name = "".join([c for c in nfkd_form if not unicodedata.combining(c)])
+        
         suffix = ""
-        if "#" in raw_name:
-            parts = raw_name.split("#")
-            raw_name = parts[0].strip()
+        if "#" in clean_name:
+            parts = clean_name.split("#")
+            clean_name = parts[0].strip()
             suffix = " " + parts[1].strip()
         
-        name = raw_name.lower().replace(" ", "-")
+        name = clean_name.lower().replace(" ", "-")
         if suffix:
             name += "-" + suffix.strip()
         
@@ -202,10 +206,21 @@ def get_dynamic_itf_calendar(driver):
         print(f"Error calendario: {e}")
         return []
 
-def get_all_rankings(date_str):
+def get_rankings(date_str, nationality=None):
     all_players, page = [], 0
     while True:
-        params = {"metric": "SINGLES", "type": "rankSingles", "sort": "asc", "at": date_str, "pageSize": 100, "page": page}
+        params = {
+            "page": page,
+            "pageSize": 50 if nationality else 100,
+            "type": "rankSingles",
+            "sort": "asc",
+            "metric": "SINGLES",
+            "at": date_str
+        }
+        
+        if nationality:
+            params["nationality"] = nationality
+
         try:
             r = requests.get(API_URL, params=params, headers=HEADERS, timeout=10)
             data = r.json()
@@ -330,7 +345,11 @@ def main():
                 TOURNAMENT_GROUPS[week_label][item['tournamentKey'].lower()] = item['tournamentName']
 
         ranking_date = (datetime.now() - timedelta(days=datetime.now().weekday())).strftime("%Y-%m-%d")
-        players_data = get_all_rankings(ranking_date)
+        
+        players_data = get_rankings(ranking_date, nationality="ARG")
+        
+        arg_names_set = {p['Player'] for p in players_data}
+
         schedule_map = {}
         tournament_store = {} 
 
@@ -348,8 +367,8 @@ def main():
             md_date = get_monday_offset(week_monday, 4)
             q_date = get_monday_offset(week_monday, 3)
 
-            if md_date not in ranking_cache: ranking_cache[md_date] = get_all_rankings(md_date)
-            if q_date not in ranking_cache: ranking_cache[q_date] = get_all_rankings(q_date)
+            if md_date not in ranking_cache: ranking_cache[md_date] = get_rankings(md_date, nationality=None)
+            if q_date not in ranking_cache: ranking_cache[q_date] = get_rankings(q_date, nationality=None)
 
             for key, t_name in tourneys.items():
                 if key.startswith("http"):
@@ -358,6 +377,9 @@ def main():
                     
                     for p_name, suffix in status_dict.items():
                         p_key = p_name.upper()
+                        
+                        if p_key not in arg_names_set: continue
+                        
                         if p_key not in schedule_map: 
                             schedule_map[p_key] = {}
 
@@ -389,8 +411,6 @@ def main():
                             family_name = p_node.get('familyName', '')
                             raw_f_name = f"{given_name} {family_name}".strip()
 
-                            lookup_name = raw_f_name.upper()
-                            
                             wta = p_node.get("atpWtaRank", "")
                             itf_rank = p_node.get("itfBTRank")
                             wtn = p_node.get("worldRating", "")
@@ -421,6 +441,8 @@ def main():
                     tournament_store[key] = tourney_players_list
 
                     for p_name, suffix in itf_name_map.items():
+                        if p_name not in arg_names_set: continue
+                        
                         if p_name not in schedule_map: 
                             schedule_map[p_name] = {}
                         
@@ -437,10 +459,10 @@ def main():
 
     table_rows = ""
     week_keys = list(TOURNAMENT_GROUPS.keys())
-    consolidated_players = {p['Player']: p for p in players_data if p['Country'] == "ARG"}
-
-    for p_name in sorted(consolidated_players.keys(), key=lambda x: consolidated_players[x]['Rank']):
-        p = consolidated_players[p_name]
+    
+    for p_name in sorted([p['Player'] for p in players_data], key=lambda x: next(p['Rank'] for p in players_data if p['Player'] == x)):
+        p = next(item for item in players_data if item["Player"] == p_name)
+        
         player_display = format_player_name(p['Player'])
         row = f'<tr data-name="{player_display.lower()}">'
         row += f'<td class="sticky-col col-rank">{p["Rank"]}</td>'
