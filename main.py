@@ -185,6 +185,10 @@ def main():
             "2026-03-09": "Semana 9 Marzo"
         }
 
+        for label in monday_map.values():
+            if label not in TOURNAMENT_GROUPS:
+                TOURNAMENT_GROUPS[label] = {}
+
         for item in itf_items:
             s_date = pd.to_datetime(item['startDate'])
             monday_date = (s_date - timedelta(days=s_date.weekday())).strftime('%Y-%m-%d')
@@ -339,12 +343,13 @@ def main():
             table {{ border-collapse: collapse; width: 100%; table-layout: fixed; }}
             th {{ position: sticky; top: 0; background: #75AADB !important; color: white; padding: 10px 15px; font-size: 11px; font-weight: bold; border-bottom: 2px solid #1e293b; border-right: 1px solid #1e293b; z-index: 10; text-transform: uppercase; text-align: center; }}
             td {{ padding: 8px 12px; border-bottom: 1px solid #94a3b8; text-align: center; font-size: 13px; border-right: 1px solid #94a3b8; }}
+            .column-entry td {{ font-size: 12px; padding: 6px 10px; }}
             .sticky-col {{ position: sticky; background: white !important; z-index: 2; }}
             th.sticky-col {{ z-index: 11; background: #75AADB !important; color: white; }}
             .col-rank {{ left: 0; width: 45px; border-right: 1px solid #1e293b !important; }}
             .col-name {{ left: 45px; width: 140px; text-align: left; font-weight: bold; color: #334155; border-right: 1px solid #1e293b !important; }}
             .col-week {{ width: 150px; overflow: hidden; text-overflow: ellipsis; }}
-            .divider-row td {{ background: #e2e8f0; font-weight: bold; text-align: left; padding: 5px 15px; font-size: 11px; border-right: none; }}
+            .divider-row td {{ background: #e2e8f0; font-weight: bold; text-align: center; padding: 5px 15px; font-size: 11px; border-right: none; }}
             tr.hidden {{ display: none; }}
             tr:hover td {{ background: #f1f5f9; }}
         </style>
@@ -393,9 +398,9 @@ def main():
                             <table>
                                 <thead>
                                     <tr>
-                                        <th style="width:50px">Pos.</th>
+                                        <th style="width:20px">Pos.</th>
                                         <th>Jugadora</th>
-                                        <th style="width:55px">País</th>
+                                        <th style="width:35px">País</th>
                                         <th style="width:90px">E-Rank</th> 
                                     </tr>
                                 </thead>
@@ -425,16 +430,13 @@ def main():
                 const players = tournamentData[sel];
                 let html = '';
 
-                // 1. MAIN DRAW SECTION
                 const mainDraw = players.filter(p => p.type === 'MAIN');
                 if (mainDraw.length > 0) {{
-                    html += '<tr class="divider-row"><td colspan="4">MAIN DRAW</td></tr>';
                     mainDraw.forEach((p) => {{
                         html += `<tr><td>${{p.pos}}</td><td style="text-align:left; font-weight:bold;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
                     }});
                 }}
                 
-                // 2. QUALIFYING SECTION
                 const qualDraw = players.filter(p => p.type === 'QUAL');
                 if (qualDraw.length > 0) {{
                     html += '<tr class="divider-row"><td colspan="4">QUALIFYING</td></tr>';
