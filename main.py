@@ -236,9 +236,9 @@ def main():
         itf_items = get_dynamic_itf_calendar(driver)
         monday_map = {
             "2026-02-16": "Semana 16 Febrero",
-            #"2026-02-23": "Semana 23 Febrero",
-            #"2026-03-02": "Semana 2 Marzo",
-            #"2026-03-09": "Semana 9 Marzo"
+            "2026-02-23": "Semana 23 Febrero",
+            "2026-03-02": "Semana 2 Marzo",
+            "2026-03-09": "Semana 9 Marzo"
         }
 
         for label in monday_map.values():
