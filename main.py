@@ -54,6 +54,11 @@ TOURNAMENT_GROUPS = {
 API_URL = "https://api.wtatennis.com/tennis/players/ranked"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"}
 
+def get_monday_offset(date_str, weeks_back):
+    dt = pd.to_datetime(date_str)
+    monday = dt - timedelta(days=dt.weekday())
+    return (monday - timedelta(weeks=weeks_back)).strftime('%Y-%m-%d')
+
 def get_itf_players(tournament_key, driver):
     url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetAcceptanceList?tournamentKey={tournament_key}&circuitCode=WT"
     try:
@@ -147,55 +152,79 @@ def get_all_rankings(date_str):
         })
     return ranking_results
 
-def scrape_tournament_players(url, players_data):
+def scrape_tournament_players(url, md_rankings, qual_rankings):
     try:
-        r = requests.get(url, headers=HEADERS, timeout=15)
+        r = requests.get(url, headers=HEADERS, timeout=20)
         soup = BeautifulSoup(r.text, 'html.parser')
-    except: return [], {}
+    except Exception as e:
+        print(f"Error scraping {url}: {e}")
+        return [], {}
     
-    main_draw_names, qualifying_names = set(), set()
+    main_draw_names = set()
+    qualifying_names = set()
+    
     current_state = "MAIN" 
-    for tag in soup.find_all(True):
+    
+    all_elements = soup.find_all(['div', 'span', 'button', 'a'], recursive=True)
+    
+    for tag in all_elements:
         text = tag.get_text().strip()
-        ui_tab = tag.get('data-ui-tab', '')
-        if text == "Doubles" or ui_tab == "Doubles": current_state = "IGNORE"
-        elif text == "Qualifying" or ui_tab == "Qualifying": current_state = "QUAL"
-        elif text == "Main Draw" or ui_tab == "Main Draw": current_state = "MAIN"
+        ui_tab = tag.get('data-ui-tab', '').lower()
+        
+        if "qualifying" in text.lower() or "qualifying" in ui_tab:
+            current_state = "QUAL"
+        elif "main draw" in text.lower() or "main draw" in ui_tab:
+            current_state = "MAIN"
+        elif "doubles" in text.lower() or "doubles" in ui_tab:
+            current_state = "IGNORE"
+            
         p_name = tag.get('data-tracking-player-name')
         if p_name:
             name_key = p_name.strip().upper()
             matched_name = NAME_LOOKUP.get(name_key, name_key)
-            if current_state == "MAIN": main_draw_names.add(matched_name)
-            elif current_state == "QUAL": qualifying_names.add(matched_name)
-    
-    tourney_players_list = []
-    
-    def process_wta_section(names, section_type):
-        temp_list = []
-        for p_name in names:
-            p_info = next((item for item in players_data if item["Player"] == p_name), {"Rank": 9999, "Country": "-"})
-            temp_list.append({
-                "pos": "-", 
-                "name": format_player_name(p_name),
-                "country": p_info["Country"], 
-                "rank": f"WTA {p_info['Rank']}" if p_info['Rank'] != 9999 else "-",
-                "type": section_type,
-                "rank_num": p_info['Rank']
-            })
-        # Sort by rank for the position
-        temp_list.sort(key=lambda x: x["rank_num"])
-        for idx, p in enumerate(temp_list, 1):
-            p["pos"] = str(idx)
-        return temp_list
+            
+            if current_state == "MAIN":
+                main_draw_names.add(matched_name)
+            elif current_state == "QUAL":
+                qualifying_names.add(matched_name)
 
-    tourney_players_list.extend(process_wta_section(main_draw_names, "MAIN"))
-    tourney_players_list.extend(process_wta_section(qualifying_names, "QUAL"))
+    def get_p_rank(name, rank_list):
+        return next((item for item in rank_list if item["Player"] == name), {"Rank": 9999, "Country": "-"})
 
-    # Suffix map for schedule table
-    schedule_suffix_map = {p: "" for p in main_draw_names}
-    schedule_suffix_map.update({p: " (Q)" for p in qualifying_names})
+    md_list = []
+    for name in main_draw_names:
+        info = get_p_rank(name, md_rankings)
+        md_list.append({
+            "name": format_player_name(name),
+            "country": info["Country"],
+            "rank_num": info["Rank"],
+            "rank": f"WTA {info['Rank']}" if info['Rank'] < 9999 else "-",
+            "type": "MAIN"
+        })
+    md_list.sort(key=lambda x: x["rank_num"])
+    for idx, p in enumerate(md_list, 1):
+        p["pos"] = str(idx)
+
+    qual_list = []
+    for name in qualifying_names:
+        info = get_p_rank(name, qual_rankings)
+        qual_list.append({
+            "name": format_player_name(name),
+            "country": info["Country"],
+            "rank_num": info["Rank"],
+            "rank": f"WTA {info['Rank']}" if info['Rank'] < 9999 else "-",
+            "type": "QUAL"
+        })
+    qual_list.sort(key=lambda x: x["rank_num"])
+    for idx, p in enumerate(qual_list, 1):
+        p["pos"] = str(idx)
+
+    final_tourney_list = md_list + qual_list
     
-    return tourney_players_list, schedule_suffix_map
+    suffix_map = {p: "" for p in main_draw_names}
+    suffix_map.update({p: " (Q)" for p in qualifying_names})
+    
+    return final_tourney_list, suffix_map
 
 def main():
     chrome_options = Options()
@@ -235,12 +264,20 @@ def main():
                 dropdown_html += f'<option value="{t_key}" class="dropdown-item">{t_name}</option>'
             dropdown_html += '</optgroup>'
 
+        ranking_cache = {}
         for week, tourneys in TOURNAMENT_GROUPS.items():
             print(f"Procesando {week}...")
+            week_monday = next(k for k, v in monday_map.items() if v == week_label)
+            md_date = get_monday_offset(week_monday, 4)
+            q_date = get_monday_offset(week_monday, 3)
+
+            if md_date not in ranking_cache: ranking_cache[md_date] = get_all_rankings(md_date)
+            if q_date not in ranking_cache: ranking_cache[q_date] = get_all_rankings(q_date)
+
             for key, t_name in tourneys.items():
                 if key.startswith("http"):
-                    tourney_players_list, status_dict = scrape_tournament_players(key, players_data)
-                    tournament_store[key] = tourney_players_list
+                    t_list, status_dict = scrape_tournament_players(key, ranking_cache[md_date], ranking_cache[q_date])
+                    tournament_store[key] = t_list
                     
                     for p_name, suffix in status_dict.items():
                         p_key = p_name.upper()
