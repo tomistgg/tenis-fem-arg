@@ -204,8 +204,8 @@ def main():
         dropdown_html = ""
         for week, tourneys in TOURNAMENT_GROUPS.items():
             dropdown_html += f'<optgroup label="{week}">'
-            for t_name in tourneys.values():
-                dropdown_html += f'<option value="{t_name}">{t_name}</option>'
+            for t_key, t_name in tourneys.items():
+                dropdown_html += f'<option value="{t_key}">{t_name}</option>'
             dropdown_html += '</optgroup>'
 
         for week, tourneys in TOURNAMENT_GROUPS.items():
@@ -285,7 +285,7 @@ def main():
                             })
 
                     tourney_players_list.sort(key=lambda x: x["pos_num"])
-                    tournament_store[t_name] = tourney_players_list
+                    tournament_store[key] = tourney_players_list
 
                     for p_name, suffix in itf_name_map.items():
                         if p_name not in schedule_map: 
