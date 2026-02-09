@@ -183,9 +183,9 @@ def main():
         itf_items = get_dynamic_itf_calendar(driver)
         monday_map = {
             "2026-02-16": "Semana 16 Febrero",
-            #"2026-02-23": "Semana 23 Febrero",
-            #"2026-03-02": "Semana 2 Marzo",
-            #"2026-03-09": "Semana 9 Marzo"
+            "2026-02-23": "Semana 23 Febrero",
+            "2026-03-02": "Semana 2 Marzo",
+            "2026-03-09": "Semana 9 Marzo"
         }
 
         for item in itf_items:
@@ -233,7 +233,13 @@ def main():
                     
                     for classification in itf_entries:
                         class_code = classification.get("entryClassificationCode", "")
-                        is_qual = "QUALIFYING" in classification.get("entryClassification", "").upper()
+                        
+                        if class_code in ["MDA", "JR"]:
+                            section_type = "MAIN"
+                        elif class_code == "Q":
+                            section_type = "QUAL"
+                        else:
+                            continue
                         
                         for entry in classification.get("entries") or []:
                             pos = entry.get("positionDisplay", "-")
@@ -247,26 +253,29 @@ def main():
                             itf_rank = p_node.get("itfBTRank")
                             wtn = p_node.get("worldRating", "")
                             
-                            if wta and str(wta).strip() != "":
-                                erank_str = f"WTA {wta}"
-                            elif itf_rank is not None and str(itf_rank).strip() != "":
-                                erank_str = f"ITF {itf_rank}"
-                            elif wtn and str(wtn).strip() != "":
-                                erank_str = f"WTN {wtn}"
-                            else:
-                                erank_str = "-"
+                            erank_str = "-"
+                            if wta and str(wta).strip() != "": erank_str = f"WTA {wta}"
+                            elif itf_rank is not None and str(itf_rank).strip() != "": erank_str = f"ITF {itf_rank}"
+                            elif wtn and str(wtn).strip() != "": erank_str = f"WTN {wtn}"
                                 
-                            if class_code == "JR":
-                                erank_str += " [JE]"
-                                
+                            if class_code == "JR": erank_str += " [JE]"
+                            
+                            try:
+                                pos_digits = ''.join(filter(str.isdigit, str(pos)))
+                                pos_num = int(pos_digits) if pos_digits else 999
+                            except:
+                                pos_num = 999
+
                             tourney_players_list.append({
                                 "pos": pos,
                                 "name": format_player_name(f_name),
                                 "country": p_node.get("nationalityCode", "-"),
                                 "rank": erank_str,
-                                "type": "QUAL" if is_qual else "MAIN"
+                                "type": section_type,
+                                "pos_num": pos_num
                             })
 
+                    tourney_players_list.sort(key=lambda x: x["pos_num"])
                     tournament_store[t_name] = tourney_players_list
 
                     for p_name, suffix in itf_name_map.items():
@@ -407,18 +416,25 @@ def main():
                 if (!tournamentData[sel]) return;
 
                 const players = tournamentData[sel];
-                
-                let html = '<tr class="divider-row"><td colspan="4">MAIN DRAW</td></tr>';
+                let html = '';
+
+                // 1. MAIN DRAW SECTION
                 const mainDraw = players.filter(p => p.type === 'MAIN');
-                mainDraw.forEach((p) => {{
-                    html += `<tr><td>${{p.pos}}</td><td style="text-align:left; font-weight:bold;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
-                }});
+                if (mainDraw.length > 0) {{
+                    html += '<tr class="divider-row"><td colspan="4">MAIN DRAW</td></tr>';
+                    mainDraw.forEach((p) => {{
+                        html += `<tr><td>${{p.pos}}</td><td style="text-align:left; font-weight:bold;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
+                    }});
+                }}
                 
-                html += '<tr class="divider-row"><td colspan="4">QUALIFYING</td></tr>';
+                // 2. QUALIFYING SECTION
                 const qualDraw = players.filter(p => p.type === 'QUAL');
-                qualDraw.forEach((p) => {{
-                    html += `<tr><td>${{p.pos}}</td><td style="text-align:left;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
-                }});
+                if (qualDraw.length > 0) {{
+                    html += '<tr class="divider-row"><td colspan="4">QUALIFYING</td></tr>';
+                    qualDraw.forEach((p) => {{
+                        html += `<tr><td>${{p.pos}}</td><td style="text-align:left;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
+                    }});
+                }}
                 
                 body.innerHTML = html;
             }}
