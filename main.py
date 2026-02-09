@@ -203,9 +203,9 @@ def main():
 
         dropdown_html = ""
         for week, tourneys in TOURNAMENT_GROUPS.items():
-            dropdown_html += f'<optgroup label="{week}">'
+            dropdown_html += f'<option disabled class="dropdown-header">{week.upper()}</option>'
             for t_key, t_name in tourneys.items():
-                dropdown_html += f'<option value="{t_key}">{t_name}</option>'
+                dropdown_html += f'<option value="{t_key}" class="dropdown-item">{t_name}</option>'
             dropdown_html += '</optgroup>'
 
         for week, tourneys in TOURNAMENT_GROUPS.items():
@@ -359,6 +359,28 @@ def main():
             .divider-row td {{ background: #e2e8f0; font-weight: bold; text-align: center; padding: 5px 15px; font-size: 11px; border-right: none; }}
             tr.hidden {{ display: none; }}
             tr:hover td {{ background: #f1f5f9; }}
+
+            .dropdown-header {{
+                background-color: #e2e8f0 !important;
+                font-weight: bold !important;
+                text-align: center !important;
+                padding: 12px 0 !important; 
+                font-size: 11px;
+                display: block;
+            }}
+            .dropdown-item {{
+                padding: 8px 15px;
+                text-align: left;
+                background-color: #ffffff;
+            }}
+
+            #tSelect {{ appearance: none; padding: 10px 30px 10px 12px;  line-height: 1.5; background-color: white; }}
+            #tSelect optgroup {{ background-color: #babdc2; color: #ffffff; text-align: center; font-style: normal; font-weight: 800; padding: 10px 0; }}
+            #tSelect option {{ background-color: #ffffff; color: #1e293b; text-align: left; padding: 8px 12px; cursor: pointer; }}
+            #tSelect option {{ margin-left: -15px; }}
+            #tSelect option:hover,
+            #tSelect option:focus,
+            #tSelect option:checked {{ background-color: #75AADB !important; color: white !important; }}
         </style>
     </head>
     <body onload="updateEntryList()">
