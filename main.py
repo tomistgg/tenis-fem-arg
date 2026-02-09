@@ -66,11 +66,8 @@ def get_itf_players(tournament_key, driver):
         
         data = json.loads(raw_content[start:end])
         
-        # We need to extract the first item of the list which contains the 'entryClassifications'
-        # as seen in your example.txt
         root_data = data[0].get("entryClassifications", []) if data else []
         
-        # name_map for the Left Table (Argentinian players)
         name_map = {}
         for classification in root_data:
             desc = classification.get("entryClassification", "").upper()
@@ -206,11 +203,11 @@ def main():
             for t_name in tourneys.values():
                 dropdown_html += f'<option value="{t_name}">{t_name}</option>'
             dropdown_html += '</optgroup>'
-                
+
         for week, tourneys in TOURNAMENT_GROUPS.items():
             print(f"Procesando {week}...")
             for key, t_name in tourneys.items():
-                
+
                 if key.startswith("http"):
                     status_dict = scrape_tournament_players(key)
                     tourney_players_list = []
@@ -224,9 +221,13 @@ def main():
                             "type": "QUAL" if "(Q)" in suffix else "MAIN"
                         })
                         p_key = p_name.upper()
-                        if p_key not in schedule_map: schedule_map[p_key] = {}
-                        schedule_map[p_key][week] = f"{t_name}{suffix}"
+                        if p_key not in schedule_map: 
+                            schedule_map[p_key] = {}
 
+                        if week in schedule_map[p_key]:
+                            schedule_map[p_key][week] += f"<br>{t_name}{suffix}"
+                        else:
+                            schedule_map[p_key][week] = f"{t_name}{suffix}"
                 else:
                     itf_entries, itf_name_map = get_itf_players(key, driver)
                     tourney_players_list = []
@@ -279,8 +280,14 @@ def main():
                     tournament_store[t_name] = tourney_players_list
 
                     for p_name, suffix in itf_name_map.items():
-                        if p_name not in schedule_map: schedule_map[p_name] = {}
-                        schedule_map[p_name][week] = f"{t_name}{suffix}"
+                        if p_name not in schedule_map: 
+                            schedule_map[p_name] = {}
+                        
+                        if week in schedule_map[p_name]:
+                            if t_name not in schedule_map[p_name][week]:
+                                schedule_map[p_name][week] += f"<br>{t_name}{suffix}"
+                        else:
+                            schedule_map[p_name][week] = f"{t_name}{suffix}"
 
                 time.sleep(random.uniform(1, 2))
 
