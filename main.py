@@ -236,9 +236,9 @@ def main():
         itf_items = get_dynamic_itf_calendar(driver)
         monday_map = {
             "2026-02-16": "Semana 16 Febrero",
-            "2026-02-23": "Semana 23 Febrero",
-            "2026-03-02": "Semana 2 Marzo",
-            "2026-03-09": "Semana 9 Marzo"
+            #"2026-02-23": "Semana 23 Febrero",
+            #"2026-03-02": "Semana 2 Marzo",
+            #"2026-03-09": "Semana 9 Marzo"
         }
 
         for label in monday_map.values():
@@ -399,9 +399,9 @@ def main():
             .search-container {{ position: absolute; left: 0; top: 50%; transform: translateY(-50%); }}
             input, select {{ padding: 8px 12px; border-radius: 8px; border: 2px solid #94a3b8; font-family: inherit; font-size: 13px; width: 250px; box-sizing: border-box; }}
             select {{ background: white; font-weight: bold; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }}
-            .content-card {{ background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; width: 100%; border: 1px solid #94a3b8; }}
+            .content-card {{ background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; width: 100%; border: 1px solid black; }}
             .table-wrapper {{ overflow-x: auto; width: 100%; }}
-            table {{ border-collapse: collapse; width: 100%; table-layout: fixed; }}
+            table {{ border-collapse: separate; border-spacing: 0; width: 100%; table-layout: fixed; border: 1px solid black; }}
             th {{ position: sticky; top: 0; background: #75AADB !important; color: white; padding: 10px 15px; font-size: 11px; font-weight: bold; border-bottom: 2px solid #1e293b; border-right: 1px solid #1e293b; z-index: 10; text-transform: uppercase; text-align: center; }}
             td {{ padding: 8px 12px; border-bottom: 1px solid #94a3b8; text-align: center; font-size: 13px; border-right: 1px solid #94a3b8; }}
             .column-entry td {{ font-size: 12px; padding: 6px 10px; }}
@@ -409,8 +409,8 @@ def main():
             .row-arg {{ background-color: #e0f2fe !important; }}
             td.col-week {{ width: 150px; font-size: 11px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
             th.sticky-col {{ z-index: 11; background: #75AADB !important; color: white; }}
-            .col-rank {{ left: 0; width: 30px; border-right: 1px solid #1e293b !important; min-width: 45px; max-width: 45px; }}
-            .col-name {{ left: 45px; width: 140px; min-width: 140px; max-width: 140px; text-align: left; font-weight: bold; color: #334155; border-right: 1px solid #1e293b !important; }}
+            .col-rank {{ left: 0; width: 30px; min-width: 45px; max-width: 45px; }}
+            .col-name {{ left: 45px; width: 140px; min-width: 140px; max-width: 140px; text-align: left; font-weight: bold; color: #334155; }}
             .col-week {{ width: 130px; font-size: 11px; font-weight: bold; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
             .divider-row td {{ background: #e2e8f0; font-weight: bold; text-align: center; padding: 5px 15px; font-size: 11px; border-right: none; }}
             tr.hidden {{ display: none; }}
