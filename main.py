@@ -544,13 +544,6 @@ def main():
         
         today = datetime.now()
         ranking_monday = (today - timedelta(days=today.weekday())).strftime("%Y-%m-%d")
-        
-        ranking_date = datetime.strptime(ranking_monday, "%Y-%m-%d")
-        if ranking_date > today:
-            print(f"ERROR: Intentando obtener rankings para fecha futura {ranking_monday}")
-            ranking_monday = (today - timedelta(days=today.weekday() + 7)).strftime("%Y-%m-%d")
-            print(f"Usando en su lugar: {ranking_monday}")
-        
         all_wta_players = get_wta_rankings_cached(ranking_monday, nationality=None)
         
         wta_players_arg = [p for p in all_wta_players if p['Country'] == 'ARG']
@@ -583,36 +576,61 @@ def main():
             md_datetime = datetime.strptime(md_date, "%Y-%m-%d")
             q_datetime = datetime.strptime(q_date, "%Y-%m-%d")
             
-            if md_datetime > today_date:
-                print(f"{tourneys}  Advertencia: md_date {md_date} está en el futuro, usando lunes actual")
-                md_date = (today_date - timedelta(days=today_date.weekday())).strftime("%Y-%m-%d")
-            if q_datetime > today_date:
-                print(f"{tourneys}  Advertencia: q_date {q_date} está en el futuro, usando lunes actual")
-                q_date = (today_date - timedelta(days=today_date.weekday())).strftime("%Y-%m-%d")
-
-            if md_date not in ranking_cache: ranking_cache[md_date] = get_wta_rankings_cached(md_date, nationality=None)
-            if q_date not in ranking_cache: ranking_cache[q_date] = get_wta_rankings_cached(q_date, nationality=None)
-
+            temp_wta_results = {}
+            has_wta_players = False
+            
             for key, t_info in tourneys.items():
-                t_name = t_info["name"]  # Extract name from the dictionary
-                
                 if key.startswith("http"):
-                    t_list, status_dict = scrape_tournament_players(key, ranking_cache[md_date], ranking_cache[q_date])
+                    t_list, status_dict = scrape_tournament_players(key, [], [])
+                    temp_wta_results[key] = (t_list, status_dict)
+                    if t_list and len(t_list) > 0:
+                        has_wta_players = True
+            
+            if has_wta_players:
+                if md_datetime > today_date:
+                    print(f"  Advertencia: md_date {md_date} está en el futuro, usando lunes actual")
+                    md_date = (today_date - timedelta(days=today_date.weekday())).strftime("%Y-%m-%d")
+                if q_datetime > today_date:
+                    print(f"  Advertencia: q_date {q_date} está en el futuro, usando lunes actual")
+                    q_date = (today_date - timedelta(days=today_date.weekday())).strftime("%Y-%m-%d")
+
+                if md_date not in ranking_cache: 
+                    ranking_cache[md_date] = get_wta_rankings_cached(md_date, nationality=None)
+                if q_date not in ranking_cache: 
+                    ranking_cache[q_date] = get_wta_rankings_cached(q_date, nationality=None)
+                
+                for key, t_info in tourneys.items():
+                    t_name = t_info["name"]
+                    if key.startswith("http"):
+                        t_list, status_dict = scrape_tournament_players(key, ranking_cache[md_date], ranking_cache[q_date])
+                        tournament_store[key] = t_list
+                        
+                        for p_name, suffix in status_dict.items():
+                            p_key = p_name.upper()
+                            if p_key not in arg_names_set: continue
+                            if p_key not in schedule_map: 
+                                schedule_map[p_key] = {}
+                            if week in schedule_map[p_key]:
+                                schedule_map[p_key][week] += f'<div style="margin-top: 3px;">{t_name}{suffix}</div>'
+                            else:
+                                schedule_map[p_key][week] = f"{t_name}{suffix}"
+            else:
+                for key, (t_list, status_dict) in temp_wta_results.items():
                     tournament_store[key] = t_list
-                    
+                    t_name = tourneys[key]["name"]
                     for p_name, suffix in status_dict.items():
                         p_key = p_name.upper()
-                        
                         if p_key not in arg_names_set: continue
-                        
                         if p_key not in schedule_map: 
                             schedule_map[p_key] = {}
-
                         if week in schedule_map[p_key]:
                             schedule_map[p_key][week] += f'<div style="margin-top: 3px;">{t_name}{suffix}</div>'
                         else:
                             schedule_map[p_key][week] = f"{t_name}{suffix}"
-                else:
+            
+            for key, t_info in tourneys.items():
+                t_name = t_info["name"]
+                if not key.startswith("http"):
                     itf_entries, itf_name_map = get_itf_players(key, driver)
                     tourney_players_list = []
                     
@@ -679,7 +697,6 @@ def main():
                         else:
                             schedule_map[p_name][week] = f"{t_name}{suffix}"
 
-                time.sleep(random.uniform(1, 2))
 
     finally:
         driver.quit()
@@ -851,7 +868,7 @@ def main():
                                         <th style="width:15px">#</th>
                                         <th>Jugadora</th>
                                         <th style="width:35px">País</th>
-                                        <th style="width:75px">E-Rank</th> 
+                                        <th style="width:70px">E-Rank</th> 
                                     </tr>
                                 </thead>
                                 <tbody id="entry-body"></tbody>
