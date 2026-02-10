@@ -104,7 +104,7 @@ def build_tournament_groups():
             clean_name = parts[0].strip()
             suffix = " " + parts[1].strip()
         
-        name = clean_name.lower().replace(" ", "-")
+        name = clean_name.lower().replace(" ", "-").replace("'", "-")
         if suffix:
             name += "-" + suffix.strip()
         
