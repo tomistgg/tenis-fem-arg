@@ -591,6 +591,7 @@ def main():
             .divider-row td {{ background: #e2e8f0; font-weight: bold; text-align: center; padding: 5px 15px; font-size: 11px; border-right: none; }}
             tr.hidden {{ display: none; }}
             tr:hover td {{ background: #f1f5f9; }}
+            tr:hover td.sticky-col {{ background: #f1f5f9 !important; }}
 
             .dropdown-header {{
                 background-color: #e2e8f0 !important;
