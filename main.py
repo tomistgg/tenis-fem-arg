@@ -97,7 +97,7 @@ def build_tournament_groups():
         
         nfkd_form = unicodedata.normalize('NFKD', raw_name)
         clean_name = "".join([c for c in nfkd_form if not unicodedata.combining(c)])
-        
+
         suffix = ""
         if "#" in clean_name:
             parts = clean_name.split("#")
@@ -244,6 +244,67 @@ def get_rankings(date_str, nationality=None):
         })
     return ranking_results
 
+def get_itf_rankings(nationality="ARG"):
+    all_players = []
+    skip = 0
+    take = 50
+    
+    while True:
+        url = "https://www.itftennis.com/tennis/api/PlayerRankApi/GetPlayerRankings"
+        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+            "Accept": "*/*",
+            "Accept-Encoding": "gzip, deflate, br, zstd",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Referer": "https://www.itftennis.com/en/rankings/",
+            "Sec-Ch-Ua": '"Not(A:Brand";v="8", "Chromium";v="144", "Google Chrome";v="144"',
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Sec-Ch-Ua-Platform": '"Windows"',
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-origin"
+        }
+        
+        params = {
+            "circuitCode": "WT",
+            "matchTypeCode": "S",
+            "ageCategoryCode": "",
+            "nationCode": nationality,
+            "take": take,
+            "skip": skip,
+            "isOrderAscending": "true"
+        }
+        
+        try:
+            r = requests.get(url, headers=headers, params=params, timeout=10)
+            data = r.json()
+            items = data.get('items', []) if isinstance(data, dict) else []
+            if not items: break
+            all_players.extend(items)
+            
+            total_items = data.get("totalItems", 0)
+            if skip + take >= total_items: break
+            
+            skip += take
+            time.sleep(0.1)
+        except:
+            break
+    
+    ranking_results = []
+    for p in all_players:
+        if not p.get('playerId'): continue
+        itf_name = f"{p.get('playerGivenName', '')} {p.get('playerFamilyName', '')}".strip().upper()
+        display_name = NAME_LOOKUP.get(itf_name, itf_name)
+        ranking_results.append({
+            "Player": display_name,
+            "Rank": f"ITF {p.get('rank')}",
+            "Country": p.get('playerNationalityCode', ''),
+            "Key": display_name
+        })
+    return ranking_results
+
+
 def scrape_tournament_players(url, md_rankings, qual_rankings):
     try:
         r = requests.get(url, headers=HEADERS, timeout=20)
@@ -290,7 +351,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings):
             "name": format_player_name(name),
             "country": info["Country"],
             "rank_num": info["Rank"],
-            "rank": f"WTA {info['Rank']}" if info['Rank'] < 9999 else "-",
+            "rank": f"{info['Rank']}" if info['Rank'] < 9999 else "-",
             "type": "MAIN"
         })
     md_list.sort(key=lambda x: x["rank_num"])
@@ -304,7 +365,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings):
             "name": format_player_name(name),
             "country": info["Country"],
             "rank_num": info["Rank"],
-            "rank": f"WTA {info['Rank']}" if info['Rank'] < 9999 else "-",
+            "rank": f"{info['Rank']}" if info['Rank'] < 9999 else "-",
             "type": "QUAL"
         })
     qual_list.sort(key=lambda x: x["rank_num"])
@@ -346,7 +407,14 @@ def main():
 
         ranking_date = (datetime.now() - timedelta(days=datetime.now().weekday())).strftime("%Y-%m-%d")
         
-        players_data = get_rankings(ranking_date, nationality="ARG")
+        
+        wta_players = get_rankings(ranking_date, nationality="ARG")
+        itf_players = get_itf_rankings(nationality="ARG")
+        
+        wta_names = {p['Player'] for p in wta_players}
+        itf_only = [p for p in itf_players if p['Player'] not in wta_names]
+        
+        players_data = wta_players + itf_only
         
         arg_names_set = {p['Player'] for p in players_data}
 
@@ -416,7 +484,7 @@ def main():
                             wtn = p_node.get("worldRating", "")
                             
                             erank_str = "-"
-                            if wta and str(wta).strip() != "": erank_str = f"WTA {wta}"
+                            if wta and str(wta).strip() != "": erank_str = f"{wta}"
                             elif itf_rank is not None and str(itf_rank).strip() != "": erank_str = f"ITF {itf_rank}"
                             elif wtn and str(wtn).strip() != "": erank_str = f"WTN {wtn}"
                                 
@@ -460,7 +528,16 @@ def main():
     table_rows = ""
     week_keys = list(TOURNAMENT_GROUPS.keys())
     
-    for p_name in sorted([p['Player'] for p in players_data], key=lambda x: next(p['Rank'] for p in players_data if p['Player'] == x)):
+    def get_sort_key(player_name):
+        p = next(item for item in players_data if item["Player"] == player_name)
+        rank = p['Rank']
+        if isinstance(rank, int):
+            return (0, rank)
+        else:
+            itf_rank = int(rank.replace("ITF ", "")) if isinstance(rank, str) and "ITF" in rank else 999999
+            return (1, itf_rank)
+    
+    for p_name in sorted([p['Player'] for p in players_data], key=get_sort_key):
         p = next(item for item in players_data if item["Player"] == p_name)
         
         player_display = format_player_name(p['Player'])
@@ -508,7 +585,7 @@ def main():
             .row-arg {{ background-color: #e0f2fe !important; }}
             td.col-week {{ width: 150px; font-size: 11px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
             th.sticky-col {{ z-index: 11; background: #75AADB !important; color: white; }}
-            .col-rank {{ left: 0; width: 30px; min-width: 45px; max-width: 45px; }}
+            .col-rank {{ left: 0; width: 32px; min-width: 45px; max-width: 45px; }}
             .col-name {{ left: 45px; width: 140px; min-width: 140px; max-width: 140px; text-align: left; font-weight: bold; }}
             .col-week {{ width: 130px; font-size: 11px; font-weight: bold; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
             .divider-row td {{ background: #e2e8f0; font-weight: bold; text-align: center; padding: 5px 15px; font-size: 11px; border-right: none; }}
