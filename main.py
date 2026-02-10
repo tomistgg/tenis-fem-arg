@@ -13,8 +13,10 @@ import os
 import unicodedata
 
 def format_player_name(text):
-    if not text: return ""
-    return " ".join([word.capitalize() for word in text.split()])
+    if not text:
+        return ""
+    return text.title()
+
 
 def load_player_mapping(filename="player_aliases.json"):
     if not os.path.exists(filename):
@@ -29,6 +31,43 @@ NAME_LOOKUP = {}
 for display_name, aliases in PLAYER_MAPPING.items():
     for alias in aliases:
         NAME_LOOKUP[alias.strip().upper()] = display_name.upper()
+
+WTA_CACHE_FILE = "wta_rankings_cache.json"
+ITF_CACHE_FILE = "itf_rankings_cache.json"
+
+def load_cache(cache_file):
+    """Load rankings cache from JSON file"""
+    if os.path.exists(cache_file):
+        with open(cache_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+def save_cache(cache_file, cache_data):
+    """Save rankings cache to JSON file"""
+    with open(cache_file, "w", encoding="utf-8") as f:
+        json.dump(cache_data, f, indent=2, ensure_ascii=False)
+
+def get_cached_rankings(date_str, cache_file, fetch_func, nationality=None):
+    """
+    Get rankings from cache or fetch if needed.
+    
+    Args:
+        date_str: The ranking date (e.g., "2026-02-10")
+        cache_file: Path to cache JSON file
+        fetch_function: Function to call if cache miss
+        **kwargs: Additional arguments for fetch_function
+    """
+    cache = load_cache(cache_file)
+    
+    if date_str in cache:
+        return cache[date_str]
+    
+    new_data = fetch_func(date_str, nationality=nationality)
+    if new_data:
+        cache[date_str] = new_data
+        save_cache(cache_file, cache)
+    return new_data
+
 
 def get_next_monday():
     today = datetime.now()
@@ -126,7 +165,11 @@ def build_tournament_groups():
         if week_label not in tournament_groups:
             tournament_groups[week_label] = {}
         
-        tournament_groups[week_label][url] = display_name
+        # Store tournament with its level for sorting later
+        tournament_groups[week_label][url] = {
+            "name": display_name,
+            "level": level
+        }
     
     return tournament_groups
 
@@ -194,9 +237,25 @@ def get_itf_players(tournament_key, driver):
                         final_list[matched_name] = suffix
     return final_list
 
-def get_dynamic_itf_calendar(driver):
+def get_dynamic_itf_calendar(driver, num_weeks=3):
+    """
+    Fetch ITF calendar dynamically for the next N weeks
+    
+    Args:
+        driver: Selenium webdriver instance
+        num_weeks: Number of weeks to fetch (default 3)
+    
+    Returns:
+        list: List of ITF tournament items
+    """
     try:
-        url = "https://www.itftennis.com/tennis/api/TournamentApi/GetCalendar?circuitCode=WT&dateFrom=2026-02-16&dateTo=2026-03-31&skip=0&take=500"
+        next_monday = get_next_monday()
+        date_from = next_monday.strftime("%Y-%m-%d")
+        
+        # Fetch tournaments up to num_weeks from next Monday
+        date_to = (next_monday + timedelta(weeks=num_weeks)).strftime("%Y-%m-%d")
+        
+        url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetCalendar?circuitCode=WT&dateFrom={date_from}&dateTo={date_to}&skip=0&take=500"
         driver.get(url)
         time.sleep(5)
         raw_content = driver.find_element("tag name", "body").text
@@ -211,7 +270,7 @@ def get_rankings(date_str, nationality=None):
     while True:
         params = {
             "page": page,
-            "pageSize": 50 if nationality else 100,
+            "pageSize": 100,
             "type": "rankSingles",
             "sort": "asc",
             "metric": "SINGLES",
@@ -305,6 +364,24 @@ def get_itf_rankings(nationality="ARG"):
     return ranking_results
 
 
+def get_wta_rankings_cached(date_str, nationality=None):
+    """Get WTA rankings with caching"""
+    return get_cached_rankings(
+        date_str,
+        WTA_CACHE_FILE,
+        get_rankings,
+        nationality=nationality
+    )
+
+def get_itf_rankings_cached(date_str, nationality="ARG"):
+    """Get ITF rankings with caching"""
+    return get_cached_rankings(
+        date_str,
+        ITF_CACHE_FILE,
+        lambda d, **kw: get_itf_rankings(nationality=kw.get('nationality', 'ARG')),
+        nationality=nationality
+    )
+
 def scrape_tournament_players(url, md_rankings, qual_rankings):
     try:
         r = requests.get(url, headers=HEADERS, timeout=20)
@@ -379,6 +456,52 @@ def scrape_tournament_players(url, md_rankings, qual_rankings):
     
     return final_tourney_list, suffix_map
 
+def get_tournament_sort_order(level):
+    """
+    Return sort order for tournament levels.
+    Lower number = higher priority in display.
+    """
+    level_order = {
+        "WTA1000": 1,
+        "WTA 1000": 1,
+        "WTA500": 2,
+        "WTA 500": 2,
+        "WTA250": 3,
+        "WTA 250": 3,
+        "WTA125": 4,
+        "WTA 125": 4,
+        "W100": 5,
+        "W75": 6,
+        "W60": 7,
+        "W50": 8,
+        "W35": 9,
+        "W25": 10,
+        "W15": 11
+    }
+    return level_order.get(level, 99)  # Unknown levels go to the end
+
+def generate_dynamic_monday_map(num_weeks=4):
+    """
+    Generate a monday_map for the next N weeks dynamically
+    This covers both WTA (4 weeks) and ITF (3 weeks) tournaments
+    
+    Args:
+        num_weeks: Number of weeks to generate (default 4 for WTA)
+    
+    Returns:
+        dict: Map of monday dates to week labels
+    """
+    next_monday = get_next_monday()
+    monday_map = {}
+    
+    for week_offset in range(num_weeks):
+        monday = next_monday + timedelta(weeks=week_offset)
+        monday_str = monday.strftime("%Y-%m-%d")
+        week_label = format_week_label(monday)
+        monday_map[monday_str] = week_label
+    
+    return monday_map
+
 def main():
     chrome_options = Options()
     chrome_options.add_argument("--headless")
@@ -386,13 +509,11 @@ def main():
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
     try:
-        itf_items = get_dynamic_itf_calendar(driver)
-        monday_map = {
-            "2026-02-16": "Semana 16 Febrero",
-            "2026-02-23": "Semana 23 Febrero",
-            "2026-03-02": "Semana 2 Marzo",
-            "2026-03-09": "Semana 9 Marzo"
-        }
+        monday_map = generate_dynamic_monday_map(num_weeks=4)
+        
+        itf_monday_map = generate_dynamic_monday_map(num_weeks=3)
+        
+        itf_items = get_dynamic_itf_calendar(driver, num_weeks=3)
 
         for label in monday_map.values():
             if label not in TOURNAMENT_GROUPS:
@@ -401,44 +522,80 @@ def main():
         for item in itf_items:
             s_date = pd.to_datetime(item['startDate'])
             monday_date = (s_date - timedelta(days=s_date.weekday())).strftime('%Y-%m-%d')
-            if monday_date in monday_map:
-                week_label = monday_map[monday_date]
-                TOURNAMENT_GROUPS[week_label][item['tournamentKey'].lower()] = item['tournamentName']
-
-        ranking_date = (datetime.now() - timedelta(days=datetime.now().weekday())).strftime("%Y-%m-%d")
+            if monday_date in itf_monday_map:
+                week_label = itf_monday_map[monday_date]
+                t_name = item['tournamentName']
+                level = "W15"
+                if "W100" in t_name or "100k" in t_name:
+                    level = "W100"
+                elif "W75" in t_name or "75k" in t_name:
+                    level = "W75"
+                elif "W50" in t_name or "50k" in t_name:
+                    level = "W50"
+                elif "W35" in t_name or "35k" in t_name:
+                    level = "W35"
+                elif "W15" in t_name or "15k" in t_name:
+                    level = "W15"
+                
+                TOURNAMENT_GROUPS[week_label][item['tournamentKey'].lower()] = {
+                    "name": t_name,
+                    "level": level
+                }     
         
+        today = datetime.now()
+        ranking_monday = (today - timedelta(days=today.weekday())).strftime("%Y-%m-%d")
         
-        wta_players = get_rankings(ranking_date, nationality="ARG")
-        itf_players = get_itf_rankings(nationality="ARG")
+        ranking_date = datetime.strptime(ranking_monday, "%Y-%m-%d")
+        if ranking_date > today:
+            print(f"ERROR: Intentando obtener rankings para fecha futura {ranking_monday}")
+            ranking_monday = (today - timedelta(days=today.weekday() + 7)).strftime("%Y-%m-%d")
+            print(f"Usando en su lugar: {ranking_monday}")
         
-        wta_names = {p['Player'] for p in wta_players}
-        itf_only = [p for p in itf_players if p['Player'] not in wta_names]
+        all_wta_players = get_wta_rankings_cached(ranking_monday, nationality=None)
         
-        players_data = wta_players + itf_only
+        wta_players_arg = [p for p in all_wta_players if p['Country'] == 'ARG']
+        itf_players_arg = get_itf_rankings_cached(ranking_monday, nationality="ARG")
         
+        wta_names_arg = {p['Player'] for p in wta_players_arg}
+        itf_only_arg = [p for p in itf_players_arg if p['Player'] not in wta_names_arg]
+        
+        players_data = wta_players_arg + itf_only_arg
         arg_names_set = {p['Player'] for p in players_data}
 
         schedule_map = {}
         tournament_store = {} 
 
-        dropdown_html = ""
-        for week, tourneys in TOURNAMENT_GROUPS.items():
-            dropdown_html += f'<option disabled class="dropdown-header">{week.upper()}</option>'
-            for t_key, t_name in tourneys.items():
-                dropdown_html += f'<option value="{t_key}" class="dropdown-item">{t_name}</option>'
-            dropdown_html += '</optgroup>'
-
         ranking_cache = {}
         for week, tourneys in TOURNAMENT_GROUPS.items():
             print(f"Procesando {week}...")
-            week_monday = next(k for k, v in monday_map.items() if v == week_label)
+            
+            week_monday = next((k for k, v in monday_map.items() if v == week), None)
+            
+            if week_monday is None:
+                print(f"  Advertencia: No se encontró fecha para {week}, saltando...")
+                continue
+            
             md_date = get_monday_offset(week_monday, 4)
             q_date = get_monday_offset(week_monday, 3)
+            
+            # Validate that ranking dates are not in the future
+            today_date = datetime.now()
+            md_datetime = datetime.strptime(md_date, "%Y-%m-%d")
+            q_datetime = datetime.strptime(q_date, "%Y-%m-%d")
+            
+            if md_datetime > today_date:
+                print(f"{tourneys}  Advertencia: md_date {md_date} está en el futuro, usando lunes actual")
+                md_date = (today_date - timedelta(days=today_date.weekday())).strftime("%Y-%m-%d")
+            if q_datetime > today_date:
+                print(f"{tourneys}  Advertencia: q_date {q_date} está en el futuro, usando lunes actual")
+                q_date = (today_date - timedelta(days=today_date.weekday())).strftime("%Y-%m-%d")
 
-            if md_date not in ranking_cache: ranking_cache[md_date] = get_rankings(md_date, nationality=None)
-            if q_date not in ranking_cache: ranking_cache[q_date] = get_rankings(q_date, nationality=None)
+            if md_date not in ranking_cache: ranking_cache[md_date] = get_wta_rankings_cached(md_date, nationality=None)
+            if q_date not in ranking_cache: ranking_cache[q_date] = get_wta_rankings_cached(q_date, nationality=None)
 
-            for key, t_name in tourneys.items():
+            for key, t_info in tourneys.items():
+                t_name = t_info["name"]  # Extract name from the dictionary
+                
                 if key.startswith("http"):
                     t_list, status_dict = scrape_tournament_players(key, ranking_cache[md_date], ranking_cache[q_date])
                     tournament_store[key] = t_list
@@ -524,6 +681,35 @@ def main():
 
     finally:
         driver.quit()
+
+    # Build dropdown HTML after scraping, excluding weeks with no tournament data
+    dropdown_html = ""
+    for week, tourneys in TOURNAMENT_GROUPS.items():
+        # Check if any tournament in this week has players
+        week_has_data = False
+        for t_key in tourneys.keys():
+            if t_key in tournament_store and tournament_store[t_key]:
+                week_has_data = True
+                break
+        
+        # Skip weeks with no tournament data (typically the 4th week for WTA)
+        if not week_has_data:
+            continue
+            
+        dropdown_html += f'<option disabled class="dropdown-header">{week.upper()}</option>'
+        
+        # Sort tournaments by level within each week
+        sorted_tourneys = sorted(
+            tourneys.items(), 
+            key=lambda x: get_tournament_sort_order(x[1]["level"])
+        )
+        
+        for t_key, t_info in sorted_tourneys:
+            # Only include tournaments that have data
+            if t_key in tournament_store and tournament_store[t_key]:
+                t_name = t_info["name"]
+                dropdown_html += f'<option value="{t_key}" class="dropdown-item">{t_name}</option>'
+        dropdown_html += '</optgroup>'
 
     table_rows = ""
     week_keys = list(TOURNAMENT_GROUPS.keys())
