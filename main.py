@@ -640,12 +640,14 @@ def main():
                             itf_rank = p_node.get("itfBTRank")
                             wtn = p_node.get("worldRating", "")
                             
-                            erank_str = "-"
-                            if wta and str(wta).strip() != "": erank_str = f"{wta}"
-                            elif itf_rank is not None and str(itf_rank).strip() != "": erank_str = f"ITF {itf_rank}"
-                            elif wtn and str(wtn).strip() != "": erank_str = f"WTN {wtn}"
-                                
-                            if class_code == "JR": erank_str += " [JE]"
+                            # For JR (Junior Exempt) players, only show "JE"
+                            if class_code == "JR":
+                                erank_str = "JE"
+                            else:
+                                erank_str = "-"
+                                if wta and str(wta).strip() != "": erank_str = f"{wta}"
+                                elif itf_rank is not None and str(itf_rank).strip() != "": erank_str = f"ITF {itf_rank}"
+                                elif wtn and str(wtn).strip() != "": erank_str = f"WTN {wtn}"
                             
                             try:
                                 pos_digits = ''.join(filter(str.isdigit, str(pos)))
@@ -849,7 +851,7 @@ def main():
                                         <th style="width:15px">#</th>
                                         <th>Jugadora</th>
                                         <th style="width:35px">País</th>
-                                        <th style="width:90px">E-Rank</th> 
+                                        <th style="width:75px">E-Rank</th> 
                                     </tr>
                                 </thead>
                                 <tbody id="entry-body"></tbody>
