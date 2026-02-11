@@ -735,11 +735,14 @@ def main():
     <head>
         <meta charset="UTF-8">
         <title>Próximos Torneos</title>
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
         <style>
             @font-face {{ font-family: 'Montserrat'; src: url('Montserrat-SemiBold.ttf'); }}
-            body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; height: auto; min-height: 100vh; overflow-y: auto; }}
-            .app-container {{ display: flex; width: 100%; height: 100%; }}
-            .sidebar {{ width: 180px; background: #1e293b; color: white; display: flex; flex-direction: column; flex-shrink: 0; }}
+            body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; min-height: 100vh; overflow-y: auto; }}
+            .app-container {{ display: flex; width: 100%; min-height: 100vh; }}
+            .sidebar {{ width: 180px; background: #1e293b; color: white; display: flex; flex-direction: column; flex-shrink: 0; min-height: 100vh; }}
             .sidebar-header {{ padding: 25px 15px; font-size: 15px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #475569; }}
             .menu-item {{ padding: 15px 20px; cursor: pointer; color: #cbd5e1; font-size: 14px; border-bottom: 1px solid #334155; transition: 0.2s; }}
             .menu-item:hover {{ background: #334155; color: white; }}
@@ -785,10 +788,63 @@ def main():
             #tSelect option {{ margin-left: -15px; }}
             #tSelect option:hover, #tSelect option:focus, #tSelect option:checked {{ background-color: #75AADB !important; color: white !important; }}
 
+            .select2-container--default .select2-selection--single {{
+                border: 2px solid #94a3b8;
+                border-radius: 8px;
+                height: 38px;
+                padding: 4px 12px;
+                font-family: inherit;
+                font-size: 13px;
+            }}
+            .select2-container--default .select2-selection--single .select2-selection__rendered {{
+                color: #1e293b;
+                line-height: 28px;
+                padding-left: 0;
+            }}
+            .select2-container--default .select2-selection--single .select2-selection__arrow {{
+                height: 36px;
+            }}
+            .select2-container--default.select2-container--open .select2-selection--single {{
+                border-color: #75AADB;
+            }}
+            .select2-dropdown {{
+                border: 2px solid #94a3b8;
+                border-radius: 8px;
+                font-family: inherit;
+            }}
+            .select2-search--dropdown .select2-search__field {{
+                border: 1px solid #94a3b8;
+                border-radius: 4px;
+                padding: 4px 8px;
+                font-family: inherit;
+            }}
+            .select2-results__option {{
+                padding: 8px 12px;
+                font-size: 13px;
+            }}
+            .select2-results__option--highlighted {{
+                background-color: #75AADB !important;
+                color: white !important;
+            }}
+            .select2-container {{
+                width: 250px !important;
+            }}
+
             .column-entry thead th {{ position: sticky; top: 0; background: #75AADB !important; color: white; z-index: 10; border-bottom: 2px solid #1e293b; }}
             .column-entry .content-card {{ overflow-y: visible; max-height: none; border: 1px solid black; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.05); width: 100%; }}
             
             #history-table th {{ background: #75AADB !important; position: sticky; top: 0; z-index: 10; }}
+            #history-table {{ table-layout: fixed; width: 100%; }}
+            #history-table th:nth-child(1) {{ width: 90px; }} /* FECHA */
+            #history-table th:nth-child(2) {{ width: auto; }} /* TORNEO */
+            #history-table th:nth-child(3) {{ width: 80px; }} /* SUPERFICIE */
+            #history-table th:nth-child(4) {{ width: 100px; }} /* RONDA */
+            #history-table th:nth-child(5) {{ width: auto; }} /* TENISTA */
+            #history-table th:nth-child(6) {{ width: 70px; }} /* RESULTADO */
+            #history-table th:nth-child(7) {{ width: 120px; }} /* SCORE */
+            #history-table th:nth-child(8) {{ width: auto; }} /* RIVAL */
+            #history-table th:nth-child(9) {{ width: 70px; }} /* PAIS_RIVAL */
+            #history-table td {{ font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
         </style>
     </head>
     <body onload="updateEntryList(); renderHistoryTable();">
@@ -852,7 +908,7 @@ def main():
                 <div id="view-history" class="single-layout" style="display: none;">
                     <div class="header-row">
                         <div class="search-container">
-                            <select id="playerHistorySelect" onchange="filterHistoryByPlayer()" style="width: 300px;">
+                            <select id="playerHistorySelect">
                                 <option value="">Seleccionar Tenista...</option>
                                 {"".join([f'<option value="{name}">{name}</option>' for name in history_players_sorted])}
                             </select>
@@ -875,6 +931,37 @@ def main():
         <script>
             const tournamentData = {json.dumps(tournament_store)};
             const historyData = {json.dumps(cleaned_history)};
+            const playerMapping = {json.dumps(PLAYER_MAPPING)};
+            
+            // Helper function to get display name from player mapping
+            function getDisplayName(upperCaseName) {{
+                // Try to find the display name in playerMapping
+                for (const [displayName, aliases] of Object.entries(playerMapping)) {{
+                    for (const alias of aliases) {{
+                        if (alias.toUpperCase() === upperCaseName) {{
+                            return displayName; // Return proper capitalization from mapping
+                        }}
+                    }}
+                }}
+                // If not found, convert to title case
+                return upperCaseName.split(' ').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                ).join(' ');
+            }}
+
+            $(document).ready(function() {{
+                $('#playerHistorySelect').select2({{
+                    placeholder: 'Selecciona una jugadora...',
+                    allowClear: true,
+                    width: '250px'
+                }});
+                
+                $('#playerHistorySelect').on('change', function() {{
+                    filterHistoryByPlayer();
+                }});
+                
+                renderHistoryTable();
+            }});
 
             function switchTab(tabName) {{
                 document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
@@ -964,16 +1051,20 @@ def main():
                 filtered.forEach(row => {{
                     const isWinner = (row['_winnerName'] || "").toString().toUpperCase() === selectedPlayer;
                     
+                    const playerDisplayName = getDisplayName(selectedPlayer);
+                    const rivalName = isWinner ? (row['_loserName'] || '') : (row['_winnerName'] || '');
+                    const rivalDisplayName = rivalName ? getDisplayName(rivalName.toUpperCase()) : '';
+                    
                     // Fill in the dynamic columns
                     const rowData = {{
                         'FECHA': row['FECHA'] || '',
                         'TORNEO': row['TORNEO'] || '',
                         'SUPERFICIE': row['SUPERFICIE'] || '',
                         'RONDA': row['RONDA'] || '',
-                        'TENISTA': selectedPlayer,
+                        'TENISTA': playerDisplayName,
                         'RESULTADO': isWinner ? 'W' : 'L',
                         'SCORE': row['SCORE'] || '',
-                        'RIVAL': isWinner ? (row['_loserName'] || '') : (row['_winnerName'] || ''),
+                        'RIVAL': rivalDisplayName,
                         'PAIS_RIVAL': isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '')
                     }};
                     
