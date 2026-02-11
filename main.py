@@ -50,12 +50,6 @@ def save_cache(cache_file, cache_data):
 def get_cached_rankings(date_str, cache_file, fetch_func, nationality=None):
     """
     Get rankings from cache or fetch if needed.
-    
-    Args:
-        date_str: The ranking date (e.g., "2026-02-10")
-        cache_file: Path to cache JSON file
-        fetch_function: Function to call if cache miss
-        **kwargs: Additional arguments for fetch_function
     """
     cache = load_cache(cache_file)
     
@@ -240,19 +234,10 @@ def get_itf_players(tournament_key, driver):
 def get_dynamic_itf_calendar(driver, num_weeks=3):
     """
     Fetch ITF calendar dynamically for the next N weeks
-    
-    Args:
-        driver: Selenium webdriver instance
-        num_weeks: Number of weeks to fetch (default 3)
-    
-    Returns:
-        list: List of ITF tournament items
     """
     try:
         next_monday = get_next_monday()
         date_from = next_monday.strftime("%Y-%m-%d")
-        
-        # Fetch tournaments up to num_weeks from next Monday
         date_to = (next_monday + timedelta(weeks=num_weeks)).strftime("%Y-%m-%d")
         
         url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetCalendar?circuitCode=WT&dateFrom={date_from}&dateTo={date_to}&skip=0&take=500"
@@ -457,40 +442,17 @@ def scrape_tournament_players(url, md_rankings, qual_rankings):
     return final_tourney_list, suffix_map
 
 def get_tournament_sort_order(level):
-    """
-    Return sort order for tournament levels.
-    Lower number = higher priority in display.
-    """
     level_order = {
-        "WTA1000": 1,
-        "WTA 1000": 1,
-        "WTA500": 2,
-        "WTA 500": 2,
-        "WTA250": 3,
-        "WTA 250": 3,
-        "WTA125": 4,
-        "WTA 125": 4,
-        "W100": 5,
-        "W75": 6,
-        "W60": 7,
-        "W50": 8,
-        "W35": 9,
-        "W25": 10,
-        "W15": 11
+        "WTA1000": 1, "WTA 1000": 1,
+        "WTA500": 2, "WTA 500": 2,
+        "WTA250": 3, "WTA 250": 3,
+        "WTA125": 4, "WTA 125": 4,
+        "W100": 5, "W75": 6, "W60": 7,
+        "W50": 8, "W35": 9, "W25": 10, "W15": 11
     }
-    return level_order.get(level, 99)  # Unknown levels go to the end
+    return level_order.get(level, 99)
 
 def generate_dynamic_monday_map(num_weeks=4):
-    """
-    Generate a monday_map for the next N weeks dynamically
-    This covers both WTA (4 weeks) and ITF (3 weeks) tournaments
-    
-    Args:
-        num_weeks: Number of weeks to generate (default 4 for WTA)
-    
-    Returns:
-        dict: Map of monday dates to week labels
-    """
     next_monday = get_next_monday()
     monday_map = {}
     
@@ -502,6 +464,19 @@ def generate_dynamic_monday_map(num_weeks=4):
     
     return monday_map
 
+def get_sheety_matches():
+    """Fetch match history from Sheety API"""
+    url = "https://api.sheety.co/6db57031b06f3dea3029e25e8bc924b9/wtaMatches/matches"
+    try:
+        r = requests.get(url, timeout=10)
+        data = r.json()
+        if 'matches' in data:
+            return data['matches']
+        return []
+    except Exception as e:
+        print(f"Error fetching matches from Sheety: {e}")
+        return []
+
 def main():
     chrome_options = Options()
     chrome_options.add_argument("--headless")
@@ -510,9 +485,9 @@ def main():
 
     try:
         monday_map = generate_dynamic_monday_map(num_weeks=4)
-        
         itf_monday_map = generate_dynamic_monday_map(num_weeks=3)
         
+        # 1. Fetch Calendar & Tournaments
         itf_items = get_dynamic_itf_calendar(driver, num_weeks=3)
 
         for label in monday_map.values():
@@ -526,22 +501,18 @@ def main():
                 week_label = itf_monday_map[monday_date]
                 t_name = item['tournamentName']
                 level = "W15"
-                if "W100" in t_name or "100k" in t_name:
-                    level = "W100"
-                elif "W75" in t_name or "75k" in t_name:
-                    level = "W75"
-                elif "W50" in t_name or "50k" in t_name:
-                    level = "W50"
-                elif "W35" in t_name or "35k" in t_name:
-                    level = "W35"
-                elif "W15" in t_name or "15k" in t_name:
-                    level = "W15"
+                if "W100" in t_name or "100k" in t_name: level = "W100"
+                elif "W75" in t_name or "75k" in t_name: level = "W75"
+                elif "W50" in t_name or "50k" in t_name: level = "W50"
+                elif "W35" in t_name or "35k" in t_name: level = "W35"
+                elif "W15" in t_name or "15k" in t_name: level = "W15"
                 
                 TOURNAMENT_GROUPS[week_label][item['tournamentKey'].lower()] = {
                     "name": t_name,
                     "level": level
                 }     
         
+        # 2. Fetch Players & Rankings
         today = datetime.now()
         ranking_monday = (today - timedelta(days=today.weekday())).strftime("%Y-%m-%d")
         all_wta_players = get_wta_rankings_cached(ranking_monday, nationality=None)
@@ -555,23 +526,19 @@ def main():
         players_data = wta_players_arg + itf_only_arg
         arg_names_set = {p['Player'] for p in players_data}
 
+        # 3. Process Tournaments (WTA & ITF)
         schedule_map = {}
         tournament_store = {} 
-
         ranking_cache = {}
+
         for week, tourneys in TOURNAMENT_GROUPS.items():
             print(f"Procesando {week}...")
-            
             week_monday = next((k for k, v in monday_map.items() if v == week), None)
-            
-            if week_monday is None:
-                print(f"  Advertencia: No se encontró fecha para {week}, saltando...")
-                continue
+            if week_monday is None: continue
             
             md_date = get_monday_offset(week_monday, 4)
             q_date = get_monday_offset(week_monday, 3)
             
-            # Validate that ranking dates are not in the future
             today_date = datetime.now()
             md_datetime = datetime.strptime(md_date, "%Y-%m-%d")
             q_datetime = datetime.strptime(q_date, "%Y-%m-%d")
@@ -579,41 +546,32 @@ def main():
             temp_wta_results = {}
             has_wta_players = False
             
+            # Pre-scan WTA
             for key, t_info in tourneys.items():
                 if key.startswith("http"):
                     t_list, status_dict = scrape_tournament_players(key, [], [])
                     temp_wta_results[key] = (t_list, status_dict)
-                    if t_list and len(t_list) > 0:
-                        has_wta_players = True
+                    if t_list and len(t_list) > 0: has_wta_players = True
             
+            # Process WTA with Rankings
             if has_wta_players:
-                if md_datetime > today_date:
-                    print(f"  Advertencia: md_date {md_date} está en el futuro, usando lunes actual")
-                    md_date = (today_date - timedelta(days=today_date.weekday())).strftime("%Y-%m-%d")
-                if q_datetime > today_date:
-                    print(f"  Advertencia: q_date {q_date} está en el futuro, usando lunes actual")
-                    q_date = (today_date - timedelta(days=today_date.weekday())).strftime("%Y-%m-%d")
+                if md_datetime > today_date: md_date = (today_date - timedelta(days=today_date.weekday())).strftime("%Y-%m-%d")
+                if q_datetime > today_date: q_date = (today_date - timedelta(days=today_date.weekday())).strftime("%Y-%m-%d")
 
-                if md_date not in ranking_cache: 
-                    ranking_cache[md_date] = get_wta_rankings_cached(md_date, nationality=None)
-                if q_date not in ranking_cache: 
-                    ranking_cache[q_date] = get_wta_rankings_cached(q_date, nationality=None)
+                if md_date not in ranking_cache: ranking_cache[md_date] = get_wta_rankings_cached(md_date, nationality=None)
+                if q_date not in ranking_cache: ranking_cache[q_date] = get_wta_rankings_cached(q_date, nationality=None)
                 
                 for key, t_info in tourneys.items():
                     t_name = t_info["name"]
                     if key.startswith("http"):
                         t_list, status_dict = scrape_tournament_players(key, ranking_cache[md_date], ranking_cache[q_date])
                         tournament_store[key] = t_list
-                        
                         for p_name, suffix in status_dict.items():
                             p_key = p_name.upper()
                             if p_key not in arg_names_set: continue
-                            if p_key not in schedule_map: 
-                                schedule_map[p_key] = {}
-                            if week in schedule_map[p_key]:
-                                schedule_map[p_key][week] += f'<div style="margin-top: 3px;">{t_name}{suffix}</div>'
-                            else:
-                                schedule_map[p_key][week] = f"{t_name}{suffix}"
+                            if p_key not in schedule_map: schedule_map[p_key] = {}
+                            if week in schedule_map[p_key]: schedule_map[p_key][week] += f'<div style="margin-top: 3px;">{t_name}{suffix}</div>'
+                            else: schedule_map[p_key][week] = f"{t_name}{suffix}"
             else:
                 for key, (t_list, status_dict) in temp_wta_results.items():
                     tournament_store[key] = t_list
@@ -621,13 +579,11 @@ def main():
                     for p_name, suffix in status_dict.items():
                         p_key = p_name.upper()
                         if p_key not in arg_names_set: continue
-                        if p_key not in schedule_map: 
-                            schedule_map[p_key] = {}
-                        if week in schedule_map[p_key]:
-                            schedule_map[p_key][week] += f'<div style="margin-top: 3px;">{t_name}{suffix}</div>'
-                        else:
-                            schedule_map[p_key][week] = f"{t_name}{suffix}"
+                        if p_key not in schedule_map: schedule_map[p_key] = {}
+                        if week in schedule_map[p_key]: schedule_map[p_key][week] += f'<div style="margin-top: 3px;">{t_name}{suffix}</div>'
+                        else: schedule_map[p_key][week] = f"{t_name}{suffix}"
             
+            # Process ITF
             for key, t_info in tourneys.items():
                 t_name = t_info["name"]
                 if not key.startswith("http"):
@@ -636,31 +592,22 @@ def main():
                     
                     for classification in itf_entries:
                         class_code = classification.get("entryClassificationCode", "")
-                        
-                        if class_code in ["MDA", "JR"]:
-                            section_type = "MAIN"
-                        elif class_code == "Q":
-                            section_type = "QUAL"
-                        else:
-                            continue
+                        if class_code in ["MDA", "JR"]: section_type = "MAIN"
+                        elif class_code == "Q": section_type = "QUAL"
+                        else: continue
                         
                         for entry in classification.get("entries") or []:
                             pos = entry.get("positionDisplay", "-")
                             players = entry.get("players") or []
                             if not players: continue
-                            
                             p_node = players[0]
-                            given_name = p_node.get('givenName', '')
-                            family_name = p_node.get('familyName', '')
-                            raw_f_name = f"{given_name} {family_name}".strip()
-
+                            raw_f_name = f"{p_node.get('givenName', '')} {p_node.get('familyName', '')}".strip()
+                            
                             wta = p_node.get("atpWtaRank", "")
                             itf_rank = p_node.get("itfBTRank")
                             wtn = p_node.get("worldRating", "")
                             
-                            # For JR (Junior Exempt) players, only show "JE"
-                            if class_code == "JR":
-                                erank_str = "JE"
+                            if class_code == "JR": erank_str = "JE"
                             else:
                                 erank_str = "-"
                                 if wta and str(wta).strip() != "": erank_str = f"{wta}"
@@ -670,16 +617,11 @@ def main():
                             try:
                                 pos_digits = ''.join(filter(str.isdigit, str(pos)))
                                 pos_num = int(pos_digits) if pos_digits else 999
-                            except:
-                                pos_num = 999
+                            except: pos_num = 999
 
                             tourney_players_list.append({
-                                "pos": pos,
-                                "name": raw_f_name,
-                                "country": p_node.get("nationalityCode", "-"),
-                                "rank": erank_str,
-                                "type": section_type,
-                                "pos_num": pos_num
+                                "pos": pos, "name": raw_f_name, "country": p_node.get("nationalityCode", "-"),
+                                "rank": erank_str, "type": section_type, "pos_num": pos_num
                             })
 
                     tourney_players_list.sort(key=lambda x: x["pos_num"])
@@ -687,44 +629,46 @@ def main():
 
                     for p_name, suffix in itf_name_map.items():
                         if p_name not in arg_names_set: continue
-                        
-                        if p_name not in schedule_map: 
-                            schedule_map[p_name] = {}
-                        
+                        if p_name not in schedule_map: schedule_map[p_name] = {}
                         if week in schedule_map[p_name]:
-                            if t_name not in schedule_map[p_name][week]:
-                                schedule_map[p_name][week] += f"<br>{t_name}{suffix}"
-                        else:
-                            schedule_map[p_name][week] = f"{t_name}{suffix}"
+                            if t_name not in schedule_map[p_name][week]: schedule_map[p_name][week] += f"<br>{t_name}{suffix}"
+                        else: schedule_map[p_name][week] = f"{t_name}{suffix}"
 
+        match_history_data = get_sheety_matches()
+
+        cleaned_history = []
+        for m in match_history_data:
+            # Filter out any key that is 'id' (case-insensitive)
+            m_clean = {k: v for k, v in m.items() if k.lower() != 'id'}
+            cleaned_history.append(m_clean)
+
+        # Sort logic: latest date first
+        def parse_match_date(item):
+            d = item.get('date') or item.get('Date') or "1900-01-01"
+            try:
+                return pd.to_datetime(d)
+            except:
+                return pd.to_datetime("1900-01-01")
+
+        cleaned_history.sort(key=parse_match_date, reverse=True)
 
     finally:
         driver.quit()
 
-    # Build dropdown HTML after scraping, excluding weeks with no tournament data
     dropdown_html = ""
     for week, tourneys in TOURNAMENT_GROUPS.items():
-        # Check if any tournament in this week has players
         week_has_data = False
         for t_key in tourneys.keys():
             if t_key in tournament_store and tournament_store[t_key]:
                 week_has_data = True
                 break
         
-        # Skip weeks with no tournament data (typically the 4th week for WTA)
-        if not week_has_data:
-            continue
+        if not week_has_data: continue
             
         dropdown_html += f'<option disabled class="dropdown-header">{week.upper()}</option>'
-        
-        # Sort tournaments by level within each week
-        sorted_tourneys = sorted(
-            tourneys.items(), 
-            key=lambda x: get_tournament_sort_order(x[1]["level"])
-        )
+        sorted_tourneys = sorted(tourneys.items(), key=lambda x: get_tournament_sort_order(x[1]["level"]))
         
         for t_key, t_info in sorted_tourneys:
-            # Only include tournaments that have data
             if t_key in tournament_store and tournament_store[t_key]:
                 t_name = t_info["name"]
                 dropdown_html += f'<option value="{t_key}" class="dropdown-item">{t_name}</option>'
@@ -736,15 +680,13 @@ def main():
     def get_sort_key(player_name):
         p = next(item for item in players_data if item["Player"] == player_name)
         rank = p['Rank']
-        if isinstance(rank, int):
-            return (0, rank)
+        if isinstance(rank, int): return (0, rank)
         else:
             itf_rank = int(rank.replace("ITF ", "")) if isinstance(rank, str) and "ITF" in rank else 999999
             return (1, itf_rank)
     
     for p_name in sorted([p['Player'] for p in players_data], key=get_sort_key):
         p = next(item for item in players_data if item["Player"] == p_name)
-        
         player_display = format_player_name(p['Player'])
         row = f'<tr data-name="{player_display.lower()}">'
         row += f'<td class="sticky-col col-rank">{p["Rank"]}</td>'
@@ -755,6 +697,19 @@ def main():
             row += f'<td class="col-week">{"<b>" if is_main else ""}{val}{"</b>" if is_main else ""}</td>'
         table_rows += row + "</tr>"
 
+    history_arg_players = set()
+    for m in match_history_data:
+        # Check winners
+        if m.get('winnerCountry') == 'ARG' or m.get('winner_country') == 'ARG':
+            name = m.get('winnerName') or m.get('winner_name')
+            if name: history_arg_players.add(name.strip().title())
+        # Check losers
+        if m.get('loserCountry') == 'ARG' or m.get('loser_country') == 'ARG':
+            name = m.get('loserName') or m.get('loser_name')
+            if name: history_arg_players.add(name.strip().title())
+
+    history_players_sorted = sorted(list(history_arg_players))
+
     html_template = f"""
     <!DOCTYPE html>
     <html lang="es">
@@ -763,14 +718,19 @@ def main():
         <title>Próximos Torneos</title>
         <style>
             @font-face {{ font-family: 'Montserrat'; src: url('Montserrat-SemiBold.ttf'); }}
-            body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; height: 100vh; overflow: hidden; }}
+            body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; height: auto; min-height: 100vh; overflow-y: auto; }}
             .app-container {{ display: flex; width: 100%; height: 100%; }}
             .sidebar {{ width: 180px; background: #1e293b; color: white; display: flex; flex-direction: column; flex-shrink: 0; }}
             .sidebar-header {{ padding: 25px 15px; font-size: 15px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #475569; }}
-            .menu-item {{ padding: 15px 20px; cursor: pointer; color: #cbd5e1; font-size: 14px; border-bottom: 1px solid #334155; }}
+            .menu-item {{ padding: 15px 20px; cursor: pointer; color: #cbd5e1; font-size: 14px; border-bottom: 1px solid #334155; transition: 0.2s; }}
+            .menu-item:hover {{ background: #334155; color: white; }}
             .menu-item.active {{ background: #75AADB; color: white; font-weight: bold; }}
-            .main-content {{ flex: 1; overflow-y: auto; background: #f8fafc; padding: 20px; }}
-            .dual-layout {{ display: flex; min-height: 80vh; gap: 40px; position: relative; }}
+            .main-content {{ flex: 1; overflow-y: visible; background: #f8fafc; padding: 20px; display: flex; flex-direction: column; }}
+            
+            /* Layout Views */
+            .dual-layout {{ display: flex; min-height: 80vh; gap: 40px; position: relative; width: 100%; }}
+            .single-layout {{ width: 100%; display: flex; flex-direction: column; }}
+            
             .column-main {{ flex: 0 0 70%; display: flex; flex-direction: column; align-items: flex-start; position: relative; min-width: 0; }}
             .column-main table {{ table-layout: fixed; width: 100%; }}
             .column-entry {{ flex: 1; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }}
@@ -780,7 +740,7 @@ def main():
             .search-container {{ position: absolute; left: 0; top: 50%; transform: translateY(-50%); }}
             input, select {{ padding: 8px 12px; border-radius: 8px; border: 2px solid #94a3b8; font-family: inherit; font-size: 13px; width: 250px; box-sizing: border-box; }}
             select {{ background: white; font-weight: bold; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }}
-            .content-card {{ background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; width: 100%; border: 1px solid black; }}
+            .content-card {{ background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.05); width: 100%; border: 1px solid black; }}
             .table-wrapper {{ overflow-x: auto; width: 100%; }}
             table {{ border-collapse: separate; border-spacing: 0; width: 100%; table-layout: fixed; border: 1px solid black; }}
             th {{ position: sticky; top: 0; background: #75AADB !important; color: white; padding: 10px 15px; font-size: 11px; font-weight: bold; border-bottom: 2px solid #1e293b; border-right: 1px solid #1e293b; z-index: 10; text-transform: uppercase; text-align: center; }}
@@ -797,38 +757,31 @@ def main():
             tr.hidden {{ display: none; }}
             tr:hover td {{ background: #f1f5f9; }}
             tr:hover td.sticky-col {{ background: #f1f5f9 !important; }}
-
-            .dropdown-header {{
-                background-color: #e2e8f0 !important;
-                font-weight: bold !important;
-                text-align: center !important;
-                padding: 12px 0 !important; 
-                font-size: 11px;
-                display: block;
-            }}
-            .dropdown-item {{
-                padding: 8px 15px;
-                text-align: left;
-                background-color: #ffffff;
-            }}
-
-            #tSelect {{ appearance: none; padding: 10px 30px 10px 12px;  line-height: 1.5; background-color: white; }}
+            .dropdown-header {{ background-color: #e2e8f0 !important; font-weight: bold !important; text-align: center !important; padding: 12px 0 !important; font-size: 11px; display: block; }}
+            .dropdown-item {{ padding: 8px 15px; text-align: left; background-color: #ffffff; }}
+            
+            #tSelect {{ appearance: none; padding: 10px 30px 10px 12px; line-height: 1.5; background-color: white; }}
             #tSelect optgroup {{ background-color: #babdc2; color: #ffffff; text-align: center; font-style: normal; font-weight: 800; padding: 10px 0; }}
             #tSelect option {{ background-color: #ffffff; color: #1e293b; text-align: left; padding: 8px 12px; cursor: pointer; }}
             #tSelect option {{ margin-left: -15px; }}
-            #tSelect option:hover,
-            #tSelect option:focus,
-            #tSelect option:checked {{ background-color: #75AADB !important; color: white !important; }}
+            #tSelect option:hover, #tSelect option:focus, #tSelect option:checked {{ background-color: #75AADB !important; color: white !important; }}
+
+            .column-entry thead th {{ position: sticky; top: 0; background: #75AADB !important; color: white; z-index: 10; border-bottom: 2px solid #1e293b; }}
+            .column-entry .content-card {{ overflow-y: visible; max-height: none; border: 1px solid black; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.05); width: 100%; }}
+            
+            #history-table th {{ background: #75AADB !important; position: sticky; top: 0; z-index: 10; }}
         </style>
     </head>
-    <body onload="updateEntryList()">
+    <body onload="updateEntryList(); renderHistoryTable();">
         <div class="app-container">
             <div class="sidebar">
                 <div class="sidebar-header">Tenistas Argentinas</div>
-                <div class="menu-item active">Próximos Torneos</div>
+                <div class="menu-item active" id="btn-upcoming" onclick="switchTab('upcoming')">Próximos Torneos</div>
+                <div class="menu-item" id="btn-history" onclick="switchTab('history')">Historial de Partidos</div>
             </div>
+            
             <div class="main-content">
-                <div class="dual-layout">
+                <div id="view-upcoming" class="dual-layout">
                     <div class="column-main">
                         <div class="header-row">
                             <div class="search-container">
@@ -876,10 +829,42 @@ def main():
                         </div>
                     </div>
                 </div>
+
+                <div id="view-history" class="single-layout" style="display: none;">
+                    <div class="header-row">
+                        <div class="search-container">
+                            <select id="playerHistorySelect" onchange="filterHistoryByPlayer()" style="width: 300px;">
+                                <option value="">Seleccionar Tenista...</option>
+                                {"".join([f'<option value="{name}">{name}</option>' for name in history_players_sorted])}
+                            </select>
+                        </div>
+                        <h1>Historial de Partidos</h1>
+                    </div>
+                    <div class="content-card">
+                        <div class="table-wrapper">
+                            <table id="history-table">
+                                <thead id="history-head"></thead>
+                                <tbody id="history-body">
+                                    <tr><td colspan="100%" style="padding: 20px; color: #64748b;">Selecciona una jugadora para ver sus partidos</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <script>
             const tournamentData = {json.dumps(tournament_store)};
+            const historyData = {json.dumps(cleaned_history)};
+
+            function switchTab(tabName) {{
+                document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+                document.getElementById('btn-' + tabName).classList.add('active');
+                
+                document.getElementById('view-upcoming').style.display = (tabName === 'upcoming') ? 'flex' : 'none';
+                document.getElementById('view-history').style.display = (tabName === 'history') ? 'flex' : 'none';
+            }}
+
             function filter() {{
                 const q = document.getElementById('s').value.toLowerCase();
                 document.querySelectorAll('#tb tr').forEach(row => {{
@@ -906,6 +891,58 @@ def main():
                     }});
                 }}
                 body.innerHTML = html;
+            }}
+
+            function renderHistoryTable() {{
+                const thead = document.getElementById('history-head');
+                const tbody = document.getElementById('history-body');
+                
+                if (!historyData || historyData.length === 0) return;
+
+                // Always render headers on start
+                const columns = Object.keys(historyData[0]);
+                let headHtml = '<tr>';
+                columns.forEach(col => {{
+                    const title = col.replace(/([A-Z])/g, " $1").replace(/^./, str => str.toUpperCase());
+                    headHtml += `<th>${{title}}</th>`;
+                }});
+                headHtml += '</tr>';
+                thead.innerHTML = headHtml;
+                
+                // Set initial placeholder message using the full width of columns
+                tbody.innerHTML = `<tr><td colspan="${{columns.length}}" style="padding: 20px; color: #64748b;">Selecciona una jugadora para ver sus partidos</td></tr>`;
+            }}
+
+            function filterHistoryByPlayer() {{
+                const selectedPlayer = document.getElementById('playerHistorySelect').value.toUpperCase();
+                const tbody = document.getElementById('history-body');
+                const columns = Object.keys(historyData[0]);
+                
+                if (!selectedPlayer) {{
+                    tbody.innerHTML = `<tr><td colspan="${{columns.length}}" style="padding: 20px;">Selecciona una jugadora...</td></tr>`;
+                    return;
+                }}
+
+                const filtered = historyData.filter(row => {{
+                    const wName = (row['winnerName'] || row['winner_name'] || "").toString().toUpperCase();
+                    const lName = (row['loserName'] || row['loser_name'] || "").toString().toUpperCase();
+                    return wName === selectedPlayer || lName === selectedPlayer;
+                }});
+
+                if (filtered.length === 0) {{
+                    tbody.innerHTML = `<tr><td colspan="${{columns.length}}" style="padding: 20px;">No se encontraron partidos para esta jugadora.</td></tr>`;
+                    return;
+                }}
+
+                let bodyHtml = '';
+                filtered.forEach(row => {{
+                    bodyHtml += '<tr>';
+                    columns.forEach(col => {{
+                        bodyHtml += `<td>${{row[col] ?? ''}}</td>`;
+                    }});
+                    bodyHtml += '</tr>';
+                }});
+                tbody.innerHTML = bodyHtml;
             }}
         </script>
     </body>
