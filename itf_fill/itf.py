@@ -192,6 +192,7 @@ def parse_drawsheet(data, tourney_meta, draw_type):
         rounds = group.get("rounds", [])
         for rnd in rounds:
             r_id = rnd.get("roundNumber")
+            r_ds = rnd.get("roundDesc")
             matches = rnd.get("matches", [])
             for match in matches:
                 try:
@@ -258,6 +259,7 @@ def parse_drawsheet(data, tourney_meta, draw_type):
                         "surface": t_surf,
                         "tournamentCountry": t_nation,
                         "roundId": r_id,
+                        "roundDesc": r_ds,
                         "draw": draw_type,
                         "result": res,
                         "resultStatusDesc": status_desc,
