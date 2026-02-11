@@ -638,13 +638,32 @@ def main():
 
         cleaned_history = []
         for m in match_history_data:
-            # Filter out any key that is 'id' (case-insensitive)
-            m_clean = {k: v for k, v in m.items() if k.lower() != 'id'}
-            cleaned_history.append(m_clean)
+            # Try different possible field names for date
+            fecha = (m.get('date') or m.get('Date') or m.get('matchDate') or 
+                    m.get('match_date') or m.get('FECHA') or '')
+            
+            # Create new structure with Spanish column names
+            new_match = {
+                'FECHA': fecha,
+                'TORNEO': m.get('tournamentName') or m.get('tournament_name') or m.get('TournamentName') or '',
+                'SUPERFICIE': m.get('surface') or m.get('Surface') or '',
+                'RONDA': m.get('roundName') or m.get('round_name') or m.get('RoundName') or '',
+                'TENISTA': '',  # Will be filled by JavaScript
+                'RESULTADO': '',  # Will be filled by JavaScript (W or L)
+                'SCORE': m.get('result') or m.get('Result') or '',
+                'RIVAL': '',  # Will be filled by JavaScript
+                'PAIS_RIVAL': '',  # Will be filled by JavaScript
+                # Keep original names for filtering
+                '_winnerName': m.get('winnerName') or m.get('winner_name') or m.get('WinnerName') or '',
+                '_loserName': m.get('loserName') or m.get('loser_name') or m.get('LoserName') or '',
+                '_winnerCountry': m.get('winnerCountry') or m.get('winner_country') or m.get('WinnerCountry') or '',
+                '_loserCountry': m.get('loserCountry') or m.get('loser_country') or m.get('LoserCountry') or ''
+            }
+            cleaned_history.append(new_match)
 
         # Sort logic: latest date first
         def parse_match_date(item):
-            d = item.get('date') or item.get('Date') or "1900-01-01"
+            d = item.get('FECHA') or "1900-01-01"
             try:
                 return pd.to_datetime(d)
             except:
@@ -893,52 +912,74 @@ def main():
                 body.innerHTML = html;
             }}
 
+
             function renderHistoryTable() {{
                 const thead = document.getElementById('history-head');
                 const tbody = document.getElementById('history-body');
                 
                 if (!historyData || historyData.length === 0) return;
 
-                // Always render headers on start
-                const columns = Object.keys(historyData[0]);
+                // Define column headers (excluding hidden _ columns)
+                const displayColumns = ['FECHA', 'TORNEO', 'SUPERFICIE', 'RONDA', 'TENISTA', 'RESULTADO', 'SCORE', 'RIVAL', 'PAIS_RIVAL'];
                 let headHtml = '<tr>';
-                columns.forEach(col => {{
-                    const title = col.replace(/([A-Z])/g, " $1").replace(/^./, str => str.toUpperCase());
-                    headHtml += `<th>${{title}}</th>`;
+                displayColumns.forEach(col => {{
+                    headHtml += `<th>${{col.replace('_', ' ')}}</th>`;
                 }});
                 headHtml += '</tr>';
                 thead.innerHTML = headHtml;
                 
-                // Set initial placeholder message using the full width of columns
-                tbody.innerHTML = `<tr><td colspan="${{columns.length}}" style="padding: 20px; color: #64748b;">Selecciona una jugadora para ver sus partidos</td></tr>`;
+                // Set initial placeholder message
+                tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px; color: #64748b;">Selecciona una jugadora para ver sus partidos</td></tr>`;
             }}
 
             function filterHistoryByPlayer() {{
                 const selectedPlayer = document.getElementById('playerHistorySelect').value.toUpperCase();
                 const tbody = document.getElementById('history-body');
-                const columns = Object.keys(historyData[0]);
+                const displayColumns = ['FECHA', 'TORNEO', 'SUPERFICIE', 'RONDA', 'TENISTA', 'RESULTADO', 'SCORE', 'RIVAL', 'PAIS_RIVAL'];
                 
                 if (!selectedPlayer) {{
-                    tbody.innerHTML = `<tr><td colspan="${{columns.length}}" style="padding: 20px;">Selecciona una jugadora...</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">Selecciona una jugadora...</td></tr>`;
                     return;
                 }}
 
                 const filtered = historyData.filter(row => {{
-                    const wName = (row['winnerName'] || row['winner_name'] || "").toString().toUpperCase();
-                    const lName = (row['loserName'] || row['loser_name'] || "").toString().toUpperCase();
+                    const wName = (row['_winnerName'] || "").toString().toUpperCase();
+                    const lName = (row['_loserName'] || "").toString().toUpperCase();
                     return wName === selectedPlayer || lName === selectedPlayer;
                 }});
 
                 if (filtered.length === 0) {{
-                    tbody.innerHTML = `<tr><td colspan="${{columns.length}}" style="padding: 20px;">No se encontraron partidos para esta jugadora.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No se encontraron partidos para esta jugadora.</td></tr>`;
                     return;
                 }}
 
+                // Sort by date descending (most recent first)
+                filtered.sort((a, b) => {{
+                    const dateA = new Date(a['FECHA'] || '1900-01-01');
+                    const dateB = new Date(b['FECHA'] || '1900-01-01');
+                    return dateB - dateA;
+                }});
+
                 let bodyHtml = '';
                 filtered.forEach(row => {{
+                    const isWinner = (row['_winnerName'] || "").toString().toUpperCase() === selectedPlayer;
+                    
+                    // Fill in the dynamic columns
+                    const rowData = {{
+                        'FECHA': row['FECHA'] || '',
+                        'TORNEO': row['TORNEO'] || '',
+                        'SUPERFICIE': row['SUPERFICIE'] || '',
+                        'RONDA': row['RONDA'] || '',
+                        'TENISTA': selectedPlayer,
+                        'RESULTADO': isWinner ? 'W' : 'L',
+                        'SCORE': row['SCORE'] || '',
+                        'RIVAL': isWinner ? (row['_loserName'] || '') : (row['_winnerName'] || ''),
+                        'PAIS_RIVAL': isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '')
+                    }};
+                    
                     bodyHtml += '<tr>';
-                    columns.forEach(col => {{
-                        bodyHtml += `<td>${{row[col] ?? ''}}</td>`;
+                    displayColumns.forEach(col => {{
+                        bodyHtml += `<td>${{rowData[col] ?? ''}}</td>`;
                     }});
                     bodyHtml += '</tr>';
                 }});
