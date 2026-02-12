@@ -154,7 +154,7 @@ def merge_ids_with_pandas(calendar_df, json_ids_string):
         return calendar_df
 
 
-def fetch_api_data(tId, classification):
+def fetch_api_data(tId, classification, week_number=0):
     url = "https://www.itftennis.com/tennis/api/TournamentApi/GetDrawsheet"
     
     headers = {
@@ -170,7 +170,7 @@ def fetch_api_data(tId, classification):
         "matchTypeCode": "S",
         "tourType": "WT",
         "tournamentId": f"{tId}",
-        "weekNumber": 0
+        "weekNumber": week_number
     }
     
     try:
@@ -180,7 +180,7 @@ def fetch_api_data(tId, classification):
     except Exception as e:
         return None
 
-def parse_drawsheet(data, tourney_meta, draw_type):
+def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     if not data or not isinstance(data, dict): return []
     rows = []
     
@@ -189,7 +189,23 @@ def parse_drawsheet(data, tourney_meta, draw_type):
     t_cat = tourney_meta.get('category')
     t_surf = tourney_meta.get('surfaceDesc')
     t_nation = tourney_meta.get('hostNation')
-    t_date = tourney_meta.get('startDate')
+    
+    base_date = tourney_meta.get('startDate')
+    
+    if base_date and "T" in base_date:
+        base_date = base_date.split("T")[0]
+
+    t_date = base_date 
+
+    if base_date and week_offset > 0:
+        from datetime import datetime, timedelta
+        try:
+            date_obj = datetime.strptime(base_date, '%Y-%m-%d')
+            adjusted_date_obj = date_obj + timedelta(days=7 * week_offset)
+            t_date = adjusted_date_obj.strftime('%Y-%m-%d')
+        except Exception as e:
+            print(f"Date parsing failed for {base_date}: {e}")
+            t_date = base_date
 
     ko_groups = data.get("koGroups", [])
     for group in ko_groups:
@@ -283,7 +299,7 @@ def parse_drawsheet(data, tourney_meta, draw_type):
     return rows
 
 if __name__ == "__main__":
-    for year in range(2010, 2000, -1):
+    for year in range(2003, 1998, -1):
         print(f"\n{'='*60}")
         print(f"PROCESSING YEAR: {year}")
         print(f"{'='*60}\n")
@@ -314,6 +330,7 @@ if __name__ == "__main__":
             for tourney in tournaments_list:
                 tId = tourney.get("tournamentId")
                 tName = tourney.get("tournamentName")
+                tCategory = tourney.get("category", "")
                 
                 if not tId or pd.isna(tId):
                     print(f"Skipping {tName} (No ID found)")
@@ -321,15 +338,48 @@ if __name__ == "__main__":
                     
                 print(f"Processing: {tName} (ID: {int(tId)})")
                 
-                for code in ["Q", "M"]:
-                    json_data = fetch_api_data(int(tId), code)
-                    
-                    if json_data:
-                        parsed = parse_drawsheet(json_data, tourney, code)
-                        all_matches.extend(parsed)
-                        print(f"   -> {code}: Found {len(parsed)} matches")
-                    
-                    time.sleep(0.2)
+                # Check if it's a multi-week tournament
+                is_multiweek = tCategory == "ITF Womens Multi-Week Circuit"
+                
+                if is_multiweek:
+                    # Multi-week tournament: iterate through weeks
+                    week = 1
+                    while True:
+                        has_data_this_week = False
+                        
+                        for code in ["Q", "M"]:
+                            json_data = fetch_api_data(int(tId), code, week_number=week)
+                            
+                            if json_data:
+                                # Week 1 = 0 offset, Week 2 = 1 offset (7 days), Week 3 = 2 offset (14 days), etc.
+                                parsed = parse_drawsheet(json_data, tourney, code, week_offset=(week - 1))
+                                if parsed:
+                                    all_matches.extend(parsed)
+                                    has_data_this_week = True
+                                    print(f"   -> Week {week}, {code}: Found {len(parsed)} matches")
+                            
+                            time.sleep(0.2)
+                        
+                        # If no data found for this week, stop iterating
+                        if not has_data_this_week:
+                            break
+                        
+                        week += 1
+                        
+                        # Safety limit: max 10 weeks
+                        if week > 10:
+                            break
+                else:
+                    # Regular tournament: single week (weekNumber=0)
+                    for code in ["Q", "M"]:
+                        json_data = fetch_api_data(int(tId), code, week_number=0)
+                        
+                        if json_data:
+                            parsed = parse_drawsheet(json_data, tourney, code, week_offset=0)
+                            all_matches.extend(parsed)
+                            print(f"   -> {code}: Found {len(parsed)} matches")
+                        
+                        time.sleep(0.2)
                 
                 time.sleep(0.5)
 
