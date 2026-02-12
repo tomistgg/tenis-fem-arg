@@ -299,7 +299,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     return rows
 
 if __name__ == "__main__":
-    for year in range(2002, 1998, -1):
+    for year in range(1998, 1995, -1):
         print(f"\n{'='*60}")
         print(f"PROCESSING YEAR: {year}")
         print(f"{'='*60}\n")
