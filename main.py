@@ -639,33 +639,47 @@ def main():
         cleaned_history = []
         for m in match_history_data:
             # Try different possible field names for date
-            fecha = (m.get('date') or m.get('Date') or m.get('matchDate') or 
+            fecha = (m.get('date') or m.get('Date') or m.get('matchDate') or
                     m.get('match_date') or m.get('FECHA') or '')
-            
+
             # Create new structure with Spanish column names
+            # Get entry values and replace "DA" with empty string
+            winner_entry = m.get('winnerEntry') or m.get('winner_entry') or m.get('WinnerEntry') or ''
+            loser_entry = m.get('loserEntry') or m.get('loser_entry') or m.get('LoserEntry') or ''
+            winner_entry = '' if winner_entry == 'DA' else winner_entry
+            loser_entry = '' if loser_entry == 'DA' else loser_entry
+
             new_match = {
-                'FECHA': fecha,
-                'TORNEO': m.get('tournamentName') or m.get('tournament_name') or m.get('TournamentName') or '',
-                'SUPERFICIE': m.get('surface') or m.get('Surface') or '',
-                'RONDA': m.get('roundName') or m.get('round_name') or m.get('RoundName') or '',
-                'TENISTA': '',  # Will be filled by JavaScript
-                'RESULTADO': '',  # Will be filled by JavaScript (W or L)
+                'DATE': fecha,
+                'TOURNAMENT': m.get('tournamentName') or m.get('tournament_name') or m.get('TournamentName') or '',
+                'SURFACE': m.get('surface') or m.get('Surface') or '',
+                'ROUND': m.get('roundName') or m.get('round_name') or m.get('RoundName') or '',
+                'PLAYER': '',
+                'ENTRY': '',
+                'SEED': '',
+                'RESULT': '',
                 'SCORE': m.get('result') or m.get('Result') or '',
-                'RIVAL': '',  # Will be filled by JavaScript
-                'PAIS_RIVAL': '',  # Will be filled by JavaScript
+                'RIVAL_ENTRY': '',
+                'RIVAL_SEED': '',
+                'RIVAL': '',
+                'RIVAL_COUNTRY': '',
                 # Keep original names for filtering
                 '_winnerName': m.get('winnerName') or m.get('winner_name') or m.get('WinnerName') or '',
                 '_loserName': m.get('loserName') or m.get('loser_name') or m.get('LoserName') or '',
                 '_winnerCountry': m.get('winnerCountry') or m.get('winner_country') or m.get('WinnerCountry') or '',
-                '_loserCountry': m.get('loserCountry') or m.get('loser_country') or m.get('LoserCountry') or ''
+                '_loserCountry': m.get('loserCountry') or m.get('loser_country') or m.get('LoserCountry') or '',
+                '_winnerEntry': winner_entry,
+                '_loserEntry': loser_entry,
+                '_winnerSeed': m.get('winnerSeed') or m.get('winner_seed') or m.get('WinnerSeed') or '',
+                '_loserSeed': m.get('loserSeed') or m.get('loser_seed') or m.get('LoserSeed') or ''
             }
             cleaned_history.append(new_match)
 
         # Sort logic: latest date first
         def parse_match_date(item):
-            d = item.get('FECHA') or "1900-01-01"
+            d = item.get('DATE') or "1900-01-01"
             try:
-                return pd.to_datetime(d)
+                return pd.to_datetime(d, dayfirst=True)
             except:
                 return pd.to_datetime("1900-01-01")
 
@@ -835,15 +849,19 @@ def main():
             
             #history-table th {{ background: #75AADB !important; position: sticky; top: 0; z-index: 10; }}
             #history-table {{ table-layout: fixed; width: 100%; }}
-            #history-table th:nth-child(1) {{ width: 90px; }} /* FECHA */
-            #history-table th:nth-child(2) {{ width: auto; }} /* TORNEO */
-            #history-table th:nth-child(3) {{ width: 80px; }} /* SUPERFICIE */
-            #history-table th:nth-child(4) {{ width: 100px; }} /* RONDA */
-            #history-table th:nth-child(5) {{ width: auto; }} /* TENISTA */
-            #history-table th:nth-child(6) {{ width: 70px; }} /* RESULTADO */
-            #history-table th:nth-child(7) {{ width: 120px; }} /* SCORE */
-            #history-table th:nth-child(8) {{ width: auto; }} /* RIVAL */
-            #history-table th:nth-child(9) {{ width: 70px; }} /* PAIS_RIVAL */
+            #history-table th:nth-child(1) {{ width: 80px; }} /* DATE */
+            #history-table th:nth-child(2) {{ width: auto; }} /* TOURNAMENT */
+            #history-table th:nth-child(3) {{ width: 70px; }} /* SURFACE */
+            #history-table th:nth-child(4) {{ width: 100px; }} /* ROUND */
+            #history-table th:nth-child(5) {{ width: 35px; }} /* ENTRY */
+            #history-table th:nth-child(6) {{ width: 30px; }} /* SEED */
+            #history-table th:nth-child(7) {{ width: 200px; }} /* PLAYER */
+            #history-table th:nth-child(8) {{ width: 50px; }} /* RESULT */
+            #history-table th:nth-child(9) {{ width: 120px; }} /* SCORE */
+            #history-table th:nth-child(10) {{ width: 35px; }} /* RIVAL_ENTRY */
+            #history-table th:nth-child(11) {{ width: 30px; }} /* RIVAL_SEED */
+            #history-table th:nth-child(12) {{ width: 200px; }} /* RIVAL */
+            #history-table th:nth-child(13) {{ width: 55px; }} /* RIVAL_COUNTRY */
             #history-table td {{ font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
         </style>
     </head>
@@ -1007,7 +1025,7 @@ def main():
                 if (!historyData || historyData.length === 0) return;
 
                 // Define column headers (excluding hidden _ columns)
-                const displayColumns = ['FECHA', 'TORNEO', 'SUPERFICIE', 'RONDA', 'TENISTA', 'RESULTADO', 'SCORE', 'RIVAL', 'PAIS_RIVAL'];
+                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'ENTRY', 'SEED', 'PLAYER', 'RESULT', 'SCORE', 'RIVAL_ENTRY', 'RIVAL_SEED', 'RIVAL', 'RIVAL_COUNTRY'];
                 let headHtml = '<tr>';
                 displayColumns.forEach(col => {{
                     headHtml += `<th>${{col.replace('_', ' ')}}</th>`;
@@ -1022,7 +1040,7 @@ def main():
             function filterHistoryByPlayer() {{
                 const selectedPlayer = document.getElementById('playerHistorySelect').value.toUpperCase();
                 const tbody = document.getElementById('history-body');
-                const displayColumns = ['FECHA', 'TORNEO', 'SUPERFICIE', 'RONDA', 'TENISTA', 'RESULTADO', 'SCORE', 'RIVAL', 'PAIS_RIVAL'];
+                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'ENTRY', 'SEED', 'PLAYER', 'RESULT', 'SCORE', 'RIVAL_ENTRY', 'RIVAL_SEED', 'RIVAL', 'RIVAL_COUNTRY'];
                 
                 if (!selectedPlayer) {{
                     tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">Selecciona una jugadora...</td></tr>`;
@@ -1042,8 +1060,8 @@ def main():
 
                 // Sort by date descending (most recent first)
                 filtered.sort((a, b) => {{
-                    const dateA = new Date(a['FECHA'] || '1900-01-01');
-                    const dateB = new Date(b['FECHA'] || '1900-01-01');
+                    const dateA = new Date(a['DATE'] || '1900-01-01');
+                    const dateB = new Date(b['DATE'] || '1900-01-01');
                     return dateB - dateA;
                 }});
 
@@ -1057,15 +1075,19 @@ def main():
                     
                     // Fill in the dynamic columns
                     const rowData = {{
-                        'FECHA': row['FECHA'] || '',
-                        'TORNEO': row['TORNEO'] || '',
-                        'SUPERFICIE': row['SUPERFICIE'] || '',
-                        'RONDA': row['RONDA'] || '',
-                        'TENISTA': playerDisplayName,
-                        'RESULTADO': isWinner ? 'W' : 'L',
+                        'DATE': row['DATE'] || '',
+                        'TOURNAMENT': row['TOURNAMENT'] || '',
+                        'SURFACE': row['SURFACE'] || '',
+                        'ROUND': row['ROUND'] || '',
+                        'ENTRY': isWinner ? (row['_winnerEntry'] || '') : (row['_loserEntry'] || ''),
+                        'SEED': isWinner ? (row['_winnerSeed'] || '') : (row['_loserSeed'] || ''),
+                        'PLAYER': playerDisplayName,
+                        'RESULT': isWinner ? 'W' : 'L',
                         'SCORE': row['SCORE'] || '',
+                        'RIVAL_ENTRY': isWinner ? (row['_loserEntry'] || '') : (row['_winnerEntry'] || ''),
+                        'RIVAL_SEED': isWinner ? (row['_loserSeed'] || '') : (row['_winnerSeed'] || ''),
                         'RIVAL': rivalDisplayName,
-                        'PAIS_RIVAL': isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '')
+                        'RIVAL_COUNTRY': isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '')
                     }};
                     
                     bodyHtml += '<tr>';
