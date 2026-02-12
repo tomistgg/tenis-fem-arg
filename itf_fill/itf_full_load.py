@@ -8,6 +8,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+from datetime import datetime, timedelta
 
 def get_itf_calendar_by_month(target_year):
     chrome_options = Options()
@@ -198,7 +199,6 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     t_date = base_date 
 
     if base_date and week_offset > 0:
-        from datetime import datetime, timedelta
         try:
             date_obj = datetime.strptime(base_date, '%Y-%m-%d')
             adjusted_date_obj = date_obj + timedelta(days=7 * week_offset)
@@ -299,7 +299,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     return rows
 
 if __name__ == "__main__":
-    for year in range(2003, 1998, -1):
+    for year in range(2002, 1998, -1):
         print(f"\n{'='*60}")
         print(f"PROCESSING YEAR: {year}")
         print(f"{'='*60}\n")
@@ -332,6 +332,10 @@ if __name__ == "__main__":
                 tName = tourney.get("tournamentName")
                 tCategory = tourney.get("category", "")
                 
+                if tCategory and str(tCategory).strip().startswith("Tier"):
+                    print(f"Skipping {tName} (Excluded Category: {tCategory})")
+                    continue
+
                 if not tId or pd.isna(tId):
                     print(f"Skipping {tName} (No ID found)")
                     continue
