@@ -26,6 +26,10 @@ def get_itf_calendar_by_month(target_year):
         # monthrange returns (first_day_weekday, number_of_days)
         last_day = calendar.monthrange(target_year, month)[1]
         
+        # Cap December at 25th
+        if month == 12:
+            last_day = 25
+        
         start_date = f"{target_year}-{month:02d}-01"
         end_date = f"{target_year}-{month:02d}-{last_day}"
         
@@ -279,8 +283,7 @@ def parse_drawsheet(data, tourney_meta, draw_type):
     return rows
 
 if __name__ == "__main__":
-    # Loop through years from 2019 down to 2010
-    for year in range(2019, 2009, -1):
+    for year in range(2025, 2010, -1):
         print(f"\n{'='*60}")
         print(f"PROCESSING YEAR: {year}")
         print(f"{'='*60}\n")
