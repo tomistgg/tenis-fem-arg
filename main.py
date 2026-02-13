@@ -762,11 +762,17 @@ def main():
         # Check winners
         if m.get('winnerCountry') == 'ARG' or m.get('winner_country') == 'ARG':
             name = m.get('winnerName') or m.get('winner_name')
-            if name: history_arg_players.add(name.strip().title())
+            if name:
+                name_upper = name.strip().upper()
+                display_name = NAME_LOOKUP.get(name_upper, name_upper)
+                history_arg_players.add(format_player_name(display_name))
         # Check losers
         if m.get('loserCountry') == 'ARG' or m.get('loser_country') == 'ARG':
             name = m.get('loserName') or m.get('loser_name')
-            if name: history_arg_players.add(name.strip().title())
+            if name:
+                name_upper = name.strip().upper()
+                display_name = NAME_LOOKUP.get(name_upper, name_upper)
+                history_arg_players.add(format_player_name(display_name))
 
     history_players_sorted = sorted(list(history_arg_players))
 
@@ -883,13 +889,14 @@ def main():
             #history-table th:nth-child(5) {{ width: auto; }} /* PLAYER */
             #history-table th:nth-child(6) {{ width: 50px; }} /* RESULT */
             #history-table th:nth-child(7) {{ width: 120px; }} /* SCORE */
-            #history-table th:nth-child(8) {{ width: auto; }} /* OPPONENT */
+            #history-table th:nth-child(8) {{ width: auto; min-width: 200px; }} /* OPPONENT */
             #history-table td {{ font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+            #history-table td:nth-child(8) {{ white-space: normal; overflow: visible; text-overflow: clip; }} /* Allow OPPONENT to wrap */
 
             /* Filter Panel Styles */
             .history-layout {{ display: flex; gap: 20px; width: 100%; }}
             .filter-panel {{ width: 250px; padding: 15px 15px 15px 0; flex-shrink: 0; }}
-            .filter-panel h3 {{ margin: 0 0 15px 0; font-size: 16px; color: #1e293b; text-align: center; font-weight: bold; }}
+            .filter-panel h3 {{ margin: 0 0 15px 0; font-size: 16px; color: #1e293b; text-align: center; font-weight: bold; background: white; border: 2px solid #75AADB; padding: 12px; border-radius: 6px; }}
             .filter-group {{ margin-bottom: 20px; text-align: left; }}
             .filter-group-title {{ font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 8px; cursor: pointer; user-select: none; display: flex; justify-content: center; align-items: center; text-align: center; position: relative; }}
             .filter-group-title:hover {{ color: #75AADB; }}
@@ -1234,7 +1241,9 @@ def main():
                 const selectedPlayer = document.getElementById('playerHistorySelect').value.toUpperCase();
 
                 playerMatches.forEach(row => {{
-                    const isWinner = (row['_winnerName'] || "").toString().toUpperCase() === selectedPlayer;
+                    const wName = (row['_winnerName'] || "").toString().toUpperCase();
+                    const wNameNormalized = getDisplayName(wName).toUpperCase();
+                    const isWinner = wNameNormalized === selectedPlayer;
 
                     // Surface
                     if (row['SURFACE']) surfaces.add(row['SURFACE']);
@@ -1356,7 +1365,11 @@ def main():
 
                 // Filter the data (if nothing selected in a category, show all)
                 const filtered = currentPlayerData.filter(row => {{
-                    const isWinner = (row['_winnerName'] || "").toString().toUpperCase() === selectedPlayer;
+                    const wName = (row['_winnerName'] || "").toString().toUpperCase();
+                    const lName = (row['_loserName'] || "").toString().toUpperCase();
+                    const wNameNormalized = getDisplayName(wName).toUpperCase();
+                    const lNameNormalized = getDisplayName(lName).toUpperCase();
+                    const isWinner = wNameNormalized === selectedPlayer;
 
                     // Surface filter
                     if (selectedSurfaces.length > 0 && !selectedSurfaces.includes(row['SURFACE'] || '')) return false;
@@ -1444,7 +1457,9 @@ def main():
 
                 let bodyHtml = '';
                 matches.forEach(row => {{
-                    const isWinner = (row['_winnerName'] || "").toString().toUpperCase() === selectedPlayer;
+                    const wName = (row['_winnerName'] || "").toString().toUpperCase();
+                    const wNameNormalized = getDisplayName(wName).toUpperCase();
+                    const isWinner = wNameNormalized === selectedPlayer;
 
                     const playerDisplayName = getDisplayName(selectedPlayer);
                     const rivalName = isWinner ? (row['_loserName'] || '') : (row['_winnerName'] || '');
@@ -1492,7 +1507,10 @@ def main():
                 const filtered = historyData.filter(row => {{
                     const wName = (row['_winnerName'] || "").toString().toUpperCase();
                     const lName = (row['_loserName'] || "").toString().toUpperCase();
-                    return wName === selectedPlayer || lName === selectedPlayer;
+                    // Normalize names using the player mapping to match aliases
+                    const wNameNormalized = getDisplayName(wName).toUpperCase();
+                    const lNameNormalized = getDisplayName(lName).toUpperCase();
+                    return wNameNormalized === selectedPlayer || lNameNormalized === selectedPlayer;
                 }});
 
                 if (filtered.length === 0) {{
