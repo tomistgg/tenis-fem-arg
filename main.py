@@ -921,11 +921,215 @@ def main():
             .table-header-section {{ margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }}
             .table-title {{ margin: 0; font-size: 22px; color: #1e293b; flex: 1; text-align: center; }}
             .player-select-container {{ width: 250px; }}
+
+            /* Mobile Menu Toggle */
+            .mobile-menu-toggle {{ display: none; position: fixed; top: 15px; left: 15px; z-index: 1000; background: #1e293b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 18px; }}
+            .sidebar.mobile-hidden {{ transform: translateX(-100%); }}
+
+            /* Responsive Styles */
+            @media (max-width: 1024px) {{
+                /* Tablet adjustments */
+                .dual-layout {{ gap: 20px; }}
+                .column-main {{ flex: 0 0 60%; }}
+                .column-entry {{ flex: 1; }}
+                input, select {{ width: 200px; }}
+                .select2-container {{ width: 200px !important; }}
+            }}
+
+            @media (max-width: 768px) {{
+                /* Mobile styles */
+                body {{ overflow-x: hidden; }}
+                .mobile-menu-toggle {{ display: block; }}
+
+                .app-container {{ flex-direction: column; }}
+
+                .sidebar {{
+                    position: fixed;
+                    left: 0;
+                    top: 0;
+                    height: 100vh;
+                    z-index: 999;
+                    transition: transform 0.3s ease;
+                    box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+                }}
+
+                .main-content {{
+                    padding: 60px 10px 10px 10px;
+                    width: 100%;
+                }}
+
+                /* Stack dual layout vertically */
+                .dual-layout {{
+                    flex-direction: column;
+                    gap: 20px;
+                }}
+
+                .column-main {{
+                    flex: 1;
+                    width: 100%;
+                }}
+
+                .column-main::after {{ display: none; }}
+
+                .column-entry {{
+                    flex: 1;
+                    width: 100%;
+                }}
+
+                /* Adjust header rows */
+                .header-row {{
+                    flex-direction: column;
+                    gap: 10px;
+                    align-items: stretch;
+                }}
+
+                .search-container {{
+                    position: static;
+                    transform: none;
+                    width: 100%;
+                }}
+
+                h1 {{
+                    font-size: 18px;
+                    text-align: center;
+                }}
+
+                input, select {{
+                    width: 100%;
+                    max-width: 100%;
+                }}
+
+                .select2-container {{
+                    width: 100% !important;
+                }}
+
+                /* Table adjustments */
+                .table-wrapper {{
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                }}
+
+                table {{
+                    font-size: 11px;
+                    min-width: 600px;
+                }}
+
+                th, td {{
+                    padding: 6px 8px;
+                    font-size: 10px;
+                }}
+
+                .col-name {{
+                    min-width: 120px;
+                    max-width: 120px;
+                }}
+
+                .col-week {{
+                    font-size: 9px;
+                }}
+
+                /* History layout - stack vertically */
+                .history-layout {{
+                    flex-direction: column;
+                }}
+
+                .filter-panel {{
+                    width: 100%;
+                    padding: 0;
+                    margin-bottom: 20px;
+                }}
+
+                .filter-panel h3 {{
+                    font-size: 14px;
+                    padding: 10px;
+                }}
+
+                .history-content {{
+                    width: 100%;
+                }}
+
+                .table-header-section {{
+                    flex-direction: column;
+                    gap: 10px;
+                }}
+
+                .player-select-container {{
+                    width: 100%;
+                }}
+
+                .table-title {{
+                    font-size: 18px;
+                }}
+
+                /* History table */
+                #history-table {{
+                    min-width: 700px;
+                }}
+
+                #history-table th:nth-child(1) {{ width: 70px; }}
+                #history-table th:nth-child(2) {{ width: auto; min-width: 120px; }}
+                #history-table th:nth-child(3) {{ width: 60px; }}
+                #history-table th:nth-child(4) {{ width: 80px; }}
+                #history-table th:nth-child(5) {{ width: auto; min-width: 120px; }}
+                #history-table th:nth-child(6) {{ width: 40px; }}
+                #history-table th:nth-child(7) {{ width: 100px; }}
+                #history-table th:nth-child(8) {{ width: auto; min-width: 150px; }}
+
+                .filter-actions {{
+                    flex-direction: column;
+                    gap: 10px;
+                }}
+
+                .filter-instructions {{
+                    padding-left: 0;
+                    text-align: center;
+                }}
+            }}
+
+            @media (max-width: 480px) {{
+                /* Extra small mobile */
+                h1 {{
+                    font-size: 16px;
+                }}
+
+                .sidebar-header {{
+                    font-size: 14px;
+                    padding: 20px 10px;
+                }}
+
+                .menu-item {{
+                    font-size: 13px;
+                    padding: 12px 15px;
+                }}
+
+                th, td {{
+                    padding: 4px 6px;
+                    font-size: 9px;
+                }}
+
+                .col-name {{
+                    min-width: 100px;
+                    max-width: 100px;
+                }}
+
+                .filter-panel h3 {{
+                    font-size: 13px;
+                }}
+
+                .filter-group-title {{
+                    font-size: 12px;
+                }}
+
+                .filter-option {{
+                    font-size: 11px;
+                }}
+            }}
         </style>
     </head>
     <body onload="updateEntryList(); renderHistoryTable();">
+        <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
         <div class="app-container">
-            <div class="sidebar">
+            <div class="sidebar" id="sidebar">
                 <div class="sidebar-header">WT Argentina</div>
                 <div class="menu-item active" id="btn-upcoming" onclick="switchTab('upcoming')">Upcoming Tournaments</div>
                 <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
@@ -1083,7 +1287,38 @@ def main():
             const tournamentData = {json.dumps(tournament_store)};
             const historyData = {json.dumps(cleaned_history)};
             const playerMapping = {json.dumps(PLAYER_MAPPING)};
-            
+
+            function toggleMobileMenu() {{
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('mobile-hidden');
+            }}
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(event) {{
+                const sidebar = document.getElementById('sidebar');
+                const menuToggle = document.querySelector('.mobile-menu-toggle');
+
+                if (window.innerWidth <= 768) {{
+                    if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {{
+                        sidebar.classList.add('mobile-hidden');
+                    }}
+                }}
+            }});
+
+            // Close mobile menu when tab is clicked
+            function switchTab(tabName) {{
+                document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+                document.getElementById('btn-' + tabName).classList.add('active');
+
+                document.getElementById('view-upcoming').style.display = (tabName === 'upcoming') ? 'flex' : 'none';
+                document.getElementById('view-history').style.display = (tabName === 'history') ? 'flex' : 'none';
+
+                // Close mobile menu after selecting
+                if (window.innerWidth <= 768) {{
+                    document.getElementById('sidebar').classList.add('mobile-hidden');
+                }}
+            }}
+
             function reverseScore(score) {{
                 if (!score) return '';
                 return score.split(' ').map(set => {{
@@ -1152,26 +1387,32 @@ def main():
             }}
 
             $(document).ready(function() {{
+                // Initialize sidebar state for mobile
+                if (window.innerWidth <= 768) {{
+                    document.getElementById('sidebar').classList.add('mobile-hidden');
+                }}
+
                 $('#playerHistorySelect').select2({{
                     placeholder: 'Select a player...',
                     allowClear: true,
                     width: '250px'
                 }});
-                
+
                 $('#playerHistorySelect').on('change', function() {{
                     filterHistoryByPlayer();
                 }});
-                
-                renderHistoryTable();
-            }});
 
-            function switchTab(tabName) {{
-                document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-                document.getElementById('btn-' + tabName).classList.add('active');
-                
-                document.getElementById('view-upcoming').style.display = (tabName === 'upcoming') ? 'flex' : 'none';
-                document.getElementById('view-history').style.display = (tabName === 'history') ? 'flex' : 'none';
-            }}
+                renderHistoryTable();
+
+                // Handle window resize
+                window.addEventListener('resize', function() {{
+                    if (window.innerWidth > 768) {{
+                        document.getElementById('sidebar').classList.remove('mobile-hidden');
+                    }} else {{
+                        document.getElementById('sidebar').classList.add('mobile-hidden');
+                    }}
+                }});
+            }});
 
             function filter() {{
                 const q = document.getElementById('s').value.toLowerCase();
