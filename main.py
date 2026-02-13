@@ -991,6 +991,28 @@ def main():
                 return '(' + parts.join('/') + ') ';
             }}
 
+            // Find the last qualifying round per tournament and rename it to QRF
+            function getQRFinalMap() {{
+                const maxQR = {{}};
+                historyData.forEach(row => {{
+                    const t = row['TOURNAMENT'] || '';
+                    const r = row['ROUND'] || '';
+                    const m = r.match(/^QR(\\d+)$/);
+                    if (m) {{
+                        const num = parseInt(m[1]);
+                        if (!maxQR[t] || num > maxQR[t]) maxQR[t] = num;
+                    }}
+                }});
+                return maxQR;
+            }}
+            const qrFinalMap = getQRFinalMap();
+
+            function displayRound(round, tournament) {{
+                const m = (round || '').match(/^QR(\\d+)$/);
+                if (m && qrFinalMap[tournament] === parseInt(m[1])) return 'QRF';
+                return round;
+            }}
+
             // Format date string to yyyy-MM-dd
             function formatDate(dateStr) {{
                 if (!dateStr) return '';
@@ -1114,9 +1136,9 @@ def main():
                 const roundOrder = {{
                     'Final': 1, 'Semi-finals': 2, 'Quarter-finals': 3,
                     '4th Round': 4, '3rd Round': 5, '2nd Round': 6, '1st Round': 7,
-                    'QR4': 8, 'QR3': 9, 'QR2': 10, 'QR1': 11,
-                    'Semi Finals': 12, 'Quarter Finals': 13,
-                    'Last 16': 14, 'Last 32': 15, 'Round Robin': 16
+                    'QRF': 8, 'QR4': 9, 'QR3': 10, 'QR2': 11, 'QR1': 12,
+                    'Semi Finals': 13, 'Quarter Finals': 14,
+                    'Last 16': 15, 'Last 32': 16, 'Round Robin': 17
                 }};
                 function getRoundOrder(round) {{
                     return roundOrder[round] || 99;
@@ -1127,7 +1149,7 @@ def main():
                     const dateA = formatDate(a['DATE'] || '1900-01-01');
                     const dateB = formatDate(b['DATE'] || '1900-01-01');
                     if (dateA !== dateB) return dateB.localeCompare(dateA);
-                    return getRoundOrder(a['ROUND']) - getRoundOrder(b['ROUND']);
+                    return getRoundOrder(displayRound(a['ROUND'], a['TOURNAMENT'])) - getRoundOrder(displayRound(b['ROUND'], b['TOURNAMENT']));
                 }});
 
                 let bodyHtml = '';
@@ -1148,7 +1170,7 @@ def main():
                         'DATE': formatDate(row['DATE'] || ''),
                         'TOURNAMENT': row['TOURNAMENT'] || '',
                         'SURFACE': row['SURFACE'] || '',
-                        'ROUND': row['ROUND'] || '',
+                        'ROUND': displayRound(row['ROUND'] || '', row['TOURNAMENT'] || ''),
                         'PLAYER': buildPrefix(pSeed, pEntry) + playerDisplayName,
                         'RESULT': isWinner ? 'W' : 'L',
                         'SCORE': isWinner ? (row['SCORE'] || '') : reverseScore(row['SCORE'] || ''),
