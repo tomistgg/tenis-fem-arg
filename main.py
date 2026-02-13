@@ -883,9 +883,31 @@ def main():
             #history-table th:nth-child(5) {{ width: auto; }} /* PLAYER */
             #history-table th:nth-child(6) {{ width: 50px; }} /* RESULT */
             #history-table th:nth-child(7) {{ width: 120px; }} /* SCORE */
-            #history-table th:nth-child(8) {{ width: auto; }} /* RIVAL */
-            #history-table th:nth-child(9) {{ width: 55px; }} /* RIVAL_COUNTRY */
+            #history-table th:nth-child(8) {{ width: auto; }} /* OPPONENT */
             #history-table td {{ font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+
+            /* Filter Panel Styles */
+            .history-layout {{ display: flex; gap: 20px; width: 100%; }}
+            .filter-panel {{ width: 250px; background: white; border: 1px solid #94a3b8; padding: 15px; flex-shrink: 0; max-height: calc(100vh - 150px); overflow-y: auto; }}
+            .filter-panel h3 {{ margin: 0 0 15px 0; font-size: 16px; color: #1e293b; text-align: left; }}
+            .filter-group {{ margin-bottom: 20px; text-align: left; }}
+            .filter-group-title {{ font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 8px; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; text-align: left; }}
+            .filter-group-title:hover {{ color: #75AADB; }}
+            .filter-options {{ max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px; background: #f8fafc; text-align: left; }}
+            .filter-option {{ padding: 6px 10px; margin-bottom: 4px; font-size: 12px; text-align: left; cursor: pointer; user-select: none; border-radius: 3px; transition: background 0.15s; }}
+            .filter-option:hover {{ background: #e2e8f0; }}
+            .filter-option.selected {{ font-weight: bold; background: #dbeafe; color: #1e40af; }}
+            .filter-actions {{ margin-top: 15px; display: flex; justify-content: center; }}
+            .filter-btn {{ padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: bold; }}
+            .filter-btn-clear {{ background: #e2e8f0; color: #475569; }}
+            .filter-btn-clear:hover {{ background: #cbd5e1; }}
+            .history-content {{ flex: 1; display: flex; flex-direction: column; min-width: 0; }}
+            .collapse-icon {{ font-size: 10px; }}
+            .filter-group.collapsed .filter-options {{ display: none; }}
+            .filter-group.collapsed .collapse-icon::before {{ content: '▼'; }}
+            .filter-group:not(.collapsed) .collapse-icon::before {{ content: '▲'; }}
+            .filter-search {{ width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: inherit; font-size: 11px; margin-bottom: 8px; box-sizing: border-box; }}
+            .filter-search:focus {{ outline: none; border-color: #75AADB; }}
         </style>
     </head>
     <body onload="updateEntryList(); renderHistoryTable();">
@@ -956,14 +978,86 @@ def main():
                         </div>
                         <h1>Historial de Partidos</h1>
                     </div>
-                    <div class="content-card">
-                        <div class="table-wrapper">
-                            <table id="history-table">
-                                <thead id="history-head"></thead>
-                                <tbody id="history-body">
-                                    <tr><td colspan="100%" style="padding: 20px; color: #64748b;">Selecciona una jugadora para ver sus partidos</td></tr>
-                                </tbody>
-                            </table>
+
+                    <div class="history-layout">
+                        <div class="filter-panel">
+                            <h3>Filtros</h3>
+
+                            <div class="filter-group">
+                                <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                                    Surface <span class="collapse-icon"></span>
+                                </div>
+                                <div class="filter-options" id="filter-surface"></div>
+                            </div>
+
+                            <div class="filter-group">
+                                <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                                    Round <span class="collapse-icon"></span>
+                                </div>
+                                <div class="filter-options" id="filter-round"></div>
+                            </div>
+
+                            <div class="filter-group">
+                                <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                                    Result <span class="collapse-icon"></span>
+                                </div>
+                                <div class="filter-options" id="filter-result"></div>
+                            </div>
+
+                            <div class="filter-group">
+                                <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                                    Opponent <span class="collapse-icon"></span>
+                                </div>
+                                <div style="padding: 8px;">
+                                    <input type="text" class="filter-search" id="opponent-search" placeholder="Search opponents..." oninput="searchOpponents()">
+                                </div>
+                                <div class="filter-options" id="filter-opponent"></div>
+                            </div>
+
+                            <div class="filter-group">
+                                <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                                    Opponent Country <span class="collapse-icon"></span>
+                                </div>
+                                <div class="filter-options" id="filter-opponent-country"></div>
+                            </div>
+
+                            <div class="filter-group">
+                                <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                                    Player Entry <span class="collapse-icon"></span>
+                                </div>
+                                <div class="filter-options" id="filter-player-entry"></div>
+                            </div>
+
+                            <div class="filter-group">
+                                <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                                    Seed <span class="collapse-icon"></span>
+                                </div>
+                                <div class="filter-options" id="filter-seed"></div>
+                            </div>
+
+                            <div class="filter-group">
+                                <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                                    Match Type <span class="collapse-icon"></span>
+                                </div>
+                                <div class="filter-options" id="filter-match-type"></div>
+                            </div>
+
+                            <div class="filter-actions">
+                                <button class="filter-btn filter-btn-clear" onclick="clearHistoryFilters()">Clear All</button>
+                            </div>
+                        </div>
+
+                        <div class="history-content">
+                            <div class="content-card">
+                                <div class="table-wrapper">
+                                    <table id="history-table">
+                                        <thead id="history-head"></thead>
+                                        <tbody id="history-body">
+                                            <tr><td colspan="100%" style="padding: 20px; color: #64748b;">Selecciona una jugadora para ver sus partidos</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1099,7 +1193,7 @@ def main():
                 if (!historyData || historyData.length === 0) return;
 
                 // Define column headers (excluding hidden _ columns)
-                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'RIVAL', 'RIVAL_COUNTRY'];
+                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'OPPONENT'];
                 let headHtml = '<tr>';
                 displayColumns.forEach(col => {{
                     headHtml += `<th>${{col.replace('_', ' ')}}</th>`;
@@ -1111,24 +1205,199 @@ def main():
                 tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px; color: #64748b;">Selecciona una jugadora para ver sus partidos</td></tr>`;
             }}
 
-            function filterHistoryByPlayer() {{
-                const selectedPlayer = document.getElementById('playerHistorySelect').value.toUpperCase();
-                const tbody = document.getElementById('history-body');
-                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'RIVAL', 'RIVAL_COUNTRY'];
-                
-                if (!selectedPlayer) {{
-                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">Selecciona una jugadora...</td></tr>`;
-                    return;
-                }}
+            let currentPlayerData = [];
 
-                const filtered = historyData.filter(row => {{
-                    const wName = (row['_winnerName'] || "").toString().toUpperCase();
-                    const lName = (row['_loserName'] || "").toString().toUpperCase();
-                    return wName === selectedPlayer || lName === selectedPlayer;
+            function toggleFilterGroup(element) {{
+                element.parentElement.classList.toggle('collapsed');
+            }}
+
+            function populateFilters(playerMatches) {{
+                // Extract unique values for each filter
+                const surfaces = new Set();
+                const rounds = new Set();
+                const results = new Set(['W', 'L']);
+                const opponents = new Set();
+                const opponentCountries = new Set();
+                const playerEntries = new Set();
+                const seeds = new Set(['Yes', 'No']);
+                const matchTypes = new Set();
+
+                const selectedPlayer = document.getElementById('playerHistorySelect').value.toUpperCase();
+
+                playerMatches.forEach(row => {{
+                    const isWinner = (row['_winnerName'] || "").toString().toUpperCase() === selectedPlayer;
+
+                    // Surface
+                    if (row['SURFACE']) surfaces.add(row['SURFACE']);
+
+                    // Round
+                    if (row['ROUND']) rounds.add(row['ROUND']);
+
+                    // Opponent
+                    const opponentName = isWinner ? (row['_loserName'] || '') : (row['_winnerName'] || '');
+                    if (opponentName) opponents.add(getDisplayName(opponentName.toUpperCase()));
+
+                    // Opponent Country
+                    const opponentCountry = isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '');
+                    if (opponentCountry) opponentCountries.add(opponentCountry);
+
+                    // Player Entry
+                    const playerEntry = isWinner ? (row['_winnerEntry'] || '') : (row['_loserEntry'] || '');
+                    if (playerEntry) playerEntries.add(playerEntry);
+
+                    // Match Type (determine from tournament)
+                    const tournament = row['TOURNAMENT'] || '';
+                    if (tournament.includes('ITF') || tournament.includes('W15') || tournament.includes('W25') ||
+                        tournament.includes('W35') || tournament.includes('W50') || tournament.includes('W60') ||
+                        tournament.includes('W75') || tournament.includes('W100')) {{
+                        matchTypes.add('ITF');
+                    }} else {{
+                        matchTypes.add('WTA');
+                    }}
                 }});
 
-                if (filtered.length === 0) {{
-                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No se encontraron partidos para esta jugadora.</td></tr>`;
+                // Populate filter options
+                populateFilterOptions('filter-surface', Array.from(surfaces).sort());
+                populateFilterOptions('filter-round', Array.from(rounds).sort());
+                populateFilterOptions('filter-result', Array.from(results));
+                populateFilterOptions('filter-opponent', Array.from(opponents).sort());
+                populateFilterOptions('filter-opponent-country', Array.from(opponentCountries).sort());
+                populateFilterOptions('filter-player-entry', Array.from(playerEntries).sort());
+                populateFilterOptions('filter-seed', Array.from(seeds));
+                populateFilterOptions('filter-match-type', Array.from(matchTypes).sort());
+            }}
+
+            function populateFilterOptions(filterId, values) {{
+                const container = document.getElementById(filterId);
+                let html = '';
+                values.forEach(value => {{
+                    if (value) {{
+                        html += `<div class="filter-option" data-value="${{value}}" onclick="toggleFilterOption(event, this)">${{value}}</div>`;
+                    }}
+                }});
+                container.innerHTML = html || '<div style="padding: 5px; color: #94a3b8; font-size: 11px;">No options</div>';
+            }}
+
+            function toggleFilterOption(event, element) {{
+                // Support Ctrl+Click for multi-select
+                if (!event.ctrlKey && !event.metaKey) {{
+                    // Single click without Ctrl - deselect all others in this group first
+                    const siblings = element.parentElement.querySelectorAll('.filter-option');
+                    siblings.forEach(sib => {{
+                        if (sib !== element) sib.classList.remove('selected');
+                    }});
+                }}
+
+                // Toggle this option
+                element.classList.toggle('selected');
+
+                // Auto-apply filters
+                applyHistoryFilters();
+            }}
+
+            function searchOpponents() {{
+                const searchTerm = document.getElementById('opponent-search').value.toLowerCase();
+                const options = document.querySelectorAll('#filter-opponent .filter-option');
+
+                options.forEach(option => {{
+                    const text = option.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {{
+                        option.style.display = '';
+                    }} else {{
+                        option.style.display = 'none';
+                    }}
+                }});
+            }}
+
+            function getSelectedFilterValues(filterId) {{
+                const container = document.getElementById(filterId);
+                const selectedOptions = container.querySelectorAll('.filter-option.selected');
+                return Array.from(selectedOptions).map(option => option.getAttribute('data-value'));
+            }}
+
+            function applyHistoryFilters() {{
+                const selectedPlayer = document.getElementById('playerHistorySelect').value.toUpperCase();
+                if (!selectedPlayer) return;
+
+                // Get selected filter values
+                const selectedSurfaces = getSelectedFilterValues('filter-surface');
+                const selectedRounds = getSelectedFilterValues('filter-round');
+                const selectedResults = getSelectedFilterValues('filter-result');
+                const selectedOpponents = getSelectedFilterValues('filter-opponent');
+                const selectedOpponentCountries = getSelectedFilterValues('filter-opponent-country');
+                const selectedPlayerEntries = getSelectedFilterValues('filter-player-entry');
+                const selectedSeeds = getSelectedFilterValues('filter-seed');
+                const selectedMatchTypes = getSelectedFilterValues('filter-match-type');
+
+                // Filter the data (if nothing selected in a category, show all)
+                const filtered = currentPlayerData.filter(row => {{
+                    const isWinner = (row['_winnerName'] || "").toString().toUpperCase() === selectedPlayer;
+
+                    // Surface filter
+                    if (selectedSurfaces.length > 0 && !selectedSurfaces.includes(row['SURFACE'] || '')) return false;
+
+                    // Round filter
+                    if (selectedRounds.length > 0 && !selectedRounds.includes(row['ROUND'] || '')) return false;
+
+                    // Result filter
+                    const result = isWinner ? 'W' : 'L';
+                    if (selectedResults.length > 0 && !selectedResults.includes(result)) return false;
+
+                    // Opponent filter
+                    if (selectedOpponents.length > 0) {{
+                        const opponentName = isWinner ? (row['_loserName'] || '') : (row['_winnerName'] || '');
+                        const opponentDisplay = opponentName ? getDisplayName(opponentName.toUpperCase()) : '';
+                        if (!selectedOpponents.includes(opponentDisplay)) return false;
+                    }}
+
+                    // Opponent Country filter
+                    const opponentCountry = isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '');
+                    if (selectedOpponentCountries.length > 0 && !selectedOpponentCountries.includes(opponentCountry)) return false;
+
+                    // Player Entry filter
+                    const playerEntry = isWinner ? (row['_winnerEntry'] || '') : (row['_loserEntry'] || '');
+                    if (selectedPlayerEntries.length > 0 && !selectedPlayerEntries.includes(playerEntry)) return false;
+
+                    // Seed filter
+                    const playerSeed = isWinner ? (row['_winnerSeed'] || '') : (row['_loserSeed'] || '');
+                    const hasSeed = playerSeed ? 'Yes' : 'No';
+                    if (selectedSeeds.length > 0 && !selectedSeeds.includes(hasSeed)) return false;
+
+                    // Match Type filter
+                    const tournament = row['TOURNAMENT'] || '';
+                    const isITF = tournament.includes('ITF') || tournament.includes('W15') || tournament.includes('W25') ||
+                                  tournament.includes('W35') || tournament.includes('W50') || tournament.includes('W60') ||
+                                  tournament.includes('W75') || tournament.includes('W100');
+                    const matchType = isITF ? 'ITF' : 'WTA';
+                    if (selectedMatchTypes.length > 0 && !selectedMatchTypes.includes(matchType)) return false;
+
+                    return true;
+                }});
+
+                renderFilteredMatches(filtered, selectedPlayer);
+            }}
+
+            function clearHistoryFilters() {{
+                // Remove selected class from all filter options
+                document.querySelectorAll('.filter-option.selected').forEach(option => {{
+                    option.classList.remove('selected');
+                }});
+                // Clear opponent search
+                const opponentSearch = document.getElementById('opponent-search');
+                if (opponentSearch) {{
+                    opponentSearch.value = '';
+                    searchOpponents();
+                }}
+                // Auto-apply filters (which will show all matches since nothing is selected)
+                applyHistoryFilters();
+            }}
+
+            function renderFilteredMatches(matches, selectedPlayer) {{
+                const tbody = document.getElementById('history-body');
+                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'OPPONENT'];
+
+                if (matches.length === 0) {{
+                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No se encontraron partidos con los filtros seleccionados.</td></tr>`;
                     return;
                 }}
 
@@ -1145,7 +1414,7 @@ def main():
                 }}
 
                 // Sort by date descending, then by round order ascending
-                filtered.sort((a, b) => {{
+                matches.sort((a, b) => {{
                     const dateA = formatDate(a['DATE'] || '1900-01-01');
                     const dateB = formatDate(b['DATE'] || '1900-01-01');
                     if (dateA !== dateB) return dateB.localeCompare(dateA);
@@ -1153,18 +1422,21 @@ def main():
                 }});
 
                 let bodyHtml = '';
-                filtered.forEach(row => {{
+                matches.forEach(row => {{
                     const isWinner = (row['_winnerName'] || "").toString().toUpperCase() === selectedPlayer;
-                    
+
                     const playerDisplayName = getDisplayName(selectedPlayer);
                     const rivalName = isWinner ? (row['_loserName'] || '') : (row['_winnerName'] || '');
                     const rivalDisplayName = rivalName ? getDisplayName(rivalName.toUpperCase()) : '';
-                    
+
                     // Fill in the dynamic columns
                     const pSeed = isWinner ? (row['_winnerSeed'] || '') : (row['_loserSeed'] || '');
                     const pEntry = isWinner ? (row['_winnerEntry'] || '') : (row['_loserEntry'] || '');
                     const rSeed = isWinner ? (row['_loserSeed'] || '') : (row['_winnerSeed'] || '');
                     const rEntry = isWinner ? (row['_loserEntry'] || '') : (row['_winnerEntry'] || '');
+
+                    const rivalCountry = isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '');
+                    const opponentName = rivalDisplayName + (rivalCountry ? ` [${{rivalCountry}}]` : '');
 
                     const rowData = {{
                         'DATE': formatDate(row['DATE'] || ''),
@@ -1174,10 +1446,9 @@ def main():
                         'PLAYER': buildPrefix(pSeed, pEntry) + playerDisplayName,
                         'RESULT': isWinner ? 'W' : 'L',
                         'SCORE': isWinner ? (row['SCORE'] || '') : reverseScore(row['SCORE'] || ''),
-                        'RIVAL': buildPrefix(rSeed, rEntry) + rivalDisplayName,
-                        'RIVAL_COUNTRY': isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '')
+                        'OPPONENT': buildPrefix(rSeed, rEntry) + opponentName
                     }};
-                    
+
                     bodyHtml += '<tr>';
                     displayColumns.forEach(col => {{
                         bodyHtml += `<td>${{rowData[col] ?? ''}}</td>`;
@@ -1185,6 +1456,37 @@ def main():
                     bodyHtml += '</tr>';
                 }});
                 tbody.innerHTML = bodyHtml;
+            }}
+
+            function filterHistoryByPlayer() {{
+                const selectedPlayer = document.getElementById('playerHistorySelect').value.toUpperCase();
+                const tbody = document.getElementById('history-body');
+                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'OPPONENT'];
+
+                if (!selectedPlayer) {{
+                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">Selecciona una jugadora...</td></tr>`;
+                    return;
+                }}
+
+                const filtered = historyData.filter(row => {{
+                    const wName = (row['_winnerName'] || "").toString().toUpperCase();
+                    const lName = (row['_loserName'] || "").toString().toUpperCase();
+                    return wName === selectedPlayer || lName === selectedPlayer;
+                }});
+
+                if (filtered.length === 0) {{
+                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No se encontraron partidos para esta jugadora.</td></tr>`;
+                    return;
+                }}
+
+                // Store current player data for filtering
+                currentPlayerData = filtered;
+
+                // Populate filters with this player's data
+                populateFilters(filtered);
+
+                // Render all matches (filters start with all checked)
+                renderFilteredMatches(filtered, selectedPlayer);
             }}
         </script>
     </body>
