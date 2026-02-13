@@ -915,8 +915,8 @@ def main():
 
             /* Filter Panel Styles */
             .history-layout {{ display: flex; gap: 20px; width: 100%; }}
-            .filter-panel {{ width: 250px; padding: 15px 15px 15px 0; flex-shrink: 0; }}
-            .filter-panel h3 {{ margin: 0 0 15px 0; font-size: 16px; color: #1e293b; text-align: center; font-weight: bold; background: white; border: 2px solid #75AADB; padding: 12px; border-radius: 6px; }}
+            .filter-panel {{ width: 250px; padding: 15px; flex-shrink: 0; border: 2px solid black; background: white; }}
+            .filter-panel h3 {{ margin: -15px -15px 15px -15px; font-size: 16px; color: white; text-align: center; font-weight: bold; background: #75AADB; border: none; padding: 12px; border-radius: 0; }}
             .filter-group {{ margin-bottom: 20px; text-align: left; }}
             .filter-group-title {{ font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 8px; cursor: pointer; user-select: none; display: flex; justify-content: center; align-items: center; text-align: center; position: relative; }}
             .filter-group-title:hover {{ color: #75AADB; }}
@@ -1055,8 +1055,9 @@ def main():
 
                 .filter-panel {{
                     width: 100%;
-                    padding: 0;
+                    padding: 15px;
                     margin-bottom: 20px;
+                    border: 2px solid black;
                 }}
 
                 .filter-panel h3 {{
