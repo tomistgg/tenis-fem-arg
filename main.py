@@ -888,26 +888,30 @@ def main():
 
             /* Filter Panel Styles */
             .history-layout {{ display: flex; gap: 20px; width: 100%; }}
-            .filter-panel {{ width: 250px; background: white; border: 1px solid #94a3b8; padding: 15px; flex-shrink: 0; max-height: calc(100vh - 150px); overflow-y: auto; }}
-            .filter-panel h3 {{ margin: 0 0 15px 0; font-size: 16px; color: #1e293b; text-align: left; }}
+            .filter-panel {{ width: 250px; padding: 15px 15px 15px 0; flex-shrink: 0; }}
+            .filter-panel h3 {{ margin: 0 0 15px 0; font-size: 16px; color: #1e293b; text-align: center; font-weight: bold; }}
             .filter-group {{ margin-bottom: 20px; text-align: left; }}
-            .filter-group-title {{ font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 8px; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; text-align: left; }}
+            .filter-group-title {{ font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 8px; cursor: pointer; user-select: none; display: flex; justify-content: center; align-items: center; text-align: center; position: relative; }}
             .filter-group-title:hover {{ color: #75AADB; }}
-            .filter-options {{ max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px; background: #f8fafc; text-align: left; }}
+            .filter-options {{ border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px; background: #f8fafc; text-align: left; }}
             .filter-option {{ padding: 6px 10px; margin-bottom: 4px; font-size: 12px; text-align: left; cursor: pointer; user-select: none; border-radius: 3px; transition: background 0.15s; }}
             .filter-option:hover {{ background: #e2e8f0; }}
             .filter-option.selected {{ font-weight: bold; background: #dbeafe; color: #1e40af; }}
-            .filter-actions {{ margin-top: 15px; display: flex; justify-content: center; }}
+            .filter-actions {{ margin-bottom: 20px; display: flex; justify-content: center; }}
             .filter-btn {{ padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: bold; }}
             .filter-btn-clear {{ background: #e2e8f0; color: #475569; }}
             .filter-btn-clear:hover {{ background: #cbd5e1; }}
+            #filter-opponent-select {{ font-size: 11px; }}
             .history-content {{ flex: 1; display: flex; flex-direction: column; min-width: 0; }}
-            .collapse-icon {{ font-size: 10px; }}
+            .collapse-icon {{ font-size: 14px; position: absolute; right: 0; }}
             .filter-group.collapsed .filter-options {{ display: none; }}
             .filter-group.collapsed .collapse-icon::before {{ content: '▼'; }}
             .filter-group:not(.collapsed) .collapse-icon::before {{ content: '▲'; }}
             .filter-search {{ width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: inherit; font-size: 11px; margin-bottom: 8px; box-sizing: border-box; }}
             .filter-search:focus {{ outline: none; border-color: #75AADB; }}
+            .table-header-section {{ margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }}
+            .table-title {{ margin: 0; font-size: 22px; color: #1e293b; flex: 1; text-align: center; }}
+            .player-select-container {{ width: 250px; }}
         </style>
     </head>
     <body onload="updateEntryList(); renderHistoryTable();">
@@ -969,85 +973,87 @@ def main():
                 </div>
 
                 <div id="view-history" class="single-layout" style="display: none;">
-                    <div class="header-row">
-                        <div class="search-container">
-                            <select id="playerHistorySelect">
-                                <option value="">Seleccionar Tenista...</option>
-                                {"".join([f'<option value="{name}">{name}</option>' for name in history_players_sorted])}
-                            </select>
-                        </div>
-                        <h1>Historial de Partidos</h1>
-                    </div>
-
                     <div class="history-layout">
                         <div class="filter-panel">
-                            <h3>Filtros</h3>
+                            <h3>Filters</h3>
 
-                            <div class="filter-group">
+                            <div class="filter-actions">
+                                <button class="filter-btn filter-btn-clear" onclick="clearHistoryFilters()">Clear All</button>
+                            </div>
+
+                            <div class="filter-group collapsed">
                                 <div class="filter-group-title" onclick="toggleFilterGroup(this)">
                                     Surface <span class="collapse-icon"></span>
                                 </div>
                                 <div class="filter-options" id="filter-surface"></div>
                             </div>
 
-                            <div class="filter-group">
+                            <div class="filter-group collapsed">
                                 <div class="filter-group-title" onclick="toggleFilterGroup(this)">
                                     Round <span class="collapse-icon"></span>
                                 </div>
                                 <div class="filter-options" id="filter-round"></div>
                             </div>
 
-                            <div class="filter-group">
+                            <div class="filter-group collapsed">
                                 <div class="filter-group-title" onclick="toggleFilterGroup(this)">
                                     Result <span class="collapse-icon"></span>
                                 </div>
                                 <div class="filter-options" id="filter-result"></div>
                             </div>
 
-                            <div class="filter-group">
+                            <div class="filter-group collapsed">
                                 <div class="filter-group-title" onclick="toggleFilterGroup(this)">
                                     Opponent <span class="collapse-icon"></span>
                                 </div>
-                                <div style="padding: 8px;">
-                                    <input type="text" class="filter-search" id="opponent-search" placeholder="Search opponents..." oninput="searchOpponents()">
+                                <div style="padding: 8px; overflow: visible;">
+                                    <select id="filter-opponent-select" style="width: 100%;">
+                                        <option value="">All Opponents</option>
+                                    </select>
                                 </div>
-                                <div class="filter-options" id="filter-opponent"></div>
                             </div>
 
-                            <div class="filter-group">
+                            <div class="filter-group collapsed">
                                 <div class="filter-group-title" onclick="toggleFilterGroup(this)">
                                     Opponent Country <span class="collapse-icon"></span>
                                 </div>
                                 <div class="filter-options" id="filter-opponent-country"></div>
                             </div>
 
-                            <div class="filter-group">
+                            <div class="filter-group collapsed">
                                 <div class="filter-group-title" onclick="toggleFilterGroup(this)">
                                     Player Entry <span class="collapse-icon"></span>
                                 </div>
                                 <div class="filter-options" id="filter-player-entry"></div>
                             </div>
 
-                            <div class="filter-group">
+                            <div class="filter-group collapsed">
                                 <div class="filter-group-title" onclick="toggleFilterGroup(this)">
                                     Seed <span class="collapse-icon"></span>
                                 </div>
                                 <div class="filter-options" id="filter-seed"></div>
                             </div>
 
-                            <div class="filter-group">
+                            <div class="filter-group collapsed">
                                 <div class="filter-group-title" onclick="toggleFilterGroup(this)">
                                     Match Type <span class="collapse-icon"></span>
                                 </div>
                                 <div class="filter-options" id="filter-match-type"></div>
                             </div>
-
-                            <div class="filter-actions">
-                                <button class="filter-btn filter-btn-clear" onclick="clearHistoryFilters()">Clear All</button>
-                            </div>
                         </div>
 
                         <div class="history-content">
+                            <div class="table-header-section">
+                                <div class="player-select-container">
+                                    <select id="playerHistorySelect">
+                                        <option value="">Seleccionar Tenista...</option>
+                                        {"".join([f'<option value="{name}">{name}</option>' for name in history_players_sorted])}
+                                    </select>
+                                </div>
+                                <h1 class="table-title">Historial de Partidos</h1>
+                                <div style="width: 250px;"></div>
+                            </div>
+
                             <div class="content-card">
                                 <div class="table-wrapper">
                                     <table id="history-table">
@@ -1260,7 +1266,7 @@ def main():
                 populateFilterOptions('filter-surface', Array.from(surfaces).sort());
                 populateFilterOptions('filter-round', Array.from(rounds).sort());
                 populateFilterOptions('filter-result', Array.from(results));
-                populateFilterOptions('filter-opponent', Array.from(opponents).sort());
+                populateOpponentSelect(Array.from(opponents).sort());
                 populateFilterOptions('filter-opponent-country', Array.from(opponentCountries).sort());
                 populateFilterOptions('filter-player-entry', Array.from(playerEntries).sort());
                 populateFilterOptions('filter-seed', Array.from(seeds));
@@ -1276,6 +1282,36 @@ def main():
                     }}
                 }});
                 container.innerHTML = html || '<div style="padding: 5px; color: #94a3b8; font-size: 11px;">No options</div>';
+            }}
+
+            function populateOpponentSelect(opponents) {{
+                const select = document.getElementById('filter-opponent-select');
+
+                // Destroy existing Select2 if it exists
+                if ($(select).data('select2')) {{
+                    $(select).select2('destroy');
+                }}
+
+                // Clear and populate options
+                let html = '<option value="">All Opponents</option>';
+                opponents.forEach(opponent => {{
+                    if (opponent) {{
+                        html += `<option value="${{opponent}}">${{opponent}}</option>`;
+                    }}
+                }});
+                select.innerHTML = html;
+
+                // Initialize Select2 with search
+                $(select).select2({{
+                    placeholder: 'All Opponents',
+                    allowClear: true,
+                    width: '100%'
+                }});
+
+                // Auto-apply filters when selection changes
+                $(select).off('change').on('change', function() {{
+                    applyHistoryFilters();
+                }});
             }}
 
             function toggleFilterOption(event, element) {{
@@ -1295,20 +1331,6 @@ def main():
                 applyHistoryFilters();
             }}
 
-            function searchOpponents() {{
-                const searchTerm = document.getElementById('opponent-search').value.toLowerCase();
-                const options = document.querySelectorAll('#filter-opponent .filter-option');
-
-                options.forEach(option => {{
-                    const text = option.textContent.toLowerCase();
-                    if (text.includes(searchTerm)) {{
-                        option.style.display = '';
-                    }} else {{
-                        option.style.display = 'none';
-                    }}
-                }});
-            }}
-
             function getSelectedFilterValues(filterId) {{
                 const container = document.getElementById(filterId);
                 const selectedOptions = container.querySelectorAll('.filter-option.selected');
@@ -1323,7 +1345,7 @@ def main():
                 const selectedSurfaces = getSelectedFilterValues('filter-surface');
                 const selectedRounds = getSelectedFilterValues('filter-round');
                 const selectedResults = getSelectedFilterValues('filter-result');
-                const selectedOpponents = getSelectedFilterValues('filter-opponent');
+                const selectedOpponent = document.getElementById('filter-opponent-select').value;
                 const selectedOpponentCountries = getSelectedFilterValues('filter-opponent-country');
                 const selectedPlayerEntries = getSelectedFilterValues('filter-player-entry');
                 const selectedSeeds = getSelectedFilterValues('filter-seed');
@@ -1343,11 +1365,11 @@ def main():
                     const result = isWinner ? 'W' : 'L';
                     if (selectedResults.length > 0 && !selectedResults.includes(result)) return false;
 
-                    // Opponent filter
-                    if (selectedOpponents.length > 0) {{
+                    // Opponent filter (single select from dropdown)
+                    if (selectedOpponent) {{
                         const opponentName = isWinner ? (row['_loserName'] || '') : (row['_winnerName'] || '');
                         const opponentDisplay = opponentName ? getDisplayName(opponentName.toUpperCase()) : '';
-                        if (!selectedOpponents.includes(opponentDisplay)) return false;
+                        if (opponentDisplay !== selectedOpponent) return false;
                     }}
 
                     // Opponent Country filter
@@ -1382,12 +1404,8 @@ def main():
                 document.querySelectorAll('.filter-option.selected').forEach(option => {{
                     option.classList.remove('selected');
                 }});
-                // Clear opponent search
-                const opponentSearch = document.getElementById('opponent-search');
-                if (opponentSearch) {{
-                    opponentSearch.value = '';
-                    searchOpponents();
-                }}
+                // Reset opponent select dropdown
+                $('#filter-opponent-select').val('').trigger('change');
                 // Auto-apply filters (which will show all matches since nothing is selected)
                 applyHistoryFilters();
             }}
