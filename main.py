@@ -1110,11 +1110,24 @@ def main():
                     return;
                 }}
 
-                // Sort by date descending (most recent first)
+                // Round priority (lower = higher in table)
+                const roundOrder = {{
+                    'Final': 1, 'Semi-finals': 2, 'Quarter-finals': 3,
+                    '4th Round': 4, '3rd Round': 5, '2nd Round': 6, '1st Round': 7,
+                    'QR4': 8, 'QR3': 9, 'QR2': 10, 'QR1': 11,
+                    'Semi Finals': 12, 'Quarter Finals': 13,
+                    'Last 16': 14, 'Last 32': 15, 'Round Robin': 16
+                }};
+                function getRoundOrder(round) {{
+                    return roundOrder[round] || 99;
+                }}
+
+                // Sort by date descending, then by round order ascending
                 filtered.sort((a, b) => {{
-                    const dateA = new Date(a['DATE'] || '1900-01-01');
-                    const dateB = new Date(b['DATE'] || '1900-01-01');
-                    return dateB - dateA;
+                    const dateA = formatDate(a['DATE'] || '1900-01-01');
+                    const dateB = formatDate(b['DATE'] || '1900-01-01');
+                    if (dateA !== dateB) return dateB.localeCompare(dateA);
+                    return getRoundOrder(a['ROUND']) - getRoundOrder(b['ROUND']);
                 }});
 
                 let bodyHtml = '';
