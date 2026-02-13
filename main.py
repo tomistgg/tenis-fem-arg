@@ -17,6 +17,26 @@ def format_player_name(text):
         return ""
     return text.title()
 
+def fix_encoding(text):
+    """Fix encoding issues and normalize special characters"""
+    if not text:
+        return ""
+
+    # Try to fix mojibake (common UTF-8 misinterpreted as Latin-1)
+    try:
+        # If text contains mojibake, this will fix it
+        if 'Ã' in text or 'Ã¡' in text or 'Ã©' in text or 'Ã­' in text or 'Ã³' in text or 'Ãº' in text:
+            text = text.encode('latin-1').decode('utf-8')
+    except (UnicodeDecodeError, UnicodeEncodeError):
+        pass
+
+    # Normalize Unicode characters (remove accents)
+    try:
+        nfkd_form = unicodedata.normalize('NFKD', text)
+        text_without_accents = "".join([c for c in nfkd_form if not unicodedata.combining(c)])
+        return text_without_accents
+    except:
+        return text
 
 def load_player_mapping(filename="player_aliases.json"):
     if not os.path.exists(filename):
@@ -678,7 +698,7 @@ def main():
 
             new_match = {
                 'DATE': fecha,
-                'TOURNAMENT': m.get('tournamentName') or m.get('tournament_name') or m.get('TournamentName') or '',
+                'TOURNAMENT': fix_encoding(m.get('tournamentName') or m.get('tournament_name') or m.get('TournamentName') or ''),
                 'SURFACE': m.get('surface') or m.get('Surface') or '',
                 'ROUND': m.get('roundName') or m.get('round_name') or m.get('RoundName') or '',
                 'PLAYER': '',
