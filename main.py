@@ -653,6 +653,12 @@ def main():
                             if t_name not in schedule_map[p_name][week]: schedule_map[p_name][week] += f"<br>{t_name}{suffix}"
                         else: schedule_map[p_name][week] = f"{t_name}{suffix}"
 
+        # Remove tournaments no longer in the next 4 weeks
+        active_keys = set()
+        for tourneys in TOURNAMENT_GROUPS.values():
+            active_keys.update(tourneys.keys())
+        entry_cache = {k: v for k, v in entry_cache.items() if k in active_keys}
+
         save_cache(ENTRY_LISTS_CACHE_FILE, entry_cache)
 
         match_history_data = get_sheety_matches()
@@ -972,6 +978,27 @@ def main():
             const historyData = {json.dumps(cleaned_history)};
             const playerMapping = {json.dumps(PLAYER_MAPPING)};
             
+            function reverseScore(score) {{
+                if (!score) return '';
+                return score.split(' ').map(set => {{
+                    const m = set.match(/^(\\d+)-(\\d+)(.*)$/);
+                    if (!m) return set;
+                    return m[2] + '-' + m[1] + m[3];
+                }}).join(' ');
+            }}
+
+            // Format date string to yyyy-MM-dd
+            function formatDate(dateStr) {{
+                if (!dateStr) return '';
+                const parts = dateStr.split('/');
+                if (parts.length === 3) {{
+                    return parts[2] + '-' + parts[1].padStart(2, '0') + '-' + parts[0].padStart(2, '0');
+                }}
+                const d = new Date(dateStr);
+                if (isNaN(d)) return dateStr;
+                return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            }}
+
             // Helper function to get display name from player mapping
             function getDisplayName(upperCaseName) {{
                 // Try to find the display name in playerMapping
@@ -1096,7 +1123,7 @@ def main():
                     
                     // Fill in the dynamic columns
                     const rowData = {{
-                        'DATE': row['DATE'] || '',
+                        'DATE': formatDate(row['DATE'] || ''),
                         'TOURNAMENT': row['TOURNAMENT'] || '',
                         'SURFACE': row['SURFACE'] || '',
                         'ROUND': row['ROUND'] || '',
@@ -1104,7 +1131,7 @@ def main():
                         'SEED': isWinner ? (row['_winnerSeed'] || '') : (row['_loserSeed'] || ''),
                         'PLAYER': playerDisplayName,
                         'RESULT': isWinner ? 'W' : 'L',
-                        'SCORE': row['SCORE'] || '',
+                        'SCORE': isWinner ? (row['SCORE'] || '') : reverseScore(row['SCORE'] || ''),
                         'RIVAL_ENTRY': isWinner ? (row['_loserEntry'] || '') : (row['_winnerEntry'] || ''),
                         'RIVAL_SEED': isWinner ? (row['_loserSeed'] || '') : (row['_winnerSeed'] || ''),
                         'RIVAL': rivalDisplayName,
