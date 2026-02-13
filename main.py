@@ -97,12 +97,12 @@ def get_monday_from_date(date_str):
     return monday
 
 def format_week_label(monday_date):
-    months_es = {
-        1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
-        5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
-        9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
+    months_en = {
+        1: "January", 2: "February", 3: "March", 4: "April",
+        5: "May", 6: "June", 7: "July", 8: "August",
+        9: "September", 10: "October", 11: "November", 12: "December"
     }
-    return f"Semana {monday_date.day} {months_es[monday_date.month]}"
+    return f"Week of {months_en[monday_date.month]} {monday_date.day}"
 
 def build_tournament_groups():
     next_monday = get_next_monday()
@@ -775,7 +775,7 @@ def main():
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Próximos Torneos</title>
+        <title>WT Argentina</title>
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -897,14 +897,16 @@ def main():
             .filter-option {{ padding: 6px 10px; margin-bottom: 4px; font-size: 12px; text-align: left; cursor: pointer; user-select: none; border-radius: 3px; transition: background 0.15s; }}
             .filter-option:hover {{ background: #e2e8f0; }}
             .filter-option.selected {{ font-weight: bold; background: #dbeafe; color: #1e40af; }}
-            .filter-actions {{ margin-bottom: 20px; display: flex; justify-content: center; }}
-            .filter-btn {{ padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: bold; }}
+            .filter-actions {{ margin-top: 20px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }}
+            .filter-instructions {{ font-size: 10px; color: #64748b; flex: 1; line-height: 1.3; padding-left: 15px; }}
+            .filter-btn {{ padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: bold; white-space: nowrap; }}
             .filter-btn-clear {{ background: #e2e8f0; color: #475569; }}
             .filter-btn-clear:hover {{ background: #cbd5e1; }}
             #filter-opponent-select {{ font-size: 11px; }}
             .history-content {{ flex: 1; display: flex; flex-direction: column; min-width: 0; }}
             .collapse-icon {{ font-size: 14px; position: absolute; right: 0; }}
             .filter-group.collapsed .filter-options {{ display: none; }}
+            .filter-group.collapsed .opponent-select-container {{ display: none; }}
             .filter-group.collapsed .collapse-icon::before {{ content: '▼'; }}
             .filter-group:not(.collapsed) .collapse-icon::before {{ content: '▲'; }}
             .filter-search {{ width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: inherit; font-size: 11px; margin-bottom: 8px; box-sizing: border-box; }}
@@ -917,9 +919,9 @@ def main():
     <body onload="updateEntryList(); renderHistoryTable();">
         <div class="app-container">
             <div class="sidebar">
-                <div class="sidebar-header">Tenistas Argentinas</div>
-                <div class="menu-item active" id="btn-upcoming" onclick="switchTab('upcoming')">Próximos Torneos</div>
-                <div class="menu-item" id="btn-history" onclick="switchTab('history')">Historial de Partidos</div>
+                <div class="sidebar-header">WT Argentina</div>
+                <div class="menu-item active" id="btn-upcoming" onclick="switchTab('upcoming')">Upcoming Tournaments</div>
+                <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
             </div>
             
             <div class="main-content">
@@ -927,9 +929,9 @@ def main():
                     <div class="column-main">
                         <div class="header-row">
                             <div class="search-container">
-                                <input type="text" id="s" placeholder="Buscar tenista..." oninput="filter()">
+                                <input type="text" id="s" placeholder="Search player..." oninput="filter()">
                             </div>
-                            <h1>Próximos Torneos</h1>
+                            <h1>Upcoming Tournaments</h1>
                         </div>
                         <div class="content-card">
                             <div class="table-wrapper">
@@ -937,7 +939,7 @@ def main():
                                     <thead>
                                         <tr>
                                             <th class="sticky-col col-rank">Rank</th>
-                                            <th class="sticky-col col-name">Jugadora</th>
+                                            <th class="sticky-col col-name">Player</th>
                                             {"".join([f'<th class="col-week">{w}</th>' for w in week_keys])}
                                         </tr>
                                     </thead>
@@ -961,8 +963,8 @@ def main():
                                 <thead>
                                     <tr>
                                         <th style="width:15px">#</th>
-                                        <th>Jugadora</th>
-                                        <th style="width:35px">País</th>
+                                        <th>PLAYER</th>
+                                        <th style="width:35px">NAT</th>
                                         <th style="width:70px">E-Rank</th> 
                                     </tr>
                                 </thead>
@@ -976,10 +978,6 @@ def main():
                     <div class="history-layout">
                         <div class="filter-panel">
                             <h3>Filters</h3>
-
-                            <div class="filter-actions">
-                                <button class="filter-btn filter-btn-clear" onclick="clearHistoryFilters()">Clear All</button>
-                            </div>
 
                             <div class="filter-group collapsed">
                                 <div class="filter-group-title" onclick="toggleFilterGroup(this)">
@@ -1006,7 +1004,7 @@ def main():
                                 <div class="filter-group-title" onclick="toggleFilterGroup(this)">
                                     Opponent <span class="collapse-icon"></span>
                                 </div>
-                                <div style="padding: 8px; overflow: visible;">
+                                <div class="opponent-select-container" style="padding: 8px; overflow: visible;">
                                     <select id="filter-opponent-select" style="width: 100%;">
                                         <option value="">All Opponents</option>
                                     </select>
@@ -1040,17 +1038,22 @@ def main():
                                 </div>
                                 <div class="filter-options" id="filter-match-type"></div>
                             </div>
+
+                            <div class="filter-actions">
+                                <div class="filter-instructions">Ctrl+Click to select multiple options.</div>
+                                <button class="filter-btn filter-btn-clear" onclick="clearHistoryFilters()">Reset Filters</button>
+                            </div>
                         </div>
 
                         <div class="history-content">
                             <div class="table-header-section">
                                 <div class="player-select-container">
                                     <select id="playerHistorySelect">
-                                        <option value="">Seleccionar Tenista...</option>
+                                        <option value="">Select Player...</option>
                                         {"".join([f'<option value="{name}">{name}</option>' for name in history_players_sorted])}
                                     </select>
                                 </div>
-                                <h1 class="table-title">Historial de Partidos</h1>
+                                <h1 class="table-title">Match History</h1>
                                 <div style="width: 250px;"></div>
                             </div>
 
@@ -1059,7 +1062,7 @@ def main():
                                     <table id="history-table">
                                         <thead id="history-head"></thead>
                                         <tbody id="history-body">
-                                            <tr><td colspan="100%" style="padding: 20px; color: #64748b;">Selecciona una jugadora para ver sus partidos</td></tr>
+                                            <tr><td colspan="100%" style="padding: 20px; color: #64748b;">Select a player to view their matches</td></tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -1143,7 +1146,7 @@ def main():
 
             $(document).ready(function() {{
                 $('#playerHistorySelect').select2({{
-                    placeholder: 'Selecciona una jugadora...',
+                    placeholder: 'Select a player...',
                     allowClear: true,
                     width: '250px'
                 }});
@@ -1208,7 +1211,7 @@ def main():
                 thead.innerHTML = headHtml;
                 
                 // Set initial placeholder message
-                tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px; color: #64748b;">Selecciona una jugadora para ver sus partidos</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px; color: #64748b;">Select a player to view their matches</td></tr>`;
             }}
 
             let currentPlayerData = [];
@@ -1415,7 +1418,7 @@ def main():
                 const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'OPPONENT'];
 
                 if (matches.length === 0) {{
-                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No se encontraron partidos con los filtros seleccionados.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No matches found with the selected filters.</td></tr>`;
                     return;
                 }}
 
@@ -1482,7 +1485,7 @@ def main():
                 const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'OPPONENT'];
 
                 if (!selectedPlayer) {{
-                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">Selecciona una jugadora...</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">Select a player...</td></tr>`;
                     return;
                 }}
 
@@ -1493,7 +1496,7 @@ def main():
                 }});
 
                 if (filtered.length === 0) {{
-                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No se encontraron partidos para esta jugadora.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No matches found for this player.</td></tr>`;
                     return;
                 }}
 
