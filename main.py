@@ -880,15 +880,11 @@ def main():
             #history-table th:nth-child(2) {{ width: auto; }} /* TOURNAMENT */
             #history-table th:nth-child(3) {{ width: 70px; }} /* SURFACE */
             #history-table th:nth-child(4) {{ width: 100px; }} /* ROUND */
-            #history-table th:nth-child(5) {{ width: 35px; }} /* ENTRY */
-            #history-table th:nth-child(6) {{ width: 30px; }} /* SEED */
-            #history-table th:nth-child(7) {{ width: 200px; }} /* PLAYER */
-            #history-table th:nth-child(8) {{ width: 50px; }} /* RESULT */
-            #history-table th:nth-child(9) {{ width: 120px; }} /* SCORE */
-            #history-table th:nth-child(10) {{ width: 35px; }} /* RIVAL_ENTRY */
-            #history-table th:nth-child(11) {{ width: 30px; }} /* RIVAL_SEED */
-            #history-table th:nth-child(12) {{ width: 200px; }} /* RIVAL */
-            #history-table th:nth-child(13) {{ width: 55px; }} /* RIVAL_COUNTRY */
+            #history-table th:nth-child(5) {{ width: auto; }} /* PLAYER */
+            #history-table th:nth-child(6) {{ width: 50px; }} /* RESULT */
+            #history-table th:nth-child(7) {{ width: 120px; }} /* SCORE */
+            #history-table th:nth-child(8) {{ width: auto; }} /* RIVAL */
+            #history-table th:nth-child(9) {{ width: 55px; }} /* RIVAL_COUNTRY */
             #history-table td {{ font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
         </style>
     </head>
@@ -987,6 +983,14 @@ def main():
                 }}).join(' ');
             }}
 
+            function buildPrefix(seed, entry) {{
+                const parts = [];
+                if (seed) parts.push(seed);
+                if (entry) parts.push(entry);
+                if (parts.length === 0) return '';
+                return '(' + parts.join('/') + ') ';
+            }}
+
             // Format date string to yyyy-MM-dd
             function formatDate(dateStr) {{
                 if (!dateStr) return '';
@@ -1073,7 +1077,7 @@ def main():
                 if (!historyData || historyData.length === 0) return;
 
                 // Define column headers (excluding hidden _ columns)
-                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'ENTRY', 'SEED', 'PLAYER', 'RESULT', 'SCORE', 'RIVAL_ENTRY', 'RIVAL_SEED', 'RIVAL', 'RIVAL_COUNTRY'];
+                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'RIVAL', 'RIVAL_COUNTRY'];
                 let headHtml = '<tr>';
                 displayColumns.forEach(col => {{
                     headHtml += `<th>${{col.replace('_', ' ')}}</th>`;
@@ -1088,7 +1092,7 @@ def main():
             function filterHistoryByPlayer() {{
                 const selectedPlayer = document.getElementById('playerHistorySelect').value.toUpperCase();
                 const tbody = document.getElementById('history-body');
-                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'ENTRY', 'SEED', 'PLAYER', 'RESULT', 'SCORE', 'RIVAL_ENTRY', 'RIVAL_SEED', 'RIVAL', 'RIVAL_COUNTRY'];
+                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'RIVAL', 'RIVAL_COUNTRY'];
                 
                 if (!selectedPlayer) {{
                     tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">Selecciona una jugadora...</td></tr>`;
@@ -1122,19 +1126,20 @@ def main():
                     const rivalDisplayName = rivalName ? getDisplayName(rivalName.toUpperCase()) : '';
                     
                     // Fill in the dynamic columns
+                    const pSeed = isWinner ? (row['_winnerSeed'] || '') : (row['_loserSeed'] || '');
+                    const pEntry = isWinner ? (row['_winnerEntry'] || '') : (row['_loserEntry'] || '');
+                    const rSeed = isWinner ? (row['_loserSeed'] || '') : (row['_winnerSeed'] || '');
+                    const rEntry = isWinner ? (row['_loserEntry'] || '') : (row['_winnerEntry'] || '');
+
                     const rowData = {{
                         'DATE': formatDate(row['DATE'] || ''),
                         'TOURNAMENT': row['TOURNAMENT'] || '',
                         'SURFACE': row['SURFACE'] || '',
                         'ROUND': row['ROUND'] || '',
-                        'ENTRY': isWinner ? (row['_winnerEntry'] || '') : (row['_loserEntry'] || ''),
-                        'SEED': isWinner ? (row['_winnerSeed'] || '') : (row['_loserSeed'] || ''),
-                        'PLAYER': playerDisplayName,
+                        'PLAYER': buildPrefix(pSeed, pEntry) + playerDisplayName,
                         'RESULT': isWinner ? 'W' : 'L',
                         'SCORE': isWinner ? (row['SCORE'] || '') : reverseScore(row['SCORE'] || ''),
-                        'RIVAL_ENTRY': isWinner ? (row['_loserEntry'] || '') : (row['_winnerEntry'] || ''),
-                        'RIVAL_SEED': isWinner ? (row['_loserSeed'] || '') : (row['_winnerSeed'] || ''),
-                        'RIVAL': rivalDisplayName,
+                        'RIVAL': buildPrefix(rSeed, rEntry) + rivalDisplayName,
                         'RIVAL_COUNTRY': isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '')
                     }};
                     
