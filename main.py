@@ -34,6 +34,7 @@ for display_name, aliases in PLAYER_MAPPING.items():
 
 WTA_CACHE_FILE = "wta_rankings_cache.json"
 ITF_CACHE_FILE = "itf_rankings_cache.json"
+ENTRY_LISTS_CACHE_FILE = "entry_lists_cache.json"
 
 def load_cache(cache_file):
     """Load rankings cache from JSON file"""
@@ -46,6 +47,17 @@ def save_cache(cache_file, cache_data):
     """Save rankings cache to JSON file"""
     with open(cache_file, "w", encoding="utf-8") as f:
         json.dump(cache_data, f, indent=2, ensure_ascii=False)
+
+def merge_entry_list(cached_players, new_players):
+    """Merge new scraped players with cached players, preserving sections that disappeared."""
+    new_main = [p for p in new_players if p.get("type") == "MAIN"]
+    new_qual = [p for p in new_players if p.get("type") == "QUAL"]
+    cached_main = [p for p in cached_players if p.get("type") == "MAIN"]
+    cached_qual = [p for p in cached_players if p.get("type") == "QUAL"]
+
+    final_main = new_main if new_main else cached_main
+    final_qual = new_qual if new_qual else cached_qual
+    return final_main + final_qual
 
 def get_cached_rankings(date_str, cache_file, fetch_func, nationality=None):
     """
@@ -528,8 +540,9 @@ def main():
 
         # 3. Process Tournaments (WTA & ITF)
         schedule_map = {}
-        tournament_store = {} 
+        tournament_store = {}
         ranking_cache = {}
+        entry_cache = load_cache(ENTRY_LISTS_CACHE_FILE)
 
         for week, tourneys in TOURNAMENT_GROUPS.items():
             print(f"Procesando {week}...")
@@ -565,6 +578,8 @@ def main():
                     t_name = t_info["name"]
                     if key.startswith("http"):
                         t_list, status_dict = scrape_tournament_players(key, ranking_cache[md_date], ranking_cache[q_date])
+                        t_list = merge_entry_list(entry_cache.get(key, []), t_list)
+                        entry_cache[key] = t_list
                         tournament_store[key] = t_list
                         for p_name, suffix in status_dict.items():
                             p_key = p_name.upper()
@@ -574,6 +589,8 @@ def main():
                             else: schedule_map[p_key][week] = f"{t_name}{suffix}"
             else:
                 for key, (t_list, status_dict) in temp_wta_results.items():
+                    t_list = merge_entry_list(entry_cache.get(key, []), t_list)
+                    entry_cache[key] = t_list
                     tournament_store[key] = t_list
                     t_name = tourneys[key]["name"]
                     for p_name, suffix in status_dict.items():
@@ -625,6 +642,8 @@ def main():
                             })
 
                     tourney_players_list.sort(key=lambda x: x["pos_num"])
+                    tourney_players_list = merge_entry_list(entry_cache.get(key, []), tourney_players_list)
+                    entry_cache[key] = tourney_players_list
                     tournament_store[key] = tourney_players_list
 
                     for p_name, suffix in itf_name_map.items():
@@ -633,6 +652,8 @@ def main():
                         if week in schedule_map[p_name]:
                             if t_name not in schedule_map[p_name][week]: schedule_map[p_name][week] += f"<br>{t_name}{suffix}"
                         else: schedule_map[p_name][week] = f"{t_name}{suffix}"
+
+        save_cache(ENTRY_LISTS_CACHE_FILE, entry_cache)
 
         match_history_data = get_sheety_matches()
 
