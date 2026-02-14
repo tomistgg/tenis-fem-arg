@@ -38,6 +38,21 @@ def fix_encoding(text):
     except:
         return text
 
+def fix_encoding_keep_accents(text):
+    """Fix encoding issues but preserve accents"""
+    if not text:
+        return ""
+
+    # Try to fix mojibake (common UTF-8 misinterpreted as Latin-1)
+    try:
+        # If text contains mojibake, this will fix it
+        if 'Ã' in text or 'Ã¡' in text or 'Ã©' in text or 'Ã­' in text or 'Ã³' in text or 'Ãº' in text:
+            text = text.encode('latin-1').decode('utf-8')
+    except (UnicodeDecodeError, UnicodeEncodeError):
+        pass
+
+    return text
+
 def load_player_mapping(filename="player_aliases.json"):
     if not os.path.exists(filename):
         print(f"Alerta: No se encontró {filename}.")
@@ -711,8 +726,8 @@ def main():
                 'RIVAL': '',
                 'RIVAL_COUNTRY': '',
                 # Keep original names for filtering
-                '_winnerName': m.get('winnerName') or m.get('winner_name') or m.get('WinnerName') or '',
-                '_loserName': m.get('loserName') or m.get('loser_name') or m.get('LoserName') or '',
+                '_winnerName': fix_encoding_keep_accents(m.get('winnerName') or m.get('winner_name') or m.get('WinnerName') or ''),
+                '_loserName': fix_encoding_keep_accents(m.get('loserName') or m.get('loser_name') or m.get('LoserName') or ''),
                 '_winnerCountry': m.get('winnerCountry') or m.get('winner_country') or m.get('WinnerCountry') or '',
                 '_loserCountry': m.get('loserCountry') or m.get('loser_country') or m.get('LoserCountry') or '',
                 '_winnerEntry': winner_entry,
@@ -1401,10 +1416,16 @@ def main():
                         }}
                     }}
                 }}
-                // If not found, convert to title case
-                return upperCaseName.split(' ').map(word => 
-                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                ).join(' ');
+                // If not found, convert to title case (handling hyphens)
+                return upperCaseName.split(' ').map(word => {{
+                    // Handle hyphenated names (e.g., Villagran-Reami)
+                    if (word.includes('-')) {{
+                        return word.split('-').map(part =>
+                            part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+                        ).join('-');
+                    }}
+                    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+                }}).join(' ');
             }}
 
             $(document).ready(function() {{
