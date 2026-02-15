@@ -139,6 +139,26 @@ def format_week_label(monday_date):
     }
     return f"Week of {months_en[monday_date.month]} {monday_date.day}"
 
+TOURNAMENT_NAME_OVERRIDES = {
+    "Grand Slam Paris": "Roland Garros",
+    "Grand Slam Wimbledon": "Wimbledon",
+    "Grand Slam New York": "US Open",
+}
+
+CITY_CASE_FIXES = {
+    "Dc": "DC",
+}
+
+def fix_display_name(name):
+    """Apply tournament name overrides and city casing fixes."""
+    base = name.split(" Qualifying")[0]
+    is_qual = name.endswith(" Qualifying")
+    if base in TOURNAMENT_NAME_OVERRIDES:
+        name = TOURNAMENT_NAME_OVERRIDES[base] + (" Qualifying" if is_qual else "")
+    for wrong, right in CITY_CASE_FIXES.items():
+        name = name.replace(wrong, right)
+    return name
+
 def build_tournament_groups():
     next_monday = get_next_monday()
     four_weeks_later = next_monday + timedelta(weeks=4)
@@ -206,7 +226,8 @@ def build_tournament_groups():
             display_name = f"Grand Slam {city}{suffix}"
         else:
             display_name = f"{level} {city}{suffix}"
-        
+        display_name = fix_display_name(display_name)
+
         if week_label not in tournament_groups:
             tournament_groups[week_label] = {}
         
@@ -267,6 +288,7 @@ def get_full_wta_calendar():
             display_name = f"Grand Slam {city}{suffix}"
         else:
             display_name = f"{level} {city}{suffix}"
+        display_name = fix_display_name(display_name)
         surface = t.get("surface") or t.get("surfaceType") or t.get("surfaceCode") or ""
         country = t.get("countryCode") or t.get("country") or t.get("hostCountryCode") or ""
         tournaments.append({
@@ -604,7 +626,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings):
             "rank": f"{info['Rank']}" if info['Rank'] < 9999 else "-",
             "type": "MAIN"
         })
-    md_list.sort(key=lambda x: x["rank_num"])
+    md_list.sort(key=lambda x: (x["rank_num"], x["name"]))
     for idx, p in enumerate(md_list, 1):
         p["pos"] = str(idx)
 
@@ -618,7 +640,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings):
             "rank": f"{info['Rank']}" if info['Rank'] < 9999 else "-",
             "type": "QUAL"
         })
-    qual_list.sort(key=lambda x: x["rank_num"])
+    qual_list.sort(key=lambda x: (x["rank_num"], x["name"]))
     for idx, p in enumerate(qual_list, 1):
         p["pos"] = str(idx)
 
@@ -654,13 +676,17 @@ def generate_dynamic_monday_map(num_weeks=4):
     return monday_map
 
 COUNTRY_TO_CONTINENT = {
-    # Americas
-    "USA": "americas", "US": "americas", "CAN": "americas", "MEX": "americas", "BRA": "americas", "ARG": "americas",
-    "CHI": "americas", "COL": "americas", "PER": "americas", "ECU": "americas", "URU": "americas", "VEN": "americas",
-    "BOL": "americas", "PAR": "americas", "CRC": "americas", "DOM": "americas", "PUR": "americas", "GUA": "americas",
-    "HON": "americas", "ESA": "americas", "NCA": "americas", "PAN": "americas", "JAM": "americas", "TTO": "americas",
-    "HAI": "americas", "BAH": "americas", "BAR": "americas", "CUB": "americas", "GUY": "americas", "SUR": "americas",
-    "BER": "americas", "AHO": "americas", "ARU": "americas",
+    # South America
+    "BRA": "south_america", "ARG": "south_america", "CHI": "south_america", "COL": "south_america",
+    "PER": "south_america", "ECU": "south_america", "URU": "south_america", "VEN": "south_america",
+    "BOL": "south_america", "PAR": "south_america", "GUY": "south_america", "SUR": "south_america",
+    # North and Central America
+    "USA": "north_central_america", "US": "north_central_america", "CAN": "north_central_america", "MEX": "north_central_america",
+    "CRC": "north_central_america", "DOM": "north_central_america", "PUR": "north_central_america", "GUA": "north_central_america",
+    "HON": "north_central_america", "ESA": "north_central_america", "NCA": "north_central_america", "PAN": "north_central_america",
+    "JAM": "north_central_america", "TTO": "north_central_america", "HAI": "north_central_america", "BAH": "north_central_america",
+    "BAR": "north_central_america", "CUB": "north_central_america", "BER": "north_central_america", "AHO": "north_central_america",
+    "ARU": "north_central_america",
     # Europe
     "FRA": "europe", "GBR": "europe", "ESP": "europe", "ITA": "europe", "GER": "europe", "SUI": "europe",
     "AUT": "europe", "BEL": "europe", "NED": "europe", "POR": "europe", "SWE": "europe", "NOR": "europe",
@@ -670,15 +696,16 @@ COUNTRY_TO_CONTINENT = {
     "GEO": "europe", "ARM": "europe", "UKR": "europe", "BLR": "europe", "MDA": "europe", "LAT": "europe",
     "LTU": "europe", "EST": "europe", "IRL": "europe", "LUX": "europe", "MON": "europe", "AND": "europe",
     "MLT": "europe", "ISR": "europe", "ISL": "europe", "RUS": "europe",
-    # Asia / Oceania
-    "CHN": "asia_oceania", "JPN": "asia_oceania", "KOR": "asia_oceania", "AUS": "asia_oceania", "NZL": "asia_oceania",
-    "IND": "asia_oceania", "THA": "asia_oceania", "MAS": "asia_oceania", "INA": "asia_oceania", "PHI": "asia_oceania",
-    "SGP": "asia_oceania", "VIE": "asia_oceania", "TPE": "asia_oceania", "HKG": "asia_oceania", "MAC": "asia_oceania",
-    "KAZ": "asia_oceania", "UZB": "asia_oceania", "QAT": "asia_oceania", "UAE": "asia_oceania", "KSA": "asia_oceania",
-    "BRN": "asia_oceania", "KUW": "asia_oceania", "OMA": "asia_oceania", "JOR": "asia_oceania", "LBN": "asia_oceania",
-    "IRQ": "asia_oceania", "IRI": "asia_oceania", "PAK": "asia_oceania", "SRI": "asia_oceania", "BAN": "asia_oceania",
-    "NEP": "asia_oceania", "MGL": "asia_oceania", "MYA": "asia_oceania", "CAM": "asia_oceania", "LAO": "asia_oceania",
-    "FIJ": "asia_oceania", "SAM": "asia_oceania", "PNG": "asia_oceania", "GUM": "asia_oceania",
+    # Asia
+    "CHN": "asia", "JPN": "asia", "KOR": "asia",
+    "IND": "asia", "THA": "asia", "MAS": "asia", "INA": "asia", "PHI": "asia",
+    "SGP": "asia", "VIE": "asia", "TPE": "asia", "HKG": "asia", "MAC": "asia",
+    "KAZ": "asia", "UZB": "asia", "QAT": "asia", "UAE": "asia", "KSA": "asia",
+    "BRN": "asia", "KUW": "asia", "OMA": "asia", "JOR": "asia", "LBN": "asia",
+    "IRQ": "asia", "IRI": "asia", "PAK": "asia", "SRI": "asia", "BAN": "asia",
+    "NEP": "asia", "MGL": "asia", "MYA": "asia", "CAM": "asia", "LAO": "asia",
+    # Oceania
+    "AUS": "oceania", "NZL": "oceania", "FIJ": "oceania", "SAM": "oceania", "PNG": "oceania", "GUM": "oceania",
     # Africa
     "RSA": "africa", "EGY": "africa", "MAR": "africa", "TUN": "africa", "ALG": "africa", "NGR": "africa",
     "KEN": "africa", "GHA": "africa", "CIV": "africa", "SEN": "africa", "CMR": "africa", "UGA": "africa",
@@ -688,29 +715,29 @@ COUNTRY_TO_CONTINENT = {
 }
 
 CONTINENT_LABELS = {
-    "americas": "Americas",
+    "south_america": "South America",
+    "north_central_america": "N/C America",
     "europe": "Europe",
-    "asia_oceania": "Asia/Oceania",
-    "africa": "Africa"
+    "africa": "Africa",
+    "asia": "Asia",
+    "oceania": "Oceania"
 }
 
-CONTINENT_KEYS = ["americas", "europe", "asia_oceania", "africa"]
+CONTINENT_KEYS = ["south_america", "north_central_america", "europe", "africa", "asia", "oceania"]
 
 def get_continent(country_code):
     """Map country code to continent key."""
     return COUNTRY_TO_CONTINENT.get((country_code or "").upper(), "europe")
 
 def get_calendar_column(level):
-    """Map tournament level to one of the 4 calendar columns."""
+    """Map tournament level to one of the 3 calendar columns."""
     lv = level.lower().replace(" ", "")
-    if lv in ("grandslam", "wta1000", "wta500", "wta250"):
+    if lv in ("grandslam", "wta1000", "wta500", "wta250", "finals", "wtafinals"):
         return "wta_tour"
     elif lv in ("wta125",):
         return "wta_125"
-    elif lv in ("w100", "w75", "w60", "w50"):
-        return "itf_high"
     else:
-        return "itf_low"
+        return "itf"
 
 def get_surface_class(surface):
     """Map surface string to CSS class."""
@@ -758,14 +785,14 @@ def build_calendar_data(tournaments):
     end_of_year = datetime(next_monday.year, 12, 31)
     total_weeks = ((end_of_year - next_monday).days // 7) + 1
 
-    column_keys = ["wta_tour", "wta_125", "itf_high", "itf_low"]
+    column_keys = ["wta_tour", "wta_125", "itf"]
     calendar_weeks = []
     for week_offset in range(total_weeks):
         monday = next_monday + timedelta(weeks=week_offset)
         sunday = monday + timedelta(days=6)
         week_label = format_week_label(monday)
 
-        columns = {k: [] for k in column_keys}
+        columns = {k: {c: [] for c in CONTINENT_KEYS} for k in column_keys}
         for t in parsed:
             overlap_start = max(t["start"].date(), monday.date())
             overlap_end = min(t["end"].date(), sunday.date())
@@ -773,12 +800,14 @@ def build_calendar_data(tournaments):
                 days_in_week = (overlap_end - overlap_start).days + 1
                 if days_in_week >= 4:
                     col = get_calendar_column(t["level"])
-                    columns[col].append({"name": t["name"], "level": t["level"], "surface": t.get("surface", "")})
+                    cont = t.get("continent", "europe")
+                    columns[col][cont].append({"name": t["name"], "level": t["level"], "surface": t.get("surface", "")})
 
         for col in column_keys:
-            columns[col].sort(key=lambda x: get_tournament_sort_order(x["level"]))
+            for cont in CONTINENT_KEYS:
+                columns[col][cont].sort(key=lambda x: get_tournament_sort_order(x["level"]))
 
-        has_any = any(columns[k] for k in column_keys)
+        has_any = any(columns[k][c] for k in column_keys for c in CONTINENT_KEYS)
         calendar_weeks.append({"week_label": week_label, "columns": columns, "has_any": has_any})
 
     # Trim trailing empty weeks
@@ -954,7 +983,7 @@ def main():
                                 "rank": erank_str, "type": section_type, "pos_num": pos_num
                             })
 
-                    tourney_players_list.sort(key=lambda x: x["pos_num"])
+                    tourney_players_list.sort(key=lambda x: (x["pos_num"], x["name"]))
                     tourney_players_list = merge_entry_list(entry_cache.get(key, []), tourney_players_list)
                     entry_cache[key] = tourney_players_list
                     tournament_store[key] = tourney_players_list
@@ -1097,22 +1126,34 @@ def main():
     all_calendar_tournaments = full_wta + full_itf
     calendar_data = build_calendar_data(all_calendar_tournaments)
 
-    col_keys = ["wta_tour", "wta_125", "itf_high", "itf_low"]
-    calendar_html = ""
+    col_keys = ["wta_tour", "wta_125", "itf"]
+    col_labels = {"wta_tour": "WTA TOUR", "wta_125": "WTA 125", "itf": "ITF"}
+    cont_labels = {"south_america": "South America", "north_central_america": "N/C America", "europe": "Europe", "africa": "Africa", "asia": "Asia", "oceania": "Oceania"}
+
+    # Build transposed table: categories as rows, weeks as columns
+    calendar_html = '<table class="calendar-table"><thead><tr>'
+    calendar_html += '<th class="cal-cat-header"></th><th class="cal-cont-header"></th>'
     for week in calendar_data:
-        has_t = " has-tournaments" if week["has_any"] else ""
-        calendar_html += f'<div class="calendar-week-row{has_t}">'
-        calendar_html += f'<div class="calendar-week-label">{week["week_label"]}</div>'
-        for ck in col_keys:
-            calendar_html += '<div class="calendar-col">'
-            if week["columns"][ck]:
-                for t in week["columns"][ck]:
-                    sc = get_surface_class(t.get("surface", ""))
-                    calendar_html += f'<div class="calendar-tournament {sc}">{t["name"]}</div>'
-            else:
-                calendar_html += '<div class="calendar-no-tournaments">\u2014</div>'
-            calendar_html += '</div>'
-        calendar_html += '</div>'
+        calendar_html += f'<th class="cal-week-header">{week["week_label"]}</th>'
+    calendar_html += '</tr></thead><tbody>'
+
+    for ck in col_keys:
+        for ci, cont in enumerate(CONTINENT_KEYS):
+            row_cls = "cal-group-first" if ci == 0 else ("cal-group-last" if ci == len(CONTINENT_KEYS) - 1 else "")
+            calendar_html += f'<tr class="{row_cls}">' if row_cls else '<tr>'
+            if ci == 0:
+                calendar_html += f'<td class="cal-cat-label" rowspan="{len(CONTINENT_KEYS)}">{col_labels[ck]}</td>'
+            calendar_html += f'<td class="cal-cont-label">{cont_labels[cont]}</td>'
+            for week in calendar_data:
+                calendar_html += '<td class="cal-cell">'
+                if week["columns"][ck][cont]:
+                    for t in week["columns"][ck][cont]:
+                        sc = get_surface_class(t.get("surface", ""))
+                        calendar_html += f'<span class="calendar-tournament {sc}">{t["name"]}</span>'
+                calendar_html += '</td>'
+            calendar_html += '</tr>'
+
+    calendar_html += '</tbody></table>'
 
     html_template = f"""
     <!DOCTYPE html>
@@ -1162,8 +1203,8 @@ def main():
             .col-week {{ width: 130px; font-size: 11px; font-weight: bold; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
             .divider-row td {{ background: #e2e8f0; font-weight: bold; text-align: center; padding: 5px 15px; font-size: 11px; border-right: none; }}
             tr.hidden {{ display: none; }}
-            tr:hover td {{ background: #f1f5f9; }}
-            tr:hover td.sticky-col {{ background: #f1f5f9 !important; }}
+            table:not(.calendar-table) tr:hover td {{ background: #f1f5f9; }}
+            table:not(.calendar-table) tr:hover td.sticky-col {{ background: #f1f5f9 !important; }}
             .dropdown-header {{ background-color: #e2e8f0 !important; font-weight: bold !important; text-align: center !important; padding: 12px 0 !important; font-size: 11px; display: block; }}
             .dropdown-item {{ padding: 8px 15px; text-align: left; background-color: #ffffff; }}
             
@@ -1261,22 +1302,22 @@ def main():
             .player-select-container {{ width: 250px; }}
 
             /* Calendar Styles */
-            .calendar-container {{ border: 1px solid black; }}
-            .calendar-header-bar {{ display: flex; background: #75AADB; color: white; font-weight: bold; font-size: 11px; text-transform: uppercase; }}
-            .calendar-header-label {{ width: 180px; flex-shrink: 0; padding: 10px 12px; border-right: 1px solid #5a95c8; text-align: center; }}
-            .calendar-col-header {{ flex: 1; padding: 10px 8px; border-right: 1px solid #5a95c8; text-align: center; }}
-            .calendar-col-header:last-child {{ border-right: none; }}
-            .calendar-week-row {{ display: flex; align-items: stretch; border-bottom: 1px solid #cbd5e1; }}
-            .calendar-week-row:last-child {{ border-bottom: none; }}
-            .calendar-week-row.has-tournaments {{ background: white; }}
-            .calendar-week-label {{ width: 180px; flex-shrink: 0; padding: 10px 12px; font-size: 12px; font-weight: bold; color: #1e293b; background: #f1f5f9; border-right: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; text-align: center; }}
-            .calendar-col {{ flex: 1; padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; justify-content: center; border-right: 1px solid #e2e8f0; min-height: 40px; }}
-            .calendar-col:last-child {{ border-right: none; }}
-            .calendar-no-tournaments {{ color: #cbd5e1; font-size: 12px; text-align: center; }}
-            .calendar-tournament {{ font-size: 11px; padding: 4px 10px; border-radius: 4px; line-height: 1.3; font-weight: 600; }}
-            .cal-clay {{ background: #ea580c; color: white; }}
-            .cal-hard {{ background: #2563eb; color: white; }}
-            .cal-grass {{ background: #16a34a; color: white; }}
+            .calendar-container {{ overflow-x: auto; }}
+            .calendar-table {{ border-collapse: separate; border-spacing: 0; width: auto; min-width: 100%; border: 1px solid black; }}
+            .calendar-table th {{ padding: 4px 4px; vertical-align: top; border-bottom: 2px solid #1e293b; border-right: 1px solid #1e293b; }}
+            .calendar-table td {{ padding: 4px 4px; vertical-align: top; border-bottom: 1px solid #94a3b8; border-right: 1px solid #94a3b8; }}
+            .cal-week-header {{ background: #75AADB; color: white; font-size: 10px; font-weight: bold; text-align: center; white-space: nowrap; padding: 6px 6px; position: sticky; top: 0; z-index: 10; min-width: 90px; }}
+            .cal-cat-header {{ background: #75AADB; color: white; position: sticky; top: 0; z-index: 11; width: 28px; min-width: 28px; }}
+            .cal-cont-header {{ background: #75AADB; color: white; position: sticky; top: 0; z-index: 11; min-width: 65px; }}
+            .cal-cat-label {{ background: #1e293b; color: white; font-size: 11px; font-weight: bold; text-align: center; vertical-align: middle !important; text-transform: uppercase; writing-mode: vertical-lr; text-orientation: mixed; transform: rotate(180deg); padding: 0; width: 28px; min-width: 28px; max-width: 28px; position: sticky; left: 0; z-index: 2; border-color: #1e293b !important; box-shadow: inset 0 0 0 50px #1e293b; }}
+            .cal-cont-label {{ background: #f1f5f9; font-size: 11px; font-weight: 600; color: #475569; text-align: center; vertical-align: middle !important; white-space: nowrap; position: sticky; left: 28px; z-index: 2; }}
+            .cal-cell {{ font-size: 10px; min-height: 24px; vertical-align: middle; }}
+            .cal-group-first td {{ border-top: 1px solid #1e293b; }}
+            .cal-group-last td {{ border-bottom: 1px solid #1e293b; }}
+            .calendar-tournament {{ display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 3px; line-height: 1.3; font-weight: 600; white-space: nowrap; margin: 1px 3px 1px 0; }}
+            .cal-clay {{ background: #e8a882; color: #5c2e0e; }}
+            .cal-hard {{ background: #88b4e8; color: #1a3a5c; }}
+            .cal-grass {{ background: #7cc89a; color: #1a4a2e; }}
 
             /* Mobile Menu Toggle */
             .mobile-menu-toggle {{ display: none; position: fixed; top: 15px; left: 15px; z-index: 1000; background: #1e293b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 18px; }}
@@ -1443,11 +1484,8 @@ def main():
                 }}
 
                 /* Calendar mobile */
-                .calendar-header-bar {{ display: none; }}
-                .calendar-week-row {{ flex-wrap: wrap; }}
-                .calendar-week-label {{ width: 100%; border-right: none; border-bottom: 1px solid #cbd5e1; padding: 8px; font-size: 11px; }}
-                .calendar-col {{ flex: 1 1 45%; min-width: 45%; border-bottom: 1px solid #e2e8f0; }}
-                .calendar-tournament {{ font-size: 9px; padding: 3px 6px; }}
+                .calendar-container {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
+                .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
             }}
 
             @media (max-width: 480px) {{
@@ -1650,17 +1688,7 @@ def main():
                 </div>
 
                 <div id="view-calendar" class="single-layout" style="display: none;">
-                    <div class="header-row" style="margin-bottom: 20px;">
-                        <h1>Tournament Calendar</h1>
-                    </div>
                     <div class="content-card calendar-container">
-                        <div class="calendar-header-bar">
-                            <div class="calendar-header-label">WEEK</div>
-                            <div class="calendar-col-header">WTA TOUR</div>
-                            <div class="calendar-col-header">WTA 125</div>
-                            <div class="calendar-col-header">ITF HIGH</div>
-                            <div class="calendar-col-header">ITF LOW</div>
-                        </div>
                         {calendar_html}
                     </div>
                 </div>
