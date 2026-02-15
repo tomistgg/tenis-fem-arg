@@ -1,3 +1,4 @@
+import re
 import time
 import requests
 import unicodedata
@@ -200,7 +201,28 @@ def get_wta_rankings_cached(date_str, nationality=None):
     )
 
 
-def scrape_tournament_players(url, md_rankings, qual_rankings):
+def fetch_player_info(player_id):
+    url = f"https://api.wtatennis.com/tennis/players/{player_id}/matches"
+    params = {"page": 0, "pageSize": 1, "sort": "desc"}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+        "referer": "https://www.wtatennis.com/",
+        "account": "wta"
+    }
+    try:
+        r = requests.get(url, params=params, headers=headers, timeout=10)
+        data = r.json()
+        player = data.get("player", {})
+        name = player.get("fullName")
+        country = player.get("countryCode")
+        if name:
+            return {"name": name, "country": country}
+    except:
+        pass
+    return None
+
+
+def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=None):
     try:
         r = requests.get(url, headers=HEADERS, timeout=20)
         soup = BeautifulSoup(r.text, 'html.parser')
@@ -208,45 +230,89 @@ def scrape_tournament_players(url, md_rankings, qual_rankings):
         print(f"Error scraping {url}: {e}")
         return [], {}
 
-    main_draw_names = set()
-    qualifying_names = set()
-
+    # 1. Read player IDs/slugs from HTML
+    main_entries, qual_entries = [], []
+    main_seen, qual_seen = set(), set()
     current_state = "MAIN"
 
-    all_elements = soup.find_all(['div', 'span', 'button', 'a'], recursive=True)
-
-    for tag in all_elements:
-        text = tag.get_text().strip()
+    for tag in soup.find_all(True):
         ui_tab = tag.get('data-ui-tab', '').lower()
 
-        if "qualifying" in text.lower() or "qualifying" in ui_tab:
+        if "qualifying" in ui_tab:
             current_state = "QUAL"
-        elif "main draw" in text.lower() or "main draw" in ui_tab:
-            current_state = "MAIN"
-        elif "doubles" in text.lower() or "doubles" in ui_tab:
+        elif "doubles" in ui_tab:
             current_state = "IGNORE"
+        if current_state == "IGNORE":
+            continue
 
-        p_name = tag.get('data-tracking-player-name')
-        if p_name:
-            name_key = p_name.strip().upper()
-            matched_name = NAME_LOOKUP.get(name_key, name_key)
+        href = tag.get('href', '')
+        m = re.match(r'/players/(\d+)/([^/]+)', href)
+        if m:
+            pid, slug = m.group(1), m.group(2)
+            if current_state == "MAIN" and pid not in main_seen:
+                main_seen.add(pid)
+                main_entries.append((pid, slug))
+            elif current_state == "QUAL" and pid not in qual_seen:
+                qual_seen.add(pid)
+                qual_entries.append((pid, slug))
 
-            if current_state == "MAIN":
-                main_draw_names.add(matched_name)
-            elif current_state == "QUAL":
-                qualifying_names.add(matched_name)
+    # Build cache lookup from previous run
+    cached_lookup = {}
+    for entry in (cached_entries or []):
+        cached_lookup[entry["name"].strip().upper()] = entry
+
+    # Build ranked names set for quick lookup
+    ranked_names = set()
+    for rank_list in [md_rankings, qual_rankings]:
+        for item in rank_list:
+            if item.get("Player"):
+                ranked_names.add(item["Player"].strip().upper())
+
+    # 2-3. Resolve each player: cache first, then rankings, then API
+    player_cache = {}
+    seen_pids = set()
+    for pid, slug in main_entries + qual_entries:
+        if pid in seen_pids:
+            continue
+        seen_pids.add(pid)
+        candidate = slug.replace("-", " ").upper()
+        mapped = NAME_LOOKUP.get(candidate, candidate)
+
+        if mapped in cached_lookup:
+            player_cache[pid] = {"name": mapped, "country": cached_lookup[mapped].get("country")}
+        elif candidate in cached_lookup:
+            player_cache[pid] = {"name": candidate, "country": cached_lookup[candidate].get("country")}
+        elif candidate in ranked_names:
+            player_cache[pid] = {"name": candidate, "country": None}
+        elif mapped in ranked_names:
+            player_cache[pid] = {"name": mapped, "country": None}
+        else:
+            info = fetch_player_info(pid)
+            if info:
+                player_cache[pid] = info
+            time.sleep(0.05)
+
+    # 4. Fill the table
+    main_draw_names = set()
+    qualifying_names = set()
 
     def get_p_rank(name, rank_list):
         return next((item for item in rank_list if item["Player"] == name), {"Rank": 9999, "Country": "-"})
 
     md_list = []
-    for name in main_draw_names:
-        info = get_p_rank(name, md_rankings)
+    for pid, slug in main_entries:
+        if pid not in player_cache:
+            continue
+        p_info = player_cache[pid]
+        name_key = p_info["name"].strip().upper()
+        matched_name = NAME_LOOKUP.get(name_key, name_key)
+        main_draw_names.add(matched_name)
+        rank_info = get_p_rank(matched_name, md_rankings)
         md_list.append({
-            "name": format_player_name(name),
-            "country": info["Country"],
-            "rank_num": info["Rank"],
-            "rank": f"{info['Rank']}" if info['Rank'] < 9999 else "-",
+            "name": format_player_name(matched_name),
+            "country": rank_info["Country"] if rank_info["Country"] != "-" else (p_info.get("country") or "-"),
+            "rank_num": rank_info["Rank"],
+            "rank": f"{rank_info['Rank']}" if rank_info['Rank'] < 9999 else "-",
             "type": "MAIN"
         })
     md_list.sort(key=lambda x: (x["rank_num"], x["name"]))
@@ -254,13 +320,19 @@ def scrape_tournament_players(url, md_rankings, qual_rankings):
         p["pos"] = str(idx)
 
     qual_list = []
-    for name in qualifying_names:
-        info = get_p_rank(name, qual_rankings)
+    for pid, slug in qual_entries:
+        if pid not in player_cache:
+            continue
+        p_info = player_cache[pid]
+        name_key = p_info["name"].strip().upper()
+        matched_name = NAME_LOOKUP.get(name_key, name_key)
+        qualifying_names.add(matched_name)
+        rank_info = get_p_rank(matched_name, qual_rankings)
         qual_list.append({
-            "name": format_player_name(name),
-            "country": info["Country"],
-            "rank_num": info["Rank"],
-            "rank": f"{info['Rank']}" if info['Rank'] < 9999 else "-",
+            "name": format_player_name(matched_name),
+            "country": rank_info["Country"] if rank_info["Country"] != "-" else (p_info.get("country") or "-"),
+            "rank_num": rank_info["Rank"],
+            "rank": f"{rank_info['Rank']}" if rank_info['Rank'] < 9999 else "-",
             "type": "QUAL"
         })
     qual_list.sort(key=lambda x: (x["rank_num"], x["name"]))

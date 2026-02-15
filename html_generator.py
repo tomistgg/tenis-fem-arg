@@ -329,11 +329,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     position: static;
                     transform: none;
                     width: 100%;
+                    order: 2;
                 }}
 
                 h1 {{
                     font-size: 18px;
                     text-align: center;
+                    order: 1;
                 }}
 
                 input, select {{
@@ -406,12 +408,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 /* History table */
                 #history-table {{
-                    min-width: 700px;
+                    min-width: 600px;
                 }}
 
                 #history-table th:nth-child(1) {{ width: 70px; }}
                 #history-table th:nth-child(2) {{ width: auto; min-width: 120px; }}
-                #history-table th:nth-child(3) {{ width: 60px; }}
+                #history-table th:nth-child(3),
+                #history-table td:nth-child(3) {{ display: none; }}
                 #history-table th:nth-child(4) {{ width: 80px; }}
                 #history-table th:nth-child(5) {{ width: auto; min-width: 120px; }}
                 #history-table th:nth-child(6) {{ width: 40px; }}

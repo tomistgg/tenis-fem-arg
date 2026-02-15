@@ -85,7 +85,7 @@ def main():
         entry_cache = load_cache(ENTRY_LISTS_CACHE_FILE)
 
         for week, tourneys in tournament_groups.items():
-            print(f"Procesando {week}...")
+            print(f"Processing {week}...")
             week_monday = next((k for k, v in monday_map.items() if v == week), None)
             if week_monday is None: continue
 
@@ -96,43 +96,21 @@ def main():
             md_datetime = datetime.strptime(md_date, "%Y-%m-%d")
             q_datetime = datetime.strptime(q_date, "%Y-%m-%d")
 
-            temp_wta_results = {}
-            has_wta_players = False
+            # Fetch rankings for this week (cached, so fast after first call)
+            if md_datetime > today_date: md_date = (today_date - timedelta(days=today_date.weekday())).strftime("%Y-%m-%d")
+            if q_datetime > today_date: q_date = (today_date - timedelta(days=today_date.weekday())).strftime("%Y-%m-%d")
 
-            # Pre-scan WTA
+            if md_date not in ranking_cache: ranking_cache[md_date] = get_wta_rankings_cached(md_date, nationality=None)
+            if q_date not in ranking_cache: ranking_cache[q_date] = get_wta_rankings_cached(q_date, nationality=None)
+
+            # Process WTA tournaments (single pass per tournament)
             for key, t_info in tourneys.items():
+                t_name = t_info["name"]
                 if key.startswith("http"):
-                    t_list, status_dict = scrape_tournament_players(key, [], [])
-                    temp_wta_results[key] = (t_list, status_dict)
-                    if t_list and len(t_list) > 0: has_wta_players = True
-
-            # Process WTA with Rankings
-            if has_wta_players:
-                if md_datetime > today_date: md_date = (today_date - timedelta(days=today_date.weekday())).strftime("%Y-%m-%d")
-                if q_datetime > today_date: q_date = (today_date - timedelta(days=today_date.weekday())).strftime("%Y-%m-%d")
-
-                if md_date not in ranking_cache: ranking_cache[md_date] = get_wta_rankings_cached(md_date, nationality=None)
-                if q_date not in ranking_cache: ranking_cache[q_date] = get_wta_rankings_cached(q_date, nationality=None)
-
-                for key, t_info in tourneys.items():
-                    t_name = t_info["name"]
-                    if key.startswith("http"):
-                        t_list, status_dict = scrape_tournament_players(key, ranking_cache[md_date], ranking_cache[q_date])
-                        t_list = merge_entry_list(entry_cache.get(key, []), t_list)
-                        entry_cache[key] = t_list
-                        tournament_store[key] = t_list
-                        for p_name, suffix in status_dict.items():
-                            p_key = p_name.upper()
-                            if p_key not in arg_names_set: continue
-                            if p_key not in schedule_map: schedule_map[p_key] = {}
-                            if week in schedule_map[p_key]: schedule_map[p_key][week] += f'<div style="margin-top: 3px;">{t_name}{suffix}</div>'
-                            else: schedule_map[p_key][week] = f"{t_name}{suffix}"
-            else:
-                for key, (t_list, status_dict) in temp_wta_results.items():
+                    t_list, status_dict = scrape_tournament_players(key, ranking_cache[md_date], ranking_cache[q_date])
                     t_list = merge_entry_list(entry_cache.get(key, []), t_list)
                     entry_cache[key] = t_list
                     tournament_store[key] = t_list
-                    t_name = tourneys[key]["name"]
                     for p_name, suffix in status_dict.items():
                         p_key = p_name.upper()
                         if p_key not in arg_names_set: continue
