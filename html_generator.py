@@ -256,7 +256,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .cal-cont-header {{ background: #75AADB; color: white; position: sticky; top: 0; z-index: 11; min-width: 65px; }}
             .cal-cat-label {{ background: #1e293b; color: white; font-size: 11px; font-weight: bold; text-align: center; vertical-align: middle !important; text-transform: uppercase; writing-mode: vertical-lr; text-orientation: mixed; transform: rotate(180deg); padding: 0; width: 28px; min-width: 28px; max-width: 28px; position: sticky; left: 0; z-index: 2; border-color: #1e293b !important; box-shadow: inset 0 0 0 50px #1e293b; }}
             .cal-cont-label {{ background: #f1f5f9; font-size: 11px; font-weight: 600; color: #475569; text-align: center; vertical-align: middle !important; white-space: nowrap; position: sticky; left: 28px; z-index: 2; }}
-            .cal-cell {{ font-size: 10px; min-height: 24px; vertical-align: middle; }}
+            .cal-cell {{ font-size: 10px; min-height: 24px; vertical-align: middle !important; }}
             .cal-group-first td {{ border-top: 1px solid #1e293b; }}
             .cal-group-last td {{ border-bottom: 1px solid #1e293b; }}
             .calendar-tournament {{ display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 3px; line-height: 1.3; font-weight: 600; white-space: nowrap; margin: 1px 3px 1px 0; }}
