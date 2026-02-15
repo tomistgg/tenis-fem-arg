@@ -192,7 +192,8 @@ def build_tournament_groups():
         level = tournament["level"]
         city = tournament["city"].title()
         start_date = tournament["startDate"]
-        
+        end_date = tournament.get("endDate", None)
+
         monday = get_monday_from_date(start_date)
         
         if not (next_monday <= monday < four_weeks_later):
@@ -201,7 +202,10 @@ def build_tournament_groups():
         week_label = format_week_label(monday)
         
         url = f"https://www.wtatennis.com/tournaments/{tournament_id}/{name}/{year}/player-list"
-        display_name = f"{level} {city}{suffix}"
+        if level.lower().replace(" ", "") == "grandslam":
+            display_name = f"Grand Slam {city}{suffix}"
+        else:
+            display_name = f"{level} {city}{suffix}"
         
         if week_label not in tournament_groups:
             tournament_groups[week_label] = {}
@@ -209,12 +213,149 @@ def build_tournament_groups():
         # Store tournament with its level for sorting later
         tournament_groups[week_label][url] = {
             "name": display_name,
-            "level": level
+            "level": level,
+            "startDate": start_date,
+            "endDate": end_date
         }
     
     return tournament_groups
 
 TOURNAMENT_GROUPS = build_tournament_groups()
+
+def get_full_wta_calendar():
+    """Fetch all WTA tournaments from now until end of year for the calendar view."""
+    today = datetime.now()
+    from_date = today.strftime("%Y-%m-%d")
+    to_date = f"{today.year}-12-31"
+
+    url = "https://api.wtatennis.com/tennis/tournaments/"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+        "referer": "https://www.wtatennis.com/",
+        "account": "wta"
+    }
+    params = {
+        "page": 0,
+        "pageSize": 200,
+        "excludeLevels": "ITF",
+        "from": from_date,
+        "to": to_date
+    }
+
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+        data = response.json()
+    except Exception as e:
+        print(f"Error fetching full WTA calendar: {e}")
+        return []
+
+    tournaments = []
+    for t in data.get("content", []):
+        level = t["level"]
+        city = t["city"].title()
+
+        raw_name = t["tournamentGroup"]["name"]
+        nfkd_form = unicodedata.normalize('NFKD', raw_name)
+        clean_name = "".join([c for c in nfkd_form if not unicodedata.combining(c)])
+        suffix = ""
+        if "#" in clean_name:
+            parts = clean_name.split("#")
+            clean_name = parts[0].strip()
+            suffix = " " + parts[1].strip()
+
+        if level.lower().replace(" ", "") == "grandslam":
+            display_name = f"Grand Slam {city}{suffix}"
+        else:
+            display_name = f"{level} {city}{suffix}"
+        surface = t.get("surface") or t.get("surfaceType") or t.get("surfaceCode") or ""
+        country = t.get("countryCode") or t.get("country") or t.get("hostCountryCode") or ""
+        tournaments.append({
+            "name": display_name,
+            "level": level,
+            "surface": surface,
+            "country": country,
+            "startDate": t["startDate"],
+            "endDate": t.get("endDate", None)
+        })
+
+    return tournaments
+
+def get_full_itf_calendar(driver):
+    """Fetch all ITF tournaments for the full year via Selenium. Numbers duplicates across the whole year."""
+    today = datetime.now()
+    date_from = f"{today.year}-01-01"  # Full year for correct numbering
+    date_to = f"{today.year}-12-31"
+
+    all_items = []
+    skip = 0
+    take = 500
+
+    while True:
+        url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetCalendar?circuitCode=WT&dateFrom={date_from}&dateTo={date_to}&skip={skip}&take={take}"
+        try:
+            driver.get(url)
+            time.sleep(random.uniform(3, 5))
+            raw_content = driver.find_element("tag name", "body").text
+            data = json.loads(raw_content)
+            items = data.get('items', [])
+            if not items:
+                break
+            all_items.extend(items)
+
+            total = data.get('totalItems', 0)
+            if skip + take >= total:
+                break
+            skip += take
+        except Exception as e:
+            print(f"Error fetching full ITF calendar (skip={skip}): {e}")
+            break
+
+    tournaments = []
+    for item in all_items:
+        # Skip cancelled tournaments
+        status = (item.get('status') or item.get('tournamentStatus') or '').lower()
+        if 'cancel' in status:
+            continue
+        t_name = item.get('tournamentName', '')
+        if 'cancel' in t_name.lower():
+            continue
+
+        level = "W15"
+        if "W100" in t_name or "100k" in t_name: level = "W100"
+        elif "W75" in t_name or "75k" in t_name: level = "W75"
+        elif "W60" in t_name or "60k" in t_name: level = "W60"
+        elif "W50" in t_name or "50k" in t_name: level = "W50"
+        elif "W35" in t_name or "35k" in t_name: level = "W35"
+        elif "W25" in t_name or "25k" in t_name: level = "W25"
+        elif "W15" in t_name or "15k" in t_name: level = "W15"
+
+        surface = item.get('surfaceDesc') or item.get('surface') or ""
+        country = item.get('hostNationCode') or item.get('hostNation') or item.get('countryCode') or ""
+        tournaments.append({
+            "name": t_name,
+            "level": level,
+            "surface": surface,
+            "country": country,
+            "startDate": item.get('startDate'),
+            "endDate": item.get('endDate', None)
+        })
+
+    # Number duplicate names across the full year (e.g. "W35 Junin" -> "W35 Junin 1", "W35 Junin 2")
+    tournaments.sort(key=lambda x: x.get("startDate") or "")
+    name_counts = {}
+    for t in tournaments:
+        name_counts[t["name"]] = name_counts.get(t["name"], 0) + 1
+    name_seq = {}
+    for t in tournaments:
+        if name_counts[t["name"]] > 1:
+            name_seq[t["name"]] = name_seq.get(t["name"], 0) + 1
+            t["name"] = f'{t["name"]} {name_seq[t["name"]]}'
+
+    # Only return future tournaments (end date >= today)
+    today_str = today.strftime("%Y-%m-%d")
+    tournaments = [t for t in tournaments if (t.get("endDate") or t.get("startDate") or "") >= today_str]
+
+    return tournaments
 
 API_URL = "https://api.wtatennis.com/tennis/players/ranked"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"}
@@ -490,6 +631,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings):
 
 def get_tournament_sort_order(level):
     level_order = {
+        "GrandSlam": 0, "Grand Slam": 0, "grandSlam": 0,
         "WTA1000": 1, "WTA 1000": 1,
         "WTA500": 2, "WTA 500": 2,
         "WTA250": 3, "WTA 250": 3,
@@ -510,6 +652,140 @@ def generate_dynamic_monday_map(num_weeks=4):
         monday_map[monday_str] = week_label
     
     return monday_map
+
+COUNTRY_TO_CONTINENT = {
+    # Americas
+    "USA": "americas", "US": "americas", "CAN": "americas", "MEX": "americas", "BRA": "americas", "ARG": "americas",
+    "CHI": "americas", "COL": "americas", "PER": "americas", "ECU": "americas", "URU": "americas", "VEN": "americas",
+    "BOL": "americas", "PAR": "americas", "CRC": "americas", "DOM": "americas", "PUR": "americas", "GUA": "americas",
+    "HON": "americas", "ESA": "americas", "NCA": "americas", "PAN": "americas", "JAM": "americas", "TTO": "americas",
+    "HAI": "americas", "BAH": "americas", "BAR": "americas", "CUB": "americas", "GUY": "americas", "SUR": "americas",
+    "BER": "americas", "AHO": "americas", "ARU": "americas",
+    # Europe
+    "FRA": "europe", "GBR": "europe", "ESP": "europe", "ITA": "europe", "GER": "europe", "SUI": "europe",
+    "AUT": "europe", "BEL": "europe", "NED": "europe", "POR": "europe", "SWE": "europe", "NOR": "europe",
+    "DEN": "europe", "FIN": "europe", "POL": "europe", "CZE": "europe", "SVK": "europe", "HUN": "europe",
+    "ROU": "europe", "BUL": "europe", "CRO": "europe", "SRB": "europe", "SLO": "europe", "BIH": "europe",
+    "MNE": "europe", "MKD": "europe", "ALB": "europe", "GRE": "europe", "CYP": "europe", "TUR": "europe",
+    "GEO": "europe", "ARM": "europe", "UKR": "europe", "BLR": "europe", "MDA": "europe", "LAT": "europe",
+    "LTU": "europe", "EST": "europe", "IRL": "europe", "LUX": "europe", "MON": "europe", "AND": "europe",
+    "MLT": "europe", "ISR": "europe", "ISL": "europe", "RUS": "europe",
+    # Asia / Oceania
+    "CHN": "asia_oceania", "JPN": "asia_oceania", "KOR": "asia_oceania", "AUS": "asia_oceania", "NZL": "asia_oceania",
+    "IND": "asia_oceania", "THA": "asia_oceania", "MAS": "asia_oceania", "INA": "asia_oceania", "PHI": "asia_oceania",
+    "SGP": "asia_oceania", "VIE": "asia_oceania", "TPE": "asia_oceania", "HKG": "asia_oceania", "MAC": "asia_oceania",
+    "KAZ": "asia_oceania", "UZB": "asia_oceania", "QAT": "asia_oceania", "UAE": "asia_oceania", "KSA": "asia_oceania",
+    "BRN": "asia_oceania", "KUW": "asia_oceania", "OMA": "asia_oceania", "JOR": "asia_oceania", "LBN": "asia_oceania",
+    "IRQ": "asia_oceania", "IRI": "asia_oceania", "PAK": "asia_oceania", "SRI": "asia_oceania", "BAN": "asia_oceania",
+    "NEP": "asia_oceania", "MGL": "asia_oceania", "MYA": "asia_oceania", "CAM": "asia_oceania", "LAO": "asia_oceania",
+    "FIJ": "asia_oceania", "SAM": "asia_oceania", "PNG": "asia_oceania", "GUM": "asia_oceania",
+    # Africa
+    "RSA": "africa", "EGY": "africa", "MAR": "africa", "TUN": "africa", "ALG": "africa", "NGR": "africa",
+    "KEN": "africa", "GHA": "africa", "CIV": "africa", "SEN": "africa", "CMR": "africa", "UGA": "africa",
+    "ETH": "africa", "TAN": "africa", "ZIM": "africa", "ZAM": "africa", "MOZ": "africa", "MAD": "africa",
+    "BEN": "africa", "TOG": "africa", "GAB": "africa", "COD": "africa", "RWA": "africa", "BUR": "africa",
+    "MLI": "africa", "NIG": "africa", "BOT": "africa", "NAM": "africa", "MRI": "africa", "LBA": "africa",
+}
+
+CONTINENT_LABELS = {
+    "americas": "Americas",
+    "europe": "Europe",
+    "asia_oceania": "Asia/Oceania",
+    "africa": "Africa"
+}
+
+CONTINENT_KEYS = ["americas", "europe", "asia_oceania", "africa"]
+
+def get_continent(country_code):
+    """Map country code to continent key."""
+    return COUNTRY_TO_CONTINENT.get((country_code or "").upper(), "europe")
+
+def get_calendar_column(level):
+    """Map tournament level to one of the 4 calendar columns."""
+    lv = level.lower().replace(" ", "")
+    if lv in ("grandslam", "wta1000", "wta500", "wta250"):
+        return "wta_tour"
+    elif lv in ("wta125",):
+        return "wta_125"
+    elif lv in ("w100", "w75", "w60", "w50"):
+        return "itf_high"
+    else:
+        return "itf_low"
+
+def get_surface_class(surface):
+    """Map surface string to CSS class."""
+    s = (surface or "").lower()
+    if "clay" in s:
+        return "cal-clay"
+    elif "grass" in s:
+        return "cal-grass"
+    else:
+        return "cal-hard"
+
+def build_calendar_data(tournaments):
+    """Build week-based calendar data with 4 columns. A tournament appears in a week if it has >= 4 days in that week."""
+    next_monday = get_next_monday()
+
+    # Parse and deduplicate tournaments
+    parsed = []
+    seen = set()
+    for t in tournaments:
+        if t["name"] in seen:
+            continue
+        seen.add(t["name"])
+        start = pd.to_datetime(t.get("startDate"))
+        end_str = t.get("endDate")
+        end = pd.to_datetime(end_str) if end_str else start + timedelta(days=6)
+        continent = get_continent(t.get("country", ""))
+        parsed.append({"name": t["name"], "level": t["level"], "surface": t.get("surface", ""), "country": t.get("country", ""), "continent": continent, "start": start, "end": end})
+
+    # Add qualifying week for Grand Slams
+    grand_slams = [t for t in parsed if t["level"].lower().replace(" ", "") == "grandslam"]
+    for gs in grand_slams:
+        qual_end = gs["start"] - timedelta(days=1)
+        qual_start = qual_end - timedelta(days=6)
+        parsed.append({
+            "name": f'{gs["name"]} Qualifying',
+            "level": gs["level"],
+            "surface": gs.get("surface", ""),
+            "country": gs.get("country", ""),
+            "continent": gs.get("continent", "europe"),
+            "start": qual_start,
+            "end": qual_end
+        })
+
+    # Compute weeks from next Monday until end of year
+    end_of_year = datetime(next_monday.year, 12, 31)
+    total_weeks = ((end_of_year - next_monday).days // 7) + 1
+
+    column_keys = ["wta_tour", "wta_125", "itf_high", "itf_low"]
+    calendar_weeks = []
+    for week_offset in range(total_weeks):
+        monday = next_monday + timedelta(weeks=week_offset)
+        sunday = monday + timedelta(days=6)
+        week_label = format_week_label(monday)
+
+        columns = {k: [] for k in column_keys}
+        for t in parsed:
+            overlap_start = max(t["start"].date(), monday.date())
+            overlap_end = min(t["end"].date(), sunday.date())
+            if overlap_start <= overlap_end:
+                days_in_week = (overlap_end - overlap_start).days + 1
+                if days_in_week >= 4:
+                    col = get_calendar_column(t["level"])
+                    columns[col].append({"name": t["name"], "level": t["level"], "surface": t.get("surface", "")})
+
+        for col in column_keys:
+            columns[col].sort(key=lambda x: get_tournament_sort_order(x["level"]))
+
+        has_any = any(columns[k] for k in column_keys)
+        calendar_weeks.append({"week_label": week_label, "columns": columns, "has_any": has_any})
+
+    # Trim trailing empty weeks
+    while calendar_weeks and not calendar_weeks[-1]["has_any"]:
+        calendar_weeks.pop()
+
+    return calendar_weeks
 
 def get_sheety_matches():
     """Fetch match history from Sheety API"""
@@ -556,7 +832,9 @@ def main():
                 
                 TOURNAMENT_GROUPS[week_label][item['tournamentKey'].lower()] = {
                     "name": t_name,
-                    "level": level
+                    "level": level,
+                    "startDate": item['startDate'],
+                    "endDate": item.get('endDate', None)
                 }     
         
         # 2. Fetch Players & Rankings
@@ -747,6 +1025,9 @@ def main():
 
         cleaned_history.sort(key=parse_match_date, reverse=True)
 
+        # Fetch full-year ITF calendar (needs Selenium)
+        full_itf = get_full_itf_calendar(driver)
+
     finally:
         driver.quit()
 
@@ -810,6 +1091,28 @@ def main():
                 history_arg_players.add(format_player_name(display_name))
 
     history_players_sorted = sorted(list(history_arg_players))
+
+    # Build calendar data: full-year WTA + full-year ITF
+    full_wta = get_full_wta_calendar()
+    all_calendar_tournaments = full_wta + full_itf
+    calendar_data = build_calendar_data(all_calendar_tournaments)
+
+    col_keys = ["wta_tour", "wta_125", "itf_high", "itf_low"]
+    calendar_html = ""
+    for week in calendar_data:
+        has_t = " has-tournaments" if week["has_any"] else ""
+        calendar_html += f'<div class="calendar-week-row{has_t}">'
+        calendar_html += f'<div class="calendar-week-label">{week["week_label"]}</div>'
+        for ck in col_keys:
+            calendar_html += '<div class="calendar-col">'
+            if week["columns"][ck]:
+                for t in week["columns"][ck]:
+                    sc = get_surface_class(t.get("surface", ""))
+                    calendar_html += f'<div class="calendar-tournament {sc}">{t["name"]}</div>'
+            else:
+                calendar_html += '<div class="calendar-no-tournaments">\u2014</div>'
+            calendar_html += '</div>'
+        calendar_html += '</div>'
 
     html_template = f"""
     <!DOCTYPE html>
@@ -956,6 +1259,24 @@ def main():
             .table-header-section {{ margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }}
             .table-title {{ margin: 0; font-size: 22px; color: #1e293b; flex: 1; text-align: center; }}
             .player-select-container {{ width: 250px; }}
+
+            /* Calendar Styles */
+            .calendar-container {{ border: 1px solid black; }}
+            .calendar-header-bar {{ display: flex; background: #75AADB; color: white; font-weight: bold; font-size: 11px; text-transform: uppercase; }}
+            .calendar-header-label {{ width: 180px; flex-shrink: 0; padding: 10px 12px; border-right: 1px solid #5a95c8; text-align: center; }}
+            .calendar-col-header {{ flex: 1; padding: 10px 8px; border-right: 1px solid #5a95c8; text-align: center; }}
+            .calendar-col-header:last-child {{ border-right: none; }}
+            .calendar-week-row {{ display: flex; align-items: stretch; border-bottom: 1px solid #cbd5e1; }}
+            .calendar-week-row:last-child {{ border-bottom: none; }}
+            .calendar-week-row.has-tournaments {{ background: white; }}
+            .calendar-week-label {{ width: 180px; flex-shrink: 0; padding: 10px 12px; font-size: 12px; font-weight: bold; color: #1e293b; background: #f1f5f9; border-right: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; text-align: center; }}
+            .calendar-col {{ flex: 1; padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; justify-content: center; border-right: 1px solid #e2e8f0; min-height: 40px; }}
+            .calendar-col:last-child {{ border-right: none; }}
+            .calendar-no-tournaments {{ color: #cbd5e1; font-size: 12px; text-align: center; }}
+            .calendar-tournament {{ font-size: 11px; padding: 4px 10px; border-radius: 4px; line-height: 1.3; font-weight: 600; }}
+            .cal-clay {{ background: #ea580c; color: white; }}
+            .cal-hard {{ background: #2563eb; color: white; }}
+            .cal-grass {{ background: #16a34a; color: white; }}
 
             /* Mobile Menu Toggle */
             .mobile-menu-toggle {{ display: none; position: fixed; top: 15px; left: 15px; z-index: 1000; background: #1e293b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 18px; }}
@@ -1120,6 +1441,13 @@ def main():
                     padding-left: 0;
                     text-align: center;
                 }}
+
+                /* Calendar mobile */
+                .calendar-header-bar {{ display: none; }}
+                .calendar-week-row {{ flex-wrap: wrap; }}
+                .calendar-week-label {{ width: 100%; border-right: none; border-bottom: 1px solid #cbd5e1; padding: 8px; font-size: 11px; }}
+                .calendar-col {{ flex: 1 1 45%; min-width: 45%; border-bottom: 1px solid #e2e8f0; }}
+                .calendar-tournament {{ font-size: 9px; padding: 3px 6px; }}
             }}
 
             @media (max-width: 480px) {{
@@ -1159,6 +1487,8 @@ def main():
                 .filter-option {{
                     font-size: 11px;
                 }}
+
+                .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
             }}
         </style>
     </head>
@@ -1169,6 +1499,7 @@ def main():
                 <div class="sidebar-header">WT Argentina</div>
                 <div class="menu-item active" id="btn-upcoming" onclick="switchTab('upcoming')">Upcoming Tournaments</div>
                 <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
+                <div class="menu-item" id="btn-calendar" onclick="switchTab('calendar')">Calendar</div>
             </div>
             
             <div class="main-content">
@@ -1317,6 +1648,22 @@ def main():
                         </div>
                     </div>
                 </div>
+
+                <div id="view-calendar" class="single-layout" style="display: none;">
+                    <div class="header-row" style="margin-bottom: 20px;">
+                        <h1>Tournament Calendar</h1>
+                    </div>
+                    <div class="content-card calendar-container">
+                        <div class="calendar-header-bar">
+                            <div class="calendar-header-label">WEEK</div>
+                            <div class="calendar-col-header">WTA TOUR</div>
+                            <div class="calendar-col-header">WTA 125</div>
+                            <div class="calendar-col-header">ITF HIGH</div>
+                            <div class="calendar-col-header">ITF LOW</div>
+                        </div>
+                        {calendar_html}
+                    </div>
+                </div>
             </div>
         </div>
         <script>
@@ -1348,6 +1695,7 @@ def main():
 
                 document.getElementById('view-upcoming').style.display = (tabName === 'upcoming') ? 'flex' : 'none';
                 document.getElementById('view-history').style.display = (tabName === 'history') ? 'flex' : 'none';
+                document.getElementById('view-calendar').style.display = (tabName === 'calendar') ? 'flex' : 'none';
 
                 // Close mobile menu after selecting
                 if (window.innerWidth <= 768) {{
