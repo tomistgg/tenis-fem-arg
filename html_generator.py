@@ -449,7 +449,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     width: auto;
                     flex: 1 1 calc(33.333% - 1px);
                     min-width: 0;
-                    border-bottom: none;
+                    border-bottom: 1px solid #cbd5e1;
                     border-right: 1px solid #cbd5e1;
                     padding: 5px 6px;
                     font-size: 9px;
@@ -553,7 +553,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #view-upcoming th, #view-upcoming td {{ font-size: 6px; padding: 2px 2px; }}
                 #view-upcoming th {{ font-size: 5px; }}
                 #view-upcoming .col-week {{ font-size: 6px; }}
+                #view-upcoming .col-rank {{
+                    width: 24px;
+                    min-width: 24px;
+                    max-width: 24px;
+                    left: 0;
+                }}
+                #view-upcoming th.col-rank, #view-upcoming td.col-rank {{
+                    white-space: normal;
+                    overflow-wrap: anywhere;
+                    word-break: break-word;
+                    line-height: 1.05;
+                }}
                 #view-upcoming .col-name {{ min-width: 70px; max-width: 70px; }}
+                #view-upcoming .col-name {{ left: 24px; }}
                 #view-upcoming th.col-name, #view-upcoming td.col-name {{
                     white-space: normal;
                     overflow-wrap: normal;
@@ -566,6 +579,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #view-entrylists table {{ min-width: 0; table-layout: auto; }}
                 #view-entrylists th, #view-entrylists td {{ font-size: 7px; padding: 2px 3px; }}
                 #view-entrylists .entry-content .header-row {{ margin-bottom: 8px; }}
+                #view-entrylists #entry-title {{ font-size: 14px; }}
 
                 /* Rankings table: compact mode */
                 #view-rankings table {{ min-width: 0; table-layout: auto; }}
@@ -603,7 +617,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
 
                 .filter-panel {{
-                    width: 100%;
+                    width: min(100%, 420px);
                     max-width: 420px;
                     margin-left: auto;
                     margin-right: auto;
@@ -614,6 +628,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     flex-wrap: wrap;
                     gap: 4px;
                     align-items: flex-start;
+                    box-sizing: border-box;
                 }}
 
                 .filter-panel h3 {{
@@ -643,10 +658,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
 
                 .player-select-container {{
-                    width: 100%;
+                    width: min(100%, 420px);
                     max-width: 420px;
                     margin-left: auto;
                     margin-right: auto;
+                    box-sizing: border-box;
                 }}
 
                 .table-title {{ font-size: 14px; text-align: center; }}
@@ -663,8 +679,23 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
 
                 .filter-instructions {{
-                    padding-left: 0;
+                    padding-left: 8px;
                     font-size: 9px;
+                }}
+                .filter-btn-clear {{ margin-right: 8px; }}
+
+                /* Opponent search (Select2): shorter height and smaller text */
+                .opponent-select-container .select2-container--default .select2-selection--single {{
+                    height: 24px;
+                    min-height: 24px;
+                    padding: 0 6px;
+                }}
+                .opponent-select-container .select2-container--default .select2-selection--single .select2-selection__rendered {{
+                    line-height: 22px;
+                    font-size: 9px;
+                }}
+                .opponent-select-container .select2-container--default .select2-selection--single .select2-selection__arrow {{
+                    height: 22px;
                 }}
 
                 .content-card {{
@@ -681,66 +712,70 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     -webkit-overflow-scrolling: touch;
                 }}
                 #history-table {{
-                    width: max-content;
-                    min-width: 100%;
-                    table-layout: auto;
+                    width: 100%;
+                    min-width: 0;
+                    table-layout: fixed;
                 }}
                 #history-table th,
                 #history-table td {{
                     font-size: 5px;
                     padding: 2px 3px;
-                    white-space: nowrap;
+                    white-space: normal;
+                    overflow-wrap: anywhere;
                     line-height: 1.15;
                 }}
 
-                #history-table th:nth-child(1), #history-table td:nth-child(1) {{ min-width: 62px; }}
-                #history-table th:nth-child(2), #history-table td:nth-child(2) {{ min-width: 108px; }}
-                #history-table th:nth-child(3), #history-table td:nth-child(3) {{ min-width: 50px; }}
-                #history-table th:nth-child(4), #history-table td:nth-child(4) {{ min-width: 52px; }}
-                #history-table th:nth-child(5), #history-table td:nth-child(5) {{ min-width: 110px; }}
-                #history-table th:nth-child(6), #history-table td:nth-child(6) {{ min-width: 40px; }}
-                #history-table th:nth-child(7), #history-table td:nth-child(7) {{ min-width: 70px; }}
-                #history-table th:nth-child(8), #history-table td:nth-child(8) {{ min-width: 120px; white-space: normal; }}
+                #history-table th:nth-child(1), #history-table td:nth-child(1) {{ width: 10%; }}
+                #history-table th:nth-child(2), #history-table td:nth-child(2) {{ width: 18%; }}
+                #history-table th:nth-child(3), #history-table td:nth-child(3) {{ width: 9%; }}
+                #history-table th:nth-child(4), #history-table td:nth-child(4) {{ width: 9%; }}
+                #history-table th:nth-child(5), #history-table td:nth-child(5) {{ width: 19%; }}
+                #history-table th:nth-child(6), #history-table td:nth-child(6) {{ width: 8%; }}
+                #history-table th:nth-child(7), #history-table td:nth-child(7) {{ width: 11%; }}
+                #history-table th:nth-child(8), #history-table td:nth-child(8) {{ width: 16%; }}
 
                 /* National Team table */
                 #national-table {{
-                    width: max-content;
-                    min-width: 100%;
-                    table-layout: auto;
+                    width: 100%;
+                    min-width: 0;
+                    table-layout: fixed;
                 }}
                 #national-table th,
                 #national-table td {{
                     font-size: 5px;
                     padding: 2px 2px;
-                    white-space: nowrap;
+                    white-space: normal;
                     overflow-wrap: anywhere;
                     line-height: 1.15;
                 }}
-                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 2%; }}
-                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 7%; min-width: 0; }}
-                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 6%; }}
-                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 6%; }}
-                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 5%; }}
-                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 7%; }}
-                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 11%; min-width: 0; white-space: normal; }}
-                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 13%; min-width: 0; white-space: normal; }}
-                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 3%; }}
-                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 6%; }}
+                #national-table th {{ white-space: nowrap; }}
+                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 3%; }}
+                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 13%; min-width: 0; }}
+                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 10%; }}
+                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 10%; }}
+                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 8%; }}
+                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 10%; }}
+                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 12%; min-width: 0; white-space: normal; }}
+                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 22%; min-width: 0; white-space: normal; }}
+                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 5%; }}
+                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 7%; }}
+                #national-table th:nth-child(9), #national-table td:nth-child(9),
+                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ white-space: nowrap; }}
 
                 /* Calendar mobile */
                 .calendar-container .table-wrapper {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
-                .cal-week-header {{ font-size: 8px; padding: 4px 4px; }}
-                .cal-cat-header, .cal-cont-header {{ font-size: 8px; }}
+                .cal-week-header {{ font-size: 7px; padding: 3px 3px; min-width: 80px; }}
+                .cal-cat-header, .cal-cont-header {{ font-size: 7px; }}
                 .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
                 #view-calendar .content-card {{
                     border: none;
                     box-shadow: none;
                     background: transparent;
                 }}
-                .cal-cat-header {{ position: sticky !important; left: 0; z-index: 13; }}
-                .cal-cont-header {{ position: sticky !important; left: 28px; z-index: 13; }}
-                .cal-cat-label {{ position: sticky !important; left: 0; z-index: 13; }}
-                .cal-cont-label {{ position: sticky !important; left: 28px; z-index: 13; }}
+                .cal-cat-header {{ position: sticky !important; position: -webkit-sticky !important; left: 0; z-index: 14; background: #75AADB; }}
+                .cal-cont-header {{ position: sticky !important; position: -webkit-sticky !important; left: 28px; z-index: 14; background: #75AADB; }}
+                .cal-cat-label {{ position: sticky !important; position: -webkit-sticky !important; left: 0; z-index: 14; }}
+                .cal-cont-label {{ position: sticky !important; position: -webkit-sticky !important; left: 28px; z-index: 14; background: #f1f5f9; }}
                 .calendar-container .table-wrapper {{ position: relative; }}
             }}
 
