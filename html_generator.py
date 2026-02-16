@@ -108,7 +108,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         if dob and "T" in dob:
             dob = dob.split("T")[0]
         name = format_player_name(p.get("Player", ""))
-        rankings_rows += f'<tr><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{name}</td><td>{p.get("Country", "")}</td><td>{p.get("Points", "")}</td><td>{p.get("Played", "")}</td><td>{dob}</td></tr>'
+        row_class = "arg-player-row" if (p.get("Country") or "").upper() == "ARG" else ""
+        rankings_rows += f'<tr class="{row_class}"><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{name}</td><td>{p.get("Country", "")}</td><td>{p.get("Points", "")}</td><td>{p.get("Played", "")}</td><td>{dob}</td></tr>'
 
     national_rows = ""
     if national_team_data:
@@ -155,7 +156,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .menu-item:hover {{ background: #334155; color: white; }}
             .menu-item.active {{ background: #75AADB; color: white; font-weight: bold; }}
             .main-content {{ flex: 1; overflow-y: visible; background: #f8fafc; padding: 20px; display: flex; flex-direction: column; }}
-            .single-layout {{ width: 100%; display: flex; flex-direction: column; }}
+            .single-layout {{ width: 100%; min-width: 0; display: flex; flex-direction: column; }}
             #view-upcoming {{ max-width: 1200px; margin: 0 auto; }}
             #view-entrylists {{ width: 100%; max-width: 1100px; margin: 0 auto; }}
             #view-rankings {{ max-width: 700px; margin: 0 auto; }}
@@ -191,6 +192,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .entry-content {{ flex: 1; display: flex; flex-direction: column; min-width: 0; }}
             #view-rankings table {{ table-layout: auto; }}
             #view-rankings td {{ font-size: 12px; padding: 6px 10px; }}
+            #view-rankings.rankings-show-all tr.arg-player-row td {{ background-color: #e0f2fe !important; }}
             .sticky-col {{ position: sticky; background: white !important; z-index: 2; }}
             .row-arg {{ background-color: #e0f2fe !important; }}
             td.col-week {{ width: 170px; font-size: 11px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
@@ -292,9 +294,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .player-select-container {{ width: 250px; }}
 
             /* Calendar Styles */
-            #view-calendar {{ width: 100%; max-width: 100%; overflow-x: hidden; }}
-            .calendar-container {{ width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; margin-bottom: 0; }}
-            .calendar-table {{ border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; border: 1px solid black; }}
+            #view-calendar {{ width: 100%; max-width: 100%; min-width: 0; overflow: hidden; }}
+            .calendar-container {{ width: 100%; max-width: 100%; min-width: 0; margin-bottom: 0; overflow: hidden; }}
+            .calendar-container .table-wrapper {{ overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; }}
+            .calendar-table {{ border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; table-layout: auto; border: 1px solid black; }}
             .calendar-table th {{ padding: 4px 4px; vertical-align: top; border-bottom: 2px solid #1e293b; border-right: 1px solid #1e293b; }}
             .calendar-table td {{ padding: 4px 4px; vertical-align: top; border-bottom: 1px solid #94a3b8; border-right: 1px solid #94a3b8; }}
             .cal-week-header {{ background: #75AADB; color: white; font-size: 10px; font-weight: bold; text-align: center; white-space: nowrap; padding: 6px 6px; position: sticky; top: 0; z-index: 10; min-width: 90px; }}
@@ -305,7 +308,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .cal-cell {{ font-size: 10px; min-height: 24px; vertical-align: middle !important; }}
             .cal-group-first td {{ border-top: 1px solid #1e293b; }}
             .cal-group-last td {{ border-bottom: 1px solid #1e293b; }}
-            .calendar-tournament {{ display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 3px; line-height: 1.3; font-weight: 600; white-space: nowrap; margin: 1px 3px 1px 0; }}
+            .calendar-tournament {{ display: block; font-size: 10px; padding: 2px 6px; border-radius: 3px; line-height: 1.3; font-weight: 600; white-space: nowrap; margin: 1px 0; }}
             .cal-clay {{ background: #e8a882; color: #5c2e0e; }}
             .cal-hard {{ background: #88b4e8; color: #1a3a5c; }}
             .cal-grass {{ background: #7cc89a; color: #1a4a2e; }}
@@ -470,7 +473,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
 
                 /* Calendar mobile */
-                .calendar-container {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
+                .calendar-container .table-wrapper {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
                 .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
             }}
 
@@ -580,7 +583,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                 </div>
 
-                <div id="view-rankings" class="single-layout" style="display: none;">
+                <div id="view-rankings" class="single-layout rankings-show-all" style="display: none;">
                     <div class="header-row">
                         <h1>WTA Rankings</h1>
                         <div class="search-container">
@@ -733,7 +736,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 <div id="view-calendar" class="single-layout" style="display: none;">
                     <div class="content-card calendar-container">
-                        {calendar_html}
+                        <div class="table-wrapper">
+                            {calendar_html}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -892,7 +897,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function toggleRankingsScope() {{
                 showArgOnly = !showArgOnly;
                 const btn = document.getElementById('rankings-toggle-btn');
+                const view = document.getElementById('view-rankings');
                 if (btn) btn.textContent = showArgOnly ? 'Show ALL' : 'Show ARG';
+                if (view) view.classList.toggle('rankings-show-all', !showArgOnly);
                 filterRankings();
             }}
             function filterRankings() {{
