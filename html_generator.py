@@ -447,13 +447,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
                 .entry-menu-item {{
                     width: auto;
-                    flex: 1 1 33%;
+                    flex: 1 1 calc(33.333% - 1px);
+                    min-width: 0;
                     border-bottom: none;
                     border-right: 1px solid #cbd5e1;
                     padding: 5px 6px;
                     font-size: 9px;
                     line-height: 1.1;
                     text-align: center;
+                    box-sizing: border-box;
                 }}
 
                 /* Adjust header rows */
@@ -547,17 +549,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
 
                 /* Upcoming: smaller text to fit more weeks */
-                #view-upcoming table {{ min-width: 460px; }}
-                #view-upcoming th, #view-upcoming td {{ font-size: 7px; padding: 2px 3px; }}
-                #view-upcoming .col-week {{ font-size: 8px; }}
-                #view-upcoming .col-name {{ min-width: 78px; max-width: 78px; }}
+                #view-upcoming table {{ min-width: 420px; }}
+                #view-upcoming th, #view-upcoming td {{ font-size: 6px; padding: 2px 2px; }}
+                #view-upcoming th {{ font-size: 5px; }}
+                #view-upcoming .col-week {{ font-size: 6px; }}
+                #view-upcoming .col-name {{ min-width: 70px; max-width: 70px; }}
                 #view-upcoming th.col-name, #view-upcoming td.col-name {{
                     white-space: normal;
                     overflow-wrap: normal;
                     word-break: keep-all;
                     text-overflow: clip;
                 }}
-                #view-upcoming .col-week, #view-upcoming td.col-week {{ width: 82px; min-width: 82px; max-width: 82px; }}
+                #view-upcoming .col-week, #view-upcoming td.col-week {{ width: 64px; min-width: 64px; max-width: 64px; }}
 
                 /* Entry Lists: compact mode */
                 #view-entrylists table {{ min-width: 0; table-layout: auto; }}
@@ -601,6 +604,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 .filter-panel {{
                     width: 100%;
+                    max-width: 420px;
+                    margin-left: auto;
+                    margin-right: auto;
                     padding: 4px;
                     margin-bottom: 0;
                     border: 2px solid black;
@@ -638,6 +644,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 .player-select-container {{
                     width: 100%;
+                    max-width: 420px;
+                    margin-left: auto;
+                    margin-right: auto;
                 }}
 
                 .table-title {{ font-size: 14px; text-align: center; }}
@@ -708,26 +717,28 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     line-height: 1.15;
                 }}
                 #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 2%; }}
-                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 8%; min-width: 0; }}
-                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 7%; }}
-                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 7%; }}
-                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 6%; }}
-                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 8%; }}
-                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 13%; min-width: 0; white-space: normal; }}
-                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 15%; min-width: 0; white-space: normal; }}
+                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 7%; min-width: 0; }}
+                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 6%; }}
+                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 6%; }}
+                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 5%; }}
+                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 7%; }}
+                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 11%; min-width: 0; white-space: normal; }}
+                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 13%; min-width: 0; white-space: normal; }}
                 #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 3%; }}
-                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 7%; }}
+                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 6%; }}
 
                 /* Calendar mobile */
                 .calendar-container .table-wrapper {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
+                .cal-week-header {{ font-size: 8px; padding: 4px 4px; }}
+                .cal-cat-header, .cal-cont-header {{ font-size: 8px; }}
                 .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
                 #view-calendar .content-card {{
                     border: none;
                     box-shadow: none;
                     background: transparent;
                 }}
-                .cal-cat-header {{ left: 0; z-index: 13; }}
-                .cal-cont-header {{ left: 28px; z-index: 13; }}
+                .cal-cat-header {{ position: sticky !important; left: 0; z-index: 13; }}
+                .cal-cont-header {{ position: sticky !important; left: 28px; z-index: 13; }}
                 .cal-cat-label {{ position: sticky !important; left: 0; z-index: 13; }}
                 .cal-cont-label {{ position: sticky !important; left: 28px; z-index: 13; }}
                 .calendar-container .table-wrapper {{ position: relative; }}
