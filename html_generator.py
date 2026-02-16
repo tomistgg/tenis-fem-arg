@@ -147,7 +147,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
         <style>
             @font-face {{ font-family: 'Montserrat'; src: url('Montserrat-SemiBold.ttf'); }}
-            body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; min-height: 100vh; overflow-y: auto; }}
+            body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }}
             .app-container {{ display: flex; width: 100%; min-height: 100vh; }}
             .sidebar {{ width: 180px; background: #1e293b; color: white; display: flex; flex-direction: column; flex-shrink: 0; min-height: 100vh; }}
             .sidebar-header {{ padding: 25px 15px; font-size: 15px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #475569; }}
@@ -166,6 +166,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .rankings-filter-container {{ position: absolute; right: 0; top: 50%; transform: translateY(-50%); }}
             .rankings-toggle-btn {{ padding: 8px 12px; border-radius: 8px; border: 2px solid #94a3b8; background: white; font-family: inherit; font-size: 12px; font-weight: bold; color: #1e293b; cursor: pointer; }}
             .rankings-toggle-btn:hover {{ background: #f1f5f9; }}
+            #rankings-search {{ width: 190px; }}
             input, select {{ padding: 8px 12px; border-radius: 8px; border: 2px solid #94a3b8; font-family: inherit; font-size: 13px; width: 250px; box-sizing: border-box; }}
             select {{ background: white; font-weight: bold; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }}
             .content-card {{ background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.05); width: 100%; border: 1px solid black; }}
@@ -291,8 +292,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .player-select-container {{ width: 250px; }}
 
             /* Calendar Styles */
-            .calendar-container {{ overflow-x: auto; }}
-            .calendar-table {{ border-collapse: separate; border-spacing: 0; width: auto; min-width: 100%; border: 1px solid black; }}
+            #view-calendar {{ width: 100%; max-width: 100%; overflow-x: hidden; }}
+            .calendar-container {{ width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; margin-bottom: 0; }}
+            .calendar-table {{ border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; border: 1px solid black; }}
             .calendar-table th {{ padding: 4px 4px; vertical-align: top; border-bottom: 2px solid #1e293b; border-right: 1px solid #1e293b; }}
             .calendar-table td {{ padding: 4px 4px; vertical-align: top; border-bottom: 1px solid #94a3b8; border-right: 1px solid #94a3b8; }}
             .cal-week-header {{ background: #75AADB; color: white; font-size: 10px; font-weight: bold; text-align: center; white-space: nowrap; padding: 6px 6px; position: sticky; top: 0; z-index: 10; min-width: 90px; }}

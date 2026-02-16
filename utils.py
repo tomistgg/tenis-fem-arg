@@ -77,7 +77,13 @@ def get_cached_rankings(date_str, cache_file, fetch_func, nationality=None):
     if new_data:
         cache[date_str] = new_data
         save_cache(cache_file, cache)
-    return new_data
+        return new_data
+
+    # Fallback: if current fetch fails/returns empty, use the latest cached snapshot.
+    if cache:
+        latest_key = sorted(cache.keys())[-1]
+        return cache.get(latest_key, [])
+    return []
 
 
 def fix_display_name(name):
