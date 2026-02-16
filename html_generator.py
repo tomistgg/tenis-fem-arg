@@ -5,7 +5,8 @@ from utils import format_player_name, get_tournament_sort_order, get_surface_cla
 
 
 def generate_html(tournament_groups, tournament_store, players_data, schedule_map,
-                  cleaned_history, calendar_data, match_history_data, wta_rankings=None):
+                  cleaned_history, calendar_data, match_history_data, wta_rankings=None,
+                  national_team_data=None):
     """Generate the complete HTML page and write it to index.html."""
 
     # Build tournament side menu HTML for Entry Lists
@@ -26,8 +27,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             if t_key in tournament_store and tournament_store[t_key]:
                 t_name = t_info["name"]
                 active = " active" if first_key is None else ""
-                if first_key is None:
-                    first_key = t_key
+                if first_key is None: first_key = t_key
                 entry_menu_html += f'<div class="entry-menu-item{active}" data-key="{t_key}" onclick="selectEntryTournament(this)">{t_name}</div>'
 
     # Build table rows
@@ -110,6 +110,31 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         name = format_player_name(p.get("Player", ""))
         rankings_rows += f'<tr><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{name}</td><td>{p.get("Country", "")}</td><td>{p.get("Points", "")}</td><td>{p.get("Played", "")}</td><td>{dob}</td></tr>'
 
+    national_rows = ""
+    if national_team_data:
+        for row in national_team_data:
+            res = row.get('Result', '')
+            res_style = ""
+            if res.upper() == 'W':
+                res_style = 'color: #166534; font-weight: bold;'
+            elif res.upper() == 'L':
+                res_style = 'color: #991b1b; font-weight: bold;'
+            
+            p_name = format_player_name(row.get('Player', ''))
+            
+            national_rows += '<tr>'
+            national_rows += f'<td>{row.get("N", "")}</td>'
+            national_rows += f'<td style="text-align:left;font-weight:bold;">{p_name}</td>'
+            national_rows += f'<td>{row.get("Date", "")}</td>'
+            national_rows += f'<td>{row.get("Event", "")}</td>'
+            national_rows += f'<td>{row.get("Round", "")}</td>'
+            national_rows += f'<td>{row.get("Tie", "")}</td>'
+            national_rows += f'<td>{row.get("Match", "")}</td>'
+            national_rows += f'<td style="text-align:left;">{row.get("Opponent", "")}</td>'
+            national_rows += f'<td style="{res_style}">{res}</td>'
+            national_rows += f'<td>{row.get("Score", "")}</td>'
+            national_rows += '</tr>'
+
     # Generate the full HTML template
     html_template = f"""
     <!DOCTYPE html>
@@ -130,12 +155,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .menu-item:hover {{ background: #334155; color: white; }}
             .menu-item.active {{ background: #75AADB; color: white; font-weight: bold; }}
             .main-content {{ flex: 1; overflow-y: visible; background: #f8fafc; padding: 20px; display: flex; flex-direction: column; }}
-
-            /* Layout Views */
             .single-layout {{ width: 100%; display: flex; flex-direction: column; }}
             #view-upcoming {{ max-width: 900px; margin: 0 auto; }}
             #view-entrylists {{ width: 100%; }}
             #view-rankings {{ max-width: 700px; margin: 0 auto; }}
+            #view-national {{ max-width: 950px; margin: 0 auto; }}
             .header-row {{ width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; gap: 10px; }}
             h1 {{ margin: 0; font-size: 22px; color: #1e293b; }}
             .search-container {{ position: absolute; left: 0; top: 50%; transform: translateY(-50%); }}
@@ -311,7 +335,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     width: 100%;
                 }}
 
-                #view-upcoming, #view-rankings {{ max-width: 100%; }}
+                #view-upcoming, #view-rankings, #view-national {{ max-width: 100%; }}
 
                 .entry-layout {{ flex-direction: column; gap: 15px; }}
                 .entry-menu {{ width: 100%; }}
@@ -477,7 +501,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         </style>
     </head>
     <body onload="renderHistoryTable();">
-        <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">\u2630</button>
+        <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">\\u2630</button>
         <div class="app-container">
             <div class="sidebar" id="sidebar">
                 <div class="sidebar-header">WT Argentina</div>
@@ -485,6 +509,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div class="menu-item" id="btn-entrylists" onclick="switchTab('entrylists')">Entry Lists</div>
                 <div class="menu-item" id="btn-rankings" onclick="switchTab('rankings')">WTA Rankings</div>
                 <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
+                <div class="menu-item" id="btn-national" onclick="switchTab('national')">National Team Order</div>
                 <div class="menu-item" id="btn-calendar" onclick="switchTab('calendar')">Calendar</div>
             </div>
 
@@ -662,6 +687,31 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                 </div>
 
+                <div id="view-national" class="single-layout" style="display: none;">
+                    <div class="header-row">
+                        <h1>Argentina NT - Player Debuts</h1>
+                    </div>
+                    <div class="content-card">
+                        <div class="table-wrapper">
+                            <table id="national-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:30px">#</th>
+                                        <th style="width:140px">PLAYER</th>
+                                        <th style="width:90px">DATE</th>
+                                        <th style="width:100px">TIE</th>
+                                        <th style="width:120px">MATCH</th>
+                                        <th>OPPONENT</th>
+                                        <th style="width:40px">RESULT</th>
+                                        <th style="width:100px">SCORE</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="national-body">{national_rows}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="view-calendar" class="single-layout" style="display: none;">
                     <div class="content-card calendar-container">
                         {calendar_html}
@@ -700,6 +750,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('view-entrylists').style.display = (tabName === 'entrylists') ? 'flex' : 'none';
                 document.getElementById('view-rankings').style.display = (tabName === 'rankings') ? 'flex' : 'none';
                 document.getElementById('view-history').style.display = (tabName === 'history') ? 'flex' : 'none';
+                document.getElementById('view-national').style.display = (tabName === 'national') ? 'flex' : 'none';
                 document.getElementById('view-calendar').style.display = (tabName === 'calendar') ? 'flex' : 'none';
 
                 if (tabName === 'entrylists') updateEntryList();
@@ -821,6 +872,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function filterRankings() {{
                 const q = document.getElementById('rankings-search').value.toLowerCase();
                 document.querySelectorAll('#rankings-body tr').forEach(row => {{
+                    const text = row.textContent.toLowerCase();
+                    row.classList.toggle('hidden', !text.includes(q));
+                }});
+            }}
+            function filterNational() {{
+                const q = document.getElementById('national-search').value.toLowerCase();
+                document.querySelectorAll('#national-body tr').forEach(row => {{
                     const text = row.textContent.toLowerCase();
                     row.classList.toggle('hidden', !text.includes(q));
                 }});

@@ -1,4 +1,5 @@
 import pandas as pd
+import csv
 from datetime import datetime, timedelta
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -236,6 +237,15 @@ def main():
     full_wta = get_full_wta_calendar()
     all_calendar_tournaments = full_wta + full_itf
     calendar_data = build_calendar_data(all_calendar_tournaments)
+
+    national_team_data = []
+    try:
+        with open('national_team_order.csv', 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f, delimiter=';')
+            for row in reader:
+                national_team_data.append(row)
+    except Exception as e:
+        print(f"Error reading national team data: {e}")
 
     # 7. Generate HTML
     generate_html(
