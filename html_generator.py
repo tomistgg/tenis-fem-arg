@@ -158,6 +158,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     <html lang="es">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>WT Argentina</title>
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -381,24 +382,40 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             @media (max-width: 768px) {{
                 /* Mobile styles */
                 body {{ overflow-x: auto; }}
-                .mobile-menu-toggle {{ display: block; }}
+                .mobile-menu-toggle {{ display: none; }}
 
                 .app-container {{ flex-direction: column; }}
 
                 .sidebar {{
-                    position: fixed;
-                    left: 0;
+                    position: sticky;
                     top: 0;
-                    height: 100vh;
+                    width: 100%;
+                    height: auto;
+                    min-height: 0;
                     z-index: 999;
-                    transition: transform 0.3s ease;
-                    box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                    flex-direction: row;
+                    overflow-x: auto;
+                    overflow-y: hidden;
+                    white-space: nowrap;
                 }}
+                .sidebar.mobile-hidden {{ transform: none; }}
+                .sidebar-header {{ display: none; }}
 
                 .main-content {{
-                    padding: 60px 10px 10px 10px;
+                    padding: 10px;
                     width: 100%;
                 }}
+
+                .menu-item {{
+                    flex: 0 0 auto;
+                    border-bottom: none;
+                    border-right: 1px solid #334155;
+                    white-space: nowrap;
+                    padding: 12px 14px;
+                    font-size: 12px;
+                }}
+                .menu-item:last-child {{ border-right: none; }}
 
                 #view-upcoming, #view-rankings, #view-national {{ max-width: 100%; }}
 
