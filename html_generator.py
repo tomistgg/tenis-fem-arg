@@ -495,18 +495,53 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 /* History table */
                 #history-table {{
-                    min-width: 600px;
+                    width: 100%;
+                    min-width: 0;
+                    table-layout: fixed;
+                }}
+                #history-table th,
+                #history-table td {{
+                    font-size: 8px;
+                    padding: 3px 3px;
+                    white-space: normal;
+                    overflow-wrap: anywhere;
+                    line-height: 1.15;
                 }}
 
-                #history-table th:nth-child(1) {{ width: 70px; }}
-                #history-table th:nth-child(2) {{ width: auto; min-width: 120px; }}
+                #history-table th:nth-child(1) {{ width: 8%; }}
+                #history-table th:nth-child(2) {{ width: 16%; min-width: 0; }}
                 #history-table th:nth-child(3),
                 #history-table td:nth-child(3) {{ display: none; }}
-                #history-table th:nth-child(4) {{ width: 80px; }}
-                #history-table th:nth-child(5) {{ width: auto; min-width: 120px; }}
-                #history-table th:nth-child(6) {{ width: 40px; }}
-                #history-table th:nth-child(7) {{ width: 100px; }}
-                #history-table th:nth-child(8) {{ width: auto; min-width: 150px; }}
+                #history-table th:nth-child(4) {{ width: 12%; }}
+                #history-table th:nth-child(5) {{ width: 16%; min-width: 0; }}
+                #history-table th:nth-child(6) {{ width: 8%; }}
+                #history-table th:nth-child(7) {{ width: 14%; }}
+                #history-table th:nth-child(8) {{ width: 18%; min-width: 0; }}
+
+                /* National Team table */
+                #national-table {{
+                    width: 100%;
+                    min-width: 0;
+                    table-layout: fixed;
+                }}
+                #national-table th,
+                #national-table td {{
+                    font-size: 8px;
+                    padding: 3px 3px;
+                    white-space: normal;
+                    overflow-wrap: anywhere;
+                    line-height: 1.15;
+                }}
+                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 4%; }}
+                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 13%; min-width: 0; }}
+                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 9%; }}
+                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 11%; }}
+                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 10%; }}
+                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 11%; }}
+                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 15%; min-width: 0; white-space: normal; }}
+                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 17%; min-width: 0; white-space: normal; }}
+                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 5%; }}
+                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 10%; }}
 
                 .filter-actions {{
                     flex-direction: column;
@@ -559,6 +594,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 .filter-option {{
                     font-size: 11px;
+                }}
+
+                #history-table th, #history-table td,
+                #national-table th, #national-table td {{
+                    font-size: 7px;
+                    padding: 2px 2px;
                 }}
 
                 .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
