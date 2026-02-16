@@ -156,7 +156,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .menu-item.active {{ background: #75AADB; color: white; font-weight: bold; }}
             .main-content {{ flex: 1; overflow-y: visible; background: #f8fafc; padding: 20px; display: flex; flex-direction: column; }}
             .single-layout {{ width: 100%; display: flex; flex-direction: column; }}
-            #view-upcoming {{ max-width: 900px; margin: 0 auto; }}
+            #view-upcoming {{ max-width: 1200px; margin: 0 auto; }}
             #view-entrylists {{ width: 100%; }}
             #view-rankings {{ max-width: 700px; margin: 0 auto; }}
             #view-national {{ max-width: 950px; margin: 0 auto; }}
@@ -168,6 +168,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .content-card {{ background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.05); width: 100%; border: 1px solid black; }}
             .table-wrapper {{ overflow-x: auto; width: 100%; }}
             table {{ border-collapse: separate; border-spacing: 0; width: 100%; table-layout: fixed; border: 1px solid black; }}
+            #view-upcoming table {{ width: max-content; min-width: 100%; }}
             th {{ position: sticky; top: 0; background: #75AADB !important; color: white; padding: 10px 15px; font-size: 11px; font-weight: bold; border-bottom: 2px solid #1e293b; border-right: 1px solid #1e293b; z-index: 10; text-transform: uppercase; text-align: center; }}
             td {{ padding: 8px 12px; border-bottom: 1px solid #94a3b8; text-align: center; font-size: 13px; border-right: 1px solid #94a3b8; }}
             #view-entrylists td {{ font-size: 12px; padding: 6px 10px; }}
@@ -186,11 +187,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #view-rankings td {{ font-size: 12px; padding: 6px 10px; }}
             .sticky-col {{ position: sticky; background: white !important; z-index: 2; }}
             .row-arg {{ background-color: #e0f2fe !important; }}
-            td.col-week {{ width: 150px; font-size: 11px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
+            td.col-week {{ width: 170px; font-size: 11px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
             th.sticky-col {{ z-index: 11; background: #75AADB !important; color: white; }}
             .col-rank {{ left: 0; width: 32px; min-width: 45px; max-width: 45px; }}
-            .col-name {{ left: 45px; width: 140px; min-width: 140px; max-width: 140px; text-align: left; font-weight: bold; }}
-            .col-week {{ width: 130px; font-size: 11px; font-weight: bold; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
+            .col-name {{ left: 45px; width: 160px; min-width: 160px; max-width: 160px; text-align: left; font-weight: bold; }}
+            .col-week {{ width: 150px; font-size: 11px; font-weight: bold; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
             .divider-row td {{ background: #e2e8f0; font-weight: bold; text-align: center; padding: 5px 15px; font-size: 11px; border-right: none; }}
             tr.hidden {{ display: none; }}
             table:not(.calendar-table) tr:hover td {{ background: #f1f5f9; }}
@@ -386,8 +387,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
 
                 .col-name {{
-                    min-width: 120px;
-                    max-width: 120px;
+                    min-width: 140px;
+                    max-width: 140px;
                 }}
 
                 .col-week {{
@@ -480,8 +481,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
 
                 .col-name {{
-                    min-width: 100px;
-                    max-width: 100px;
+                    min-width: 120px;
+                    max-width: 120px;
                 }}
 
                 .filter-panel h3 {{
