@@ -5,28 +5,30 @@ from utils import format_player_name, get_tournament_sort_order, get_surface_cla
 
 
 def generate_html(tournament_groups, tournament_store, players_data, schedule_map,
-                  cleaned_history, calendar_data, match_history_data):
+                  cleaned_history, calendar_data, match_history_data, wta_rankings=None):
     """Generate the complete HTML page and write it to index.html."""
 
-    # Build dropdown HTML
-    dropdown_html = ""
+    # Build tournament side menu HTML for Entry Lists
+    entry_menu_html = ""
+    first_key = None
     for week, tourneys in tournament_groups.items():
         week_has_data = False
         for t_key in tourneys.keys():
             if t_key in tournament_store and tournament_store[t_key]:
                 week_has_data = True
                 break
-
         if not week_has_data: continue
 
-        dropdown_html += f'<option disabled class="dropdown-header">{week.upper()}</option>'
+        entry_menu_html += f'<div class="entry-menu-week">{week.upper()}</div>'
         sorted_tourneys = sorted(tourneys.items(), key=lambda x: get_tournament_sort_order(x[1]["level"]))
 
         for t_key, t_info in sorted_tourneys:
             if t_key in tournament_store and tournament_store[t_key]:
                 t_name = t_info["name"]
-                dropdown_html += f'<option value="{t_key}" class="dropdown-item">{t_name}</option>'
-        dropdown_html += '</optgroup>'
+                active = " active" if first_key is None else ""
+                if first_key is None:
+                    first_key = t_key
+                entry_menu_html += f'<div class="entry-menu-item{active}" data-key="{t_key}" onclick="selectEntryTournament(this)">{t_name}</div>'
 
     # Build table rows
     table_rows = ""
@@ -99,6 +101,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     calendar_html += '</tbody></table>'
 
+    # Build rankings table rows
+    rankings_rows = ""
+    for p in (wta_rankings or []):
+        dob = p.get("DOB", "")
+        if dob and "T" in dob:
+            dob = dob.split("T")[0]
+        name = format_player_name(p.get("Player", ""))
+        rankings_rows += f'<tr><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{name}</td><td>{p.get("Country", "")}</td><td>{p.get("Points", "")}</td><td>{p.get("Played", "")}</td><td>{dob}</td></tr>'
+
     # Generate the full HTML template
     html_template = f"""
     <!DOCTYPE html>
@@ -121,13 +132,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .main-content {{ flex: 1; overflow-y: visible; background: #f8fafc; padding: 20px; display: flex; flex-direction: column; }}
 
             /* Layout Views */
-            .dual-layout {{ display: flex; min-height: 80vh; gap: 40px; position: relative; width: 100%; }}
             .single-layout {{ width: 100%; display: flex; flex-direction: column; }}
-
-            .column-main {{ flex: 0 0 70%; display: flex; flex-direction: column; align-items: flex-start; position: relative; min-width: 0; }}
-            .column-main table {{ table-layout: fixed; width: 100%; }}
-            .column-entry {{ flex: 1; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }}
-            .column-main::after {{ content: ""; position: absolute; right: -20px; top: 50px; bottom: 20px; width: 1px; background: #94a3b8; }}
+            #view-upcoming {{ max-width: 900px; margin: 0 auto; }}
+            #view-entrylists {{ width: 100%; }}
+            #view-rankings {{ max-width: 700px; margin: 0 auto; }}
             .header-row {{ width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; gap: 10px; }}
             h1 {{ margin: 0; font-size: 22px; color: #1e293b; }}
             .search-container {{ position: absolute; left: 0; top: 50%; transform: translateY(-50%); }}
@@ -138,7 +146,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             table {{ border-collapse: separate; border-spacing: 0; width: 100%; table-layout: fixed; border: 1px solid black; }}
             th {{ position: sticky; top: 0; background: #75AADB !important; color: white; padding: 10px 15px; font-size: 11px; font-weight: bold; border-bottom: 2px solid #1e293b; border-right: 1px solid #1e293b; z-index: 10; text-transform: uppercase; text-align: center; }}
             td {{ padding: 8px 12px; border-bottom: 1px solid #94a3b8; text-align: center; font-size: 13px; border-right: 1px solid #94a3b8; }}
-            .column-entry td {{ font-size: 12px; padding: 6px 10px; }}
+            #view-entrylists td {{ font-size: 12px; padding: 6px 10px; }}
+            #view-entrylists table {{ table-layout: auto; }}
+
+            /* Entry Lists layout */
+            .entry-layout {{ display: flex; gap: 25px; width: 100%; }}
+            .entry-menu {{ width: 220px; flex-shrink: 0; background: white; border: 1px solid black; align-self: flex-start; }}
+            .entry-menu-header {{ background: #75AADB; color: white; font-size: 14px; font-weight: bold; text-align: center; padding: 12px; }}
+            .entry-menu-week {{ background: #e2e8f0; font-size: 11px; font-weight: bold; text-align: center; padding: 8px; color: #475569; border-bottom: 1px solid #cbd5e1; }}
+            .entry-menu-item {{ padding: 10px 15px; font-size: 12px; cursor: pointer; border-bottom: 1px solid #e2e8f0; color: #334155; transition: background 0.15s; }}
+            .entry-menu-item:hover {{ background: #f1f5f9; }}
+            .entry-menu-item.active {{ background: #dbeafe; color: #1e40af; font-weight: bold; }}
+            .entry-content {{ flex: 1; display: flex; flex-direction: column; min-width: 0; }}
+            #view-rankings table {{ table-layout: auto; }}
+            #view-rankings td {{ font-size: 12px; padding: 6px 10px; }}
             .sticky-col {{ position: sticky; background: white !important; z-index: 2; }}
             .row-arg {{ background-color: #e0f2fe !important; }}
             td.col-week {{ width: 150px; font-size: 11px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
@@ -152,12 +173,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             table:not(.calendar-table) tr:hover td.sticky-col {{ background: #f1f5f9 !important; }}
             .dropdown-header {{ background-color: #e2e8f0 !important; font-weight: bold !important; text-align: center !important; padding: 12px 0 !important; font-size: 11px; display: block; }}
             .dropdown-item {{ padding: 8px 15px; text-align: left; background-color: #ffffff; }}
-
-            #tSelect {{ appearance: none; padding: 10px 30px 10px 12px; line-height: 1.5; background-color: white; }}
-            #tSelect optgroup {{ background-color: #babdc2; color: #ffffff; text-align: center; font-style: normal; font-weight: 800; padding: 10px 0; }}
-            #tSelect option {{ background-color: #ffffff; color: #1e293b; text-align: left; padding: 8px 12px; cursor: pointer; }}
-            #tSelect option {{ margin-left: -15px; }}
-            #tSelect option:hover, #tSelect option:focus, #tSelect option:checked {{ background-color: #75AADB !important; color: white !important; }}
 
             .select2-container--default .select2-selection--single {{
                 border: 2px solid #94a3b8;
@@ -201,8 +216,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 width: 250px !important;
             }}
 
-            .column-entry thead th {{ position: sticky; top: 0; background: #75AADB !important; color: white; z-index: 10; border-bottom: 2px solid #1e293b; }}
-            .column-entry .content-card {{ overflow-y: visible; max-height: none; border: 1px solid black; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.05); width: 100%; }}
+            #view-entrylists .content-card {{ overflow-y: visible; max-height: none; }}
 
             #history-table th {{ background: #75AADB !important; position: sticky; top: 0; z-index: 10; }}
             #history-table {{ table-layout: fixed; width: 100%; }}
@@ -271,9 +285,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             /* Responsive Styles */
             @media (max-width: 1024px) {{
                 /* Tablet adjustments */
-                .dual-layout {{ gap: 20px; }}
-                .column-main {{ flex: 0 0 60%; }}
-                .column-entry {{ flex: 1; }}
                 input, select {{ width: 200px; }}
                 .select2-container {{ width: 200px !important; }}
             }}
@@ -300,23 +311,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     width: 100%;
                 }}
 
-                /* Stack dual layout vertically */
-                .dual-layout {{
-                    flex-direction: column;
-                    gap: 20px;
-                }}
+                #view-upcoming, #view-rankings {{ max-width: 100%; }}
 
-                .column-main {{
-                    flex: 1;
-                    width: 100%;
-                }}
-
-                .column-main::after {{ display: none; }}
-
-                .column-entry {{
-                    flex: 1;
-                    width: 100%;
-                }}
+                .entry-layout {{ flex-direction: column; gap: 15px; }}
+                .entry-menu {{ width: 100%; }}
 
                 /* Adjust header rows */
                 .header-row {{
@@ -478,61 +476,90 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
         </style>
     </head>
-    <body onload="updateEntryList(); renderHistoryTable();">
+    <body onload="renderHistoryTable();">
         <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">\u2630</button>
         <div class="app-container">
             <div class="sidebar" id="sidebar">
                 <div class="sidebar-header">WT Argentina</div>
                 <div class="menu-item active" id="btn-upcoming" onclick="switchTab('upcoming')">Upcoming Tournaments</div>
+                <div class="menu-item" id="btn-entrylists" onclick="switchTab('entrylists')">Entry Lists</div>
+                <div class="menu-item" id="btn-rankings" onclick="switchTab('rankings')">WTA Rankings</div>
                 <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
                 <div class="menu-item" id="btn-calendar" onclick="switchTab('calendar')">Calendar</div>
             </div>
 
             <div class="main-content">
-                <div id="view-upcoming" class="dual-layout">
-                    <div class="column-main">
-                        <div class="header-row">
-                            <div class="search-container">
-                                <input type="text" id="s" placeholder="Search player..." oninput="filter()">
-                            </div>
-                            <h1>Upcoming Tournaments</h1>
+                <div id="view-upcoming" class="single-layout">
+                    <div class="header-row">
+                        <div class="search-container">
+                            <input type="text" id="s" placeholder="Search player..." oninput="filter()">
                         </div>
-                        <div class="content-card">
-                            <div class="table-wrapper">
+                        <h1>Upcoming Tournaments</h1>
+                    </div>
+                    <div class="content-card">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="sticky-col col-rank">Rank</th>
+                                        <th class="sticky-col col-name">Player</th>
+                                        {"".join([f'<th class="col-week">{w}</th>' for w in week_keys])}
+                                    </tr>
+                                </thead>
+                                <tbody id="tb">{table_rows}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-entrylists" style="display: none;">
+                    <div class="entry-layout">
+                        <div class="entry-menu">
+                            <div class="entry-menu-header">Tournaments</div>
+                            {entry_menu_html}
+                        </div>
+                        <div class="entry-content">
+                            <div class="header-row">
+                                <h1 id="entry-title">Entry List</h1>
+                            </div>
+                            <div class="content-card">
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th class="sticky-col col-rank">Rank</th>
-                                            <th class="sticky-col col-name">Player</th>
-                                            {"".join([f'<th class="col-week">{w}</th>' for w in week_keys])}
+                                            <th style="width:15px">#</th>
+                                            <th>PLAYER</th>
+                                            <th style="width:35px">NAT</th>
+                                            <th style="width:70px">E-Rank</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="tb">{table_rows}</tbody>
+                                    <tbody id="entry-body"></tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="column-entry">
-                        <div class="header-row">
-                            <h1>Entry List</h1>
-                            <div class="search-container-static">
-                                <select id="tSelect" onchange="updateEntryList()">
-                                    {dropdown_html}
-                                </select>
-                            </div>
+                <div id="view-rankings" class="single-layout" style="display: none;">
+                    <div class="header-row">
+                        <h1>WTA Rankings</h1>
+                        <div class="search-container">
+                            <input type="text" id="rankings-search" placeholder="Search player..." oninput="filterRankings()">
                         </div>
-                        <div class="content-card">
-                            <table>
+                    </div>
+                    <div class="content-card">
+                        <div class="table-wrapper">
+                            <table id="rankings-table">
                                 <thead>
                                     <tr>
-                                        <th style="width:15px">#</th>
+                                        <th style="width:55px">RANK</th>
                                         <th>PLAYER</th>
-                                        <th style="width:35px">NAT</th>
-                                        <th style="width:70px">E-Rank</th>
+                                        <th style="width:60px">NAT</th>
+                                        <th style="width:70px">POINTS</th>
+                                        <th style="width:65px">PLAYED</th>
+                                        <th style="width:100px">DOB</th>
                                     </tr>
                                 </thead>
-                                <tbody id="entry-body"></tbody>
+                                <tbody id="rankings-body">{rankings_rows}</tbody>
                             </table>
                         </div>
                     </div>
@@ -670,8 +697,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('btn-' + tabName).classList.add('active');
 
                 document.getElementById('view-upcoming').style.display = (tabName === 'upcoming') ? 'flex' : 'none';
+                document.getElementById('view-entrylists').style.display = (tabName === 'entrylists') ? 'flex' : 'none';
+                document.getElementById('view-rankings').style.display = (tabName === 'rankings') ? 'flex' : 'none';
                 document.getElementById('view-history').style.display = (tabName === 'history') ? 'flex' : 'none';
                 document.getElementById('view-calendar').style.display = (tabName === 'calendar') ? 'flex' : 'none';
+
+                if (tabName === 'entrylists') updateEntryList();
 
                 // Close mobile menu after selecting
                 if (window.innerWidth <= 768) {{
@@ -787,11 +818,30 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     row.classList.toggle('hidden', !matches);
                 }});
             }}
-            function updateEntryList() {{
-                const sel = document.getElementById('tSelect').value;
+            function filterRankings() {{
+                const q = document.getElementById('rankings-search').value.toLowerCase();
+                document.querySelectorAll('#rankings-body tr').forEach(row => {{
+                    const text = row.textContent.toLowerCase();
+                    row.classList.toggle('hidden', !text.includes(q));
+                }});
+            }}
+            function selectEntryTournament(el) {{
+                document.querySelectorAll('.entry-menu-item').forEach(item => item.classList.remove('active'));
+                el.classList.add('active');
+                updateEntryList(el.getAttribute('data-key'), el.textContent);
+            }}
+
+            function updateEntryList(key, name) {{
+                if (!key) {{
+                    const active = document.querySelector('.entry-menu-item.active');
+                    if (!active) return;
+                    key = active.getAttribute('data-key');
+                    name = active.textContent;
+                }}
                 const body = document.getElementById('entry-body');
-                if (!tournamentData[sel]) return;
-                const players = tournamentData[sel];
+                document.getElementById('entry-title').textContent = name || 'Entry List';
+                if (!tournamentData[key]) return;
+                const players = tournamentData[key];
                 let html = '';
                 const main = players.filter(p => p.type === 'MAIN');
                 const qual = players.filter(p => p.type === 'QUAL');

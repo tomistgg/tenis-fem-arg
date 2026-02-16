@@ -186,7 +186,10 @@ def get_rankings(date_str, nationality=None):
             "Player": display_name,
             "Rank": p.get('ranking'),
             "Country": p.get('player', {}).get('countryCode', ''),
-            "Key": display_name
+            "Key": display_name,
+            "Points": p.get('points', 0),
+            "Played": p.get('tournamentsPlayed', 0),
+            "DOB": p.get('player', {}).get('dateOfBirth', '')
         })
     return ranking_results
 

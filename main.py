@@ -107,7 +107,7 @@ def main():
             for key, t_info in tourneys.items():
                 t_name = t_info["name"]
                 if key.startswith("http"):
-                    t_list, status_dict = scrape_tournament_players(key, ranking_cache[md_date], ranking_cache[q_date])
+                    t_list, status_dict = scrape_tournament_players(key, ranking_cache[md_date], ranking_cache[q_date], entry_cache.get(key, []))
                     t_list = merge_entry_list(entry_cache.get(key, []), t_list)
                     entry_cache[key] = t_list
                     tournament_store[key] = t_list
@@ -240,7 +240,7 @@ def main():
     # 7. Generate HTML
     generate_html(
         tournament_groups, tournament_store, players_data, schedule_map,
-        cleaned_history, calendar_data, match_history_data
+        cleaned_history, calendar_data, match_history_data, all_wta_players
     )
 
 
