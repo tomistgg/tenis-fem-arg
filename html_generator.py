@@ -470,27 +470,58 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 /* History layout - stack vertically */
                 .history-layout {{
                     flex-direction: column;
+                    gap: 12px;
+                }}
+
+                /* Mobile-only history flow:
+                   1) title + player search
+                   2) filters in wrapped rows
+                   3) full-width table */
+                #view-history {{
+                    width: 100%;
+                    max-width: 100%;
+                }}
+
+                .history-content {{
+                    width: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
                 }}
 
                 .filter-panel {{
                     width: 100%;
-                    padding: 15px;
-                    margin-bottom: 20px;
+                    padding: 10px;
+                    margin-bottom: 0;
                     border: 2px solid black;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                    align-items: flex-start;
                 }}
 
                 .filter-panel h3 {{
                     font-size: 14px;
                     padding: 10px;
+                    width: 100%;
+                    margin: -10px -10px 8px -10px;
                 }}
 
-                .history-content {{
-                    width: 100%;
+                .filter-group {{
+                    margin-bottom: 0;
+                    flex: 1 1 150px;
+                    min-width: 140px;
+                    border: 1px solid #d1d5db;
+                    border-radius: 4px;
+                    padding: 6px;
+                    background: #f8fafc;
                 }}
 
                 .table-header-section {{
                     flex-direction: column;
                     gap: 10px;
+                    margin-bottom: 0;
+                    align-items: stretch;
                 }}
 
                 .player-select-container {{
@@ -499,32 +530,59 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 .table-title {{
                     font-size: 18px;
+                    text-align: center;
+                }}
+
+                .table-header-section > div[style*="width: 250px"] {{
+                    display: none;
+                }}
+
+                .filter-actions {{
+                    width: 100%;
+                    margin-top: 4px;
+                    justify-content: space-between;
+                    order: 99;
+                }}
+
+                .filter-instructions {{
+                    padding-left: 0;
+                    font-size: 9px;
+                }}
+
+                .content-card {{
+                    width: 100%;
+                }}
+
+                .history-content .content-card {{
+                    width: 100%;
                 }}
 
                 /* History table */
+                #view-history .table-wrapper {{
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                }}
                 #history-table {{
-                    width: 100%;
-                    min-width: 0;
-                    table-layout: fixed;
+                    width: max-content;
+                    min-width: 100%;
+                    table-layout: auto;
                 }}
                 #history-table th,
                 #history-table td {{
                     font-size: 8px;
-                    padding: 3px 3px;
-                    white-space: normal;
-                    overflow-wrap: anywhere;
+                    padding: 4px 6px;
+                    white-space: nowrap;
                     line-height: 1.15;
                 }}
 
-                #history-table th:nth-child(1) {{ width: 8%; }}
-                #history-table th:nth-child(2) {{ width: 16%; min-width: 0; }}
-                #history-table th:nth-child(3),
-                #history-table td:nth-child(3) {{ display: none; }}
-                #history-table th:nth-child(4) {{ width: 12%; }}
-                #history-table th:nth-child(5) {{ width: 16%; min-width: 0; }}
-                #history-table th:nth-child(6) {{ width: 8%; }}
-                #history-table th:nth-child(7) {{ width: 14%; }}
-                #history-table th:nth-child(8) {{ width: 18%; min-width: 0; }}
+                #history-table th:nth-child(1), #history-table td:nth-child(1) {{ min-width: 90px; }}
+                #history-table th:nth-child(2), #history-table td:nth-child(2) {{ min-width: 220px; }}
+                #history-table th:nth-child(3), #history-table td:nth-child(3) {{ min-width: 90px; }}
+                #history-table th:nth-child(4), #history-table td:nth-child(4) {{ min-width: 100px; }}
+                #history-table th:nth-child(5), #history-table td:nth-child(5) {{ min-width: 210px; }}
+                #history-table th:nth-child(6), #history-table td:nth-child(6) {{ min-width: 70px; }}
+                #history-table th:nth-child(7), #history-table td:nth-child(7) {{ min-width: 130px; }}
+                #history-table th:nth-child(8), #history-table td:nth-child(8) {{ min-width: 260px; white-space: normal; }}
 
                 /* National Team table */
                 #national-table {{
@@ -550,16 +608,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 17%; min-width: 0; white-space: normal; }}
                 #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 5%; }}
                 #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 10%; }}
-
-                .filter-actions {{
-                    flex-direction: column;
-                    gap: 10px;
-                }}
-
-                .filter-instructions {{
-                    padding-left: 0;
-                    text-align: center;
-                }}
 
                 /* Calendar mobile */
                 .calendar-container .table-wrapper {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
@@ -866,10 +914,37 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('view-calendar').style.display = (tabName === 'calendar') ? 'flex' : 'none';
 
                 if (tabName === 'entrylists') updateEntryList();
+                applyMobileHistoryLayout();
 
                 // Close mobile menu after selecting
                 if (window.innerWidth <= 768) {{
                     document.getElementById('sidebar').classList.add('mobile-hidden');
+                }}
+            }}
+
+            function applyMobileHistoryLayout() {{
+                const historyLayout = document.querySelector('#view-history .history-layout');
+                if (!historyLayout) return;
+
+                const filterPanel = historyLayout.querySelector('.filter-panel');
+                const historyContent = historyLayout.querySelector('.history-content');
+                if (!filterPanel || !historyContent) return;
+
+                const headerSection = historyContent.querySelector('.table-header-section');
+                if (!headerSection) return;
+
+                if (window.innerWidth <= 768) {{
+                    // Mobile order: header/search -> filters -> table
+                    if (!historyContent.contains(filterPanel)) {{
+                        headerSection.insertAdjacentElement('afterend', filterPanel);
+                    }} else if (headerSection.nextElementSibling !== filterPanel) {{
+                        headerSection.insertAdjacentElement('afterend', filterPanel);
+                    }}
+                }} else {{
+                    // Desktop order: filters left -> content right
+                    if (historyContent.contains(filterPanel)) {{
+                        historyLayout.insertBefore(filterPanel, historyContent);
+                    }}
                 }}
             }}
 
@@ -963,6 +1038,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }});
 
                 renderHistoryTable();
+                applyMobileHistoryLayout();
 
                 // Handle window resize
                 window.addEventListener('resize', function() {{
@@ -971,6 +1047,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     }} else {{
                         document.getElementById('sidebar').classList.add('mobile-hidden');
                     }}
+                    applyMobileHistoryLayout();
                 }});
             }});
 
