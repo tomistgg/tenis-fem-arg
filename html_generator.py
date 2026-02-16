@@ -356,8 +356,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .calendar-table th {{ padding: 4px 4px; vertical-align: top; border-bottom: 2px solid #1e293b; border-right: 1px solid #1e293b; }}
             .calendar-table td {{ padding: 4px 4px; vertical-align: top; border-bottom: 1px solid #94a3b8; border-right: 1px solid #94a3b8; }}
             .cal-week-header {{ background: #75AADB; color: white; font-size: 10px; font-weight: bold; text-align: center; white-space: nowrap; padding: 6px 6px; position: sticky; top: 0; z-index: 10; min-width: 90px; }}
-            .cal-cat-header {{ background: #75AADB; color: white; position: sticky; top: 0; z-index: 11; width: 28px; min-width: 28px; }}
-            .cal-cont-header {{ background: #75AADB; color: white; position: sticky; top: 0; z-index: 11; min-width: 65px; }}
+            .cal-cat-header {{ background: #75AADB; color: white; position: sticky; top: 0; left: 0; z-index: 12; width: 28px; min-width: 28px; }}
+            .cal-cont-header {{ background: #75AADB; color: white; position: sticky; top: 0; left: 28px; z-index: 12; min-width: 65px; }}
             .cal-cat-label {{ background: #1e293b; color: white; font-size: 11px; font-weight: bold; text-align: center; vertical-align: middle !important; text-transform: uppercase; writing-mode: vertical-lr; text-orientation: mixed; transform: rotate(180deg); padding: 0; width: 28px; min-width: 28px; max-width: 28px; position: sticky; left: 0; z-index: 2; border-color: #1e293b !important; box-shadow: inset 0 0 0 50px #1e293b; }}
             .cal-cont-label {{ background: #f1f5f9; font-size: 11px; font-weight: 600; color: #475569; text-align: center; vertical-align: middle !important; white-space: nowrap; position: sticky; left: 28px; z-index: 2; }}
             .cal-cell {{ font-size: 10px; min-height: 24px; vertical-align: middle !important; }}
@@ -387,40 +387,74 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .app-container {{ flex-direction: column; }}
 
                 .sidebar {{
-                    position: sticky;
+                    position: fixed;
                     top: 0;
-                    width: 100%;
+                    left: 0;
+                    right: 0;
+                    width: 100vw;
                     height: auto;
                     min-height: 0;
                     z-index: 999;
                     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
                     flex-direction: row;
-                    overflow-x: auto;
+                    overflow-x: hidden;
                     overflow-y: hidden;
-                    white-space: nowrap;
+                    white-space: normal;
                 }}
                 .sidebar.mobile-hidden {{ transform: none; }}
                 .sidebar-header {{ display: none; }}
 
                 .main-content {{
-                    padding: 10px;
+                    padding: 56px 8px 8px 8px;
                     width: 100%;
                 }}
 
                 .menu-item {{
-                    flex: 0 0 auto;
+                    flex: 1 1 0;
                     border-bottom: none;
                     border-right: 1px solid #334155;
-                    white-space: nowrap;
-                    padding: 12px 14px;
-                    font-size: 12px;
+                    white-space: normal;
+                    min-height: 40px;
+                    padding: 4px 3px;
+                    font-size: 8px;
+                    line-height: 1.1;
+                    text-align: center;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                 }}
                 .menu-item:last-child {{ border-right: none; }}
 
                 #view-upcoming, #view-rankings, #view-national {{ max-width: 100%; }}
 
                 .entry-layout {{ flex-direction: column; gap: 15px; }}
-                .entry-menu {{ width: 100%; }}
+                .entry-menu {{
+                    width: 100%;
+                    display: flex;
+                    flex-wrap: wrap;
+                    align-items: stretch;
+                    border: 1px solid black;
+                }}
+                .entry-menu-header {{
+                    width: 100%;
+                    font-size: 11px;
+                    padding: 8px;
+                }}
+                .entry-menu-week {{
+                    width: 100%;
+                    font-size: 9px;
+                    padding: 5px 6px;
+                }}
+                .entry-menu-item {{
+                    width: auto;
+                    flex: 1 1 33%;
+                    border-bottom: none;
+                    border-right: 1px solid #cbd5e1;
+                    padding: 5px 6px;
+                    font-size: 9px;
+                    line-height: 1.1;
+                    text-align: center;
+                }}
 
                 /* Adjust header rows */
                 .header-row {{
@@ -442,6 +476,43 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     order: 3;
                     display: flex;
                     justify-content: center;
+                }}
+
+                /* Rankings: title first, then search + button on one row */
+                #view-rankings .header-row {{
+                    display: grid;
+                    grid-template-columns: 1fr auto;
+                    grid-template-areas:
+                        "title title"
+                        "search button";
+                    align-items: center;
+                    row-gap: 8px;
+                    column-gap: 8px;
+                }}
+                #view-rankings h1 {{
+                    grid-area: title;
+                    width: 100%;
+                    order: 1;
+                }}
+                #view-rankings .search-container {{
+                    grid-area: search;
+                    order: unset;
+                    width: auto !important;
+                    flex: 1 1 auto;
+                }}
+                #view-rankings .rankings-filter-container {{
+                    grid-area: button;
+                    order: unset;
+                    width: auto !important;
+                    flex: 0 0 auto;
+                    justify-content: flex-end;
+                }}
+                #view-rankings #rankings-search {{
+                    width: 100%;
+                }}
+                #view-rankings .rankings-toggle-btn {{
+                    font-size: 10px;
+                    padding: 7px 10px;
                 }}
 
                 h1 {{
@@ -466,14 +537,36 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
 
                 table {{
-                    font-size: 11px;
-                    min-width: 600px;
+                    font-size: 10px;
+                    min-width: 560px;
                 }}
 
                 th, td {{
-                    padding: 6px 8px;
-                    font-size: 10px;
+                    padding: 4px 6px;
+                    font-size: 9px;
                 }}
+
+                /* Upcoming: smaller text to fit more weeks */
+                #view-upcoming table {{ min-width: 460px; }}
+                #view-upcoming th, #view-upcoming td {{ font-size: 7px; padding: 2px 3px; }}
+                #view-upcoming .col-week {{ font-size: 8px; }}
+                #view-upcoming .col-name {{ min-width: 78px; max-width: 78px; }}
+                #view-upcoming th.col-name, #view-upcoming td.col-name {{
+                    white-space: normal;
+                    overflow-wrap: normal;
+                    word-break: keep-all;
+                    text-overflow: clip;
+                }}
+                #view-upcoming .col-week, #view-upcoming td.col-week {{ width: 82px; min-width: 82px; max-width: 82px; }}
+
+                /* Entry Lists: compact mode */
+                #view-entrylists table {{ min-width: 0; table-layout: auto; }}
+                #view-entrylists th, #view-entrylists td {{ font-size: 7px; padding: 2px 3px; }}
+                #view-entrylists .entry-content .header-row {{ margin-bottom: 8px; }}
+
+                /* Rankings table: compact mode */
+                #view-rankings table {{ min-width: 0; table-layout: auto; }}
+                #view-rankings th, #view-rankings td {{ font-size: 7px; padding: 2px 3px; }}
 
                 .col-name {{
                     min-width: 140px;
@@ -508,31 +601,33 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 .filter-panel {{
                     width: 100%;
-                    padding: 10px;
+                    padding: 4px;
                     margin-bottom: 0;
                     border: 2px solid black;
                     display: flex;
                     flex-wrap: wrap;
-                    gap: 8px;
+                    gap: 4px;
                     align-items: flex-start;
                 }}
 
                 .filter-panel h3 {{
-                    font-size: 14px;
-                    padding: 10px;
+                    font-size: 9px;
+                    padding: 5px;
                     width: 100%;
-                    margin: -10px -10px 8px -10px;
+                    margin: -4px -4px 4px -4px;
                 }}
 
                 .filter-group {{
                     margin-bottom: 0;
-                    flex: 1 1 150px;
-                    min-width: 140px;
+                    flex: 1 1 100px;
+                    min-width: 95px;
                     border: 1px solid #d1d5db;
                     border-radius: 4px;
-                    padding: 6px;
+                    padding: 2px;
                     background: #f8fafc;
                 }}
+                .filter-group-title {{ font-size: 8px; margin-bottom: 2px; }}
+                .filter-option {{ font-size: 7px; padding: 2px 3px; margin-bottom: 1px; }}
 
                 .table-header-section {{
                     flex-direction: column;
@@ -545,10 +640,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     width: 100%;
                 }}
 
-                .table-title {{
-                    font-size: 18px;
-                    text-align: center;
-                }}
+                .table-title {{ font-size: 14px; text-align: center; }}
 
                 .table-header-section > div[style*="width: 250px"] {{
                     display: none;
@@ -586,20 +678,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
                 #history-table th,
                 #history-table td {{
-                    font-size: 8px;
-                    padding: 4px 6px;
+                    font-size: 5px;
+                    padding: 2px 3px;
                     white-space: nowrap;
                     line-height: 1.15;
                 }}
 
-                #history-table th:nth-child(1), #history-table td:nth-child(1) {{ min-width: 90px; }}
-                #history-table th:nth-child(2), #history-table td:nth-child(2) {{ min-width: 220px; }}
-                #history-table th:nth-child(3), #history-table td:nth-child(3) {{ min-width: 90px; }}
-                #history-table th:nth-child(4), #history-table td:nth-child(4) {{ min-width: 100px; }}
-                #history-table th:nth-child(5), #history-table td:nth-child(5) {{ min-width: 210px; }}
-                #history-table th:nth-child(6), #history-table td:nth-child(6) {{ min-width: 70px; }}
-                #history-table th:nth-child(7), #history-table td:nth-child(7) {{ min-width: 130px; }}
-                #history-table th:nth-child(8), #history-table td:nth-child(8) {{ min-width: 260px; white-space: normal; }}
+                #history-table th:nth-child(1), #history-table td:nth-child(1) {{ min-width: 62px; }}
+                #history-table th:nth-child(2), #history-table td:nth-child(2) {{ min-width: 108px; }}
+                #history-table th:nth-child(3), #history-table td:nth-child(3) {{ min-width: 50px; }}
+                #history-table th:nth-child(4), #history-table td:nth-child(4) {{ min-width: 52px; }}
+                #history-table th:nth-child(5), #history-table td:nth-child(5) {{ min-width: 110px; }}
+                #history-table th:nth-child(6), #history-table td:nth-child(6) {{ min-width: 40px; }}
+                #history-table th:nth-child(7), #history-table td:nth-child(7) {{ min-width: 70px; }}
+                #history-table th:nth-child(8), #history-table td:nth-child(8) {{ min-width: 120px; white-space: normal; }}
 
                 /* National Team table */
                 #national-table {{
@@ -609,26 +701,36 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
                 #national-table th,
                 #national-table td {{
-                    font-size: 8px;
-                    padding: 3px 3px;
+                    font-size: 5px;
+                    padding: 2px 2px;
                     white-space: nowrap;
                     overflow-wrap: anywhere;
                     line-height: 1.15;
                 }}
-                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 4%; }}
-                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 13%; min-width: 0; }}
-                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 9%; }}
-                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 11%; }}
-                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 10%; }}
-                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 11%; }}
-                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 15%; min-width: 0; white-space: normal; }}
-                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 17%; min-width: 0; white-space: normal; }}
-                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 5%; }}
-                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 10%; }}
+                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 2%; }}
+                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 8%; min-width: 0; }}
+                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 7%; }}
+                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 7%; }}
+                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 6%; }}
+                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 8%; }}
+                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 13%; min-width: 0; white-space: normal; }}
+                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 15%; min-width: 0; white-space: normal; }}
+                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 3%; }}
+                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 7%; }}
 
                 /* Calendar mobile */
                 .calendar-container .table-wrapper {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
                 .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
+                #view-calendar .content-card {{
+                    border: none;
+                    box-shadow: none;
+                    background: transparent;
+                }}
+                .cal-cat-header {{ left: 0; z-index: 13; }}
+                .cal-cont-header {{ left: 28px; z-index: 13; }}
+                .cal-cat-label {{ position: sticky !important; left: 0; z-index: 13; }}
+                .cal-cont-label {{ position: sticky !important; left: 28px; z-index: 13; }}
+                .calendar-container .table-wrapper {{ position: relative; }}
             }}
 
             @media (max-width: 480px) {{
@@ -643,13 +745,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
 
                 .menu-item {{
-                    font-size: 13px;
-                    padding: 12px 15px;
+                    font-size: 7px;
+                    min-height: 36px;
+                    padding: 3px 2px;
                 }}
 
                 th, td {{
-                    padding: 4px 6px;
-                    font-size: 9px;
+                    padding: 2px 3px;
+                    font-size: 7px;
                 }}
 
                 .col-name {{
@@ -658,20 +761,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
 
                 .filter-panel h3 {{
-                    font-size: 13px;
+                    font-size: 11px;
                 }}
 
                 .filter-group-title {{
-                    font-size: 12px;
+                    font-size: 10px;
                 }}
 
                 .filter-option {{
-                    font-size: 11px;
+                    font-size: 9px;
                 }}
 
                 #history-table th, #history-table td,
                 #national-table th, #national-table td {{
-                    font-size: 7px;
+                    font-size: 5px;
                     padding: 2px 2px;
                 }}
 
