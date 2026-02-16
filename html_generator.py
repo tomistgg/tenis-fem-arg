@@ -112,7 +112,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         row_class = "arg-player-row" if (p.get("Country") or "").upper() == "ARG" else ""
         rankings_rows += f'<tr class="{row_class}"><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{name}</td><td>{p.get("Country", "")}</td><td>{p.get("Points", "")}</td><td>{p.get("Played", "")}</td><td>{dob}</td></tr>'
 
-    default_national_columns = ["N", "Player", "Date", "Event", "Round", "Tie", "Match", "Opponent", "Result", "Score"]
+    default_national_columns = ["N", "Player", "Date", "Event", "Round", "Tie", "Partner", "Opponent", "Result", "Score"]
     national_columns = list(national_team_data[0].keys()) if national_team_data else default_national_columns
 
     header_label_map = {"N": "#"}
@@ -120,13 +120,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         "N": ' style="width:30px"',
         "Player": ' style="width:140px"',
         "Date": ' style="width:90px"',
-        "Event": ' style="width:120px"',
-        "Round": ' style="width:100px"',
-        "Tie": ' style="width:100px"',
-        "Match": ' style="width:120px"',
+        "Event": ' style="width:110px"',
+        "Round": ' style="width:80px"',
+        "Tie": ' style="width:110px"',
+        "Partner": ' style="width:160px"',
         "Opponent": "",
         "Result": ' style="width:50px"',
-        "Score": ' style="width:100px"'
+        "Score": ' style="width:110px"'
     }
     national_header_html = "".join(
         f'<th{header_style_map.get(col, "")}>{escape(header_label_map.get(col, col.upper()))}</th>'
@@ -176,7 +176,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #view-upcoming {{ max-width: 1200px; margin: 0 auto; }}
             #view-entrylists {{ width: 100%; max-width: 1100px; margin: 0 auto; }}
             #view-rankings {{ max-width: 700px; margin: 0 auto; }}
-            #view-national {{ max-width: 1280px; margin: 0 auto; }}
+            #view-national {{ max-width: 1400px; margin: 0 auto; }}
             .header-row {{ width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; gap: 10px; }}
             h1 {{ margin: 0; font-size: 22px; color: #1e293b; }}
             .search-container {{ position: absolute; left: 0; top: 50%; transform: translateY(-50%); }}
@@ -267,9 +267,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             #view-entrylists .content-card {{ overflow-y: visible; max-height: none; }}
 
-            /* National Team table: keep all columns visible without horizontal scroll */
-            #view-national .table-wrapper {{ overflow-x: visible; }}
-            #national-table {{ table-layout: auto; width: 100%; }}
+            /* National Team table: allow horizontal expansion instead of squeezing columns */
+            #view-national .table-wrapper {{ overflow-x: auto; }}
+            #national-table {{ table-layout: auto; width: max-content; min-width: 100%; }}
             #national-table th, #national-table td {{
                 font-size: 11px;
                 padding: 5px 6px;
@@ -282,7 +282,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 min-width: 185px;
             }}
             #national-table th:nth-child(7), #national-table td:nth-child(7) {{
-                min-width: 170px;
+                min-width: 160px;
                 white-space: nowrap;
             }}
             #national-table th:nth-child(8), #national-table td:nth-child(8) {{
@@ -295,6 +295,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 min-width: 55px;
                 white-space: nowrap;
                 text-align: center;
+            }}
+            #national-table th:nth-child(6), #national-table td:nth-child(6) {{
+                min-width: 110px;
+                white-space: nowrap;
+            }}
+            #national-table th:nth-child(10), #national-table td:nth-child(10) {{
+                min-width: 110px;
+                white-space: nowrap;
             }}
 
             #history-table th {{ background: #75AADB !important; position: sticky; top: 0; z-index: 10; }}
@@ -520,15 +528,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 /* National Team table */
                 #national-table {{
-                    width: 100%;
-                    min-width: 0;
-                    table-layout: fixed;
+                    width: max-content;
+                    min-width: 100%;
+                    table-layout: auto;
                 }}
                 #national-table th,
                 #national-table td {{
                     font-size: 8px;
                     padding: 3px 3px;
-                    white-space: normal;
+                    white-space: nowrap;
                     overflow-wrap: anywhere;
                     line-height: 1.15;
                 }}
