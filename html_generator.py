@@ -549,14 +549,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
 
                 /* Upcoming: smaller text to fit more weeks */
-                #view-upcoming table {{ min-width: 420px; }}
-                #view-upcoming th, #view-upcoming td {{ font-size: 6px; padding: 2px 2px; }}
-                #view-upcoming th {{ font-size: 5px; }}
-                #view-upcoming .col-week {{ font-size: 6px; }}
+                #view-upcoming table {{ width: 100%; min-width: 100%; table-layout: fixed; }}
+                #view-upcoming th, #view-upcoming td {{ font-size: 5px; padding: 2px 2px; }}
+                #view-upcoming th {{ font-size: 4px; }}
+                #view-upcoming th.col-week {{ font-size: 4px !important; }}
+                #view-upcoming td.col-week, #view-upcoming .col-week {{ font-size: 4px; }}
                 #view-upcoming .col-rank {{
-                    width: 24px;
-                    min-width: 24px;
-                    max-width: 24px;
+                    width: 20px;
+                    min-width: 20px;
+                    max-width: 20px;
                     left: 0;
                 }}
                 #view-upcoming th.col-rank, #view-upcoming td.col-rank {{
@@ -565,7 +566,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     word-break: break-word;
                     line-height: 1.05;
                 }}
-                #view-upcoming .col-name {{ min-width: 70px; max-width: 70px; }}
+                #view-upcoming .col-name {{ min-width: 62px; max-width: 62px; }}
                 #view-upcoming .col-name {{ left: 24px; }}
                 #view-upcoming th.col-name, #view-upcoming td.col-name {{
                     white-space: normal;
@@ -573,7 +574,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     word-break: keep-all;
                     text-overflow: clip;
                 }}
-                #view-upcoming .col-week, #view-upcoming td.col-week {{ width: 64px; min-width: 64px; max-width: 64px; }}
+                #view-upcoming .col-week, #view-upcoming td.col-week {{ width: 52px; min-width: 52px; max-width: 52px; }}
 
                 /* Entry Lists: compact mode */
                 #view-entrylists table {{ min-width: 0; table-layout: auto; }}
@@ -582,8 +583,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #view-entrylists #entry-title {{ font-size: 14px; }}
 
                 /* Rankings table: compact mode */
-                #view-rankings table {{ min-width: 0; table-layout: auto; }}
-                #view-rankings th, #view-rankings td {{ font-size: 7px; padding: 2px 3px; }}
+                #view-rankings table {{ min-width: 0; width: 100%; table-layout: fixed; }}
+                #view-rankings th, #view-rankings td {{
+                    font-size: 7px;
+                    padding: 2px 2px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }}
+                #view-rankings th:nth-child(1), #view-rankings td:nth-child(1) {{ width: 5%; }}
+                #view-rankings th:nth-child(2), #view-rankings td:nth-child(2) {{ width: 64%; text-align: left; }}
+                #view-rankings th:nth-child(3), #view-rankings td:nth-child(3) {{ width: 5%; }}
+                #view-rankings th:nth-child(4), #view-rankings td:nth-child(4) {{ width: 9%; }}
+                #view-rankings th:nth-child(5), #view-rankings td:nth-child(5) {{ width: 5%; }}
+                #view-rankings th:nth-child(6), #view-rankings td:nth-child(6) {{ width: 12%; }}
 
                 .col-name {{
                     min-width: 140px;
@@ -692,10 +705,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
                 .opponent-select-container .select2-container--default .select2-selection--single .select2-selection__rendered {{
                     line-height: 22px;
-                    font-size: 9px;
+                    font-size: 8px;
                 }}
                 .opponent-select-container .select2-container--default .select2-selection--single .select2-selection__arrow {{
                     height: 22px;
+                }}
+                #select2-filter-opponent-select-results .select2-results__option {{
+                    font-size: 8px;
                 }}
 
                 .content-card {{
@@ -735,6 +751,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #history-table th:nth-child(8), #history-table td:nth-child(8) {{ width: 16%; }}
 
                 /* National Team table */
+                #view-national .table-wrapper {{
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                }}
                 #national-table {{
                     width: 100%;
                     min-width: 0;
@@ -742,23 +762,25 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
                 #national-table th,
                 #national-table td {{
-                    font-size: 5px;
-                    padding: 2px 2px;
+                    font-size: 3px;
+                    padding: 1px 1px;
                     white-space: normal;
                     overflow-wrap: anywhere;
                     line-height: 1.15;
+                    min-width: 0 !important;
+                    max-width: none !important;
                 }}
                 #national-table th {{ white-space: nowrap; }}
-                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 3%; }}
-                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 13%; min-width: 0; }}
-                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 10%; }}
-                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 10%; }}
-                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 8%; }}
-                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 10%; }}
-                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 12%; min-width: 0; white-space: normal; }}
-                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 22%; min-width: 0; white-space: normal; }}
-                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 5%; }}
-                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 7%; }}
+                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 2%; }}
+                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 9%; min-width: 0; }}
+                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 8%; }}
+                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 7%; }}
+                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 5%; }}
+                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 8%; }}
+                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 8%; min-width: 0; white-space: normal; }}
+                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 35%; min-width: 0; white-space: normal; display: table-cell !important; }}
+                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 5%; min-width: 0; text-align: center; display: table-cell !important; }}
+                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 13%; min-width: 0; }}
                 #national-table th:nth-child(9), #national-table td:nth-child(9),
                 #national-table th:nth-child(10), #national-table td:nth-child(10) {{ white-space: nowrap; }}
 
@@ -1404,6 +1426,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 // Auto-apply filters when selection changes
                 $(select).off('change').on('change', function() {{
+                    const selectedText = this.options[this.selectedIndex] ? this.options[this.selectedIndex].text : 'All Opponents';
+                    const rendered = this.nextElementSibling
+                        ? this.nextElementSibling.querySelector('.select2-selection__rendered')
+                        : null;
+                    if (rendered) {{
+                        rendered.textContent = selectedText;
+                        rendered.title = selectedText;
+                    }}
                     applyHistoryFilters();
                 }});
             }}
@@ -1582,6 +1612,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'OPPONENT'];
 
                 if (!selectedPlayer) {{
+                    currentPlayerData = [];
+                    ['filter-surface', 'filter-round', 'filter-result', 'filter-opponent-country', 'filter-player-entry', 'filter-seed', 'filter-match-type']
+                        .forEach(id => {{
+                            const el = document.getElementById(id);
+                            if (el) el.innerHTML = '';
+                        }});
+                    const oppSelect = document.getElementById('filter-opponent-select');
+                    if (oppSelect) {{
+                        if ($(oppSelect).data('select2')) {{
+                            $(oppSelect).select2('destroy');
+                        }}
+                        oppSelect.innerHTML = '<option value="">All Opponents</option>';
+                    }}
                     tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">Select a player...</td></tr>`;
                     return;
                 }}
