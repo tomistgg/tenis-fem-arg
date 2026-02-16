@@ -148,7 +148,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
         <style>
             @font-face {{ font-family: 'Montserrat'; src: url('Montserrat-SemiBold.ttf'); }}
-            body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }}
+            body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; min-height: 100vh; overflow-y: auto; overflow-x: auto; }}
             .app-container {{ display: flex; width: 100%; min-height: 100vh; }}
             .sidebar {{ width: 180px; background: #1e293b; color: white; display: flex; flex-direction: column; flex-shrink: 0; min-height: 100vh; }}
             .sidebar-header {{ padding: 25px 15px; font-size: 15px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #475569; }}
@@ -294,10 +294,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .player-select-container {{ width: 250px; }}
 
             /* Calendar Styles */
-            #view-calendar {{ width: 100%; max-width: 100%; min-width: 0; overflow: hidden; }}
-            .calendar-container {{ width: 100%; max-width: 100%; min-width: 0; margin-bottom: 0; overflow: hidden; }}
-            .calendar-container .table-wrapper {{ overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; }}
-            .calendar-table {{ border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; table-layout: auto; border: 1px solid black; }}
+            #view-calendar {{ width: 100%; min-height: 0; }}
+            .calendar-container {{ width: max-content; min-width: 100%; min-height: 0; margin-bottom: 0; display: block; }}
+            .calendar-container .table-wrapper {{ display: block; overflow: visible; -webkit-overflow-scrolling: touch; width: max-content; max-width: none; }}
+            .calendar-table {{ border-collapse: separate; border-spacing: 0; width: max-content; min-width: max-content; table-layout: auto; border: 1px solid black; }}
             .calendar-table th {{ padding: 4px 4px; vertical-align: top; border-bottom: 2px solid #1e293b; border-right: 1px solid #1e293b; }}
             .calendar-table td {{ padding: 4px 4px; vertical-align: top; border-bottom: 1px solid #94a3b8; border-right: 1px solid #94a3b8; }}
             .cal-week-header {{ background: #75AADB; color: white; font-size: 10px; font-weight: bold; text-align: center; white-space: nowrap; padding: 6px 6px; position: sticky; top: 0; z-index: 10; min-width: 90px; }}
@@ -326,7 +326,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             @media (max-width: 768px) {{
                 /* Mobile styles */
-                body {{ overflow-x: hidden; }}
+                body {{ overflow-x: auto; }}
                 .mobile-menu-toggle {{ display: block; }}
 
                 .app-container {{ flex-direction: column; }}
