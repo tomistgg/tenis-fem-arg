@@ -157,12 +157,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .main-content {{ flex: 1; overflow-y: visible; background: #f8fafc; padding: 20px; display: flex; flex-direction: column; }}
             .single-layout {{ width: 100%; display: flex; flex-direction: column; }}
             #view-upcoming {{ max-width: 1200px; margin: 0 auto; }}
-            #view-entrylists {{ width: 100%; }}
+            #view-entrylists {{ width: 100%; max-width: 1100px; margin: 0 auto; }}
             #view-rankings {{ max-width: 700px; margin: 0 auto; }}
             #view-national {{ max-width: 950px; margin: 0 auto; }}
             .header-row {{ width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; gap: 10px; }}
             h1 {{ margin: 0; font-size: 22px; color: #1e293b; }}
             .search-container {{ position: absolute; left: 0; top: 50%; transform: translateY(-50%); }}
+            .rankings-filter-container {{ position: absolute; right: 0; top: 50%; transform: translateY(-50%); }}
+            .rankings-toggle-btn {{ padding: 8px 12px; border-radius: 8px; border: 2px solid #94a3b8; background: white; font-family: inherit; font-size: 12px; font-weight: bold; color: #1e293b; cursor: pointer; }}
+            .rankings-toggle-btn:hover {{ background: #f1f5f9; }}
             input, select {{ padding: 8px 12px; border-radius: 8px; border: 2px solid #94a3b8; font-family: inherit; font-size: 13px; width: 250px; box-sizing: border-box; }}
             select {{ background: white; font-weight: bold; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }}
             .content-card {{ background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.05); width: 100%; border: 1px solid black; }}
@@ -173,6 +176,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             td {{ padding: 8px 12px; border-bottom: 1px solid #94a3b8; text-align: center; font-size: 13px; border-right: 1px solid #94a3b8; }}
             #view-entrylists td {{ font-size: 12px; padding: 6px 10px; }}
             #view-entrylists table {{ table-layout: auto; }}
+            #view-entrylists .entry-content {{ align-items: center; }}
+            #view-entrylists .content-card {{ width: 100%; max-width: 760px; margin: 0 auto; }}
 
             /* Entry Lists layout */
             .entry-layout {{ display: flex; gap: 25px; width: 100%; }}
@@ -353,6 +358,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     transform: none;
                     width: 100%;
                     order: 2;
+                }}
+                .rankings-filter-container {{
+                    position: static;
+                    transform: none;
+                    width: 100%;
+                    order: 3;
+                    display: flex;
+                    justify-content: center;
                 }}
 
                 h1 {{
@@ -570,6 +583,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         <h1>WTA Rankings</h1>
                         <div class="search-container">
                             <input type="text" id="rankings-search" placeholder="Search player..." oninput="filterRankings()">
+                        </div>
+                        <div class="rankings-filter-container">
+                            <button id="rankings-toggle-btn" class="rankings-toggle-btn" onclick="toggleRankingsScope()">Show ARG</button>
                         </div>
                     </div>
                     <div class="content-card">
@@ -870,11 +886,21 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     row.classList.toggle('hidden', !matches);
                 }});
             }}
+            let showArgOnly = false;
+            function toggleRankingsScope() {{
+                showArgOnly = !showArgOnly;
+                const btn = document.getElementById('rankings-toggle-btn');
+                if (btn) btn.textContent = showArgOnly ? 'Show ALL' : 'Show ARG';
+                filterRankings();
+            }}
             function filterRankings() {{
                 const q = document.getElementById('rankings-search').value.toLowerCase();
                 document.querySelectorAll('#rankings-body tr').forEach(row => {{
                     const text = row.textContent.toLowerCase();
-                    row.classList.toggle('hidden', !text.includes(q));
+                    const nat = row.children[2] ? row.children[2].textContent.trim().toUpperCase() : '';
+                    const matchesSearch = text.includes(q);
+                    const matchesCountry = !showArgOnly || nat === 'ARG';
+                    row.classList.toggle('hidden', !(matchesSearch && matchesCountry));
                 }});
             }}
             function filterNational() {{
