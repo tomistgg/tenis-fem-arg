@@ -240,7 +240,7 @@ def main():
 
     national_team_data = []
     try:
-        with open('national_team_order.csv', 'r', encoding='utf-8') as f:
+        with open('national_team_order.csv', 'r', encoding='utf-8-sig') as f:
             reader = csv.DictReader(f, delimiter=';')
             for row in reader:
                 national_team_data.append(row)
@@ -250,7 +250,8 @@ def main():
     # 7. Generate HTML
     generate_html(
         tournament_groups, tournament_store, players_data, schedule_map,
-        cleaned_history, calendar_data, match_history_data, all_wta_players
+        cleaned_history, calendar_data, match_history_data, all_wta_players,
+        national_team_data=national_team_data
     )
 
 

@@ -1,4 +1,5 @@
 import json
+from html import escape
 
 from config import PLAYER_MAPPING, CONTINENT_KEYS, CONTINENT_LABELS, NAME_LOOKUP
 from utils import format_player_name, get_tournament_sort_order, get_surface_class
@@ -111,30 +112,45 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         row_class = "arg-player-row" if (p.get("Country") or "").upper() == "ARG" else ""
         rankings_rows += f'<tr class="{row_class}"><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{name}</td><td>{p.get("Country", "")}</td><td>{p.get("Points", "")}</td><td>{p.get("Played", "")}</td><td>{dob}</td></tr>'
 
+    default_national_columns = ["N", "Player", "Date", "Event", "Round", "Tie", "Match", "Opponent", "Result", "Score"]
+    national_columns = list(national_team_data[0].keys()) if national_team_data else default_national_columns
+
+    header_label_map = {"N": "#"}
+    header_style_map = {
+        "N": ' style="width:30px"',
+        "Player": ' style="width:140px"',
+        "Date": ' style="width:90px"',
+        "Event": ' style="width:120px"',
+        "Round": ' style="width:100px"',
+        "Tie": ' style="width:100px"',
+        "Match": ' style="width:120px"',
+        "Opponent": "",
+        "Result": ' style="width:50px"',
+        "Score": ' style="width:100px"'
+    }
+    national_header_html = "".join(
+        f'<th{header_style_map.get(col, "")}>{escape(header_label_map.get(col, col.upper()))}</th>'
+        for col in national_columns
+    )
+
     national_rows = ""
-    if national_team_data:
-        for row in national_team_data:
-            res = row.get('Result', '')
-            res_style = ""
-            if res.upper() == 'W':
-                res_style = 'color: #166534; font-weight: bold;'
-            elif res.upper() == 'L':
-                res_style = 'color: #991b1b; font-weight: bold;'
-            
-            p_name = format_player_name(row.get('Player', ''))
-            
-            national_rows += '<tr>'
-            national_rows += f'<td>{row.get("N", "")}</td>'
-            national_rows += f'<td style="text-align:left;font-weight:bold;">{p_name}</td>'
-            national_rows += f'<td>{row.get("Date", "")}</td>'
-            national_rows += f'<td>{row.get("Event", "")}</td>'
-            national_rows += f'<td>{row.get("Round", "")}</td>'
-            national_rows += f'<td>{row.get("Tie", "")}</td>'
-            national_rows += f'<td>{row.get("Match", "")}</td>'
-            national_rows += f'<td style="text-align:left;">{row.get("Opponent", "")}</td>'
-            national_rows += f'<td style="{res_style}">{res}</td>'
-            national_rows += f'<td>{row.get("Score", "")}</td>'
-            national_rows += '</tr>'
+    for row in (national_team_data or []):
+        national_rows += '<tr>'
+        for col in national_columns:
+            value = str(row.get(col, "") or "")
+            cell_style = ""
+
+            if col == "Player":
+                value = format_player_name(value)
+                cell_style = ' style="font-weight:bold;"'
+            elif col == "Result":
+                if value.upper() == "W":
+                    cell_style = ' style="color: #166534; font-weight: bold;"'
+                elif value.upper() == "L":
+                    cell_style = ' style="color: #991b1b; font-weight: bold;"'
+
+            national_rows += f'<td{cell_style}>{escape(value)}</td>'
+        national_rows += '</tr>'
 
     # Generate the full HTML template
     html_template = f"""
@@ -160,7 +176,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #view-upcoming {{ max-width: 1200px; margin: 0 auto; }}
             #view-entrylists {{ width: 100%; max-width: 1100px; margin: 0 auto; }}
             #view-rankings {{ max-width: 700px; margin: 0 auto; }}
-            #view-national {{ max-width: 950px; margin: 0 auto; }}
+            #view-national {{ max-width: 1280px; margin: 0 auto; }}
             .header-row {{ width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; gap: 10px; }}
             h1 {{ margin: 0; font-size: 22px; color: #1e293b; }}
             .search-container {{ position: absolute; left: 0; top: 50%; transform: translateY(-50%); }}
@@ -250,6 +266,36 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
 
             #view-entrylists .content-card {{ overflow-y: visible; max-height: none; }}
+
+            /* National Team table: keep all columns visible without horizontal scroll */
+            #view-national .table-wrapper {{ overflow-x: visible; }}
+            #national-table {{ table-layout: auto; width: 100%; }}
+            #national-table th, #national-table td {{
+                font-size: 11px;
+                padding: 5px 6px;
+                white-space: normal;
+                overflow-wrap: anywhere;
+                line-height: 1.2;
+            }}
+            #national-table th:nth-child(2), #national-table td:nth-child(2) {{
+                text-align: center;
+                min-width: 185px;
+            }}
+            #national-table th:nth-child(7), #national-table td:nth-child(7) {{
+                min-width: 170px;
+                white-space: nowrap;
+            }}
+            #national-table th:nth-child(8), #national-table td:nth-child(8) {{
+                text-align: center;
+                width: 270px;
+                min-width: 270px;
+                white-space: nowrap;
+            }}
+            #national-table th:nth-child(9), #national-table td:nth-child(9) {{
+                min-width: 55px;
+                white-space: nowrap;
+                text-align: center;
+            }}
 
             #history-table th {{ background: #75AADB !important; position: sticky; top: 0; z-index: 10; }}
             #history-table {{ table-layout: fixed; width: 100%; }}
@@ -718,14 +764,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             <table id="national-table">
                                 <thead>
                                     <tr>
-                                        <th style="width:30px">#</th>
-                                        <th style="width:140px">PLAYER</th>
-                                        <th style="width:90px">DATE</th>
-                                        <th style="width:100px">TIE</th>
-                                        <th style="width:120px">MATCH</th>
-                                        <th>OPPONENT</th>
-                                        <th style="width:40px">RESULT</th>
-                                        <th style="width:100px">SCORE</th>
+                                        {national_header_html}
                                     </tr>
                                 </thead>
                                 <tbody id="national-body">{national_rows}</tbody>
