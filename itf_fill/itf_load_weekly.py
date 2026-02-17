@@ -272,7 +272,6 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
                         "tournamentCategory": t_cat,
                         "surface": t_surf,
                         "tournamentCountry": t_nation,
-                        "roundId": r_id,
                         "roundDesc": r_ds,
                         "draw": draw_type,
                         "result": res,
