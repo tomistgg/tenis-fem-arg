@@ -483,12 +483,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 /* Rankings: title first, then search + button on one row */
                 #view-rankings .header-row {{
                     display: grid;
-                    grid-template-columns: 1fr auto;
+                    grid-template-columns: 148px auto;
                     grid-template-areas:
                         "title title"
                         "search button";
-                    align-items: center;
-                    row-gap: 8px;
+                    align-items: stretch;
+                    justify-content: center;
+                    width: fit-content;
+                    max-width: 100%;
+                    margin: 0 auto 8px auto;
+                    row-gap: 6px;
                     column-gap: 8px;
                 }}
                 #view-rankings h1 {{
@@ -498,23 +502,39 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
                 #view-rankings .search-container {{
                     grid-area: search;
-                    order: unset;
-                    width: auto !important;
-                    flex: 1 1 auto;
+                    width: 148px !important;
+                    display: block;
+                    margin: 0;
                 }}
                 #view-rankings .rankings-filter-container {{
                     grid-area: button;
-                    order: unset;
                     width: auto !important;
-                    flex: 0 0 auto;
+                    display: flex;
                     justify-content: flex-end;
+                    align-items: stretch;
+                    margin: 0;
                 }}
                 #view-rankings #rankings-search {{
-                    width: 100%;
+                    width: 148px;
+                    height: 28px;
+                    padding: 4px 8px;
+                    font-size: 10px;
+                    box-sizing: border-box;
+                    margin: 0;
+                    display: block;
+                }}
+                #view-rankings #rankings-search::placeholder {{ font-size: 9px; }}
+                #view-rankings .rankings-toggle-btn {{
+                    height: 28px;
+                    padding: 0 10px;
+                    font-size: 10px;
+                    line-height: 1;
+                    box-sizing: border-box;
+                    margin: 0;
+                    display: block;
                 }}
                 #view-rankings .rankings-toggle-btn {{
                     font-size: 10px;
-                    padding: 7px 10px;
                 }}
 
                 h1 {{
@@ -583,7 +603,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #view-entrylists #entry-title {{ font-size: 14px; }}
 
                 /* Rankings table: compact mode */
-                #view-rankings table {{ min-width: 0; width: 100%; table-layout: auto; }}
+                #view-rankings .content-card {{
+                    width: fit-content;
+                    max-width: 100%;
+                    margin: 0 auto;
+                }}
+                #view-rankings .content-card .table-wrapper {{
+                    width: auto;
+                    overflow-x: visible;
+                }}
+                #view-rankings table {{ min-width: 0; width: auto; margin: 0; table-layout: auto; }}
                 #view-rankings th, #view-rankings td {{
                     font-size: 7px;
                     padding: 2px 2px;
@@ -592,7 +621,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     text-overflow: ellipsis;
                 }}
                 /* Entry-list style: fixed side columns, wide PLAYER */
-                #view-rankings th:nth-child(1), #view-rankings td:nth-child(1) {{ width: 18px !important; }}
+                #view-rankings th:nth-child(1), #view-rankings td:nth-child(1) {{ width: 20px !important; }}
                 #view-rankings th:nth-child(2), #view-rankings td:nth-child(2) {{
                     width: auto !important;
                     text-align: left;
@@ -600,10 +629,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     overflow: hidden;
                     text-overflow: ellipsis;
                 }}
-                #view-rankings th:nth-child(3), #view-rankings td:nth-child(3) {{ width: 24px !important; }}
-                #view-rankings th:nth-child(4), #view-rankings td:nth-child(4) {{ width: 38px !important; }}
-                #view-rankings th:nth-child(5), #view-rankings td:nth-child(5) {{ width: 30px !important; }}
-                #view-rankings th:nth-child(6), #view-rankings td:nth-child(6) {{ width: 54px !important; }}
+                #view-rankings th:nth-child(3), #view-rankings td:nth-child(3) {{ width: 26px !important; }}
+                #view-rankings th:nth-child(4), #view-rankings td:nth-child(4) {{ width: 42px !important; }}
+                #view-rankings th:nth-child(5), #view-rankings td:nth-child(5) {{ width: 34px !important; }}
+                #view-rankings th:nth-child(6), #view-rankings td:nth-child(6) {{ width: 58px !important; }}
 
                 .col-name {{
                     min-width: 140px;
