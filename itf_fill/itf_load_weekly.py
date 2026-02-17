@@ -374,6 +374,7 @@ if __name__ == "__main__":
 
     print("Step 1: Fetching Calendar...")
     raw_data = get_itf_calendar_for_range(start_date, end_date)
+    print(raw_data)
 
     if not raw_data:
         print(f"No calendar data found for this week ({start_date} to {end_date}).")
