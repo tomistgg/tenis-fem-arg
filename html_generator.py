@@ -165,7 +165,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
         <style>
             @font-face {{ font-family: 'Montserrat'; src: url('Montserrat-SemiBold.ttf'); }}
-            body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; min-height: 100vh; overflow-y: auto; overflow-x: auto; }}
+            html {{ -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }}
+            body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; min-height: 100vh; overflow-y: auto; overflow-x: auto; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }}
             .app-container {{ display: flex; width: 100%; min-height: 100vh; }}
             .sidebar {{ width: 180px; background: #1e293b; color: white; display: flex; flex-direction: column; flex-shrink: 0; min-height: 100vh; }}
             .sidebar-header {{ padding: 25px 15px; font-size: 15px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #475569; }}
@@ -579,9 +580,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #view-upcoming th.col-week {{ font-size: 4px !important; }}
                 #view-upcoming td.col-week, #view-upcoming .col-week {{ font-size: 4px; }}
                 #view-upcoming .col-rank {{
-                    width: 20px;
-                    min-width: 20px;
-                    max-width: 20px;
+                    width: 16px;
+                    min-width: 16px;
+                    max-width: 16px;
                     left: 0;
                 }}
                 #view-upcoming th.col-rank, #view-upcoming td.col-rank {{
@@ -590,15 +591,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     word-break: break-word;
                     line-height: 1.05;
                 }}
-                #view-upcoming .col-name {{ min-width: 62px; max-width: 62px; }}
-                #view-upcoming .col-name {{ left: 24px; }}
+                #view-upcoming .col-name {{
+                    width: auto !important;
+                    min-width: 0 !important;
+                    max-width: none !important;
+                }}
+                #view-upcoming .col-name {{ left: 16px; }}
                 #view-upcoming th.col-name, #view-upcoming td.col-name {{
                     white-space: normal;
-                    overflow-wrap: normal;
-                    word-break: keep-all;
+                    overflow-wrap: anywhere;
+                    word-break: break-word;
                     text-overflow: clip;
                 }}
-                #view-upcoming .col-week, #view-upcoming td.col-week {{ width: 52px; min-width: 52px; max-width: 52px; }}
+                #view-upcoming .col-week, #view-upcoming td.col-week {{ width: 60px; min-width: 60px; max-width: 60px; }}
 
                 /* Entry Lists: compact mode */
                 #view-entrylists table {{ min-width: 0; table-layout: auto; }}
@@ -910,6 +915,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 13% !important; }}
 
                 .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
+            }}
+
+            /* iOS WebKit-specific: keep Upcoming columns tight and consistent with desktop emulation */
+            @supports (-webkit-touch-callout: none) {{
+                @media (max-width: 768px) {{
+                    #view-upcoming th,
+                    #view-upcoming td {{
+                        -webkit-text-size-adjust: 100%;
+                        text-size-adjust: 100%;
+                    }}
+                }}
             }}
         </style>
     </head>
