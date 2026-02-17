@@ -227,7 +227,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     return rows
 
 if __name__ == "__main__":
-    gs_files = ['australian_open.json', 'roland_garros.json']
+    gs_files = ['australian_open.json', 'roland_garros.json', 'wimbledon.json', 'us_open.json']
     all_matches = []
 
     for f in gs_files:
