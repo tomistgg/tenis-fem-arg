@@ -583,7 +583,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #view-entrylists #entry-title {{ font-size: 14px; }}
 
                 /* Rankings table: compact mode */
-                #view-rankings table {{ min-width: 0; width: 100%; table-layout: fixed; }}
+                #view-rankings table {{ min-width: 0; width: 100%; table-layout: auto; }}
                 #view-rankings th, #view-rankings td {{
                     font-size: 7px;
                     padding: 2px 2px;
@@ -591,12 +591,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     overflow: hidden;
                     text-overflow: ellipsis;
                 }}
-                #view-rankings th:nth-child(1), #view-rankings td:nth-child(1) {{ width: 5%; }}
-                #view-rankings th:nth-child(2), #view-rankings td:nth-child(2) {{ width: 64%; text-align: left; }}
-                #view-rankings th:nth-child(3), #view-rankings td:nth-child(3) {{ width: 5%; }}
-                #view-rankings th:nth-child(4), #view-rankings td:nth-child(4) {{ width: 9%; }}
-                #view-rankings th:nth-child(5), #view-rankings td:nth-child(5) {{ width: 5%; }}
-                #view-rankings th:nth-child(6), #view-rankings td:nth-child(6) {{ width: 12%; }}
+                /* Entry-list style: fixed side columns, wide PLAYER */
+                #view-rankings th:nth-child(1), #view-rankings td:nth-child(1) {{ width: 18px !important; }}
+                #view-rankings th:nth-child(2), #view-rankings td:nth-child(2) {{
+                    width: auto !important;
+                    text-align: left;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }}
+                #view-rankings th:nth-child(3), #view-rankings td:nth-child(3) {{ width: 24px !important; }}
+                #view-rankings th:nth-child(4), #view-rankings td:nth-child(4) {{ width: 38px !important; }}
+                #view-rankings th:nth-child(5), #view-rankings td:nth-child(5) {{ width: 30px !important; }}
+                #view-rankings th:nth-child(6), #view-rankings td:nth-child(6) {{ width: 54px !important; }}
 
                 .col-name {{
                     min-width: 140px;
