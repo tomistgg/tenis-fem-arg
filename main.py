@@ -25,6 +25,23 @@ from itf import (
 )
 from html_generator import generate_html
 
+COUNTRY_OVERRIDES = {
+    "FRANCESCA MATTIOLI": "ARG",
+}
+
+
+def override_country_for_player(player_name, country_code):
+    key = (player_name or "").strip().upper()
+    if key in COUNTRY_OVERRIDES:
+        return COUNTRY_OVERRIDES[key]
+    return country_code
+
+
+def normalize_country_overrides(rows, name_key, country_key):
+    for row in rows or []:
+        row[country_key] = override_country_for_player(row.get(name_key, ""), row.get(country_key, ""))
+    return rows
+
 
 def main():
     chrome_options = Options()
@@ -69,6 +86,7 @@ def main():
         today = datetime.now()
         ranking_monday = (today - timedelta(days=today.weekday())).strftime("%Y-%m-%d")
         all_wta_players = get_wta_rankings_cached(ranking_monday, nationality=None)
+        normalize_country_overrides(all_wta_players, "Player", "Country")
 
         wta_players_arg = [p for p in all_wta_players if p['Country'] == 'ARG']
         itf_players_arg = get_itf_rankings_cached(ranking_monday, nationality="ARG")
@@ -103,6 +121,8 @@ def main():
 
             if md_date not in ranking_cache: ranking_cache[md_date] = get_wta_rankings_cached(md_date, nationality=None)
             if q_date not in ranking_cache: ranking_cache[q_date] = get_wta_rankings_cached(q_date, nationality=None)
+            normalize_country_overrides(ranking_cache[md_date], "Player", "Country")
+            normalize_country_overrides(ranking_cache[q_date], "Player", "Country")
 
             # Process WTA tournaments (single pass per tournament)
             for key, t_info in tourneys.items():
@@ -110,6 +130,7 @@ def main():
                 if key.startswith("http"):
                     t_list, status_dict = scrape_tournament_players(key, ranking_cache[md_date], ranking_cache[q_date], entry_cache.get(key, []))
                     t_list = merge_entry_list(entry_cache.get(key, []), t_list)
+                    normalize_country_overrides(t_list, "name", "country")
                     entry_cache[key] = t_list
                     tournament_store[key] = t_list
                     for p_name, suffix in status_dict.items():
@@ -162,6 +183,7 @@ def main():
 
                     tourney_players_list.sort(key=lambda x: (x["pos_num"], x["name"]))
                     tourney_players_list = merge_entry_list(entry_cache.get(key, []), tourney_players_list)
+                    normalize_country_overrides(tourney_players_list, "name", "country")
                     entry_cache[key] = tourney_players_list
                     tournament_store[key] = tourney_players_list
 
