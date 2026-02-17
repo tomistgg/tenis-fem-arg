@@ -350,16 +350,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             /* Calendar Styles */
             #view-calendar {{ width: 100%; min-height: 0; }}
-            .calendar-container {{ width: max-content; min-width: 100%; min-height: 0; margin-bottom: 0; display: block; }}
-            .calendar-container .table-wrapper {{ display: block; overflow: visible; -webkit-overflow-scrolling: touch; width: max-content; max-width: none; }}
+            .calendar-container {{ width: 100%; min-width: 100%; min-height: 0; margin-bottom: 0; display: block; }}
+            .calendar-container .table-wrapper {{ display: block; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; border-right: 1px solid #1e293b; }}
             .calendar-table {{ border-collapse: separate; border-spacing: 0; width: max-content; min-width: max-content; table-layout: auto; border: 1px solid black; }}
             .calendar-table th {{ padding: 4px 4px; vertical-align: top; border-bottom: 2px solid #1e293b; border-right: 1px solid #1e293b; }}
             .calendar-table td {{ padding: 4px 4px; vertical-align: top; border-bottom: 1px solid #94a3b8; border-right: 1px solid #94a3b8; }}
             .cal-week-header {{ background: #75AADB; color: white; font-size: 10px; font-weight: bold; text-align: center; white-space: nowrap; padding: 6px 6px; position: sticky; top: 0; z-index: 10; min-width: 90px; }}
-            .cal-cat-header {{ background: #75AADB; color: white; position: sticky; top: 0; left: 0; z-index: 12; width: 28px; min-width: 28px; }}
-            .cal-cont-header {{ background: #75AADB; color: white; position: sticky; top: 0; left: 28px; z-index: 12; min-width: 65px; }}
-            .cal-cat-label {{ background: #1e293b; color: white; font-size: 11px; font-weight: bold; text-align: center; vertical-align: middle !important; text-transform: uppercase; writing-mode: vertical-lr; text-orientation: mixed; transform: rotate(180deg); padding: 0; width: 28px; min-width: 28px; max-width: 28px; position: sticky; left: 0; z-index: 2; border-color: #1e293b !important; box-shadow: inset 0 0 0 50px #1e293b; }}
-            .cal-cont-label {{ background: #f1f5f9; font-size: 11px; font-weight: 600; color: #475569; text-align: center; vertical-align: middle !important; white-space: nowrap; position: sticky; left: 28px; z-index: 2; }}
+            .cal-cat-header {{ background: #75AADB; color: white; position: sticky; top: 0; left: 0; z-index: 15; width: 24px; min-width: 24px; max-width: 24px; box-sizing: border-box; }}
+            .cal-cont-header {{ background: #75AADB; color: white; position: sticky; top: 0; left: 24px; z-index: 15; min-width: 58px; }}
+            .cal-cat-label {{ background: #1e293b; color: white; font-size: 11px; font-weight: bold; text-align: center; vertical-align: middle !important; text-transform: uppercase; writing-mode: vertical-lr; text-orientation: mixed; transform: rotate(180deg); padding: 0; width: 24px; min-width: 24px; max-width: 24px; position: sticky; left: 0; z-index: 14; border-color: #1e293b !important; box-shadow: inset 0 0 0 50px #1e293b; box-sizing: border-box; flex: 0 0 24px; }}
+            .cal-cont-label {{ background: #f1f5f9; font-size: 10px; font-weight: 600; color: #475569; text-align: center; vertical-align: middle !important; white-space: nowrap; position: sticky; left: 24px; z-index: 14; min-width: 58px; }}
             .cal-cell {{ font-size: 10px; min-height: 24px; vertical-align: middle !important; }}
             .cal-group-first td {{ border-top: 1px solid #1e293b; }}
             .cal-group-last td {{ border-bottom: 1px solid #1e293b; }}
@@ -835,9 +835,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     background: transparent;
                 }}
                 .cal-cat-header {{ position: sticky !important; position: -webkit-sticky !important; left: 0; z-index: 14; background: #75AADB; }}
-                .cal-cont-header {{ position: sticky !important; position: -webkit-sticky !important; left: 28px; z-index: 14; background: #75AADB; }}
+                .cal-cont-header {{ position: sticky !important; position: -webkit-sticky !important; left: 24px; z-index: 14; background: #75AADB; }}
                 .cal-cat-label {{ position: sticky !important; position: -webkit-sticky !important; left: 0; z-index: 14; }}
-                .cal-cont-label {{ position: sticky !important; position: -webkit-sticky !important; left: 28px; z-index: 14; background: #f1f5f9; }}
+                .cal-cont-label {{ position: sticky !important; position: -webkit-sticky !important; left: 24px; z-index: 14; background: #f1f5f9; }}
                 .calendar-container .table-wrapper {{ position: relative; }}
             }}
 

@@ -74,7 +74,7 @@ COUNTRY_TO_CONTINENT = {
 }
 
 CONTINENT_LABELS = {
-    "south_america": "South America",
+    "south_america": "S America",
     "north_central_america": "N/C America",
     "europe": "Europe",
     "africa": "Africa",
