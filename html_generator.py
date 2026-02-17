@@ -792,8 +792,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 /* National Team table */
                 #view-national .table-wrapper {{
-                    overflow-x: auto;
-                    -webkit-overflow-scrolling: touch;
+                    overflow-x: hidden;
                 }}
                 #national-table {{
                     width: 100%;
@@ -802,27 +801,23 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
                 #national-table th,
                 #national-table td {{
-                    font-size: 3px;
+                    font-size: 4px;
                     padding: 1px 1px;
-                    white-space: normal;
+                    white-space: normal !important;
                     overflow-wrap: anywhere;
+                    word-break: break-word;
                     line-height: 1.15;
-                    min-width: 0 !important;
-                    max-width: none !important;
                 }}
-                #national-table th {{ white-space: nowrap; }}
-                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 2%; }}
-                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 9%; min-width: 0; }}
-                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 8%; }}
-                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 7%; }}
-                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 5%; }}
-                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 8%; }}
-                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 8%; min-width: 0; white-space: normal; }}
-                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 35%; min-width: 0; white-space: normal; display: table-cell !important; }}
-                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 5%; min-width: 0; text-align: center; display: table-cell !important; }}
-                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 13%; min-width: 0; }}
-                #national-table th:nth-child(9), #national-table td:nth-child(9),
-                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ white-space: nowrap; }}
+                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 3% !important; }}
+                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 11% !important; }}
+                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 8% !important; }}
+                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 10% !important; }}
+                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 7% !important; }}
+                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 9% !important; }}
+                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 9% !important; }}
+                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 25% !important; display: table-cell !important; }}
+                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 5% !important; text-align: center; display: table-cell !important; }}
+                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 13% !important; }}
 
                 /* Calendar mobile */
                 .calendar-container .table-wrapper {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
@@ -886,6 +881,34 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     padding: 2px 2px;
                 }}
 
+                #view-national .table-wrapper {{
+                    overflow-x: hidden;
+                }}
+                #national-table {{
+                    width: 100%;
+                    min-width: 0;
+                    table-layout: fixed;
+                }}
+                #national-table th,
+                #national-table td {{
+                    font-size: 4px;
+                    padding: 1px 1px;
+                    white-space: normal !important;
+                    overflow-wrap: anywhere;
+                    word-break: break-word;
+                    line-height: 1.15;
+                }}
+                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 3% !important; }}
+                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 11% !important; }}
+                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 8% !important; }}
+                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 10% !important; }}
+                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 7% !important; }}
+                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 9% !important; }}
+                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 9% !important; }}
+                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 25% !important; display: table-cell !important; }}
+                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 5% !important; text-align: center; display: table-cell !important; }}
+                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 13% !important; }}
+
                 .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
             }}
         </style>
@@ -899,7 +922,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div class="menu-item" id="btn-entrylists" onclick="switchTab('entrylists')">Entry Lists</div>
                 <div class="menu-item" id="btn-rankings" onclick="switchTab('rankings')">WTA Rankings</div>
                 <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
-                <div class="menu-item" id="btn-national" onclick="switchTab('national')">National Team Order</div>
+                <div class="menu-item" id="btn-national" onclick="switchTab('national')">Argentina NT Debuts</div>
                 <div class="menu-item" id="btn-calendar" onclick="switchTab('calendar')">Calendar</div>
             </div>
 
