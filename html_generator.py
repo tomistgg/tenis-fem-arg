@@ -158,7 +158,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
         <title>WT Argentina</title>
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -381,7 +381,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             @media (max-width: 768px) {{
                 /* Mobile styles */
-                body {{ overflow-x: auto; }}
+                body {{ overflow-x: hidden; }}
                 .mobile-menu-toggle {{ display: none; }}
 
                 .app-container {{ flex-direction: column; }}
@@ -391,7 +391,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     top: 0;
                     left: 0;
                     right: 0;
-                    width: 100vw;
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    padding-left: env(safe-area-inset-left);
+                    padding-right: env(safe-area-inset-right);
+                    box-sizing: border-box;
                     height: auto;
                     min-height: 0;
                     z-index: 999;
