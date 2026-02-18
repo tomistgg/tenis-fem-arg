@@ -204,7 +204,7 @@ def main():
 
         # 4. Fetch match history
         match_history_data = []
-        matches_files = ['itf_fill/itf_matches_arg.csv', 'itf_fill/wta_matches_arg.csv', 'itf_fill/gs_matches_arg.csv', 'itf_fill/fed_bjkc_matches_arg.csv']
+        matches_files = ['data/itf_matches_arg.csv', 'data/wta_matches_arg.csv', 'data/gs_matches_arg.csv', 'data/fed_bjkc_matches_arg.csv']
         for file_path in matches_files:
             try:
                 with open(file_path, 'r', encoding='utf-8-sig') as file_obj:
