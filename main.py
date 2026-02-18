@@ -205,14 +205,14 @@ def main():
         # 4. Fetch match history
         match_history_data = []
         matches_files = ['itf_fill/itf_matches_arg.csv', 'itf_fill/wta_matches_arg.csv', 'itf_fill/gs_matches_arg.csv']
-        for f in matches_files:
+        for file_path in matches_files:
             try:
-                with open(f, 'r', encoding='utf-8-sig') as f:
-                    reader = csv.DictReader(f, delimiter=',')
+                with open(file_path, 'r', encoding='utf-8-sig') as file_obj:
+                    reader = csv.DictReader(file_obj, delimiter=',')
                     for row in reader:
                         match_history_data.append(row)
             except Exception as e:
-                print(f"Error reading matches data: {e}")
+                print(f"Error reading matches data from {file_path}: {e}")
 
         cleaned_history = []
         for m in match_history_data:
@@ -224,11 +224,25 @@ def main():
             winner_entry = '' if winner_entry == 'DA' else winner_entry
             loser_entry = '' if loser_entry == 'DA' else loser_entry
 
+            raw_round = m.get('roundName') or m.get('round_name') or m.get('RoundName') or ''
+            draw_type = m.get('draw') or m.get('Draw') or m.get('DRAW') or ''
+            
+            if draw_type == 'Q':
+                qr_mapping = {
+                    '1st Round': 'QR1',
+                    '2nd Round': 'QR2',
+                    '3rd Round': 'QR3',
+                    '4th Round': 'QR4'
+                }
+                final_round = qr_mapping.get(raw_round, raw_round) 
+            else:
+                final_round = raw_round
+
             new_match = {
                 'DATE': fecha,
                 'TOURNAMENT': fix_encoding(m.get('tournamentName') or m.get('tournament_name') or m.get('TournamentName') or ''),
                 'SURFACE': m.get('surface') or m.get('Surface') or '',
-                'ROUND': m.get('roundName') or m.get('round_name') or m.get('RoundName') or '',
+                'ROUND': final_round,
                 'PLAYER': '',
                 'ENTRY': '',
                 'SEED': '',

@@ -137,7 +137,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
         rounds = group.get("rounds", [])
         for rnd in rounds:
             r_id = rnd.get("roundNumber")
-            r_ds = rnd.get("roundName")
+            r_ds = rnd.get("roundDesc")
             matches = rnd.get("matches", [])
             for match in matches:
                 try:
