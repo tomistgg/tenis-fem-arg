@@ -203,7 +203,16 @@ def main():
         save_cache(ENTRY_LISTS_CACHE_FILE, entry_cache)
 
         # 4. Fetch match history
-        match_history_data = get_sheety_matches()
+        match_history_data = []
+        matches_files = ['itf_fill/itf_matches_arg.csv', 'itf_fill/wta_matches_arg.csv', 'itf_fill/gs_matches_arg.csv']
+        for f in matches_files:
+            try:
+                with open(f, 'r', encoding='utf-8-sig') as f:
+                    reader = csv.DictReader(f, delimiter=',')
+                    for row in reader:
+                        match_history_data.append(row)
+            except Exception as e:
+                print(f"Error reading matches data: {e}")
 
         cleaned_history = []
         for m in match_history_data:
@@ -243,7 +252,7 @@ def main():
         def parse_match_date(item):
             d = item.get('DATE') or "1900-01-01"
             try:
-                return pd.to_datetime(d, dayfirst=True)
+                return pd.to_datetime(d, dayfirst=False)
             except:
                 return pd.to_datetime("1900-01-01")
 
