@@ -1,13 +1,13 @@
 import json
 from html import escape
-
+import os
+from datetime import datetime
 from config import PLAYER_MAPPING, CONTINENT_KEYS, CONTINENT_LABELS, NAME_LOOKUP
 from utils import format_player_name, get_tournament_sort_order, get_surface_class
 
-
 def generate_html(tournament_groups, tournament_store, players_data, schedule_map,
                   cleaned_history, calendar_data, match_history_data, wta_rankings=None,
-                  national_team_data=None):
+                  national_team_data=None, captains_data=None):
     """Generate the complete HTML page and write it to index.html."""
 
     # Build tournament side menu HTML for Entry Lists
@@ -152,6 +152,28 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             national_rows += f'<td{cell_style}>{escape(value)}</td>'
         national_rows += '</tr>'
 
+    default_captains_columns = ["N", "Captain", "Year"]
+    captains_columns = list(captains_data[0].keys()) if captains_data else default_captains_columns
+
+    captains_header_html = "".join(
+        f'<th{header_style_map.get(col, "")}>{escape(header_label_map.get(col, col.upper()))}</th>'
+        for col in captains_columns
+    )
+
+    captains_rows = ""
+    for row in (captains_data or []):
+        captains_rows += '<tr>'
+        for col in captains_columns:
+            value = str(row.get(col, "") or "")
+            cell_style = ""
+
+            if col == "Captain":
+                value = format_player_name(value)
+                cell_style = ' style="font-weight:bold;"'
+
+            captains_rows += f'<td{cell_style}>{escape(value)}</td>'
+        captains_rows += '</tr>'
+
     # Generate the full HTML template
     html_template = f"""
     <!DOCTYPE html>
@@ -179,6 +201,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #view-entrylists {{ width: 100%; max-width: 1100px; margin: 0 auto; }}
             #view-rankings {{ max-width: 700px; margin: 0 auto; }}
             #view-national {{ max-width: 1400px; margin: 0 auto; }}
+            #view-captains {{ max-width: 640px; margin: 0 auto; }}
             .header-row {{ width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; gap: 10px; }}
             h1 {{ margin: 0; font-size: 22px; color: #1e293b; }}
             .search-container {{ position: absolute; left: 0; top: 50%; transform: translateY(-50%); }}
@@ -307,6 +330,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 white-space: nowrap;
             }}
 
+            /* Captains table: keep compact width and avoid stretched columns */
+            #view-captains .content-card {{ width: fit-content; max-width: 100%; margin: 0 auto; }}
+            #view-captains .table-wrapper {{ width: fit-content; max-width: 100%; overflow-x: auto; }}
+            #captains-table {{ width: max-content; min-width: 0; table-layout: auto; margin: 0; }}
+            #captains-table th, #captains-table td {{
+                font-size: 11px;
+                padding: 5px 6px;
+                white-space: nowrap;
+                line-height: 1.2;
+            }}
+            #captains-table th:nth-child(1), #captains-table td:nth-child(1) {{ width: 42px; }}
+            #captains-table th:nth-child(2), #captains-table td:nth-child(2) {{ width: auto; }}
+            #captains-table th:nth-child(3), #captains-table td:nth-child(3) {{ width: 64px; }}
+
             #history-table th {{ background: #75AADB !important; position: sticky; top: 0; z-index: 10; }}
             #history-table {{ table-layout: fixed; width: 100%; }}
             #history-table th:nth-child(1) {{ width: 80px; }} /* DATE */
@@ -430,7 +467,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
                 .menu-item:last-child {{ border-right: none; }}
 
-                #view-upcoming, #view-rankings, #view-national {{ max-width: 100%; }}
+                #view-upcoming, #view-rankings, #view-national, #view-captains {{ max-width: 100%; }}
 
                 .entry-layout {{ flex-direction: column; gap: 15px; }}
                 .entry-menu {{
@@ -824,6 +861,27 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 5% !important; text-align: center; display: table-cell !important; }}
                 #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 13% !important; }}
 
+                /* Captains table mobile */
+                #view-captains .content-card {{ max-width: 100%; }}
+                #view-captains .table-wrapper {{ overflow-x: hidden; }}
+                #captains-table {{
+                    width: 100%;
+                    min-width: 0;
+                    table-layout: fixed;
+                }}
+                #captains-table th,
+                #captains-table td {{
+                    font-size: 9px;
+                    padding: 3px 4px;
+                    white-space: normal;
+                    overflow-wrap: anywhere;
+                    word-break: break-word;
+                    line-height: 1.15;
+                }}
+                #captains-table th:nth-child(1), #captains-table td:nth-child(1) {{ width: 12%; }}
+                #captains-table th:nth-child(2), #captains-table td:nth-child(2) {{ width: 58%; }}
+                #captains-table th:nth-child(3), #captains-table td:nth-child(3) {{ width: 30%; }}
+
                 /* Calendar mobile */
                 .calendar-container .table-wrapper {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
                 .cal-week-header {{ font-size: 7px; padding: 3px 3px; min-width: 80px; }}
@@ -914,6 +972,27 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 5% !important; text-align: center; display: table-cell !important; }}
                 #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 13% !important; }}
 
+                #view-captains .table-wrapper {{
+                    overflow-x: hidden;
+                }}
+                #captains-table {{
+                    width: 100%;
+                    min-width: 0;
+                    table-layout: fixed;
+                }}
+                #captains-table th,
+                #captains-table td {{
+                    font-size: 8px;
+                    padding: 2px 3px;
+                    white-space: normal;
+                    overflow-wrap: anywhere;
+                    word-break: break-word;
+                    line-height: 1.15;
+                }}
+                #captains-table th:nth-child(1), #captains-table td:nth-child(1) {{ width: 12%; }}
+                #captains-table th:nth-child(2), #captains-table td:nth-child(2) {{ width: 58%; }}
+                #captains-table th:nth-child(3), #captains-table td:nth-child(3) {{ width: 30%; }}
+
                 .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
             }}
 
@@ -936,10 +1015,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div class="sidebar-header">WT Argentina</div>
                 <div class="menu-item active" id="btn-upcoming" onclick="switchTab('upcoming')">Upcoming Tournaments</div>
                 <div class="menu-item" id="btn-entrylists" onclick="switchTab('entrylists')">Entry Lists</div>
+                <div class="menu-item" id="btn-calendar" onclick="switchTab('calendar')">Calendar</div>
                 <div class="menu-item" id="btn-rankings" onclick="switchTab('rankings')">WTA Rankings</div>
                 <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
-                <div class="menu-item" id="btn-national" onclick="switchTab('national')">Argentina NT Debuts</div>
-                <div class="menu-item" id="btn-calendar" onclick="switchTab('calendar')">Calendar</div>
+                <div class="menu-item" id="btn-national" onclick="switchTab('national')">Argentina NT Players</div>
+                <div class="menu-item" id="btn-captains" onclick="switchTab('captains')">Argentina NT Captains</div>
             </div>
 
             <div class="main-content">
@@ -1137,6 +1217,24 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                 </div>
 
+                <div id="view-captains" class="single-layout" style="display: none;">
+                    <div class="header-row">
+                        <h1>Argentina NT - Captains</h1>
+                    </div>
+                    <div class="content-card">
+                        <div class="table-wrapper">
+                            <table id="captains-table">
+                                <thead>
+                                    <tr>
+                                        {captains_header_html}
+                                    </tr>
+                                </thead>
+                                <tbody id="captains-body">{captains_rows}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="view-calendar" class="single-layout" style="display: none;">
                     <div class="content-card calendar-container">
                         <div class="table-wrapper">
@@ -1178,6 +1276,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('view-rankings').style.display = (tabName === 'rankings') ? 'flex' : 'none';
                 document.getElementById('view-history').style.display = (tabName === 'history') ? 'flex' : 'none';
                 document.getElementById('view-national').style.display = (tabName === 'national') ? 'flex' : 'none';
+                document.getElementById('view-captains').style.display = (tabName === 'captains') ? 'flex' : 'none';
                 document.getElementById('view-calendar').style.display = (tabName === 'calendar') ? 'flex' : 'none';
 
                 if (tabName === 'entrylists') updateEntryList();

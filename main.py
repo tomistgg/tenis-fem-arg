@@ -292,11 +292,22 @@ def main():
     except Exception as e:
         print(f"Error reading national team data: {e}")
 
+    captains_data = []
+    try:
+        with open('data/captains.csv', 'r', encoding='utf-8-sig') as f:
+            # Assuming the CSV uses commas. If it uses semicolons, change delimiter to ';'
+            reader = csv.DictReader(f, delimiter=',')
+            for row in reader:
+                captains_data.append(row)
+    except Exception as e:
+        print(f"Error reading NT captains data: {e}")
+
     # 7. Generate HTML
     generate_html(
         tournament_groups, tournament_store, players_data, schedule_map,
         cleaned_history, calendar_data, match_history_data, all_wta_players,
-        national_team_data=national_team_data
+        national_team_data=national_team_data,
+        captains_data=captains_data
     )
 
 
