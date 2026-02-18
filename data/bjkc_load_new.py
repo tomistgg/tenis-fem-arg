@@ -1,6 +1,7 @@
 import requests
 import json
 from datetime import datetime
+import os
 import pandas as pd
 
 # --- CONFIGURATION ---
@@ -153,6 +154,10 @@ def main():
         except: continue
 
     # Phase 3: Final Merge and Column Order
+    if not match_results:
+        print("\nNo match results found.")
+        return
+
     final_df = pd.merge(df_ties, pd.DataFrame(match_results), on="tieId", how="inner")
     final_df = final_df.rename(columns={"eventName": "tournamentName", "drawName": "draw"})
     
@@ -160,8 +165,28 @@ def main():
             "tournamentCountry", "roundName", "draw", "result", "resultStatusDesc", "winnerId", "winnerEntry", 
             "winnerSeed", "winnerName", "winnerCountry", "loserId", "loserEntry", "loserSeed", "loserName", "loserCountry"]
     
-    final_df[cols].to_csv(f"bjkc_matches_arg_{END_YEAR}.csv", index=False)
-    print(f"\nDone! Saved {len(final_df)} rows to 'bjkc_matches_arg_{END_YEAR}.csv'.")
+    # Filter final dataframe to only include the required columns
+    final_df = final_df[cols]
+    
+    csv_filename = "bjkc_matches_arg.csv"
+    
+    # Check if file exists to only append new records
+    if os.path.exists(csv_filename):
+        existing_df = pd.read_csv(csv_filename)
+        
+        # Filter final_df to only include matchIds that are not in the existing CSV
+        new_matches = final_df[~final_df['matchId'].isin(existing_df['matchId'])]
+        
+        if not new_matches.empty:
+            # Append without writing the header again
+            new_matches.to_csv(csv_filename, mode='a', header=False, index=False)
+            print(f"\nDone! Appended {len(new_matches)} new matches to '{csv_filename}'.")
+        else:
+            print(f"\nDone! No new matches found. '{csv_filename}' is already up to date.")
+    else:
+        # File doesn't exist, create it and write headers
+        final_df.to_csv(csv_filename, index=False)
+        print(f"\nDone! Saved {len(final_df)} rows to a new file '{csv_filename}'.")
 
 if __name__ == "__main__":
     main()
