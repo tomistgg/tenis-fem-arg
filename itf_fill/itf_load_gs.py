@@ -123,7 +123,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
 
     t_date = base_date 
 
-    if base_date and week_offset > 0:
+    if base_date and week_offset != 0: 
         try:
             date_obj = datetime.strptime(base_date, '%Y-%m-%d')
             adjusted_date_obj = date_obj + timedelta(days=7 * week_offset)
@@ -230,16 +230,16 @@ if __name__ == "__main__":
     gs_files = ['australian_open.json', 'roland_garros.json', 'wimbledon.json', 'us_open.json']
     all_matches = []
 
-    for f in gs_files:
+    for file_name in gs_files:
 
-        with open(f, 'r', encoding='utf-8') as f:
+        with open(file_name, 'r', encoding='utf-8') as f:
             raw_data = json.load(f)
 
         tournaments_df = create_tournament_df(raw_data)
 
         if tournaments_df is None or tournaments_df.empty:
-            print(f"DataFrame creation failed for {year}.")
-            raise SystemExit(0)
+            print(f"DataFrame creation failed for {file_name}.")
+            continue
 
         print("Step 2: Fetching Tournament IDs...")
         keys_list = tournaments_df["tournamentKey"].dropna().unique().tolist()
@@ -272,7 +272,8 @@ if __name__ == "__main__":
                 json_data = fetch_api_data(int(tId), code, week_number=0)
 
                 if json_data:
-                    parsed = parse_drawsheet(json_data, tourney, code, week_offset=0)
+                    offset = -1 if code == "Q" else 0
+                    parsed = parse_drawsheet(json_data, tourney, code, week_offset=offset)
                     all_matches.extend(parsed)
                     print(f"   -> {code}: Found {len(parsed)} ARG matches")
 
@@ -289,4 +290,4 @@ if __name__ == "__main__":
         final_matches_df.to_csv(file_path, index=False, encoding='utf-8-sig')
         print(f"\nSUCCESS! Saved {len(final_matches_df)} ARG matches to:\n{file_path}")
     else:
-        print(f"\nFinished {year}, but no ARG matches were found.")
+        print(f"\nFinished processing files, but no ARG matches were found.")
