@@ -109,8 +109,12 @@ def fetch_itf_ids_to_json(keys_list):
         return "[]"
 
     chrome_options = Options()
+    chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-    
+
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
     results = []
