@@ -29,14 +29,57 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas requests beautifulsoup4 selenium webdriver-manager
 
+      - name: Snapshot previous data state
+        run: |
+          mkdir -p .run_snapshot/data
+          cp data/entry_lists_cache.json .run_snapshot/data/entry_lists_cache.json 2>/dev/null || true
+          cp data/tournament_snapshot.json .run_snapshot/data/tournament_snapshot.json 2>/dev/null || true
+          cp data/calendar_snapshot.json .run_snapshot/data/calendar_snapshot.json 2>/dev/null || true
+          cp data/*.csv .run_snapshot/data/ 2>/dev/null || true
+
       - name: Run weekly ITF loader
+        id: itf_weekly
         run: python itf_load_weekly.py
 
       - name: Run update script
+        id: main_update
         run: python main.py
+
+      - name: Build run report
+        if: always()
+        run: |
+          python generate_run_report.py --before .run_snapshot/data --after data --output .run_snapshot/run_report.md
+
+      - name: Check if report exists
+        if: always()
+        id: check_report
+        run: |
+          if [ -f .run_snapshot/run_report.md ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "body<<DELIMITER_EOF" >> "$GITHUB_OUTPUT"
+            cat .run_snapshot/run_report.md >> "$GITHUB_OUTPUT"
+            echo "" >> "$GITHUB_OUTPUT"
+            echo "DELIMITER_EOF" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Send email report
+        if: always() && steps.check_report.outputs.exists == 'true'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "WTA Site Update Report - ${{ github.repository }} - Run #${{ github.run_number }}"
+          to: ${{ secrets.RECEIVE_ALERT }}
+          from: WTA Tracker
+          body: ${{ steps.check_report.outputs.body }}
 
       - name: Commit and push changes
         run: |
+          rm -rf .run_snapshot
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A

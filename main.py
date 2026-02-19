@@ -1,4 +1,5 @@
 import os
+import json
 import pandas as pd
 import csv
 from datetime import datetime, timedelta
@@ -28,6 +29,8 @@ from html_generator import generate_html
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
+TOURNAMENT_SNAPSHOT_FILE = os.path.join(DATA_DIR, "tournament_snapshot.json")
+CALENDAR_SNAPSHOT_FILE = os.path.join(DATA_DIR, "calendar_snapshot.json")
 
 COUNTRY_OVERRIDES = {
     "FRANCESCA MATTIOLI": "ARG",
@@ -45,6 +48,11 @@ def normalize_country_overrides(rows, name_key, country_key):
     for row in rows or []:
         row[country_key] = override_country_for_player(row.get(name_key, ""), row.get(country_key, ""))
     return rows
+
+
+def save_json_file(path, payload):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
 
 
 def main():
@@ -85,6 +93,18 @@ def main():
                     "startDate": item['startDate'],
                     "endDate": item.get('endDate', None)
                 }
+
+        tournament_snapshot = {}
+        for week, tourneys in tournament_groups.items():
+            for key, info in tourneys.items():
+                tournament_snapshot[key] = {
+                    "name": info.get("name", key),
+                    "level": info.get("level", ""),
+                    "startDate": info.get("startDate"),
+                    "endDate": info.get("endDate"),
+                    "week": week,
+                }
+        save_json_file(TOURNAMENT_SNAPSHOT_FILE, tournament_snapshot)
 
         # 2. Fetch Players & Rankings
         today = datetime.now()
@@ -291,6 +311,34 @@ def main():
     full_wta = get_full_wta_calendar()
     all_calendar_tournaments = full_wta + full_itf
     calendar_data = build_calendar_data(all_calendar_tournaments)
+    calendar_snapshot = []
+    seen_calendar_entries = set()
+    for week in calendar_data:
+        week_label = week.get("week_label", "")
+        columns = week.get("columns", {})
+        for column_name, continents in columns.items():
+            for continent, tournaments in continents.items():
+                for t in tournaments:
+                    key = (
+                        week_label,
+                        column_name,
+                        continent,
+                        t.get("name", ""),
+                        t.get("level", ""),
+                        t.get("surface", ""),
+                    )
+                    if key in seen_calendar_entries:
+                        continue
+                    seen_calendar_entries.add(key)
+                    calendar_snapshot.append({
+                        "week_label": week_label,
+                        "column": column_name,
+                        "continent": continent,
+                        "name": t.get("name", ""),
+                        "level": t.get("level", ""),
+                        "surface": t.get("surface", ""),
+                    })
+    save_json_file(CALENDAR_SNAPSHOT_FILE, calendar_snapshot)
 
     national_team_data = []
     try:
