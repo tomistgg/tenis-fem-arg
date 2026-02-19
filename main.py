@@ -272,6 +272,7 @@ def main():
                 'DATE': fecha,
                 'TOURNAMENT': fix_encoding(m.get('tournamentName') or m.get('tournament_name') or m.get('TournamentName') or ''),
                 'SURFACE': m.get('surface') or m.get('Surface') or '',
+                'MATCH_TYPE': m.get('matchType') or m.get('MatchType') or m.get('MATCH_TYPE') or '',
                 'ROUND': final_round,
                 'PLAYER': '',
                 'ENTRY': '',

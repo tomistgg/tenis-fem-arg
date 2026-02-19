@@ -1509,6 +1509,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 element.parentElement.classList.toggle('collapsed');
             }}
 
+            function getRowMatchType(row) {{
+                const explicit = (row['MATCH_TYPE'] || row['matchType'] || '').toString().trim();
+                if (explicit) return explicit;
+
+                // Backward-compatible fallback for older rows without matchType.
+                const tournament = (row['TOURNAMENT'] || '').toString();
+                const isITF = tournament.includes('ITF') || tournament.includes('W15') || tournament.includes('W25') ||
+                              tournament.includes('W35') || tournament.includes('W50') || tournament.includes('W60') ||
+                              tournament.includes('W75') || tournament.includes('W100');
+                return isITF ? 'ITF' : 'WTA';
+            }}
+
             function populateFilters(playerMatches) {{
                 // Extract unique values for each filter
                 const surfaces = new Set();
@@ -1545,15 +1557,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const playerEntry = isWinner ? (row['_winnerEntry'] || '') : (row['_loserEntry'] || '');
                     if (playerEntry) playerEntries.add(playerEntry);
 
-                    // Match Type (determine from tournament)
-                    const tournament = row['TOURNAMENT'] || '';
-                    if (tournament.includes('ITF') || tournament.includes('W15') || tournament.includes('W25') ||
-                        tournament.includes('W35') || tournament.includes('W50') || tournament.includes('W60') ||
-                        tournament.includes('W75') || tournament.includes('W100')) {{
-                        matchTypes.add('ITF');
-                    }} else {{
-                        matchTypes.add('WTA');
-                    }}
+                    // Match Type (from CSV matchType column; fallback for legacy rows)
+                    const matchType = getRowMatchType(row);
+                    if (matchType) matchTypes.add(matchType);
                 }});
 
                 // Populate filter options
@@ -1692,11 +1698,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     if (selectedSeeds.length > 0 && !selectedSeeds.includes(hasSeed)) return false;
 
                     // Match Type filter
-                    const tournament = row['TOURNAMENT'] || '';
-                    const isITF = tournament.includes('ITF') || tournament.includes('W15') || tournament.includes('W25') ||
-                                  tournament.includes('W35') || tournament.includes('W50') || tournament.includes('W60') ||
-                                  tournament.includes('W75') || tournament.includes('W100');
-                    const matchType = isITF ? 'ITF' : 'WTA';
+                    const matchType = getRowMatchType(row);
                     if (selectedMatchTypes.length > 0 && !selectedMatchTypes.includes(matchType)) return false;
 
                     return true;
