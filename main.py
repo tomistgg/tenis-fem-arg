@@ -271,6 +271,7 @@ def main():
             new_match = {
                 'DATE': fecha,
                 'TOURNAMENT': fix_encoding(m.get('tournamentName') or m.get('tournament_name') or m.get('TournamentName') or ''),
+                'CATEGORY': fix_encoding(m.get('tournamentCategory') or m.get('tournament_category') or m.get('TournamentCategory') or ''),
                 'SURFACE': m.get('surface') or m.get('Surface') or '',
                 'MATCH_TYPE': m.get('matchType') or m.get('MatchType') or m.get('MATCH_TYPE') or '',
                 'ROUND': final_round,
@@ -290,7 +291,8 @@ def main():
                 '_winnerEntry': winner_entry,
                 '_loserEntry': loser_entry,
                 '_winnerSeed': m.get('winnerSeed') or m.get('winner_seed') or m.get('WinnerSeed') or '',
-                '_loserSeed': m.get('loserSeed') or m.get('loser_seed') or m.get('LoserSeed') or ''
+                '_loserSeed': m.get('loserSeed') or m.get('loser_seed') or m.get('LoserSeed') or '',
+                '_resultStatusDesc': m.get('resultStatusDesc') or m.get('result_status_desc') or m.get('ResultStatusDesc') or ''
             }
             cleaned_history.append(new_match)
 

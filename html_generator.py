@@ -365,6 +365,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .filter-group-title {{ font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 8px; cursor: pointer; user-select: none; display: flex; justify-content: center; align-items: center; text-align: center; position: relative; }}
             .filter-group-title:hover {{ color: #75AADB; }}
             .filter-options {{ border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px; background: #f8fafc; text-align: left; }}
+            .filter-options.scrollable {{ max-height: 180px; overflow-y: auto; }}
             .filter-option {{ padding: 6px 10px; margin-bottom: 4px; font-size: 12px; text-align: left; cursor: pointer; user-select: none; border-radius: 3px; transition: background 0.15s; }}
             .filter-option:hover {{ background: #e2e8f0; }}
             .filter-option.selected {{ font-weight: bold; background: #dbeafe; color: #1e40af; }}
@@ -385,6 +386,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .table-header-section {{ margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }}
             .table-title {{ margin: 0; font-size: 22px; color: #1e293b; flex: 1; text-align: center; }}
             .player-select-container {{ width: 250px; }}
+            .history-summary-container {{ width: 250px; text-align: right; }}
+            .history-wl-counter {{ font-size: 14px; font-weight: 700; color: #1e293b; }}
 
             /* Calendar Styles */
             #view-calendar {{ width: 100%; min-height: 0; }}
@@ -744,6 +747,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
                 .filter-group-title {{ font-size: 8px; margin-bottom: 2px; }}
                 .filter-option {{ font-size: 7px; padding: 2px 3px; margin-bottom: 1px; }}
+                .filter-options.scrollable {{ max-height: 120px; }}
 
                 .table-header-section {{
                     flex-direction: column;
@@ -762,8 +766,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 .table-title {{ font-size: 14px; text-align: center; }}
 
-                .table-header-section > div[style*="width: 250px"] {{
-                    display: none;
+                .history-summary-container {{
+                    width: 100%;
+                    text-align: center;
+                }}
+
+                .history-wl-counter {{
+                    font-size: 12px;
                 }}
 
                 .filter-actions {{
@@ -1130,6 +1139,27 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                             <div class="filter-group collapsed">
                                 <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                                    Year <span class="collapse-icon"></span>
+                                </div>
+                                <div class="filter-options" id="filter-year"></div>
+                            </div>
+
+                            <div class="filter-group collapsed">
+                                <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                                    Tournament <span class="collapse-icon"></span>
+                                </div>
+                                <div class="filter-options scrollable" id="filter-tournament"></div>
+                            </div>
+
+                            <div class="filter-group collapsed">
+                                <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                                    Category <span class="collapse-icon"></span>
+                                </div>
+                                <div class="filter-options scrollable" id="filter-category"></div>
+                            </div>
+
+                            <div class="filter-group collapsed">
+                                <div class="filter-group-title" onclick="toggleFilterGroup(this)">
                                     Opponent <span class="collapse-icon"></span>
                                 </div>
                                 <div class="opponent-select-container" style="padding: 8px; overflow: visible;">
@@ -1182,7 +1212,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                     </select>
                                 </div>
                                 <h1 class="table-title">Match History</h1>
-                                <div style="width: 250px;"></div>
+                                <div class="history-summary-container">
+                                    <span id="history-wl-counter" class="history-wl-counter">Matches: 0 (0-0)</span>
+                                </div>
                             </div>
 
                             <div class="content-card">
@@ -1521,11 +1553,36 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 return isITF ? 'ITF' : 'WTA';
             }}
 
+            function getRowYear(row) {{
+                const dateStr = (row['DATE'] || '').toString().trim();
+                const match = dateStr.match(/^(\\d{{4}})/);
+                return match ? match[1] : '';
+            }}
+
+            function getResultLabel(row, isWinner) {{
+                const statusDesc = (row['_resultStatusDesc'] || '').toString().toLowerCase();
+                const scoreText = (row['SCORE'] || '').toString().toLowerCase();
+                const isRet = statusDesc.includes('retired') || statusDesc.includes('ret.') || scoreText.includes('ret.');
+                const isDef = statusDesc.includes('default') || statusDesc.includes('def.') || scoreText.includes('def.');
+
+                if (isWinner) {{
+                    if (isRet) return 'Wins by RET';
+                    if (isDef) return 'Wins by DEF';
+                    return 'Wins';
+                }}
+                if (isRet) return 'Losses by RET';
+                if (isDef) return 'Losses by DEF';
+                return 'Losses';
+            }}
+
             function populateFilters(playerMatches) {{
                 // Extract unique values for each filter
                 const surfaces = new Set();
                 const rounds = new Set();
-                const results = new Set(['W', 'L']);
+                const results = new Set();
+                const years = new Set();
+                const tournaments = new Set();
+                const categories = new Set();
                 const opponents = new Set();
                 const opponentCountries = new Set();
                 const playerEntries = new Set();
@@ -1538,12 +1595,25 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const wName = (row['_winnerName'] || "").toString().toUpperCase();
                     const wNameNormalized = getDisplayName(wName).toUpperCase();
                     const isWinner = wNameNormalized === selectedPlayer;
+                    const resultLabel = getResultLabel(row, isWinner);
+                    if (resultLabel) results.add(resultLabel);
 
                     // Surface
                     if (row['SURFACE']) surfaces.add(row['SURFACE']);
 
                     // Round
                     if (row['ROUND']) rounds.add(row['ROUND']);
+
+                    // Year
+                    const year = getRowYear(row);
+                    if (year) years.add(year);
+
+                    // Tournament
+                    if (row['TOURNAMENT']) tournaments.add(row['TOURNAMENT']);
+
+                    // Category
+                    const category = row['CATEGORY'] || '';
+                    if (category) categories.add(category);
 
                     // Opponent
                     const opponentName = isWinner ? (row['_loserName'] || '') : (row['_winnerName'] || '');
@@ -1563,9 +1633,23 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }});
 
                 // Populate filter options
+                const orderedResults = [
+                    'Wins',
+                    'Losses',
+                    'Wins by RET',
+                    'Losses by RET',
+                    'Wins by DEF',
+                    'Losses by DEF'
+                ].filter(r => results.has(r));
+                const orderedYears = Array.from(years).sort((a, b) => Number(b) - Number(a));
+                orderedYears.unshift('Career');
+
                 populateFilterOptions('filter-surface', Array.from(surfaces).sort());
                 populateFilterOptions('filter-round', Array.from(rounds).sort());
-                populateFilterOptions('filter-result', Array.from(results));
+                populateFilterOptions('filter-result', orderedResults);
+                populateFilterOptions('filter-year', orderedYears);
+                populateFilterOptions('filter-tournament', Array.from(tournaments).sort((a, b) => a.localeCompare(b)));
+                populateFilterOptions('filter-category', Array.from(categories).sort((a, b) => a.localeCompare(b)));
                 populateOpponentSelect(Array.from(opponents).sort());
                 populateFilterOptions('filter-opponent-country', Array.from(opponentCountries).sort());
                 populateFilterOptions('filter-player-entry', Array.from(playerEntries).sort());
@@ -1645,6 +1729,26 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 return Array.from(selectedOptions).map(option => option.getAttribute('data-value'));
             }}
 
+            function updateHistoryCounter(matches, selectedPlayer) {{
+                const counter = document.getElementById('history-wl-counter');
+                if (!counter) return;
+
+                const total = (matches || []).length;
+                if (!selectedPlayer || total === 0) {{
+                    counter.textContent = `Matches: ${{total}} (0-${{total}})`;
+                    return;
+                }}
+
+                let wins = 0;
+                (matches || []).forEach(row => {{
+                    const wName = (row['_winnerName'] || '').toString().toUpperCase();
+                    const wNameNormalized = getDisplayName(wName).toUpperCase();
+                    if (wNameNormalized === selectedPlayer) wins += 1;
+                }});
+                const losses = total - wins;
+                counter.textContent = `Matches: ${{total}} (${{wins}}-${{losses}})`;
+            }}
+
             function applyHistoryFilters() {{
                 const selectedPlayer = document.getElementById('playerHistorySelect').value.toUpperCase();
                 if (!selectedPlayer) return;
@@ -1653,6 +1757,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const selectedSurfaces = getSelectedFilterValues('filter-surface');
                 const selectedRounds = getSelectedFilterValues('filter-round');
                 const selectedResults = getSelectedFilterValues('filter-result');
+                const selectedYears = getSelectedFilterValues('filter-year');
+                const selectedTournaments = getSelectedFilterValues('filter-tournament');
+                const selectedCategories = getSelectedFilterValues('filter-category');
                 const selectedOpponent = document.getElementById('filter-opponent-select').value;
                 const selectedOpponentCountries = getSelectedFilterValues('filter-opponent-country');
                 const selectedPlayerEntries = getSelectedFilterValues('filter-player-entry');
@@ -1674,8 +1781,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     if (selectedRounds.length > 0 && !selectedRounds.includes(row['ROUND'] || '')) return false;
 
                     // Result filter
-                    const result = isWinner ? 'W' : 'L';
+                    const result = getResultLabel(row, isWinner);
                     if (selectedResults.length > 0 && !selectedResults.includes(result)) return false;
+
+                    // Year filter
+                    const rowYear = getRowYear(row);
+                    if (selectedYears.length > 0 && !selectedYears.includes('Career') && !selectedYears.includes(rowYear)) return false;
+
+                    // Tournament filter
+                    if (selectedTournaments.length > 0 && !selectedTournaments.includes(row['TOURNAMENT'] || '')) return false;
+
+                    // Category filter
+                    const rowCategory = row['CATEGORY'] || '';
+                    if (selectedCategories.length > 0 && !selectedCategories.includes(rowCategory)) return false;
 
                     // Opponent filter (single select from dropdown)
                     if (selectedOpponent) {{
@@ -1704,6 +1822,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     return true;
                 }});
 
+                updateHistoryCounter(filtered, selectedPlayer);
                 renderFilteredMatches(filtered, selectedPlayer);
             }}
 
@@ -1721,6 +1840,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function renderFilteredMatches(matches, selectedPlayer) {{
                 const tbody = document.getElementById('history-body');
                 const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'OPPONENT'];
+                updateHistoryCounter(matches, selectedPlayer);
 
                 if (matches.length === 0) {{
                     tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No matches found with the selected filters.</td></tr>`;
@@ -1793,7 +1913,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 if (!selectedPlayer) {{
                     currentPlayerData = [];
-                    ['filter-surface', 'filter-round', 'filter-result', 'filter-opponent-country', 'filter-player-entry', 'filter-seed', 'filter-match-type']
+                    ['filter-surface', 'filter-round', 'filter-result', 'filter-year', 'filter-tournament', 'filter-category', 'filter-opponent-country', 'filter-player-entry', 'filter-seed', 'filter-match-type']
                         .forEach(id => {{
                             const el = document.getElementById(id);
                             if (el) el.innerHTML = '';
@@ -1806,6 +1926,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         oppSelect.innerHTML = '<option value="">All Opponents</option>';
                     }}
                     tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">Select a player...</td></tr>`;
+                    updateHistoryCounter([], '');
                     return;
                 }}
 
@@ -1820,6 +1941,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 if (filtered.length === 0) {{
                     tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No matches found for this player.</td></tr>`;
+                    updateHistoryCounter([], selectedPlayer);
                     return;
                 }}
 
