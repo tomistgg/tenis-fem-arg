@@ -1,7 +1,11 @@
 import requests
 import json
 from datetime import datetime
+import os
 import pandas as pd
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
 
 # --- CONFIGURATION ---
 START_YEAR = 1963
@@ -160,8 +164,9 @@ def main():
             "tournamentCountry", "roundName", "draw", "result", "resultStatusDesc", "winnerId", "winnerEntry", 
             "winnerSeed", "winnerName", "winnerCountry", "loserId", "loserEntry", "loserSeed", "loserName", "loserCountry"]
     
-    final_df[cols].to_csv("bjkc_matches_arg.csv", index=False)
-    print(f"\nDone! Saved {len(final_df)} rows to 'bjkc_matches_arg.csv'.")
+    output_path = os.path.join(DATA_DIR, "bjkc_matches_arg.csv")
+    final_df[cols].to_csv(output_path, index=False)
+    print(f"\nDone! Saved {len(final_df)} rows to '{output_path}'.")
 
 if __name__ == "__main__":
     main()

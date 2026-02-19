@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import csv
 from datetime import datetime, timedelta
@@ -24,6 +25,9 @@ from itf import (
     get_dynamic_itf_calendar, get_itf_rankings_cached
 )
 from html_generator import generate_html
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
 
 COUNTRY_OVERRIDES = {
     "FRANCESCA MATTIOLI": "ARG",
@@ -204,7 +208,12 @@ def main():
 
         # 4. Fetch match history
         match_history_data = []
-        matches_files = ['data/itf_matches_arg.csv', 'data/wta_matches_arg.csv', 'data/gs_matches_arg.csv', 'data/fed_bjkc_matches_arg.csv']
+        matches_files = [
+            os.path.join(DATA_DIR, 'itf_matches_arg.csv'),
+            os.path.join(DATA_DIR, 'wta_matches_arg.csv'),
+            os.path.join(DATA_DIR, 'gs_matches_arg.csv'),
+            os.path.join(DATA_DIR, 'fed_bjkc_matches_arg.csv'),
+        ]
         for file_path in matches_files:
             try:
                 with open(file_path, 'r', encoding='utf-8-sig') as file_obj:
@@ -285,7 +294,7 @@ def main():
 
     national_team_data = []
     try:
-        with open('national_team_order.csv', 'r', encoding='utf-8-sig') as f:
+        with open(os.path.join(DATA_DIR, 'national_team_order.csv'), 'r', encoding='utf-8-sig') as f:
             reader = csv.DictReader(f, delimiter=';')
             for row in reader:
                 national_team_data.append(row)
@@ -294,7 +303,7 @@ def main():
 
     captains_data = []
     try:
-        with open('data/captains.csv', 'r', encoding='utf-8-sig') as f:
+        with open(os.path.join(DATA_DIR, 'captains.csv'), 'r', encoding='utf-8-sig') as f:
             # Assuming the CSV uses commas. If it uses semicolons, change delimiter to ';'
             reader = csv.DictReader(f, delimiter=',')
             for row in reader:

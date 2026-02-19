@@ -1,8 +1,10 @@
 import os
 import json
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
 
-def load_player_mapping(filename="player_aliases.json"):
+def load_player_mapping(filename=os.path.join(DATA_DIR, "player_aliases.json")):
     if not os.path.exists(filename):
         print(f"Alerta: No se encontr\u00f3 {filename}.")
         return {}
@@ -17,9 +19,9 @@ for display_name, aliases in PLAYER_MAPPING.items():
     for alias in aliases:
         NAME_LOOKUP[alias.strip().upper()] = display_name.upper()
 
-WTA_CACHE_FILE = "wta_rankings_cache.json"
-ITF_CACHE_FILE = "itf_rankings_cache.json"
-ENTRY_LISTS_CACHE_FILE = "entry_lists_cache.json"
+WTA_CACHE_FILE = os.path.join(DATA_DIR, "wta_rankings_cache.json")
+ITF_CACHE_FILE = os.path.join(DATA_DIR, "itf_rankings_cache.json")
+ENTRY_LISTS_CACHE_FILE = os.path.join(DATA_DIR, "entry_lists_cache.json")
 
 API_URL = "https://api.wtatennis.com/tennis/players/ranked"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"}

@@ -9,6 +9,9 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime, timedelta
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+
 def get_week_start_end(today=None):
     if today is None:
         today = datetime.today().date()
@@ -295,8 +298,7 @@ def update_csv_smart(filename, new_data_df, reset_if_not_current_week=False, cur
     """
     Handles loading, checking dates, deduplicating, and saving.
     """
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(script_dir, filename)
+    file_path = os.path.join(DATA_DIR, filename)
     
     existing_df = pd.DataFrame()
     file_exists = os.path.exists(file_path)

@@ -4,6 +4,9 @@ from datetime import datetime
 import os
 import pandas as pd
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+
 # --- CONFIGURATION ---
 START_YEAR = datetime.now().year
 END_YEAR = datetime.now().year
@@ -168,7 +171,7 @@ def main():
     # Filter final dataframe to only include the required columns
     final_df = final_df[cols]
     
-    csv_filename = "bjkc_matches_arg.csv"
+    csv_filename = os.path.join(DATA_DIR, "bjkc_matches_arg.csv")
     
     # Check if file exists to only append new records
     if os.path.exists(csv_filename):

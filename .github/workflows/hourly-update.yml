@@ -30,7 +30,7 @@ jobs:
           pip install pandas requests beautifulsoup4 selenium webdriver-manager
 
       - name: Run weekly ITF loader
-        run: python data/itf_load_weekly.py
+        run: python itf_load_weekly.py
 
       - name: Run update script
         run: python main.py

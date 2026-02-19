@@ -10,6 +10,84 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime, timedelta
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+
+def get_itf_calendar_by_month(target_year):
+    chrome_options = Options()
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+    chrome_options.add_argument("window-size=1920,1080")
+    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
+
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+
+    all_tournaments = []
+    seen_ids = set()
+
+    months = []
+    for month in range(1, 13):
+        # monthrange returns (first_day_weekday, number_of_days)
+        last_day = calendar.monthrange(target_year, month)[1]
+        
+        # Cap December at 25th
+        if month == 12:
+            last_day = 25
+        
+        start_date = f"{target_year}-{month:02d}-01"
+        end_date = f"{target_year}-{month:02d}-{last_day}"
+        
+        months.append((start_date, end_date))
+
+    try:
+        print("Establishing session...")
+        driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
+        time.sleep(5)
+
+        for start_date, end_date in months:
+            print(f"Fetching data for {start_date} to {end_date}...")
+            
+            api_url = (
+                f"https://www.itftennis.com/tennis/api/TournamentApi/GetCalendar?"
+                f"circuitCode=WT&searchString=&skip=0&take=1000&dateFrom={start_date}&dateTo={end_date}"
+                f"&isOrderAscending=true&orderField=startDate"
+            )
+            
+            driver.get(api_url)
+            time.sleep(2) 
+            
+            raw_content = driver.find_element("tag name", "body").text.strip()
+            
+            if not raw_content:
+                continue
+
+            try:
+                month_data = json.loads(raw_content)
+            except json.JSONDecodeError:
+                continue
+
+            if isinstance(month_data, dict):
+                month_data = month_data.get('items') or month_data.get('data') or []
+
+            if not isinstance(month_data, list):
+                continue
+
+            for tournament in month_data:
+                if isinstance(tournament, dict):
+                    t_id = tournament.get('tournamentKey')
+                    if t_id and t_id not in seen_ids:
+                        all_tournaments.append(tournament)
+                        seen_ids.add(t_id)
+
+        all_tournaments.sort(key=lambda x: x.get('startDate', ''))
+        return all_tournaments
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return []
+    finally:
+        driver.quit()
+
 def create_tournament_df(tournament_list):
     if not tournament_list:
         print("No data provided.")
@@ -123,7 +201,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
 
     t_date = base_date 
 
-    if base_date and week_offset != 0: 
+    if base_date and week_offset > 0:
         try:
             date_obj = datetime.strptime(base_date, '%Y-%m-%d')
             adjusted_date_obj = date_obj + timedelta(days=7 * week_offset)
@@ -137,7 +215,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
         rounds = group.get("rounds", [])
         for rnd in rounds:
             r_id = rnd.get("roundNumber")
-            r_ds = rnd.get("roundDesc")
+            r_ds = rnd.get("roundName")
             matches = rnd.get("matches", [])
             for match in matches:
                 try:
@@ -199,7 +277,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
                         continue
 
                     rows.append({
-                        "matchType": "GS",
+                        "matchType": "ITF",
                         "matchId": matchId,
                         "date": t_date,
                         "tournamentId": t_id,
@@ -227,19 +305,23 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     return rows
 
 if __name__ == "__main__":
-    gs_files = ['australian_open.json', 'roland_garros.json', 'wimbledon.json', 'us_open.json']
-    all_matches = []
+    for year in range(2026, 2025, -1):
+        print(f"\n{'='*60}")
+        print(f"PROCESSING YEAR: {year}")
+        print(f"{'='*60}\n")
 
-    for file_name in gs_files:
+        print("Step 1: Fetching Calendar...")
+        raw_data = get_itf_calendar_by_month(year)
 
-        with open(file_name, 'r', encoding='utf-8') as f:
-            raw_data = json.load(f)
+        if not raw_data:
+            print(f"No calendar data found for {year}.")
+            raise SystemExit(0)
 
         tournaments_df = create_tournament_df(raw_data)
 
         if tournaments_df is None or tournaments_df.empty:
-            print(f"DataFrame creation failed for {file_name}.")
-            continue
+            print(f"DataFrame creation failed for {year}.")
+            raise SystemExit(0)
 
         print("Step 2: Fetching Tournament IDs...")
         keys_list = tournaments_df["tournamentKey"].dropna().unique().tolist()
@@ -251,6 +333,7 @@ if __name__ == "__main__":
 
         print(f"Step 4: Fetching Match Details for {len(final_df)} tournaments...")
 
+        all_matches = []
         tournaments_list = final_df.to_dict('records')
 
         for tourney in tournaments_list:
@@ -268,26 +351,50 @@ if __name__ == "__main__":
 
             print(f"Processing: {tName} (ID: {int(tId)})")
 
-            for code in ["Q", "M"]:
-                json_data = fetch_api_data(int(tId), code, week_number=0)
+            is_multiweek = tCategory == "ITF Womens Multi-Week Circuit"
 
-                if json_data:
-                    offset = -1 if code == "Q" else 0
-                    parsed = parse_drawsheet(json_data, tourney, code, week_offset=offset)
-                    all_matches.extend(parsed)
-                    print(f"   -> {code}: Found {len(parsed)} ARG matches")
+            if is_multiweek:
+                week = 1
+                while True:
+                    has_data_this_week = False
 
-                time.sleep(0.2)
+                    for code in ["Q", "M"]:
+                        json_data = fetch_api_data(int(tId), code, week_number=week)
+
+                        if json_data:
+                            parsed = parse_drawsheet(json_data, tourney, code, week_offset=(week - 1))
+                            if parsed:
+                                all_matches.extend(parsed)
+                                has_data_this_week = True
+                                print(f"   -> Week {week}, {code}: Found {len(parsed)} ARG matches")
+
+                        time.sleep(0.2)
+
+                    if not has_data_this_week:
+                        break
+
+                    week += 1
+                    if week > 10:
+                        break
+            else:
+                for code in ["Q", "M"]:
+                    json_data = fetch_api_data(int(tId), code, week_number=0)
+
+                    if json_data:
+                        parsed = parse_drawsheet(json_data, tourney, code, week_offset=0)
+                        all_matches.extend(parsed)
+                        print(f"   -> {code}: Found {len(parsed)} ARG matches")
+
+                    time.sleep(0.2)
 
             time.sleep(0.5)
 
-    if all_matches:
-        final_matches_df = pd.DataFrame(all_matches)
+        if all_matches:
+            final_matches_df = pd.DataFrame(all_matches)
 
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        file_path = os.path.join(script_dir, f"gs_matches_arg.csv")
+            file_path = os.path.join(DATA_DIR, f"itf_matches_{year}_arg.csv")
 
-        final_matches_df.to_csv(file_path, index=False, encoding='utf-8-sig')
-        print(f"\nSUCCESS! Saved {len(final_matches_df)} ARG matches to:\n{file_path}")
-    else:
-        print(f"\nFinished processing files, but no ARG matches were found.")
+            final_matches_df.to_csv(file_path, index=False, encoding='utf-8-sig')
+            print(f"\nSUCCESS! Saved {len(final_matches_df)} ARG matches to:\n{file_path}")
+        else:
+            print(f"\nFinished {year}, but no ARG matches were found.")
