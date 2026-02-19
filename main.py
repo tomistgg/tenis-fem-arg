@@ -232,6 +232,7 @@ def main():
             os.path.join(DATA_DIR, 'itf_matches_arg.csv'),
             os.path.join(DATA_DIR, 'wta_matches_arg.csv'),
             os.path.join(DATA_DIR, 'gs_matches_arg.csv'),
+            os.path.join(DATA_DIR, 'og_matches_arg.csv'),
             os.path.join(DATA_DIR, 'fed_bjkc_matches_arg.csv'),
         ]
         for file_path in matches_files:
