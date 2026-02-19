@@ -256,6 +256,9 @@ def main():
 
             raw_round = m.get('roundName') or m.get('round_name') or m.get('RoundName') or ''
             draw_type = m.get('draw') or m.get('Draw') or m.get('DRAW') or ''
+            match_type_value = (m.get('matchType') or m.get('MatchType') or m.get('MATCH_TYPE') or '').strip()
+            tournament_category_value = (m.get('tournamentCategory') or m.get('tournament_category') or m.get('TournamentCategory') or '').strip()
+            tournament_name_value = (m.get('tournamentName') or m.get('tournament_name') or m.get('TournamentName') or '').strip()
             
             if draw_type == 'Q':
                 qr_mapping = {
@@ -270,10 +273,10 @@ def main():
 
             new_match = {
                 'DATE': fecha,
-                'TOURNAMENT': fix_encoding(m.get('tournamentName') or m.get('tournament_name') or m.get('TournamentName') or ''),
-                'CATEGORY': fix_encoding(m.get('tournamentCategory') or m.get('tournament_category') or m.get('TournamentCategory') or ''),
+                'TOURNAMENT': fix_encoding(tournament_name_value),
+                'CATEGORY': fix_encoding(tournament_category_value),
                 'SURFACE': m.get('surface') or m.get('Surface') or '',
-                'MATCH_TYPE': m.get('matchType') or m.get('MatchType') or m.get('MATCH_TYPE') or '',
+                'MATCH_TYPE': match_type_value,
                 'ROUND': final_round,
                 'PLAYER': '',
                 'ENTRY': '',

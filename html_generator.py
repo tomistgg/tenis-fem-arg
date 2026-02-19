@@ -355,6 +355,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #history-table th:nth-child(7) {{ width: 120px; }} /* SCORE */
             #history-table th:nth-child(8) {{ width: auto; min-width: 200px; }} /* OPPONENT */
             #history-table td {{ font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+            #history-table td:nth-child(2) {{ white-space: normal; overflow: visible; text-overflow: clip; }} /* Allow TOURNAMENT to wrap */
             #history-table td:nth-child(8) {{ white-space: normal; overflow: visible; text-overflow: clip; }} /* Allow OPPONENT to wrap */
 
             /* Filter Panel Styles */
@@ -1575,6 +1576,25 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 return 'Losses';
             }}
 
+            function isTeamEventRow(row) {{
+                const matchType = (row['MATCH_TYPE'] || row['matchType'] || '').toString();
+                const category = (row['CATEGORY'] || row['tournamentCategory'] || '').toString();
+                const tournament = (row['TOURNAMENT'] || row['tournamentName'] || '').toString();
+                return (
+                    matchType === 'Fed/BJK Cup' ||
+                    category.includes('Fed/BJK Cup') ||
+                    tournament.includes('BJK') ||
+                    tournament.includes('Fed Cup')
+                );
+            }}
+
+            function getRoundFilterLabel(row) {{
+                const roundValue = (row['ROUND'] || '').toString().trim();
+                if (!roundValue) return '';
+                if (isTeamEventRow(row)) return roundValue.startsWith('Team - ') ? roundValue : `Team - ${{roundValue}}`;
+                return roundValue;
+            }}
+
             function populateFilters(playerMatches) {{
                 // Extract unique values for each filter
                 const surfaces = new Set();
@@ -1601,8 +1621,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     // Surface
                     if (row['SURFACE']) surfaces.add(row['SURFACE']);
 
-                    // Round
-                    if (row['ROUND']) rounds.add(row['ROUND']);
+                    // Round (Team events are prefixed only in filter labels)
+                    const roundFilterLabel = getRoundFilterLabel(row);
+                    if (roundFilterLabel) rounds.add(roundFilterLabel);
 
                     // Year
                     const year = getRowYear(row);
@@ -1778,7 +1799,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     if (selectedSurfaces.length > 0 && !selectedSurfaces.includes(row['SURFACE'] || '')) return false;
 
                     // Round filter
-                    if (selectedRounds.length > 0 && !selectedRounds.includes(row['ROUND'] || '')) return false;
+                    const roundFilterLabel = getRoundFilterLabel(row);
+                    if (selectedRounds.length > 0 && !selectedRounds.includes(roundFilterLabel)) return false;
 
                     // Result filter
                     const result = getResultLabel(row, isWinner);
