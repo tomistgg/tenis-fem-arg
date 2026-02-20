@@ -64,8 +64,18 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Detect data changes
+        if: always()
+        id: detect_changes
+        run: |
+          if diff -rq .run_snapshot/data data --exclude="*.pyc" > /dev/null 2>&1; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Send email report
-        if: always() && steps.check_report.outputs.exists == 'true'
+        if: always() && steps.check_report.outputs.exists == 'true' && steps.detect_changes.outputs.changed == 'true'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
