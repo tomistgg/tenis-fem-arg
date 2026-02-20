@@ -246,12 +246,6 @@ def render_markdown(report):
     else:
         lines.append("- None detected.")
 
-    lines.append("")
-    lines.append("## Notes")
-    lines.append("- Diff compares pre-run snapshots vs post-run `data/` files in this workflow run.")
-    lines.append("- On first run (or when a snapshot file is missing), sections may show `None detected` because no baseline exists.")
-    lines.append("- Match lists are capped per CSV to keep email size manageable.")
-    lines.append("")
     return "\n".join(lines)
 
 

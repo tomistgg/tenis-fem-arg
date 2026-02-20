@@ -375,19 +375,37 @@ def update_csv_smart(filename, new_data_df, reset_if_not_current_week=False, cur
 
 if __name__ == "__main__":
     week_start, week_end = get_week_start_end()
-    start_date = week_start.strftime("%Y-%m-%d")
-    end_date = week_end.strftime("%Y-%m-%d")
+    last_week_start = week_start - timedelta(days=7)
+    last_week_end = week_start - timedelta(days=1)
 
     print(f"\n{'='*60}")
-    print(f"PROCESSING THIS WEEK: {start_date} to {end_date}")
+    print(f"PROCESSING LAST WEEK:  {last_week_start} to {last_week_end}")
+    print(f"PROCESSING THIS WEEK:  {week_start} to {week_end}")
     print(f"{'='*60}\n")
 
-    print("Step 1: Fetching Calendar...")
-    raw_data = get_itf_calendar_for_range(start_date, end_date)
-    print(raw_data)
+    print("Step 1: Fetching Calendar (last week + this week)...")
+    raw_last = get_itf_calendar_for_range(
+        last_week_start.strftime("%Y-%m-%d"),
+        last_week_end.strftime("%Y-%m-%d")
+    )
+    raw_this = get_itf_calendar_for_range(
+        week_start.strftime("%Y-%m-%d"),
+        week_end.strftime("%Y-%m-%d")
+    )
+
+    # Combine and deduplicate by tournamentKey
+    seen_keys = set()
+    raw_data = []
+    for t in (raw_last or []) + (raw_this or []):
+        key = t.get("tournamentKey")
+        if key and key not in seen_keys:
+            raw_data.append(t)
+            seen_keys.add(key)
+
+    print(f"Found {len(raw_data)} unique tournaments across both weeks.")
 
     if not raw_data:
-        print(f"No calendar data found for this week ({start_date} to {end_date}).")
+        print("No calendar data found for either week.")
         raise SystemExit(0)
 
     tournaments_df = create_tournament_df(raw_data)
@@ -469,21 +487,12 @@ if __name__ == "__main__":
         print(f"Step 5: Saving & Updating Files")
         print(f"{'='*60}")
 
-        # 1. Update Weekly File (Reset if new week, Append if same week)
         update_csv_smart(
-            "itf_matches_weekly.csv", 
-            new_matches_df, 
-            reset_if_not_current_week=True, 
-            current_week_start=week_start
-        )
-
-        # 2. Update Master File (Always Append new matches)
-        update_csv_smart(
-            "itf_matches_2026_arg.csv", 
-            new_matches_df, 
+            "itf_matches_arg.csv",
+            new_matches_df,
             reset_if_not_current_week=False
         )
-        
+
         print("\nAll updates completed successfully.")
 
     else:
