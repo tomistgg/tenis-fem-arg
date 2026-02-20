@@ -85,3 +85,7 @@ CONTINENT_LABELS = {
 }
 
 CONTINENT_KEYS = ["south_america", "north_central_america", "europe", "africa", "asia", "oceania"]
+
+COUNTRY_OVERRIDES = {
+    "FRANCESCA MATTIOLI": "ARG",
+}

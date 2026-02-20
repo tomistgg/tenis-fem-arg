@@ -2,9 +2,11 @@ import os
 import json
 import unicodedata
 
+import csv
+
 from config import (
     TOURNAMENT_NAME_OVERRIDES, CITY_CASE_FIXES,
-    COUNTRY_TO_CONTINENT
+    COUNTRY_TO_CONTINENT, COUNTRY_OVERRIDES
 )
 
 
@@ -135,3 +137,33 @@ def get_surface_class(surface):
         return "cal-grass"
     else:
         return "cal-hard"
+
+
+def save_json_file(path, payload):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+
+
+def override_country_for_player(player_name, country_code):
+    key = (player_name or "").strip().upper()
+    if key in COUNTRY_OVERRIDES:
+        return COUNTRY_OVERRIDES[key]
+    return country_code
+
+
+def normalize_country_overrides(rows, name_key, country_key):
+    for row in rows or []:
+        row[country_key] = override_country_for_player(row.get(name_key, ""), row.get(country_key, ""))
+    return rows
+
+
+def load_csv_rows(file_path, delimiter=','):
+    rows = []
+    try:
+        with open(file_path, 'r', encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f, delimiter=delimiter)
+            for row in reader:
+                rows.append(row)
+    except Exception as e:
+        print(f"Error reading {file_path}: {e}")
+    return rows

@@ -9,6 +9,68 @@ from utils import get_cached_rankings
 from calendar_builder import get_next_monday
 
 
+def get_itf_level(tournament_name):
+    """Determine ITF tournament level from its name."""
+    t = tournament_name
+    if "W100" in t or "100k" in t: return "W100"
+    if "W75" in t or "75k" in t: return "W75"
+    if "W60" in t or "60k" in t: return "W60"
+    if "W50" in t or "50k" in t: return "W50"
+    if "W35" in t or "35k" in t: return "W35"
+    if "W25" in t or "25k" in t: return "W25"
+    return "W15"
+
+
+def parse_itf_entry_list(itf_entries):
+    """Parse raw ITF acceptance list classifications into a sorted player list."""
+    players = []
+    for classification in itf_entries:
+        class_code = classification.get("entryClassificationCode", "")
+        if class_code in ["MDA", "JR"]:
+            section_type = "MAIN"
+        elif class_code == "Q":
+            section_type = "QUAL"
+        else:
+            continue
+
+        for entry in classification.get("entries") or []:
+            pos = entry.get("positionDisplay", "-")
+            entry_players = entry.get("players") or []
+            if not entry_players:
+                continue
+            p_node = entry_players[0]
+            raw_f_name = f"{p_node.get('givenName', '')} {p_node.get('familyName', '')}".strip()
+
+            wta = p_node.get("atpWtaRank", "")
+            itf_rank = p_node.get("itfBTRank")
+            wtn = p_node.get("worldRating", "")
+
+            if class_code == "JR":
+                erank_str = "JE"
+            else:
+                erank_str = "-"
+                if wta and str(wta).strip() != "":
+                    erank_str = f"{wta}"
+                elif itf_rank is not None and str(itf_rank).strip() != "":
+                    erank_str = f"ITF {itf_rank}"
+                elif wtn and str(wtn).strip() != "":
+                    erank_str = f"WTN {wtn}"
+
+            try:
+                pos_digits = ''.join(filter(str.isdigit, str(pos)))
+                pos_num = int(pos_digits) if pos_digits else 999
+            except:
+                pos_num = 999
+
+            players.append({
+                "pos": pos, "name": raw_f_name, "country": p_node.get("nationalityCode", "-"),
+                "rank": erank_str, "type": section_type, "pos_num": pos_num
+            })
+
+    players.sort(key=lambda x: (x["pos_num"], x["name"]))
+    return players
+
+
 def get_full_itf_calendar(driver):
     """Fetch all ITF tournaments for the full year via Selenium. Numbers duplicates across the whole year."""
     today = datetime.now()
@@ -48,14 +110,7 @@ def get_full_itf_calendar(driver):
         if 'cancel' in t_name.lower():
             continue
 
-        level = "W15"
-        if "W100" in t_name or "100k" in t_name: level = "W100"
-        elif "W75" in t_name or "75k" in t_name: level = "W75"
-        elif "W60" in t_name or "60k" in t_name: level = "W60"
-        elif "W50" in t_name or "50k" in t_name: level = "W50"
-        elif "W35" in t_name or "35k" in t_name: level = "W35"
-        elif "W25" in t_name or "25k" in t_name: level = "W25"
-        elif "W15" in t_name or "15k" in t_name: level = "W15"
+        level = get_itf_level(t_name)
 
         surface = item.get('surfaceDesc') or item.get('surface') or ""
         country = item.get('hostNationCode') or item.get('hostNation') or item.get('countryCode') or ""
