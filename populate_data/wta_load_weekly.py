@@ -52,7 +52,6 @@ def fetch_tournaments_for_range(from_date, to_date):
             break
         page += 1
 
-    print(f"  Found {len(all_tournaments)} tournaments from {from_date} to {to_date}.")
     return all_tournaments
 
 
@@ -186,36 +185,15 @@ if __name__ == "__main__":
     week_start = today - timedelta(days=today.weekday())
     week_end = week_start + timedelta(days=6)
 
-    print(f"\n{'='*60}")
-    print(f"WTA Weekly Load")
-    print(f"Today:       {today}")
-    print(f"Prev week:   {range_start} to {week_start - timedelta(days=1)}")
-    print(f"This week:   {week_start} to {week_end}")
-    print(f"Next week:   {week_end + timedelta(days=1)} to {range_end}")
-    print(f"{'='*60}\n")
-
-    # Determine years covered by the range
-    years = set()
-    d = range_start
-    while d <= range_end:
-        years.add(d.year)
-        d += timedelta(days=1)
-
-    print("Step 1: Fetching calendar...")
     tournaments = fetch_tournaments_for_range(
         range_start.strftime("%Y-%m-%d"),
         range_end.strftime("%Y-%m-%d"),
     )
 
     if not tournaments:
-        print("No tournaments found in this date range.")
         raise SystemExit(0)
 
-    print(f"\nStep 2: Loading existing matches from CSV...")
     existing_ids = load_existing_match_ids(OUTPUT_FILE)
-    print(f"  {len(existing_ids)} existing match IDs loaded.")
-
-    print(f"\nStep 3: Fetching match details for {len(tournaments)} tournaments...")
     new_rows = []
 
     for t in tournaments:
@@ -255,11 +233,5 @@ if __name__ == "__main__":
 
         time.sleep(0.3)
 
-    print(f"\nStep 4: Saving results...")
     if new_rows:
         append_to_csv(new_rows, OUTPUT_FILE)
-        print(f"  [+] Added {len(new_rows)} new matches to {OUTPUT_FILE}")
-    else:
-        print(f"  [i] No new matches to add.")
-
-    print("\nDone.")

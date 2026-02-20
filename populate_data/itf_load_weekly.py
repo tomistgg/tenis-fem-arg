@@ -36,11 +36,8 @@ def get_itf_calendar_for_range(start_date, end_date):
     seen_ids = set()
 
     try:
-        print("Establishing session...")
         driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
         time.sleep(5)
-
-        print(f"Fetching data for {start_date} to {end_date}...")
 
         api_url = (
             f"https://www.itftennis.com/tennis/api/TournamentApi/GetCalendar?"
@@ -77,14 +74,13 @@ def get_itf_calendar_for_range(start_date, end_date):
         return all_tournaments
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"[!] Calendar fetch error: {e}")
         return []
     finally:
         driver.quit()
 
 def create_tournament_df(tournament_list):
     if not tournament_list:
-        print("No data provided.")
         return None
 
     rows = []
@@ -125,7 +121,6 @@ def fetch_itf_ids_to_json(keys_list):
         for key in keys_list:
             api_url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
             
-            print(f"Fetching ID for {key}...")
             driver.get(api_url)
             time.sleep(1) 
             
@@ -139,7 +134,7 @@ def fetch_itf_ids_to_json(keys_list):
                         "tournamentId": data["tournamentId"]
                     })
             except Exception as e:
-                print(f"Failed for {key}: {e}")
+                print(f"[!] Failed to fetch ID for {key}: {e}")
     finally:
         driver.quit()
 
@@ -152,7 +147,7 @@ def merge_ids_with_pandas(calendar_df, json_ids_string):
         final_df = pd.merge(calendar_df, ids_df, on="tournamentKey", how="left")
         return final_df
     except Exception as e:
-        print(f"Error merging DataFrames: {e}")
+        print(f"[!] Error merging DataFrames: {e}")
         return calendar_df
 
 
@@ -205,7 +200,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
             adjusted_date_obj = date_obj + timedelta(days=7 * week_offset)
             t_date = adjusted_date_obj.strftime('%Y-%m-%d')
         except Exception as e:
-            print(f"Date parsing failed for {base_date}: {e}")
+            print(f"[!] Date parsing failed for {base_date}: {e}")
             t_date = base_date
 
     ko_groups = data.get("koGroups", [])
@@ -315,33 +310,23 @@ def update_csv_smart(filename, new_data_df, reset_if_not_current_week=False, cur
         try:
             existing_df = pd.read_csv(file_path)
         except Exception as e:
-            print(f"   [!] Could not read existing {filename}: {e}. Starting fresh.")
+            print(f"[!] Could not read existing {filename}: {e}. Starting fresh.")
             file_exists = False
 
     # Logic 1: Weekly Reset Check
     if reset_if_not_current_week and file_exists and not existing_df.empty:
-        # Check if the data in the file belongs to the current week
-        # We assume 'date' column exists and is in YYYY-MM-DD
         if 'date' in existing_df.columns:
             try:
-                # Take the most common date or the first one to check the week
                 sample_date_str = existing_df['date'].iloc[0]
                 sample_date = datetime.strptime(str(sample_date_str), "%Y-%m-%d").date()
-                
-                # Calculate week start of the file's data
                 file_week_start = sample_date - timedelta(days=sample_date.weekday())
-                
-                # Check if file week matches current requested week
                 if file_week_start != current_week_start:
-                    print(f"   [i] {filename} contains data from a previous week ({file_week_start}). Resetting file.")
-                    existing_df = pd.DataFrame() # Clear data
-                else:
-                    print(f"   [i] {filename} is from current week. Appending new matches...")
+                    existing_df = pd.DataFrame()
             except Exception as e:
-                print(f"   [!] Date check failed ({e}). Resetting file to be safe.")
+                print(f"[!] Date check failed ({e}). Resetting file to be safe.")
                 existing_df = pd.DataFrame()
         else:
-            print(f"   [!] No date column found. Resetting file.")
+            print(f"[!] No date column found in {filename}. Resetting file.")
             existing_df = pd.DataFrame()
 
     # Logic 2: Deduplication (Add only what doesn't exist)
@@ -358,32 +343,21 @@ def update_csv_smart(filename, new_data_df, reset_if_not_current_week=False, cur
         unique_new_rows = new_data_df[is_new]
         
         if unique_new_rows.empty:
-            print(f"   [i] No new matches found for {filename}.")
             return
-            
-        print(f"   [+] Adding {len(unique_new_rows)} new matches to {filename}...")
-        
-        # Append new rows to existing
+
         final_df = pd.concat([existing_df, unique_new_rows], ignore_index=True)
     else:
-        print(f"   [+] Creating/Overwriting {filename} with {len(new_data_df)} matches...")
         final_df = new_data_df
 
-    # Save
     final_df.to_csv(file_path, index=False, encoding='utf-8-sig')
-    print(f"   [ok] Saved {filename}.")
 
 if __name__ == "__main__":
     week_start, week_end = get_week_start_end()
     last_week_start = week_start - timedelta(days=7)
     last_week_end = week_start - timedelta(days=1)
+    next_week_start = week_start + timedelta(days=7)
+    next_week_end = next_week_start + timedelta(days=6)
 
-    print(f"\n{'='*60}")
-    print(f"PROCESSING LAST WEEK:  {last_week_start} to {last_week_end}")
-    print(f"PROCESSING THIS WEEK:  {week_start} to {week_end}")
-    print(f"{'='*60}\n")
-
-    print("Step 1: Fetching Calendar (last week + this week)...")
     raw_last = get_itf_calendar_for_range(
         last_week_start.strftime("%Y-%m-%d"),
         last_week_end.strftime("%Y-%m-%d")
@@ -392,37 +366,32 @@ if __name__ == "__main__":
         week_start.strftime("%Y-%m-%d"),
         week_end.strftime("%Y-%m-%d")
     )
+    raw_next = get_itf_calendar_for_range(
+        next_week_start.strftime("%Y-%m-%d"),
+        next_week_end.strftime("%Y-%m-%d")
+    )
 
     # Combine and deduplicate by tournamentKey
     seen_keys = set()
     raw_data = []
-    for t in (raw_last or []) + (raw_this or []):
+    for t in (raw_last or []) + (raw_this or []) + (raw_next or []):
         key = t.get("tournamentKey")
         if key and key not in seen_keys:
             raw_data.append(t)
             seen_keys.add(key)
 
-    print(f"Found {len(raw_data)} unique tournaments across both weeks.")
-
     if not raw_data:
-        print("No calendar data found for either week.")
         raise SystemExit(0)
 
     tournaments_df = create_tournament_df(raw_data)
 
     if tournaments_df is None or tournaments_df.empty:
-        print("DataFrame creation failed for this week.")
         raise SystemExit(0)
-
-    print("Step 2: Fetching Tournament IDs...")
     keys_list = tournaments_df["tournamentKey"].dropna().unique().tolist()
     json_ids_string = fetch_itf_ids_to_json(keys_list)
 
-    print("Step 3: Merging Data...")
     final_df = merge_ids_with_pandas(tournaments_df, json_ids_string)
     final_df['tournamentId'] = final_df['tournamentId'].fillna(0).astype(int).astype(str).replace('0', '')
-
-    print(f"Step 4: Fetching Match Details for {len(final_df)} tournaments...")
 
     all_matches = []
     tournaments_list = final_df.to_dict('records')
@@ -433,14 +402,10 @@ if __name__ == "__main__":
         tCategory = tourney.get("category", "")
 
         if tCategory and str(tCategory).strip().startswith("Tier"):
-            print(f"Skipping {tName} (Excluded Category: {tCategory})")
             continue
 
         if not tId or pd.isna(tId) or str(tId) == "":
-            print(f"Skipping {tName} (No ID found)")
             continue
-
-        print(f"Processing: {tName} (ID: {tId})")
 
         is_multiweek = tCategory == "ITF Womens Multi-Week Circuit"
 
@@ -457,7 +422,6 @@ if __name__ == "__main__":
                         if parsed:
                             all_matches.extend(parsed)
                             has_data_this_week = True
-                            print(f"   -> Week {week}, {code}: Found {len(parsed)} matches")
 
                     time.sleep(0.2)
 
@@ -474,7 +438,6 @@ if __name__ == "__main__":
                 if json_data:
                     parsed = parse_drawsheet(json_data, tourney, code, week_offset=0)
                     all_matches.extend(parsed)
-                    print(f"   -> {code}: Found {len(parsed)} matches")
 
                 time.sleep(0.2)
 
@@ -482,18 +445,9 @@ if __name__ == "__main__":
 
     if all_matches:
         new_matches_df = pd.DataFrame(all_matches)
-        
-        print(f"\n{'='*60}")
-        print(f"Step 5: Saving & Updating Files")
-        print(f"{'='*60}")
 
         update_csv_smart(
             "itf_matches_arg.csv",
             new_matches_df,
             reset_if_not_current_week=False
         )
-
-        print("\nAll updates completed successfully.")
-
-    else:
-        print("\nFinished this week, but no matches were found (or no ARG players involved).")
