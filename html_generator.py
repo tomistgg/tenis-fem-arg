@@ -198,7 +198,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .main-content {{ flex: 1; overflow-y: visible; background: #f8fafc; padding: 20px; display: flex; flex-direction: column; }}
             .single-layout {{ width: 100%; min-width: 0; display: flex; flex-direction: column; }}
             #view-upcoming {{ max-width: 1200px; margin: 0 auto; }}
-            #view-entrylists {{ width: 100%; max-width: 1100px; margin: 0 auto; }}
+            #view-entrylists {{ width: 100%; max-width: 1100px; margin: 0; }}
             #view-rankings {{ max-width: 700px; margin: 0 auto; }}
             #view-national {{ max-width: 1400px; margin: 0 auto; }}
             #view-captains {{ max-width: 640px; margin: 0 auto; }}
@@ -219,15 +219,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             td {{ padding: 8px 12px; border-bottom: 1px solid #94a3b8; text-align: center; font-size: 13px; border-right: 1px solid #94a3b8; }}
             #view-entrylists td {{ font-size: 12px; padding: 6px 10px; }}
             #view-entrylists table {{ table-layout: auto; }}
-            #view-entrylists .entry-content {{ align-items: center; }}
-            #view-entrylists .content-card {{ width: 100%; max-width: 760px; margin: 0 auto; }}
+            #view-entrylists .entry-content {{ align-items: flex-start; }}
+            #view-entrylists .content-card {{ width: 100%; max-width: 760px; margin: 0; }}
 
             /* Entry Lists layout */
-            .entry-layout {{ display: flex; gap: 25px; width: 100%; }}
-            .entry-menu {{ width: 220px; flex-shrink: 0; background: white; border: 1px solid black; align-self: flex-start; }}
-            .entry-menu-header {{ background: #75AADB; color: white; font-size: 14px; font-weight: bold; text-align: center; padding: 12px; }}
-            .entry-menu-week {{ background: #e2e8f0; font-size: 11px; font-weight: bold; text-align: center; padding: 8px; color: #475569; border-bottom: 1px solid #cbd5e1; }}
-            .entry-menu-item {{ padding: 10px 15px; font-size: 12px; cursor: pointer; border-bottom: 1px solid #e2e8f0; color: #334155; transition: background 0.15s; }}
+            .entry-layout {{ display: flex; flex-direction: row; gap: 25px; width: 100%; }}
+            .entry-menu {{ width: 480px; flex-shrink: 0; display: flex; flex-wrap: wrap; align-items: stretch; background: white; border: 1px solid black; align-self: flex-start; }}
+            .entry-menu-header {{ width: 100%; background: #75AADB; color: white; font-size: 14px; font-weight: bold; text-align: center; padding: 12px; }}
+            .entry-menu-week {{ width: 100%; background: #e2e8f0; font-size: 11px; font-weight: bold; text-align: center; padding: 8px; color: #475569; border-bottom: 1px solid #cbd5e1; }}
+            .entry-menu-item {{ flex: 1 1 calc(33.333% - 1px); min-width: 0; padding: 10px 8px; font-size: 12px; cursor: pointer; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; color: #334155; transition: background 0.15s; text-align: center; box-sizing: border-box; }}
             .entry-menu-item:hover {{ background: #f1f5f9; }}
             .entry-menu-item.active {{ background: #dbeafe; color: #1e40af; font-weight: bold; }}
             .entry-content {{ flex: 1; display: flex; flex-direction: column; min-width: 0; }}
