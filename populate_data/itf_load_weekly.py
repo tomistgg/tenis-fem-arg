@@ -10,7 +10,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime, timedelta
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, "data")
+DATA_DIR = os.path.join(BASE_DIR, "..", "data")
 
 def get_week_start_end(today=None):
     if today is None:

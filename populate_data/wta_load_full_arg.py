@@ -1,4 +1,5 @@
 import csv
+import os
 import time
 import requests
 
@@ -16,7 +17,8 @@ HEADERS = {
 
 START_YEAR = 2016
 END_YEAR   = 2026
-OUTPUT_FILE = "data/wta_matches_arg.csv"
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_FILE = os.path.join(_BASE_DIR, "..", "data", "wta_matches_arg.csv")
 
 CSV_COLUMNS = [
     "matchType", "matchId", "date", "tournamentId",
