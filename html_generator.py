@@ -1356,9 +1356,21 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}).join(' ');
             }}
 
+            function formatSeed(seed) {{
+                if (seed === null || seed === undefined) return '';
+                const text = String(seed).trim();
+                if (!text) return '';
+                const num = Number(text);
+                if (!Number.isNaN(num) && Number.isInteger(num)) {{
+                    return String(num);
+                }}
+                return text;
+            }}
+
             function buildPrefix(seed, entry) {{
                 const parts = [];
-                if (seed) parts.push(seed);
+                const formattedSeed = formatSeed(seed);
+                if (formattedSeed) parts.push(formattedSeed);
                 if (entry) parts.push(entry);
                 if (parts.length === 0) return '';
                 return '(' + parts.join('/') + ') ';
