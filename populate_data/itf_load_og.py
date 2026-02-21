@@ -117,6 +117,8 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     t_name = tourney_meta.get('tournamentName')
     t_cat = tourney_meta.get('category')
     t_surf = tourney_meta.get('surfaceDesc')
+    t_indoor = tourney_meta.get('indoorOrOutDoor', '')
+    t_io = 'I' if t_indoor == 'Indoor' else 'O'
     t_nation = tourney_meta.get('hostNation')
     
     base_date = tourney_meta.get('startDate')
@@ -209,6 +211,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
                         "tournamentName": t_name,
                         "tournamentCategory": t_cat,
                         "surface": t_surf,
+                        "inOrOutdoor": t_io,
                         "tournamentCountry": t_nation,
                         "roundName": r_ds,
                         "draw": draw_type,
