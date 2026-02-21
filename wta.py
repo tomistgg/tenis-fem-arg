@@ -299,6 +299,12 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
     main_draw_names = set()
     qualifying_names = set()
 
+    def parse_rank_num(value):
+        try:
+            return int(str(value).strip())
+        except Exception:
+            return 9999
+
     def get_p_rank(name, rank_list):
         return next((item for item in rank_list if item["Player"] == name), {"Rank": 9999, "Country": "-"})
 
@@ -318,6 +324,29 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
             "rank": f"{rank_info['Rank']}" if rank_info['Rank'] < 9999 else "-",
             "type": "MAIN"
         })
+
+    # Some WTA pages temporarily expose only Qualifying. In that case, keep MAIN from cache.
+    if not md_list and qual_entries and cached_entries:
+        cached_main = [p for p in cached_entries if p.get("type") == "MAIN"]
+        for p in cached_main:
+            name_key = (p.get("name") or "").strip().upper()
+            if not name_key:
+                continue
+            matched_name = NAME_LOOKUP.get(name_key, name_key)
+            main_draw_names.add(matched_name)
+            rank_num = p.get("rank_num")
+            if not isinstance(rank_num, int):
+                rank_num = parse_rank_num(p.get("rank"))
+            rank_value = p.get("rank")
+            rank_display = str(rank_value).strip() if rank_value not in (None, "") else (str(rank_num) if rank_num < 9999 else "-")
+            md_list.append({
+                "name": format_player_name(matched_name),
+                "country": p.get("country") or "-",
+                "rank_num": rank_num,
+                "rank": rank_display if rank_num < 9999 else "-",
+                "type": "MAIN"
+            })
+
     md_list.sort(key=lambda x: (x["rank_num"], x["name"]))
     for idx, p in enumerate(md_list, 1):
         p["pos"] = str(idx)
