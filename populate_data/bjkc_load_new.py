@@ -149,7 +149,8 @@ def main():
                 match_results.append({
                     "tieId": tid, "matchType": "Fed/BJK Cup", "matchId": m.get('id'), "date": formatted_date,
                     "tournamentId": tie_data.get('_name'), "tournamentCategory": "Fed/BJK Cup",
-                    "surface": surface, "tournamentCountry": venue_country, "resultStatusDesc": m.get('resultStatusDesc', ''),
+                    "surface": surface, "inOrOutdoor": "I" if surface.startswith("I.") else "O",
+                    "tournamentCountry": venue_country, "resultStatusDesc": m.get('resultStatusDesc', ''),
                     "result": get_score_string(s1.get('sideSets'), s2.get('sideSets'), is_s1),
                     "winnerId": win.get('id'), "winnerEntry": "", "winnerSeed": "", "winnerName": get_p(win), "winnerCountry": get_c(win),
                     "loserId": los.get('id'), "loserEntry": "", "loserSeed": "", "loserName": get_p(los), "loserCountry": get_c(los)
@@ -164,8 +165,8 @@ def main():
     final_df = pd.merge(df_ties, pd.DataFrame(match_results), on="tieId", how="inner")
     final_df = final_df.rename(columns={"eventName": "tournamentName", "drawName": "draw"})
     
-    cols = ["matchType", "matchId", "date", "tournamentId", "tournamentName", "tournamentCategory", "surface", 
-            "tournamentCountry", "roundName", "draw", "result", "resultStatusDesc", "winnerId", "winnerEntry", 
+    cols = ["matchType", "matchId", "date", "tournamentId", "tournamentName", "tournamentCategory", "surface",
+            "inOrOutdoor", "tournamentCountry", "roundName", "draw", "result", "resultStatusDesc", "winnerId", "winnerEntry",
             "winnerSeed", "winnerName", "winnerCountry", "loserId", "loserEntry", "loserSeed", "loserName", "loserCountry"]
     
     # Filter final dataframe to only include the required columns
