@@ -17,7 +17,7 @@ HEADERS = {
 }
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_FILE = os.path.join(_BASE_DIR, "..", "data", "wta_matches_arg_NEW.csv")
+OUTPUT_FILE = os.path.join(_BASE_DIR, "..", "data", "wta_matches_arg.csv")
 
 CSV_COLUMNS = [
     "matchType", "matchId", "date", "tournamentId",
