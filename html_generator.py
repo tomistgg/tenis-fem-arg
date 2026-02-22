@@ -1675,6 +1675,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     'Losses by DEF'
                 ].filter(r => results.has(r));
                 const orderedYears = Array.from(years).sort((a, b) => Number(b) - Number(a));
+                orderedYears.unshift('Last 52');
                 orderedYears.unshift('Career');
 
                 populateFilterOptions('filter-surface', Array.from(surfaces).sort());
@@ -1820,7 +1821,24 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                     // Year filter
                     const rowYear = getRowYear(row);
-                    if (selectedYears.length > 0 && !selectedYears.includes('Career') && !selectedYears.includes(rowYear)) return false;
+                    if (selectedYears.length > 0 && !selectedYears.includes('Career')) {{
+                        const wantLast52 = selectedYears.includes('Last 52');
+                        const otherYears = selectedYears.filter(y => y !== 'Last 52');
+                        let pass = false;
+                        if (wantLast52) {{
+                            const today = new Date();
+                            const dayOfWeek = today.getDay() === 0 ? 6 : today.getDay() - 1; // Mon=0
+                            const weekStart = new Date(today);
+                            weekStart.setDate(today.getDate() - dayOfWeek);
+                            weekStart.setHours(0, 0, 0, 0);
+                            const cutoff = new Date(weekStart);
+                            cutoff.setDate(weekStart.getDate() - 51 * 7);
+                            const rowDate = new Date(row['DATE'] || '');
+                            if (!isNaN(rowDate) && rowDate >= cutoff) pass = true;
+                        }}
+                        if (!pass && otherYears.length > 0 && otherYears.includes(rowYear)) pass = true;
+                        if (!pass) return false;
+                    }}
 
                     // Tournament filter
                     if (selectedTournaments.length > 0 && !selectedTournaments.includes(row['TOURNAMENT'] || '')) return false;
