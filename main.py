@@ -229,11 +229,20 @@ def load_match_history():
         else:
             final_round = raw_round
 
+        raw_surface = m.get('surface') or m.get('Surface') or ''
+        in_or_outdoor = m.get('inOrOutdoor') or m.get('InOrOutdoor') or ''
+        if raw_surface.startswith('I.'):
+            formatted_surface = 'Ind. ' + raw_surface[2:].capitalize()
+        elif in_or_outdoor == 'I':
+            formatted_surface = 'Ind. ' + raw_surface
+        else:
+            formatted_surface = raw_surface
+
         cleaned_history.append({
             'DATE': fecha,
             'TOURNAMENT': fix_encoding(tournament_name_value),
             'CATEGORY': fix_encoding(tournament_category_value),
-            'SURFACE': m.get('surface') or m.get('Surface') or '',
+            'SURFACE': formatted_surface,
             'MATCH_TYPE': match_type_value,
             'ROUND': final_round,
             'PLAYER': '',
