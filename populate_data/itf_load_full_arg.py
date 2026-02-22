@@ -192,6 +192,8 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     t_name = tourney_meta.get('tournamentName')
     t_cat = tourney_meta.get('category')
     t_surf = tourney_meta.get('surfaceDesc')
+    t_indoor = tourney_meta.get('indoorOrOutDoor', '')
+    t_io = 'I' if t_indoor == 'Indoor' else 'O'
     t_nation = tourney_meta.get('hostNation')
     
     base_date = tourney_meta.get('startDate')
@@ -215,7 +217,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
         rounds = group.get("rounds", [])
         for rnd in rounds:
             r_id = rnd.get("roundNumber")
-            r_ds = rnd.get("roundName")
+            r_ds = rnd.get("roundDesc")
             matches = rnd.get("matches", [])
             for match in matches:
                 try:
@@ -284,6 +286,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
                         "tournamentName": t_name,
                         "tournamentCategory": t_cat,
                         "surface": t_surf,
+                        "inOrOutdoor": t_io,
                         "tournamentCountry": t_nation,
                         "roundName": r_ds,
                         "draw": draw_type,
@@ -305,23 +308,39 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     return rows
 
 if __name__ == "__main__":
-    for year in range(2026, 2025, -1):
-        print(f"\n{'='*60}")
+    current_year = datetime.now().year
+    output_path = os.path.join(DATA_DIR, "itf_matches_arg.csv")
+
+    # Detect years already saved so we can skip them on rerun
+    existing_years = set()
+    if os.path.exists(output_path):
+        try:
+            existing_df = pd.read_csv(output_path, usecols=["date"], dtype=str)
+            existing_years = set(existing_df["date"].str[:4].dropna().unique())
+            print(f"Found existing data for years: {sorted(existing_years)}")
+        except Exception:
+            pass
+
+    write_header = len(existing_years) == 0
+
+    for year in range(1994, current_year + 1):
+        if str(year) in existing_years:
+            print(f"SKIPPING YEAR {year} (already in CSV)")
+            continue
         print(f"PROCESSING YEAR: {year}")
-        print(f"{'='*60}\n")
 
         print("Step 1: Fetching Calendar...")
         raw_data = get_itf_calendar_by_month(year)
 
         if not raw_data:
             print(f"No calendar data found for {year}.")
-            raise SystemExit(0)
+            continue
 
         tournaments_df = create_tournament_df(raw_data)
 
         if tournaments_df is None or tournaments_df.empty:
             print(f"DataFrame creation failed for {year}.")
-            raise SystemExit(0)
+            continue
 
         print("Step 2: Fetching Tournament IDs...")
         keys_list = tournaments_df["tournamentKey"].dropna().unique().tolist()
@@ -391,10 +410,10 @@ if __name__ == "__main__":
 
         if all_matches:
             final_matches_df = pd.DataFrame(all_matches)
-
-            file_path = os.path.join(DATA_DIR, f"itf_matches_{year}_arg.csv")
-
-            final_matches_df.to_csv(file_path, index=False, encoding='utf-8-sig')
-            print(f"\nSUCCESS! Saved {len(final_matches_df)} ARG matches to:\n{file_path}")
+            final_matches_df.to_csv(output_path, mode='a', header=write_header, index=False, encoding='utf-8-sig')
+            write_header = False
+            print(f"\nSUCCESS! Appended {len(final_matches_df)} ARG matches from {year} to:\n{output_path}")
         else:
             print(f"\nFinished {year}, but no ARG matches were found.")
+
+    print(f"\nDone! All years written to {output_path}")
