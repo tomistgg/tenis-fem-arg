@@ -144,7 +144,7 @@ def get_status_desc(result):
 def parse_match(m, meta, q_map=None):
     winner = str(m.get("Winner", ""))
 
-    if winner in ("2", "4"):
+    if winner in ("2", "4", "6"):
         w_id      = m.get("PlayerIDA", "")
         w_entry   = m.get("EntryTypeA", "").upper()
         w_seed    = m.get("SeedA", "")
@@ -172,6 +172,10 @@ def parse_match(m, meta, q_map=None):
 
     result = format_score(m.get("ScoreString", ""))
     status_desc = get_status_desc(result)
+
+    if winner in ("6", "7"):
+        result = "W/O"
+        status_desc = "Walkover"
 
     return {
         "matchType":          "WTA",

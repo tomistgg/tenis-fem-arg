@@ -226,7 +226,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
             matches = rnd.get("matches", [])
             for match in matches:
                 try:
-                    if match.get("playStatusCode") != "PC": continue
+                    if match.get("playStatusCode") != "PC" and match.get("resultStatusCode") != "WO": continue
                     
                     matchId = match.get("matchId")
                     teams = match.get("teams", [])
@@ -276,7 +276,10 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
                         elif "Defaulted" in status_desc or "Default" in status_desc:
                             res += " def."
 
-                    if not any(char.isdigit() for char in res):
+                    if match.get("resultStatusCode") == "WO":
+                        res = "W/O"
+                        status_desc = "Walkover"
+                    elif not any(char.isdigit() for char in res):
                         res = ""
                         status_desc = "Walkover"
 
