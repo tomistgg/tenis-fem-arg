@@ -582,6 +582,21 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #view-rankings .rankings-toggle-btn {{
                     font-size: 10px;
                 }}
+                #view-entrylists .rankings-filter-container {{
+                    width: auto !important;
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: stretch;
+                    margin: 0;
+                }}
+                #view-entrylists #btn-prio1 {{
+                    height: 28px;
+                    padding: 0 10px;
+                    font-size: 10px;
+                    line-height: 1;
+                    box-sizing: border-box;
+                    margin: 0;
+                }}
 
                 h1 {{
                     font-size: 18px;
@@ -1065,6 +1080,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         <div class="entry-content">
                             <div class="header-row">
                                 <h1 id="entry-title">Entry List</h1>
+                                <div class="rankings-filter-container">
+                                    <button id="btn-prio1" class="rankings-toggle-btn" style="display:none;" onclick="togglePrio1()">Show Prio 1</button>
+                                </div>
                             </div>
                             <div class="content-card">
                                 <table>
@@ -1484,6 +1502,25 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 updateEntryList(el.getAttribute('data-key'), el.textContent);
             }}
 
+            let _prioFilterActive = false;
+
+            function togglePrio1() {{
+                _prioFilterActive = !_prioFilterActive;
+                document.getElementById('btn-prio1').textContent = _prioFilterActive ? 'Show All' : 'Show Prio 1';
+                updateEntryList();
+            }}
+
+            function renderRows(list, isMain, isITF, renumber) {{
+                const prioCell = p => isITF ? `<td>${{p.priority||''}}</td>` : '';
+                let html = '';
+                list.forEach((p, i) => {{
+                    const displayPos = renumber ? (i + 1) : p.pos;
+                    const bold = isMain ? 'font-weight:bold;' : '';
+                    html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{displayPos}}</td><td style="text-align:left;${{bold}}">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td>${{prioCell(p)}}</tr>`;
+                }});
+                return html;
+            }}
+
             function updateEntryList(key, name) {{
                 if (!key) {{
                     const active = document.querySelector('.entry-menu-item.active');
@@ -1497,27 +1534,45 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const players = tournamentData[key];
                 const isITF = !key.startsWith('http');
                 document.getElementById('entry-prio-header').style.display = isITF ? '' : 'none';
+                const btn = document.getElementById('btn-prio1');
+                btn.style.display = isITF ? '' : 'none';
+                if (!isITF) _prioFilterActive = false;
+                btn.textContent = _prioFilterActive ? 'Show All' : 'Show Prio 1';
                 let html = '';
                 const main = players.filter(p => p.type === 'MAIN');
                 const qual = players.filter(p => p.type === 'QUAL');
                 const alt = players.filter(p => p.type === 'ALT');
                 const cols = isITF ? 5 : 4;
-                const prioCell = p => isITF ? `<td>${{p.priority||''}}</td>` : '';
 
-                main.forEach(p => {{
-                    html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{p.pos}}</td><td style="text-align:left;font-weight:bold;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td>${{prioCell(p)}}</tr>`;
-                }});
-                if (qual.length > 0) {{
-                    html += `<tr class="divider-row"><td colspan="${{cols}}">QUALIFYING</td></tr>`;
-                    qual.forEach(p => {{
-                        html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{p.pos}}</td><td style="text-align:left;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td>${{prioCell(p)}}</tr>`;
-                    }});
-                }}
-                if (alt.length > 0) {{
-                    html += `<tr class="divider-row"><td colspan="${{cols}}">ALTERNATES</td></tr>`;
-                    alt.forEach(p => {{
-                        html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{p.pos}}</td><td style="text-align:left;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td>${{prioCell(p)}}</tr>`;
-                    }});
+                if (_prioFilterActive) {{
+                    // Pool all prio=1 players in order: MAIN → QUAL → ALT
+                    const pool = [
+                        ...main.filter(p => p.priority === '1'),
+                        ...qual.filter(p => p.priority === '1'),
+                        ...alt.filter(p => p.priority === '1'),
+                    ];
+                    const displayMain = pool.slice(0, main.length);
+                    const displayQual = pool.slice(main.length, main.length + qual.length);
+                    const displayAlt  = pool.slice(main.length + qual.length);
+                    html += renderRows(displayMain, true, isITF, true);
+                    if (displayQual.length > 0) {{
+                        html += `<tr class="divider-row"><td colspan="${{cols}}">QUALIFYING</td></tr>`;
+                        html += renderRows(displayQual, false, isITF, true);
+                    }}
+                    if (displayAlt.length > 0) {{
+                        html += `<tr class="divider-row"><td colspan="${{cols}}">ALTERNATES</td></tr>`;
+                        html += renderRows(displayAlt, false, isITF, true);
+                    }}
+                }} else {{
+                    html += renderRows(main, true, isITF, false);
+                    if (qual.length > 0) {{
+                        html += `<tr class="divider-row"><td colspan="${{cols}}">QUALIFYING</td></tr>`;
+                        html += renderRows(qual, false, isITF, false);
+                    }}
+                    if (alt.length > 0) {{
+                        html += `<tr class="divider-row"><td colspan="${{cols}}">ALTERNATES</td></tr>`;
+                        html += renderRows(alt, false, isITF, false);
+                    }}
                 }}
                 body.innerHTML = html;
             }}
