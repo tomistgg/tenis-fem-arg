@@ -36,8 +36,26 @@ def parse_itf_entry_list(itf_entries):
         for entry in classification.get("entries") or []:
             pos = entry.get("positionDisplay", "-")
             entry_players = entry.get("players") or []
+
+            try:
+                pos_digits = ''.join(filter(str.isdigit, str(pos)))
+                pos_num = int(pos_digits) if pos_digits else 999
+            except:
+                pos_num = 999
+
             if not entry_players:
+                if entry.get("isAvailableSlot"):
+                    display_name = "(Available Slot)"
+                elif entry.get("isExemption"):
+                    display_name = "(Special Exempt)"
+                else:
+                    continue
+                players.append({
+                    "pos": pos, "name": display_name, "country": "-",
+                    "rank": "-", "type": section_type, "pos_num": pos_num
+                })
                 continue
+
             p_node = entry_players[0]
             raw_f_name = f"{p_node.get('givenName', '')} {p_node.get('familyName', '')}".strip()
 
@@ -55,12 +73,6 @@ def parse_itf_entry_list(itf_entries):
                     erank_str = f"ITF {itf_rank}"
                 elif wtn and str(wtn).strip() != "":
                     erank_str = f"WTN {wtn}"
-
-            try:
-                pos_digits = ''.join(filter(str.isdigit, str(pos)))
-                pos_num = int(pos_digits) if pos_digits else 999
-            except:
-                pos_num = 999
 
             players.append({
                 "pos": pos, "name": raw_f_name, "country": p_node.get("nationalityCode", "-"),
