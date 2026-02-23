@@ -206,6 +206,18 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
             t_date = base_date
 
     ko_groups = data.get("koGroups", [])
+
+    q_map = {}
+    if draw_type == "Q":
+        seen_q = {}
+        for group in ko_groups:
+            for rnd in group.get("rounds", []):
+                rd = rnd.get("roundDesc")
+                rn = rnd.get("roundNumber")
+                if rd and rd not in seen_q:
+                    seen_q[rd] = int(rn) if isinstance(rn, (int, float)) else 9999
+        q_map = {rd: f"QR{i + 1}" for i, (rd, _) in enumerate(sorted(seen_q.items(), key=lambda x: x[1]))}
+
     for group in ko_groups:
         rounds = group.get("rounds", [])
         for rnd in rounds:
@@ -281,7 +293,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
                         "surface": t_surf,
                         "inOrOutdoor": t_io,
                         "tournamentCountry": t_nation,
-                        "roundName": r_ds,
+                        "roundName": q_map.get(r_ds, r_ds) if draw_type == "Q" else r_ds,
                         "draw": draw_type,
                         "result": res,
                         "resultStatusDesc": status_desc,

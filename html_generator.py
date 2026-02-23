@@ -1376,26 +1376,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 return '(' + parts.join('/') + ') ';
             }}
 
-            // Find the last qualifying round per tournament and rename it to QRF
-            function getQRFinalMap() {{
-                const maxQR = {{}};
-                historyData.forEach(row => {{
-                    const t = row['TOURNAMENT'] || '';
-                    const r = row['ROUND'] || '';
-                    const m = r.match(/^QR(\\d+)$/);
-                    if (m) {{
-                        const num = parseInt(m[1]);
-                        if (!maxQR[t] || num > maxQR[t]) maxQR[t] = num;
-                    }}
-                }});
-                return maxQR;
-            }}
-            const qrFinalMap = getQRFinalMap();
-
             function displayRound(round, tournament) {{
-                const m = (round || '').match(/^QR(\\d+)$/);
-                if (m && qrFinalMap[tournament] === parseInt(m[1])) return 'QRF';
-                return round;
+                return round || '';
             }}
 
             // Format date string to yyyy-MM-dd
@@ -1903,7 +1885,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const roundOrder = {{
                     'Final': 1, 'Semi-finals': 2, 'Quarter-finals': 3,
                     '4th Round': 4, '3rd Round': 5, '2nd Round': 6, '1st Round': 7,
-                    'QRF': 8, 'QR4': 9, 'QR3': 10, 'QR2': 11, 'QR1': 12,
+                    'QR4': 8, 'QR3': 9, 'QR2': 10, 'QR1': 11,
                     'Semi Finals': 13, 'Quarter Finals': 14,
                     'Last 16': 15, 'Last 32': 16, 'Round Robin': 17
                 }};

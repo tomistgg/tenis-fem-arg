@@ -218,16 +218,7 @@ def load_match_history():
         tournament_category_value = (m.get('tournamentCategory') or m.get('tournament_category') or m.get('TournamentCategory') or '').strip()
         tournament_name_value = (m.get('tournamentName') or m.get('tournament_name') or m.get('TournamentName') or '').strip()
 
-        if draw_type == 'Q':
-            qr_mapping = {
-                '1st Round': 'QR1',
-                '2nd Round': 'QR2',
-                '3rd Round': 'QR3',
-                '4th Round': 'QR4'
-            }
-            final_round = qr_mapping.get(raw_round, raw_round)
-        else:
-            final_round = raw_round
+        final_round = raw_round
 
         raw_surface = m.get('surface') or m.get('Surface') or ''
         in_or_outdoor = m.get('inOrOutdoor') or m.get('InOrOutdoor') or ''

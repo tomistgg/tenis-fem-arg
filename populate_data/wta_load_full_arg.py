@@ -1,5 +1,6 @@
 import csv
 import os
+import re
 import time
 import requests
 
@@ -43,6 +44,43 @@ MANUAL_MATCHES = [
         "loserName": "Beatrice Ricci", "loserCountry": "ITA",
     },
 ]
+
+
+MAIN_DRAW_ROUND_MAP = {
+    "1": "1st Round", "2": "2nd Round", "3": "3rd Round",
+    "4": "4th Round", "5": "5th Round",
+    "Q": "Quarter-finals", "S": "Semi-finals", "F": "Final",
+}
+
+
+def _q_round_key(rnd):
+    rnd = str(rnd)
+    if rnd.isdigit():
+        return int(rnd)
+    m = re.match(r"^Q(\d+)$", rnd)
+    if m:
+        return int(m.group(1))
+    m = re.match(r"^QR(\d+)$", rnd)
+    if m:
+        return int(m.group(1))
+    text = {"1st Round": 1, "2nd Round": 2, "3rd Round": 3, "4th Round": 4}
+    return text.get(rnd, 99)
+
+
+def build_q_round_map(raw_matches):
+    """Map qualifying RoundID values → QR1/QR2/.../QRF using ALL qualifying singles matches."""
+    q_rounds = {
+        str(m.get("RoundID", ""))
+        for m in raw_matches
+        if m.get("DrawLevelType") == "Q" and m.get("DrawMatchType") == "S" and m.get("RoundID", "")
+    }
+    if not q_rounds:
+        return {}
+    sorted_rounds = sorted(q_rounds, key=_q_round_key)
+    result = {}
+    for i, rnd in enumerate(sorted_rounds):
+        result[rnd] = f"QR{i + 1}"
+    return result
 
 
 def fetch_tournaments_for_year(year):
@@ -103,7 +141,7 @@ def get_status_desc(result):
     return ""
 
 
-def parse_match(m, meta):
+def parse_match(m, meta, q_map=None):
     winner = str(m.get("Winner", ""))
 
     if winner in ("2", "4"):
@@ -145,7 +183,7 @@ def parse_match(m, meta):
         "surface":            meta["surface"],
         "inOrOutdoor":        meta["inOrOutdoor"],
         "tournamentCountry":  meta["tournamentCountry"],
-        "roundName":          m.get("RoundID", ""),
+        "roundName":          _map_round(m.get("RoundID", ""), m.get("DrawLevelType", ""), q_map),
         "draw":               m.get("DrawLevelType", ""),
         "result":             result,
         "resultStatusDesc":   status_desc,
@@ -160,6 +198,13 @@ def parse_match(m, meta):
         "loserName":          l_name,
         "loserCountry":       l_country,
     }
+
+
+def _map_round(raw_round, draw_level, q_map):
+    raw_round = str(raw_round)
+    if draw_level == "Q":
+        return q_map.get(raw_round, raw_round) if q_map else raw_round
+    return MAIN_DRAW_ROUND_MAP.get(raw_round, raw_round)
 
 
 def fetch_matches(tournament_id, year):
@@ -221,7 +266,8 @@ if __name__ == "__main__":
 
             if arg_matches:
                 meta = build_meta(t)
-                rows = [parse_match(m, meta) for m in arg_matches]
+                q_map = build_q_round_map(raw_matches)
+                rows = [parse_match(m, meta, q_map) for m in arg_matches]
                 all_rows.extend(rows)
 
             time.sleep(0.3)
