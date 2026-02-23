@@ -1661,7 +1661,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 orderedYears.unshift('Career');
 
                 populateFilterOptions('filter-surface', Array.from(surfaces).sort());
-                populateFilterOptions('filter-round', Array.from(rounds).sort());
+                const roundOrderForFilter = {{
+                    'QR1': 1, 'QR2': 2, 'QR3': 3, 'QR4': 4,
+                    '1st Round': 5, '2nd Round': 6, '3rd Round': 7, '4th Round': 8, '5th Round': 9,
+                    'Quarter-finals': 10, 'Semi-finals': 11, 'Final': 12,
+                    'Team - Round Robin': 13, 'Team - Last 32': 14, 'Team - Last 16': 15,
+                    'Team - Quarter Finals': 16, 'Team - Semi Finals': 17, 'Team - Final': 18,
+                }};
+                const orderedRounds = Array.from(rounds).sort((a, b) => {{
+                    const oa = roundOrderForFilter[a] ?? 99;
+                    const ob = roundOrderForFilter[b] ?? 99;
+                    return oa !== ob ? oa - ob : a.localeCompare(b);
+                }});
+                populateFilterOptions('filter-round', orderedRounds);
                 populateFilterOptions('filter-result', orderedResults);
                 populateFilterOptions('filter-year', orderedYears);
                 populateFilterOptions('filter-tournament', Array.from(tournaments).sort((a, b) => a.localeCompare(b)));
@@ -1886,8 +1898,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     'Final': 1, 'Semi-finals': 2, 'Quarter-finals': 3,
                     '4th Round': 4, '3rd Round': 5, '2nd Round': 6, '1st Round': 7,
                     'QR4': 8, 'QR3': 9, 'QR2': 10, 'QR1': 11,
-                    'Semi Finals': 13, 'Quarter Finals': 14,
-                    'Last 16': 15, 'Last 32': 16, 'Round Robin': 17
+                    'Semi Finals': 12, 'Quarter Finals': 13,
+                    'Last 16': 14, 'Last 32': 15, 'Round Robin': 16
                 }};
                 function getRoundOrder(round) {{
                     return roundOrder[round] || 99;
