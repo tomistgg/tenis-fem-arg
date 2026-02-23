@@ -30,6 +30,8 @@ def parse_itf_entry_list(itf_entries):
             section_type = "MAIN"
         elif class_code == "Q":
             section_type = "QUAL"
+        elif class_code == "A":
+            section_type = "ALT"
         else:
             continue
 
@@ -78,6 +80,15 @@ def parse_itf_entry_list(itf_entries):
                 "pos": pos, "name": raw_f_name, "country": p_node.get("nationalityCode", "-"),
                 "rank": erank_str, "type": section_type, "pos_num": pos_num
             })
+
+    # Ensure Special Exempt positions don't conflict with JE (Junior Exempt) players
+    real_main = [p for p in players if p["type"] == "MAIN" and p["name"] != "(Special Exempt)"]
+    exempt = [p for p in players if p["type"] == "MAIN" and p["name"] == "(Special Exempt)"]
+    if exempt and real_main:
+        max_pos = max(p["pos_num"] for p in real_main)
+        for i, p in enumerate(exempt):
+            p["pos_num"] = max_pos + i + 1
+            p["pos"] = str(max_pos + i + 1)
 
     players.sort(key=lambda x: (x["pos_num"], x["name"]))
     return players

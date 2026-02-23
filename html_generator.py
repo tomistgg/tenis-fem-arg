@@ -1497,6 +1497,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 let html = '';
                 const main = players.filter(p => p.type === 'MAIN');
                 const qual = players.filter(p => p.type === 'QUAL');
+                const alt = players.filter(p => p.type === 'ALT');
 
                 main.forEach(p => {{
                     html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{p.pos}}</td><td style="text-align:left;font-weight:bold;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
@@ -1504,6 +1505,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if (qual.length > 0) {{
                     html += `<tr class="divider-row"><td colspan="4">QUALIFYING</td></tr>`;
                     qual.forEach(p => {{
+                        html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{p.pos}}</td><td style="text-align:left;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
+                    }});
+                }}
+                if (alt.length > 0) {{
+                    html += `<tr class="divider-row"><td colspan="4">ALTERNATES</td></tr>`;
+                    alt.forEach(p => {{
                         html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{p.pos}}</td><td style="text-align:left;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
                     }});
                 }}

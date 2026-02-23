@@ -63,11 +63,14 @@ def merge_entry_list(cached_players, new_players):
     """Merge new scraped players with cached players, preserving sections that disappeared."""
     new_main = [p for p in new_players if p.get("type") == "MAIN"]
     new_qual = [p for p in new_players if p.get("type") == "QUAL"]
+    new_alt = [p for p in new_players if p.get("type") == "ALT"]
     cached_main = [p for p in cached_players if p.get("type") == "MAIN"]
     cached_qual = [p for p in cached_players if p.get("type") == "QUAL"]
+    cached_alt = [p for p in cached_players if p.get("type") == "ALT"]
     final_main = new_main if new_main else cached_main
     final_qual = new_qual if new_qual else cached_qual
-    return final_main + final_qual
+    final_alt = new_alt if new_alt else cached_alt
+    return final_main + final_qual + final_alt
 
 
 def get_cached_rankings(date_str, cache_file, fetch_func, nationality=None):
