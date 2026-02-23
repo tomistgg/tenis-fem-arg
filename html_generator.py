@@ -1074,6 +1074,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                             <th>PLAYER</th>
                                             <th style="width:35px">NAT</th>
                                             <th style="width:70px">E-Rank</th>
+                                            <th id="entry-prio-header" style="width:35px;display:none">PRIO</th>
                                         </tr>
                                     </thead>
                                     <tbody id="entry-body"></tbody>
@@ -1494,24 +1495,28 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('entry-title').textContent = name || 'Entry List';
                 if (!tournamentData[key]) return;
                 const players = tournamentData[key];
+                const isITF = !key.startsWith('http');
+                document.getElementById('entry-prio-header').style.display = isITF ? '' : 'none';
                 let html = '';
                 const main = players.filter(p => p.type === 'MAIN');
                 const qual = players.filter(p => p.type === 'QUAL');
                 const alt = players.filter(p => p.type === 'ALT');
+                const cols = isITF ? 5 : 4;
+                const prioCell = p => isITF ? `<td>${{p.priority||''}}</td>` : '';
 
                 main.forEach(p => {{
-                    html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{p.pos}}</td><td style="text-align:left;font-weight:bold;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
+                    html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{p.pos}}</td><td style="text-align:left;font-weight:bold;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td>${{prioCell(p)}}</tr>`;
                 }});
                 if (qual.length > 0) {{
-                    html += `<tr class="divider-row"><td colspan="4">QUALIFYING</td></tr>`;
+                    html += `<tr class="divider-row"><td colspan="${{cols}}">QUALIFYING</td></tr>`;
                     qual.forEach(p => {{
-                        html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{p.pos}}</td><td style="text-align:left;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
+                        html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{p.pos}}</td><td style="text-align:left;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td>${{prioCell(p)}}</tr>`;
                     }});
                 }}
                 if (alt.length > 0) {{
-                    html += `<tr class="divider-row"><td colspan="4">ALTERNATES</td></tr>`;
+                    html += `<tr class="divider-row"><td colspan="${{cols}}">ALTERNATES</td></tr>`;
                     alt.forEach(p => {{
-                        html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{p.pos}}</td><td style="text-align:left;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td></tr>`;
+                        html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{p.pos}}</td><td style="text-align:left;">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td>${{prioCell(p)}}</tr>`;
                     }});
                 }}
                 body.innerHTML = html;

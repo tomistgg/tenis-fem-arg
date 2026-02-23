@@ -45,6 +45,8 @@ def parse_itf_entry_list(itf_entries):
             except:
                 pos_num = 999
 
+            priority = str(entry.get("priority") or "").strip()
+
             if not entry_players:
                 if entry.get("isAvailableSlot"):
                     display_name = "(Available Slot)"
@@ -54,7 +56,7 @@ def parse_itf_entry_list(itf_entries):
                     continue
                 players.append({
                     "pos": pos, "name": display_name, "country": "-",
-                    "rank": "-", "type": section_type, "pos_num": pos_num
+                    "rank": "-", "priority": priority, "type": section_type, "pos_num": pos_num
                 })
                 continue
 
@@ -78,7 +80,7 @@ def parse_itf_entry_list(itf_entries):
 
             players.append({
                 "pos": pos, "name": raw_f_name, "country": p_node.get("nationalityCode", "-"),
-                "rank": erank_str, "type": section_type, "pos_num": pos_num
+                "rank": erank_str, "priority": priority, "type": section_type, "pos_num": pos_num
             })
 
     # Ensure Special Exempt positions don't conflict with JE (Junior Exempt) players
