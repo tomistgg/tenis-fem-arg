@@ -1828,7 +1828,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const counter = document.getElementById('history-wl-counter');
                 if (!counter) return;
 
-                const nonWO = (matches || []).filter(row => (row['_resultStatusDesc'] || '') !== 'Walkover');
+                const nonWO = (matches || []).filter(row => !['Walkover', 'Bye'].includes(row['_resultStatusDesc'] || ''));
                 const total = nonWO.length;
                 if (!selectedPlayer || total === 0) {{
                     counter.textContent = `Matches: ${{total}} (0-${{total}})`;
