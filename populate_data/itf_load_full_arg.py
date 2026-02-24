@@ -233,7 +233,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
             matches = rnd.get("matches", [])
             for match in matches:
                 try:
-                    if match.get("playStatusCode") != "PC" and match.get("resultStatusCode") != "WO": continue
+                    if match.get("playStatusCode") != "PC" and match.get("resultStatusCode") not in ("WO", "BYE"): continue
                     
                     matchId = match.get("matchId")
                     teams = match.get("teams", [])
@@ -283,7 +283,12 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
                         elif "Defaulted" in status_desc or "Default" in status_desc:
                             res += " def."
 
-                    if match.get("resultStatusCode") == "WO":
+                    if match.get("resultStatusCode") == "BYE":
+                        res = "-"
+                        status_desc = "Bye"
+                        l_n = "Bye"
+                        l_c = "-"
+                    elif match.get("resultStatusCode") == "WO":
                         res = "W/O"
                         status_desc = "Walkover"
                     elif not any(char.isdigit() for char in res):
@@ -396,11 +401,10 @@ if __name__ == "__main__":
                         json_data = fetch_api_data(int(tId), code, week_number=week)
 
                         if json_data:
+                            has_data_this_week = True
                             parsed = parse_drawsheet(json_data, tourney, code, week_offset=(week - 1))
-                            if parsed:
-                                all_matches.extend(parsed)
-                                has_data_this_week = True
-                                print(f"   -> Week {week}, {code}: Found {len(parsed)} ARG matches")
+                            all_matches.extend(parsed)
+                            print(f"   -> Week {week}, {code}: Found {len(parsed)} ARG matches")
 
                         time.sleep(0.2)
 
