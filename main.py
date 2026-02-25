@@ -7,7 +7,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
-from config import ENTRY_LISTS_CACHE_FILE
+from config import ENTRY_LISTS_CACHE_FILE, NAME_LOOKUP
 from utils import (
     fix_encoding, fix_encoding_keep_accents,
     load_cache, save_cache, merge_entry_list,
@@ -106,6 +106,7 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
     schedule_map = {}
     tournament_store = {}
     ranking_cache = {}
+    unranked_schedule = {}
 
     for week, tourneys in tournament_groups.items():
         print(f"Processing {week}...")
@@ -151,6 +152,20 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                         schedule_map[p_key][week] += f'<div style="margin-top: 3px;">{t_name}{suffix}</div>'
                     else:
                         schedule_map[p_key][week] = f"{t_name}{suffix}"
+                for p in t_list:
+                    p_upper = p['name'].upper()
+                    if p_upper in arg_names_set:
+                        continue
+                    if p.get('country', '') != 'ARG':
+                        continue
+                    suffix = '' if p.get('type') == 'MAIN' else ' (Q)'
+                    if p_upper not in unranked_schedule:
+                        unranked_schedule[p_upper] = {}
+                    if week in unranked_schedule[p_upper]:
+                        if t_name not in unranked_schedule[p_upper][week]:
+                            unranked_schedule[p_upper][week] += f'<div style="margin-top: 3px;">{t_name}{suffix}</div>'
+                    else:
+                        unranked_schedule[p_upper][week] = f"{t_name}{suffix}"
 
         # ITF tournaments
         for key, t_info in tourneys.items():
@@ -173,6 +188,27 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                             schedule_map[p_name][week] += f"<br>{t_name}{suffix}"
                     else:
                         schedule_map[p_name][week] = f"{t_name}{suffix}"
+                for p in tourney_players_list:
+                    raw_upper = p['name'].upper()
+                    p_key = NAME_LOOKUP.get(raw_upper, raw_upper)
+                    if p_key in arg_names_set:
+                        continue
+                    if p.get('country', '') != 'ARG':
+                        continue
+                    p_type = p.get('type', '')
+                    if p_type == 'MAIN':
+                        suffix = ''
+                    elif p_type == 'QUAL':
+                        suffix = ' (Q)'
+                    else:
+                        suffix = f" (ALT {p.get('pos', '')})" if p.get('pos') else ' (ALT)'
+                    if p_key not in unranked_schedule:
+                        unranked_schedule[p_key] = {}
+                    if week in unranked_schedule[p_key]:
+                        if t_name not in unranked_schedule[p_key][week]:
+                            unranked_schedule[p_key][week] += f"<br>{t_name}{suffix}"
+                    else:
+                        unranked_schedule[p_key][week] = f"{t_name}{suffix}"
 
     # Remove tournaments no longer in the next 4 weeks
     active_keys = set()
@@ -180,7 +216,7 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
         active_keys.update(tourneys.keys())
     entry_cache = {k: v for k, v in entry_cache.items() if k in active_keys}
 
-    return schedule_map, tournament_store, entry_cache
+    return schedule_map, tournament_store, entry_cache, unranked_schedule
 
 
 def load_match_history():
@@ -307,10 +343,21 @@ def main():
 
         # 3. Process tournament entry lists
         entry_cache = load_cache(ENTRY_LISTS_CACHE_FILE)
-        schedule_map, tournament_store, entry_cache = process_tournaments(
+        schedule_map, tournament_store, entry_cache, unranked_schedule = process_tournaments(
             driver, tournament_groups, monday_map, arg_names_set, entry_cache
         )
         save_cache(ENTRY_LISTS_CACHE_FILE, entry_cache)
+
+        # Add unranked ARG players found in entry lists to players_data and schedule_map
+        existing_player_keys = {p['Player'] for p in players_data}
+        for name_upper, weeks in unranked_schedule.items():
+            schedule_map[name_upper] = weeks
+            if name_upper not in existing_player_keys:
+                players_data.append({
+                    'Player': name_upper,
+                    'Key': name_upper,
+                    'Rank': '-'
+                })
 
         # 4. Load match history
         match_history_data, cleaned_history = load_match_history()
