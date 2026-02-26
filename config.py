@@ -19,7 +19,7 @@ for display_name, aliases in PLAYER_MAPPING.items():
     for alias in aliases:
         NAME_LOOKUP[alias.strip().upper()] = display_name.upper()
 
-WTA_CACHE_FILE = os.path.join(DATA_DIR, "wta_rankings_cache.json")
+WTA_RANKINGS_CSV = os.path.join(DATA_DIR, "wta_rankings_20_29.csv")
 ITF_CACHE_FILE = os.path.join(DATA_DIR, "itf_rankings_cache.json")
 ENTRY_LISTS_CACHE_FILE = os.path.join(DATA_DIR, "entry_lists_cache.json")
 

@@ -5,7 +5,10 @@ import unicodedata
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 
-from config import API_URL, HEADERS, NAME_LOOKUP, WTA_CACHE_FILE
+import csv as _csv
+import os as _os
+
+from config import API_URL, HEADERS, NAME_LOOKUP, WTA_RANKINGS_CSV
 from utils import fix_display_name, format_player_name, get_cached_rankings
 from calendar_builder import get_next_monday, get_monday_from_date, format_week_label
 
@@ -188,20 +191,62 @@ def get_rankings(date_str, nationality=None):
             "Country": p.get('player', {}).get('countryCode', ''),
             "Key": display_name,
             "Points": p.get('points', 0),
-            "Played": p.get('tournamentsPlayed', 0),
             "DOB": p.get('player', {}).get('dateOfBirth', '')
         })
     return ranking_results
 
 
+_wta_csv_cache = None  # module-level in-memory cache: date_str -> list of player dicts
+
+
+def _load_wta_csv():
+    global _wta_csv_cache
+    if _wta_csv_cache is not None:
+        return _wta_csv_cache
+    _wta_csv_cache = {}
+    if not _os.path.exists(WTA_RANKINGS_CSV):
+        return _wta_csv_cache
+    with open(WTA_RANKINGS_CSV, encoding="utf-8") as f:
+        for row in _csv.DictReader(f):
+            d = row["week_date"]
+            if d not in _wta_csv_cache:
+                _wta_csv_cache[d] = []
+            _wta_csv_cache[d].append({
+                "Player":  row["player"].upper(),
+                "Rank":    int(row["rank"]) if row.get("rank") else None,
+                "Country": row["country"],
+                "Key":     row["player"].upper(),
+                "Points":  int(row["points"]) if row.get("points") else 0,
+                "DOB":     row.get("dob", ""),
+            })
+    return _wta_csv_cache
+
+
 def get_wta_rankings_cached(date_str, nationality=None):
-    """Get WTA rankings with caching"""
-    return get_cached_rankings(
-        date_str,
-        WTA_CACHE_FILE,
-        get_rankings,
-        nationality=nationality
-    )
+    """Get WTA rankings from CSV, falling back to API if the date is missing."""
+    csv_data = _load_wta_csv()
+
+    if date_str in csv_data:
+        players = csv_data[date_str]
+        if nationality:
+            return [p for p in players if p.get("Country") == nationality]
+        return players
+
+    # Date not in CSV — fetch from API and keep in memory for this run
+    new_data = get_rankings(date_str, nationality=nationality)
+    if new_data:
+        csv_data[date_str] = new_data
+        return new_data
+
+    # Fallback: use the latest available date in the CSV
+    if csv_data:
+        latest_key = sorted(csv_data.keys())[-1]
+        players = csv_data.get(latest_key, [])
+        if nationality:
+            return [p for p in players if p.get("Country") == nationality]
+        return players
+
+    return []
 
 
 def fetch_player_info(player_id):

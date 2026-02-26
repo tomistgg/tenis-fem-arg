@@ -110,7 +110,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             dob = dob.split("T")[0]
         name = format_player_name(p.get("Player", ""))
         row_class = "arg-player-row" if (p.get("Country") or "").upper() == "ARG" else ""
-        rankings_rows += f'<tr class="{row_class}"><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{name}</td><td>{p.get("Country", "")}</td><td>{p.get("Points", "")}</td><td>{p.get("Played", "")}</td><td>{dob}</td></tr>'
+        rankings_rows += f'<tr class="{row_class}"><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{name}</td><td>{p.get("Country", "")}</td><td>{p.get("Points", "")}</td><td>{dob}</td></tr>'
 
     default_national_columns = ["N", "Player", "Date", "Event", "Round", "Tie", "Partner", "Opponent", "Result", "Score"]
     national_columns = list(national_team_data[0].keys()) if national_team_data else default_national_columns
@@ -1121,7 +1121,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                         <th>PLAYER</th>
                                         <th style="width:60px">NAT</th>
                                         <th style="width:70px">POINTS</th>
-                                        <th style="width:65px">PLAYED</th>
                                         <th style="width:100px">DOB</th>
                                     </tr>
                                 </thead>
