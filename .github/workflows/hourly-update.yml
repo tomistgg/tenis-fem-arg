@@ -68,6 +68,16 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Check if report has meaningful content
+        if: always()
+        id: check_content
+        run: |
+          if grep -qP "^- (?!None detected\.)" .run_snapshot/run_report.md 2>/dev/null; then
+            echo "has_content=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_content=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Detect data changes
         if: always()
         id: detect_changes
@@ -79,7 +89,7 @@ jobs:
           fi
 
       - name: Send email report
-        if: always() && steps.check_report.outputs.exists == 'true' && steps.detect_changes.outputs.changed == 'true'
+        if: always() && steps.check_report.outputs.exists == 'true' && steps.check_content.outputs.has_content == 'true' && steps.detect_changes.outputs.changed == 'true'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
