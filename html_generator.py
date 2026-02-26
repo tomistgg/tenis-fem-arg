@@ -103,21 +103,48 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     calendar_html += '</tbody></table>'
 
-    # Build dropdown options for all available ranking weeks
+    # Build cascading year/month/day selects for ranking week picker
     _all_csv = _load_wta_csv()
     _all_dates = sorted(_all_csv.keys())
     _latest_date = _all_dates[-1] if _all_dates else ""
 
-    _month_names = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
-    rankings_week_options = ""
-    for _d in reversed(_all_dates):
+    # Build nested date index: year(str) -> month(int) -> [day(int), ...]
+    _date_index = {}
+    for _d in _all_dates:
         try:
             _dt = datetime.strptime(_d, "%Y-%m-%d")
-            _label = f"{_month_names[_dt.month - 1]} {_dt.day}, {_dt.year}"
+            _y = str(_dt.year)
+            if _y not in _date_index:
+                _date_index[_y] = {}
+            _m = _dt.month
+            if _m not in _date_index[_y]:
+                _date_index[_y][_m] = []
+            _date_index[_y][_m].append(_dt.day)
         except Exception:
-            _label = _d
-        _sel = ' selected' if _d == _latest_date else ''
-        rankings_week_options += f'<option value="{_d}"{_sel}>{_label}</option>'
+            pass
+
+    _latest_year = _latest_month_int = _latest_day_int = 0
+    _latest_year_str = ""
+    if _latest_date:
+        try:
+            _ldt = datetime.strptime(_latest_date, "%Y-%m-%d")
+            _latest_year_str = str(_ldt.year)
+            _latest_year = _ldt.year
+            _latest_month_int = _ldt.month
+            _latest_day_int = _ldt.day
+        except Exception:
+            pass
+
+    _all_years = sorted(_date_index.keys(), reverse=True)
+    rankings_year_options = ""
+    for _y in _all_years:
+        _sel = ' selected' if _y == _latest_year_str else ''
+        rankings_year_options += f'<option value="{_y}"{_sel}>{_y}</option>'
+
+    rankings_dates_index_json = json.dumps(_date_index)
+    rankings_latest_year_str = _latest_year_str
+    rankings_latest_month = _latest_month_int
+    rankings_latest_day = _latest_day_int
 
     # Build rankings table rows (initial: latest week)
     rankings_rows = ""
@@ -225,8 +252,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .rankings-filter-container {{ position: absolute; right: 0; top: 50%; transform: translateY(-50%); }}
             .rankings-toggle-btn {{ padding: 8px 12px; border-radius: 8px; border: 2px solid #94a3b8; background: white; font-family: inherit; font-size: 12px; font-weight: bold; color: #1e293b; cursor: pointer; white-space: nowrap; }}
             .rankings-toggle-btn:hover {{ background: #f1f5f9; }}
-            .rankings-filter-container {{ display: flex; align-items: center; gap: 8px; }}
-            #rankings-week-select {{ width: auto; min-width: 130px; font-size: 12px; font-weight: bold; padding: 8px 28px 8px 10px; }}
+            .rankings-filter-container {{ display: flex; align-items: center; }}
+            .rankings-date-picker {{ display: flex; align-items: stretch; border: 2px solid #94a3b8; border-radius: 8px; overflow: hidden; background: white; }}
+            .rankings-date-select {{ width: auto; font-size: 12px; font-weight: bold; padding: 8px 22px 8px 8px; border: none !important; border-radius: 0 !important; background-color: transparent !important; }}
+            #rankings-year-select {{ min-width: 72px; }}
+            #rankings-month-select {{ min-width: 62px; border-left: 1px solid #cbd5e1 !important; }}
+            #rankings-day-select {{ min-width: 50px; border-left: 1px solid #cbd5e1 !important; }}
+            .rankings-load-btn {{ border: none; border-left: 2px solid #94a3b8; border-radius: 0; background: #75AADB; font-family: inherit; font-size: 13px; font-weight: bold; color: white; cursor: pointer; padding: 0 10px; line-height: 1; }}
+            .rankings-load-btn:hover {{ background: #5a8fb8; }}
+            .rankings-controls {{ display: flex; align-items: center; width: 100%; gap: 8px; }}
+            .rankings-controls .search-container {{ position: static; transform: none; flex: 1; display: flex; justify-content: flex-start; }}
+            .rankings-controls .rankings-filter-container {{ position: static; transform: none; flex: 0 0 auto; }}
+            .rankings-btn-end {{ flex: 1; display: flex; justify-content: flex-end; }}
             #rankings-search {{ width: 190px; }}
             input, select {{ padding: 8px 12px; border-radius: 8px; border: 2px solid #94a3b8; font-family: inherit; font-size: 13px; width: 250px; box-sizing: border-box; }}
             select {{ background: white; font-weight: bold; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }}
@@ -545,65 +582,44 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     justify-content: center;
                 }}
 
-                /* Rankings: title first, then search + button on one row */
-                #view-rankings .header-row {{
-                    display: grid;
-                    grid-template-columns: 148px auto;
-                    grid-template-areas:
-                        "title title"
-                        "search button";
-                    align-items: stretch;
-                    justify-content: center;
-                    width: fit-content;
-                    max-width: 100%;
-                    margin: 0 auto 8px auto;
-                    row-gap: 6px;
-                    column-gap: 8px;
-                }}
-                #view-rankings h1 {{
-                    grid-area: title;
-                    width: 100%;
-                    order: 1;
-                }}
-                #view-rankings .search-container {{
-                    grid-area: search;
-                    width: 148px !important;
-                    display: block;
-                    margin: 0;
-                }}
-                #view-rankings .rankings-filter-container {{
-                    grid-area: button;
-                    width: auto !important;
-                    display: flex;
-                    justify-content: flex-end;
-                    align-items: stretch;
-                    margin: 0;
+                /* Rankings mobile: compact controls row */
+                #view-rankings .rankings-controls {{
+                    gap: 4px;
                 }}
                 #view-rankings #rankings-search {{
-                    width: 148px;
                     height: 28px;
                     padding: 4px 8px;
                     font-size: 10px;
                     box-sizing: border-box;
                     margin: 0;
-                    display: block;
+                    width: 100%;
                 }}
                 #view-rankings #rankings-search::placeholder {{ font-size: 9px; }}
                 #view-rankings .rankings-toggle-btn {{
                     height: 28px;
-                    padding: 0 10px;
+                    padding: 0 8px;
                     font-size: 10px;
                     line-height: 1;
                     box-sizing: border-box;
                     margin: 0;
-                    display: block;
+                    white-space: nowrap;
                 }}
-                #view-rankings #rankings-week-select {{
+                #view-rankings .rankings-date-picker {{
                     height: 28px;
-                    padding: 0 22px 0 6px;
+                }}
+                #view-rankings .rankings-date-select {{
+                    height: 28px;
+                    padding: 0 14px 0 4px;
                     font-size: 9px;
                     min-width: 0;
                     width: auto;
+                    box-sizing: border-box;
+                    margin: 0;
+                }}
+                #view-rankings .rankings-load-btn {{
+                    height: 28px;
+                    padding: 0 7px;
+                    font-size: 11px;
                     box-sizing: border-box;
                     margin: 0;
                 }}
@@ -1130,12 +1146,21 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div id="view-rankings" class="single-layout rankings-show-all" style="display: none;">
                     <div class="header-row">
                         <h1>WTA Rankings</h1>
-                        <div class="search-container">
-                            <input type="text" id="rankings-search" placeholder="Search player..." oninput="filterRankings()">
-                        </div>
-                        <div class="rankings-filter-container">
-                            <select id="rankings-week-select" onchange="switchRankingWeek(this.value)">{rankings_week_options}</select>
-                            <button id="rankings-toggle-btn" class="rankings-toggle-btn" onclick="toggleRankingsScope()">Show ARG</button>
+                        <div class="rankings-controls">
+                            <div class="search-container">
+                                <input type="text" id="rankings-search" placeholder="Search player..." oninput="filterRankings()">
+                            </div>
+                            <div class="rankings-filter-container">
+                                <div class="rankings-date-picker">
+                                    <select id="rankings-year-select" class="rankings-date-select" onchange="onRankingYearChange(this.value)">{rankings_year_options}</select>
+                                    <select id="rankings-month-select" class="rankings-date-select" onchange="onRankingMonthChange()"></select>
+                                    <select id="rankings-day-select" class="rankings-date-select"></select>
+                                    <button id="rankings-load-btn" class="rankings-load-btn" onclick="applyRankingSelection()">&#8594;</button>
+                                </div>
+                            </div>
+                            <div class="rankings-btn-end">
+                                <button id="rankings-toggle-btn" class="rankings-toggle-btn" onclick="toggleRankingsScope()">Show ARG</button>
+                            </div>
                         </div>
                     </div>
                     <div class="content-card">
@@ -1564,9 +1589,47 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 tbody.innerHTML = html;
                 filterRankings();
             }}
+            const _rankingsDatesIndex = {rankings_dates_index_json};
+            const _rankingMonthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            function _populateRankingMonths(year, selectMonth, selectDay) {{
+                const sel = document.getElementById('rankings-month-select');
+                const months = Object.keys(_rankingsDatesIndex[year] || {{}}).map(Number).sort((a,b)=>a-b);
+                const chosenM = (selectMonth != null && months.includes(+selectMonth)) ? +selectMonth : months[months.length-1];
+                sel.innerHTML = months.map(m => {{
+                    const isSel = (m === chosenM) ? ' selected' : '';
+                    return `<option value="${{m}}"${{isSel}}>${{_rankingMonthNames[m-1]}}</option>`;
+                }}).join('');
+                _populateRankingDays(year, chosenM, selectDay);
+            }}
+            function _populateRankingDays(year, monthNum, selectDay) {{
+                const sel = document.getElementById('rankings-day-select');
+                const days = ((_rankingsDatesIndex[year] || {{}})[String(monthNum)] || []).slice().sort((a,b)=>a-b);
+                const chosenD = (selectDay != null && days.includes(+selectDay)) ? +selectDay : days[days.length-1];
+                sel.innerHTML = days.map(d => {{
+                    const isSel = (d === chosenD) ? ' selected' : '';
+                    return `<option value="${{d}}"${{isSel}}>${{d}}</option>`;
+                }}).join('');
+            }}
+            function onRankingYearChange(year) {{
+                _populateRankingMonths(year, null, null);
+            }}
+            function onRankingMonthChange() {{
+                const year = document.getElementById('rankings-year-select').value;
+                const month = +document.getElementById('rankings-month-select').value;
+                _populateRankingDays(year, month, null);
+            }}
+            function applyRankingSelection() {{
+                const year = document.getElementById('rankings-year-select').value;
+                const month = document.getElementById('rankings-month-select').value;
+                const day = document.getElementById('rankings-day-select').value;
+                if (!year || !month || !day) return;
+                const mm = month.toString().padStart(2,'0');
+                const dd = day.toString().padStart(2,'0');
+                switchRankingWeek(`${{year}}-${{mm}}-${{dd}}`);
+            }}
             function switchRankingWeek(dateStr) {{
-                const sel = document.getElementById('rankings-week-select');
-                if (sel) {{ sel.disabled = true; sel.style.opacity = '0.5'; }}
+                const controls = ['rankings-year-select','rankings-month-select','rankings-day-select','rankings-load-btn'].map(id => document.getElementById(id));
+                controls.forEach(el => {{ if(el) {{ el.disabled = true; el.style.opacity = '0.5'; }} }});
                 _loadRankingsCsv()
                     .then(data => {{
                         const players = data[dateStr];
@@ -1574,9 +1637,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     }})
                     .catch(() => {{}})
                     .finally(() => {{
-                        if (sel) {{ sel.disabled = false; sel.style.opacity = '1'; }}
+                        controls.forEach(el => {{ if(el) {{ el.disabled = false; el.style.opacity = '1'; }} }});
                     }});
             }}
+            _populateRankingMonths('{rankings_latest_year_str}', {rankings_latest_month}, {rankings_latest_day});
             function filterNational() {{
                 const q = document.getElementById('national-search').value.toLowerCase();
                 document.querySelectorAll('#national-body tr').forEach(row => {{
