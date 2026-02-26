@@ -37,6 +37,10 @@ jobs:
           cp data/calendar_snapshot.json .run_snapshot/data/calendar_snapshot.json 2>/dev/null || true
           cp data/*.csv .run_snapshot/data/ 2>/dev/null || true
 
+      - name: Load weekly WTA ranking
+        id: weekly_ranking
+        run: python populate_data/load_weekly_ranking.py
+
       - name: Run weekly ITF loader
         id: itf_weekly
         run: python populate_data/itf_load_new.py
