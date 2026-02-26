@@ -359,8 +359,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #history-table td:nth-child(8) {{ white-space: normal; overflow: visible; text-overflow: clip; }} /* Allow OPPONENT to wrap */
 
             /* Filter Panel Styles */
-            .history-layout {{ display: flex; gap: 20px; width: 100%; }}
-            .filter-panel {{ width: 250px; padding: 15px; flex-shrink: 0; border: 2px solid black; background: white; }}
+            .history-layout {{ display: flex; gap: 20px; width: 100%; align-items: flex-start; }}
+            .filter-panel {{ width: 250px; padding: 15px; flex-shrink: 0; border: 2px solid black; background: white; align-self: flex-start; }}
             .filter-panel h3 {{ margin: -15px -15px 15px -15px; font-size: 16px; color: white; text-align: center; font-weight: bold; background: #75AADB; border: none; padding: 12px; border-radius: 0; }}
             .filter-group {{ margin-bottom: 20px; text-align: left; }}
             .filter-group-title {{ font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 8px; cursor: pointer; user-select: none; display: flex; justify-content: center; align-items: center; text-align: center; position: relative; }}
