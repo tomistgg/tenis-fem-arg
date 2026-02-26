@@ -39,11 +39,11 @@ jobs:
 
       - name: Run weekly ITF loader
         id: itf_weekly
-        run: python populate_data/itf_load_weekly.py
+        run: python populate_data/itf_load_new.py
 
       - name: Run weekly WTA loader
         id: wta_weekly
-        run: python populate_data/wta_load_weekly.py
+        run: python populate_data/wta_load_new.py
 
       - name: Run update script
         id: main_update
