@@ -1538,44 +1538,54 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     row.classList.toggle('hidden', !(matchesSearch && matchesCountry));
                 }});
             }}
-            let _rankingsCsvCache = null;
-            let _rankingsCsvPromise = null;
-            function _loadRankingsCsv() {{
-                if (_rankingsCsvCache) return Promise.resolve(_rankingsCsvCache);
-                if (_rankingsCsvPromise) return _rankingsCsvPromise;
-                _rankingsCsvPromise = fetch('data/wta_rankings_20_29.csv')
+            const _csvFileCaches = {{}};
+            const _csvFilePromises = {{}};
+            function _csvFileForYear(year) {{
+                const y = parseInt(year);
+                if (y >= 2020) return 'data/wta_rankings_20_29.csv';
+                if (y >= 2010) return 'data/wta_rankings_10_19.csv';
+                return 'data/wta_rankings_00_09.csv';
+            }}
+            function _parseCsvText(text) {{
+                const cache = {{}};
+                const lines = text.split('\\n');
+                for (let i = 1; i < lines.length; i++) {{
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    const cols = line.split(',');
+                    if (cols.length < 5) continue;
+                    const date = cols[0].trim();
+                    if (!cache[date]) cache[date] = [];
+                    cache[date].push({{
+                        r: parseInt(cols[1]) || null,
+                        pts: parseInt(cols[2]) || 0,
+                        n: cols[3] || '',
+                        c: cols[4] || '',
+                        d: (cols[5] || '').replace(/\\r/g, '').trim()
+                    }});
+                }}
+                return cache;
+            }}
+            function _loadCsvForYear(year) {{
+                const file = _csvFileForYear(year);
+                if (_csvFileCaches[file]) return Promise.resolve(_csvFileCaches[file]);
+                if (_csvFilePromises[file]) return _csvFilePromises[file];
+                _csvFilePromises[file] = fetch(file)
                     .then(r => {{
                         if (!r.ok) throw new Error('HTTP ' + r.status);
                         return r.text();
                     }})
                     .then(text => {{
-                        const cache = {{}};
-                        const lines = text.split('\\n');
-                        for (let i = 1; i < lines.length; i++) {{
-                            const line = lines[i].trim();
-                            if (!line) continue;
-                            const cols = line.split(',');
-                            if (cols.length < 5) continue;
-                            const date = cols[0].trim();
-                            if (!cache[date]) cache[date] = [];
-                            cache[date].push({{
-                                r: parseInt(cols[1]) || null,
-                                pts: parseInt(cols[2]) || 0,
-                                n: cols[3] || '',
-                                c: cols[4] || '',
-                                d: (cols[5] || '').replace(/\\r/g, '').trim()
-                            }});
-                        }}
-                        _rankingsCsvCache = cache;
-                        _rankingsCsvPromise = null;
-                        return cache;
+                        _csvFileCaches[file] = _parseCsvText(text);
+                        _csvFilePromises[file] = null;
+                        return _csvFileCaches[file];
                     }})
                     .catch(err => {{
-                        console.error('Failed to load rankings CSV:', err);
-                        _rankingsCsvPromise = null;
+                        console.error('Failed to load ' + file + ':', err);
+                        _csvFilePromises[file] = null;
                         throw err;
                     }});
-                return _rankingsCsvPromise;
+                return _csvFilePromises[file];
             }}
             function _renderRankingRows(players) {{
                 const tbody = document.getElementById('rankings-body');
@@ -1628,9 +1638,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 switchRankingWeek(`${{year}}-${{mm}}-${{dd}}`);
             }}
             function switchRankingWeek(dateStr) {{
+                const year = dateStr.split('-')[0];
                 const controls = ['rankings-year-select','rankings-month-select','rankings-day-select','rankings-load-btn'].map(id => document.getElementById(id));
                 controls.forEach(el => {{ if(el) {{ el.disabled = true; el.style.opacity = '0.5'; }} }});
-                _loadRankingsCsv()
+                _loadCsvForYear(year)
                     .then(data => {{
                         const players = data[dateStr];
                         if (players) _renderRankingRows(players);

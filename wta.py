@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 import csv as _csv
 import os as _os
 
-from config import API_URL, HEADERS, NAME_LOOKUP, WTA_RANKINGS_CSV
+from config import API_URL, HEADERS, NAME_LOOKUP, WTA_RANKINGS_CSV, WTA_RANKINGS_CSV_10_19, WTA_RANKINGS_CSV_00_09
 from utils import fix_display_name, format_player_name, get_cached_rankings
 from calendar_builder import get_next_monday, get_monday_from_date, format_week_label
 
@@ -204,21 +204,22 @@ def _load_wta_csv():
     if _wta_csv_cache is not None:
         return _wta_csv_cache
     _wta_csv_cache = {}
-    if not _os.path.exists(WTA_RANKINGS_CSV):
-        return _wta_csv_cache
-    with open(WTA_RANKINGS_CSV, encoding="utf-8") as f:
-        for row in _csv.DictReader(f):
-            d = row["week_date"]
-            if d not in _wta_csv_cache:
-                _wta_csv_cache[d] = []
-            _wta_csv_cache[d].append({
-                "Player":  row["player"].upper(),
-                "Rank":    int(row["rank"]) if row.get("rank") else None,
-                "Country": row["country"],
-                "Key":     row["player"].upper(),
-                "Points":  int(row["points"]) if row.get("points") else 0,
-                "DOB":     row.get("dob", ""),
-            })
+    for csv_file in [WTA_RANKINGS_CSV_00_09, WTA_RANKINGS_CSV_10_19, WTA_RANKINGS_CSV]:
+        if not _os.path.exists(csv_file):
+            continue
+        with open(csv_file, encoding="utf-8") as f:
+            for row in _csv.DictReader(f):
+                d = row["week_date"]
+                if d not in _wta_csv_cache:
+                    _wta_csv_cache[d] = []
+                _wta_csv_cache[d].append({
+                    "Player":  row["player"].upper(),
+                    "Rank":    int(row["rank"]) if row.get("rank") else None,
+                    "Country": row["country"],
+                    "Key":     row["player"].upper(),
+                    "Points":  int(row["points"]) if row.get("points") else 0,
+                    "DOB":     row.get("dob", ""),
+                })
     return _wta_csv_cache
 
 
