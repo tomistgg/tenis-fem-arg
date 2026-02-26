@@ -255,9 +255,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .rankings-filter-container {{ display: flex; align-items: center; }}
             .rankings-date-picker {{ display: flex; align-items: stretch; border: 2px solid #94a3b8; border-radius: 8px; overflow: hidden; background: white; }}
             .rankings-date-select {{ width: auto; font-size: 12px; font-weight: bold; padding: 8px 22px 8px 8px; border: none !important; border-radius: 0 !important; background-color: transparent !important; }}
-            #rankings-year-select {{ min-width: 72px; }}
-            #rankings-month-select {{ min-width: 62px; border-left: 1px solid #cbd5e1 !important; }}
-            #rankings-day-select {{ min-width: 50px; border-left: 1px solid #cbd5e1 !important; }}
+            #rankings-year-select {{ min-width: 82px; }}
+            #rankings-month-select {{ min-width: 74px; border-left: 1px solid #cbd5e1 !important; }}
+            #rankings-day-select {{ min-width: 62px; border-left: 1px solid #cbd5e1 !important; }}
             .rankings-load-btn {{ border: none; border-left: 2px solid #94a3b8; border-radius: 0; background: #75AADB; font-family: inherit; font-size: 13px; font-weight: bold; color: white; cursor: pointer; padding: 0 10px; line-height: 1; }}
             .rankings-load-btn:hover {{ background: #5a8fb8; }}
             .rankings-controls {{ display: flex; align-items: center; width: 100%; gap: 8px; }}
@@ -295,7 +295,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             td.col-week {{ width: 170px; font-size: 11px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
             th.sticky-col {{ z-index: 11; background: #75AADB !important; color: white; }}
             .col-rank {{ left: 0; width: 32px; min-width: 45px; max-width: 45px; }}
-            .col-name {{ left: 45px; width: 160px; min-width: 160px; max-width: 160px; text-align: left; font-weight: bold; }}
+            .col-name {{ left: 45px; width: 112px; min-width: 112px; max-width: 112px; text-align: left; font-weight: bold; }}
             .col-week {{ width: 150px; font-size: 11px; font-weight: bold; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
             .divider-row td {{ background: #e2e8f0; font-weight: bold; text-align: center; padding: 5px 15px; font-size: 11px; border-right: none; }}
             tr.hidden {{ display: none; }}
@@ -582,44 +582,68 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     justify-content: center;
                 }}
 
-                /* Rankings mobile: compact controls row */
+                /* Rankings mobile: two-row controls layout */
                 #view-rankings .rankings-controls {{
-                    gap: 4px;
+                    flex-wrap: wrap;
+                    gap: 6px;
+                    align-items: center;
+                    order: 2;
+                }}
+                #view-rankings .search-container {{
+                    flex: 0 0 100% !important;
+                    width: 100% !important;
+                    position: static;
+                    transform: none;
+                    order: 1;
                 }}
                 #view-rankings #rankings-search {{
-                    height: 28px;
-                    padding: 4px 8px;
-                    font-size: 10px;
+                    width: 100% !important;
+                    height: 32px;
+                    padding: 4px 10px;
+                    font-size: 11px;
                     box-sizing: border-box;
                     margin: 0;
-                    width: 100%;
                 }}
-                #view-rankings #rankings-search::placeholder {{ font-size: 9px; }}
+                #view-rankings #rankings-search::placeholder {{ font-size: 10px; }}
+                #view-rankings .rankings-filter-container {{
+                    flex: 1 1 auto !important;
+                    width: auto !important;
+                    position: static;
+                    transform: none;
+                    order: 2;
+                    justify-content: flex-start;
+                }}
+                #view-rankings .rankings-btn-end {{
+                    flex: 0 0 auto !important;
+                    order: 3;
+                }}
                 #view-rankings .rankings-toggle-btn {{
-                    height: 28px;
-                    padding: 0 8px;
-                    font-size: 10px;
+                    height: 32px;
+                    padding: 0 10px;
+                    font-size: 11px;
                     line-height: 1;
                     box-sizing: border-box;
                     margin: 0;
                     white-space: nowrap;
                 }}
                 #view-rankings .rankings-date-picker {{
-                    height: 28px;
+                    height: 32px;
                 }}
                 #view-rankings .rankings-date-select {{
-                    height: 28px;
-                    padding: 0 14px 0 4px;
-                    font-size: 9px;
-                    min-width: 0;
-                    width: auto;
+                    height: 32px;
+                    padding: 0 20px 0 6px;
+                    font-size: 10px;
+                    width: auto !important;
                     box-sizing: border-box;
                     margin: 0;
                 }}
+                #view-rankings #rankings-year-select {{ min-width: 70px !important; }}
+                #view-rankings #rankings-month-select {{ min-width: 62px !important; }}
+                #view-rankings #rankings-day-select {{ min-width: 52px !important; }}
                 #view-rankings .rankings-load-btn {{
-                    height: 28px;
-                    padding: 0 7px;
-                    font-size: 11px;
+                    height: 32px;
+                    padding: 0 9px;
+                    font-size: 12px;
                     box-sizing: border-box;
                     margin: 0;
                 }}
@@ -710,15 +734,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 /* Rankings table: compact mode */
                 #view-rankings .content-card {{
-                    width: fit-content;
-                    max-width: 100%;
+                    width: 100%;
                     margin: 0 auto;
                 }}
                 #view-rankings .content-card .table-wrapper {{
-                    width: auto;
-                    overflow-x: visible;
+                    width: 100%;
+                    overflow-x: auto;
                 }}
-                #view-rankings table {{ min-width: 0; width: auto; margin: 0; table-layout: auto; }}
+                #view-rankings table {{ min-width: 100%; width: 100%; margin: 0; table-layout: auto; }}
                 #view-rankings th, #view-rankings td {{
                     font-size: 7px;
                     padding: 2px 2px;
@@ -741,8 +764,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #view-rankings th:nth-child(6), #view-rankings td:nth-child(6) {{ width: 58px !important; }}
 
                 .col-name {{
-                    min-width: 140px;
-                    max-width: 140px;
+                    min-width: 98px;
+                    max-width: 98px;
                 }}
 
                 .col-week {{
@@ -1592,7 +1615,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 let html = '';
                 players.forEach(p => {{
                     const dob = (p.d || '').split('T')[0];
-                    const name = (p.n || '').replace(/\\b\\w/g, c => c.toUpperCase()).replace(/\\B\\w/g, c => c.toLowerCase());
+                    const name = (p.n || '').toLowerCase().replace(/(^|\\s)(\\S)/g, (_, b, c) => b + c.toUpperCase());
                     const isArg = (p.c || '').toUpperCase() === 'ARG';
                     html += `<tr class="${{isArg ? 'arg-player-row' : ''}}"><td>${{p.r || ''}}</td><td style="text-align:left;font-weight:bold;">${{name}}</td><td>${{p.c || ''}}</td><td>${{p.pts || ''}}</td><td>${{dob}}</td></tr>`;
                 }});
