@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "..", "data")
+TOURNAMENT_LINK_PREFIX = "/en/tournament/"
 
 def get_itf_calendar_by_month(target_year):
     chrome_options = Options()
@@ -95,7 +96,7 @@ def create_tournament_df(tournament_list):
 
     rows = []
     for item in tournament_list:
-        link = item.get("tournamentLink", "")
+        link = TOURNAMENT_LINK_PREFIX + item.get("tournamentLink", "")
         t_key = link.rstrip('/').split('/')[-1] if link else None
 
         rows.append({
