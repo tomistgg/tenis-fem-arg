@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 from config import PLAYER_MAPPING, CONTINENT_KEYS, CONTINENT_LABELS, NAME_LOOKUP
 from utils import format_player_name, get_tournament_sort_order, get_surface_class
+from wta import _load_wta_csv
 
 def generate_html(tournament_groups, tournament_store, players_data, schedule_map,
                   cleaned_history, calendar_data, match_history_data, wta_rankings=None,
@@ -102,7 +103,23 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     calendar_html += '</tbody></table>'
 
-    # Build rankings table rows
+    # Build dropdown options for all available ranking weeks
+    _all_csv = _load_wta_csv()
+    _all_dates = sorted(_all_csv.keys())
+    _latest_date = _all_dates[-1] if _all_dates else ""
+
+    _month_names = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+    rankings_week_options = ""
+    for _d in reversed(_all_dates):
+        try:
+            _dt = datetime.strptime(_d, "%Y-%m-%d")
+            _label = f"{_month_names[_dt.month - 1]} {_dt.day}, {_dt.year}"
+        except Exception:
+            _label = _d
+        _sel = ' selected' if _d == _latest_date else ''
+        rankings_week_options += f'<option value="{_d}"{_sel}>{_label}</option>'
+
+    # Build rankings table rows (initial: latest week)
     rankings_rows = ""
     for p in (wta_rankings or []):
         dob = p.get("DOB", "")
@@ -206,8 +223,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             h1 {{ margin: 0; font-size: 22px; color: #1e293b; }}
             .search-container {{ position: absolute; left: 0; top: 50%; transform: translateY(-50%); }}
             .rankings-filter-container {{ position: absolute; right: 0; top: 50%; transform: translateY(-50%); }}
-            .rankings-toggle-btn {{ padding: 8px 12px; border-radius: 8px; border: 2px solid #94a3b8; background: white; font-family: inherit; font-size: 12px; font-weight: bold; color: #1e293b; cursor: pointer; }}
+            .rankings-toggle-btn {{ padding: 8px 12px; border-radius: 8px; border: 2px solid #94a3b8; background: white; font-family: inherit; font-size: 12px; font-weight: bold; color: #1e293b; cursor: pointer; white-space: nowrap; }}
             .rankings-toggle-btn:hover {{ background: #f1f5f9; }}
+            .rankings-filter-container {{ display: flex; align-items: center; gap: 8px; }}
+            #rankings-week-select {{ width: auto; min-width: 130px; font-size: 12px; font-weight: bold; padding: 8px 28px 8px 10px; }}
             #rankings-search {{ width: 190px; }}
             input, select {{ padding: 8px 12px; border-radius: 8px; border: 2px solid #94a3b8; font-family: inherit; font-size: 13px; width: 250px; box-sizing: border-box; }}
             select {{ background: white; font-weight: bold; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }}
@@ -579,8 +598,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     margin: 0;
                     display: block;
                 }}
-                #view-rankings .rankings-toggle-btn {{
-                    font-size: 10px;
+                #view-rankings #rankings-week-select {{
+                    height: 28px;
+                    padding: 0 22px 0 6px;
+                    font-size: 9px;
+                    min-width: 0;
+                    width: auto;
+                    box-sizing: border-box;
+                    margin: 0;
                 }}
                 #view-entrylists .rankings-filter-container {{
                     width: auto !important;
@@ -1109,6 +1134,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             <input type="text" id="rankings-search" placeholder="Search player..." oninput="filterRankings()">
                         </div>
                         <div class="rankings-filter-container">
+                            <select id="rankings-week-select" onchange="switchRankingWeek(this.value)">{rankings_week_options}</select>
                             <button id="rankings-toggle-btn" class="rankings-toggle-btn" onclick="toggleRankingsScope()">Show ARG</button>
                         </div>
                     </div>
@@ -1299,7 +1325,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             const tournamentData = {json.dumps(tournament_store)};
             const historyData = {json.dumps(cleaned_history)};
             const playerMapping = {json.dumps(PLAYER_MAPPING)};
-
             function toggleMobileMenu() {{
                 const sidebar = document.getElementById('sidebar');
                 sidebar.classList.toggle('mobile-hidden');
@@ -1487,6 +1512,70 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const matchesCountry = !showArgOnly || nat === 'ARG';
                     row.classList.toggle('hidden', !(matchesSearch && matchesCountry));
                 }});
+            }}
+            let _rankingsCsvCache = null;
+            let _rankingsCsvPromise = null;
+            function _loadRankingsCsv() {{
+                if (_rankingsCsvCache) return Promise.resolve(_rankingsCsvCache);
+                if (_rankingsCsvPromise) return _rankingsCsvPromise;
+                _rankingsCsvPromise = fetch('data/wta_rankings_20_29.csv')
+                    .then(r => {{
+                        if (!r.ok) throw new Error('HTTP ' + r.status);
+                        return r.text();
+                    }})
+                    .then(text => {{
+                        const cache = {{}};
+                        const lines = text.split('\\n');
+                        for (let i = 1; i < lines.length; i++) {{
+                            const line = lines[i].trim();
+                            if (!line) continue;
+                            const cols = line.split(',');
+                            if (cols.length < 5) continue;
+                            const date = cols[0].trim();
+                            if (!cache[date]) cache[date] = [];
+                            cache[date].push({{
+                                r: parseInt(cols[1]) || null,
+                                pts: parseInt(cols[2]) || 0,
+                                n: cols[3] || '',
+                                c: cols[4] || '',
+                                d: (cols[5] || '').replace(/\\r/g, '').trim()
+                            }});
+                        }}
+                        _rankingsCsvCache = cache;
+                        _rankingsCsvPromise = null;
+                        return cache;
+                    }})
+                    .catch(err => {{
+                        console.error('Failed to load rankings CSV:', err);
+                        _rankingsCsvPromise = null;
+                        throw err;
+                    }});
+                return _rankingsCsvPromise;
+            }}
+            function _renderRankingRows(players) {{
+                const tbody = document.getElementById('rankings-body');
+                let html = '';
+                players.forEach(p => {{
+                    const dob = (p.d || '').split('T')[0];
+                    const name = (p.n || '').replace(/\\b\\w/g, c => c.toUpperCase()).replace(/\\B\\w/g, c => c.toLowerCase());
+                    const isArg = (p.c || '').toUpperCase() === 'ARG';
+                    html += `<tr class="${{isArg ? 'arg-player-row' : ''}}"><td>${{p.r || ''}}</td><td style="text-align:left;font-weight:bold;">${{name}}</td><td>${{p.c || ''}}</td><td>${{p.pts || ''}}</td><td>${{dob}}</td></tr>`;
+                }});
+                tbody.innerHTML = html;
+                filterRankings();
+            }}
+            function switchRankingWeek(dateStr) {{
+                const sel = document.getElementById('rankings-week-select');
+                if (sel) {{ sel.disabled = true; sel.style.opacity = '0.5'; }}
+                _loadRankingsCsv()
+                    .then(data => {{
+                        const players = data[dateStr];
+                        if (players) _renderRankingRows(players);
+                    }})
+                    .catch(() => {{}})
+                    .finally(() => {{
+                        if (sel) {{ sel.disabled = false; sel.style.opacity = '1'; }}
+                    }});
             }}
             function filterNational() {{
                 const q = document.getElementById('national-search').value.toLowerCase();
