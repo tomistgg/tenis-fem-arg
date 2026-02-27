@@ -741,7 +741,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     width: 100%;
                     overflow-x: auto;
                 }}
-                #view-rankings table {{ min-width: 100%; width: 100%; margin: 0; table-layout: auto; }}
+                #view-rankings table {{ min-width: 100%; width: 100%; margin: 0; table-layout: fixed; }}
                 #view-rankings th, #view-rankings td {{
                     font-size: 7px;
                     padding: 2px 2px;
@@ -752,7 +752,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 /* Entry-list style: fixed side columns, wide PLAYER */
                 #view-rankings th:nth-child(1), #view-rankings td:nth-child(1) {{ width: 20px !important; }}
                 #view-rankings th:nth-child(2), #view-rankings td:nth-child(2) {{
-                    width: auto !important;
+                    width: 120px !important;
+                    max-width: 120px !important;
                     text-align: left;
                     white-space: nowrap;
                     overflow: hidden;
