@@ -267,7 +267,8 @@ if __name__ == "__main__":
 
         arg_matches = [
             m for m in raw_matches
-            if m.get("DrawMatchType") == "S"
+            if m.get("MatchState") == "F"
+            and m.get("DrawMatchType") == "S"
             and (m.get("PlayerCountryA") == "ARG" or m.get("PlayerCountryB") == "ARG")
         ]
 
