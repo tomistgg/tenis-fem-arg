@@ -159,7 +159,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     default_national_columns = ["N", "Player", "Date", "Event", "Round", "Tie", "Partner", "Opponent", "Result", "Score"]
     national_columns = list(national_team_data[0].keys()) if national_team_data else default_national_columns
 
-    header_label_map = {"N": "#"}
+    header_label_map = {"N": "#", "Result": "RES.", "Round": "RND"}
     header_style_map = {
         "N": ' style="width:30px"',
         "Player": ' style="width:140px"',
@@ -193,7 +193,22 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 elif value.upper() == "L":
                     cell_style = ' style="color: #991b1b; font-weight: bold;"'
 
-            national_rows += f'<td{cell_style}>{escape(value)}</td>'
+            if col in ("Player", "Partner"):
+                # Wrap each word on its own line for mobile
+                display_value = "<br>".join(escape(value).split())
+            elif col == "Score":
+                # One line per set
+                display_value = "<br>".join(escape(value).split())
+            elif col == "Opponent":
+                # Split on "/" for doubles, then wrap each name's words
+                parts = value.split("/")
+                display_parts = []
+                for part in parts:
+                    display_parts.append("<br>".join(escape(part.strip()).split()))
+                display_value = "<br>/<br>".join(display_parts) if len(parts) > 1 else display_parts[0]
+            else:
+                display_value = escape(value)
+            national_rows += f'<td{cell_style}>{display_value}</td>'
         national_rows += '</tr>'
 
     default_captains_columns = ["N", "Captain", "Year"]
@@ -224,14 +239,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
         <title>WT Argentina</title>
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
         <style>
             @font-face {{ font-family: 'Montserrat'; src: url('Montserrat-SemiBold.ttf'); }}
-            html {{ -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }}
+            html {{ -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: hidden; max-width: 100vw; }}
             body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; min-height: 100vh; overflow-y: auto; overflow-x: auto; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }}
             .app-container {{ display: flex; width: 100%; min-height: 100vh; }}
             .sidebar {{ width: 180px; background: #1e293b; color: white; display: flex; flex-direction: column; flex-shrink: 0; min-height: 100vh; }}
@@ -479,7 +494,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             @media (max-width: 768px) {{
                 /* Mobile styles */
-                body {{ overflow-x: hidden; }}
+                body {{ overflow-x: hidden; max-width: 100vw; }}
                 .mobile-menu-toggle {{ display: none; }}
 
                 .app-container {{ flex-direction: column; }}
@@ -509,6 +524,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .main-content {{
                     padding: 56px 8px 8px 8px;
                     width: 100%;
+                    box-sizing: border-box;
                 }}
 
                 .menu-item {{
@@ -924,32 +940,32 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 /* National Team table */
                 #view-national .table-wrapper {{
-                    overflow-x: hidden;
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
                 }}
                 #national-table {{
                     width: 100%;
-                    min-width: 0;
                     table-layout: fixed;
                 }}
                 #national-table th,
                 #national-table td {{
-                    font-size: 4px;
+                    font-size: 7px;
                     padding: 1px 1px;
-                    white-space: normal !important;
-                    overflow-wrap: anywhere;
+                    white-space: normal;
                     word-break: break-word;
-                    line-height: 1.15;
+                    line-height: 1.1;
+                    overflow: hidden;
                 }}
-                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 3% !important; }}
-                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 11% !important; }}
-                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 8% !important; }}
-                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 10% !important; }}
-                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 7% !important; }}
-                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 9% !important; }}
-                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 9% !important; }}
-                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 25% !important; display: table-cell !important; }}
-                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 5% !important; text-align: center; display: table-cell !important; }}
-                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 13% !important; }}
+                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 12px !important; }}
+                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 48px !important; }}
+                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 34px !important; }}
+                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 28px !important; }}
+                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 16px !important; }}
+                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 38px !important; }}
+                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 38px !important; }}
+                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 50px !important; }}
+                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 14px !important; text-align: center; }}
+                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 28px !important; }}
 
                 /* Captains table mobile */
                 #view-captains .content-card {{ max-width: 100%; }}
@@ -1028,39 +1044,38 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     font-size: 9px;
                 }}
 
-                #history-table th, #history-table td,
-                #national-table th, #national-table td {{
+                #history-table th, #history-table td {{
                     font-size: 5px;
                     padding: 2px 2px;
                 }}
 
                 #view-national .table-wrapper {{
-                    overflow-x: hidden;
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
                 }}
                 #national-table {{
                     width: 100%;
-                    min-width: 0;
                     table-layout: fixed;
                 }}
                 #national-table th,
                 #national-table td {{
-                    font-size: 4px;
+                    font-size: 6px;
                     padding: 1px 1px;
-                    white-space: normal !important;
-                    overflow-wrap: anywhere;
+                    white-space: normal;
                     word-break: break-word;
-                    line-height: 1.15;
+                    line-height: 1.05;
+                    overflow: hidden;
                 }}
-                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 3% !important; }}
-                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 11% !important; }}
-                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 8% !important; }}
-                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 10% !important; }}
-                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 7% !important; }}
-                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 9% !important; }}
-                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 9% !important; }}
-                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 25% !important; display: table-cell !important; }}
-                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 5% !important; text-align: center; display: table-cell !important; }}
-                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 13% !important; }}
+                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 10px !important; }}
+                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 40px !important; }}
+                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 28px !important; }}
+                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 24px !important; }}
+                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 14px !important; }}
+                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 32px !important; }}
+                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 32px !important; }}
+                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 42px !important; }}
+                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 12px !important; text-align: center; }}
+                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 24px !important; }}
 
                 #view-captains .table-wrapper {{
                     overflow-x: hidden;
