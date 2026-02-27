@@ -193,19 +193,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 elif value.upper() == "L":
                     cell_style = ' style="color: #991b1b; font-weight: bold;"'
 
-            if col in ("Player", "Partner"):
-                # Wrap each word on its own line for mobile
-                display_value = "<br>".join(escape(value).split())
-            elif col == "Score":
-                # One line per set
-                display_value = "<br>".join(escape(value).split())
+            if col in ("Player", "Partner", "Score"):
+                desktop_value = escape(value)
+                mobile_value = "<br>".join(escape(value).split())
+                display_value = f'<span class="desktop-only">{desktop_value}</span><span class="mobile-only">{mobile_value}</span>'
             elif col == "Opponent":
-                # Split on "/" for doubles, then wrap each name's words
+                desktop_value = escape(value)
                 parts = value.split("/")
                 display_parts = []
                 for part in parts:
                     display_parts.append("<br>".join(escape(part.strip()).split()))
-                display_value = "<br>/<br>".join(display_parts) if len(parts) > 1 else display_parts[0]
+                mobile_value = "<br>/<br>".join(display_parts) if len(parts) > 1 else display_parts[0]
+                display_value = f'<span class="desktop-only">{desktop_value}</span><span class="mobile-only">{mobile_value}</span>'
             else:
                 display_value = escape(value)
             national_rows += f'<td{cell_style}>{display_value}</td>'
@@ -247,6 +246,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         <style>
             @font-face {{ font-family: 'Montserrat'; src: url('Montserrat-SemiBold.ttf'); }}
             html {{ -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: hidden; max-width: 100vw; }}
+            .mobile-only {{ display: none; }}
+            .desktop-only {{ display: inline; }}
             body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; min-height: 100vh; overflow-y: auto; overflow-x: auto; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }}
             .app-container {{ display: flex; width: 100%; min-height: 100vh; }}
             .sidebar {{ width: 180px; background: #1e293b; color: white; display: flex; flex-direction: column; flex-shrink: 0; min-height: 100vh; }}
@@ -495,6 +496,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             @media (max-width: 768px) {{
                 /* Mobile styles */
                 body {{ overflow-x: hidden; max-width: 100vw; }}
+                .mobile-only {{ display: inline; }}
+                .desktop-only {{ display: none; }}
                 .mobile-menu-toggle {{ display: none; }}
 
                 .app-container {{ flex-direction: column; }}
@@ -744,9 +747,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 /* Entry Lists: compact mode */
                 #view-entrylists table {{ min-width: 0; table-layout: auto; }}
-                #view-entrylists th, #view-entrylists td {{ font-size: 7px; padding: 2px 3px; }}
-                #view-entrylists .entry-content .header-row {{ margin-bottom: 8px; }}
-                #view-entrylists #entry-title {{ font-size: 14px; }}
+                #view-entrylists th {{ font-size: 10px; padding: 3px 4px; }}
+                #view-entrylists td {{ font-size: 10px; padding: 4px 4px; }}
+                #view-entrylists .entry-content .header-row {{
+                    margin-bottom: 8px;
+                    flex-direction: row !important;
+                    align-items: center !important;
+                    position: relative;
+                }}
+                #view-entrylists #entry-title {{ font-size: 14px; margin: 0; text-align: center; width: 100%; }}
+                #view-entrylists .rankings-filter-container {{ position: absolute; right: 0; top: 50%; transform: translateY(-50%); flex-shrink: 0; }}
 
                 /* Rankings table: compact mode */
                 #view-rankings .content-card {{
