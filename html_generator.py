@@ -1732,15 +1732,22 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const cols = isITF ? 5 : 4;
 
                 if (_prioFilterActive) {{
-                    // Pool all prio=1 players in order: MAIN → QUAL → ALT
+                    // JR prio1 players go at the bottom; non-prio1 JR spots filled from qual/alt
+                    const mainJRPrio1 = main.filter(p => p.entry === 'JR' && p.priority === '1');
+                    const mainRegular = main.filter(p => p.entry !== 'JR');
+                    const regularSpots = main.length - mainJRPrio1.length;
                     const pool = [
-                        ...main.filter(p => p.priority === '1'),
+                        ...mainRegular.filter(p => p.priority === '1'),
                         ...qual.filter(p => p.priority === '1'),
                         ...alt.filter(p => p.priority === '1'),
                     ];
-                    const displayMain = pool.slice(0, main.length);
-                    const displayQual = pool.slice(main.length, main.length + qual.length);
-                    const displayAlt  = pool.slice(main.length + qual.length);
+                    const displayMain = [
+                        ...pool.slice(0, regularSpots),
+                        ...mainJRPrio1,
+                    ];
+                    const remainingPool = pool.slice(regularSpots);
+                    const displayQual = remainingPool.slice(0, qual.length);
+                    const displayAlt  = remainingPool.slice(qual.length);
                     html += renderRows(displayMain, true, isITF, true);
                     if (displayQual.length > 0) {{
                         html += `<tr class="divider-row"><td colspan="${{cols}}">QUALIFYING</td></tr>`;
