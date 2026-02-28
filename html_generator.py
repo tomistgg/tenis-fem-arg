@@ -49,9 +49,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         player_display = format_player_name(p['Player'])
         row = f'<tr data-name="{player_display.lower()}">'
         row += f'<td class="sticky-col col-rank">{p["Rank"]}</td>'
-        row += f'<td class="sticky-col col-name">{player_display}</td>'
+        mobile_name = "<br>".join(player_display.split())
+        row += f'<td class="sticky-col col-name"><span class="desktop-only">{player_display}</span><span class="mobile-only">{mobile_name}</span></td>'
         for week in week_keys:
             val = schedule_map.get(p['Key'], {}).get(week, "\u2014")
+            val = val.replace("Sharm ElSheikh", "Sharm ES")
             is_main = "(Q)" not in val and val != "\u2014"
             row += f'<td class="col-week">{"<b>" if is_main else ""}{val}{"</b>" if is_main else ""}</td>'
         table_rows += row + "</tr>"
@@ -525,7 +527,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .sidebar-header {{ display: none; }}
 
                 .main-content {{
-                    padding: 56px 8px 8px 8px;
+                    padding: 56px 1px 8px 1px;
                     width: 100%;
                     box-sizing: border-box;
                 }}
@@ -713,16 +715,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     font-size: 9px;
                 }}
 
-                /* Upcoming: smaller text to fit more weeks */
+                /* Upcoming: mobile layout */
                 #view-upcoming table {{ width: 100%; min-width: 100%; table-layout: fixed; }}
-                #view-upcoming th, #view-upcoming td {{ font-size: 5px; padding: 2px 2px; }}
-                #view-upcoming th {{ font-size: 4px; }}
-                #view-upcoming th.col-week {{ font-size: 4px !important; }}
-                #view-upcoming td.col-week, #view-upcoming .col-week {{ font-size: 4px; }}
+                #view-upcoming th, #view-upcoming td {{ font-size: 7px; padding: 2px 2px; }}
+                #view-upcoming th {{ font-size: 6px; }}
+                #view-upcoming th.col-week {{ font-size: 6px !important; }}
+                #view-upcoming td.col-week, #view-upcoming .col-week {{ font-size: 5px; line-height: 1.6; }}
                 #view-upcoming .col-rank {{
-                    width: 16px;
-                    min-width: 16px;
-                    max-width: 16px;
+                    width: 20px !important;
+                    min-width: 20px !important;
+                    max-width: 20px !important;
                     left: 0;
                 }}
                 #view-upcoming th.col-rank, #view-upcoming td.col-rank {{
@@ -732,18 +734,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     line-height: 1.05;
                 }}
                 #view-upcoming .col-name {{
-                    width: auto !important;
-                    min-width: 0 !important;
-                    max-width: none !important;
+                    width: 62px !important;
+                    min-width: 62px !important;
+                    max-width: 62px !important;
                 }}
-                #view-upcoming .col-name {{ left: 16px; }}
+                #view-upcoming .col-name {{ left: 20px; }}
                 #view-upcoming th.col-name, #view-upcoming td.col-name {{
                     white-space: normal;
                     overflow-wrap: anywhere;
                     word-break: break-word;
                     text-overflow: clip;
+                    text-align: center;
                 }}
-                #view-upcoming .col-week, #view-upcoming td.col-week {{ width: 60px; min-width: 60px; max-width: 60px; }}
+                #view-upcoming .col-week, #view-upcoming td.col-week {{ width: auto !important; min-width: 0 !important; max-width: none !important; }}
 
                 /* Entry Lists: compact mode */
                 #view-entrylists table {{ min-width: 0; table-layout: auto; }}
@@ -1037,9 +1040,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     font-size: 7px;
                 }}
 
-                .col-name {{
-                    min-width: 120px;
-                    max-width: 120px;
+                #view-upcoming .col-name {{
+                    width: 56px !important;
+                    min-width: 56px !important;
+                    max-width: 56px !important;
                 }}
 
                 .filter-panel h3 {{
@@ -1290,7 +1294,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                             <div class="filter-group collapsed">
                                 <div class="filter-group-title" onclick="toggleFilterGroup(this)">
-                                    Opponent Country <span class="collapse-icon"></span>
+                                    Opp. Country <span class="collapse-icon"></span>
                                 </div>
                                 <div class="filter-options" id="filter-opponent-country"></div>
                             </div>
@@ -1510,18 +1514,21 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
 
             // Helper function to get display name from player mapping
-            function getDisplayName(upperCaseName) {{
-                // Try to find the display name in playerMapping
+            // Build reverse lookup cache for O(1) name resolution
+            const _displayNameCache = {{}};
+            (function() {{
                 for (const [displayName, aliases] of Object.entries(playerMapping)) {{
                     for (const alias of aliases) {{
-                        if (alias.toUpperCase() === upperCaseName) {{
-                            return displayName; // Return proper capitalization from mapping
-                        }}
+                        _displayNameCache[alias.toUpperCase()] = displayName;
                     }}
                 }}
+            }})();
+
+            function getDisplayName(upperCaseName) {{
+                const cached = _displayNameCache[upperCaseName];
+                if (cached) return cached;
                 // If not found, convert to title case (handling hyphens)
-                return upperCaseName.split(' ').map(word => {{
-                    // Handle hyphenated names (e.g., Villagran-Reami)
+                const result = upperCaseName.split(' ').map(word => {{
                     if (word.includes('-')) {{
                         return word.split('-').map(part =>
                             part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
@@ -1529,6 +1536,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     }}
                     return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
                 }}).join(' ');
+                _displayNameCache[upperCaseName] = result;
+                return result;
             }}
 
             $(document).ready(function() {{
@@ -1920,7 +1929,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const opponentName = isWinner ? (row['_loserName'] || '') : (row['_winnerName'] || '');
                     if (opponentName) opponents.add(getDisplayName(opponentName.toUpperCase()));
 
-                    // Opponent Country
+                    // Opp. Country
                     const opponentCountry = isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '');
                     if (opponentCountry) opponentCountries.add(opponentCountry);
 
@@ -2135,7 +2144,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         if (opponentDisplay !== selectedOpponent) return false;
                     }}
 
-                    // Opponent Country filter
+                    // Opp. Country filter
                     const opponentCountry = isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '');
                     if (selectedOpponentCountries.length > 0 && !selectedOpponentCountries.includes(opponentCountry)) return false;
 
@@ -2200,17 +2209,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     return getRoundOrder(displayRound(a['ROUND'], a['TOURNAMENT'])) - getRoundOrder(displayRound(b['ROUND'], b['TOURNAMENT']));
                 }});
 
-                let bodyHtml = '';
-                matches.forEach(row => {{
+                const parts = [];
+                const playerDisplayName = getDisplayName(selectedPlayer);
+                for (let i = 0; i < matches.length; i++) {{
+                    const row = matches[i];
                     const wName = (row['_winnerName'] || "").toString().toUpperCase();
-                    const wNameNormalized = getDisplayName(wName).toUpperCase();
-                    const isWinner = wNameNormalized === selectedPlayer;
+                    const isWinner = getDisplayName(wName).toUpperCase() === selectedPlayer;
 
-                    const playerDisplayName = getDisplayName(selectedPlayer);
                     const rivalName = isWinner ? (row['_loserName'] || '') : (row['_winnerName'] || '');
                     const rivalDisplayName = rivalName ? getDisplayName(rivalName.toUpperCase()) : '';
 
-                    // Fill in the dynamic columns
                     const pSeed = isWinner ? (row['_winnerSeed'] || '') : (row['_loserSeed'] || '');
                     const pEntry = isWinner ? (row['_winnerEntry'] || '') : (row['_loserEntry'] || '');
                     const rSeed = isWinner ? (row['_loserSeed'] || '') : (row['_winnerSeed'] || '');
@@ -2219,24 +2227,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const rivalCountry = isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '');
                     const opponentName = rivalDisplayName + (rivalCountry ? ` [${{rivalCountry}}]` : '');
 
-                    const rowData = {{
-                        'DATE': formatDate(row['DATE'] || ''),
-                        'TOURNAMENT': row['TOURNAMENT'] || '',
-                        'SURFACE': row['SURFACE'] || '',
-                        'ROUND': displayRound(row['ROUND'] || '', row['TOURNAMENT'] || ''),
-                        'PLAYER': buildPrefix(pSeed, pEntry) + playerDisplayName,
-                        'RESULT': isWinner ? 'W' : 'L',
-                        'SCORE': isWinner ? (row['SCORE'] || '') : reverseScore(row['SCORE'] || ''),
-                        'OPPONENT': buildPrefix(rSeed, rEntry) + opponentName
-                    }};
-
-                    bodyHtml += '<tr>';
-                    displayColumns.forEach(col => {{
-                        bodyHtml += `<td>${{rowData[col] ?? ''}}</td>`;
-                    }});
-                    bodyHtml += '</tr>';
-                }});
-                tbody.innerHTML = bodyHtml;
+                    parts.push('<tr><td>', formatDate(row['DATE'] || ''),
+                        '</td><td>', row['TOURNAMENT'] || '',
+                        '</td><td>', row['SURFACE'] || '',
+                        '</td><td>', displayRound(row['ROUND'] || '', row['TOURNAMENT'] || ''),
+                        '</td><td>', buildPrefix(pSeed, pEntry) + playerDisplayName,
+                        '</td><td>', isWinner ? 'W' : 'L',
+                        '</td><td>', isWinner ? (row['SCORE'] || '') : reverseScore(row['SCORE'] || ''),
+                        '</td><td>', buildPrefix(rSeed, rEntry) + opponentName,
+                        '</td></tr>');
+                }}
+                tbody.innerHTML = parts.join('');
             }}
 
             function filterHistoryByPlayer() {{
