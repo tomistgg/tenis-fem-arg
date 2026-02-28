@@ -250,9 +250,9 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
                     l_id, l_n, l_c = get_p(loser)
                     
                     w_en = winner.get('entryStatus') or ""
-                    w_sd = winner.get('seeding') or ""
+                    w_sd = int(winner['seeding']) if winner.get('seeding') else ""
                     l_en = loser.get('entryStatus') or ""
-                    l_sd = loser.get('seeding') or ""
+                    l_sd = int(loser['seeding']) if loser.get('seeding') else ""
                     
                     # Score Parsing
                     w_s, l_s = winner.get("scores", []), loser.get("scores", [])
