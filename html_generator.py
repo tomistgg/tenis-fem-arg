@@ -11,6 +11,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                   national_team_data=None, captains_data=None):
     """Generate the complete HTML page and write it to index.html."""
 
+    # Load points distribution
+    points_dist_path = os.path.join(os.path.dirname(__file__), 'data', 'points_distribution.json')
+    with open(points_dist_path, 'r', encoding='utf-8') as f:
+        points_distribution = json.load(f)
+
+    # Load ITF tournament draw sizes
+    draw_sizes_path = os.path.join(os.path.dirname(__file__), 'data', 'itf_tournament_draw_sizes.json')
+    try:
+        with open(draw_sizes_path, 'r', encoding='utf-8') as f:
+            itf_draw_sizes = json.load(f)
+    except Exception:
+        itf_draw_sizes = []
+
     # Build tournament side menu HTML for Entry Lists
     entry_menu_html = ""
     first_key = None
@@ -264,6 +277,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #view-rankings {{ max-width: 700px; margin: 0 auto; }}
             #view-national {{ max-width: 1400px; margin: 0 auto; }}
             #view-captains {{ max-width: 640px; margin: 0 auto; }}
+            #view-roadtogs {{ max-width: 800px; margin: 0 auto; }}
+            .roadtogs-controls {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }}
+            #roadtogs-table {{ width: 100%; table-layout: fixed; }}
+            #roadtogs-table th, #roadtogs-table td {{ padding: 8px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; }}
+            #roadtogs-table th:nth-child(1), #roadtogs-table td:nth-child(1) {{ width: 95px; white-space: nowrap; }}
+            #roadtogs-table th:nth-child(2), #roadtogs-table td:nth-child(2) {{ white-space: normal; word-break: break-word; }}
+            #roadtogs-table th:nth-child(3), #roadtogs-table td:nth-child(3) {{ width: 150px; white-space: nowrap; }}
+            #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) {{ width: 55px; white-space: nowrap; }}
+            #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) {{ width: 95px; white-space: nowrap; }}
+            .roadtogs-separator td {{ background: #334155; color: white; text-align: center !important; font-weight: bold; font-size: 12px; letter-spacing: 1px; padding: 6px 12px !important; }}
             .header-row {{ width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; gap: 10px; }}
             h1 {{ margin: 0; font-size: 22px; color: #1e293b; }}
             .search-container {{ position: absolute; left: 0; top: 50%; transform: translateY(-50%); }}
@@ -548,7 +571,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
                 .menu-item:last-child {{ border-right: none; }}
 
-                #view-upcoming, #view-rankings, #view-national, #view-captains {{ max-width: 100%; }}
+                #view-upcoming, #view-rankings, #view-national, #view-captains, #view-roadtogs {{ max-width: 100%; }}
 
                 .entry-layout {{ flex-direction: column; gap: 15px; }}
                 .entry-menu {{
@@ -1139,6 +1162,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
                 <div class="menu-item" id="btn-national" onclick="switchTab('national')">Argentina NT Players</div>
                 <div class="menu-item" id="btn-captains" onclick="switchTab('captains')">Argentina NT Captains</div>
+                <div class="menu-item" id="btn-roadtogs" onclick="switchTab('roadtogs')">Road to GS</div>
             </div>
 
             <div class="main-content">
@@ -1397,12 +1421,47 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         </div>
                     </div>
                 </div>
+
+                <div id="view-roadtogs" class="single-layout" style="display: none;">
+                    <div class="header-row">
+                        <h1>Road to GS</h1>
+                    </div>
+                    <div class="roadtogs-controls">
+                        <div class="player-select-container">
+                            <select id="roadtogsPlayerSelect">
+                                <option value="">Select Player...</option>
+                                {"".join([f'<option value="{name}">{name}</option>' for name in history_players_sorted])}
+                            </select>
+                        </div>
+                        <div id="roadtogs-points-total" style="font-size: 16px; font-weight: bold; color: #1e293b; padding-right: 12px;">Points: 0</div>
+                    </div>
+                    <div class="content-card">
+                        <div class="table-wrapper">
+                            <table id="roadtogs-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Tournament</th>
+                                        <th>Round</th>
+                                        <th>Points</th>
+                                        <th>Drop Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="roadtogs-body">
+                                    <tr><td colspan="5" style="padding: 20px; color: #64748b;">Select a player to view their results</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <script>
             const tournamentData = {json.dumps(tournament_store)};
             const historyData = {json.dumps(cleaned_history)};
             const playerMapping = {json.dumps(PLAYER_MAPPING)};
+            const pointsDistribution = {json.dumps(points_distribution)};
+            const itfDrawSizes = {json.dumps(itf_draw_sizes)};
             function toggleMobileMenu() {{
                 const sidebar = document.getElementById('sidebar');
                 sidebar.classList.toggle('mobile-hidden');
@@ -1432,6 +1491,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('view-national').style.display = (tabName === 'national') ? 'flex' : 'none';
                 document.getElementById('view-captains').style.display = (tabName === 'captains') ? 'flex' : 'none';
                 document.getElementById('view-calendar').style.display = (tabName === 'calendar') ? 'flex' : 'none';
+                document.getElementById('view-roadtogs').style.display = (tabName === 'roadtogs') ? 'flex' : 'none';
 
                 if (tabName === 'entrylists') updateEntryList();
                 applyMobileHistoryLayout();
@@ -2288,6 +2348,397 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 // Render all matches (filters start with all checked)
                 renderFilteredMatches(filtered, selectedPlayer);
             }}
+
+            // Road to GS
+            function initRoadToGS() {{
+                const select = document.getElementById('roadtogsPlayerSelect');
+                if (!select) return;
+                $(select).select2({{ placeholder: 'Select Player...', allowClear: true, width: '100%' }});
+                $(select).on('change', renderRoadToGS);
+            }}
+
+            function renderRoadToGS() {{
+                const selectedPlayer = document.getElementById('roadtogsPlayerSelect').value.toUpperCase();
+                const tbody = document.getElementById('roadtogs-body');
+
+                if (!selectedPlayer) {{
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding: 20px; color: #64748b;">Select a player to view their results</td></tr>';
+                    document.getElementById('roadtogs-points-total').textContent = 'Points: 0';
+                    return;
+                }}
+
+                // Round ordering for determining the "last" (deepest) round
+                const roundOrder = {{'QR1':1,'QR2':2,'QR3':3,'QR4':4,'Round Robin':4.5,'1st Round':5,'2nd Round':6,'3rd Round':7,'4th Round':8,'5th Round':9,'Quarter Finals':10,'Quarter-finals':10,'Semi-finals':11,'Final':12}};
+
+                // Get current date and 52 weeks ago
+                const now = new Date();
+                const fiftyTwoWeeksAgo = new Date(now);
+                fiftyTwoWeeksAgo.setDate(fiftyTwoWeeksAgo.getDate() - 364);
+
+                // Category to points distribution description mapping (use lower M draw size)
+                const categoryToDesc = {{
+                    'GS': 'Grand Slam',
+                    'WTA 1000': 'WTA 1000 (56M, 32Q)',
+                    'WTA 500': 'WTA 500 (30/28M, 24/16Q)',
+                    'WTA 250': 'WTA 250 (32M, 24/16Q)',
+                    'WTA 125': 'WTA 125 (32M, 8Q)',
+                    '125K': 'WTA 125 (32M, 8Q)',
+                    '125K Series': 'WTA 125 (32M, 8Q)',
+                    'W100': 'W100 (32M, 32Q)',
+                    'W75': 'W75 (32M, 32Q)',
+                    'W50': 'W50 (32M, 32Q)',
+                    'W35': 'W35 (32M, 64/48/32/24Q)',
+                    'W15': 'W15 (32M, 64/48/32/24Q)'
+                }};
+
+                // Build points lookup: description -> {{ W, F, SF, ... }}
+                const pointsLookup = {{}};
+                pointsDistribution.forEach(p => {{ pointsLookup[p.Description] = p; }});
+
+                // Build ITF draw size lookup: "name|date" -> {{ description, mainDrawSize }}
+                const itfDrawLookup = {{}};
+                itfDrawSizes.forEach(t => {{
+                    const key = (t.tournamentName || '') + '|' + (t.date || '');
+                    itfDrawLookup[key] = {{ description: t.description, mainDrawSize: t.mainDrawSize }};
+                    // For multi-week entries with "(Week N)", also store with base name
+                    const weekMatch = (t.tournamentName || '').match(/^(.+?)\s*\(Week \d+\)$/);
+                    if (weekMatch) {{
+                        const baseKey = weekMatch[1].trim() + '|' + (t.date || '');
+                        itfDrawLookup[baseKey] = {{ description: t.description, mainDrawSize: t.mainDrawSize }};
+                    }}
+                }});
+
+                // Draw size per category for mapping round names to point keys
+                // GS=128, WTA 1000 (56M)=64, everything else=32
+                const categoryDrawSize = {{
+                    'GS': 128, 'WTA 1000': 64,
+                    'WTA 500': 32, 'WTA 250': 32, 'WTA 125': 32,
+                    '125K': 32, '125K Series': 32,
+                    'W100': 32, 'W75': 32, 'W50': 32, 'W35': 32, 'W15': 32
+                }};
+
+                // Map a main draw round name to a point key based on draw size
+                function getMainDrawPointKey(round, result, drawSize) {{
+                    if (round === 'Final') return result === 'W' ? 'W' : 'F';
+                    if (round === 'Semi-finals') return 'SF';
+                    if (round === 'Quarter-finals') return 'QF';
+                    // Numbered rounds depend on draw size
+                    if (drawSize === 128) {{
+                        if (round === '4th Round') return 'R16';
+                        if (round === '3rd Round') return 'R32';
+                        if (round === '2nd Round') return 'R64';
+                        if (round === '1st Round') return 'R128';
+                    }} else if (drawSize === 64) {{
+                        if (round === '3rd Round') return 'R16';
+                        if (round === '2nd Round') return 'R32';
+                        if (round === '1st Round') return 'R64';
+                    }} else {{
+                        if (round === '2nd Round') return 'R16';
+                        if (round === '1st Round') return 'R32';
+                    }}
+                    return null;
+                }}
+
+                // Map a qualifying round to a point key
+                function getQualPointKey(round, result, hasMainDraw) {{
+                    if (hasMainDraw || result === 'W') return 'QLFR';
+                    return round; // QR1, QR2, QR3
+                }}
+
+                // Filter matches for selected player in last 52 weeks, exclude Fed/BJK Cup
+                const playerMatches = historyData.filter(row => {{
+                    const matchType = (row['MATCH_TYPE'] || '').trim();
+                    if (matchType === 'Fed/BJK Cup') return false;
+
+                    const wName = getDisplayName((row['_winnerName'] || '').toString().toUpperCase()).toUpperCase();
+                    const lName = getDisplayName((row['_loserName'] || '').toString().toUpperCase()).toUpperCase();
+                    if (wName !== selectedPlayer && lName !== selectedPlayer) return false;
+
+                    const dateStr = row['DATE'] || '';
+                    if (!dateStr) return false;
+                    const matchDate = new Date(dateStr);
+                    return matchDate >= fiftyTwoWeeksAgo && matchDate <= now;
+                }});
+
+                // Helper: compute Monday of a date's week
+                function getMonday(dateStr) {{
+                    const d = new Date(dateStr);
+                    const day = d.getUTCDay();
+                    const diff = (day === 0) ? -6 : 1 - day;
+                    const monday = new Date(d);
+                    monday.setUTCDate(d.getUTCDate() + diff);
+                    return monday.toISOString().slice(0, 10);
+                }}
+
+                // Group by tournament + week, track best round per draw type (M/Q)
+                // For Grand Slams and United Cup, group by tournament name only (combine weeks)
+                const tournamentMap = new Map();
+                playerMatches.forEach(row => {{
+                    const tName = row['TOURNAMENT'] || '';
+                    const dateStr = row['DATE'] || '';
+                    const matchType = (row['MATCH_TYPE'] || '').trim();
+                    const category = (row['CATEGORY'] || '').trim();
+                    const isGS = matchType === 'GS';
+                    const isUnitedCup = tName.toUpperCase().includes('UNITED CUP');
+                    const mondayStr = getMonday(dateStr);
+                    const draw = (row['DRAW'] || '').toUpperCase();
+                    const round = row['ROUND'] || '';
+                    const rOrder = roundOrder[round] || 0;
+
+                    // Determine if selected player won or lost this match
+                    const wName = getDisplayName((row['_winnerName'] || '').toString().toUpperCase()).toUpperCase();
+                    const playerResult = (wName === selectedPlayer) ? 'W' : 'L';
+
+                    // For GS/United Cup, key by tournament name only; for others, key by week + name
+                    const key = (isGS || isUnitedCup) ? (matchType + '|' + tName) : (mondayStr + '|' + tName);
+
+                    if (!tournamentMap.has(key)) {{
+                        tournamentMap.set(key, {{
+                            date: mondayStr,
+                            tournament: tName,
+                            category: category,
+                            isGS: isGS,
+                            isUnitedCup: isUnitedCup,
+                            bestMainRound: '',
+                            bestMainOrder: 0,
+                            bestMainResult: '',
+                            bestQualRound: '',
+                            bestQualOrder: 0,
+                            bestQualResult: '',
+                            qualMonday: '',
+                            mainMonday: '',
+                            ucWins: 0,
+                            ucTotal: 0,
+                            ucHasKnockout: false
+                        }});
+                    }}
+                    const entry = tournamentMap.get(key);
+
+                    // United Cup: track win counts and knockout participation
+                    if (isUnitedCup) {{
+                        entry.ucTotal++;
+                        if (playerResult === 'W') entry.ucWins++;
+                        if (round !== 'Round Robin' && playerResult === 'W') entry.ucHasKnockout = true;
+                    }}
+
+                    if (draw === 'Q') {{
+                        if (rOrder > entry.bestQualOrder) {{
+                            entry.bestQualRound = round;
+                            entry.bestQualOrder = rOrder;
+                            entry.bestQualResult = playerResult;
+                        }}
+                        if (!entry.qualMonday || mondayStr < entry.qualMonday) {{
+                            entry.qualMonday = mondayStr;
+                        }}
+                    }} else {{
+                        if (rOrder > entry.bestMainOrder) {{
+                            entry.bestMainRound = round;
+                            entry.bestMainOrder = rOrder;
+                            entry.bestMainResult = playerResult;
+                        }}
+                        if (!entry.mainMonday || mondayStr < entry.mainMonday) {{
+                            entry.mainMonday = mondayStr;
+                        }}
+                    }}
+                }});
+
+                // Compute final date for each tournament
+                tournamentMap.forEach(t => {{
+                    if (t.isGS) {{
+                        if (t.mainMonday) {{
+                            t.date = t.mainMonday;
+                        }} else if (t.qualMonday) {{
+                            const qMon = new Date(t.qualMonday);
+                            qMon.setUTCDate(qMon.getUTCDate() + 7);
+                            t.date = qMon.toISOString().slice(0, 10);
+                        }}
+                    }} else if (t.isUnitedCup && t.mainMonday) {{
+                        t.date = t.mainMonday;
+                    }}
+                }});
+
+                const tournaments = Array.from(tournamentMap.values());
+
+                if (tournaments.length === 0) {{
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding: 20px; color: #64748b;">No tournaments found in the last 52 weeks.</td></tr>';
+                    document.getElementById('roadtogs-points-total').textContent = 'Points: 0';
+                    return;
+                }}
+
+                // Calculate points and round display for each tournament
+                tournaments.forEach(t => {{
+                    // United Cup: special win-count based points
+                    if (t.isUnitedCup) {{
+                        const ucTable = pointsLookup['United Cup'];
+                        t.roundDisplay = t.ucWins + 'W-' + (t.ucTotal - t.ucWins) + 'L';
+                        t.points = 0;
+                        if (ucTable) {{
+                            const w = t.ucWins;
+                            const ko = t.ucHasKnockout;
+                            if (w >= 5) t.points = ucTable['5W'];
+                            else if (w === 4) t.points = ucTable['4W'];
+                            else if (w === 3) t.points = ucTable['3W'];
+                            else if (w === 2 && ko) t.points = ucTable['2W_KO'];
+                            else if (w === 2) t.points = ucTable['2W_RR'];
+                            else if (w === 1 && ko) t.points = ucTable['1W_KO'];
+                            else if (w === 1) t.points = ucTable['1W_RR'];
+                            else t.points = ucTable['0W'];
+                        }}
+                    }} else {{
+
+                    // Determine qualifier vs lucky loser status
+                    const qualified = t.bestQualRound && t.bestQualResult === 'W';
+                    const isLuckyLoser = t.bestQualRound && t.bestQualResult === 'L' && !!t.bestMainRound;
+
+                    // Qualifying display
+                    const qualDisplay = qualified ? 'QLFR' : t.bestQualRound;
+
+                    // Main draw display: "WINNER" if won the final
+                    let mainDisplay = t.bestMainRound;
+                    if (t.bestMainRound === 'Final' && t.bestMainResult === 'W') {{
+                        mainDisplay = 'WINNER';
+                    }}
+
+                    // Build round display
+                    if (t.bestMainRound && t.bestQualRound) {{
+                        t.roundDisplay = mainDisplay + ' + ' + qualDisplay;
+                    }} else {{
+                        t.roundDisplay = mainDisplay || qualDisplay || '';
+                    }}
+
+                    // Calculate points
+                    // For ITF tournaments, look up actual draw size description
+                    const itfCategories = ['W100','W75','W60','W50','W35','W25','W15'];
+                    let desc, drawSize;
+                    if (itfCategories.includes(t.category)) {{
+                        const dsInfo = itfDrawLookup[t.tournament + '|' + t.date];
+                        if (dsInfo) {{
+                            desc = dsInfo.description;
+                            drawSize = dsInfo.mainDrawSize > 32 ? 64 : 32;
+                        }} else {{
+                            console.warn(`[Road to GS] ITF draw size fallback: "${{t.tournament}}" (${{t.date}}) not found in itfDrawSizes, using default`);
+                            desc = categoryToDesc[t.category] || '';
+                            drawSize = categoryDrawSize[t.category] || 32;
+                        }}
+                    }} else {{
+                        desc = categoryToDesc[t.category] || '';
+                        drawSize = categoryDrawSize[t.category] || 32;
+                    }}
+                    const pTable = pointsLookup[desc];
+                    t.points = 0;
+                    if (pTable) {{
+                        // Main draw points
+                        if (t.bestMainRound) {{
+                            // Qualifier who lost 1st round: no MD points
+                            const qualFirstRoundLoss = qualified && t.bestMainRound === '1st Round' && t.bestMainResult === 'L';
+                            // Lucky loser who lost 1st round: no MD points
+                            const llFirstRoundLoss = isLuckyLoser && t.bestMainRound === '1st Round' && t.bestMainResult === 'L';
+                            if (!qualFirstRoundLoss && !llFirstRoundLoss) {{
+                                const mdKey = getMainDrawPointKey(t.bestMainRound, t.bestMainResult, drawSize);
+                                if (mdKey && pTable[mdKey] != null) t.points += pTable[mdKey];
+                            }}
+                        }}
+                        // Qualifying points
+                        if (t.bestQualRound) {{
+                            if (isLuckyLoser) {{
+                                // Lucky loser: points for best qualifying round lost, not QLFR
+                                const qKey = t.bestQualRound; // QR1, QR2, QR3
+                                if (pTable[qKey] != null) t.points += pTable[qKey];
+                            }} else {{
+                                const qKey = getQualPointKey(t.bestQualRound, t.bestQualResult, !!t.bestMainRound);
+                                if (qKey && pTable[qKey] != null) t.points += pTable[qKey];
+                            }}
+                        }}
+                    }}
+                    }} // end else (non-United Cup)
+
+                    // Drop date: GS/W15/W35 = date + 14 days, others = date + 7 days
+                    const monday = new Date(t.date);
+                    const dropDate = new Date(monday);
+                    const extendedDrop = t.isGS || t.category === 'W15' || t.category === 'W35';
+                    dropDate.setUTCDate(monday.getUTCDate() + (extendedDrop ? 14 : 7));
+                    t.dropDate = dropDate.toISOString().slice(0, 10);
+                }});
+
+                // Mandatory tournament names for WTA 1000
+                const mandatory1000Names = ['Indian Wells', 'Miami', 'Madrid', 'Rome', 'Toronto', 'Montreal', 'Cincinnati', 'Beijing'];
+                const optional1000Names = ['Doha', 'Dubai', 'Wuhan'];
+
+                // Classify tournaments
+                const mandatoryGS = [];
+                const mandatory1000 = [];
+                const optional1000 = [];
+                const rest = [];
+
+                tournaments.forEach(t => {{
+                    const hasMD = !!t.bestMainRound;
+                    const tUpper = t.tournament.toUpperCase();
+
+                    if (t.isGS && hasMD) {{
+                        t.mandatory = true;
+                        mandatoryGS.push(t);
+                    }} else if (t.category === 'WTA 1000' && hasMD && mandatory1000Names.some(n => tUpper.includes(n.toUpperCase()))) {{
+                        mandatory1000.push(t);
+                    }} else if (t.category === 'WTA 1000' && hasMD && optional1000Names.some(n => tUpper.includes(n.toUpperCase()))) {{
+                        optional1000.push(t);
+                    }} else {{
+                        rest.push(t);
+                    }}
+                }});
+
+                // Sort each group by points descending
+                mandatory1000.sort((a, b) => b.points - a.points);
+                optional1000.sort((a, b) => b.points - a.points);
+                rest.sort((a, b) => b.points - a.points);
+
+                // Best 6 mandatory WTA 1000
+                const counted1000 = mandatory1000.slice(0, 6);
+                counted1000.forEach(t => {{ t.mandatory = true; }});
+                const uncounted1000 = mandatory1000.slice(6);
+
+                // Best 1 optional WTA 1000
+                const countedOpt = optional1000.slice(0, 1);
+                countedOpt.forEach(t => {{ t.mandatory = true; }});
+                const uncountedOpt = optional1000.slice(1);
+
+                // Combine mandatory countable tournaments
+                const mandatoryAll = [...mandatoryGS, ...counted1000, ...countedOpt];
+                const mandatoryCount = mandatoryAll.length;
+
+                // Fill remaining spots up to 18 from rest + uncounted WTA 1000s
+                const fillPool = [...uncounted1000, ...uncountedOpt, ...rest];
+                fillPool.sort((a, b) => b.points - a.points);
+                const fillSlots = Math.max(0, 18 - mandatoryCount);
+                const filledCountable = fillPool.slice(0, fillSlots);
+                const nonCountable = fillPool.slice(fillSlots);
+
+                // Build final ordered list grouped by tier, each sorted by points desc
+                mandatoryGS.sort((a, b) => b.points - a.points);
+                const allMandatory1000 = [...counted1000, ...countedOpt];
+                allMandatory1000.sort((a, b) => b.points - a.points);
+                filledCountable.sort((a, b) => b.points - a.points);
+                const countable = [...mandatoryGS, ...allMandatory1000, ...filledCountable];
+                nonCountable.sort((a, b) => b.points - a.points);
+
+                const totalPoints = countable.reduce((sum, t) => sum + t.points, 0);
+                document.getElementById('roadtogs-points-total').textContent = 'Points: ' + totalPoints;
+
+                // Render table
+                const parts = [];
+                countable.forEach(t => {{
+                    parts.push(`<tr><td>${{t.date}}</td><td>${{t.tournament}}</td><td>${{t.roundDisplay}}</td><td>${{t.points}}</td><td>${{t.dropDate}}</td></tr>`);
+                }});
+                if (nonCountable.length > 0) {{
+                    parts.push('<tr class="roadtogs-separator"><td colspan="5">NON-COUNTABLE TOURNAMENTS</td></tr>');
+                    nonCountable.forEach(t => {{
+                        parts.push(`<tr><td>${{t.date}}</td><td>${{t.tournament}}</td><td>${{t.roundDisplay}}</td><td>${{t.points}}</td><td>${{t.dropDate}}</td></tr>`);
+                    }});
+                }}
+
+                tbody.innerHTML = parts.join('');
+            }}
+
+            document.addEventListener('DOMContentLoaded', initRoadToGS);
         </script>
     </body>
     </html>

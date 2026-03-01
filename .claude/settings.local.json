@@ -4,7 +4,11 @@
       "Bash(git mv:*)",
       "Bash(ls:*)",
       "Bash(python3:*)",
-      "Bash(python main.py)"
+      "Bash(python main.py)",
+      "Bash(python populate_data/itf_tournament_sizes.py)",
+      "Bash(python -u populate_data/itf_tournament_sizes.py)",
+      "Bash(python -u -c \":*)",
+      "Bash(python -c \":*)"
     ]
   }
 }

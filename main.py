@@ -272,6 +272,7 @@ def load_match_history():
             'CATEGORY': fix_encoding(tournament_category_value),
             'SURFACE': formatted_surface,
             'MATCH_TYPE': match_type_value,
+            'DRAW': draw_type,
             'ROUND': final_round,
             'PLAYER': '',
             'ENTRY': '',
