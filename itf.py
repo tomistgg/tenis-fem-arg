@@ -189,7 +189,7 @@ def get_itf_players(tournament_key, driver):
 
             for entry in classification.get("entries") or []:
                 pos = entry.get("positionDisplay", "")
-                suffix = "" if code == "MDA" else (f" (ALT {pos})" if code == "ALT" or "ALTERNATE" in desc else " (Q)")
+                suffix = "" if code in ("MDA", "JR", "SE", "WC") else (f" (ALT {pos})" if code == "ALT" or "ALTERNATE" in desc else " (Q)")
                 players = entry.get("players") or []
                 for p in players:
                     full_name = f"{p.get('givenName', '')} {p.get('familyName', '')}".strip().upper()
