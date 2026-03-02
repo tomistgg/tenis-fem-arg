@@ -102,16 +102,20 @@ def compute_report(before_dir, after_dir):
             old_entries = before_entry.get(t_key, [])
             new_entries = after_entry.get(t_key, [])
 
-            old_arg = get_arg_players(old_entries)
-            new_arg = get_arg_players(new_entries)
+            # Only report withdrawals for tournaments present in both snapshots.
+            # If a tournament was pruned (no longer in the active week window),
+            # its disappearance is not a withdrawal.
+            if t_key in before_entry and t_key in after_entry:
+                old_arg = get_arg_players(old_entries)
+                new_arg = get_arg_players(new_entries)
 
-            withdrew = sorted(old_arg - new_arg)
-            if withdrew:
-                report["withdrawals"].append({
-                    "tournament_key": t_key,
-                    "tournament_name": get_tournament_label(t_key, before_tourney, after_tourney),
-                    "players": withdrew,
-                })
+                withdrew = sorted(old_arg - new_arg)
+                if withdrew:
+                    report["withdrawals"].append({
+                        "tournament_key": t_key,
+                        "tournament_name": get_tournament_label(t_key, before_tourney, after_tourney),
+                        "players": withdrew,
+                    })
 
             old_has = len(old_entries) > 0
             new_has = len(new_entries) > 0
