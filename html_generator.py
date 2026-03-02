@@ -1164,7 +1164,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
                 <div class="menu-item" id="btn-national" onclick="switchTab('national')">Argentina NT Players</div>
                 <div class="menu-item" id="btn-captains" onclick="switchTab('captains')">Argentina NT Captains</div>
-                <div class="menu-item" id="btn-roadtogs" onclick="switchTab('roadtogs')">Road to GS</div>
+                <div class="menu-item" id="btn-roadtogs" onclick="switchTab('roadtogs')">Points Breakdown</div>
             </div>
 
             <div class="main-content">
@@ -1426,7 +1426,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 <div id="view-roadtogs" class="single-layout" style="display: none;">
                     <div class="header-row">
-                        <h1>Road to GS</h1>
+                        <h1>Points Breakdown</h1>
                     </div>
                     <div class="roadtogs-controls">
                         <div class="player-select-container">
@@ -2579,6 +2579,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     return;
                 }}
 
+                // Mandatory tournament names for WTA 1000
+                const mandatory1000Names = ['Indian Wells', 'Miami', 'Madrid', 'Rome', 'Toronto', 'Montreal', 'Cincinnati', 'Beijing'];
+
                 // Calculate points and round display for each tournament
                 tournaments.forEach(t => {{
                     // United Cup: special win-count based points
@@ -2678,16 +2681,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     }}
                     }} // end else (non-United Cup)
 
-                    // Drop date: GS/W15/W35 = date + 14 days, others = date + 7 days
+                    // Drop date: GS/mandatory 1000/W15/W35 = date + 14 days, others = date + 7 days
                     const monday = new Date(t.date);
                     const dropDate = new Date(monday);
-                    const extendedDrop = t.isGS || t.category === 'W15' || t.category === 'W35';
+                    const isMandatory1000 = t.category === 'WTA 1000' && mandatory1000Names.some(n => t.tournament.toUpperCase().includes(n.toUpperCase()));
+                    const extendedDrop = t.isGS || t.category === 'W15' || t.category === 'W35' || isMandatory1000;
                     dropDate.setUTCDate(monday.getUTCDate() + (extendedDrop ? 14 : 7));
                     t.dropDate = dropDate.toISOString().slice(0, 10);
                 }});
 
-                // Mandatory tournament names for WTA 1000
-                const mandatory1000Names = ['Indian Wells', 'Miami', 'Madrid', 'Rome', 'Toronto', 'Montreal', 'Cincinnati', 'Beijing'];
                 const optional1000Names = ['Doha', 'Dubai', 'Wuhan'];
 
                 // Classify tournaments
