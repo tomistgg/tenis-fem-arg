@@ -16,21 +16,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     with open(points_dist_path, 'r', encoding='utf-8') as f:
         points_distribution = json.load(f)
 
-    # Load ITF tournament draw sizes
-    draw_sizes_path = os.path.join(os.path.dirname(__file__), 'data', 'itf_tournament_draw_sizes.json')
+    # Load tournament draw sizes (combined WTA + ITF)
+    draw_sizes_path = os.path.join(os.path.dirname(__file__), 'data', 'tournament_draw_sizes.json')
     try:
         with open(draw_sizes_path, 'r', encoding='utf-8') as f:
-            itf_draw_sizes = json.load(f)
+            all_draw_sizes = json.load(f)
     except Exception:
-        itf_draw_sizes = []
-
-    # Load WTA tournament draw sizes
-    wta_draw_sizes_path = os.path.join(os.path.dirname(__file__), 'data', 'wta_tournament_draw_sizes.json')
-    try:
-        with open(wta_draw_sizes_path, 'r', encoding='utf-8') as f:
-            wta_draw_sizes = json.load(f)
-    except Exception:
-        wta_draw_sizes = []
+        all_draw_sizes = []
+    itf_draw_sizes = [t for t in all_draw_sizes if t.get('source') == 'ITF']
+    wta_draw_sizes = [t for t in all_draw_sizes if t.get('source') == 'WTA']
 
     # Build tournament side menu HTML for Entry Lists
     entry_menu_html = ""
