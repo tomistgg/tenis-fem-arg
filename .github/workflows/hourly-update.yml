@@ -49,6 +49,10 @@ jobs:
         id: wta_weekly
         run: python populate_data/wta_load_new.py
 
+      - name: Update tournament draw sizes
+        id: draw_sizes
+        run: python populate_data/tournament_sizes_update.py
+
       - name: Run update script
         id: main_update
         run: python main.py
