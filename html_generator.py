@@ -283,11 +283,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .roadtogs-controls {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }}
             #roadtogs-table {{ width: 100%; table-layout: fixed; }}
             #roadtogs-table th, #roadtogs-table td {{ padding: 8px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; }}
-            #roadtogs-table th:nth-child(1), #roadtogs-table td:nth-child(1) {{ width: 95px; white-space: nowrap; }}
+            #roadtogs-table th:nth-child(1), #roadtogs-table td:nth-child(1) {{ width: 95px; white-space: nowrap; text-align: center; }}
             #roadtogs-table th:nth-child(2), #roadtogs-table td:nth-child(2) {{ white-space: normal; word-break: break-word; }}
-            #roadtogs-table th:nth-child(3), #roadtogs-table td:nth-child(3) {{ width: 150px; white-space: nowrap; }}
-            #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) {{ width: 55px; white-space: nowrap; }}
-            #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) {{ width: 95px; white-space: nowrap; }}
+            #roadtogs-table th:nth-child(3), #roadtogs-table td:nth-child(3) {{ width: 85px; white-space: nowrap; text-align: center; }}
+            #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) {{ width: 40px; white-space: nowrap; text-align: center; }}
+            #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) {{ width: 95px; white-space: nowrap; text-align: center; }}
             .roadtogs-separator td {{ background: #334155; color: white; text-align: center !important; font-weight: bold; font-size: 12px; letter-spacing: 1px; padding: 6px 12px !important; }}
             .header-row {{ width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; gap: 10px; }}
             h1 {{ margin: 0; font-size: 22px; color: #1e293b; }}
@@ -1041,6 +1041,46 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .cal-cat-label {{ position: sticky !important; position: -webkit-sticky !important; left: 0; z-index: 14; }}
                 .cal-cont-label {{ position: sticky !important; position: -webkit-sticky !important; left: 24px; z-index: 14; background: #f1f5f9; }}
                 .calendar-container .table-wrapper {{ position: relative; }}
+
+                /* Points Breakdown mobile */
+                #view-roadtogs .roadtogs-controls {{
+                    flex-wrap: nowrap;
+                    align-items: center;
+                }}
+                #view-roadtogs .player-select-container {{
+                    width: 60%;
+                    max-width: none;
+                    margin-left: 0;
+                    margin-right: 0;
+                }}
+                #roadtogs-points-total {{
+                    font-size: 12px !important;
+                    white-space: nowrap;
+                    padding-right: 6px !important;
+                }}
+                #view-roadtogs .content-card {{
+                    width: 100%;
+                }}
+                #view-roadtogs .table-wrapper {{
+                    overflow-x: hidden;
+                }}
+                #roadtogs-table {{
+                    width: 100%;
+                    min-width: 0;
+                    table-layout: fixed;
+                }}
+                #roadtogs-table th,
+                #roadtogs-table td {{
+                    font-size: 8px;
+                    padding: 3px 3px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }}
+                #roadtogs-table th:nth-child(1), #roadtogs-table td:nth-child(1) {{ width: 18% !important; }}
+                #roadtogs-table th:nth-child(3), #roadtogs-table td:nth-child(3) {{ width: 18% !important; }}
+                #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) {{ width: 9% !important; }}
+                #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) {{ width: 18% !important; }}
             }}
 
             @media (max-width: 480px) {{
@@ -1138,6 +1178,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #captains-table th:nth-child(3), #captains-table td:nth-child(3) {{ width: 30%; }}
 
                 .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
+
+                /* Points Breakdown extra-small */
+                #roadtogs-table th,
+                #roadtogs-table td {{
+                    font-size: 7px;
+                    padding: 2px 2px;
+                }}
+                #roadtogs-points-total {{
+                    font-size: 11px !important;
+                }}
             }}
 
             /* iOS WebKit-specific: keep Upcoming columns tight and consistent with desktop emulation */
@@ -1445,7 +1495,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                         <th>Date</th>
                                         <th>Tournament</th>
                                         <th>Round</th>
-                                        <th>Points</th>
+                                        <th>PTS</th>
                                         <th>Drop Date</th>
                                     </tr>
                                 </thead>
@@ -2353,6 +2403,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
 
             // Road to GS
+            function abbrevRound(r) {{
+                return r
+                    .replace('WINNER', 'W')
+                    .replace('Final', 'F')
+                    .replace('Semi-finals', 'SF')
+                    .replace('Quarter-finals', 'QF')
+                    .replace('4th Round', '4th')
+                    .replace('3rd Round', '3rd')
+                    .replace('2nd Round', '2nd')
+                    .replace('1st Round', '1st');
+            }}
+
             function initRoadToGS() {{
                 const select = document.getElementById('roadtogsPlayerSelect');
                 if (!select) return;
@@ -2618,9 +2680,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                     // Build round display
                     if (t.bestMainRound && t.bestQualRound) {{
-                        t.roundDisplay = mainDisplay + ' + ' + qualDisplay;
+                        t.roundDisplay = abbrevRound(mainDisplay) + ' + ' + qualDisplay;
                     }} else {{
-                        t.roundDisplay = mainDisplay || qualDisplay || '';
+                        t.roundDisplay = abbrevRound(mainDisplay || qualDisplay || '');
                     }}
 
                     // Calculate points
