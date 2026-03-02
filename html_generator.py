@@ -91,6 +91,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     history_players_sorted = sorted(list(history_arg_players))
 
+    # Build roadtogs player list: only players present in the WTA rankings
+    wta_ranking_names = {format_player_name(p.get("Player", "")).upper() for p in (wta_rankings or [])}
+    roadtogs_players_sorted = [name for name in history_players_sorted if name.upper() in wta_ranking_names]
+
     # Build calendar HTML
     col_keys = ["wta_tour", "wta_125", "itf"]
     col_labels = {"wta_tour": "WTA TOUR", "wta_125": "WTA 125", "itf": "ITF"}
@@ -284,7 +288,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #roadtogs-table {{ width: 100%; table-layout: fixed; }}
             #roadtogs-table th, #roadtogs-table td {{ padding: 8px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; }}
             #roadtogs-table th:nth-child(1), #roadtogs-table td:nth-child(1) {{ width: 95px; white-space: nowrap; text-align: center; }}
-            #roadtogs-table th:nth-child(2), #roadtogs-table td:nth-child(2) {{ white-space: normal; word-break: break-word; }}
+            #roadtogs-table th:nth-child(2) {{ text-align: center; }}
+            #roadtogs-table td:nth-child(2) {{ white-space: normal; word-break: break-word; }}
             #roadtogs-table th:nth-child(3), #roadtogs-table td:nth-child(3) {{ width: 85px; white-space: nowrap; text-align: center; }}
             #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) {{ width: 40px; white-space: nowrap; text-align: center; }}
             #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) {{ width: 95px; white-space: nowrap; text-align: center; }}
@@ -1048,15 +1053,27 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     align-items: center;
                 }}
                 #view-roadtogs .player-select-container {{
-                    width: 60%;
+                    width: 50%;
                     max-width: none;
                     margin-left: 0;
                     margin-right: 0;
                 }}
+                #view-roadtogs .player-select-container .select2-container--default .select2-selection--single {{
+                    height: 26px;
+                    min-height: 26px;
+                }}
+                #view-roadtogs .player-select-container .select2-container--default .select2-selection--single .select2-selection__rendered {{
+                    line-height: 24px;
+                    font-size: 9px;
+                }}
+                #view-roadtogs .player-select-container .select2-container--default .select2-selection--single .select2-selection__arrow {{
+                    height: 24px;
+                }}
                 #roadtogs-points-total {{
-                    font-size: 12px !important;
+                    font-size: 11px !important;
                     white-space: nowrap;
-                    padding-right: 6px !important;
+                    padding-right: 4px !important;
+                    padding-left: 6px !important;
                 }}
                 #view-roadtogs .content-card {{
                     width: 100%;
@@ -1078,6 +1095,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     text-overflow: ellipsis;
                 }}
                 #roadtogs-table th:nth-child(1), #roadtogs-table td:nth-child(1) {{ width: 18% !important; }}
+                #roadtogs-table th:nth-child(2) {{ text-align: center !important; }}
                 #roadtogs-table th:nth-child(3), #roadtogs-table td:nth-child(3) {{ width: 18% !important; }}
                 #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) {{ width: 9% !important; }}
                 #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) {{ width: 18% !important; }}
@@ -1482,7 +1500,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         <div class="player-select-container">
                             <select id="roadtogsPlayerSelect">
                                 <option value="">Select Player...</option>
-                                {"".join([f'<option value="{name}">{name}</option>' for name in history_players_sorted])}
+                                {"".join([f'<option value="{name}">{name}</option>' for name in roadtogs_players_sorted])}
                             </select>
                         </div>
                         <div id="roadtogs-points-total" style="font-size: 16px; font-weight: bold; color: #1e293b; padding-right: 12px;">Points: 0</div>
