@@ -13,24 +13,29 @@ from utils import fix_display_name, format_player_name, get_cached_rankings
 from calendar_builder import get_next_monday, get_monday_from_date, format_week_label
 
 
-def build_tournament_groups():
-    next_monday = get_next_monday()
-    four_weeks_later = next_monday + timedelta(weeks=4)
+_wta_tournaments_raw = None  # module-level cache for raw WTA tournament API data
 
+
+def _fetch_wta_tournaments_raw():
+    """Fetch all WTA tournaments from 1 week ago to end of year (single API call)."""
+    global _wta_tournaments_raw
+    if _wta_tournaments_raw is not None:
+        return _wta_tournaments_raw
+
+    today = datetime.now()
+    next_monday = get_next_monday()
     from_date = (next_monday - timedelta(days=7)).strftime("%Y-%m-%d")
-    to_date = four_weeks_later.strftime("%Y-%m-%d")
+    to_date = f"{today.year}-12-31"
 
     url = "https://api.wtatennis.com/tennis/tournaments/"
-
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
         "referer": "https://www.wtatennis.com/",
         "account": "wta"
     }
-
     params = {
         "page": 0,
-        "pageSize": 30,
+        "pageSize": 200,
         "excludeLevels": "ITF",
         "from": from_date,
         "to": to_date
@@ -39,13 +44,23 @@ def build_tournament_groups():
     try:
         response = requests.get(url, headers=headers, params=params, timeout=10)
         data = response.json()
+        _wta_tournaments_raw = data.get("content", [])
     except Exception as e:
-        print(f"Error fetching tournaments: {e}")
-        return {}
+        print(f"Error fetching WTA tournaments: {e}")
+        _wta_tournaments_raw = []
+
+    return _wta_tournaments_raw
+
+
+def build_tournament_groups():
+    next_monday = get_next_monday()
+    four_weeks_later = next_monday + timedelta(weeks=4)
+
+    raw_tournaments = _fetch_wta_tournaments_raw()
 
     tournament_groups = {}
 
-    for tournament in data.get("content", []):
+    for tournament in raw_tournaments:
         tournament_id = tournament["tournamentGroup"]["id"]
         raw_name = tournament["tournamentGroup"]["name"]
 
@@ -96,34 +111,18 @@ def build_tournament_groups():
 
 
 def get_full_wta_calendar():
-    """Fetch all WTA tournaments from now until end of year for the calendar view."""
+    """Get all WTA tournaments from now until end of year for the calendar view."""
     today = datetime.now()
-    from_date = today.strftime("%Y-%m-%d")
-    to_date = f"{today.year}-12-31"
+    today_str = today.strftime("%Y-%m-%d")
 
-    url = "https://api.wtatennis.com/tennis/tournaments/"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
-        "referer": "https://www.wtatennis.com/",
-        "account": "wta"
-    }
-    params = {
-        "page": 0,
-        "pageSize": 200,
-        "excludeLevels": "ITF",
-        "from": from_date,
-        "to": to_date
-    }
-
-    try:
-        response = requests.get(url, headers=headers, params=params, timeout=10)
-        data = response.json()
-    except Exception as e:
-        print(f"Error fetching full WTA calendar: {e}")
-        return []
+    raw_tournaments = _fetch_wta_tournaments_raw()
 
     tournaments = []
-    for t in data.get("content", []):
+    for t in raw_tournaments:
+        start_date = t["startDate"]
+        if start_date < today_str:
+            continue
+
         level = t["level"]
         city = t["city"].title()
 
@@ -148,7 +147,7 @@ def get_full_wta_calendar():
             "level": level,
             "surface": surface,
             "country": country,
-            "startDate": t["startDate"],
+            "startDate": start_date,
             "endDate": t.get("endDate", None)
         })
 

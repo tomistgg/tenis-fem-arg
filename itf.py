@@ -97,8 +97,15 @@ def parse_itf_entry_list(itf_entries):
     return players
 
 
-def get_full_itf_calendar(driver):
-    """Fetch all ITF tournaments for the full year via Selenium. Numbers duplicates across the whole year."""
+_itf_calendar_raw = None  # module-level cache for raw ITF calendar items
+
+
+def _fetch_itf_calendar_raw(driver):
+    """Fetch all raw ITF calendar items for the full year (single Selenium call, cached)."""
+    global _itf_calendar_raw
+    if _itf_calendar_raw is not None:
+        return _itf_calendar_raw
+
     today = datetime.now()
     date_from = f"{today.year}-01-01"
     date_to = f"{today.year}-12-31"
@@ -126,6 +133,16 @@ def get_full_itf_calendar(driver):
         except Exception as e:
             print(f"Error fetching full ITF calendar (skip={skip}): {e}")
             break
+
+    _itf_calendar_raw = all_items
+    return _itf_calendar_raw
+
+
+def get_full_itf_calendar(driver):
+    """Get all ITF tournaments for the full year. Numbers duplicates across the whole year."""
+    today = datetime.now()
+
+    all_items = _fetch_itf_calendar_raw(driver)
 
     tournaments = []
     for item in all_items:
@@ -203,21 +220,19 @@ def get_itf_players(tournament_key, driver):
 
 
 def get_dynamic_itf_calendar(driver, num_weeks=3):
-    """Fetch ITF calendar dynamically for the next N weeks"""
-    try:
-        next_monday = get_next_monday()
-        date_from = next_monday.strftime("%Y-%m-%d")
-        date_to = (next_monday + timedelta(weeks=num_weeks)).strftime("%Y-%m-%d")
+    """Get ITF calendar for the next N weeks, filtered from the full-year cache."""
+    next_monday = get_next_monday()
+    date_from = next_monday.strftime("%Y-%m-%d")
+    date_to = (next_monday + timedelta(weeks=num_weeks)).strftime("%Y-%m-%d")
 
-        url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetCalendar?circuitCode=WT&dateFrom={date_from}&dateTo={date_to}&skip=0&take=500"
-        driver.get(url)
-        time.sleep(5)
-        raw_content = driver.find_element("tag name", "body").text
-        data = json.loads(raw_content)
-        return data.get('items', [])
-    except Exception as e:
-        print(f"Error calendario: {e}")
-        return []
+    all_items = _fetch_itf_calendar_raw(driver)
+
+    filtered = []
+    for item in all_items:
+        start = (item.get('startDate') or '')[:10]
+        if start and date_from <= start < date_to:
+            filtered.append(item)
+    return filtered
 
 
 def get_itf_rankings(nationality="ARG"):

@@ -340,13 +340,16 @@ def build_calendar_snapshot(calendar_data):
 def main():
     driver = create_driver()
     try:
-        # 1. Build tournament groups (WTA + ITF)
+        # 1. Fetch full-year ITF calendar first (populates cache for dynamic subset)
+        full_itf = get_full_itf_calendar(driver)
+
+        # 2. Build tournament groups (WTA + ITF) — uses cached ITF data
         tournament_groups, monday_map = build_all_tournament_groups(driver)
 
-        # 2. Fetch ARG player rankings
+        # 3. Fetch ARG player rankings
         players_data, arg_names_set, all_wta_players = fetch_arg_players()
 
-        # 3. Process tournament entry lists
+        # 4. Process tournament entry lists
         entry_cache = load_cache(ENTRY_LISTS_CACHE_FILE)
         schedule_map, tournament_store, entry_cache, unranked_schedule = process_tournaments(
             driver, tournament_groups, monday_map, arg_names_set, entry_cache
@@ -364,15 +367,12 @@ def main():
                     'Rank': '-'
                 })
 
-        # 4. Load match history
+        # 5. Load match history
         match_history_data, cleaned_history = load_match_history()
-
-        # 5. Fetch full-year ITF calendar (needs Selenium)
-        full_itf = get_full_itf_calendar(driver)
     finally:
         driver.quit()
 
-    # 6. Build calendar
+    # 6. Build calendar — uses cached WTA data
     full_wta = get_full_wta_calendar()
     calendar_data = build_calendar_data(full_wta + full_itf)
     build_calendar_snapshot(calendar_data)

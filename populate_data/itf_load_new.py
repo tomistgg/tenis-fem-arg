@@ -20,7 +20,7 @@ def get_week_start_end(today=None):
     week_end = week_start + timedelta(days=6)              # Sunday
     return week_start, week_end
 
-def get_itf_calendar_for_range(start_date, end_date):
+def create_driver():
     chrome_options = Options()
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
@@ -29,9 +29,14 @@ def get_itf_calendar_for_range(start_date, end_date):
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     chrome_options.add_argument("window-size=1920,1080")
     chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
-
     service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=chrome_options)
+    return webdriver.Chrome(service=service, options=chrome_options)
+
+
+def get_itf_calendar_for_range(start_date, end_date, driver=None):
+    owns_driver = driver is None
+    if owns_driver:
+        driver = create_driver()
 
     all_tournaments = []
     seen_ids = set()
@@ -78,7 +83,8 @@ def get_itf_calendar_for_range(start_date, end_date):
         print(f"[!] Calendar fetch error: {e}")
         return []
     finally:
-        driver.quit()
+        if owns_driver:
+            driver.quit()
 
 def create_tournament_df(tournament_list):
     if not tournament_list:
@@ -101,34 +107,30 @@ def create_tournament_df(tournament_list):
 
     return pd.DataFrame(rows)
 
-def fetch_itf_ids_to_json(keys_list):
+def fetch_itf_ids_to_json(keys_list, driver=None):
     if not keys_list:
         return "[]"
 
-    chrome_options = Options()
-    chrome_options.add_argument("--headless=new")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    owns_driver = driver is None
+    if owns_driver:
+        driver = create_driver()
 
     results = []
     try:
-        driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
-        time.sleep(5)
+        if owns_driver:
+            driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
+            time.sleep(5)
 
         for key in keys_list:
             api_url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
-            
+
             driver.get(api_url)
-            time.sleep(1) 
-            
+            time.sleep(1)
+
             try:
                 raw_content = driver.find_element("tag name", "body").text.strip()
                 data = json.loads(raw_content)
-                
+
                 if data and "tournamentId" in data:
                     results.append({
                         "tournamentKey": key,
@@ -137,7 +139,8 @@ def fetch_itf_ids_to_json(keys_list):
             except Exception as e:
                 print(f"[!] Failed to fetch ID for {key}: {e}")
     finally:
-        driver.quit()
+        if owns_driver:
+            driver.quit()
 
     return json.dumps(results)
 
@@ -378,41 +381,39 @@ def update_csv_smart(filename, new_data_df, reset_if_not_current_week=False, cur
 if __name__ == "__main__":
     week_start, week_end = get_week_start_end()
     last_week_start = week_start - timedelta(days=7)
-    last_week_end = week_start - timedelta(days=1)
     next_week_start = week_start + timedelta(days=7)
     next_week_end = next_week_start + timedelta(days=6)
 
-    raw_last = get_itf_calendar_for_range(
-        last_week_start.strftime("%Y-%m-%d"),
-        last_week_end.strftime("%Y-%m-%d")
-    )
-    raw_this = get_itf_calendar_for_range(
-        week_start.strftime("%Y-%m-%d"),
-        week_end.strftime("%Y-%m-%d")
-    )
-    raw_next = get_itf_calendar_for_range(
-        next_week_start.strftime("%Y-%m-%d"),
-        next_week_end.strftime("%Y-%m-%d")
-    )
+    # Single driver and single calendar call for the full date range
+    driver = create_driver()
+    try:
+        raw_all = get_itf_calendar_for_range(
+            last_week_start.strftime("%Y-%m-%d"),
+            next_week_end.strftime("%Y-%m-%d"),
+            driver=driver
+        )
 
-    # Combine and deduplicate by tournamentKey
-    seen_keys = set()
-    raw_data = []
-    for t in (raw_last or []) + (raw_this or []) + (raw_next or []):
-        key = t.get("tournamentKey")
-        if key and key not in seen_keys:
-            raw_data.append(t)
-            seen_keys.add(key)
+        # Deduplicate by tournamentKey
+        seen_keys = set()
+        raw_data = []
+        for t in (raw_all or []):
+            key = t.get("tournamentKey")
+            if key and key not in seen_keys:
+                raw_data.append(t)
+                seen_keys.add(key)
 
-    if not raw_data:
-        raise SystemExit(0)
+        if not raw_data:
+            raise SystemExit(0)
 
-    tournaments_df = create_tournament_df(raw_data)
+        tournaments_df = create_tournament_df(raw_data)
 
-    if tournaments_df is None or tournaments_df.empty:
-        raise SystemExit(0)
-    keys_list = tournaments_df["tournamentKey"].dropna().unique().tolist()
-    json_ids_string = fetch_itf_ids_to_json(keys_list)
+        if tournaments_df is None or tournaments_df.empty:
+            raise SystemExit(0)
+        keys_list = tournaments_df["tournamentKey"].dropna().unique().tolist()
+        # Reuse same driver for ID fetching (session cookies already set)
+        json_ids_string = fetch_itf_ids_to_json(keys_list, driver=driver)
+    finally:
+        driver.quit()
 
     final_df = merge_ids_with_pandas(tournaments_df, json_ids_string)
     final_df['tournamentId'] = final_df['tournamentId'].fillna(0).astype(int).astype(str).replace('0', '')
