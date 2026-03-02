@@ -24,6 +24,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     except Exception:
         itf_draw_sizes = []
 
+    # Load WTA tournament draw sizes
+    wta_draw_sizes_path = os.path.join(os.path.dirname(__file__), 'data', 'wta_tournament_draw_sizes.json')
+    try:
+        with open(wta_draw_sizes_path, 'r', encoding='utf-8') as f:
+            wta_draw_sizes = json.load(f)
+    except Exception:
+        wta_draw_sizes = []
+
     # Build tournament side menu HTML for Entry Lists
     entry_menu_html = ""
     first_key = None
@@ -1462,6 +1470,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             const playerMapping = {json.dumps(PLAYER_MAPPING)};
             const pointsDistribution = {json.dumps(points_distribution)};
             const itfDrawSizes = {json.dumps(itf_draw_sizes)};
+            const wtaDrawSizes = {json.dumps(wta_draw_sizes)};
             function toggleMobileMenu() {{
                 const sidebar = document.getElementById('sidebar');
                 sidebar.classList.toggle('mobile-hidden');
@@ -2408,6 +2417,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     }}
                 }});
 
+                // Build WTA draw size lookup by tournament ID (strip leading zeros)
+                const wtaDrawLookup = {{}};
+                wtaDrawSizes.forEach(t => {{
+                    if (!t.description || !t.tournamentId) return;
+                    const normId = String(parseInt(t.tournamentId) || t.tournamentId);
+                    wtaDrawLookup[normId] = {{ description: t.description, mainDrawSize: t.mainDrawSize }};
+                }});
+
                 // Draw size per category for mapping round names to point keys
                 // GS=128, WTA 1000 (56M)=64, everything else=32
                 const categoryDrawSize = {{
@@ -2492,10 +2509,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     // For GS/United Cup, key by tournament name only; for others, key by week + name
                     const key = (isGS || isUnitedCup) ? (matchType + '|' + tName) : (mondayStr + '|' + tName);
 
+                    const tournamentId = (row['TOURNAMENT_ID'] || '').trim();
+
                     if (!tournamentMap.has(key)) {{
                         tournamentMap.set(key, {{
                             date: mondayStr,
                             tournament: tName,
+                            tournamentId: tournamentId,
                             category: category,
                             isGS: isGS,
                             isUnitedCup: isUnitedCup,
@@ -2621,8 +2641,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             drawSize = categoryDrawSize[t.category] || 32;
                         }}
                     }} else {{
-                        desc = categoryToDesc[t.category] || '';
-                        drawSize = categoryDrawSize[t.category] || 32;
+                        // For WTA tournaments, look up actual draw size description by tournament ID
+                        const wtaCategories = ['WTA 1000','WTA 500','WTA 250','WTA 125','125K','125K Series'];
+                        const wtaNormId = t.tournamentId ? String(parseInt(t.tournamentId) || t.tournamentId) : '';
+                        const wtaInfo = (wtaCategories.includes(t.category) && wtaNormId) ? wtaDrawLookup[wtaNormId] : null;
+                        if (wtaInfo) {{
+                            desc = wtaInfo.description;
+                            drawSize = wtaInfo.mainDrawSize > 64 ? 128 : (wtaInfo.mainDrawSize > 32 ? 64 : 32);
+                        }} else {{
+                            if (wtaCategories.includes(t.category)) {{
+                                console.warn(`[Road to GS] WTA draw size fallback: "${{t.tournament}}" (${{t.date}}) not found in wtaDrawSizes, using default`);
+                            }}
+                            desc = categoryToDesc[t.category] || '';
+                            drawSize = categoryDrawSize[t.category] || 32;
+                        }}
                     }}
                     const pTable = pointsLookup[desc];
                     t.points = 0;

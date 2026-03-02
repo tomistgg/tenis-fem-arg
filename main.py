@@ -266,9 +266,12 @@ def load_match_history():
         else:
             formatted_surface = raw_surface
 
+        tournament_id_value = (m.get('tournamentId') or m.get('tournament_id') or m.get('TournamentId') or '').strip()
+
         cleaned_history.append({
             'DATE': fecha,
             'TOURNAMENT': fix_encoding(tournament_name_value),
+            'TOURNAMENT_ID': tournament_id_value,
             'CATEGORY': fix_encoding(tournament_category_value),
             'SURFACE': formatted_surface,
             'MATCH_TYPE': match_type_value,

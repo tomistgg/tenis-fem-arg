@@ -8,7 +8,8 @@
       "Bash(python populate_data/itf_tournament_sizes.py)",
       "Bash(python -u populate_data/itf_tournament_sizes.py)",
       "Bash(python -u -c \":*)",
-      "Bash(python -c \":*)"
+      "Bash(python -c \":*)",
+      "Bash(python -u populate_data/wta_tournament_sizes.py)"
     ]
   }
 }
