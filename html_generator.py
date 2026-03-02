@@ -1051,9 +1051,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #view-roadtogs .roadtogs-controls {{
                     flex-wrap: nowrap;
                     align-items: center;
+                    justify-content: flex-start;
+                    gap: 8px;
                 }}
                 #view-roadtogs .player-select-container {{
-                    width: 50%;
+                    width: 55%;
                     max-width: none;
                     margin-left: 0;
                     margin-right: 0;
@@ -1061,19 +1063,39 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #view-roadtogs .player-select-container .select2-container--default .select2-selection--single {{
                     height: 26px;
                     min-height: 26px;
+                    padding-top: 0;
+                    padding-bottom: 0;
+                    display: flex;
+                    align-items: center;
+                    position: relative;
                 }}
                 #view-roadtogs .player-select-container .select2-container--default .select2-selection--single .select2-selection__rendered {{
-                    line-height: 24px;
+                    line-height: 1;
                     font-size: 9px;
+                    padding-left: 6px;
+                    flex: 1;
+                    min-width: 0;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }}
                 #view-roadtogs .player-select-container .select2-container--default .select2-selection--single .select2-selection__arrow {{
-                    height: 24px;
+                    height: 100%;
+                    position: absolute;
+                    top: 0;
+                    right: 1px;
+                }}
+                #select2-roadtogsPlayerSelect-results .select2-results__option {{
+                    font-size: 9px;
+                    padding: 3px 6px;
                 }}
                 #roadtogs-points-total {{
                     font-size: 11px !important;
                     white-space: nowrap;
-                    padding-right: 4px !important;
-                    padding-left: 6px !important;
+                    padding-right: 0 !important;
+                    padding-left: 0 !important;
+                    margin-left: auto;
+                    margin-right: 20px;
                 }}
                 #view-roadtogs .content-card {{
                     width: 100%;
