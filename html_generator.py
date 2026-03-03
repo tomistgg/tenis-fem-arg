@@ -2550,7 +2550,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 itfDrawSizes.forEach(t => {{
                     const key = (t.tournamentName||'') + '|' + (t.date||'');
                     _rtgs_itfDrawLookup[key] = {{description:t.description, mainDrawSize:t.mainDrawSize}};
-                    const wm = (t.tournamentName||'').match(/^(.+?)\s*\(Week \d+\)$/);
+                    const wm = (t.tournamentName||'').match(/^(.+?)\\s*\\(Week \\d+\\)$/);
                     if (wm) _rtgs_itfDrawLookup[wm[1].trim()+'|'+(t.date||'')] = _rtgs_itfDrawLookup[key];
                 }});
                 _rtgs_wtaDrawLookup = {{}};
@@ -2829,7 +2829,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const key = (t.tournamentName || '') + '|' + (t.date || '');
                     itfDrawLookup[key] = {{ description: t.description, mainDrawSize: t.mainDrawSize }};
                     // For multi-week entries with "(Week N)", also store with base name
-                    const weekMatch = (t.tournamentName || '').match(/^(.+?)\s*\(Week \d+\)$/);
+                    const weekMatch = (t.tournamentName || '').match(/^(.+?)\\s*\\(Week \\d+\\)$/);
                     if (weekMatch) {{
                         const baseKey = weekMatch[1].trim() + '|' + (t.date || '');
                         itfDrawLookup[baseKey] = {{ description: t.description, mainDrawSize: t.mainDrawSize }};
