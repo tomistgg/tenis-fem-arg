@@ -1,4 +1,3 @@
-import requests
 import pandas as pd
 from datetime import datetime, timedelta
 
@@ -116,16 +115,3 @@ def build_calendar_data(tournaments):
 
     return calendar_weeks
 
-
-def get_sheety_matches():
-    """Fetch match history from Sheety API"""
-    url = "https://api.sheety.co/6db57031b06f3dea3029e25e8bc924b9/wtaMatches/matches"
-    try:
-        r = requests.get(url, timeout=10)
-        data = r.json()
-        if 'matches' in data:
-            return data['matches']
-        return []
-    except Exception as e:
-        print(f"Error fetching matches from Sheety: {e}")
-        return []

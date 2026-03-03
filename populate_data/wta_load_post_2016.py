@@ -100,9 +100,6 @@ def fetch_tournaments_for_year(year):
         page += 1
 
     print(f"  Total: {len(all_tournaments)} tournaments in {year}.")
-    for t in all_tournaments:
-        group_id = t.get("tournamentGroup", {}).get("id", "")
-        live_id  = t.get("liveScoringId", "")
     return all_tournaments
 
 

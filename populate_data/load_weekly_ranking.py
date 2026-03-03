@@ -5,7 +5,7 @@ from datetime import date, timedelta
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from config import WTA_RANKINGS_CSV, DATA_DIR
+from config import WTA_RANKINGS_CSV
 from wta import get_rankings
 
 RANKINGS_CSV = WTA_RANKINGS_CSV

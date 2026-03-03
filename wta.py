@@ -9,7 +9,7 @@ import csv as _csv
 import os as _os
 
 from config import API_URL, HEADERS, NAME_LOOKUP, WTA_RANKINGS_CSV, WTA_RANKINGS_CSV_10_19, WTA_RANKINGS_CSV_00_09
-from utils import fix_display_name, format_player_name, get_cached_rankings
+from utils import fix_display_name, format_player_name
 from calendar_builder import get_next_monday, get_monday_from_date, format_week_label
 
 

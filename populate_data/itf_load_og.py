@@ -3,7 +3,6 @@ import time
 import pandas as pd
 import os
 import requests
-import calendar
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -107,7 +106,7 @@ def fetch_api_data(tId, classification, week_number=0):
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
         return response.json()
-    except Exception as e:
+    except Exception:
         return None
 
 def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
@@ -154,7 +153,6 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     for group in ko_groups:
         rounds = group.get("rounds", [])
         for rnd in rounds:
-            r_id = rnd.get("roundNumber")
             r_ds = rnd.get("roundDesc")
             matches = rnd.get("matches", [])
             for match in matches:
