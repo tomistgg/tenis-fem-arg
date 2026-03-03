@@ -1,7 +1,7 @@
 import json
 from html import escape
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from config import PLAYER_MAPPING, CONTINENT_KEYS, CONTINENT_LABELS, NAME_LOOKUP
 from utils import format_player_name, get_tournament_sort_order, get_surface_class
 from wta import _load_wta_csv
@@ -94,6 +94,61 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     # Build roadtogs player list: only players present in the WTA rankings
     wta_ranking_names = {format_player_name(p.get("Player", "")).upper() for p in (wta_rankings or [])}
     roadtogs_players_sorted = [name for name in history_players_sorted if name.upper() in wta_ranking_names]
+
+    # Compute GS cutoff dates
+    current_year = str(datetime.now().year)
+    gs_list = [
+        ("Australian Open", "#0066B3"),
+        ("Roland Garros",   "#C8602A"),
+        ("Wimbledon",        "#3D7A3D"),
+        ("US Open",          "#003087"),
+    ]
+    gs_tables_html = ""
+    for gs_name, gs_color in gs_list:
+        monday_date = None
+        for week in calendar_data:
+            for col_key in ["wta_tour", "wta_125", "itf"]:
+                for tournaments in week.get("columns", {}).get(col_key, {}).values():
+                    if any(t["name"] == gs_name for t in tournaments):
+                        monday_date = week.get("monday_date")
+                        break
+                if monday_date:
+                    break
+            if monday_date:
+                break
+        if monday_date:
+            gs_dt = datetime.strptime(monday_date, "%Y-%m-%d")
+            md_cutoff = (gs_dt - timedelta(weeks=6)).strftime("%Y-%m-%d")
+            q_cutoff  = (gs_dt - timedelta(weeks=4)).strftime("%Y-%m-%d")
+        else:
+            gs_upper = gs_name.upper()
+            dates = [
+                r["DATE"] for r in cleaned_history
+                if gs_upper in (r.get("TOURNAMENT") or "").upper()
+                and (r.get("DATE") or "").startswith(current_year)
+            ]
+            if dates:
+                earliest = min(dates)
+                gs_dt = datetime.strptime(earliest, "%Y-%m-%d")
+                gs_dt -= timedelta(days=gs_dt.weekday())
+                gs_dt += timedelta(weeks=52)
+                md_cutoff = (gs_dt - timedelta(weeks=6)).strftime("%Y-%m-%d")
+                q_cutoff  = (gs_dt - timedelta(weeks=4)).strftime("%Y-%m-%d")
+            else:
+                md_cutoff = "N/A"
+                q_cutoff  = "N/A"
+        gs_tables_html += (
+            f'<table class="gs-cutoff-table">'
+            f'<thead>'
+            f'<tr><th colspan="4" style="background:{gs_color} !important;color:white !important;">{gs_name.upper()}</th></tr>'
+            f'<tr><th>D</th><th>Cut Off</th><th>Acc. Pts</th><th>Est. Need</th></tr>'
+            f'</thead>'
+            f'<tbody>'
+            f'<tr><td>Q</td><td>{q_cutoff}</td><td>0</td><td>0</td></tr>'
+            f'<tr><td>MD</td><td>{md_cutoff}</td><td>0</td><td>0</td></tr>'
+            f'</tbody>'
+            f'</table>'
+        )
 
     # Build calendar HTML
     col_keys = ["wta_tour", "wta_125", "itf"]
@@ -294,6 +349,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) {{ width: 40px; white-space: nowrap; text-align: center; }}
             #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) {{ width: 95px; white-space: nowrap; text-align: center; }}
             .roadtogs-separator td {{ background: #334155; color: white; text-align: center !important; font-weight: bold; font-size: 12px; letter-spacing: 1px; padding: 6px 12px !important; }}
+            .roadtogs-cutoffs {{ margin-bottom: 12px; display: flex; flex-wrap: nowrap; gap: 10px; align-items: flex-start; }}
+            .gs-cutoff-table {{ border-collapse: collapse !important; font-size: 10px; width: auto !important; table-layout: auto !important; }}
+            .gs-cutoff-table th, .gs-cutoff-table td {{ border: 1px solid #cbd5e1; padding: 2px 6px; text-align: center; }}
+            .gs-cutoff-table thead tr:last-child th {{ background: #f1f5f9 !important; font-weight: bold; color: #475569 !important; }}
             .header-row {{ width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; gap: 10px; }}
             h1 {{ margin: 0; font-size: 22px; color: #1e293b; }}
             .search-container {{ position: absolute; left: 0; top: 50%; transform: translateY(-50%); }}
@@ -1526,6 +1585,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             </select>
                         </div>
                         <div id="roadtogs-points-total" style="font-size: 16px; font-weight: bold; color: #1e293b; padding-right: 12px;">Points: 0</div>
+                    </div>
+                    <div class="roadtogs-cutoffs">
+                        {gs_tables_html}
                     </div>
                     <div class="content-card">
                         <div class="table-wrapper">

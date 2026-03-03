@@ -109,7 +109,7 @@ def build_calendar_data(tournaments):
                 columns[col][cont].sort(key=lambda x: get_tournament_sort_order(x["level"]))
 
         has_any = any(columns[k][c] for k in column_keys for c in CONTINENT_KEYS)
-        calendar_weeks.append({"week_label": week_label, "columns": columns, "has_any": has_any})
+        calendar_weeks.append({"week_label": week_label, "monday_date": monday.strftime("%Y-%m-%d"), "columns": columns, "has_any": has_any})
 
     while calendar_weeks and not calendar_weeks[-1]["has_any"]:
         calendar_weeks.pop()
