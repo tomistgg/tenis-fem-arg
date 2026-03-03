@@ -1605,8 +1605,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         {gs_tables_html}
                     </div>
                     <div class="roadtogs-legend">
-                        <div>ACC. PTS = Points accumulated that count towards the ranking on the cutoff date.</div>
-                        <div>EST. NEED = Estimated points needed to qualify for the Grand Slam: 330 for Q, 780 for MD (based on previous year's).</div>
+                        <div>ACC. PTS = Points accumulated that count towards the ranking as of the cutoff date.</div>
+                        <div>EST. NEED = Estimated points needed to qualify for the Grand Slam: 330 for Q, 780 for MD (based on the previous year).</div>
                     </div>
                     <div class="content-card">
                         <div class="table-wrapper">
@@ -2591,6 +2591,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             function _rtgs_mdKey(round, result, drawSize) {{
                 if (round==='Final') return result==='W'?'W':'F';
+                if (result==='W') {{
+                    const _n32 ={{'1st Round':'2nd Round','2nd Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'}};
+                    const _n64 ={{'1st Round':'2nd Round','2nd Round':'3rd Round','3rd Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'}};
+                    const _n128={{'1st Round':'2nd Round','2nd Round':'3rd Round','3rd Round':'4th Round','4th Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'}};
+                    const _nm=drawSize>=128?_n128:(drawSize>=64?_n64:_n32);
+                    const _nr=_nm[round]; if (_nr) return _rtgs_mdKey(_nr,'L',drawSize);
+                }}
                 if (round==='Semi-finals') return 'SF';
                 if (round==='Quarter-finals') return 'QF';
                 if (drawSize===128) {{ if (round==='4th Round') return 'R16'; if (round==='3rd Round') return 'R32'; if (round==='2nd Round') return 'R64'; if (round==='1st Round') return 'R128'; }}
@@ -2605,7 +2612,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 _rtgs_initLookups();
                 const windowEnd = new Date(windowEndStr);
                 const windowStart = new Date(windowEnd);
-                windowStart.setDate(windowStart.getDate() - 385); // 55 weeks: covers up to 54-week drop periods
+                windowStart.setDate(windowStart.getDate() - 385); // 55 weeks: wide enough for W15/W35 +7 effective date shift
 
                 const matches = historyData.filter(row => {{
                     const mt = (row['MATCH_TYPE']||'').trim();
@@ -2629,8 +2636,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const wn=getDisplayName((row['_winnerName']||'').toString().toUpperCase()).toUpperCase();
                     const res=wn===selectedPlayer?'W':'L';
                     const tid=(row['TOURNAMENT_ID']||'').trim();
-                    // Group by tournamentId so a tournament spanning multiple weeks is one entry
-                    const key=(isGS||isUC)?(mt+'|'+tName):(tid?(tid+'|'+tName):(mon+'|'+tName));
+                    const yr=ds.slice(0,4);
+                    // Group by tournamentId+year so different annual editions stay separate
+                    const key=(isGS||isUC)?(mt+'|'+tName):(tid?(tid+'|'+yr+'|'+tName):(mon+'|'+tName));
                     if (!tMap.has(key)) tMap.set(key, {{date:mon,tournament:tName,tournamentId:tid,category:cat,isGS:isGS,isUnitedCup:isUC,bestMainRound:'',bestMainOrder:0,bestMainResult:'',bestQualRound:'',bestQualOrder:0,bestQualResult:'',qualMonday:'',mainMonday:'',ucWins:0,ucTotal:0,ucHasKnockout:false}});
                     const e=tMap.get(key);
                     if (isUC) {{ e.ucTotal++; if (res==='W') e.ucWins++; if (round!=='Round Robin'&&res==='W') e.ucHasKnockout=true; }}
@@ -2844,6 +2852,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 // Map a main draw round name to a point key based on draw size
                 function getMainDrawPointKey(round, result, drawSize) {{
                     if (round === 'Final') return result === 'W' ? 'W' : 'F';
+                    if (result === 'W') {{
+                        // Still in tournament — guaranteed next round; use next round's loss points
+                        const _nxt32  = {{'1st Round':'2nd Round','2nd Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'}};
+                        const _nxt64  = {{'1st Round':'2nd Round','2nd Round':'3rd Round','3rd Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'}};
+                        const _nxt128 = {{'1st Round':'2nd Round','2nd Round':'3rd Round','3rd Round':'4th Round','4th Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'}};
+                        const _nxtMap = drawSize>=128 ? _nxt128 : (drawSize>=64 ? _nxt64 : _nxt32);
+                        const _nxt = _nxtMap[round];
+                        if (_nxt) return getMainDrawPointKey(_nxt, 'L', drawSize);
+                    }}
                     if (round === 'Semi-finals') return 'SF';
                     if (round === 'Quarter-finals') return 'QF';
                     // Numbered rounds depend on draw size
@@ -2914,8 +2931,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const playerResult = (wName === selectedPlayer) ? 'W' : 'L';
 
                     const tournamentId = (row['TOURNAMENT_ID'] || '').trim();
-                    // Group by tournamentId so a tournament spanning multiple weeks is one entry
-                    const key = (isGS || isUnitedCup) ? (matchType + '|' + tName) : (tournamentId ? (tournamentId + '|' + tName) : (mondayStr + '|' + tName));
+                    const yr = dateStr.slice(0, 4);
+                    // Group by tournamentId+year so different annual editions stay separate
+                    const key = (isGS || isUnitedCup) ? (matchType + '|' + tName) : (tournamentId ? (tournamentId + '|' + yr + '|' + tName) : (mondayStr + '|' + tName));
 
                     if (!tournamentMap.has(key)) {{
                         tournamentMap.set(key, {{
@@ -2983,6 +3001,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     }} else if (t.mainMonday) {{
                         t.date = t.mainMonday; // set to main-draw week for multi-week tournaments
                     }}
+                }});
+
+                // Remove entries whose tournament monday is in the same week as (or before) 52 weeks ago.
+                // "Last 52 weeks counting this one": anything in the same calendar week as today-52w is excluded.
+                const _cwMon = (() => {{ const d = new Date(now); const wd = d.getUTCDay(); d.setUTCDate(d.getUTCDate() - (wd===0?6:wd-1)); d.setUTCHours(0,0,0,0); return d; }})();
+                const _52wAgoMon = new Date(_cwMon); _52wAgoMon.setUTCDate(_cwMon.getUTCDate() - 364);
+                tournamentMap.forEach((t, key) => {{
+                    if (!t.date) return;
+                    const effMon = new Date(t.date + 'T00:00:00Z');
+                    if (t.category === 'W15' || t.category === 'W35') effMon.setUTCDate(effMon.getUTCDate() + 7);
+                    if (effMon <= _52wAgoMon) tournamentMap.delete(key);
                 }});
 
                 const tournaments = Array.from(tournamentMap.values());
@@ -3065,6 +3094,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             }}
                             desc = categoryToDesc[t.category] || '';
                             drawSize = categoryDrawSize[t.category] || 32;
+                        }}
+                    }}
+                    // If player won their last round (still active), advance roundDisplay to guaranteed next round
+                    if (t.bestMainResult === 'W' && t.bestMainRound && t.bestMainRound !== 'Final') {{
+                        const _rd32  = {{'1st Round':'2nd Round','2nd Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'}};
+                        const _rd64  = {{'1st Round':'2nd Round','2nd Round':'3rd Round','3rd Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'}};
+                        const _rd128 = {{'1st Round':'2nd Round','2nd Round':'3rd Round','3rd Round':'4th Round','4th Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'}};
+                        const _rdMap = drawSize>=128 ? _rd128 : (drawSize>=64 ? _rd64 : _rd32);
+                        const _rdNxt = _rdMap[t.bestMainRound];
+                        if (_rdNxt) {{
+                            const _rdAbbr = abbrevRound(_rdNxt);
+                            t.roundDisplay = t.bestQualRound ? (_rdAbbr + ' + ' + qualDisplay) : _rdAbbr;
                         }}
                     }}
                     const pTable = pointsLookup[desc];
