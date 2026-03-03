@@ -1605,7 +1605,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         {gs_tables_html}
                     </div>
                     <div class="roadtogs-legend">
-                        ACC. PTS = Points accumulated that count towards the ranking on the cutoff date. | EST. NEED = Estimated points needed to qualify for the Grand Slam: 330 for Q, 780 for MD (based on previous year's).
+                        <div>ACC. PTS = Points accumulated that count towards the ranking on the cutoff date.</div>
+                        <div>EST. NEED = Estimated points needed to qualify for the Grand Slam: 330 for Q, 780 for MD (based on previous year's).</div>
                     </div>
                     <div class="content-card">
                         <div class="table-wrapper">
