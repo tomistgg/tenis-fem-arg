@@ -74,9 +74,13 @@ def load_csv_rows(path):
 
 def build_row_key(row, headers):
     if "matchId" in headers:
-        return str(row.get("matchId", "")).strip()
+        mid = str(row.get("matchId", "")).strip()
+        tid = str(row.get("tournamentId", "")).strip()
+        return f"{tid}|{mid}" if tid else mid
     if "MATCHID" in headers:
-        return str(row.get("MATCHID", "")).strip()
+        mid = str(row.get("MATCHID", "")).strip()
+        tid = str(row.get("TOURNAMENT_ID", "") or row.get("tournamentId", "")).strip()
+        return f"{tid}|{mid}" if tid else mid
 
     required = ["date", "tournamentName", "winnerName", "loserName", "roundName", "draw"]
     if all(k in row for k in required):
