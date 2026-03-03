@@ -97,14 +97,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     # Compute GS cutoff dates
     current_year = str(datetime.now().year)
-    gs_list = [
-        ("Australian Open", "#0066B3"),
-        ("Roland Garros",   "#C8602A"),
-        ("Wimbledon",        "#3D7A3D"),
-        ("US Open",          "#003087"),
+    gs_list_raw = [
+        ("Australian Open", "#0066B3", "AO"),
+        ("Roland Garros",   "#C8602A", "RG"),
+        ("Wimbledon",        "#3D7A3D", "WIM"),
+        ("US Open",          "#003087", "USO"),
     ]
-    gs_tables_html = ""
-    for gs_name, gs_color in gs_list:
+    gs_data = []
+    for gs_name, gs_color, gs_id in gs_list_raw:
         monday_date = None
         for week in calendar_data:
             for col_key in ["wta_tour", "wta_125", "itf"]:
@@ -137,6 +137,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             else:
                 md_cutoff = "N/A"
                 q_cutoff  = "N/A"
+        gs_data.append({"id": gs_id, "name": gs_name, "color": gs_color,
+                         "qCutoff": q_cutoff, "mdCutoff": md_cutoff})
+
+    # Sort: soonest upcoming GS first (by qCutoff ascending); N/A last
+    gs_data.sort(key=lambda g: g["qCutoff"] if g["qCutoff"] != "N/A" else "9999-99-99")
+
+    gs_tables_html = ""
+    for gs in gs_data:
+        gs_id    = gs["id"]
+        gs_name  = gs["name"]
+        gs_color = gs["color"]
+        q_cutoff = gs["qCutoff"]
+        md_cutoff = gs["mdCutoff"]
         gs_tables_html += (
             f'<table class="gs-cutoff-table">'
             f'<thead>'
@@ -144,11 +157,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             f'<tr><th>D</th><th>Cut Off</th><th>Acc. Pts</th><th>Est. Need</th></tr>'
             f'</thead>'
             f'<tbody>'
-            f'<tr><td>Q</td><td>{q_cutoff}</td><td>0</td><td>0</td></tr>'
-            f'<tr><td>MD</td><td>{md_cutoff}</td><td>0</td><td>0</td></tr>'
+            f'<tr><td>Q</td><td>{q_cutoff}</td><td id="gs-acc-q-{gs_id}">-</td><td id="gs-est-q-{gs_id}">-</td></tr>'
+            f'<tr><td>MD</td><td>{md_cutoff}</td><td id="gs-acc-md-{gs_id}">-</td><td id="gs-est-md-{gs_id}">-</td></tr>'
             f'</tbody>'
             f'</table>'
         )
+    gs_cutoffs_json = json.dumps(gs_data)
 
     # Build calendar HTML
     col_keys = ["wta_tour", "wta_125", "itf"]
@@ -1617,6 +1631,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             const pointsDistribution = {json.dumps(points_distribution)};
             const itfDrawSizes = {json.dumps(itf_draw_sizes)};
             const wtaDrawSizes = {json.dumps(wta_draw_sizes)};
+            const gsCutoffs = {gs_cutoffs_json};
             function toggleMobileMenu() {{
                 const sidebar = document.getElementById('sidebar');
                 sidebar.classList.toggle('mobile-hidden');
@@ -2504,6 +2519,234 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 renderFilteredMatches(filtered, selectedPlayer);
             }}
 
+            // Road to GS: shared lookups (initialised once, reused by renderRoadToGS + computeBest18)
+            const _rtgs_roundOrder = {{'QR1':1,'QR2':2,'QR3':3,'QR4':4,'Round Robin':4.5,'1st Round':5,'2nd Round':6,'3rd Round':7,'4th Round':8,'5th Round':9,'Quarter Finals':10,'Quarter-finals':10,'Semi-finals':11,'Final':12}};
+            const _rtgs_categoryToDesc = {{
+                'GS':'Grand Slam','WTA 1000':'WTA 1000 (56M, 32Q)','WTA 500':'WTA 500 (30/28M, 24/16Q)',
+                'WTA 250':'WTA 250 (32M, 24/16Q)','WTA 125':'WTA 125 (32M, 8Q)',
+                '125K':'WTA 125 (32M, 8Q)','125K Series':'WTA 125 (32M, 8Q)',
+                'W100':'W100 (32M, 32Q)','W75':'W75 (32M, 32Q)','W50':'W50 (32M, 32Q)',
+                'W35':'W35 (32M, 64/48/32/24Q)','W15':'W15 (32M, 64/48/32/24Q)'
+            }};
+            const _rtgs_categoryDrawSize = {{'GS':128,'WTA 1000':64,'WTA 500':32,'WTA 250':32,'WTA 125':32,'125K':32,'125K Series':32,'W100':32,'W75':32,'W50':32,'W35':32,'W15':32}};
+            const _rtgs_mandatory1000Names = ['Indian Wells','Miami','Madrid','Rome','Toronto','Montreal','Cincinnati','Beijing'];
+            const _rtgs_optional1000Names  = ['Doha','Dubai','Wuhan'];
+            let _rtgs_pointsLookup = null, _rtgs_itfDrawLookup = null, _rtgs_wtaDrawLookup = null;
+
+            function _rtgs_initLookups() {{
+                if (_rtgs_pointsLookup) return;
+                _rtgs_pointsLookup = {{}};
+                pointsDistribution.forEach(p => {{ _rtgs_pointsLookup[p.Description] = p; }});
+                _rtgs_itfDrawLookup = {{}};
+                itfDrawSizes.forEach(t => {{
+                    const key = (t.tournamentName||'') + '|' + (t.date||'');
+                    _rtgs_itfDrawLookup[key] = {{description:t.description, mainDrawSize:t.mainDrawSize}};
+                    const wm = (t.tournamentName||'').match(/^(.+?)\s*\(Week \d+\)$/);
+                    if (wm) _rtgs_itfDrawLookup[wm[1].trim()+'|'+(t.date||'')] = _rtgs_itfDrawLookup[key];
+                }});
+                _rtgs_wtaDrawLookup = {{}};
+                wtaDrawSizes.forEach(t => {{
+                    if (!t.description || !t.tournamentId) return;
+                    _rtgs_wtaDrawLookup[String(parseInt(t.tournamentId)||t.tournamentId)] = {{description:t.description, mainDrawSize:t.mainDrawSize}};
+                }});
+            }}
+
+            function _rtgs_monday(dateStr) {{
+                const d = new Date(dateStr), day = d.getUTCDay();
+                const m = new Date(d);
+                m.setUTCDate(d.getUTCDate() + (day===0 ? -6 : 1-day));
+                return m.toISOString().slice(0,10);
+            }}
+
+            // 2-week tournaments that freeze rankings for 2 consecutive weeks
+            const _rtgs_twoWeekNames = ['Australian Open','Roland Garros','Wimbledon','US Open','Indian Wells','Miami','Madrid','Internazionali','Rome'];
+            // Main-draw mondays of genuine 2-week tournaments (GS + WTA 1000 only).
+            // Qualifying and lower-tier tournaments excluded so week-1 detection works correctly.
+            // Each main-draw monday also adds mon+7 to cover both weeks of the freeze.
+            const _rtgs_twoWeekFreezeMondays = (() => {{
+                const s = new Set();
+                historyData.forEach(r => {{
+                    const tName = r['TOURNAMENT'] || '';
+                    const draw = (r['DRAW'] || '').toUpperCase();
+                    const cat = (r['CATEGORY'] || '').trim();
+                    const mt = (r['MATCH_TYPE'] || '').trim();
+                    const isGenuine2Week = mt === 'GS' || cat === 'WTA 1000' || cat === 'Premier Mandatory' || cat === 'Premier 5';
+                    if (draw === 'M' && isGenuine2Week && _rtgs_twoWeekNames.some(n => tName.includes(n))) {{
+                        const mon = _rtgs_monday(r['DATE'] || '');
+                        if (mon) {{
+                            s.add(mon);
+                            const w2 = new Date(mon);
+                            w2.setUTCDate(w2.getUTCDate() + 7);
+                            s.add(w2.toISOString().slice(0, 10));
+                        }}
+                    }}
+                }});
+                return s;
+            }})();
+
+            function _rtgs_mdKey(round, result, drawSize) {{
+                if (round==='Final') return result==='W'?'W':'F';
+                if (round==='Semi-finals') return 'SF';
+                if (round==='Quarter-finals') return 'QF';
+                if (drawSize===128) {{ if (round==='4th Round') return 'R16'; if (round==='3rd Round') return 'R32'; if (round==='2nd Round') return 'R64'; if (round==='1st Round') return 'R128'; }}
+                else if (drawSize===64) {{ if (round==='3rd Round') return 'R16'; if (round==='2nd Round') return 'R32'; if (round==='1st Round') return 'R64'; }}
+                else {{ if (round==='2nd Round') return 'R16'; if (round==='1st Round') return 'R32'; }}
+                return null;
+            }}
+
+            function _rtgs_qKey(round, result, hasMain) {{ return (hasMain||result==='W') ? 'QLFR' : round; }}
+
+            function computeBest18(selectedPlayer, windowEndStr) {{
+                _rtgs_initLookups();
+                const windowEnd = new Date(windowEndStr);
+                const windowStart = new Date(windowEnd);
+                windowStart.setDate(windowStart.getDate() - 385); // 55 weeks: covers up to 54-week drop periods
+
+                const matches = historyData.filter(row => {{
+                    const mt = (row['MATCH_TYPE']||'').trim();
+                    if (mt==='Fed/BJK Cup') return false;
+                    const wn = getDisplayName((row['_winnerName']||'').toString().toUpperCase()).toUpperCase();
+                    const ln = getDisplayName((row['_loserName']||'').toString().toUpperCase()).toUpperCase();
+                    if (wn!==selectedPlayer && ln!==selectedPlayer) return false;
+                    const ds = row['DATE']||''; if (!ds) return false;
+                    const md = new Date(ds);
+                    return md>=windowStart && md<=windowEnd;
+                }});
+                if (!matches.length) return 0;
+
+                const tMap = new Map();
+                matches.forEach(row => {{
+                    const tName=row['TOURNAMENT']||'', ds=row['DATE']||'';
+                    const mt=(row['MATCH_TYPE']||'').trim(), cat=(row['CATEGORY']||'').trim();
+                    const isGS=mt==='GS', isUC=tName.toUpperCase().includes('UNITED CUP');
+                    const mon=_rtgs_monday(ds), draw=(row['DRAW']||'').toUpperCase();
+                    const round=row['ROUND']||'', rOrd=_rtgs_roundOrder[round]||0;
+                    const wn=getDisplayName((row['_winnerName']||'').toString().toUpperCase()).toUpperCase();
+                    const res=wn===selectedPlayer?'W':'L';
+                    const tid=(row['TOURNAMENT_ID']||'').trim();
+                    // Group by tournamentId so a tournament spanning multiple weeks is one entry
+                    const key=(isGS||isUC)?(mt+'|'+tName):(tid?(tid+'|'+tName):(mon+'|'+tName));
+                    if (!tMap.has(key)) tMap.set(key, {{date:mon,tournament:tName,tournamentId:tid,category:cat,isGS:isGS,isUnitedCup:isUC,bestMainRound:'',bestMainOrder:0,bestMainResult:'',bestQualRound:'',bestQualOrder:0,bestQualResult:'',qualMonday:'',mainMonday:'',ucWins:0,ucTotal:0,ucHasKnockout:false}});
+                    const e=tMap.get(key);
+                    if (isUC) {{ e.ucTotal++; if (res==='W') e.ucWins++; if (round!=='Round Robin'&&res==='W') e.ucHasKnockout=true; }}
+                    if (draw==='Q') {{
+                        if (rOrd>e.bestQualOrder) {{e.bestQualRound=round;e.bestQualOrder=rOrd;e.bestQualResult=res;}}
+                        if (!e.qualMonday||mon<e.qualMonday) e.qualMonday=mon;
+                    }} else {{
+                        if (rOrd>e.bestMainOrder) {{e.bestMainRound=round;e.bestMainOrder=rOrd;e.bestMainResult=res;}}
+                        if (!e.mainMonday||mon<e.mainMonday) e.mainMonday=mon;
+                    }}
+                }});
+
+                tMap.forEach(t => {{
+                    if (t.isGS) {{
+                        if (t.mainMonday) {{ t.date=t.mainMonday; }}
+                        else if (t.qualMonday) {{ const q=new Date(t.qualMonday); q.setUTCDate(q.getUTCDate()+7); t.date=q.toISOString().slice(0,10); }}
+                    }} else if (t.isUnitedCup&&t.mainMonday) {{ t.date=t.mainMonday; }}
+                    else if (t.mainMonday) {{ t.date=t.mainMonday; }} // set to main-draw week for multi-week tournaments
+                }});
+
+                // Filter: only include tournaments whose points are still live at windowEnd
+                // (dropDate > windowEnd). Mirrors the drop date logic in renderRoadToGS.
+                // W15/W35: points go live 1 week after tournament (effective date = monday+7).
+                const _cb18ItfCats=['W100','W75','W60','W50','W40','W35','W25','W15','W10','W80'];
+                const ts=Array.from(tMap.values()).filter(t => {{
+                    if (!t.date) return false;
+                    const isW1535=t.category==='W15'||t.category==='W35';
+                    const effMon=new Date(t.date+'T00:00:00Z');
+                    if (isW1535) effMon.setUTCDate(effMon.getUTCDate()+7);
+                    const effStr=effMon.toISOString().slice(0,10);
+                    if (effStr>windowEndStr) return false; // points not yet live at cutoff
+                    const is2w=t.isGS||(!_cb18ItfCats.includes(t.category)&&_rtgs_twoWeekNames.some(n=>t.tournament.includes(n)));
+                    const isCF=!is2w&&_rtgs_twoWeekFreezeMondays.has(effStr);
+                    let dr;
+                    if (is2w) {{
+                        dr=new Date(effMon); dr.setUTCDate(effMon.getUTCDate()+54*7);
+                    }} else if (isCF) {{
+                        const prev=new Date(effMon); prev.setUTCDate(effMon.getUTCDate()-7);
+                        const w1=_rtgs_twoWeekFreezeMondays.has(prev.toISOString().slice(0,10))?prev:effMon;
+                        dr=new Date(w1); dr.setUTCDate(w1.getUTCDate()+54*7);
+                    }} else {{
+                        dr=new Date(effMon); dr.setUTCDate(effMon.getUTCDate()+53*7);
+                    }}
+                    return dr>windowEnd;
+                }});
+                if (!ts.length) return 0;
+
+                const itfCats=['W100','W75','W60','W50','W35','W25','W15'];
+                const wtaCats=['WTA 1000','WTA 500','WTA 250','WTA 125','125K','125K Series'];
+                ts.forEach(t => {{
+                    if (t.isUnitedCup) {{
+                        const uc=_rtgs_pointsLookup['United Cup']; t.points=0;
+                        if (uc) {{ const w=t.ucWins,ko=t.ucHasKnockout;
+                            if(w>=5)t.points=uc['5W']; else if(w===4)t.points=uc['4W']; else if(w===3)t.points=uc['3W'];
+                            else if(w===2&&ko)t.points=uc['2W_KO']; else if(w===2)t.points=uc['2W_RR'];
+                            else if(w===1&&ko)t.points=uc['1W_KO']; else if(w===1)t.points=uc['1W_RR'];
+                            else t.points=uc['0W']; }}
+                    }} else {{
+                        const qual=t.bestQualRound&&t.bestQualResult==='W';
+                        const ll=t.bestQualRound&&t.bestQualResult==='L'&&!!t.bestMainRound;
+                        let desc,drawSize;
+                        if (itfCats.includes(t.category)) {{
+                            const di=_rtgs_itfDrawLookup[t.tournament+'|'+t.date];
+                            if(di){{desc=di.description;drawSize=di.mainDrawSize>32?64:32;}}
+                            else{{desc=_rtgs_categoryToDesc[t.category]||'';drawSize=_rtgs_categoryDrawSize[t.category]||32;}}
+                        }} else {{
+                            const nid=t.tournamentId?String(parseInt(t.tournamentId)||t.tournamentId):'';
+                            const wi=(wtaCats.includes(t.category)&&nid)?_rtgs_wtaDrawLookup[nid]:null;
+                            if(wi){{desc=wi.description;drawSize=wi.mainDrawSize>64?128:wi.mainDrawSize>32?64:32;}}
+                            else{{desc=_rtgs_categoryToDesc[t.category]||'';drawSize=_rtgs_categoryDrawSize[t.category]||32;}}
+                        }}
+                        const pt=_rtgs_pointsLookup[desc]; t.points=0;
+                        if (pt) {{
+                            if (t.bestMainRound) {{
+                                const qfl=qual&&t.bestMainRound==='1st Round'&&t.bestMainResult==='L';
+                                const lfl=ll&&t.bestMainRound==='1st Round'&&t.bestMainResult==='L';
+                                if (!qfl&&!lfl) {{ const k=_rtgs_mdKey(t.bestMainRound,t.bestMainResult,drawSize); if(k&&pt[k]!=null)t.points+=pt[k]; }}
+                            }}
+                            if (t.bestQualRound) {{
+                                if (ll) {{ if(pt[t.bestQualRound]!=null)t.points+=pt[t.bestQualRound]; }}
+                                else {{ const k=_rtgs_qKey(t.bestQualRound,t.bestQualResult,!!t.bestMainRound); if(k&&pt[k]!=null)t.points+=pt[k]; }}
+                            }}
+                        }}
+                    }}
+                }});
+
+                const mGS=[],m1000=[],opt=[],rest=[];
+                ts.forEach(t => {{
+                    const hasMD=!!t.bestMainRound, up=t.tournament.toUpperCase();
+                    if(t.isGS&&hasMD) mGS.push(t);
+                    else if(t.category==='WTA 1000'&&hasMD&&_rtgs_mandatory1000Names.some(n=>up.includes(n.toUpperCase()))) m1000.push(t);
+                    else if(t.category==='WTA 1000'&&hasMD&&_rtgs_optional1000Names.some(n=>up.includes(n.toUpperCase()))) opt.push(t);
+                    else rest.push(t);
+                }});
+                m1000.sort((a,b)=>b.points-a.points); opt.sort((a,b)=>b.points-a.points); rest.sort((a,b)=>b.points-a.points);
+                const c1000=m1000.slice(0,6), cOpt=opt.slice(0,1);
+                const mandatory=[...mGS,...c1000,...cOpt];
+                const fillPool=[...m1000.slice(6),...opt.slice(1),...rest];
+                fillPool.sort((a,b)=>b.points-a.points);
+                const countable=[...mandatory,...fillPool.slice(0,Math.max(0,18-mandatory.length))];
+                return countable.reduce((s,t)=>s+t.points,0);
+            }}
+
+            function updateGSCutoffTables(selectedPlayer) {{
+                gsCutoffs.forEach(gs => {{
+                    ['q','md'].forEach(type => {{
+                        const cutoff = type==='q' ? gs.qCutoff : gs.mdCutoff;
+                        const accEl = document.getElementById('gs-acc-'+type+'-'+gs.id);
+                        const estEl = document.getElementById('gs-est-'+type+'-'+gs.id);
+                        if (!accEl||!estEl) return;
+                        if (!selectedPlayer||cutoff==='N/A') {{ accEl.textContent='-'; estEl.textContent='-'; estEl.style.color=''; estEl.style.fontWeight=''; return; }}
+                        const pts = computeBest18(selectedPlayer, cutoff);
+                        accEl.textContent = pts;
+                        const est = pts - (type==='q' ? 330 : 780);
+                        estEl.textContent = est;
+                        estEl.style.fontWeight = 'bold';
+                        estEl.style.color = est > 0 ? '#1a7a1a' : est >= -10 ? '#b8860b' : est >= -25 ? '#cc5500' : '#cc0000';
+                    }});
+                }});
+            }}
+
             // Road to GS
             function abbrevRound(r) {{
                 return r
@@ -2531,6 +2774,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if (!selectedPlayer) {{
                     tbody.innerHTML = '<tr><td colspan="5" style="padding: 20px; color: #64748b;">Select a player to view their results</td></tr>';
                     document.getElementById('roadtogs-points-total').textContent = 'Points: 0';
+                    updateGSCutoffTables('');
                     return;
                 }}
 
@@ -2664,10 +2908,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const wName = getDisplayName((row['_winnerName'] || '').toString().toUpperCase()).toUpperCase();
                     const playerResult = (wName === selectedPlayer) ? 'W' : 'L';
 
-                    // For GS/United Cup, key by tournament name only; for others, key by week + name
-                    const key = (isGS || isUnitedCup) ? (matchType + '|' + tName) : (mondayStr + '|' + tName);
-
                     const tournamentId = (row['TOURNAMENT_ID'] || '').trim();
+                    // Group by tournamentId so a tournament spanning multiple weeks is one entry
+                    const key = (isGS || isUnitedCup) ? (matchType + '|' + tName) : (tournamentId ? (tournamentId + '|' + tName) : (mondayStr + '|' + tName));
 
                     if (!tournamentMap.has(key)) {{
                         tournamentMap.set(key, {{
@@ -2732,6 +2975,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         }}
                     }} else if (t.isUnitedCup && t.mainMonday) {{
                         t.date = t.mainMonday;
+                    }} else if (t.mainMonday) {{
+                        t.date = t.mainMonday; // set to main-draw week for multi-week tournaments
                     }}
                 }});
 
@@ -2845,12 +3090,34 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     }}
                     }} // end else (non-United Cup)
 
-                    // Drop date: GS/mandatory 1000/W15/W35 = date + 14 days, others = date + 7 days
+                    // Drop date rules:
+                    //   GS / genuine WTA 1000 2-week events: date + 54 weeks
+                    //   W15/W35: points go live 1 week after tournament (effective date = monday+7),
+                    //            then apply the same 53/54-week rules from the effective date
+                    //   Concurrent with a 2-week freeze: share week1Mon + 54 weeks
+                    //   All others: date + 53 weeks
+                    const _itfCats = ['W100','W75','W60','W50','W40','W35','W25','W15','W10','W80'];
                     const monday = new Date(t.date);
-                    const dropDate = new Date(monday);
-                    const isMandatory1000 = t.category === 'WTA 1000' && mandatory1000Names.some(n => t.tournament.toUpperCase().includes(n.toUpperCase()));
-                    const extendedDrop = t.isGS || t.category === 'W15' || t.category === 'W35' || isMandatory1000;
-                    dropDate.setUTCDate(monday.getUTCDate() + (extendedDrop ? 14 : 7));
+                    const isW15W35 = t.category === 'W15' || t.category === 'W35';
+                    const effectiveMonday = new Date(monday);
+                    if (isW15W35) effectiveMonday.setUTCDate(monday.getUTCDate() + 7);
+                    const effectiveDateStr = effectiveMonday.toISOString().slice(0, 10);
+                    const dropDate = new Date(effectiveMonday);
+                    const is2WeekEvent = t.isGS || (!_itfCats.includes(t.category) && _rtgs_twoWeekNames.some(n => t.tournament.includes(n)));
+                    const isConcurrentFreeze = !is2WeekEvent && _rtgs_twoWeekFreezeMondays.has(effectiveDateStr);
+                    if (is2WeekEvent) {{
+                        dropDate.setUTCDate(effectiveMonday.getUTCDate() + 54 * 7);
+                    }} else if (isConcurrentFreeze) {{
+                        // Use week1Mon of the concurrent 2-week event so all concurrent
+                        // tournaments share the same drop date as that event.
+                        const prevMon = new Date(effectiveMonday);
+                        prevMon.setUTCDate(effectiveMonday.getUTCDate() - 7);
+                        const week1Mon = _rtgs_twoWeekFreezeMondays.has(prevMon.toISOString().slice(0, 10)) ? prevMon : effectiveMonday;
+                        dropDate.setTime(week1Mon.getTime());
+                        dropDate.setUTCDate(dropDate.getUTCDate() + 54 * 7);
+                    }} else {{
+                        dropDate.setUTCDate(effectiveMonday.getUTCDate() + 53 * 7);
+                    }}
                     t.dropDate = dropDate.toISOString().slice(0, 10);
                 }});
 
@@ -2914,6 +3181,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 const totalPoints = countable.reduce((sum, t) => sum + t.points, 0);
                 document.getElementById('roadtogs-points-total').textContent = 'Points: ' + totalPoints;
+                updateGSCutoffTables(selectedPlayer);
 
                 // Render table
                 const parts = [];
