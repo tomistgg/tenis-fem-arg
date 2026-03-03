@@ -363,7 +363,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) {{ width: 40px; white-space: nowrap; text-align: center; }}
             #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) {{ width: 95px; white-space: nowrap; text-align: center; }}
             .roadtogs-separator td {{ background: #334155; color: white; text-align: center !important; font-weight: bold; font-size: 12px; letter-spacing: 1px; padding: 6px 12px !important; }}
-            .roadtogs-cutoffs {{ margin-bottom: 12px; display: flex; flex-wrap: nowrap; gap: 10px; align-items: flex-start; }}
+            .roadtogs-cutoffs {{ margin-bottom: 8px; display: flex; flex-wrap: nowrap; gap: 10px; align-items: flex-start; }}
+            .roadtogs-legend {{ margin-bottom: 12px; font-size: 11px; color: #64748b; line-height: 1.5; }}
             .gs-cutoff-table {{ border-collapse: collapse !important; font-size: 10px; width: auto !important; table-layout: auto !important; }}
             .gs-cutoff-table th, .gs-cutoff-table td {{ border: 1px solid #cbd5e1; padding: 2px 6px; text-align: center; }}
             .gs-cutoff-table thead tr:last-child th {{ background: #f1f5f9 !important; font-weight: bold; color: #475569 !important; }}
@@ -1602,6 +1603,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                     <div class="roadtogs-cutoffs">
                         {gs_tables_html}
+                    </div>
+                    <div class="roadtogs-legend">
+                        ACC. PTS = Points accumulated that count towards the ranking on the cutoff date. | EST. NEED = Estimated points needed to qualify for the Grand Slam: 330 for Q, 780 for MD (based on previous year's).
                     </div>
                     <div class="content-card">
                         <div class="table-wrapper">
@@ -3184,14 +3188,24 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 updateGSCutoffTables(selectedPlayer);
 
                 // Render table
+                const _today = new Date(); _today.setUTCHours(0,0,0,0);
+                const _in14 = new Date(_today); _in14.setUTCDate(_today.getUTCDate() + 14);
+                const _in28 = new Date(_today); _in28.setUTCDate(_today.getUTCDate() + 28);
+                function _dropStyle(dropDateStr) {{
+                    if (!dropDateStr) return '';
+                    const d = new Date(dropDateStr);
+                    if (d <= _in14) return ' style="color:#cc0000;font-weight:bold;"';
+                    if (d <= _in28) return ' style="color:#cc5500;font-weight:bold;"';
+                    return '';
+                }}
                 const parts = [];
                 countable.forEach(t => {{
-                    parts.push(`<tr><td>${{t.date}}</td><td>${{t.tournament}}</td><td>${{t.roundDisplay}}</td><td>${{t.points}}</td><td>${{t.dropDate}}</td></tr>`);
+                    parts.push(`<tr><td>${{t.date}}</td><td>${{t.tournament}}</td><td>${{t.roundDisplay}}</td><td>${{t.points}}</td><td${{_dropStyle(t.dropDate)}}>${{t.dropDate}}</td></tr>`);
                 }});
                 if (nonCountable.length > 0) {{
                     parts.push('<tr class="roadtogs-separator"><td colspan="5">NON-COUNTABLE TOURNAMENTS</td></tr>');
                     nonCountable.forEach(t => {{
-                        parts.push(`<tr><td>${{t.date}}</td><td>${{t.tournament}}</td><td>${{t.roundDisplay}}</td><td>${{t.points}}</td><td>${{t.dropDate}}</td></tr>`);
+                        parts.push(`<tr><td>${{t.date}}</td><td>${{t.tournament}}</td><td>${{t.roundDisplay}}</td><td>${{t.points}}</td><td${{_dropStyle(t.dropDate)}}>${{t.dropDate}}</td></tr>`);
                     }});
                 }}
 
