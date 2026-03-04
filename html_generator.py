@@ -322,6 +322,152 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             captains_rows += f'<td{cell_style}>{escape(value)}</td>'
         captains_rows += '</tr>'
 
+    # Build BJK Cup Series HTML
+    _bjkc_iso_to_name = {
+        'ARG': 'Argentina', 'AUS': 'Australia', 'AUT': 'Austria',
+        'BAH': 'Bahamas', 'BEL': 'Belgium', 'BOL': 'Bolivia',
+        'BRA': 'Brazil', 'BUL': 'Bulgaria', 'CAN': 'Canada',
+        'CHI': 'Chile', 'CHN': 'China', 'COL': 'Colombia',
+        'CRO': 'Croatia', 'CUB': 'Cuba', 'CZE': 'Czechia',
+        'DEN': 'Denmark', 'DOM': 'Dominican Republic', 'ECU': 'Ecuador',
+        'ESP': 'Spain', 'EST': 'Estonia', 'FIN': 'Finland',
+        'FRA': 'France', 'FRG': 'West Germany', 'GBR': 'Great Britain',
+        'GER': 'Germany', 'GRE': 'Greece', 'GUA': 'Guatemala',
+        'HUN': 'Hungary', 'INA': 'Indonesia', 'JPN': 'Japan',
+        'KAZ': 'Kazakhstan', 'KOR': 'South Korea', 'MEX': 'Mexico',
+        'NED': 'Netherlands', 'NOR': 'Norway', 'NZL': 'New Zealand',
+        'PAR': 'Paraguay', 'PER': 'Peru', 'PHI': 'Philippines',
+        'POL': 'Poland', 'PUR': 'Puerto Rico', 'ROU': 'Romania',
+        'RUS': 'Russia', 'SEN': 'Senegal', 'SLO': 'Slovenia',
+        'SUI': 'Switzerland', 'SVK': 'Slovakia', 'SWE': 'Sweden',
+        'TCH': 'Czechoslovakia', 'TPE': 'Chinese Taipei', 'UKR': 'Ukraine',
+        'URU': 'Uruguay', 'USA': 'USA', 'VEN': 'Venezuela',
+        'YUG': 'Yugoslavia',
+    }
+
+    def _bjkc_flip_score(s):
+        if not s: return ""
+        out = []
+        for part in s.split():
+            tb = ""
+            if "(" in part:
+                tb = part[part.index("("):]
+                part = part[:part.index("(")]
+            ab = part.split("-")
+            out.append(f"{ab[1]}-{ab[0]}{tb}" if len(ab) == 2 else part + tb)
+        return " ".join(out)
+
+    bjkc_series_html = ""
+    try:
+        import pandas as _pd
+        _bjkc_path = os.path.join(os.path.dirname(__file__), 'data', 'bjkc_matches_arg.csv')
+        _bjkc_df = _pd.read_csv(_bjkc_path)
+
+        # Build alias reverse map: raw_name_upper → display_name
+        _alias_reverse = {}
+        try:
+            _aliases_path = os.path.join(os.path.dirname(__file__), 'data', 'player_aliases.json')
+            with open(_aliases_path, encoding='utf-8') as _af:
+                _aliases_data = json.load(_af)
+            for _display_name, _raw_list in _aliases_data.items():
+                for _raw in _raw_list:
+                    _alias_reverse[_raw.strip().upper()] = _display_name
+        except Exception:
+            pass
+
+        def _apply_alias(name_str):
+            """Apply alias lookup to a player name or 'P1 / P2' doubles string."""
+            parts = name_str.split(' / ')
+            return ' / '.join(_alias_reverse.get(p.strip().upper(), p.strip()) for p in parts)
+
+        # Sort ties by their earliest date, newest first
+        _tie_dates = _bjkc_df.groupby('tournamentId')['date'].min().sort_values(ascending=False)
+
+        for _tid in _tie_dates.index:
+            _grp = _bjkc_df[_bjkc_df['tournamentId'] == _tid].copy()
+            _first = _grp.iloc[0]
+
+            # Determine opponent ISO → name
+            _opp_iso = None
+            for _, _mr in _grp.iterrows():
+                if str(_mr.get('winnerCountry', '')) != 'ARG':
+                    _opp_iso = str(_mr['winnerCountry'])
+                    break
+                if str(_mr.get('loserCountry', '')) != 'ARG':
+                    _opp_iso = str(_mr['loserCountry'])
+                    break
+            _opp_name = _bjkc_iso_to_name.get(_opp_iso or '', _opp_iso or '?')
+
+            _t_name = str(_first.get('tournamentName', ''))
+            _header = f"{_t_name} vs {_opp_name}"
+
+            # Overall tie result: only count played matches
+            _arg_wins = 0
+            _arg_losses = 0
+            for _, _mr in _grp.iterrows():
+                _r = str(_mr.get('result', '') or '')
+                if not _r or _r.lower() == 'nan':
+                    continue
+                if str(_mr.get('winnerCountry', '')) == 'ARG':
+                    _arg_wins += 1
+                else:
+                    _arg_losses += 1
+            _tie_won = _arg_wins > _arg_losses
+            _badge_bg = '#dcfce7' if _tie_won else '#fee2e2'
+            _badge_color = '#166534' if _tie_won else '#991b1b'
+            _tie_res_label = f"{_arg_wins}-{_arg_losses}"
+
+            _rows_html = ""
+            for _, _mr in _grp.iterrows():
+                _result_raw = str(_mr.get('result', '') or '')
+                _has_result = bool(_result_raw) and _result_raw.lower() != 'nan'
+                _arg_won = str(_mr.get('winnerCountry', '')) == 'ARG'
+
+                _arg_player = _apply_alias(str(_mr['winnerName'] if _arg_won else _mr['loserName']))
+                _opp_player = str(_mr['loserName'] if _arg_won else _mr['winnerName'])
+
+                if not _has_result:
+                    _score_display = '<em style="color:#64748b;">Not Played</em>'
+                    _res_label = '-'
+                    _res_style = 'color:#64748b;font-weight:bold;'
+                else:
+                    _score = _result_raw if _arg_won else _bjkc_flip_score(_result_raw)
+                    _status = str(_mr.get('resultStatusDesc', '') or '')
+                    _score_display = escape(_score)
+                    if _status and _status.lower() != 'nan':
+                        _score_display += f' <span style="color:#64748b;font-size:0.85em;">({escape(_status)})</span>'
+                    _res_label = 'W' if _arg_won else 'L'
+                    _res_style = 'color:#166534;font-weight:bold;' if _arg_won else 'color:#991b1b;font-weight:bold;'
+
+                _date_display = str(_mr.get('date', ''))
+                _rows_html += f"""<tr>
+                        <td style="white-space:nowrap;">{escape(_date_display)}</td>
+                        <td style="font-weight:bold;white-space:nowrap;">{escape(_arg_player)}</td>
+                        <td style="{_res_style}text-align:center;">{_res_label}</td>
+                        <td style="white-space:nowrap;">{_score_display}</td>
+                        <td style="white-space:nowrap;">{escape(_opp_player)}</td>
+                    </tr>"""
+
+            bjkc_series_html += f"""<div class="bjkc-series-block">
+                <div class="bjkc-series-header">
+                    <span class="bjkc-header-side"></span>
+                    <span class="bjkc-header-title">{escape(_header)}</span>
+                    <span class="bjkc-header-side"><span class="bjkc-tie-score" style="background:{_badge_bg};color:{_badge_color};">{_tie_res_label}</span></span>
+                </div>
+                <div class="content-card">
+                    <div class="table-wrapper">
+                        <table class="bjkc-series-table">
+                            <thead><tr>
+                                <th>DATE</th><th>ARGENTINA</th><th>RES.</th><th>SCORE</th><th>OPPONENT</th>
+                            </tr></thead>
+                            <tbody>{_rows_html}</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>"""
+    except Exception as _e:
+        bjkc_series_html = f'<p style="color:red;">Error loading BJK Cup data: {escape(str(_e))}</p>'
+
     # Generate the full HTML template
     html_template = f"""
     <!DOCTYPE html>
@@ -542,6 +688,25 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #captains-table th:nth-child(1), #captains-table td:nth-child(1) {{ width: 42px; }}
             #captains-table th:nth-child(2), #captains-table td:nth-child(2) {{ width: auto; }}
             #captains-table th:nth-child(3), #captains-table td:nth-child(3) {{ width: 64px; }}
+
+            /* Series view */
+            #fedbcup-view-series {{ width: 100%; }}
+            .bjkc-series-block {{ margin-bottom: 20px; }}
+            .bjkc-series-header {{
+                display: flex;
+                align-items: center;
+                background: #334155;
+                color: #fff;
+                font-weight: 700;
+                font-size: 12px;
+                padding: 7px 10px;
+            }}
+            .bjkc-header-title {{ flex: 1; text-align: center; }}
+            .bjkc-header-side {{ flex: 0 0 60px; text-align: right; }}
+            .bjkc-tie-score {{ display: inline-block; font-size: 15px; font-weight: 900; padding: 2px 10px; border-radius: 4px; letter-spacing: 1px; }}
+            .bjkc-series-table {{ table-layout: auto !important; width: max-content !important; min-width: 100%; }}
+            .bjkc-series-table th:nth-child(1), .bjkc-series-table td:nth-child(1) {{ white-space: nowrap; width: 80px; }}
+            .bjkc-series-table th:nth-child(3), .bjkc-series-table td:nth-child(3) {{ width: 44px; }}
 
             #history-table th {{ background: #75AADB !important; position: sticky; top: 0; z-index: 10; }}
             #history-table {{ table-layout: fixed; width: 100%; }}
@@ -1129,6 +1294,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #captains-table th:nth-child(2), #captains-table td:nth-child(2) {{ width: 58%; }}
                 #captains-table th:nth-child(3), #captains-table td:nth-child(3) {{ width: 30%; }}
 
+                /* Series mobile */
+                .bjkc-series-header {{ font-size: 10px; padding: 5px 6px; }}
+                .bjkc-series-table th {{ font-size: 8px !important; padding: 3px 4px !important; }}
+                .bjkc-series-table td {{ font-size: 9px !important; padding: 3px 4px !important; }}
+                .bjkc-series-table th:nth-child(1), .bjkc-series-table td:nth-child(1) {{ width: 56px; }}
+
                 /* Calendar mobile */
                 .calendar-container .table-wrapper {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
                 .cal-week-header {{ font-size: 7px; padding: 3px 3px; min-width: 80px; }}
@@ -1576,10 +1747,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         <h1>Fed/BJK Cup</h1>
                     </div>
                     <div class="fedbcup-toggle-row">
-                        <button class="fedbcup-btn active" id="fedbcup-btn-players" onclick="switchFedBjkTab('players')">Player Debuts</button>
+                        <button class="fedbcup-btn active" id="fedbcup-btn-series" onclick="switchFedBjkTab('series')">Series</button>
+                        <button class="fedbcup-btn" id="fedbcup-btn-players" onclick="switchFedBjkTab('players')">Player Debuts</button>
                         <button class="fedbcup-btn" id="fedbcup-btn-captains" onclick="switchFedBjkTab('captains')">Captain Debuts</button>
                     </div>
-                    <div id="fedbcup-view-players" class="content-card">
+                    <div id="fedbcup-view-players" class="content-card" style="display: none;">
                         <div class="table-wrapper">
                             <table id="national-table">
                                 <thead>
@@ -1602,6 +1774,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                 <tbody id="captains-body">{captains_rows}</tbody>
                             </table>
                         </div>
+                    </div>
+                    <div id="fedbcup-view-series">
+                        {bjkc_series_html}
                     </div>
                 </div>
 
@@ -1704,8 +1879,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function switchFedBjkTab(subTab) {{
                 document.getElementById('fedbcup-view-players').style.display = (subTab === 'players') ? '' : 'none';
                 document.getElementById('fedbcup-view-captains').style.display = (subTab === 'captains') ? '' : 'none';
+                document.getElementById('fedbcup-view-series').style.display = (subTab === 'series') ? '' : 'none';
                 document.getElementById('fedbcup-btn-players').classList.toggle('active', subTab === 'players');
                 document.getElementById('fedbcup-btn-captains').classList.toggle('active', subTab === 'captains');
+                document.getElementById('fedbcup-btn-series').classList.toggle('active', subTab === 'series');
             }}
 
             function applyMobileHistoryLayout() {{
