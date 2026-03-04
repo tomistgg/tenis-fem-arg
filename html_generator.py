@@ -380,6 +380,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             parts = name_str.split(' / ')
             return ' / '.join(_alias_reverse.get(p.strip().upper(), p.strip()) for p in parts)
 
+        def _fmt_name(name_str):
+            """Format player name; doubles get a desktop slash + mobile line-break."""
+            if ' / ' in name_str:
+                p = name_str.split(' / ', 1)
+                return escape(p[0]) + '<span class="doubles-slash"> / </span><br class="doubles-br">' + escape(p[1])
+            return escape(name_str)
+
         # Sort ties by their earliest date, newest first
         _tie_dates = _bjkc_df.groupby('tournamentId')['date'].min().sort_values(ascending=False)
 
@@ -417,6 +424,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             _badge_color = '#166534' if _tie_won else '#991b1b'
             _tie_res_label = f"{_arg_wins}-{_arg_losses}"
 
+            _tie_date = str(_grp['date'].dropna().min()) if not _grp['date'].dropna().empty else ''
+
             _rows_html = ""
             for _, _mr in _grp.iterrows():
                 _result_raw = str(_mr.get('result', '') or '')
@@ -439,18 +448,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     _res_label = 'W' if _arg_won else 'L'
                     _res_style = 'color:#166534;font-weight:bold;' if _arg_won else 'color:#991b1b;font-weight:bold;'
 
-                _date_display = str(_mr.get('date', ''))
                 _rows_html += f"""<tr>
-                        <td style="white-space:nowrap;">{escape(_date_display)}</td>
-                        <td style="font-weight:bold;white-space:nowrap;">{escape(_arg_player)}</td>
+                        <td style="font-weight:bold;white-space:nowrap;">{_fmt_name(_arg_player)}</td>
                         <td style="{_res_style}text-align:center;">{_res_label}</td>
                         <td style="white-space:nowrap;">{_score_display}</td>
-                        <td style="white-space:nowrap;">{escape(_opp_player)}</td>
+                        <td style="white-space:nowrap;">{_fmt_name(_opp_player)}</td>
                     </tr>"""
 
             bjkc_series_html += f"""<div class="bjkc-series-block">
                 <div class="bjkc-series-header">
-                    <span class="bjkc-header-side"></span>
+                    <span class="bjkc-header-date">{escape(_tie_date)}</span>
                     <span class="bjkc-header-title">{escape(_header)}</span>
                     <span class="bjkc-header-side"><span class="bjkc-tie-score" style="background:{_badge_bg};color:{_badge_color};">{_tie_res_label}</span></span>
                 </div>
@@ -458,7 +465,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     <div class="table-wrapper">
                         <table class="bjkc-series-table">
                             <thead><tr>
-                                <th>DATE</th><th>ARGENTINA</th><th>RES.</th><th>SCORE</th><th>OPPONENT</th>
+                                <th>ARGENTINA</th><th>RES.</th><th>SCORE</th><th>OPPONENT</th>
                             </tr></thead>
                             <tbody>{_rows_html}</tbody>
                         </table>
@@ -702,11 +709,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 padding: 7px 10px;
             }}
             .bjkc-header-title {{ flex: 1; text-align: center; }}
+            .bjkc-header-date {{ flex: 0 0 auto; text-align: left; white-space: nowrap; font-size: 11px; opacity: 0.85; padding-right: 8px; }}
             .bjkc-header-side {{ flex: 0 0 60px; text-align: right; }}
             .bjkc-tie-score {{ display: inline-block; font-size: 15px; font-weight: 900; padding: 2px 10px; border-radius: 4px; letter-spacing: 1px; }}
             .bjkc-series-table {{ table-layout: auto !important; width: max-content !important; min-width: 100%; }}
-            .bjkc-series-table th:nth-child(1), .bjkc-series-table td:nth-child(1) {{ white-space: nowrap; width: 80px; }}
-            .bjkc-series-table th:nth-child(3), .bjkc-series-table td:nth-child(3) {{ width: 44px; }}
+            .bjkc-series-table th:nth-child(2), .bjkc-series-table td:nth-child(2) {{ width: 44px; text-align: center; }}
+            .doubles-br {{ display: none; }}
 
             #history-table th {{ background: #75AADB !important; position: sticky; top: 0; z-index: 10; }}
             #history-table {{ table-layout: fixed; width: 100%; }}
@@ -1296,9 +1304,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 /* Series mobile */
                 .bjkc-series-header {{ font-size: 10px; padding: 5px 6px; }}
+                .bjkc-header-date {{ font-size: 9px; }}
+                .bjkc-series-table {{ width: 100% !important; min-width: unset !important; }}
                 .bjkc-series-table th {{ font-size: 8px !important; padding: 3px 4px !important; }}
-                .bjkc-series-table td {{ font-size: 9px !important; padding: 3px 4px !important; }}
-                .bjkc-series-table th:nth-child(1), .bjkc-series-table td:nth-child(1) {{ width: 56px; }}
+                .bjkc-series-table td {{ font-size: 9px !important; padding: 3px 4px !important; white-space: normal !important; }}
+                .bjkc-series-table td:nth-child(2) {{ white-space: nowrap !important; }}
+                .bjkc-series-table td:nth-child(3) {{ white-space: nowrap !important; }}
+                .doubles-br {{ display: inline; }}
+                .doubles-slash {{ display: none; }}
 
                 /* Calendar mobile */
                 .calendar-container .table-wrapper {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
