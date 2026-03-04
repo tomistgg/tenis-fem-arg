@@ -350,8 +350,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #view-upcoming {{ max-width: 1200px; margin: 0 auto; }}
             #view-entrylists {{ width: 100%; max-width: 1100px; margin: 0; }}
             #view-rankings {{ max-width: 700px; margin: 0 auto; }}
-            #view-national {{ max-width: 1400px; margin: 0 auto; }}
-            #view-captains {{ max-width: 640px; margin: 0 auto; }}
+            #view-fedbcup {{ max-width: 1400px; margin: 0 auto; }}
             #view-roadtogs {{ max-width: 800px; margin: 0 auto; }}
             .roadtogs-controls {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }}
             #roadtogs-table {{ width: 100%; table-layout: fixed; }}
@@ -470,8 +469,30 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             #view-entrylists .content-card {{ overflow-y: visible; max-height: none; }}
 
-            /* National Team table: allow horizontal expansion instead of squeezing columns */
-            #view-national .table-wrapper {{ overflow-x: auto; }}
+            /* Fed/BJK Cup toggle buttons */
+            .fedbcup-toggle-row {{
+                display: flex;
+                width: 100%;
+                margin-bottom: 8px;
+            }}
+            .fedbcup-btn {{
+                flex: 1;
+                padding: 10px 0;
+                cursor: pointer;
+                border: none;
+                font-size: 14px;
+                font-weight: 600;
+                background: #e2e8f0;
+                color: #334155;
+                transition: background 0.2s, color 0.2s;
+            }}
+            .fedbcup-btn:first-child {{ border-radius: 6px 0 0 6px; }}
+            .fedbcup-btn:last-child {{ border-radius: 0 6px 6px 0; }}
+            .fedbcup-btn.active {{ background: #75AADB; color: #fff; }}
+            .fedbcup-btn:hover:not(.active) {{ background: #cbd5e1; }}
+
+            /* Player Debuts table: allow horizontal expansion */
+            #fedbcup-view-players .table-wrapper {{ overflow-x: auto; }}
             #national-table {{ table-layout: auto; width: max-content; min-width: 100%; }}
             #national-table th, #national-table td {{
                 font-size: 11px;
@@ -508,9 +529,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 white-space: nowrap;
             }}
 
-            /* Captains table: keep compact width and avoid stretched columns */
-            #view-captains .content-card {{ width: fit-content; max-width: 100%; margin: 0 auto; }}
-            #view-captains .table-wrapper {{ width: fit-content; max-width: 100%; overflow-x: auto; }}
+            /* Captain Debuts table: compact width */
+            #fedbcup-view-captains {{ width: fit-content; max-width: 100%; margin: 0 auto; }}
+            #fedbcup-view-captains .table-wrapper {{ width: fit-content; max-width: 100%; overflow-x: auto; }}
             #captains-table {{ width: max-content; min-width: 0; table-layout: auto; margin: 0; }}
             #captains-table th, #captains-table td {{
                 font-size: 11px;
@@ -1055,8 +1076,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #history-table th:nth-child(7), #history-table td:nth-child(7) {{ width: 11%; }}
                 #history-table th:nth-child(8), #history-table td:nth-child(8) {{ width: 16%; }}
 
-                /* National Team table */
-                #view-national .table-wrapper {{
+                /* Fed/BJK Cup toggle buttons mobile */
+                .fedbcup-btn {{ font-size: 12px; padding: 8px 0; }}
+
+                /* Player Debuts table mobile */
+                #fedbcup-view-players .table-wrapper {{
                     overflow-x: auto;
                     -webkit-overflow-scrolling: touch;
                 }}
@@ -1084,9 +1108,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 14px !important; text-align: center; }}
                 #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 28px !important; }}
 
-                /* Captains table mobile */
-                #view-captains .content-card {{ max-width: 100%; }}
-                #view-captains .table-wrapper {{ overflow-x: hidden; }}
+                /* Captain Debuts table mobile */
+                #fedbcup-view-captains {{ max-width: 100%; }}
+                #fedbcup-view-captains .table-wrapper {{ overflow-x: hidden; }}
                 #captains-table {{
                     width: 100%;
                     min-width: 0;
@@ -1330,8 +1354,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div class="menu-item" id="btn-calendar" onclick="switchTab('calendar')">Calendar</div>
                 <div class="menu-item" id="btn-rankings" onclick="switchTab('rankings')">WTA Rankings</div>
                 <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
-                <div class="menu-item" id="btn-national" onclick="switchTab('national')">Argentina NT Players</div>
-                <div class="menu-item" id="btn-captains" onclick="switchTab('captains')">Argentina NT Captains</div>
+                <div class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</div>
                 <div class="menu-item" id="btn-roadtogs" onclick="switchTab('roadtogs')">Points Breakdown</div>
             </div>
 
@@ -1548,11 +1571,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                 </div>
 
-                <div id="view-national" class="single-layout" style="display: none;">
+                <div id="view-fedbcup" class="single-layout" style="display: none;">
                     <div class="header-row">
-                        <h1>Argentina NT - Player Debuts</h1>
+                        <h1>Fed/BJK Cup</h1>
                     </div>
-                    <div class="content-card">
+                    <div class="fedbcup-toggle-row">
+                        <button class="fedbcup-btn active" id="fedbcup-btn-players" onclick="switchFedBjkTab('players')">Player Debuts</button>
+                        <button class="fedbcup-btn" id="fedbcup-btn-captains" onclick="switchFedBjkTab('captains')">Captain Debuts</button>
+                    </div>
+                    <div id="fedbcup-view-players" class="content-card">
                         <div class="table-wrapper">
                             <table id="national-table">
                                 <thead>
@@ -1564,13 +1591,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             </table>
                         </div>
                     </div>
-                </div>
-
-                <div id="view-captains" class="single-layout" style="display: none;">
-                    <div class="header-row">
-                        <h1>Argentina NT - Captains</h1>
-                    </div>
-                    <div class="content-card">
+                    <div id="fedbcup-view-captains" class="content-card" style="display: none;">
                         <div class="table-wrapper">
                             <table id="captains-table">
                                 <thead>
@@ -1667,8 +1688,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('view-entrylists').style.display = (tabName === 'entrylists') ? 'flex' : 'none';
                 document.getElementById('view-rankings').style.display = (tabName === 'rankings') ? 'flex' : 'none';
                 document.getElementById('view-history').style.display = (tabName === 'history') ? 'flex' : 'none';
-                document.getElementById('view-national').style.display = (tabName === 'national') ? 'flex' : 'none';
-                document.getElementById('view-captains').style.display = (tabName === 'captains') ? 'flex' : 'none';
+                document.getElementById('view-fedbcup').style.display = (tabName === 'fedbcup') ? 'flex' : 'none';
                 document.getElementById('view-calendar').style.display = (tabName === 'calendar') ? 'flex' : 'none';
                 document.getElementById('view-roadtogs').style.display = (tabName === 'roadtogs') ? 'flex' : 'none';
 
@@ -1679,6 +1699,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if (window.innerWidth <= 768) {{
                     document.getElementById('sidebar').classList.add('mobile-hidden');
                 }}
+            }}
+
+            function switchFedBjkTab(subTab) {{
+                document.getElementById('fedbcup-view-players').style.display = (subTab === 'players') ? '' : 'none';
+                document.getElementById('fedbcup-view-captains').style.display = (subTab === 'captains') ? '' : 'none';
+                document.getElementById('fedbcup-btn-players').classList.toggle('active', subTab === 'players');
+                document.getElementById('fedbcup-btn-captains').classList.toggle('active', subTab === 'captains');
             }}
 
             function applyMobileHistoryLayout() {{
