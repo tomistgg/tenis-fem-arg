@@ -79,12 +79,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         if m.get('winnerCountry') == 'ARG' or m.get('winner_country') == 'ARG':
             name = m.get('winnerName') or m.get('winner_name')
             if name:
+                if '/' in name:
+                    continue
                 name_upper = name.strip().upper()
                 display_name = NAME_LOOKUP.get(name_upper, name_upper)
                 history_arg_players.add(format_player_name(display_name))
         if m.get('loserCountry') == 'ARG' or m.get('loser_country') == 'ARG':
             name = m.get('loserName') or m.get('loser_name')
             if name:
+                if '/' in name:
+                    continue
                 name_upper = name.strip().upper()
                 display_name = NAME_LOOKUP.get(name_upper, name_upper)
                 history_arg_players.add(format_player_name(display_name))
@@ -2374,6 +2378,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 );
             }}
 
+            function isDoublesHistoryRow(row) {{
+                const wName = (row['_winnerName'] || '').toString();
+                const lName = (row['_loserName'] || '').toString();
+                return wName.includes('/') || lName.includes('/');
+            }}
+
             function getRoundFilterLabel(row) {{
                 const roundValue = (row['ROUND'] || '').toString().trim();
                 if (!roundValue) return '';
@@ -2398,6 +2408,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const selectedPlayer = document.getElementById('playerHistorySelect').value.toUpperCase();
 
                 playerMatches.forEach(row => {{
+                    if (isDoublesHistoryRow(row)) return;
                     const wName = (row['_winnerName'] || "").toString().toUpperCase();
                     const wNameNormalized = getDisplayName(wName).toUpperCase();
                     const isWinner = wNameNormalized === selectedPlayer;
@@ -2589,6 +2600,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 // Filter the data (if nothing selected in a category, show all)
                 const filtered = currentPlayerData.filter(row => {{
+                    if (isDoublesHistoryRow(row)) return false;
                     const wName = (row['_winnerName'] || "").toString().toUpperCase();
                     const lName = (row['_loserName'] || "").toString().toUpperCase();
                     const wNameNormalized = getDisplayName(wName).toUpperCase();
@@ -2679,6 +2691,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function renderFilteredMatches(matches, selectedPlayer) {{
                 const tbody = document.getElementById('history-body');
                 const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'OPPONENT'];
+                matches = (matches || []).filter(row => !isDoublesHistoryRow(row));
                 updateHistoryCounter(matches, selectedPlayer);
 
                 if (matches.length === 0) {{
@@ -2762,6 +2775,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
 
                 const filtered = historyData.filter(row => {{
+                    if (isDoublesHistoryRow(row)) return false;
                     const wName = (row['_winnerName'] || "").toString().toUpperCase();
                     const lName = (row['_loserName'] || "").toString().toUpperCase();
                     // Normalize names using the player mapping to match aliases
