@@ -427,7 +427,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             _tie_date = str(_grp['date'].dropna().min()) if not _grp['date'].dropna().empty else ''
 
             _rows_html = ""
-            for _, _mr in _grp.iterrows():
+            def _sort_key(row):
+                mo = row.get('matchOrder')
+                try:
+                    import math
+                    if mo is None or (isinstance(mo, float) and math.isnan(mo)): raise ValueError
+                    return int(mo)
+                except:
+                    is_d = ' / ' in str(row.get('winnerName', '')) or ' / ' in str(row.get('loserName', ''))
+                    return 999 if is_d else 998
+            _grp_sorted = _grp.copy()
+            _grp_sorted['_sk'] = _grp_sorted.apply(_sort_key, axis=1)
+            _grp_sorted = _grp_sorted.sort_values('_sk').drop(columns=['_sk'])
+            for _, _mr in _grp_sorted.iterrows():
                 _result_raw = str(_mr.get('result', '') or '')
                 _has_result = bool(_result_raw) and _result_raw.lower() != 'nan'
                 _arg_won = str(_mr.get('winnerCountry', '')) == 'ARG'

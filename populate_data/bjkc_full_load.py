@@ -151,6 +151,7 @@ def main():
                     "tournamentId": tie_data.get('_name'), "tournamentCategory": "Fed/BJK Cup",
                     "surface": surface, "inOrOutdoor": "I" if surface.startswith("I.") else "O",
                     "tournamentCountry": venue_country, "resultStatusDesc": m.get('resultStatusDesc', ''),
+                    "matchOrder": int(m['orderInRound']) if m.get('orderInRound') is not None else None,
                     "result": get_score_string(s1.get('sideSets'), s2.get('sideSets'), is_s1),
                     "winnerId": win.get('id'), "winnerEntry": "", "winnerSeed": "", "winnerName": get_p(win), "winnerCountry": get_c(win),
                     "loserId": los.get('id'), "loserEntry": "", "loserSeed": "", "loserName": get_p(los), "loserCountry": get_c(los)
@@ -162,11 +163,13 @@ def main():
     final_df = final_df.rename(columns={"eventName": "tournamentName", "drawName": "draw"})
     
     cols = ["matchType", "matchId", "date", "tournamentId", "tournamentName", "tournamentCategory", "surface",
-            "inOrOutdoor", "tournamentCountry", "roundName", "draw", "result", "resultStatusDesc", "winnerId", "winnerEntry",
+            "inOrOutdoor", "tournamentCountry", "roundName", "draw", "matchOrder", "result", "resultStatusDesc", "winnerId", "winnerEntry",
             "winnerSeed", "winnerName", "winnerCountry", "loserId", "loserEntry", "loserSeed", "loserName", "loserCountry"]
     
     output_path = os.path.join(DATA_DIR, "bjkc_matches_arg.csv")
-    final_df[cols].to_csv(output_path, index=False)
+    out = final_df[cols].copy()
+    out['matchOrder'] = out['matchOrder'].astype('Int64')
+    out.to_csv(output_path, index=False)
     print(f"\nDone! Saved {len(final_df)} rows to '{output_path}'.")
 
 if __name__ == "__main__":
