@@ -406,7 +406,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             _opp_name = _bjkc_iso_to_name.get(_opp_iso or '', _opp_iso or '?')
 
             _t_name = str(_first.get('tournamentName', ''))
-            _header = f"{_t_name} vs {_opp_name}"
+            _header = _t_name if ' vs ' in _t_name.lower() else f"{_t_name} vs {_opp_name}"
 
             # Overall tie result: only count played matches
             _arg_wins = 0
