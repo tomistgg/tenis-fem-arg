@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 import os
 import pandas as pd
+import re
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "..", "data")
@@ -18,6 +19,199 @@ HEADERS = {
     "referer": "https://www.billiejeankingcup.com/",
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
 }
+
+MANUAL_MATCH_UPSERTS = [
+    {
+        "matchType": "Fed/BJK Cup",
+        "matchId": "00000000-0000-0000-0000-000000000000",
+        "date": "1979-05-06",
+        "tournamentId": "W-FC-1979-WG-CR-ARG-ESP-01",
+        "tournamentName": "World Group",
+        "tournamentCategory": "Fed/BJK Cup",
+        "surface": "Clay",
+        "inOrOutdoor": "O",
+        "tournamentCountry": "Spain",
+        "roundName": "Final",
+        "draw": "Consolation Round",
+        "matchOrder": pd.NA,
+        "result": "",
+        "resultStatusDesc": "",
+        "winnerId": "4b600a89-4a95-4f10-9330-383a0dd4144b",
+        "winnerEntry": "",
+        "winnerSeed": "",
+        "winnerName": "Emilse Rapponi-Longo",
+        "winnerCountry": "ARG",
+        "loserId": "ffa11317-1a0b-4f60-a991-de22a813841b",
+        "loserEntry": "",
+        "loserSeed": "",
+        "loserName": "Carmen Perea-Alcala",
+        "loserCountry": "ESP",
+    },
+    {
+        "matchType": "Fed/BJK Cup",
+        "matchId": "00000000-0000-0000-0000-000000000001",
+        "date": "1979-05-06",
+        "tournamentId": "W-FC-1979-WG-CR-ARG-ESP-01",
+        "tournamentName": "World Group",
+        "tournamentCategory": "Fed/BJK Cup",
+        "surface": "Clay",
+        "inOrOutdoor": "O",
+        "tournamentCountry": "Spain",
+        "roundName": "Final",
+        "draw": "Consolation Round",
+        "matchOrder": pd.NA,
+        "result": "6-1 6-3",
+        "resultStatusDesc": "",
+        "winnerId": "ca1ea628-aca6-4a7d-8a93-84228bca3495",
+        "winnerEntry": "",
+        "winnerSeed": "",
+        "winnerName": "Adriana Villagran-Reami",
+        "winnerCountry": "ARG",
+        "loserId": "ffa11317-1a0b-4f60-a991-de22a813841a",
+        "loserEntry": "",
+        "loserSeed": "",
+        "loserName": "Monica Alvarez de Mon",
+        "loserCountry": "ESP",
+    },
+    {
+        "matchType": "Fed/BJK Cup",
+        "matchId": "00000000-0000-0000-0000-000000000002",
+        "date": "1979-05-06",
+        "tournamentId": "W-FC-1979-WG-CR-ARG-HUN-01",
+        "tournamentName": "World Group",
+        "tournamentCategory": "Fed/BJK Cup",
+        "surface": "Clay",
+        "inOrOutdoor": "O",
+        "tournamentCountry": "Spain",
+        "roundName": "Last 16",
+        "draw": "Consolation Round",
+        "matchOrder": pd.NA,
+        "result": "8-6 7-5",
+        "resultStatusDesc": "",
+        "winnerId": "4b600a89-4a95-4f10-9330-383a0dd4144b",
+        "winnerEntry": "",
+        "winnerSeed": "",
+        "winnerName": "Emilse Rapponi-Longo",
+        "winnerCountry": "ARG",
+        "loserId": "ffa11317-1a0b-4f60-a991-de22a813841b",
+        "loserEntry": "",
+        "loserSeed": "",
+        "loserName": "Anna Nemeth",
+        "loserCountry": "HUN",
+    },
+    {
+        "matchType": "Fed/BJK Cup",
+        "matchId": "00000000-0000-0000-0000-000000000003",
+        "date": "1979-05-06",
+        "tournamentId": "W-FC-1979-WG-CR-ARG-HUN-01",
+        "tournamentName": "World Group",
+        "tournamentCategory": "Fed/BJK Cup",
+        "surface": "Clay",
+        "inOrOutdoor": "O",
+        "tournamentCountry": "Spain",
+        "roundName": "Last 16",
+        "draw": "Consolation Round",
+        "matchOrder": pd.NA,
+        "result": "6-3 6-1",
+        "resultStatusDesc": "",
+        "winnerId": "bfb4443c-42c7-4f8b-a1ae-762adbd7a6e4",
+        "winnerEntry": "",
+        "winnerSeed": "",
+        "winnerName": "Ivanna Madruga-Osses",
+        "winnerCountry": "ARG",
+        "loserId": "ffa11317-1a0b-4f60-a991-de22a813841c",
+        "loserEntry": "",
+        "loserSeed": "",
+        "loserName": "Judit Szorenyi",
+        "loserCountry": "HUN",
+    },
+    {
+        "matchType": "Fed/BJK Cup",
+        "matchId": "00000000-0000-0000-0000-000000000004",
+        "date": "1979-05-06",
+        "tournamentId": "W-FC-1979-WG-CR-ARG-HUN-01",
+        "tournamentName": "World Group",
+        "tournamentCategory": "Fed/BJK Cup",
+        "surface": "Clay",
+        "inOrOutdoor": "O",
+        "tournamentCountry": "Spain",
+        "roundName": "Last 16",
+        "draw": "Consolation Round",
+        "matchOrder": pd.NA,
+        "result": "6-4 6-4",
+        "resultStatusDesc": "",
+        "winnerId": "bfb4443c-42c7-4f8b-a1ae-762adbd7a6e4",
+        "winnerEntry": "",
+        "winnerSeed": "",
+        "winnerName": "Ivanna Madruga-Osses / Adriana Villagran-Reami",
+        "winnerCountry": "ARG",
+        "loserId": "ffa11317-1a0b-4f60-a991-de22a813841c",
+        "loserEntry": "",
+        "loserSeed": "",
+        "loserName": "Judit Szorenyi / Eva Rozsavolgyi",
+        "loserCountry": "HUN",
+    },
+    {
+        "matchType": "Fed/BJK Cup",
+        "matchId": "49936565-ce9b-4f69-a0bd-88d99b70a04f",
+        "date": "1979-05-06",
+        "tournamentId": "W-FC-1979-WG-CR-ARG-ESP-01",
+        "tournamentName": "World Group",
+        "tournamentCategory": "Fed/BJK Cup",
+        "surface": "Clay",
+        "inOrOutdoor": "O",
+        "tournamentCountry": "Spain",
+        "roundName": "Final",
+        "draw": "Consolation Round",
+        "matchOrder": 3,
+        "result": "6-4 7-5",
+        "resultStatusDesc": "",
+        "winnerId": "9125b50e-3773-43c4-a0ce-3383162d1370",
+        "winnerEntry": "",
+        "winnerSeed": "",
+        "winnerName": "Emilse Rapponi-Longo / Adriana Villagran-Reami",
+        "winnerCountry": "ARG",
+        "loserId": "ffa11317-1a0b-4f60-a991-de22a813841a",
+        "loserEntry": "",
+        "loserSeed": "",
+        "loserName": "Carmen Perea-Alcala / Beatriz Pellon",
+        "loserCountry": "ESP",
+    },
+]
+
+ROUND_PRIORITY = {
+    "Round Robin": 0,
+    "Last 128": 1,
+    "Last 64": 2,
+    "Last 32": 3,
+    "Last 16": 4,
+    "Quarter Finals": 5,
+    "Semi Finals": 6,
+    "Final": 7,
+}
+
+def _round_sort_key(round_name):
+    if pd.isna(round_name):
+        return 999
+    if round_name in ROUND_PRIORITY:
+        return ROUND_PRIORITY[round_name]
+    match = re.match(r"^Last\s+(\d+)$", str(round_name))
+    if match:
+        n = int(match.group(1))
+        return max(0, 200 - n)
+    return 500
+
+def apply_manual_upserts_and_sort(df):
+    manual_df = pd.DataFrame(MANUAL_MATCH_UPSERTS)
+    df = df[~df["matchId"].isin(manual_df["matchId"])].copy()
+    df = pd.concat([df, manual_df], ignore_index=True)
+    df["roundSort"] = df["roundName"].apply(_round_sort_key)
+    df = df.sort_values(
+        by=["date", "roundSort", "tournamentId", "draw", "matchOrder", "matchId"],
+        na_position="last",
+        kind="mergesort",
+    ).drop(columns=["roundSort"])
+    return df
 
 def get_score_string(side1_sets, side2_sets, winner_is_s1):
     if not side1_sets or not side2_sets: return ""
@@ -169,6 +363,8 @@ def main():
     output_path = os.path.join(DATA_DIR, "bjkc_matches_arg.csv")
     out = final_df[cols].copy()
     out['matchOrder'] = out['matchOrder'].astype('Int64')
+    out = apply_manual_upserts_and_sort(out)
+    out['matchOrder'] = pd.to_numeric(out['matchOrder'], errors='coerce').astype('Int64')
     out.to_csv(output_path, index=False)
     print(f"\nDone! Saved {len(final_df)} rows to '{output_path}'.")
 

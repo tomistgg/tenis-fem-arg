@@ -387,10 +387,39 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 return escape(p[0]) + '<span class="doubles-slash"> / </span><br class="doubles-br">' + escape(p[1])
             return escape(name_str)
 
-        # Sort ties by their earliest date, newest first
-        _tie_dates = _bjkc_df.groupby('tournamentId')['date'].min().sort_values(ascending=False)
+        # Sort ties by earliest date (newest first), then by best round (best first).
+        _tie_round_order = {
+            'Round Robin': 1,
+            'Last 128': 2,
+            'Last 64': 3,
+            'Last 32': 4,
+            'Last 16': 5,
+            'Quarter Finals': 6,
+            'Semi Finals': 7,
+            'Final': 8,
+        }
+        _tie_draw_order = {
+            'Main Draw': 1,
+            'Consolation Round': 2,
+        }
 
-        for _tid in _tie_dates.index:
+        def _round_rank(v):
+            return _tie_round_order.get(str(v or '').strip(), 0)
+        def _draw_rank(v):
+            return _tie_draw_order.get(str(v or '').strip(), 0)
+
+        _tie_meta = _bjkc_df.groupby('tournamentId', as_index=False).agg(
+            tieDate=('date', 'min'),
+            roundRank=('roundName', lambda s: max((_round_rank(x) for x in s), default=0)),
+            drawRank=('draw', lambda s: max((_draw_rank(x) for x in s), default=0))
+        )
+        _tie_meta['tieDateDt'] = _pd.to_datetime(_tie_meta['tieDate'], errors='coerce')
+        _tie_meta = _tie_meta.sort_values(
+            by=['tieDateDt', 'drawRank', 'roundRank', 'tournamentId'],
+            ascending=[False, False, False, True]
+        )
+
+        for _tid in _tie_meta['tournamentId'].tolist():
             _grp = _bjkc_df[_bjkc_df['tournamentId'] == _tid].copy()
             _first = _grp.iloc[0]
 
