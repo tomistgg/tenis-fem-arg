@@ -1376,10 +1376,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #history-table th:nth-child(2), #history-table td:nth-child(2) {{ width: 18%; }}
                 #history-table th:nth-child(3), #history-table td:nth-child(3) {{ width: 9%; }}
                 #history-table th:nth-child(4), #history-table td:nth-child(4) {{ width: 9%; }}
-                #history-table th:nth-child(5), #history-table td:nth-child(5) {{ width: 19%; }}
-                #history-table th:nth-child(6), #history-table td:nth-child(6) {{ width: 8%; }}
-                #history-table th:nth-child(7), #history-table td:nth-child(7) {{ width: 11%; }}
-                #history-table th:nth-child(8), #history-table td:nth-child(8) {{ width: 16%; }}
+                #history-table th:nth-child(5), #history-table td:nth-child(5) {{ width: 17%; }}
+                #history-table th:nth-child(6), #history-table td:nth-child(6) {{ width: 6%; }}
+                #history-table th:nth-child(7), #history-table td:nth-child(7) {{ width: 13%; }}
+                #history-table th:nth-child(8), #history-table td:nth-child(8) {{ width: 18%; }}
 
                 /* Fed/BJK Cup toggle buttons mobile */
                 .fedbcup-btn {{ font-size: 12px; padding: 8px 0; }}
@@ -2039,6 +2039,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const img = `<img src="https://purecatamphetamine.github.io/country-flag-icons/3x2/${{iso.toUpperCase()}}.svg" alt="${{code}}" title="${{code}}" style="vertical-align:middle;margin-right:3px;width:16px;height:11px;outline:0.3px solid #000">`;
                 return showCode === false ? img : img + code;
             }}
+            function countryFlagHistory(code, showCode) {{
+                const html = countryFlag(code, showCode);
+                if (window.innerWidth > 768) return html;
+                return String(html).replace('width:16px;height:11px', 'width:13px;height:9px');
+            }}
+            function syncHistoryResultHeader() {{
+                const th = document.querySelector('#history-head th:nth-child(6)');
+                if (!th) return;
+                th.textContent = window.innerWidth <= 768 ? 'RES' : 'RESULT';
+            }}
             function toggleMobileMenu() {{
                 const sidebar = document.getElementById('sidebar');
                 sidebar.classList.toggle('mobile-hidden');
@@ -2214,6 +2224,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         document.getElementById('sidebar').classList.add('mobile-hidden');
                     }}
                     applyMobileHistoryLayout();
+                    syncHistoryResultHeader();
                 }});
             }});
 
@@ -2466,10 +2477,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'OPPONENT'];
                 let headHtml = '<tr>';
                 displayColumns.forEach(col => {{
-                    headHtml += `<th>${{col.replace('_', ' ')}}</th>`;
+                    const headerText = (window.innerWidth <= 768 && col === 'RESULT') ? 'RES' : col.replace('_', ' ');
+                    headHtml += `<th>${{headerText}}</th>`;
                 }});
                 headHtml += '</tr>';
                 thead.innerHTML = headHtml;
+                syncHistoryResultHeader();
 
                 // Set initial placeholder message
                 tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px; color: #64748b;">Select a player to view their matches</td></tr>`;
@@ -2884,7 +2897,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const rEntry = isWinner ? (row['_loserEntry'] || '') : (row['_winnerEntry'] || '');
 
                     const rivalCountry = isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '');
-                    const opponentName = (rivalCountry && rivalCountry !== '-' ? countryFlag(rivalCountry, false) + ' ' : '') + rivalDisplayName;
+                    const opponentName = (rivalCountry && rivalCountry !== '-' ? countryFlagHistory(rivalCountry, false) + ' ' : '') + rivalDisplayName;
 
                     parts.push('<tr><td>', formatDate(row['DATE'] || ''),
                         '</td><td>', row['TOURNAMENT'] || '',
