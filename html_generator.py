@@ -2042,7 +2042,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function countryFlagHistory(code, showCode) {{
                 const html = countryFlag(code, showCode);
                 if (window.innerWidth > 768) return html;
-                return String(html).replace('width:16px;height:11px', 'width:13px;height:9px');
+                return String(html).replace('width:16px;height:11px', 'width:12px;height:8px');
             }}
             function syncHistoryResultHeader() {{
                 const th = document.querySelector('#history-head th:nth-child(6)');
@@ -2897,7 +2897,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const rEntry = isWinner ? (row['_loserEntry'] || '') : (row['_winnerEntry'] || '');
 
                     const rivalCountry = isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '');
-                    const opponentName = (rivalCountry && rivalCountry !== '-' ? countryFlagHistory(rivalCountry, false) + ' ' : '') + rivalDisplayName;
+                    const opponentFlag = (rivalCountry && rivalCountry !== '-') ? (countryFlagHistory(rivalCountry, false) + ' ') : '';
 
                     parts.push('<tr><td>', formatDate(row['DATE'] || ''),
                         '</td><td>', row['TOURNAMENT'] || '',
@@ -2906,7 +2906,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         '</td><td>', buildPrefix(pSeed, pEntry) + playerDisplayName,
                         '</td><td>', isWinner ? 'W' : 'L',
                         '</td><td>', isWinner ? (row['SCORE'] || '') : reverseScore(row['SCORE'] || ''),
-                        '</td><td>', buildPrefix(rSeed, rEntry) + opponentName,
+                        '</td><td>', opponentFlag + buildPrefix(rSeed, rEntry) + rivalDisplayName,
                         '</td></tr>');
                 }}
                 tbody.innerHTML = parts.join('');
