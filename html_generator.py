@@ -6,6 +6,50 @@ from config import PLAYER_MAPPING, CONTINENT_KEYS, CONTINENT_LABELS, NAME_LOOKUP
 from utils import format_player_name, get_tournament_sort_order, get_surface_class
 from wta import _load_wta_csv
 
+IOC_TO_ISO2 = {
+    'ALB':'al','ALG':'dz','AND':'ad','ANG':'ao','ARG':'ar','ARM':'am','AUS':'au','AUT':'at','AZE':'az',
+    'BAH':'bs','BAR':'bb','BDI':'bi','BEL':'be','BEN':'bj','BIH':'ba','BLR':'by','BOL':'bo',
+    'BOT':'bw','BRA':'br','BUL':'bg','CAL':'nc','CAM':'kh','CAN':'ca','CHI':'cl','CHN':'cn',
+    'CIV':'ci','CMR':'cm','COL':'co','CRC':'cr','CRO':'hr','CUB':'cu','CUW':'cw','CYP':'cy','CZE':'cz',
+    'DEN':'dk','DOM':'do','ECU':'ec','EGY':'eg','ESA':'sv','ESP':'es','EST':'ee',
+    'FIJ':'fj','FIN':'fi','FRA':'fr','FRG':'de',
+    'GAB':'ga','GBR':'gb','GEO':'ge','GER':'de','GLP':'gp','GRE':'gr','GUA':'gt',
+    'HAI':'ht','HKG':'hk','HUN':'hu',
+    'INA':'id','IND':'in','IRI':'ir','IRL':'ie','IRN':'ir','ISR':'il','ITA':'it',
+    'JAM':'jm','JOR':'jo','JPN':'jp',
+    'KAZ':'kz','KEN':'ke','KGZ':'kg','KHM':'kh','KOR':'kr','KOS':'xk','KSA':'sa',
+    'LAO':'la','LAT':'lv','LIE':'li','LTU':'lt','LUX':'lu',
+    'MAD':'mg','MAR':'ma','MAS':'my','MDA':'md','MEX':'mx','MKD':'mk','MLT':'mt','MNE':'me','MON':'mc',
+    'MRI':'mu','NAM':'na','NCA':'ni','NCD':'nc','NED':'nl','NEP':'np','NGA':'ng','NGR':'ng','NOR':'no','NZL':'nz',
+    'OMA':'om','OMN':'om','PAK':'pk','PAN':'pa','PAR':'py','PER':'pe','PHI':'ph','PLE':'ps','PNG':'pg',
+    'POL':'pl','POR':'pt','PUR':'pr','QAT':'qa',
+    'ROC':'ru','ROM':'ro','ROU':'ro','RSA':'za','RUS':'ru',
+    'SAM':'ws','SEN':'sn','SGP':'sg','SIN':'sg','SLO':'si','SMR':'sm',
+    'SRB':'rs','SRI':'lk','SUI':'ch','SVK':'sk','SWE':'se','SYR':'sy',
+    'TCH':'cz',
+    'THA':'th','TKM':'tm','TPE':'tw','TRI':'tt','TTO':'tt','TUN':'tn','TUR':'tr',
+    'UAE':'ae','UKR':'ua','URU':'uy','USA':'us','UZB':'uz','VEN':'ve','VIE':'vn',
+    'XKX':'xk','ZAM':'zm','ZIM':'zw',
+}
+
+# Dissolved countries with local SVG flags
+LOCAL_FLAGS = {'YUG', 'SCG', 'CIS', 'URS'}
+
+FLAG_STYLE = 'vertical-align:middle;margin-right:3px;width:16px;height:11px;outline:0.3px solid #000'
+
+def country_flag_html(code, show_code=True):
+    if not code or code == '-':
+        return code or ''
+    upper = code.upper()
+    if upper in LOCAL_FLAGS:
+        img = f'<img src="data/flags/{upper.lower()}.svg" alt="{code}" title="{code}" style="{FLAG_STYLE}">'
+        return f'{img}{code}' if show_code else img
+    iso = IOC_TO_ISO2.get(upper)
+    if not iso:
+        return code
+    img = f'<img src="https://purecatamphetamine.github.io/country-flag-icons/3x2/{iso.upper()}.svg" alt="{code}" title="{code}" style="{FLAG_STYLE}">'
+    return f'{img}{code}' if show_code else img
+
 def generate_html(tournament_groups, tournament_store, players_data, schedule_map,
                   cleaned_history, calendar_data, match_history_data, wta_rankings=None,
                   national_team_data=None, captains_data=None):
@@ -248,7 +292,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             dob = dob.split("T")[0]
         name = format_player_name(p.get("Player", ""))
         row_class = "arg-player-row" if (p.get("Country") or "").upper() == "ARG" else ""
-        rankings_rows += f'<tr class="{row_class}"><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{name}</td><td>{p.get("Country", "")}</td><td>{p.get("Points", "")}</td><td>{dob}</td></tr>'
+        country_code = p.get("Country") or ""
+        rankings_rows += f'<tr class="{row_class}" data-country="{country_code.upper()}"><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{country_flag_html(country_code, show_code=False)} {name}</td><td>{p.get("Points", "")}</td><td>{dob}</td></tr>'
 
     default_national_columns = ["N", "Player", "Date", "Event", "Round", "Tie", "Partner", "Opponent", "Result", "Score"]
     national_columns = list(national_team_data[0].keys()) if national_team_data else default_national_columns
@@ -439,7 +484,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             _opp_name = _bjkc_iso_to_name.get(_opp_iso or '', _opp_iso or '?')
 
             _t_name = str(_first.get('tournamentName', ''))
-            _header = _t_name if ' vs ' in _t_name.lower() else f"{_t_name} vs {_opp_name}"
+            _opp_flag = country_flag_html(_opp_iso or '', show_code=False)
+            _header_text = _t_name if ' vs ' in _t_name.lower() else f"{_t_name} vs {_opp_name}"
 
             # Overall tie result: only count played matches
             _arg_wins = 0
@@ -503,7 +549,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             bjkc_series_html += f"""<div class="bjkc-series-block">
                 <div class="bjkc-series-header">
                     <span class="bjkc-header-date">{escape(_tie_date)}</span>
-                    <span class="bjkc-header-title">{escape(_header)}</span>
+                    <span class="bjkc-header-title">{escape(_header_text)} {_opp_flag}</span>
                     <span class="bjkc-header-side"><span class="bjkc-tie-score" style="background:{_badge_bg};color:{_badge_color};">{_tie_res_label}</span></span>
                 </div>
                 <div class="content-card">
@@ -1672,7 +1718,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                         <tr>
                                             <th style="width:15px">#</th>
                                             <th>PLAYER</th>
-                                            <th style="width:35px">NAT</th>
                                             <th style="width:70px">E-Rank</th>
                                             <th id="entry-prio-header" style="width:35px;display:none">PRIO</th>
                                         </tr>
@@ -1711,7 +1756,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                     <tr>
                                         <th style="width:55px">RANK</th>
                                         <th>PLAYER</th>
-                                        <th style="width:60px">NAT</th>
                                         <th style="width:70px">POINTS</th>
                                         <th style="width:100px">DOB</th>
                                     </tr>
@@ -1981,6 +2025,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             const itfDrawSizes = {json.dumps(itf_draw_sizes)};
             const wtaDrawSizes = {json.dumps(wta_draw_sizes)};
             const gsCutoffs = {gs_cutoffs_json};
+            const _iocToIso2 = {{ALB:'al',ALG:'dz',AND:'ad',ANG:'ao',ARG:'ar',ARM:'am',AUS:'au',AUT:'at',AZE:'az',BAH:'bs',BAR:'bb',BDI:'bi',BEL:'be',BEN:'bj',BIH:'ba',BLR:'by',BOL:'bo',BOT:'bw',BRA:'br',BUL:'bg',CAL:'nc',CAM:'kh',CAN:'ca',CHI:'cl',CHN:'cn',CIV:'ci',CMR:'cm',COL:'co',CRC:'cr',CRO:'hr',CUB:'cu',CUW:'cw',CYP:'cy',CZE:'cz',DEN:'dk',DOM:'do',ECU:'ec',EGY:'eg',ESA:'sv',ESP:'es',EST:'ee',FIJ:'fj',FIN:'fi',FRA:'fr',FRG:'de',GAB:'ga',GBR:'gb',GEO:'ge',GER:'de',GLP:'gp',GRE:'gr',GUA:'gt',HAI:'ht',HKG:'hk',HUN:'hu',INA:'id',IND:'in',IRI:'ir',IRL:'ie',IRN:'ir',ISR:'il',ITA:'it',JAM:'jm',JOR:'jo',JPN:'jp',KAZ:'kz',KEN:'ke',KGZ:'kg',KHM:'kh',KOR:'kr',KOS:'xk',KSA:'sa',LAO:'la',LAT:'lv',LIE:'li',LTU:'lt',LUX:'lu',MAD:'mg',MAR:'ma',MAS:'my',MDA:'md',MEX:'mx',MKD:'mk',MLT:'mt',MNE:'me',MON:'mc',MRI:'mu',NAM:'na',NCA:'ni',NCD:'nc',NED:'nl',NEP:'np',NGA:'ng',NGR:'ng',NOR:'no',NZL:'nz',OMA:'om',OMN:'om',PAK:'pk',PAN:'pa',PAR:'py',PER:'pe',PHI:'ph',PLE:'ps',PNG:'pg',POL:'pl',POR:'pt',PUR:'pr',QAT:'qa',ROC:'ru',ROM:'ro',ROU:'ro',RSA:'za',RUS:'ru',SAM:'ws',SEN:'sn',SGP:'sg',SIN:'sg',SLO:'si',SMR:'sm',SRB:'rs',SRI:'lk',SUI:'ch',SVK:'sk',SWE:'se',SYR:'sy',TCH:'cz',THA:'th',TKM:'tm',TPE:'tw',TRI:'tt',TTO:'tt',TUN:'tn',TUR:'tr',UAE:'ae',UKR:'ua',URU:'uy',USA:'us',UZB:'uz',VEN:'ve',VIE:'vn',XKX:'xk',ZAM:'zm',ZIM:'zw'}};
+            const _localFlags = new Set(['YUG','SCG','CIS','URS']);
+            function countryFlag(code, showCode) {{
+                if (!code || code === '-') return code || '';
+                const upper = code.toUpperCase();
+                if (_localFlags.has(upper)) {{
+                    const img = `<img src="data/flags/${{upper.toLowerCase()}}.svg" alt="${{code}}" title="${{code}}" style="vertical-align:middle;margin-right:3px;width:16px;height:11px;outline:0.3px solid #000">`;
+                    return showCode === false ? img : img + code;
+                }}
+                const iso = _iocToIso2[upper];
+                if (!iso) return code;
+                const img = `<img src="https://purecatamphetamine.github.io/country-flag-icons/3x2/${{iso.toUpperCase()}}.svg" alt="${{code}}" title="${{code}}" style="vertical-align:middle;margin-right:3px;width:16px;height:11px;outline:0.3px solid #000">`;
+                return showCode === false ? img : img + code;
+            }}
             function toggleMobileMenu() {{
                 const sidebar = document.getElementById('sidebar');
                 sidebar.classList.toggle('mobile-hidden');
@@ -2179,7 +2237,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const q = document.getElementById('rankings-search').value.toLowerCase();
                 document.querySelectorAll('#rankings-body tr').forEach(row => {{
                     const text = row.textContent.toLowerCase();
-                    const nat = row.children[2] ? row.children[2].textContent.trim().toUpperCase() : '';
+                    const nat = row.getAttribute('data-country') || (row.children[2] ? row.children[2].textContent.trim().toUpperCase() : '');
                     const matchesSearch = text.includes(q);
                     const matchesCountry = !showArgOnly || nat === 'ARG';
                     row.classList.toggle('hidden', !(matchesSearch && matchesCountry));
@@ -2241,7 +2299,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const dob = (p.d || '').split('T')[0];
                     const name = (p.n || '').toLowerCase().replace(/(^|\\s)(\\S)/g, (_, b, c) => b + c.toUpperCase());
                     const isArg = (p.c || '').toUpperCase() === 'ARG';
-                    html += `<tr class="${{isArg ? 'arg-player-row' : ''}}"><td>${{p.r || ''}}</td><td style="text-align:left;font-weight:bold;">${{name}}</td><td>${{p.c || ''}}</td><td>${{p.pts || ''}}</td><td>${{dob}}</td></tr>`;
+                    html += `<tr class="${{isArg ? 'arg-player-row' : ''}}" data-country="${{(p.c||'').toUpperCase()}}"><td>${{p.r || ''}}</td><td style="text-align:left;font-weight:bold;">${{countryFlag(p.c || '', false)}} ${{name}}</td><td>${{p.pts || ''}}</td><td>${{dob}}</td></tr>`;
                 }});
                 tbody.innerHTML = html;
                 filterRankings();
@@ -2326,7 +2384,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 list.forEach((p, i) => {{
                     const displayPos = renumber ? (i + 1) : p.pos;
                     const bold = isMain ? 'font-weight:bold;' : '';
-                    html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{displayPos}}</td><td style="text-align:left;${{bold}}">${{p.name}}</td><td>${{p.country}}</td><td>${{p.rank}}</td>${{prioCell(p)}}</tr>`;
+                    const flag = (p.country && p.country !== '-') ? countryFlag(p.country, false) + ' ' : '';
+                    html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{displayPos}}</td><td style="text-align:left;${{bold}}">${{flag}}${{p.name}}</td><td>${{p.rank}}</td>${{prioCell(p)}}</tr>`;
                 }});
                 return html;
             }}
@@ -2823,7 +2882,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const rEntry = isWinner ? (row['_loserEntry'] || '') : (row['_winnerEntry'] || '');
 
                     const rivalCountry = isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '');
-                    const opponentName = rivalDisplayName + (rivalCountry ? ` [${{rivalCountry}}]` : '');
+                    const opponentName = (rivalCountry && rivalCountry !== '-' ? countryFlag(rivalCountry, false) + ' ' : '') + rivalDisplayName;
 
                     parts.push('<tr><td>', formatDate(row['DATE'] || ''),
                         '</td><td>', row['TOURNAMENT'] || '',

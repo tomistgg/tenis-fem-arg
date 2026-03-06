@@ -222,6 +222,17 @@ def _load_wta_csv():
     return _wta_csv_cache
 
 
+def _save_wta_csv_date(date_str, players):
+    """Append a new week's rankings to the current decade CSV file."""
+    if not players:
+        return
+    with open(WTA_RANKINGS_CSV, "a", encoding="utf-8", newline="") as f:
+        writer = _csv.writer(f)
+        for p in players:
+            name = (p.get("Player") or "").title()
+            writer.writerow([date_str, p.get("Rank", ""), p.get("Points", 0), name, p.get("Country", ""), p.get("DOB", "")])
+
+
 def get_wta_rankings_cached(date_str, nationality=None):
     """Get WTA rankings from CSV, falling back to API if the date is missing."""
     csv_data = _load_wta_csv()
@@ -232,10 +243,11 @@ def get_wta_rankings_cached(date_str, nationality=None):
             return [p for p in players if p.get("Country") == nationality]
         return players
 
-    # Date not in CSV — fetch from API and keep in memory for this run
+    # Date not in CSV — fetch from API, save to CSV, and keep in memory
     new_data = get_rankings(date_str, nationality=nationality)
     if new_data:
         csv_data[date_str] = new_data
+        _save_wta_csv_date(date_str, new_data)
         return new_data
 
     # Fallback: use the latest available date in the CSV

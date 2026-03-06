@@ -9,7 +9,12 @@
       "Bash(python -u populate_data/itf_tournament_sizes.py)",
       "Bash(python -u -c \":*)",
       "Bash(python -c \":*)",
-      "Bash(python -u populate_data/wta_tournament_sizes.py)"
+      "Bash(python -u populate_data/wta_tournament_sizes.py)",
+      "Bash(grep -n \"^        <script>$\\\\|^            function openTourney\" /c/Users/tomas/Documents/wta-entry-lists/tenisfemarg/html_generator.py)",
+      "Bash(tasklist)",
+      "WebFetch(domain:upload.wikimedia.org)",
+      "Bash(curl -s -L -o /c/Users/tomas/Documents/wta-entry-lists/tenisfemarg/data/flags/urs.svg \"https://upload.wikimedia.org/wikipedia/commons/a/a9/Flag_of_the_Soviet_Union.svg\")",
+      "Bash(grep -n \"const img = \\\\`<img src=\" /c/Users/tomas/Documents/wta-entry-lists/tenisfemarg/html_generator.py)"
     ]
   }
 }
