@@ -14,7 +14,12 @@
       "Bash(tasklist)",
       "WebFetch(domain:upload.wikimedia.org)",
       "Bash(curl -s -L -o /c/Users/tomas/Documents/wta-entry-lists/tenisfemarg/data/flags/urs.svg \"https://upload.wikimedia.org/wikipedia/commons/a/a9/Flag_of_the_Soviet_Union.svg\")",
-      "Bash(grep -n \"const img = \\\\`<img src=\" /c/Users/tomas/Documents/wta-entry-lists/tenisfemarg/html_generator.py)"
+      "Bash(grep -n \"const img = \\\\`<img src=\" /c/Users/tomas/Documents/wta-entry-lists/tenisfemarg/html_generator.py)",
+      "Bash(grep -rn \"CANCELLED\\\\|cancelled\" /c/Users/tomas/Documents/wta-entry-lists/tenisfemarg/*.py)",
+      "Bash(grep -rn \"CANCEL\" /c/Users/tomas/Documents/wta-entry-lists/tenisfemarg/*.py)",
+      "Bash(grep -rn \"W15 Antalya\" /c/Users/tomas/Documents/wta-entry-lists/tenisfemarg/*.py)",
+      "Bash(grep -rn \"W15 Antalya\" /c/Users/tomas/Documents/wta-entry-lists/tenisfemarg/*.json)",
+      "Bash(grep -rn \"CANCELLED\" /c/Users/tomas/Documents/wta-entry-lists/tenisfemarg/data/*.json)"
     ]
   }
 }

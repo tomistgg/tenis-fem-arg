@@ -54,11 +54,13 @@ def build_all_tournament_groups(driver):
             tournament_groups[label] = {}
 
     for item in itf_items:
+        t_name = item['tournamentName']
+        if 'cancel' in t_name.lower():
+            continue
         s_date = pd.to_datetime(item['startDate'])
         monday_date = (s_date - timedelta(days=s_date.weekday())).strftime('%Y-%m-%d')
         if monday_date in itf_monday_map:
             week_label = itf_monday_map[monday_date]
-            t_name = item['tournamentName']
             tournament_groups[week_label][item['tournamentKey'].lower()] = {
                 "name": t_name,
                 "level": get_itf_level(t_name),
@@ -69,6 +71,8 @@ def build_all_tournament_groups(driver):
     tournament_snapshot = {}
     for week, tourneys in tournament_groups.items():
         for key, info in tourneys.items():
+            if 'cancel' in info.get("name", "").lower():
+                continue
             tournament_snapshot[key] = {
                 "name": info.get("name", key),
                 "level": info.get("level", ""),
@@ -170,6 +174,8 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
         # ITF tournaments
         for key, t_info in tourneys.items():
             t_name = t_info["name"]
+            if 'cancel' in t_name.lower():
+                continue
             if not key.startswith("http"):
                 itf_entries, itf_name_map = get_itf_players(key, driver)
                 tourney_players_list = parse_itf_entry_list(itf_entries)

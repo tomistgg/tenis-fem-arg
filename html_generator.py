@@ -2408,9 +2408,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if (!isITF) _prioFilterActive = false;
                 btn.textContent = _prioFilterActive ? 'Show All' : 'Show Prio 1';
                 let html = '';
-                const main = players.filter(p => p.type === 'MAIN');
-                const qual = players.filter(p => p.type === 'QUAL');
-                const alt = players.filter(p => p.type === 'ALT');
+                const byPos = (a, b) => (Number(a.pos_num ?? 999) - Number(b.pos_num ?? 999))
+                    || String(a.name || '').localeCompare(String(b.name || ''));
+                const main = players.filter(p => p.type === 'MAIN').sort(byPos);
+                const qual = players.filter(p => p.type === 'QUAL').sort(byPos);
+                const alt = players.filter(p => p.type === 'ALT').sort(byPos);
                 const cols = isITF ? 5 : 4;
 
                 if (_prioFilterActive) {{

@@ -84,14 +84,16 @@ def parse_itf_entry_list(itf_entries):
                 "entry": "JR" if class_code == "JR" else ""
             })
 
-    # Ensure Special Exempt positions don't conflict with JE (Junior Exempt) players
-    real_main = [p for p in players if p["type"] == "MAIN" and p["name"] != "(Special Exempt)"]
-    exempt = [p for p in players if p["type"] == "MAIN" and p["name"] == "(Special Exempt)"]
-    if exempt and real_main:
-        max_pos = max(p["pos_num"] for p in real_main)
-        for i, p in enumerate(exempt):
-            p["pos_num"] = max_pos + i + 1
-            p["pos"] = str(max_pos + i + 1)
+    # Keep MAIN placeholders at the end of occupied MAIN positions so JR/MDA merges don't duplicate slots.
+    placeholder_names = {"(Available Slot)", "(Special Exempt)"}
+    real_main = [p for p in players if p["type"] == "MAIN" and p["name"] not in placeholder_names]
+    main_placeholders = [p for p in players if p["type"] == "MAIN" and p["name"] in placeholder_names]
+    if real_main and main_placeholders:
+        next_pos = max(p["pos_num"] for p in real_main) + 1
+        for p in main_placeholders:
+            p["pos_num"] = next_pos
+            p["pos"] = str(next_pos)
+            next_pos += 1
 
     players.sort(key=lambda x: (x["pos_num"], x["name"]))
     return players
