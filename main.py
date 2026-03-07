@@ -19,8 +19,7 @@ from calendar_builder import (
 )
 from wta import (
     build_tournament_groups, get_full_wta_calendar,
-    get_wta_rankings_cached, scrape_tournament_players,
-    get_draws_tournament_list
+    get_wta_rankings_cached, scrape_tournament_players
 )
 from itf import (
     get_full_itf_calendar, get_itf_players,
@@ -28,7 +27,6 @@ from itf import (
     get_itf_level, parse_itf_entry_list
 )
 from html_generator import generate_html
-from draws import fetch_tournament_draws
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -380,23 +378,7 @@ def main():
     finally:
         driver.quit()
 
-    # 6. Fetch WTA draws (past week + current week + next week)
-    draws_store = {}
-    draws_tournaments = get_draws_tournament_list()
-    current_year = str(datetime.now().year)
-    for week, tourneys in draws_tournaments.items():
-        for t_key, t_info in tourneys.items():
-            print(f"Fetching draws for {t_info['name']}...")
-            t_draws = fetch_tournament_draws(t_key, current_year)
-            if t_draws:
-                draws_store[t_key] = {
-                    "name": t_info["name"],
-                    "level": t_info.get("level", ""),
-                    "week": week,
-                    "draws": t_draws,
-                }
-
-    # 7. Build calendar — uses cached WTA data
+    # 6. Build calendar — uses cached WTA data
     full_wta = get_full_wta_calendar()
     calendar_data = build_calendar_data(full_wta + full_itf)
     build_calendar_snapshot(calendar_data)
@@ -409,8 +391,7 @@ def main():
         tournament_groups, tournament_store, players_data, schedule_map,
         cleaned_history, calendar_data, match_history_data, all_wta_players,
         national_team_data=national_team_data,
-        captains_data=captains_data,
-        draws_data=draws_store
+        captains_data=captains_data
     )
 
 
