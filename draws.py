@@ -1,7 +1,7 @@
 """Parse WTA draw PDFs and fetch draws for active tournaments."""
 
+import io
 import re
-import math
 import requests
 import pdfplumber
 
@@ -42,9 +42,7 @@ def parse_draw_pdf(pdf_bytes):
       - players: list of {pos, seed, entry, name, country}
       - matches: list of {round, match_num, player1_pos, player2_pos, winner_name, score}
     """
-    pdf = pdfplumber.open(
-        __import__('io').BytesIO(pdf_bytes)
-    )
+    pdf = pdfplumber.open(io.BytesIO(pdf_bytes))
     page = pdf.pages[0]
     words = page.extract_words(keep_blank_chars=True, x_tolerance=2, y_tolerance=2)
 
@@ -79,16 +77,18 @@ def parse_draw_pdf(pdf_bytes):
     player_words = [w for w in words if w['x0'] < 175 and w['top'] > 90]
     result_words = [w for w in words if w['x0'] >= 175 and w['top'] > 90]
 
-    # Find the y-boundary where seeded players / footer begins
+    # Find the y-boundary where the footer begins (round prize row, seeded players, etc.)
     footer_y = page.height
     for w in words:
-        if w['text'] in ('Q1', 'Q2', 'Qualifier', 'R16', 'QF', 'SF', 'Final') and w['top'] > 200:
-            # This is a round header at the bottom
-            if w['x0'] < 30 or w['top'] > 600:
-                footer_y = min(footer_y, w['top'])
-    # Also check for "Seeded players" or "WTA Supervisor"
+        if w['text'] == 'Q1' and w['top'] > 200:
+            footer_y = min(footer_y, w['top'])
+            break
     for w in words:
-        if w['text'] in ('Seeded', 'WTA') and w['top'] > 200:
+        if w['text'] in ('Seeded', 'WTA', 'Supervisor') and w['top'] > 200:
+            footer_y = min(footer_y, w['top'])
+    # Also check for round labels like "R16", "QF", "SF", "Final" at bottom
+    for w in words:
+        if w['text'] in ('R16', 'QF', 'SF', 'Final', 'R32', 'R64', 'R128') and w['top'] > 200 and w['x0'] < 120:
             footer_y = min(footer_y, w['top'])
 
     player_words = [w for w in player_words if w['top'] < footer_y]
@@ -119,13 +119,20 @@ def parse_draw_pdf(pdf_bytes):
 
 def _parse_players(player_words):
     """Parse player entries from left-column words."""
-    # Group words into rows by y-coordinate
-    rows = {}
+    # Group words into rows by y-coordinate using position numbers as anchors
+    # First find all position-number words (at x < 40)
+    pos_ys = []
     for w in player_words:
-        y_key = round(w['top'] / 10) * 10  # group by ~10px bands
-        if y_key not in rows:
-            rows[y_key] = []
-        rows[y_key].append(w)
+        if w['x0'] < 40 and re.match(r'^\d+', w['text']):
+            pos_ys.append(w['top'])
+    pos_ys.sort()
+
+    # Assign each word to nearest position row
+    rows = {y: [] for y in pos_ys}
+    for w in player_words:
+        best_y = min(pos_ys, key=lambda y: abs(y - w['top'])) if pos_ys else None
+        if best_y is not None and abs(w['top'] - best_y) < 8:
+            rows[best_y].append(w)
 
     # Sort rows by y
     sorted_rows = sorted(rows.items(), key=lambda x: x[0])

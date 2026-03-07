@@ -23,7 +23,10 @@
       "Bash(curl -s -o \"c:/Users/tomas/Documents/wta-entry-lists/tenisfemarg/data/test_draw.pdf\" \"https://wtafiles.wtatennis.com/pdf/draws/2026/1125/QS.pdf\")",
       "Bash(pip list)",
       "Bash(pip install pdfplumber)",
-      "Bash(python -m pip install pdfplumber)"
+      "Bash(python -m pip install pdfplumber)",
+      "Bash(python test_bracket.py)",
+      "Bash(start data/test_bracket.html)",
+      "Bash(python -c \"import html_generator; print\\(''OK''\\)\")"
     ]
   }
 }
