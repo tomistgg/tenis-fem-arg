@@ -407,6 +407,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
     md_list.sort(key=lambda x: (x["rank_num"], x["name"]))
     for idx, p in enumerate(md_list, 1):
         p["pos"] = str(idx)
+        p["pos_num"] = idx
 
     qual_list = []
     for pid, slug in qual_entries:
@@ -427,6 +428,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
     qual_list.sort(key=lambda x: (x["rank_num"], x["name"]))
     for idx, p in enumerate(qual_list, 1):
         p["pos"] = str(idx)
+        p["pos_num"] = idx
 
     final_tourney_list = md_list + qual_list
 
