@@ -110,6 +110,66 @@ def build_tournament_groups():
     return tournament_groups
 
 
+def get_draws_tournament_list():
+    """Get WTA tournaments for the draws page: past week, current week, and next week."""
+    today = datetime.now()
+    current_monday = today - timedelta(days=today.weekday())
+    current_monday = current_monday.replace(hour=0, minute=0, second=0, microsecond=0)
+    past_monday = current_monday - timedelta(weeks=1)
+    two_weeks_later = current_monday + timedelta(weeks=2)
+
+    raw_tournaments = _fetch_wta_tournaments_raw()
+    result = {}
+
+    for tournament in raw_tournaments:
+        tournament_id = tournament["tournamentGroup"]["id"]
+        raw_name = tournament["tournamentGroup"]["name"]
+
+        nfkd_form = unicodedata.normalize('NFKD', raw_name)
+        clean_name = "".join([c for c in nfkd_form if not unicodedata.combining(c)])
+
+        suffix = ""
+        if "#" in clean_name:
+            parts = clean_name.split("#")
+            clean_name = parts[0].strip()
+            suffix = " " + parts[1].strip()
+
+        name = clean_name.lower().replace(" ", "-").replace("'", "-")
+        if suffix:
+            name += "-" + suffix.strip()
+
+        year = tournament["year"]
+        level = tournament["level"]
+        city = tournament["city"].title()
+        start_date = tournament["startDate"]
+        end_date = tournament.get("endDate", None)
+
+        monday = get_monday_from_date(start_date)
+
+        if not (past_monday <= monday < two_weeks_later):
+            continue
+
+        week_label = format_week_label(monday)
+        t_url = f"https://www.wtatennis.com/tournaments/{tournament_id}/{name}/{year}/player-list"
+        if level.lower().replace(" ", "") == "grandslam":
+            display_name = f"Grand Slam {city}{suffix}"
+        else:
+            display_name = f"{level} {city}{suffix}"
+        display_name = fix_display_name(display_name)
+
+        if week_label not in result:
+            result[week_label] = {}
+
+        result[week_label][t_url] = {
+            "name": display_name,
+            "level": level,
+            "startDate": start_date,
+            "endDate": end_date
+        }
+
+    return result
+
+
 def get_full_wta_calendar():
     """Get all WTA tournaments from now until end of year for the calendar view."""
     today = datetime.now()

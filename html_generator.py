@@ -91,26 +91,26 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if first_key is None: first_key = t_key
                 entry_menu_html += f'<div class="entry-menu-item{active}" data-key="{t_key}" onclick="selectEntryTournament(this)">{t_name}</div>'
 
-    # Build draws side menu HTML
+    # Build draws side menu HTML (grouped by week from draws_data)
     if draws_data is None:
         draws_data = {}
     draws_menu_html = ""
     first_draw_key = None
-    for week, tourneys in tournament_groups.items():
-        week_has_draw = False
-        for t_key in tourneys.keys():
-            if t_key in draws_data and draws_data[t_key].get("draws"):
-                week_has_draw = True
-                break
-        if not week_has_draw:
-            continue
+    # Group draws by week
+    draws_by_week = {}
+    for t_key, tdata in draws_data.items():
+        week = tdata.get("week", "")
+        if week not in draws_by_week:
+            draws_by_week[week] = []
+        draws_by_week[week].append((t_key, tdata))
+    # Sort weeks chronologically by parsing the week label
+    for week in sorted(draws_by_week.keys(), key=lambda w: w):
+        items = draws_by_week[week]
+        items.sort(key=lambda x: get_tournament_sort_order(x[1].get("level", "")))
         draws_menu_html += f'<div class="entry-menu-week">{week.upper()}</div>'
-        sorted_tourneys = sorted(tourneys.items(), key=lambda x: get_tournament_sort_order(x[1]["level"]))
-        for t_key, t_info in sorted_tourneys:
-            if t_key not in draws_data or not draws_data[t_key].get("draws"):
-                continue
-            t_name = t_info["name"]
-            draw_types = draws_data[t_key]["draws"]
+        for t_key, tdata in items:
+            t_name = tdata["name"]
+            draw_types = tdata.get("draws", {})
             for dtype_code, draw_info in draw_types.items():
                 dtype_label = draw_info.get("draw_type", dtype_code)
                 item_key = f"{t_key}|{dtype_code}"
@@ -636,19 +636,25 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #view-draws {{ width: 100%; max-width: 100%; margin: 0; }}
             .draw-bracket-wrapper {{ overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 120px); padding-bottom: 16px; }}
             .draw-bracket {{ display: flex; gap: 0; padding: 10px; min-width: max-content; position: relative; }}
-            .draw-round {{ display: flex; flex-direction: column; justify-content: space-around; min-width: 210px; padding: 0 16px; }}
+            .draw-round {{ display: flex; flex-direction: column; min-width: 210px; padding: 0 16px; }}
             .draw-round-header {{ text-align: center; font-weight: bold; font-size: 11px; color: #64748b; padding: 4px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; background: #f8fafc; z-index: 2; }}
-            .draw-match {{ display: flex; flex-direction: column; margin: 2px 0; }}
-            .draw-match .draw-player {{ display: flex; align-items: center; padding: 3px 8px; font-size: 12px; border: 1px solid #e2e8f0; background: white; min-height: 24px; gap: 4px; cursor: default; }}
+            .draw-match-wrapper {{ flex: 1; display: flex; align-items: center; padding: 3px 0; }}
+            .draw-match {{ display: flex; flex-direction: column; width: 100%; }}
+            .draw-match .draw-player {{ display: flex; align-items: center; padding: 3px 6px; font-size: 12px; border: 1px solid #e2e8f0; background: white; min-height: 24px; gap: 2px; cursor: default; }}
             .draw-match .draw-player:first-child {{ border-bottom: none; }}
             .draw-match .draw-player.winner {{ font-weight: bold; background: #f0fdf4; }}
             .draw-match .draw-player.arg-player {{ background: #dbeafe; }}
             .draw-match .draw-player.arg-player.winner {{ background: #bbf7d0; }}
+            .draw-player .seed-entry {{ display: flex; gap: 2px; min-width: 32px; flex-shrink: 0; }}
             .draw-player .seed {{ color: #6b7280; font-size: 10px; min-width: 14px; text-align: right; }}
             .draw-player .entry {{ color: #9333ea; font-size: 10px; min-width: 16px; }}
             .draw-player .name {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-            .draw-player .country {{ color: #6b7280; font-size: 10px; margin-left: 4px; }}
-            .draw-player .score {{ color: #059669; font-size: 10px; margin-left: auto; white-space: nowrap; }}
+            .draw-player .country {{ flex-shrink: 0; min-width: 20px; display: inline-block; }}
+            .draw-player .sets {{ display: flex; gap: 0; margin-left: 6px; flex-shrink: 0; }}
+            .draw-player .set-score {{ font-size: 10px; width: 12px; text-align: center; position: relative; }}
+            .draw-player .set-score sup {{ font-size: 7px; position: absolute; top: -2px; }}
+            .draw-player .set-score.won {{ color: #059669; }}
+            .draw-player .set-score.lost {{ color: #dc2626; }}
             .draw-no-draws {{ text-align: center; color: #94a3b8; padding: 40px; font-size: 14px; }}
             .gallery-controls {{ display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }}
             #gallery-search {{ width: 250px; }}
@@ -2492,13 +2498,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const matches = draw.matches || [];
                 const drawSize = draw.draw_size;
                 const isQual = (draw.draw_type || '').toUpperCase().includes('QUALIFYING');
-                // Qualifying: determine rounds from draw structure
-                // 8 players = 1 round (4 qualifiers), 16 = 2 rounds (4 qualifiers), 32 = 2 rounds (8 qualifiers)
+                // Determine number of rounds
                 let numRounds;
                 if (isQual) {{
-                    if (drawSize <= 8) numRounds = 1;
-                    else if (drawSize <= 32) numRounds = 2;
-                    else numRounds = 3;
+                    // Use actual round count from results, or estimate from draw size
+                    const maxR = matches.length > 0 ? Math.max(...matches.map(m => m.round)) : 0;
+                    if (maxR > 0) {{
+                        numRounds = maxR;
+                    }} else if (drawSize <= 8) {{
+                        numRounds = 1;
+                    }} else {{
+                        numRounds = 2;
+                    }}
                 }} else {{
                     numRounds = Math.ceil(Math.log2(drawSize));
                 }}
@@ -2577,7 +2588,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             function getWinnerPlayer(match) {{
                 if (!match || !match.winner) return {{}};
-                const wn = match.winner.toLowerCase();
+                let wn = match.winner.toLowerCase().replace(/\\.\\.\\.$/, '').trim();
                 // Match abbreviated name (e.g. "R. Sramkova") to full name
                 for (const p of [match.p1, match.p2]) {{
                     if (!p || !p.name) continue;
@@ -2587,9 +2598,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     if (parts.length === 2) {{
                         const lastName = parts[0].trim();
                         const firstName = parts[1].trim();
-                        const abbrev = firstName.charAt(0).toLowerCase() + '. ' + lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase();
-                        if (wn === abbrev.toLowerCase()) return p;
-                        // Also try just last name match
+                        const abbrev = (firstName.charAt(0) + '. ' + lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase()).toLowerCase();
+                        if (wn === abbrev) return p;
+                        if (abbrev.startsWith(wn) && wn.length >= 5) return p;
                         if (wn.endsWith(lastName.toLowerCase()) || wn.endsWith(lastName)) return p;
                     }}
                     if (full.includes(wn) || wn.includes(full)) return p;
@@ -2615,12 +2626,28 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function renderMatch(match, roundIdx, matchIdx) {{
                 const p1Html = renderPlayer(match.p1, match, true);
                 const p2Html = renderPlayer(match.p2, match, false);
-                return `<div class="draw-match" data-round="${{roundIdx}}" data-match="${{matchIdx}}">${{p1Html}}${{p2Html}}</div>`;
+                return `<div class="draw-match-wrapper"><div class="draw-match" data-round="${{roundIdx}}" data-match="${{matchIdx}}">${{p1Html}}${{p2Html}}</div></div>`;
+            }}
+
+            function parseScore(scoreStr) {{
+                // Parse "63 76(5) 46" into per-set winner/loser scores
+                if (!scoreStr) return [];
+                const parts = scoreStr.trim().replace(/\\s*(RET|DEF)\\s*$/i, '').trim().split(/\\s+/);
+                const sets = [];
+                for (const p of parts) {{
+                    const m = p.match(/^(\\d)(\\d)(?:\\((\\d+)\\))?$/);
+                    if (!m) continue;
+                    const a = parseInt(m[1]), b = parseInt(m[2]);
+                    const tb = m[3] || '';
+                    // The winner's score is listed first in WTA PDFs
+                    sets.push({{ w: a, l: b, tb }});
+                }}
+                return sets;
             }}
 
             function renderPlayer(player, match, isTop) {{
                 if (!player || !player.name) {{
-                    return `<div class="draw-player">&nbsp;</div>`;
+                    return `<div class="draw-player"><span class="country"></span>&nbsp;</div>`;
                 }}
                 const name = formatDrawName(player.name);
                 const isWinner = match.winner && isMatchWinner(player, match.winner);
@@ -2631,8 +2658,35 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const flag = player.country ? countryFlag(player.country, false) : '';
                 const seedHtml = player.seed ? `<span class="seed">${{player.seed}}</span>` : '';
                 const entryHtml = player.entry ? `<span class="entry">${{player.entry}}</span>` : '';
-                const scoreHtml = isWinner && match.score ? `<span class="score">${{match.score}}</span>` : '';
-                return `<div class="${{cls.join(' ')}}">${{seedHtml}}${{entryHtml}}<span class="name">${{flag}} ${{name}}</span><span class="country">${{player.country || ''}}</span>${{scoreHtml}}</div>`;
+                // Per-player set scores
+                let setsHtml = '';
+                if (match.score) {{
+                    const sets = parseScore(match.score);
+                    if (sets.length > 0) {{
+                        const ret = /RET/i.test(match.score);
+                        const def = /DEF/i.test(match.score);
+                        setsHtml = '<span class="sets">';
+                        for (const s of sets) {{
+                            if (isWinner) {{
+                                setsHtml += `<span class="set-score won">${{s.w}}</span>`;
+                            }} else {{
+                                const display = s.tb ? `${{s.l}}<sup>${{s.tb}}</sup>` : `${{s.l}}`;
+                                setsHtml += `<span class="set-score lost">${{display}}</span>`;
+                            }}
+                        }}
+                        // RET/DEF as extra column — show on loser, empty span on winner for alignment
+                        if (ret || def) {{
+                            const label = ret ? 'R' : 'D';
+                            if (!isWinner) {{
+                                setsHtml += `<span class="set-score lost" style="font-size:9px">${{label}}</span>`;
+                            }} else {{
+                                setsHtml += `<span class="set-score"></span>`;
+                            }}
+                        }}
+                        setsHtml += '</span>';
+                    }}
+                }}
+                return `<div class="${{cls.join(' ')}}"><span class="country">${{flag}}</span><span class="seed-entry">${{seedHtml}}${{entryHtml}}</span><span class="name">${{name}}</span>${{setsHtml}}</div>`;
             }}
 
             function formatDrawName(name) {{
@@ -2641,12 +2695,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const parts = name.split(',');
                 const last = parts[0].trim();
                 const first = parts[1].trim();
-                return first.charAt(0) + '. ' + last.charAt(0).toUpperCase() + last.slice(1).toLowerCase();
+                const titleLast = last.split(/\\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+                return first.charAt(0) + '. ' + titleLast;
             }}
 
             function isMatchWinner(player, winnerName) {{
                 if (!player.name || !winnerName) return false;
-                const wn = winnerName.toLowerCase();
+                let wn = winnerName.toLowerCase().replace(/\\.\\.\\.$/, '').trim();
                 const full = player.name.toLowerCase();
                 const parts = full.split(',');
                 if (parts.length === 2) {{
@@ -2654,6 +2709,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const firstName = parts[1].trim();
                     const abbrev = firstName.charAt(0) + '. ' + lastName;
                     if (wn === abbrev) return true;
+                    if (abbrev.startsWith(wn) && wn.length >= 5) return true;
                     if (wn.endsWith(lastName)) return true;
                 }}
                 return full.includes(wn) || wn.includes(full);
@@ -2694,7 +2750,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         const xMid = (x1 + xT) / 2;
 
                         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                        path.setAttribute('d', `M${{x1}},${{y1}} H${{xMid}} V${{yT}} H${{xT}} M${{x2}},${{y2}} H${{xMid}}`);
+                        path.setAttribute('d', `M${{x1}},${{y1}} H${{xMid}} V${{yT}} H${{xT}} M${{x2}},${{y2}} H${{xMid}} V${{yT}}`);
                         path.setAttribute('fill', 'none');
                         path.setAttribute('stroke', '#cbd5e1');
                         path.setAttribute('stroke-width', '1.5');

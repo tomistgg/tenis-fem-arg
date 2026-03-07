@@ -26,7 +26,10 @@
       "Bash(python -m pip install pdfplumber)",
       "Bash(python test_bracket.py)",
       "Bash(start data/test_bracket.html)",
-      "Bash(python -c \"import html_generator; print\\(''OK''\\)\")"
+      "Bash(python -c \"import html_generator; print\\(''OK''\\)\")",
+      "Bash(python -c \"import main; print\\(''OK''\\)\")",
+      "Bash(start index.html)",
+      "Bash(grep -c \"V$\" index.html)"
     ]
   }
 }
