@@ -91,11 +91,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if first_key is None: first_key = t_key
                 entry_menu_html += f'<div class="entry-menu-item{active}" data-key="{t_key}" onclick="selectEntryTournament(this)">{t_name}</div>'
 
-    # Build draws side menu HTML (grouped by week from draws_data)
+    # Build draws dropdown and data (grouped by week from draws_data)
     if draws_data is None:
         draws_data = {}
-    draws_menu_html = ""
-    first_draw_key = None
+    draws_dropdown_html = ""
+    first_draw_tkey = None
     # Group draws by week
     draws_by_week = {}
     for t_key, tdata in draws_data.items():
@@ -103,22 +103,25 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         if week not in draws_by_week:
             draws_by_week[week] = []
         draws_by_week[week].append((t_key, tdata))
-    # Sort weeks chronologically by parsing the week label
+    # Build <select> options grouped by week
     for week in sorted(draws_by_week.keys(), key=lambda w: w):
         items = draws_by_week[week]
         items.sort(key=lambda x: get_tournament_sort_order(x[1].get("level", "")))
-        draws_menu_html += f'<div class="entry-menu-week">{week.upper()}</div>'
+        draws_dropdown_html += f'<optgroup label="{week.upper()}">'
         for t_key, tdata in items:
             t_name = tdata["name"]
-            draw_types = tdata.get("draws", {})
-            for dtype_code, draw_info in draw_types.items():
-                dtype_label = draw_info.get("draw_type", dtype_code)
-                item_key = f"{t_key}|{dtype_code}"
-                active = " active" if first_draw_key is None else ""
-                if first_draw_key is None:
-                    first_draw_key = item_key
-                display = f"{t_name} - {dtype_label}" if len(draw_types) > 1 else t_name
-                draws_menu_html += f'<div class="entry-menu-item{active}" data-key=\'{item_key}\' onclick="selectDraw(this)">{display}</div>'
+            selected = ""
+            if first_draw_tkey is None:
+                first_draw_tkey = t_key
+                selected = " selected"
+            draws_dropdown_html += f'<option value="{t_key}"{selected}>{t_name}</option>'
+        draws_dropdown_html += '</optgroup>'
+
+    # Build draws tournament info for JS (which draw types available)
+    draws_tournament_info = {}
+    for t_key, tdata in draws_data.items():
+        draw_types = list(tdata.get("draws", {}).keys())
+        draws_tournament_info[t_key] = {"name": tdata["name"], "types": draw_types}
 
     # Serialize draws_data for JS
     draws_js_data = {}
@@ -634,23 +637,32 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #view-roadtogs {{ max-width: 800px; margin: 0 auto; }}
             #view-gallery {{ max-width: 1400px; margin: 0 auto; }}
             #view-draws {{ width: 100%; max-width: 100%; margin: 0; }}
+            .draws-layout {{ display: flex; flex-direction: column; width: 100%; }}
+            .draws-toolbar {{ display: flex; align-items: center; gap: 12px; padding: 8px 16px; flex-wrap: wrap; }}
+            #draws-tournament-select {{ padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: inherit; background: white; min-width: 180px; }}
+            #draw-title {{ margin: 0; font-size: 16px; flex: 1; text-align: center; white-space: nowrap; }}
+            .draws-type-btns {{ display: flex; gap: 0; }}
+            .draw-type-btn {{ padding: 5px 14px; border: 1px solid #cbd5e1; background: white; font-family: inherit; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer; }}
+            .draw-type-btn:first-child {{ border-radius: 6px 0 0 6px; }}
+            .draw-type-btn:last-child {{ border-radius: 0 6px 6px 0; border-left: none; }}
+            .draw-type-btn.active {{ background: #1e293b; color: white; border-color: #1e293b; }}
             .draw-bracket-wrapper {{ overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 120px); padding-bottom: 16px; }}
             .draw-bracket {{ display: flex; gap: 0; padding: 10px; min-width: max-content; position: relative; }}
             .draw-round {{ display: flex; flex-direction: column; min-width: 210px; padding: 0 16px; }}
             .draw-round-header {{ text-align: center; font-weight: bold; font-size: 11px; color: #64748b; padding: 4px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; background: #f8fafc; z-index: 2; }}
             .draw-match-wrapper {{ flex: 1; display: flex; align-items: center; padding: 3px 0; }}
             .draw-match {{ display: flex; flex-direction: column; width: 100%; }}
-            .draw-match .draw-player {{ display: flex; align-items: center; padding: 3px 6px; font-size: 12px; border: 1px solid #e2e8f0; background: white; min-height: 24px; gap: 2px; cursor: default; }}
+            .draw-match .draw-player {{ display: flex; align-items: center; padding: 3px 4px; font-size: 12px; border: 1px solid #e2e8f0; background: white; min-height: 24px; gap: 1px; cursor: default; }}
             .draw-match .draw-player:first-child {{ border-bottom: none; }}
             .draw-match .draw-player.winner {{ font-weight: bold; background: #f0fdf4; }}
             .draw-match .draw-player.arg-player {{ background: #dbeafe; }}
             .draw-match .draw-player.arg-player.winner {{ background: #bbf7d0; }}
-            .draw-player .seed-entry {{ display: flex; gap: 2px; min-width: 32px; flex-shrink: 0; }}
-            .draw-player .seed {{ color: #6b7280; font-size: 10px; min-width: 14px; text-align: right; }}
-            .draw-player .entry {{ color: #9333ea; font-size: 10px; min-width: 16px; }}
+            .draw-player .seed-entry {{ display: flex; gap: 1px; min-width: 28px; flex-shrink: 0; }}
+            .draw-player .seed {{ color: #6b7280; font-size: 10px; min-width: 12px; text-align: right; }}
+            .draw-player .entry {{ color: #9333ea; font-size: 10px; }}
             .draw-player .name {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
             .draw-player .country {{ flex-shrink: 0; min-width: 20px; display: inline-block; }}
-            .draw-player .sets {{ display: flex; gap: 0; margin-left: 6px; flex-shrink: 0; }}
+            .draw-player .sets {{ display: flex; gap: 0; margin-left: 4px; flex-shrink: 0; }}
             .draw-player .set-score {{ font-size: 10px; width: 12px; text-align: center; position: relative; }}
             .draw-player .set-score sup {{ font-size: 7px; position: absolute; top: -2px; }}
             .draw-player .set-score.won {{ color: #059669; }}
@@ -1796,19 +1808,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 </div>
 
                 <div id="view-draws" style="display: none;">
-                    <div class="entry-layout">
-                        <div class="entry-menu">
-                            <div class="entry-menu-header">Tournaments</div>
-                            {draws_menu_html if draws_menu_html else '<div style="padding:12px;color:#94a3b8;font-size:12px;">No draws available yet</div>'}
-                        </div>
-                        <div class="draw-content" style="flex:1;min-width:0;">
-                            <div class="header-row">
-                                <h1 id="draw-title">Draw</h1>
+                    <div class="draws-layout">
+                        <div class="draws-toolbar">
+                            <select id="draws-tournament-select" onchange="onDrawTournamentChange(this.value)">
+                                {draws_dropdown_html if draws_dropdown_html else '<option value="">No draws available</option>'}
+                            </select>
+                            <h2 id="draw-title">Draw</h2>
+                            <div class="draws-type-btns">
+                                <button id="btn-draw-ms" class="draw-type-btn active" onclick="selectDrawType('MS')">Main Draw</button>
+                                <button id="btn-draw-qs" class="draw-type-btn" onclick="selectDrawType('QS')">Qualifying</button>
                             </div>
-                            <div class="draw-bracket-wrapper" id="draw-bracket-wrapper">
-                                <div class="draw-bracket" id="draw-bracket">
-                                    <div class="draw-no-draws">Select a tournament to view its draw</div>
-                                </div>
+                        </div>
+                        <div class="draw-bracket-wrapper" id="draw-bracket-wrapper">
+                            <div class="draw-bracket" id="draw-bracket">
+                                <div class="draw-no-draws">Select a tournament to view its draw</div>
                             </div>
                         </div>
                     </div>
@@ -2111,6 +2124,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             const wtaDrawSizes = {json.dumps(wta_draw_sizes)};
             const gsCutoffs = {gs_cutoffs_json};
             const drawsData = {json.dumps(draws_js_data)};
+            const drawsTournamentInfo = {json.dumps(draws_tournament_info)};
             const _iocToIso2 = {{ALB:'al',ALG:'dz',AND:'ad',ANG:'ao',ARG:'ar',ARM:'am',AUS:'au',AUT:'at',AZE:'az',BAH:'bs',BAR:'bb',BDI:'bi',BEL:'be',BEN:'bj',BIH:'ba',BLR:'by',BOL:'bo',BOT:'bw',BRA:'br',BUL:'bg',CAL:'nc',CAM:'kh',CAN:'ca',CHI:'cl',CHN:'cn',CIV:'ci',CMR:'cm',COL:'co',CRC:'cr',CRO:'hr',CUB:'cu',CUW:'cw',CYP:'cy',CZE:'cz',DEN:'dk',DOM:'do',ECU:'ec',EGY:'eg',ESA:'sv',ESP:'es',EST:'ee',FIJ:'fj',FIN:'fi',FRA:'fr',FRG:'de',GAB:'ga',GBR:'gb',GEO:'ge',GER:'de',GLP:'gp',GRE:'gr',GUA:'gt',HAI:'ht',HKG:'hk',HUN:'hu',INA:'id',IND:'in',IRI:'ir',IRL:'ie',IRN:'ir',ISR:'il',ITA:'it',JAM:'jm',JOR:'jo',JPN:'jp',KAZ:'kz',KEN:'ke',KGZ:'kg',KHM:'kh',KOR:'kr',KOS:'xk',KSA:'sa',LAO:'la',LAT:'lv',LIE:'li',LTU:'lt',LUX:'lu',MAD:'mg',MAR:'ma',MAS:'my',MDA:'md',MEX:'mx',MKD:'mk',MLT:'mt',MNE:'me',MON:'mc',MRI:'mu',NAM:'na',NCA:'ni',NCD:'nc',NED:'nl',NEP:'np',NGA:'ng',NGR:'ng',NOR:'no',NZL:'nz',OMA:'om',OMN:'om',PAK:'pk',PAN:'pa',PAR:'py',PER:'pe',PHI:'ph',PLE:'ps',PNG:'pg',POL:'pl',POR:'pt',PUR:'pr',QAT:'qa',ROC:'ru',ROM:'ro',ROU:'ro',RSA:'za',RUS:'ru',SAM:'ws',SEN:'sn',SGP:'sg',SIN:'sg',SLO:'si',SMR:'sm',SRB:'rs',SRI:'lk',SUI:'ch',SVK:'sk',SWE:'se',SYR:'sy',TCH:'cz',THA:'th',TKM:'tm',TPE:'tw',TRI:'tt',TTO:'tt',TUN:'tn',TUR:'tr',UAE:'ae',UKR:'ua',URU:'uy',USA:'us',UZB:'uz',VEN:'ve',VIE:'vn',XKX:'xk',ZAM:'zm',ZIM:'zw'}};
             const _localFlags = new Set(['YUG','SCG','CIS','URS']);
             function countryFlag(code, showCode) {{
@@ -2159,7 +2173,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 document.getElementById('view-upcoming').style.display = (tabName === 'upcoming') ? 'flex' : 'none';
                 document.getElementById('view-entrylists').style.display = (tabName === 'entrylists') ? 'flex' : 'none';
-                document.getElementById('view-draws').style.display = (tabName === 'draws') ? 'flex' : 'none';
+                document.getElementById('view-draws').style.display = (tabName === 'draws') ? 'block' : 'none';
                 document.getElementById('view-rankings').style.display = (tabName === 'rankings') ? 'flex' : 'none';
                 document.getElementById('view-history').style.display = (tabName === 'history') ? 'flex' : 'none';
                 document.getElementById('view-fedbcup').style.display = (tabName === 'fedbcup') ? 'flex' : 'none';
@@ -2469,28 +2483,59 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 updateEntryList(el.getAttribute('data-key'), el.textContent);
             }}
 
-            function selectDraw(el) {{
-                document.querySelectorAll('#view-draws .entry-menu-item').forEach(item => item.classList.remove('active'));
-                el.classList.add('active');
-                updateDraw(el.getAttribute('data-key'), el.textContent);
+            let _currentDrawType = 'MS';
+
+            function onDrawTournamentChange(tKey) {{
+                const info = drawsTournamentInfo[tKey];
+                if (!info) return;
+                // Default to MS if available, else QS
+                if (info.types.includes('MS')) {{
+                    _currentDrawType = 'MS';
+                }} else if (info.types.includes('QS')) {{
+                    _currentDrawType = 'QS';
+                }}
+                updateDrawTypeButtons(tKey);
+                loadDraw(tKey, _currentDrawType);
             }}
 
-            function updateDraw(key, name) {{
-                if (!key) {{
-                    const active = document.querySelector('#view-draws .entry-menu-item.active');
-                    if (!active) return;
-                    key = active.getAttribute('data-key');
-                    name = active.textContent;
-                }}
+            function selectDrawType(dtype) {{
+                _currentDrawType = dtype;
+                document.querySelectorAll('.draw-type-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById(dtype === 'MS' ? 'btn-draw-ms' : 'btn-draw-qs').classList.add('active');
+                const tKey = document.getElementById('draws-tournament-select').value;
+                loadDraw(tKey, dtype);
+            }}
+
+            function updateDrawTypeButtons(tKey) {{
+                const info = drawsTournamentInfo[tKey];
+                const msBtn = document.getElementById('btn-draw-ms');
+                const qsBtn = document.getElementById('btn-draw-qs');
+                msBtn.disabled = !info || !info.types.includes('MS');
+                qsBtn.disabled = !info || !info.types.includes('QS');
+                msBtn.style.opacity = msBtn.disabled ? '0.4' : '1';
+                qsBtn.style.opacity = qsBtn.disabled ? '0.4' : '1';
+                document.querySelectorAll('.draw-type-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById(_currentDrawType === 'MS' ? 'btn-draw-ms' : 'btn-draw-qs').classList.add('active');
+            }}
+
+            function loadDraw(tKey, dtype) {{
                 const container = document.getElementById('draw-bracket');
                 const titleEl = document.getElementById('draw-title');
-                titleEl.textContent = name || 'Draw';
+                const info = drawsTournamentInfo[tKey];
+                titleEl.textContent = info ? info.name : 'Draw';
+                const key = tKey + '|' + dtype;
                 const draw = drawsData[key];
                 if (!draw || !draw.players || draw.players.length === 0) {{
-                    container.innerHTML = '<div class="draw-no-draws">No draw available</div>';
+                    container.innerHTML = '<div class="draw-no-draws">No draw available for this type</div>';
                     return;
                 }}
                 renderBracket(container, draw);
+            }}
+
+            function updateDraw() {{
+                const sel = document.getElementById('draws-tournament-select');
+                if (!sel || !sel.value) return;
+                onDrawTournamentChange(sel.value);
             }}
 
             function renderBracket(container, draw) {{
@@ -2652,9 +2697,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const name = formatDrawName(player.name);
                 const isWinner = match.winner && isMatchWinner(player, match.winner);
                 const isArg = player.country === 'ARG';
+                const matchConcluded = !!match.winner;
                 const cls = ['draw-player'];
                 if (isWinner) cls.push('winner');
-                if (isArg) cls.push('arg-player');
+                if (isArg && !matchConcluded) cls.push('arg-player');
                 const flag = player.country ? countryFlag(player.country, false) : '';
                 const seedHtml = player.seed ? `<span class="seed">${{player.seed}}</span>` : '';
                 const entryHtml = player.entry ? `<span class="entry">${{player.entry}}</span>` : '';
