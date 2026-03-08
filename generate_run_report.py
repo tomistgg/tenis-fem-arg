@@ -206,6 +206,24 @@ def compute_report(before_dir, after_dir):
                 added.append(row)
         report["added_calendar_tournaments"] = added
 
+    # Detect new tournament draws
+    before_draws = load_json(os.path.join(before_dir, "draws_snapshot.json")) or {}
+    after_draws = load_json(os.path.join(after_dir, "draws_snapshot.json")) or {}
+
+    new_draws = []
+    for t_key, info in after_draws.items():
+        t_name = info.get("name", t_key)
+        after_types = set(info.get("types", []))
+        before_types = set()
+        if t_key in before_draws:
+            before_types = set(before_draws[t_key].get("types", []))
+        new_types = after_types - before_types
+        if new_types:
+            type_labels = {"MDS": "Main Draw", "QS": "Qualifying"}
+            labels = [type_labels.get(t, t) for t in sorted(new_types)]
+            new_draws.append({"name": t_name, "types": labels})
+    report["new_draws"] = new_draws
+
     return report
 
 
@@ -244,7 +262,16 @@ def render_markdown(report):
         lines.append("- None detected.")
 
     lines.append("")
-    lines.append("## 4) Tournaments Added to Calendar")
+    lines.append("## 4) New Tournament Draws Available")
+    if report.get("new_draws"):
+        for item in report["new_draws"]:
+            types_str = ", ".join(item["types"])
+            lines.append(f"- {item['name']}: {types_str}")
+    else:
+        lines.append("- None detected.")
+
+    lines.append("")
+    lines.append("## 5) Tournaments Added to Calendar")
     if report["added_calendar_tournaments"]:
         for item in report["added_calendar_tournaments"]:
             lines.append(

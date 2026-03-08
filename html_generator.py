@@ -52,7 +52,7 @@ def country_flag_html(code, show_code=True):
 
 def generate_html(tournament_groups, tournament_store, players_data, schedule_map,
                   cleaned_history, calendar_data, match_history_data, wta_rankings=None,
-                  national_team_data=None, captains_data=None):
+                  national_team_data=None, captains_data=None, draws_data=None):
     """Generate the complete HTML page and write it to index.html."""
 
     # Load points distribution
@@ -90,6 +90,41 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 active = " active" if first_key is None else ""
                 if first_key is None: first_key = t_key
                 entry_menu_html += f'<div class="entry-menu-item{active}" data-key="{t_key}" onclick="selectEntryTournament(this)">{t_name}</div>'
+
+    # Build draws dropdown and data
+    if draws_data is None:
+        draws_data = {}
+    draws_dropdown_html = ""
+    first_draw_tkey = None
+    draws_by_week = {}
+    for t_key, tdata in draws_data.items():
+        week = tdata.get("week", "")
+        if week not in draws_by_week:
+            draws_by_week[week] = []
+        draws_by_week[week].append((t_key, tdata))
+    for week in sorted(draws_by_week.keys(), key=lambda w: w):
+        items = draws_by_week[week]
+        items.sort(key=lambda x: get_tournament_sort_order(x[1].get("level", "")))
+        draws_dropdown_html += f'<optgroup label="{week.upper()}">'
+        for t_key, tdata in items:
+            t_name = tdata["name"]
+            selected = ""
+            if first_draw_tkey is None:
+                first_draw_tkey = t_key
+                selected = " selected"
+            draws_dropdown_html += f'<option value="{t_key}"{selected}>{t_name}</option>'
+        draws_dropdown_html += '</optgroup>'
+
+    draws_tournament_info = {}
+    for t_key, tdata in draws_data.items():
+        draw_types = list(tdata.get("draws", {}).keys())
+        draws_tournament_info[t_key] = {"name": tdata["name"], "types": draw_types}
+
+    draws_js_data = {}
+    for t_key, tdata in draws_data.items():
+        for dtype_code, draw_info in tdata.get("draws", {}).items():
+            js_key = f"{t_key}|{dtype_code}"
+            draws_js_data[js_key] = draw_info
 
     # Build table rows
     table_rows = ""
@@ -597,6 +632,40 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #view-fedbcup {{ max-width: 1400px; margin: 0 auto; }}
             #view-roadtogs {{ max-width: 800px; margin: 0 auto; }}
             #view-gallery {{ max-width: 1400px; margin: 0 auto; }}
+            #view-draws {{ width: 100%; max-width: 100%; margin: 0; }}
+            .draws-layout {{ display: flex; flex-direction: column; width: 100%; }}
+            .draws-toolbar {{ display: flex; align-items: center; gap: 10px; padding: 6px 12px; flex-wrap: wrap; }}
+            #draws-tournament-select {{ padding: 5px 24px 5px 8px; border: 2px solid #94a3b8; border-radius: 8px; font-size: 11px; font-family: inherit; background: white; min-width: 160px; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; cursor: pointer; }}
+            #draws-tournament-select optgroup {{ font-size: 10px; font-weight: bold; background: #e2e8f0; color: #475569; padding: 4px 0; }}
+            #draws-tournament-select option {{ font-size: 11px; font-weight: normal; background: white; padding: 4px 8px; }}
+            #draw-title {{ margin: 0; font-size: 13px; flex: 1; text-align: center; white-space: nowrap; }}
+            .draws-type-btns {{ display: flex; gap: 0; }}
+            .draw-type-btn {{ padding: 4px 10px; border: 1px solid #cbd5e1; background: white; font-family: inherit; font-size: 10px; font-weight: 600; color: #64748b; cursor: pointer; }}
+            .draw-type-btn:first-child {{ border-radius: 6px 0 0 6px; }}
+            .draw-type-btn:last-child {{ border-radius: 0 6px 6px 0; border-left: none; }}
+            .draw-type-btn.active {{ background: #1e293b; color: white; border-color: #1e293b; }}
+            .draw-bracket-wrapper {{ overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 110px); padding-bottom: 12px; }}
+            .draw-bracket {{ display: flex; gap: 0; padding: 6px; min-width: max-content; position: relative; }}
+            .draw-round {{ display: flex; flex-direction: column; min-width: 175px; padding: 0 10px; }}
+            .draw-round-header {{ text-align: center; font-weight: bold; font-size: 9px; color: #64748b; padding: 3px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; background: #f8fafc; z-index: 2; }}
+            .draw-match-wrapper {{ flex: 1; display: flex; align-items: center; padding: 2px 0; }}
+            .draw-match {{ display: flex; flex-direction: column; width: 100%; }}
+            .draw-match .draw-player {{ display: flex; align-items: center; padding: 1px 3px; font-size: 10px; border: 1px solid #e2e8f0; background: white; min-height: 18px; gap: 1px; cursor: default; }}
+            .draw-match .draw-player:first-child {{ border-bottom: none; }}
+            .draw-match .draw-player.winner {{ font-weight: bold; background: #f0fdf4; }}
+            .draw-match .draw-player.arg-player {{ background: #dbeafe; }}
+            .draw-match .draw-player.arg-player.winner {{ background: #bbf7d0; }}
+            .draw-player .seed-entry {{ display: flex; gap: 1px; min-width: 24px; flex-shrink: 0; justify-content: center; }}
+            .draw-player .seed {{ color: #6b7280; font-size: 9px; min-width: 10px; text-align: center; }}
+            .draw-player .entry {{ color: #9333ea; font-size: 9px; text-align: center; }}
+            .draw-player .name {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+            .draw-player .country {{ flex-shrink: 0; width: 16px; min-width: 16px; display: inline-block; text-align: center; }}
+            .draw-player .sets {{ display: flex; gap: 0; margin-left: 3px; flex-shrink: 0; }}
+            .draw-player .set-score {{ font-size: 9px; width: 11px; text-align: center; position: relative; }}
+            .draw-player .set-score sup {{ font-size: 6px; position: absolute; top: -2px; }}
+            .draw-player .set-score.won {{ color: #059669; }}
+            .draw-player .set-score.lost {{ color: #dc2626; }}
+            .draw-no-draws {{ text-align: center; color: #94a3b8; padding: 40px; font-size: 12px; }}
             .gallery-controls {{ display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }}
             #gallery-search {{ width: 250px; }}
             #gallery-player-select, #gallery-tournament-select {{ min-width: 180px; width: auto; }}
@@ -1672,6 +1741,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div class="menu-item" id="btn-roadtogs" onclick="switchTab('roadtogs')">Points Breakdown</div>
                 <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
                 <div class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</div>
+                <div class="menu-item" id="btn-draws" onclick="switchTab('draws')">Draws</div>
                 <a class="menu-item" href="https://www.flickr.com/photos/tomistgg/albums" target="_blank" onclick="return confirm('You are about to open a new tab to Flickr.com where the photos are saved, are you sure you want to continue?')">Photo Gallery</a>
             </div>
 
@@ -1997,6 +2067,21 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                 </div>
 
+                <div id="view-draws" class="single-layout" style="display: none;">
+                    <div class="draws-layout">
+                        <div class="draws-toolbar">
+                            <select id="draws-tournament-select" onchange="onDrawTournamentChange(this.value)">
+                                {draws_dropdown_html}
+                            </select>
+                            <h2 id="draw-title"></h2>
+                            <div class="draws-type-btns" id="draws-type-btns"></div>
+                        </div>
+                        <div class="draw-bracket-wrapper" id="draw-bracket-wrapper">
+                            <div class="draw-bracket" id="draw-bracket"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="gallery-lb" id="gallery-lb">
                     <div class="gallery-lb-inner">
                         <button class="gallery-lb-close" id="gallery-lb-close">&#x2715;</button>
@@ -2025,6 +2110,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             const itfDrawSizes = {json.dumps(itf_draw_sizes)};
             const wtaDrawSizes = {json.dumps(wta_draw_sizes)};
             const gsCutoffs = {gs_cutoffs_json};
+            const drawsData = {json.dumps(draws_js_data)};
+            const drawsTournamentInfo = {json.dumps(draws_tournament_info)};
             const _iocToIso2 = {{ALB:'al',ALG:'dz',AND:'ad',ANG:'ao',ARG:'ar',ARM:'am',AUS:'au',AUT:'at',AZE:'az',BAH:'bs',BAR:'bb',BDI:'bi',BEL:'be',BEN:'bj',BIH:'ba',BLR:'by',BOL:'bo',BOT:'bw',BRA:'br',BUL:'bg',CAL:'nc',CAM:'kh',CAN:'ca',CHI:'cl',CHN:'cn',CIV:'ci',CMR:'cm',COL:'co',CRC:'cr',CRO:'hr',CUB:'cu',CUW:'cw',CYP:'cy',CZE:'cz',DEN:'dk',DOM:'do',ECU:'ec',EGY:'eg',ESA:'sv',ESP:'es',EST:'ee',FIJ:'fj',FIN:'fi',FRA:'fr',FRG:'de',GAB:'ga',GBR:'gb',GEO:'ge',GER:'de',GLP:'gp',GRE:'gr',GUA:'gt',HAI:'ht',HKG:'hk',HUN:'hu',INA:'id',IND:'in',IRI:'ir',IRL:'ie',IRN:'ir',ISR:'il',ITA:'it',JAM:'jm',JOR:'jo',JPN:'jp',KAZ:'kz',KEN:'ke',KGZ:'kg',KHM:'kh',KOR:'kr',KOS:'xk',KSA:'sa',LAO:'la',LAT:'lv',LIE:'li',LTU:'lt',LUX:'lu',MAD:'mg',MAR:'ma',MAS:'my',MDA:'md',MEX:'mx',MKD:'mk',MLT:'mt',MNE:'me',MON:'mc',MRI:'mu',NAM:'na',NCA:'ni',NCD:'nc',NED:'nl',NEP:'np',NGA:'ng',NGR:'ng',NOR:'no',NZL:'nz',OMA:'om',OMN:'om',PAK:'pk',PAN:'pa',PAR:'py',PER:'pe',PHI:'ph',PLE:'ps',PNG:'pg',POL:'pl',POR:'pt',PUR:'pr',QAT:'qa',ROC:'ru',ROM:'ro',ROU:'ro',RSA:'za',RUS:'ru',SAM:'ws',SEN:'sn',SGP:'sg',SIN:'sg',SLO:'si',SMR:'sm',SRB:'rs',SRI:'lk',SUI:'ch',SVK:'sk',SWE:'se',SYR:'sy',TCH:'cz',THA:'th',TKM:'tm',TPE:'tw',TRI:'tt',TTO:'tt',TUN:'tn',TUR:'tr',UAE:'ae',UKR:'ua',URU:'uy',USA:'us',UZB:'uz',VEN:'ve',VIE:'vn',XKX:'xk',ZAM:'zm',ZIM:'zw'}};
             const _localFlags = new Set(['YUG','SCG','CIS','URS']);
             function countryFlag(code, showCode) {{
@@ -2080,9 +2167,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('view-calendar').style.display = (tabName === 'calendar') ? 'flex' : 'none';
                 document.getElementById('view-roadtogs').style.display = (tabName === 'roadtogs') ? 'flex' : 'none';
                 document.getElementById('view-gallery').style.display = (tabName === 'gallery') ? 'flex' : 'none';
+                document.getElementById('view-draws').style.display = (tabName === 'draws') ? 'block' : 'none';
 
                 if (tabName === 'gallery') initGallery();
                 if (tabName === 'entrylists') updateEntryList();
+                if (tabName === 'draws') updateDraw();
 
                 applyMobileHistoryLayout();
 
@@ -3874,6 +3963,291 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 galleryRenderBatch();
                 document.getElementById('gallery-loadmore-wrap').style.display = galleryRendered < galleryFiltered.length ? 'block' : 'none';
             }});
+
+            // ===== DRAWS =====
+            let currentDrawTKey = '';
+            let currentDrawType = 'MDS';
+
+            function onDrawTournamentChange(tKey) {{
+                currentDrawTKey = tKey;
+                const info = drawsTournamentInfo[tKey];
+                if (!info) return;
+                const types = info.types || [];
+                if (types.length > 0 && !types.includes(currentDrawType)) {{
+                    currentDrawType = types[0];
+                }}
+                updateDrawTypeButtons(types);
+                document.getElementById('draw-title').textContent = info.name || '';
+                loadDraw();
+            }}
+
+            function selectDrawType(dtype) {{
+                currentDrawType = dtype;
+                const btns = document.querySelectorAll('.draw-type-btn');
+                btns.forEach(b => b.classList.toggle('active', b.dataset.type === dtype));
+                loadDraw();
+            }}
+
+            function updateDrawTypeButtons(types) {{
+                const container = document.getElementById('draws-type-btns');
+                container.innerHTML = '';
+                const labels = {{'MDS': 'Main Draw', 'QS': 'Qualifying'}};
+                types.forEach(t => {{
+                    const btn = document.createElement('button');
+                    btn.className = 'draw-type-btn' + (t === currentDrawType ? ' active' : '');
+                    btn.dataset.type = t;
+                    btn.textContent = labels[t] || t;
+                    btn.onclick = () => selectDrawType(t);
+                    container.appendChild(btn);
+                }});
+            }}
+
+            function loadDraw() {{
+                const key = currentDrawTKey + '|' + currentDrawType;
+                const data = drawsData[key];
+                const bracket = document.getElementById('draw-bracket');
+                if (!data || !data.players || data.players.length === 0) {{
+                    bracket.innerHTML = '<div class="draw-no-draws">No draw available</div>';
+                    return;
+                }}
+                renderBracket(data, bracket);
+            }}
+
+            function updateDraw() {{
+                const sel = document.getElementById('draws-tournament-select');
+                if (!currentDrawTKey && sel.value) {{
+                    onDrawTournamentChange(sel.value);
+                }} else if (currentDrawTKey) {{
+                    loadDraw();
+                }}
+            }}
+
+            function formatDrawName(rawName) {{
+                if (!rawName) return '';
+                return rawName.replace(/\\.\\.\\.$/, '').trim();
+            }}
+
+            function parseScore(scoreStr) {{
+                if (!scoreStr) return {{ sets: [], retired: false }};
+                const parts = scoreStr.trim().split(/\\s+/);
+                const sets = [];
+                let retired = false;
+                for (const p of parts) {{
+                    if (p === 'RET' || p === 'DEF') {{ retired = true; continue; }}
+                    const m = p.match(/^(\\d+)(?:\\((\\d+)\\))?$/);
+                    if (m) {{
+                        sets.push({{ w: parseInt(m[1].charAt(0)), l: parseInt(m[1].charAt(1) || '0'), tb: m[2] || null }});
+                    }}
+                }}
+                return {{ sets, retired }};
+            }}
+
+            function isMatchWinner(playerName, winnerName) {{
+                if (!playerName || !winnerName) return false;
+                const truncated = winnerName.trim().endsWith('...');
+                const pNorm = playerName.replace(/\\.\\.\\.$/, '').trim().toUpperCase();
+                const wNorm = winnerName.replace(/\\.\\.\\.$/, '').trim().toUpperCase();
+                if (pNorm === wNorm) return true;
+                // playerName is "LASTNAME, First" format; winnerName is "F. Lastname" format
+                const commaIdx = pNorm.indexOf(',');
+                if (commaIdx > 0) {{
+                    const playerLast = pNorm.substring(0, commaIdx).trim();
+                    const wm = wNorm.match(/^[A-Z]+\\.\\s+(.+)$/);
+                    if (wm) {{
+                        const winnerLast = wm[1].trim();
+                        if (playerLast === winnerLast) return true;
+                        // Handle truncated names like "Jimenez Kasints..." vs "JIMENEZ KASINTSEVA"
+                        if (truncated && winnerLast.length >= 5 && playerLast.startsWith(winnerLast)) return true;
+                    }}
+                }}
+                return false;
+            }}
+
+            function getWinnerPlayer(match, players) {{
+                if (!match || !match.winner_name) return null;
+                for (const p of players) {{
+                    if (isMatchWinner(p.name, match.winner_name)) return p;
+                }}
+                return null;
+            }}
+
+            function renderPlayer(player, isBye, isQualifier, isWinner, isTop, scoreData, matchConcluded) {{
+                const flag = player ? countryFlag(player.country, false) : '';
+                const flagHtml = '<span class="country">' + flag + '</span>';
+                let seedEntry = '<span class="seed-entry"></span>';
+                if (player) {{
+                    const seed = player.seed ? '<span class="seed">' + player.seed + '</span>' : '';
+                    const entry = player.entry ? '<span class="entry">' + player.entry + '</span>' : '';
+                    seedEntry = '<span class="seed-entry">' + seed + entry + '</span>';
+                }}
+                let name = '';
+                if (player) name = formatDrawName(player.name);
+                else if (isBye) name = 'BYE';
+                else if (isQualifier) name = 'Qualifier';
+                const nameHtml = '<span class="name">' + name + '</span>';
+                let setsHtml = '';
+                if (scoreData && scoreData.sets && scoreData.sets.length > 0) {{
+                    const ss = scoreData.sets;
+                    for (let i = 0; i < ss.length; i++) {{
+                        const s = ss[i];
+                        const myScore = isWinner ? s.w : s.l;
+                        const otherScore = isWinner ? s.l : s.w;
+                        const won = myScore > otherScore;
+                        const cls = won ? 'won' : 'lost';
+                        const tb = (s.tb && !won) ? '<sup>' + s.tb + '</sup>' : '';
+                        setsHtml += '<span class="set-score ' + cls + '">' + myScore + tb + '</span>';
+                    }}
+                    if (scoreData.retired) {{
+                        if (!isWinner) {{
+                            setsHtml += '<span class="set-score lost">R</span>';
+                        }} else {{
+                            setsHtml += '<span class="set-score">&nbsp;</span>';
+                        }}
+                    }}
+                }}
+                const isArg = player && player.country === 'ARG' && !matchConcluded;
+                const cls = 'draw-player' + (isWinner ? ' winner' : '') + (isArg ? ' arg-player' : '');
+                return '<div class="' + cls + '">' + flagHtml + seedEntry + nameHtml + (setsHtml ? '<span class="sets">' + setsHtml + '</span>' : '') + '</div>';
+            }}
+
+            function renderMatch(p1, p2, isBye1, isBye2, isQ1, isQ2, match, players) {{
+                const scoreData = match ? parseScore(match.score) : null;
+                const winnerPlayer = match ? getWinnerPlayer(match, players) : null;
+                const matchConcluded = !!winnerPlayer;
+                const p1IsWinner = winnerPlayer && p1 && isMatchWinner(p1.name, match.winner_name);
+                const p2IsWinner = winnerPlayer && p2 && isMatchWinner(p2.name, match.winner_name);
+                return '<div class="draw-match">' +
+                    renderPlayer(p1, isBye1, isQ1, p1IsWinner, true, matchConcluded ? scoreData : null, matchConcluded) +
+                    renderPlayer(p2, isBye2, isQ2, p2IsWinner, false, matchConcluded ? scoreData : null, matchConcluded) +
+                    '</div>';
+            }}
+
+            function renderBracket(data, container) {{
+                const players = data.players || [];
+                const matches = data.matches || [];
+                const byes = new Set(data.byes || []);
+                const drawSize = data.draw_size || players.length;
+                const pdfRoundLabels = data.round_labels || [];
+                const numRounds = data.num_rounds || Math.ceil(Math.log2(drawSize));
+
+                let html = '';
+                for (let r = 0; r < numRounds; r++) {{
+                    const label = r < pdfRoundLabels.length ? pdfRoundLabels[r] : 'R' + (r + 1);
+                    html += '<div class="draw-round"><div class="draw-round-header">' + label + '</div>';
+
+                    if (r === 0) {{
+                        const numMatches = Math.floor(drawSize / 2);
+                        for (let m = 0; m < numMatches; m++) {{
+                            const pos1 = m * 2 + 1;
+                            const pos2 = m * 2 + 2;
+                            const p1 = players.find(p => p.pos === pos1) || null;
+                            const p2 = players.find(p => p.pos === pos2) || null;
+                            const isBye1 = byes.has(pos1);
+                            const isBye2 = byes.has(pos2);
+                            const isQ1 = !p1 && !isBye1;
+                            const isQ2 = !p2 && !isBye2;
+                            const match = matches.find(mt => mt.round === 1 && mt.match_num === m) || null;
+                            html += '<div class="draw-match-wrapper">' + renderMatch(p1, p2, isBye1, isBye2, isQ1, isQ2, match, players) + '</div>';
+                        }}
+                    }} else {{
+                        const numMatches = Math.floor(drawSize / Math.pow(2, r + 1));
+                        for (let m = 0; m < numMatches; m++) {{
+                            const match = matches.find(mt => mt.round === r + 1 && mt.match_num === m) || null;
+                            // Find the two feed matches from previous round
+                            const feedTop = matches.find(mt => mt.round === r && mt.match_num === m * 2) || null;
+                            const feedBot = matches.find(mt => mt.round === r && mt.match_num === m * 2 + 1) || null;
+                            let p1 = null, p2 = null;
+                            // If r==1, feed matches are R1; check for BYE auto-advances too
+                            if (r === 1) {{
+                                // Top feed: winner of R1 match m*2, or BYE auto-advance
+                                const topPos1 = m * 4 + 1, topPos2 = m * 4 + 2;
+                                if (feedTop && feedTop.winner_name) {{
+                                    p1 = getWinnerPlayer(feedTop, players);
+                                }} else if (byes.has(topPos1) && !byes.has(topPos2)) {{
+                                    p1 = players.find(p => p.pos === topPos2) || null;
+                                }} else if (byes.has(topPos2) && !byes.has(topPos1)) {{
+                                    p1 = players.find(p => p.pos === topPos1) || null;
+                                }}
+                                // Bottom feed
+                                const botPos1 = m * 4 + 3, botPos2 = m * 4 + 4;
+                                if (feedBot && feedBot.winner_name) {{
+                                    p2 = getWinnerPlayer(feedBot, players);
+                                }} else if (byes.has(botPos1) && !byes.has(botPos2)) {{
+                                    p2 = players.find(p => p.pos === botPos2) || null;
+                                }} else if (byes.has(botPos2) && !byes.has(botPos1)) {{
+                                    p2 = players.find(p => p.pos === botPos1) || null;
+                                }}
+                            }} else {{
+                                if (feedTop && feedTop.winner_name) p1 = getWinnerPlayer(feedTop, players);
+                                if (feedBot && feedBot.winner_name) p2 = getWinnerPlayer(feedBot, players);
+                            }}
+                            html += '<div class="draw-match-wrapper">' + renderMatch(p1, p2, false, false, false, false, match, players) + '</div>';
+                        }}
+                    }}
+                    html += '</div>';
+                }}
+
+                container.innerHTML = html;
+                drawConnectors(container);
+            }}
+
+            function drawConnectors(container) {{
+                const rounds = container.querySelectorAll('.draw-round');
+                const oldSvg = container.querySelector('svg');
+                if (oldSvg) oldSvg.remove();
+
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+                svg.setAttribute('width', container.scrollWidth);
+                svg.setAttribute('height', container.scrollHeight);
+                container.appendChild(svg);
+
+                for (let r = 0; r < rounds.length - 1; r++) {{
+                    const currMatches = rounds[r].querySelectorAll('.draw-match-wrapper');
+                    const nextMatches = rounds[r + 1].querySelectorAll('.draw-match-wrapper');
+
+                    for (let m = 0; m < nextMatches.length; m++) {{
+                        const topIdx = m * 2;
+                        const botIdx = m * 2 + 1;
+                        if (topIdx >= currMatches.length) continue;
+
+                        const topMatch = currMatches[topIdx];
+                        const botMatch = botIdx < currMatches.length ? currMatches[botIdx] : null;
+                        const nextMatch = nextMatches[m];
+
+                        const topRect = topMatch.getBoundingClientRect();
+                        const nextRect = nextMatch.getBoundingClientRect();
+                        const containerRect = container.getBoundingClientRect();
+
+                        const xStart = topRect.right - containerRect.left;
+                        const xEnd = nextRect.left - containerRect.left;
+                        const xMid = (xStart + xEnd) / 2;
+
+                        const yT = topRect.top + topRect.height / 2 - containerRect.top;
+                        const yN = nextRect.top + nextRect.height / 2 - containerRect.top;
+
+                        // Top match connector
+                        const pathT = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        pathT.setAttribute('d', `M${{xStart}},${{yT}} H${{xMid}} V${{yN}} H${{xEnd}}`);
+                        pathT.setAttribute('fill', 'none');
+                        pathT.setAttribute('stroke', '#cbd5e1');
+                        pathT.setAttribute('stroke-width', '1');
+                        svg.appendChild(pathT);
+
+                        // Bottom match connector
+                        if (botMatch) {{
+                            const botRect = botMatch.getBoundingClientRect();
+                            const yB = botRect.top + botRect.height / 2 - containerRect.top;
+                            const pathB = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                            pathB.setAttribute('d', `M${{xStart}},${{yB}} H${{xMid}} V${{yN}} H${{xEnd}}`);
+                            pathB.setAttribute('fill', 'none');
+                            pathB.setAttribute('stroke', '#cbd5e1');
+                            pathB.setAttribute('stroke-width', '1');
+                            svg.appendChild(pathB);
+                        }}
+                    }}
+                }}
+            }}
 
         </script>
     </body>
