@@ -635,10 +635,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #view-draws {{ width: 100%; max-width: 100%; margin: 0; }}
             .draws-layout {{ display: flex; flex-direction: column; width: 100%; }}
             .draws-toolbar {{ display: flex; align-items: center; gap: 10px; padding: 6px 12px; flex-wrap: wrap; position: relative; }}
-            #draws-tournament-select {{ padding: 5px 24px 5px 8px; border: 2px solid #94a3b8; border-radius: 8px; font-size: 11px; font-family: inherit; background: white; min-width: 160px; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; cursor: pointer; }}
+            #draws-tournament-select {{ padding: 6px 24px 6px 8px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 12px; font-family: inherit; background: white; min-width: 200px; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; cursor: pointer; color: #1e293b; font-weight: 600; text-align: center; text-align-last: center; }}
             #draws-tournament-select optgroup {{ font-size: 10px; font-weight: bold; background: #e2e8f0; color: #475569; padding: 4px 0; }}
             #draws-tournament-select option {{ font-size: 11px; font-weight: normal; background: white; padding: 4px 8px; }}
-            #draw-title {{ margin: 0; font-size: 13px; position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; pointer-events: none; }}
             .draws-type-btns {{ display: flex; gap: 0; }}
             .draw-type-btn {{ padding: 4px 10px; border: 1px solid #cbd5e1; background: white; font-family: inherit; font-size: 10px; font-weight: 600; color: #64748b; cursor: pointer; }}
             .draw-type-btn:first-child {{ border-radius: 6px 0 0 6px; }}
@@ -661,7 +660,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .draw-match .draw-player.winner {{ font-weight: bold; background: #f0fdf4; }}
             .draw-match .draw-player.arg-player {{ background: #dbeafe; }}
             .draw-match .draw-player.arg-player.winner {{ background: #bbf7d0; }}
-            .draw-player .seed-entry {{ display: flex; gap: 1px; min-width: 24px; flex-shrink: 0; justify-content: center; }}
+            .draw-player .seed-entry {{ display: flex; gap: 0; width: 30px; flex-shrink: 0; justify-content: center; overflow: hidden; }}
             .draw-player .seed {{ color: #6b7280; font-size: 9px; min-width: 10px; text-align: center; }}
             .draw-player .entry {{ color: #9333ea; font-size: 9px; text-align: center; }}
             .draw-player .name {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
@@ -1714,25 +1713,22 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 /* Draws mobile */
                 .draws-toolbar {{ padding: 4px 8px; gap: 6px; flex-wrap: wrap; justify-content: center; }}
-                #draws-tournament-select {{ font-size: 11px; min-width: 0; width: 100%; padding: 6px 24px 6px 8px; color: #1e293b; font-weight: 600; text-align: center; text-align-last: center; border-color: #cbd5e1; }}
-                #draw-title {{ display: none !important; }}
-                .draws-toolbar > span {{ display: none !important; }}
-                .draws-toolbar > span[style*="flex:1"] {{ display: none !important; }}
-                .draw-type-btn {{ padding: 3px 8px; font-size: 9px; }}
-                .draw-filter-reset {{ font-size: 9px; padding: 3px 8px; }}
-                .draws-toolbar > span {{ font-size: 8px !important; }}
-                .draw-bracket-wrapper {{ max-height: calc(100vh - 90px); }}
-                .draw-bracket {{ padding: 4px; }}
-                .draw-round {{ min-width: 140px; padding: 0 6px; }}
-                .draw-round-header {{ font-size: 8px; padding: 2px 0 4px; }}
-                .draw-match .draw-player {{ font-size: 8px; min-height: 15px; padding: 1px 2px; }}
-                .draw-player .seed {{ font-size: 7px; }}
-                .draw-player .entry {{ font-size: 7px; }}
-                .draw-player .seed-entry {{ min-width: 20px; }}
-                .draw-player .country {{ font-size: 8px; width: 14px; min-width: 14px; }}
-                .draw-player .set-score {{ font-size: 7px; width: 9px; }}
-                .draw-player .set-score sup {{ font-size: 5px; }}
-                .draw-no-draws {{ font-size: 10px; padding: 24px; }}
+                #draws-tournament-select {{ font-size: 10px; min-width: 0; width: 100%; padding: 5px 22px 5px 7px; }}
+                .draws-toolbar > span[style*="font-size"] {{ display: none !important; }}
+                .draw-type-btn {{ padding: 2px 7px; font-size: 8px; }}
+                .draw-filter-reset {{ font-size: 8px; padding: 2px 7px; }}
+                .draw-bracket-wrapper {{ max-height: calc(100vh - 85px); }}
+                .draw-bracket {{ padding: 3px; }}
+                .draw-round {{ min-width: 130px; padding: 0 5px; }}
+                .draw-round-header {{ font-size: 7px; padding: 2px 0 3px; }}
+                .draw-match .draw-player {{ font-size: 7px; min-height: 14px; padding: 1px 2px; }}
+                .draw-player .seed {{ font-size: 6px; }}
+                .draw-player .entry {{ font-size: 6px; }}
+                .draw-player .seed-entry {{ width: 24px; }}
+                .draw-player .country {{ font-size: 7px; width: 13px; min-width: 13px; }}
+                .draw-player .set-score {{ font-size: 6px; width: 8px; }}
+                .draw-player .set-score sup {{ font-size: 4px; }}
+                .draw-no-draws {{ font-size: 9px; padding: 20px; }}
 
                 /* Points Breakdown extra-small */
                 #roadtogs-table th,
@@ -2101,11 +2097,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             <select id="draws-tournament-select" onchange="onDrawTournamentChange(this.value)">
                                 {draws_dropdown_html}
                             </select>
-                            <span style="font-size:9px;color:#94a3b8;margin-left:2px;">Click a round header to filter</span>
-                            <h2 id="draw-title"></h2>
+                            <div class="draws-type-btns" id="draws-type-btns"></div>
+                            <span style="font-size:9px;color:#94a3b8;">Click a round header to filter</span>
                             <span style="flex:1;"></span>
                             <button class="draw-filter-reset" id="draw-filter-reset" onclick="resetDrawFilter()">Show Full Draw</button>
-                            <div class="draws-type-btns" id="draws-type-btns"></div>
                         </div>
                         <div class="draw-bracket-wrapper" id="draw-bracket-wrapper">
                             <div class="draw-bracket" id="draw-bracket"></div>
@@ -4008,7 +4003,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     currentDrawType = types[0];
                 }}
                 updateDrawTypeButtons(types);
-                document.getElementById('draw-title').textContent = info.name || '';
                 loadDraw();
             }}
 
@@ -4057,7 +4051,22 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             function formatDrawName(rawName) {{
                 if (!rawName) return '';
-                return rawName.replace(/\\.\\.\\.$/, '').trim();
+                let name = rawName.replace(/\\.\\.\\.$/, '').trim();
+                // Shorten names > 25 chars: "LASTNAME1 LASTNAME2, First" -> "LASTNAME1 L., First"
+                if (name.length > 25) {{
+                    const ci = name.indexOf(',');
+                    if (ci > 0) {{
+                        const last = name.substring(0, ci).trim();
+                        const first = name.substring(ci + 1).trim();
+                        const parts = last.split(/\\s+/);
+                        if (parts.length >= 2) {{
+                            // Keep first word of last name, abbreviate the rest
+                            const shortened = parts[0] + ' ' + parts.slice(1).map(p => p.charAt(0) + '.').join(' ');
+                            name = shortened + ', ' + first;
+                        }}
+                    }}
+                }}
+                return name;
             }}
 
             function parseScore(scoreStr) {{
@@ -4109,9 +4118,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const flagHtml = '<span class="country">' + flag + '</span>';
                 let seedEntry = '<span class="seed-entry"></span>';
                 if (player) {{
-                    const seed = player.seed ? '<span class="seed">' + player.seed + '</span>' : '';
-                    const entry = player.entry ? '<span class="entry">' + player.entry + '</span>' : '';
-                    seedEntry = '<span class="seed-entry">' + seed + entry + '</span>';
+                    let seText = '';
+                    if (player.seed && player.entry) {{
+                        seText = '<span class="seed">' + player.seed + '/' + '</span><span class="entry">' + player.entry + '</span>';
+                    }} else if (player.seed) {{
+                        seText = '<span class="seed">' + player.seed + '</span>';
+                    }} else if (player.entry) {{
+                        seText = '<span class="entry">' + player.entry + '</span>';
+                    }}
+                    seedEntry = '<span class="seed-entry">' + seText + '</span>';
                 }}
                 let name = '';
                 if (player) name = formatDrawName(player.name);
@@ -4224,13 +4239,24 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 drawConnectors(container);
             }}
 
+            function getOffsetRelativeTo(el, ancestor) {{
+                let x = 0, y = 0;
+                let current = el;
+                while (current && current !== ancestor) {{
+                    x += current.offsetLeft;
+                    y += current.offsetTop;
+                    current = current.offsetParent;
+                }}
+                return {{ x, y, w: el.offsetWidth, h: el.offsetHeight }};
+            }}
+
             function drawConnectors(container) {{
                 const rounds = container.querySelectorAll('.draw-round');
                 const oldSvg = container.querySelector('svg');
                 if (oldSvg) oldSvg.remove();
 
                 const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+                svg.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;';
                 svg.setAttribute('width', container.scrollWidth);
                 svg.setAttribute('height', container.scrollHeight);
                 container.appendChild(svg);
@@ -4250,18 +4276,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         const botMatch = botIdx < currMatches.length ? currMatches[botIdx] : null;
                         const nextMatch = nextMatches[m];
 
-                        const topRect = topMatch.getBoundingClientRect();
-                        const nextRect = nextMatch.getBoundingClientRect();
-                        const containerRect = container.getBoundingClientRect();
+                        const topPos = getOffsetRelativeTo(topMatch, container);
+                        const nextPos = getOffsetRelativeTo(nextMatch, container);
 
-                        const xStart = topRect.right - containerRect.left;
-                        const xEnd = nextRect.left - containerRect.left;
+                        const xStart = topPos.x + topPos.w;
+                        const xEnd = nextPos.x;
                         const xMid = (xStart + xEnd) / 2;
 
-                        const yT = topRect.top + topRect.height / 2 - containerRect.top;
-                        const yN = nextRect.top + nextRect.height / 2 - containerRect.top;
+                        const yT = topPos.y + topPos.h / 2;
+                        const yN = nextPos.y + nextPos.h / 2;
 
-                        // Top match connector
                         const pathT = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                         pathT.setAttribute('d', `M${{xStart}},${{yT}} H${{xMid}} V${{yN}} H${{xEnd}}`);
                         pathT.setAttribute('fill', 'none');
@@ -4269,10 +4293,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         pathT.setAttribute('stroke-width', '1');
                         svg.appendChild(pathT);
 
-                        // Bottom match connector
                         if (botMatch) {{
-                            const botRect = botMatch.getBoundingClientRect();
-                            const yB = botRect.top + botRect.height / 2 - containerRect.top;
+                            const botPos = getOffsetRelativeTo(botMatch, container);
+                            const yB = botPos.y + botPos.h / 2;
                             const pathB = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                             pathB.setAttribute('d', `M${{xStart}},${{yB}} H${{xMid}} V${{yN}} H${{xEnd}}`);
                             pathB.setAttribute('fill', 'none');

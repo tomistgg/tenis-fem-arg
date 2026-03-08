@@ -114,6 +114,34 @@ def _parse_page(text):
                 continue
 
         if not players_done:
+            # Combined line: "POS ENTRY SEED NAME, First" e.g. "1 WC 1 NAVARRO, Emma"
+            combo_match = re.match(
+                r'^(\d+)\s+(WC|LL|PR|SE|ALT|Alt|Q)\s+(\d+)\s+([A-Z][A-Z\s]+,\s*.+)$', line)
+            if combo_match:
+                current_pos = int(combo_match.group(1))
+                current_entry = combo_match.group(2)
+                current_seed = combo_match.group(3)
+                name = combo_match.group(4).strip()
+                country = ""
+                inline_country = re.match(r'^(.+?)([A-Z]{3})$', name)
+                if inline_country and re.match(r'.*[a-z]$', inline_country.group(1)):
+                    name = inline_country.group(1).strip()
+                    country = inline_country.group(2)
+                if not country and i < len(lines):
+                    next_line = lines[i].strip()
+                    if re.match(r'^[A-Z]{3}$', next_line):
+                        country = next_line
+                        i += 1
+                players.append({
+                    "pos": current_pos,
+                    "seed": current_seed,
+                    "entry": current_entry,
+                    "name": name,
+                    "country": country,
+                })
+                current_pos = None
+                continue
+
             # Try to parse position line: just a number, or "number entry" like "3 Q" or "28 Q"
             pos_match = re.match(r'^(\d+)(?:\s+(WC|LL|PR|SE|ALT|Alt|Q))?$', line)
             if pos_match:
