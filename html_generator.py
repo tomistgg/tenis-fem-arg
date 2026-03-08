@@ -1713,9 +1713,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
 
                 /* Draws mobile */
-                .draws-toolbar {{ padding: 4px 8px; gap: 6px; }}
-                #draws-tournament-select {{ font-size: 10px; min-width: 120px; padding: 4px 20px 4px 6px; }}
-                #draw-title {{ font-size: 11px; }}
+                .draws-toolbar {{ padding: 4px 8px; gap: 6px; flex-wrap: wrap; justify-content: center; }}
+                #draws-tournament-select {{ font-size: 11px; min-width: 0; width: 100%; padding: 6px 24px 6px 8px; color: #1e293b; font-weight: 600; text-align: center; text-align-last: center; border-color: #cbd5e1; }}
+                #draw-title {{ display: none !important; }}
+                .draws-toolbar > span {{ display: none !important; }}
+                .draws-toolbar > span[style*="flex:1"] {{ display: none !important; }}
                 .draw-type-btn {{ padding: 3px 8px; font-size: 9px; }}
                 .draw-filter-reset {{ font-size: 9px; padding: 3px 8px; }}
                 .draws-toolbar > span {{ font-size: 8px !important; }}
@@ -4234,6 +4236,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 container.appendChild(svg);
 
                 for (let r = 0; r < rounds.length - 1; r++) {{
+                    // Skip connectors from/to hidden rounds
+                    if (rounds[r].classList.contains('hidden-round') || rounds[r + 1].classList.contains('hidden-round')) continue;
                     const currMatches = rounds[r].querySelectorAll('.draw-match-wrapper');
                     const nextMatches = rounds[r + 1].querySelectorAll('.draw-match-wrapper');
 
