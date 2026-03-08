@@ -634,11 +634,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #view-gallery {{ max-width: 1400px; margin: 0 auto; }}
             #view-draws {{ width: 100%; max-width: 100%; margin: 0; }}
             .draws-layout {{ display: flex; flex-direction: column; width: 100%; }}
-            .draws-toolbar {{ display: flex; align-items: center; gap: 10px; padding: 6px 12px; flex-wrap: wrap; }}
+            .draws-toolbar {{ display: flex; align-items: center; gap: 10px; padding: 6px 12px; flex-wrap: wrap; position: relative; }}
             #draws-tournament-select {{ padding: 5px 24px 5px 8px; border: 2px solid #94a3b8; border-radius: 8px; font-size: 11px; font-family: inherit; background: white; min-width: 160px; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; cursor: pointer; }}
             #draws-tournament-select optgroup {{ font-size: 10px; font-weight: bold; background: #e2e8f0; color: #475569; padding: 4px 0; }}
             #draws-tournament-select option {{ font-size: 11px; font-weight: normal; background: white; padding: 4px 8px; }}
-            #draw-title {{ margin: 0; font-size: 13px; flex: 1; text-align: center; white-space: nowrap; }}
+            #draw-title {{ margin: 0; font-size: 13px; position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; pointer-events: none; }}
             .draws-type-btns {{ display: flex; gap: 0; }}
             .draw-type-btn {{ padding: 4px 10px; border: 1px solid #cbd5e1; background: white; font-family: inherit; font-size: 10px; font-weight: 600; color: #64748b; cursor: pointer; }}
             .draw-type-btn:first-child {{ border-radius: 6px 0 0 6px; }}
@@ -646,8 +646,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .draw-type-btn.active {{ background: #1e293b; color: white; border-color: #1e293b; }}
             .draw-bracket-wrapper {{ overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 110px); padding-bottom: 12px; }}
             .draw-bracket {{ display: flex; gap: 0; padding: 6px; min-width: max-content; position: relative; }}
-            .draw-round {{ display: flex; flex-direction: column; min-width: 175px; padding: 0 10px; }}
-            .draw-round-header {{ text-align: center; font-weight: bold; font-size: 9px; color: #64748b; padding: 3px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; background: #f8fafc; z-index: 2; }}
+            .draw-round {{ display: flex; flex-direction: column; min-width: 175px; padding: 0 10px; transition: min-width 0.2s, padding 0.2s, opacity 0.2s; }}
+            .draw-round.hidden-round {{ display: none; }}
+            .draw-round-header {{ text-align: center; font-weight: bold; font-size: 9px; color: #64748b; padding: 3px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; background: #f8fafc; z-index: 2; cursor: pointer; }}
+            .draw-round-header:hover {{ color: #1e40af; text-decoration: underline; }}
+            .draw-round-header.active-filter {{ color: #1e40af; }}
+            .draw-filter-reset {{ display: none; font-size: 10px; color: #64748b; cursor: pointer; padding: 4px 10px; border: 1px solid #cbd5e1; border-radius: 6px; background: white; font-family: inherit; }}
+            .draw-filter-reset:hover {{ background: #f1f5f9; color: #1e293b; }}
+            .draw-filter-reset.visible {{ display: inline-block; }}
             .draw-match-wrapper {{ flex: 1; display: flex; align-items: center; padding: 2px 0; }}
             .draw-match {{ display: flex; flex-direction: column; width: 100%; }}
             .draw-match .draw-player {{ display: flex; align-items: center; padding: 1px 3px; font-size: 10px; border: 1px solid #e2e8f0; background: white; min-height: 18px; gap: 1px; cursor: default; }}
@@ -1706,6 +1712,26 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
 
+                /* Draws mobile */
+                .draws-toolbar {{ padding: 4px 8px; gap: 6px; }}
+                #draws-tournament-select {{ font-size: 10px; min-width: 120px; padding: 4px 20px 4px 6px; }}
+                #draw-title {{ font-size: 11px; }}
+                .draw-type-btn {{ padding: 3px 8px; font-size: 9px; }}
+                .draw-filter-reset {{ font-size: 9px; padding: 3px 8px; }}
+                .draws-toolbar > span {{ font-size: 8px !important; }}
+                .draw-bracket-wrapper {{ max-height: calc(100vh - 90px); }}
+                .draw-bracket {{ padding: 4px; }}
+                .draw-round {{ min-width: 140px; padding: 0 6px; }}
+                .draw-round-header {{ font-size: 8px; padding: 2px 0 4px; }}
+                .draw-match .draw-player {{ font-size: 8px; min-height: 15px; padding: 1px 2px; }}
+                .draw-player .seed {{ font-size: 7px; }}
+                .draw-player .entry {{ font-size: 7px; }}
+                .draw-player .seed-entry {{ min-width: 20px; }}
+                .draw-player .country {{ font-size: 8px; width: 14px; min-width: 14px; }}
+                .draw-player .set-score {{ font-size: 7px; width: 9px; }}
+                .draw-player .set-score sup {{ font-size: 5px; }}
+                .draw-no-draws {{ font-size: 10px; padding: 24px; }}
+
                 /* Points Breakdown extra-small */
                 #roadtogs-table th,
                 #roadtogs-table td {{
@@ -1736,12 +1762,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div class="sidebar-header">WT Argentina</div>
                 <div class="menu-item active" id="btn-upcoming" onclick="switchTab('upcoming')">Upcoming Tournaments</div>
                 <div class="menu-item" id="btn-entrylists" onclick="switchTab('entrylists')">Entry Lists</div>
+                <div class="menu-item" id="btn-draws" onclick="switchTab('draws')">Draws</div>
                 <div class="menu-item" id="btn-calendar" onclick="switchTab('calendar')">Calendar</div>
                 <div class="menu-item" id="btn-rankings" onclick="switchTab('rankings')">WTA Rankings</div>
                 <div class="menu-item" id="btn-roadtogs" onclick="switchTab('roadtogs')">Points Breakdown</div>
                 <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
                 <div class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</div>
-                <div class="menu-item" id="btn-draws" onclick="switchTab('draws')">Draws</div>
                 <a class="menu-item" href="https://www.flickr.com/photos/tomistgg/albums" target="_blank" onclick="return confirm('You are about to open a new tab to Flickr.com where the photos are saved, are you sure you want to continue?')">Photo Gallery</a>
             </div>
 
@@ -2073,7 +2099,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             <select id="draws-tournament-select" onchange="onDrawTournamentChange(this.value)">
                                 {draws_dropdown_html}
                             </select>
+                            <span style="font-size:9px;color:#94a3b8;margin-left:2px;">Click a round header to filter</span>
                             <h2 id="draw-title"></h2>
+                            <span style="flex:1;"></span>
+                            <button class="draw-filter-reset" id="draw-filter-reset" onclick="resetDrawFilter()">Show Full Draw</button>
                             <div class="draws-type-btns" id="draws-type-btns"></div>
                         </div>
                         <div class="draw-bracket-wrapper" id="draw-bracket-wrapper">
@@ -4003,6 +4032,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
 
             function loadDraw() {{
+                currentDrawFilterRound = 0;
+                document.getElementById('draw-filter-reset').classList.remove('visible');
                 const key = currentDrawTKey + '|' + currentDrawType;
                 const data = drawsData[key];
                 const bracket = document.getElementById('draw-bracket');
@@ -4133,7 +4164,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 let html = '';
                 for (let r = 0; r < numRounds; r++) {{
                     const label = r < pdfRoundLabels.length ? pdfRoundLabels[r] : 'R' + (r + 1);
-                    html += '<div class="draw-round"><div class="draw-round-header">' + label + '</div>';
+                    html += '<div class="draw-round" data-round="' + r + '"><div class="draw-round-header" data-round="' + r + '" onclick="filterDrawFromRound(' + r + ')" title="Click to show from this round">' + label + '</div>';
 
                     if (r === 0) {{
                         const numMatches = Math.floor(drawSize / 2);
@@ -4248,6 +4279,76 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     }}
                 }}
             }}
+
+            let currentDrawFilterRound = 0;
+
+            function filterDrawFromRound(r) {{
+                const container = document.getElementById('draw-bracket');
+                const rounds = container.querySelectorAll('.draw-round');
+                const resetBtn = document.getElementById('draw-filter-reset');
+
+                if (currentDrawFilterRound === r) {{
+                    resetDrawFilter();
+                    return;
+                }}
+
+                currentDrawFilterRound = r;
+
+                rounds.forEach((round, idx) => {{
+                    const header = round.querySelector('.draw-round-header');
+                    if (idx < r) {{
+                        round.classList.add('hidden-round');
+                    }} else {{
+                        round.classList.remove('hidden-round');
+                    }}
+                    if (header) {{
+                        header.classList.toggle('active-filter', idx === r);
+                    }}
+                }});
+
+                resetBtn.classList.add('visible');
+                // Redraw connectors after layout change
+                setTimeout(() => drawConnectors(container), 50);
+            }}
+
+            function resetDrawFilter() {{
+                const container = document.getElementById('draw-bracket');
+                const rounds = container.querySelectorAll('.draw-round');
+                const resetBtn = document.getElementById('draw-filter-reset');
+
+                currentDrawFilterRound = 0;
+                rounds.forEach(round => {{
+                    round.classList.remove('hidden-round');
+                    const header = round.querySelector('.draw-round-header');
+                    if (header) header.classList.remove('active-filter');
+                }});
+                resetBtn.classList.remove('visible');
+                setTimeout(() => drawConnectors(container), 50);
+            }}
+
+            // Constrain draw scroll: prevent scrolling left past initial position (scrollLeft=0)
+            (function() {{
+                const wrapper = document.getElementById('draw-bracket-wrapper');
+                if (!wrapper) return;
+                wrapper.addEventListener('scroll', function() {{
+                    if (this.scrollLeft < 0) this.scrollLeft = 0;
+                }});
+                // Touch-based constraint for mobile
+                let touchStartX = 0;
+                let scrollStartX = 0;
+                wrapper.addEventListener('touchstart', function(e) {{
+                    touchStartX = e.touches[0].clientX;
+                    scrollStartX = this.scrollLeft;
+                }}, {{ passive: true }});
+                wrapper.addEventListener('touchmove', function(e) {{
+                    if (this.scrollLeft < 0) this.scrollLeft = 0;
+                    // If at left edge and trying to scroll further left, prevent
+                    const dx = e.touches[0].clientX - touchStartX;
+                    if (scrollStartX === 0 && dx > 0) {{
+                        this.scrollLeft = 0;
+                    }}
+                }}, {{ passive: true }});
+            }})();
 
         </script>
     </body>
