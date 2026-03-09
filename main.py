@@ -30,6 +30,7 @@ from itf import (
 )
 from html_generator import generate_html
 from draws import fetch_tournament_draws, fetch_itf_tournament_draws
+from tstrength import build_tstrength_data
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -432,6 +433,9 @@ def main():
     calendar_data = build_calendar_data(full_wta + full_itf)
     build_calendar_snapshot(calendar_data)
 
+    # 7b. Build tournament strength data (cached)
+    tstrength_data = build_tstrength_data()
+
     # 8. Generate HTML
     national_team_data = load_csv_rows(os.path.join(DATA_DIR, 'national_team_order.csv'), delimiter=';')
     captains_data = load_csv_rows(os.path.join(DATA_DIR, 'captains.csv'))
@@ -441,7 +445,8 @@ def main():
         cleaned_history, calendar_data, match_history_data, all_wta_players,
         national_team_data=national_team_data,
         captains_data=captains_data,
-        draws_data=draws_store
+        draws_data=draws_store,
+        tstrength_data=tstrength_data
     )
 
 

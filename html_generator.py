@@ -52,7 +52,8 @@ def country_flag_html(code, show_code=True):
 
 def generate_html(tournament_groups, tournament_store, players_data, schedule_map,
                   cleaned_history, calendar_data, match_history_data, wta_rankings=None,
-                  national_team_data=None, captains_data=None, draws_data=None):
+                  national_team_data=None, captains_data=None, draws_data=None,
+                  tstrength_data=None):
     """Generate the complete HTML page and write it to index.html."""
 
     # Load points distribution
@@ -601,6 +602,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     except Exception as _e:
         bjkc_series_html = f'<p style="color:red;">Error loading BJK Cup data: {escape(str(_e))}</p>'
 
+    # Build T-Strength data as JSON for JS rendering
+    if tstrength_data is None:
+        tstrength_data = []
+    tstrength_json_list = [t for t in tstrength_data if t.get("gm", 0) > 0]
+    import json as _json
+    tstrength_json_str = _json.dumps(tstrength_json_list)
+
     # Generate the full HTML template
     html_template = f"""
     <!DOCTYPE html>
@@ -630,6 +638,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #view-entrylists {{ width: 100%; max-width: 1100px; margin: 0; }}
             #view-rankings {{ max-width: 700px; margin: 0 auto; }}
             #view-fedbcup {{ max-width: 1400px; margin: 0 auto; }}
+            #view-tstrength {{ width: 100%; margin: 0 auto; }}
             #view-roadtogs {{ max-width: 800px; margin: 0 auto; }}
             #view-gallery {{ max-width: 1400px; margin: 0 auto; }}
             #view-draws {{ width: 100%; max-width: 100%; margin: 0; }}
@@ -901,6 +910,23 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #captains-table th:nth-child(1), #captains-table td:nth-child(1) {{ width: 42px; }}
             #captains-table th:nth-child(2), #captains-table td:nth-child(2) {{ width: auto; }}
             #captains-table th:nth-child(3), #captains-table td:nth-child(3) {{ width: 64px; }}
+
+            /* T-Strength table */
+            #view-tstrength {{ display: flex; flex-direction: column; align-items: center; }}
+            .tstrength-wrapper {{ overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 160px); }}
+            .ts-controls {{ display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; justify-content: center; }}
+            .ts-controls button {{ padding: 4px 8px; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; background: #75AADB; color: #fff; border-color: #75AADB; font-family: inherit; min-width: 0; }}
+            .ts-controls button:hover {{ opacity: 0.85; }}
+            .ts-controls select {{ padding: 3px 18px 3px 4px; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: inherit; width: 100px; text-align-last: center; }}
+            #ts-filter-year {{ width: 60px; }}
+            .ts-explanation {{ max-width: 700px; margin: 0 auto 8px auto; font-size: 11px; color: #64748b; line-height: 1.4; }}
+            .ts-explanation p {{ margin: 2px 0; }}
+            #tstrength-table {{ border-collapse: collapse; font-size: 12px; white-space: nowrap; width: auto; margin: 0 auto; }}
+            #tstrength-table th, #tstrength-table td {{ padding: 3px 6px; border: 1px solid #e2e8f0; text-align: center; }}
+            #tstrength-table th {{ background: #75AADB; color: #fff; font-size: 11px; position: sticky; top: 0; z-index: 2; }}
+            #tstrength-table td.ts-rank-num {{ font-weight: 700; color: #64748b; }}
+            #tstrength-table td.ts-name {{ font-weight: 600; }}
+            #tstrength-table td.ts-gm, #tstrength-table td.ts-hm {{ font-weight: 700; }}
 
             /* Series view */
             #fedbcup-view-series {{ width: 100%; }}
@@ -1766,6 +1792,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div class="menu-item" id="btn-roadtogs" onclick="switchTab('roadtogs')">Points Breakdown</div>
                 <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
                 <div class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</div>
+                <div class="menu-item" id="btn-tstrength" onclick="switchTab('tstrength')">WTA TRN-STR</div>
                 <a class="menu-item" href="https://www.flickr.com/photos/tomistgg/albums" target="_blank" onclick="return confirm('You are about to open a new tab to Flickr.com where the photos are saved, are you sure you want to continue?')">Photo Gallery</a>
             </div>
 
@@ -2018,6 +2045,109 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                 </div>
 
+                <div id="view-tstrength" class="single-layout" style="display: none;">
+                    <div class="header-row">
+                        <h1>WTA TRN-STR</h1>
+                    </div>
+                    <div class="ts-controls">
+                        <button id="ts-sort-toggle" onclick="tsToggleSort()">Order by Date</button>
+                        <select id="ts-filter-year" onchange="tsRender()"><option value="2026">2026</option><option value="2025">2025</option></select>
+                        <select id="ts-filter-level" onchange="tsRender()"><option value="">All Levels</option><option value="WTA 500">WTA 500</option><option value="WTA 250">WTA 250</option><option value="WTA 125">WTA 125</option></select>
+                        <select id="ts-filter-surface" onchange="tsRender()"><option value="">All Surfaces</option><option value="Hard">Hard</option><option value="Clay">Clay</option><option value="Grass">Grass</option></select>
+                        <select id="ts-filter-region" onchange="tsRender()"><option value="">All Regions</option><option value="Europe">Europe</option><option value="North America">North America</option><option value="South America">South America</option><option value="Asia">Asia</option><option value="Middle East">Middle East</option><option value="Oceania">Oceania</option><option value="Africa">Africa</option></select>
+                    </div>
+                    <div class="ts-explanation">
+                        <p><strong>GM</strong> (Geometric Mean): Balanced measure of overall draw quality across all players.</p>
+                        <p><strong>HM</strong> (Harmonic Mean): Weighted toward top-ranked players. Reflects star power in the draw.</p>
+                    </div>
+                    <div class="tstrength-wrapper">
+                        <table id="tstrength-table">
+                            <thead><tr><th>#</th><th>GM</th><th>HM</th><th>Date</th><th>Tournament</th><th>Level</th><th>Surface</th><th>Region</th><th>Draw</th></tr></thead>
+                            <tbody id="tstrength-tbody"></tbody>
+                        </table>
+                    </div>
+                    <script>
+                    (function() {{
+                        var tsData = {tstrength_json_str};
+                        var tsSort = 'strength';
+                        var levelColors = {{"WTA 500":"#8e44ad55","WTA 250":"#2980b955","WTA 125":"#e8439355"}};
+                        var surfaceColors = {{"Hard":"#2980b955","Clay":"#e67e2255","Grass":"#27ae6055","Carpet":"#8e44ad55"}};
+                        var regionColors = {{"Europe":"#2980b955","North America":"#e74c3c55","South America":"#27ae6055","Asia":"#f39c1255","Oceania":"#8e44ad55","Middle East":"#795548aa","Africa":"#d3540055"}};
+
+                        function tsGradient(val, minV, maxV) {{
+                            if (maxV <= minV) return '#f1f5f9';
+                            var t = (val - minV) / (maxV - minV);
+                            t = Math.max(0, Math.min(1, t));
+                            var r, g, b;
+                            if (t < 0.5) {{
+                                var p = t * 2;
+                                r = Math.round(27 + p * (230 - 27));
+                                g = Math.round(135 + p * (195 - 135));
+                                b = Math.round(27 + p * (20 - 27));
+                            }} else {{
+                                var p = (t - 0.5) * 2;
+                                r = Math.round(230 + p * (180 - 230));
+                                g = Math.round(195 + p * (30 - 195));
+                                b = Math.round(20 + p * (30 - 20));
+                            }}
+                            return 'rgba(' + r + ',' + g + ',' + b + ',0.35)';
+                        }}
+
+                        window.tsToggleSort = function() {{
+                            tsSort = tsSort === 'strength' ? 'date' : 'strength';
+                            document.getElementById('ts-sort-toggle').textContent = tsSort === 'strength' ? 'Order by Date' : 'Order by Strength';
+                            tsRender();
+                        }};
+
+                        window.tsRender = function() {{
+                            var fy = document.getElementById('ts-filter-year').value;
+                            var fl = document.getElementById('ts-filter-level').value;
+                            var fs = document.getElementById('ts-filter-surface').value;
+                            var fr = document.getElementById('ts-filter-region').value;
+                            var filtered = tsData.filter(function(t) {{
+                                if ((t.year || '2025') !== fy) return false;
+                                if (fl && t.level !== fl) return false;
+                                if (fs && t.surface !== fs) return false;
+                                if (fr && t.region !== fr) return false;
+                                return true;
+                            }});
+                            if (tsSort === 'strength') {{
+                                filtered.sort(function(a, b) {{ return a.gm - b.gm; }});
+                            }} else {{
+                                filtered.sort(function(a, b) {{ return a.startDate < b.startDate ? -1 : a.startDate > b.startDate ? 1 : 0; }});
+                            }}
+                            var gmVals = filtered.map(function(t) {{ return t.gm; }});
+                            var hmVals = filtered.map(function(t) {{ return t.hm; }});
+                            var gmMin = Math.min.apply(null, gmVals), gmMax = Math.max.apply(null, gmVals);
+                            var hmMin = Math.min.apply(null, hmVals), hmMax = Math.max.apply(null, hmVals);
+                            var tbody = document.getElementById('tstrength-tbody');
+                            var html = '';
+                            for (var i = 0; i < filtered.length; i++) {{
+                                var t = filtered[i];
+                                var lc = levelColors[t.level] || '';
+                                var sc = surfaceColors[t.surface] || '';
+                                var rc = regionColors[t.region] || '';
+                                var gmBg = tsGradient(t.gm, gmMin, gmMax);
+                                var hmBg = tsGradient(t.hm, hmMin, hmMax);
+                                html += '<tr>';
+                                html += '<td class="ts-rank-num">' + (i + 1) + '</td>';
+                                html += '<td class="ts-gm" style="background:' + gmBg + '">' + t.gm + '</td>';
+                                html += '<td class="ts-hm" style="background:' + hmBg + '">' + t.hm + '</td>';
+                                html += '<td>' + t.startDate + '</td>';
+                                html += '<td class="ts-name">' + t.name + '</td>';
+                                html += '<td style="background:' + lc + '">' + t.level + '</td>';
+                                html += '<td style="background:' + sc + '">' + t.surface + '</td>';
+                                html += '<td style="background:' + rc + '">' + (t.region || '') + '</td>';
+                                html += '<td>' + t.playerCount + '</td>';
+                                html += '</tr>';
+                            }}
+                            tbody.innerHTML = html;
+                        }};
+                        tsRender();
+                    }})();
+                    </script>
+                </div>
+
                 <div id="view-calendar" class="single-layout" style="display: none;">
                     <div class="content-card calendar-container">
                         <div class="table-wrapper">
@@ -2194,6 +2324,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('view-roadtogs').style.display = (tabName === 'roadtogs') ? 'flex' : 'none';
                 document.getElementById('view-gallery').style.display = (tabName === 'gallery') ? 'flex' : 'none';
                 document.getElementById('view-draws').style.display = (tabName === 'draws') ? 'block' : 'none';
+                document.getElementById('view-tstrength').style.display = (tabName === 'tstrength') ? 'flex' : 'none';
 
                 if (tabName === 'gallery') initGallery();
                 if (tabName === 'entrylists') updateEntryList();
