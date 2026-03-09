@@ -25,10 +25,11 @@ from wta import (
 from itf import (
     get_full_itf_calendar, get_itf_players,
     get_dynamic_itf_calendar, get_itf_rankings_cached,
-    get_itf_level, parse_itf_entry_list
+    get_itf_level, parse_itf_entry_list,
+    get_draws_itf_tournament_list
 )
 from html_generator import generate_html
-from draws import fetch_tournament_draws
+from draws import fetch_tournament_draws, fetch_itf_tournament_draws
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -377,6 +378,10 @@ def main():
 
         # 5. Load match history
         match_history_data, cleaned_history = load_match_history()
+
+        # 5b. Fetch ITF draws tournament list (needs Selenium for GetEventFilters)
+        print("Fetching ITF draws tournament list...")
+        itf_draws_tournaments = get_draws_itf_tournament_list(driver)
     finally:
         driver.quit()
 
@@ -388,6 +393,23 @@ def main():
         for t_key, t_info in tourneys.items():
             print(f"Fetching draws for {t_info['name']}...")
             t_draws = fetch_tournament_draws(t_key, current_year)
+            if t_draws:
+                draws_store[t_key] = {
+                    "name": t_info["name"],
+                    "level": t_info.get("level", ""),
+                    "week": week,
+                    "draws": t_draws,
+                }
+
+    # 6b. Fetch ITF draws (uses requests.post, no Selenium needed)
+    for week, tourneys in itf_draws_tournaments.items():
+        for t_key, t_info in tourneys.items():
+            print(f"Fetching ITF draws for {t_info['name']}...")
+            tid = t_info.get("tournamentId")
+            if not tid:
+                continue
+            is_multiweek = t_info.get("is_multiweek", False)
+            t_draws = fetch_itf_tournament_draws(tid, is_multiweek=is_multiweek)
             if t_draws:
                 draws_store[t_key] = {
                     "name": t_info["name"],

@@ -1,5 +1,6 @@
-"""Parse WTA draw PDFs using plain text extraction with PyMuPDF."""
+"""Parse WTA draw PDFs and ITF draw JSON data."""
 
+import math
 import re
 import requests
 import fitz
@@ -348,3 +349,263 @@ def fetch_tournament_draws(tournament_url, year):
                 print(f"Error parsing {dtype_label} draw for {tid}: {e}")
 
     return draws
+
+
+# ── ITF draw support ──────────────────────────────────────────────────────────
+
+_ITF_DRAW_TYPES = [
+    ("M", "MDS", "Main Draw"),
+    ("Q", "QS", "Qualifying"),
+]
+
+_ITF_DRAWSHEET_URL = "https://www.itftennis.com/tennis/api/TournamentApi/GetDrawsheet"
+
+_ITF_ENTRY_MAP = {
+    "DA": "",
+    "WC": "WC",
+    "Q": "Q",
+    "LL": "LL",
+    "PR": "PR",
+    "SE": "SE",
+    "ALT": "ALT",
+}
+
+
+def _fetch_itf_drawsheet(tournament_id, classification, week_number=0):
+    """Fetch an ITF drawsheet via POST API (no Selenium needed)."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+        "Referer": f"https://www.itftennis.com/en/tournament/draws-and-results/print/?tournamentId={tournament_id}&circuitCode=WT",
+        "Origin": "https://www.itftennis.com",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "circuitCode": "WT",
+        "eventClassificationCode": classification,
+        "matchTypeCode": "S",
+        "tourType": "WT",
+        "tournamentId": str(tournament_id),
+        "weekNumber": week_number,
+    }
+    try:
+        resp = requests.post(_ITF_DRAWSHEET_URL, json=payload, headers=headers, timeout=15)
+        resp.raise_for_status()
+        return resp.json()
+    except Exception:
+        return None
+
+
+def _parse_itf_score(teams, winner_idx):
+    """Build a WTA-style score string from ITF score data.
+
+    WTA format combines winner+loser games per set: "64 75(3) 62"
+    means winner won 6-4, 7-5(3), 6-2.
+
+    The losingScore field on the LOSER's side contains the tiebreak points
+    they scored (e.g., loser has score=6, losingScore=4 means they lost the
+    tiebreak 4, so the set was 7-6(4) from the winner's perspective).
+    """
+    if winner_idx is None:
+        return ""
+    loser_idx = 1 - winner_idx
+    w_scores = teams[winner_idx].get("scores") or []
+    l_scores = teams[loser_idx].get("scores") or []
+    parts = []
+    for i in range(len(w_scores)):
+        ws = w_scores[i] if i < len(w_scores) else None
+        ls = l_scores[i] if i < len(l_scores) else None
+        if ws is None or ls is None:
+            continue
+        w_val = ws.get("score")
+        l_val = ls.get("score")
+        if w_val is None or l_val is None:
+            continue
+        # Combine winner+loser games like WTA format: "64" means 6-4
+        tb = ls.get("losingScore")
+        if tb is not None and tb > 0:
+            parts.append(f"{w_val}{l_val}({tb})")
+        else:
+            parts.append(f"{w_val}{l_val}")
+    return " ".join(parts)
+
+
+def _build_itf_match_entry(match, teams, round_num, match_idx):
+    """Build a match entry dict from an ITF match, handling PC, WO, and RET."""
+    result_code = match.get("resultStatusCode")
+    play_code = match.get("playStatusCode")
+
+    # A match has a result if it was played (PC) or decided by walkover/retirement
+    has_result = play_code == "PC" or result_code in ("WO", "RET", "DEF")
+    if not has_result:
+        return None
+
+    winner_idx = None
+    for t_idx, team in enumerate(teams):
+        if team.get("isWinner"):
+            winner_idx = t_idx
+            break
+    if winner_idx is None:
+        return None
+
+    winner_team = teams[winner_idx]
+    wp = (winner_team.get("players") or [None])[0]
+    if not wp:
+        return None
+
+    # Abbreviate: use only first letter of first given name, like WTA "J. Riera"
+    given = wp.get("givenName", "")
+    abbrev = given[0] + "." if given else ""
+    winner_name = f"{abbrev} {wp.get('familyName', '')}"
+
+    score = _parse_itf_score(teams, winner_idx)
+    if result_code == "RET":
+        score += " RET" if score else "RET"
+    elif result_code == "WO":
+        score = "W/O"
+    elif result_code == "DEF":
+        score += " DEF" if score else "DEF"
+
+    return {
+        "round": round_num,
+        "match_num": match_idx,
+        "winner_name": winner_name,
+        "score": score,
+    }
+
+
+def _parse_itf_draw(data):
+    """Convert ITF drawsheet JSON to the same format as parse_draw_pdf output."""
+    if not data or not isinstance(data, dict):
+        return None
+
+    ko_groups = data.get("koGroups") or []
+    if not ko_groups:
+        return None
+
+    rounds_data = ko_groups[0].get("rounds") or []
+    if not rounds_data:
+        return None
+
+    # Round 1 defines the draw positions
+    r1 = rounds_data[0]
+    r1_matches = r1.get("matches") or []
+    draw_size = len(r1_matches) * 2
+
+    players = []
+    byes = []
+    all_matches = []
+    round_labels = []
+
+    # Parse R1 to build player list and byes
+    for m_idx, match in enumerate(r1_matches):
+        teams = match.get("teams") or []
+        if len(teams) < 2:
+            continue
+
+        is_bye = match.get("resultStatusCode") == "BYE"
+        pos1 = m_idx * 2 + 1
+        pos2 = m_idx * 2 + 2
+
+        for t_idx, team in enumerate(teams):
+            pos = pos1 if t_idx == 0 else pos2
+            team_players = team.get("players") or []
+            player = team_players[0] if team_players and team_players[0] else None
+
+            if player:
+                family = player.get("familyName", "")
+                given = player.get("givenName", "")
+                name = f"{family.upper()}, {given}"
+                country = player.get("nationality", "")
+                seed = str(team.get("seeding")) if team.get("seeding") else ""
+                entry_raw = team.get("entryStatus") or ""
+                entry = _ITF_ENTRY_MAP.get(entry_raw, entry_raw)
+                players.append({
+                    "pos": pos,
+                    "seed": seed,
+                    "entry": entry,
+                    "name": name,
+                    "country": country,
+                })
+            elif is_bye:
+                byes.append(pos)
+
+        # Build match result for R1
+        match_entry = _build_itf_match_entry(match, teams, 1, m_idx)
+        if match_entry:
+            all_matches.append(match_entry)
+
+    # Parse subsequent rounds
+    for r_idx in range(1, len(rounds_data)):
+        rnd = rounds_data[r_idx]
+        rnd_matches = rnd.get("matches") or []
+        round_num = r_idx + 1
+
+        for m_idx, match in enumerate(rnd_matches):
+            teams = match.get("teams") or []
+            if len(teams) < 2:
+                continue
+            match_entry = _build_itf_match_entry(match, teams, round_num, m_idx)
+            if match_entry:
+                all_matches.append(match_entry)
+
+    # Build round labels
+    round_label_map = {
+        "1st Round": "Round of " + str(draw_size),
+        "2nd Round": "Round of " + str(draw_size // 2),
+        "3rd Round": "Round of " + str(draw_size // 4),
+        "Quarter-finals": "Quarterfinals",
+        "Semi-finals": "Semifinals",
+        "Final": "Final",
+    }
+    for rnd in rounds_data:
+        desc = rnd.get("roundDesc", "")
+        label = round_label_map.get(desc, desc)
+        round_labels.append(label)
+
+    num_rounds = len(rounds_data)
+
+    return {
+        "tournament_name": "",
+        "location": "",
+        "dates": "",
+        "prize": "",
+        "surface": "",
+        "draw_type": "",
+        "draw_size": draw_size,
+        "players": players,
+        "matches": all_matches,
+        "byes": sorted(byes),
+        "round_labels": round_labels,
+        "num_rounds": num_rounds,
+    }
+
+
+def fetch_itf_tournament_draws(tournament_id, is_multiweek=False):
+    """Fetch and parse ITF draws for a tournament. Returns dict like WTA draws."""
+    draws = {}
+    for classification, dtype_code, dtype_label in _ITF_DRAW_TYPES:
+        week_number = 1 if is_multiweek else 0
+        raw = _fetch_itf_drawsheet(tournament_id, classification, week_number)
+        if raw and raw.get("koGroups"):
+            try:
+                parsed = _parse_itf_draw(raw)
+                if parsed and parsed["players"]:
+                    draws[dtype_code] = parsed
+            except Exception as e:
+                print(f"Error parsing ITF {dtype_label} for {tournament_id}: {e}")
+    return draws
+
+
+def get_itf_tournament_id(tournament_key, driver):
+    """Get ITF tournamentId from tournamentKey via Selenium."""
+    api_url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={tournament_key}"
+    try:
+        driver.get(api_url)
+        import time
+        time.sleep(1)
+        raw = driver.find_element("tag name", "body").text.strip()
+        import json
+        data = json.loads(raw)
+        return data.get("tournamentId")
+    except Exception:
+        return None

@@ -237,6 +237,103 @@ def get_dynamic_itf_calendar(driver, num_weeks=3):
     return filtered
 
 
+def get_draws_itf_tournament_list(driver):
+    """Get ITF tournaments for the draws page: past week, current week, and next week.
+
+    Returns dict: week_label -> {tournamentKey -> {name, level, tournamentId, ...}}
+    Requires Selenium driver to fetch tournamentIds via GetEventFilters.
+    """
+    from calendar_builder import format_week_label
+
+    today = datetime.now()
+    current_monday = today - timedelta(days=today.weekday())
+    current_monday = current_monday.replace(hour=0, minute=0, second=0, microsecond=0)
+    past_monday = current_monday - timedelta(weeks=1)
+    two_weeks_later = current_monday + timedelta(weeks=2)
+
+    all_items = _fetch_itf_calendar_raw(driver)
+
+    # Filter to relevant week range
+    tournaments = []
+    name_counts = {}
+    for item in all_items:
+        status = (item.get('status') or item.get('tournamentStatus') or '').lower()
+        if 'cancel' in status:
+            continue
+        t_name = item.get('tournamentName', '')
+        if 'cancel' in t_name.lower():
+            continue
+        start_str = (item.get('startDate') or '')[:10]
+        if not start_str:
+            continue
+        try:
+            start_date = datetime.strptime(start_str, "%Y-%m-%d")
+        except ValueError:
+            continue
+        monday = start_date - timedelta(days=start_date.weekday())
+        if not (past_monday <= monday < two_weeks_later):
+            continue
+        tournaments.append(item)
+        name_counts[t_name] = name_counts.get(t_name, 0) + 1
+
+    # Number duplicate names
+    name_seq = {}
+    for item in sorted(tournaments, key=lambda x: x.get('startDate', '')):
+        t_name = item.get('tournamentName', '')
+        if name_counts[t_name] > 1:
+            name_seq[t_name] = name_seq.get(t_name, 0) + 1
+            item['_display_name'] = f"{t_name} {name_seq[t_name]}"
+        else:
+            item['_display_name'] = t_name
+
+    # Fetch tournamentIds
+    for item in tournaments:
+        key = item.get('tournamentKey') or ''
+        if not key:
+            link = item.get('tournamentLink', '')
+            key = link.rstrip('/').split('/')[-1] if link else ''
+        if not key:
+            item['_tid'] = None
+            continue
+        item['_key'] = key
+        api_url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
+        try:
+            driver.get(api_url)
+            time.sleep(1)
+            raw = driver.find_element("tag name", "body").text.strip()
+            data = json.loads(raw)
+            item['_tid'] = data.get("tournamentId")
+        except Exception:
+            item['_tid'] = None
+
+    # Build result grouped by week
+    result = {}
+    for item in tournaments:
+        tid = item.get('_tid')
+        if not tid:
+            continue
+        key = item.get('_key', '')
+        start_str = (item.get('startDate') or '')[:10]
+        start_date = datetime.strptime(start_str, "%Y-%m-%d")
+        monday = start_date - timedelta(days=start_date.weekday())
+        week_label = format_week_label(monday)
+        level = get_itf_level(item.get('tournamentName', ''))
+        is_multiweek = (item.get('category') or '') == "ITF Womens Multi-Week Circuit"
+
+        if week_label not in result:
+            result[week_label] = {}
+        result[week_label][key] = {
+            "name": item['_display_name'],
+            "level": level,
+            "tournamentId": tid,
+            "startDate": item.get('startDate'),
+            "endDate": item.get('endDate'),
+            "is_multiweek": is_multiweek,
+        }
+
+    return result
+
+
 def get_itf_rankings(nationality="ARG"):
     all_players = []
     skip = 0
