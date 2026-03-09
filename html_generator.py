@@ -943,10 +943,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
                 .ts-controls select, .ts-controls button {{ font-size: 10px; }}
                 .ts-explanation {{ font-size: 8px; padding: 0 8px; }}
-                .tstrength-wrapper {{ width: 100%; max-width: 100vw; overflow-x: hidden; }}
-                #tstrength-table {{ width: 100%; table-layout: auto; font-size: 6px; white-space: nowrap; }}
-                #tstrength-table th {{ font-size: 6px; padding: 1px 0px; }}
-                #tstrength-table td {{ padding: 1px 0px; }}
+                .tstrength-wrapper {{ width: 100%; overflow-x: hidden; }}
+                #tstrength-table {{ width: 100% !important; min-width: 0 !important; table-layout: fixed !important; font-size: 7px; white-space: normal !important; }}
+                #tstrength-table th, #tstrength-table td {{ font-size: 7px; padding: 3px 0px !important; white-space: normal !important; word-break: break-word; line-height: 1.1; overflow: hidden; }}
+                #tstrength-table th:nth-child(1), #tstrength-table td:nth-child(1) {{ width: 5%; }}
+                #tstrength-table th:nth-child(2), #tstrength-table td:nth-child(2) {{ width: 8%; }}
+                #tstrength-table th:nth-child(3), #tstrength-table td:nth-child(3) {{ width: 8%; }}
+                #tstrength-table th:nth-child(4), #tstrength-table td:nth-child(4) {{ width: 11%; }}
+                #tstrength-table th:nth-child(5), #tstrength-table td:nth-child(5) {{ width: 27%; }}
+                #tstrength-table th:nth-child(6), #tstrength-table td:nth-child(6) {{ width: 9%; }}
+                #tstrength-table th:nth-child(7), #tstrength-table td:nth-child(7) {{ width: 12%; }}
+                #tstrength-table th:nth-child(8), #tstrength-table td:nth-child(8) {{ width: 9%; }}
+                #tstrength-table th:nth-child(9), #tstrength-table td:nth-child(9) {{ width: 8%; }}
             }}
 
             /* Series view */
@@ -1813,7 +1821,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div class="menu-item" id="btn-roadtogs" onclick="switchTab('roadtogs')">Points Breakdown</div>
                 <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
                 <div class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</div>
-                <div class="menu-item" id="btn-tstrength" onclick="switchTab('tstrength')">WTA TRN-STR</div>
+                <div class="menu-item" id="btn-tstrength" onclick="switchTab('tstrength')">WTA TRN STR</div>
                 <a class="menu-item" href="https://www.flickr.com/photos/tomistgg/albums" target="_blank" onclick="return confirm('You are about to open a new tab to Flickr.com where the photos are saved, are you sure you want to continue?')">Photo Gallery</a>
             </div>
 
@@ -2068,7 +2076,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 <div id="view-tstrength" class="single-layout" style="display: none;">
                     <div class="header-row">
-                        <h1>WTA TRN-STR</h1>
+                        <h1>WTA Tournament Strength</h1>
                     </div>
                     <div class="ts-controls">
                         <div class="ts-row1"><button id="ts-sort-toggle" onclick="tsToggleSort()">Order by Strength</button>
@@ -2091,7 +2099,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     (function() {{
                         var tsData = {tstrength_json_str};
                         var tsSort = 'date';
-                        var levelColors = {{"WTA 500":"#aa00ff88","WTA 250":"#0055ff88","WTA 125":"#ff006a88"}};
+                        var levelColors = {{"WTA 500":"#aa00ff88","WTA 250":"#0055ff88","WTA 125":"#ffaa0088"}};
                         var surfaceColors = {{"Hard":"#0055ff88","Clay":"#ff550088","Grass":"#00bb3388","Carpet":"#aa00ff88"}};
                         var regionColors = {{"Europe":"#0055ff88","North America":"#ff111188","South America":"#00bb3388","Asia":"#ffaa0088","Oceania":"#aa00ff88","Middle East":"#ff660088","Africa":"#ff330088"}};
 
