@@ -2091,9 +2091,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     (function() {{
                         var tsData = {tstrength_json_str};
                         var tsSort = 'date';
-                        var levelColors = {{"WTA 500":"#8e44ad55","WTA 250":"#2980b955","WTA 125":"#e8439355"}};
-                        var surfaceColors = {{"Hard":"#2980b955","Clay":"#e67e2255","Grass":"#27ae6055","Carpet":"#8e44ad55"}};
-                        var regionColors = {{"Europe":"#2980b955","North America":"#e74c3c55","South America":"#27ae6055","Asia":"#f39c1255","Oceania":"#8e44ad55","Middle East":"#795548aa","Africa":"#d3540055"}};
+                        var levelColors = {{"WTA 500":"#aa00ff88","WTA 250":"#0055ff88","WTA 125":"#ff006a88"}};
+                        var surfaceColors = {{"Hard":"#0055ff88","Clay":"#ff550088","Grass":"#00bb3388","Carpet":"#aa00ff88"}};
+                        var regionColors = {{"Europe":"#0055ff88","North America":"#ff111188","South America":"#00bb3388","Asia":"#ffaa0088","Oceania":"#aa00ff88","Middle East":"#ff660088","Africa":"#ff330088"}};
 
                         function tsGradient(val, minV, maxV) {{
                             if (maxV <= minV) return '#f1f5f9';
@@ -2102,16 +2102,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             var r, g, b;
                             if (t < 0.5) {{
                                 var p = t * 2;
-                                r = Math.round(27 + p * (230 - 27));
-                                g = Math.round(135 + p * (195 - 135));
-                                b = Math.round(27 + p * (20 - 27));
+                                r = Math.round(0 + p * (255 - 0));
+                                g = Math.round(200 + p * (220 - 200));
+                                b = Math.round(0 + p * (0 - 0));
                             }} else {{
                                 var p = (t - 0.5) * 2;
-                                r = Math.round(230 + p * (180 - 230));
-                                g = Math.round(195 + p * (30 - 195));
-                                b = Math.round(20 + p * (30 - 20));
+                                r = Math.round(255 + p * (220 - 255));
+                                g = Math.round(220 + p * (0 - 220));
+                                b = Math.round(0 + p * (0 - 0));
                             }}
-                            return 'rgba(' + r + ',' + g + ',' + b + ',0.35)';
+                            return 'rgba(' + r + ',' + g + ',' + b + ',0.50)';
                         }}
 
                         window.tsToggleSort = function() {{
