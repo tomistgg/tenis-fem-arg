@@ -928,6 +928,27 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #tstrength-table td.ts-name {{ font-weight: 600; }}
             #tstrength-table td.ts-gm, #tstrength-table td.ts-hm {{ font-weight: 700; }}
 
+            .ts-row1, .ts-row2 {{ display: contents; }}
+
+            @media (max-width: 768px) {{
+                .ts-controls {{
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 4px;
+                }}
+                .ts-row1, .ts-row2 {{
+                    display: flex;
+                    gap: 6px;
+                    justify-content: center;
+                }}
+                .ts-controls select, .ts-controls button {{ font-size: 10px; }}
+                .ts-explanation {{ font-size: 8px; padding: 0 8px; }}
+                .tstrength-wrapper {{ width: 100%; max-width: 100vw; overflow-x: hidden; }}
+                #tstrength-table {{ width: 100%; table-layout: auto; font-size: 6px; white-space: nowrap; }}
+                #tstrength-table th {{ font-size: 6px; padding: 1px 0px; }}
+                #tstrength-table td {{ padding: 1px 0px; }}
+            }}
+
             /* Series view */
             #fedbcup-view-series {{ width: 100%; }}
             .bjkc-series-block {{ margin-bottom: 20px; }}
@@ -2050,11 +2071,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         <h1>WTA TRN-STR</h1>
                     </div>
                     <div class="ts-controls">
-                        <button id="ts-sort-toggle" onclick="tsToggleSort()">Order by Date</button>
-                        <select id="ts-filter-year" onchange="tsRender()"><option value="2026">2026</option><option value="2025">2025</option></select>
-                        <select id="ts-filter-level" onchange="tsRender()"><option value="">All Levels</option><option value="WTA 500">WTA 500</option><option value="WTA 250">WTA 250</option><option value="WTA 125">WTA 125</option></select>
+                        <div class="ts-row1"><button id="ts-sort-toggle" onclick="tsToggleSort()">Order by Strength</button>
+                        <select id="ts-filter-year" onchange="tsRender()"><option value="2026">2026</option><option value="2025">2025</option></select></div>
+                        <div class="ts-row2"><select id="ts-filter-level" onchange="tsRender()"><option value="">All Levels</option><option value="WTA 500">WTA 500</option><option value="WTA 250">WTA 250</option><option value="WTA 125">WTA 125</option></select>
                         <select id="ts-filter-surface" onchange="tsRender()"><option value="">All Surfaces</option><option value="Hard">Hard</option><option value="Clay">Clay</option><option value="Grass">Grass</option></select>
-                        <select id="ts-filter-region" onchange="tsRender()"><option value="">All Regions</option><option value="Europe">Europe</option><option value="North America">North America</option><option value="South America">South America</option><option value="Asia">Asia</option><option value="Middle East">Middle East</option><option value="Oceania">Oceania</option><option value="Africa">Africa</option></select>
+                        <select id="ts-filter-region" onchange="tsRender()"><option value="">All Regions</option><option value="Europe">Europe</option><option value="North America">North America</option><option value="South America">South America</option><option value="Asia">Asia</option><option value="Middle East">Middle East</option><option value="Oceania">Oceania</option><option value="Africa">Africa</option></select></div>
                     </div>
                     <div class="ts-explanation">
                         <p><strong>GM</strong> (Geometric Mean): Balanced measure of overall draw quality across all players.</p>
@@ -2069,7 +2090,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     <script>
                     (function() {{
                         var tsData = {tstrength_json_str};
-                        var tsSort = 'strength';
+                        var tsSort = 'date';
                         var levelColors = {{"WTA 500":"#8e44ad55","WTA 250":"#2980b955","WTA 125":"#e8439355"}};
                         var surfaceColors = {{"Hard":"#2980b955","Clay":"#e67e2255","Grass":"#27ae6055","Carpet":"#8e44ad55"}};
                         var regionColors = {{"Europe":"#2980b955","North America":"#e74c3c55","South America":"#27ae6055","Asia":"#f39c1255","Oceania":"#8e44ad55","Middle East":"#795548aa","Africa":"#d3540055"}};
@@ -2122,6 +2143,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             var hmMin = Math.min.apply(null, hmVals), hmMax = Math.max.apply(null, hmVals);
                             var tbody = document.getElementById('tstrength-tbody');
                             var html = '';
+                            var isMobile = window.innerWidth <= 768;
+                            var regionShort = {{"North America":"NA","South America":"SA","Central America":"CA","Caribbean":"Carib","Middle East":"ME","Europe":"EU","Asia":"AS","Oceania":"OC","Africa":"AF"}};
+                            var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                            function ordinal(d) {{ var s = ['th','st','nd','rd']; var v = d % 100; return d + (s[(v-20)%10] || s[v] || s[0]); }}
+                            function fmtDate(ds) {{
+                                var p = ds.split('-'); var m = parseInt(p[1],10)-1; var d = parseInt(p[2],10);
+                                return months[m] + ' ' + ordinal(d);
+                            }}
+                            function cleanName(n) {{
+                                var cleaned = n.replace(/\\s*\\d{{3}}\\s*/g, ' ').replace(/\\s+/g,' ').trim();
+                                var hashMatch = n.match(/#\d+/);
+                                if (hashMatch && cleaned.indexOf(hashMatch[0]) === -1) cleaned += ' ' + hashMatch[0];
+                                return cleaned;
+                            }}
                             for (var i = 0; i < filtered.length; i++) {{
                                 var t = filtered[i];
                                 var lc = levelColors[t.level] || '';
@@ -2129,15 +2164,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                 var rc = regionColors[t.region] || '';
                                 var gmBg = tsGradient(t.gm, gmMin, gmMax);
                                 var hmBg = tsGradient(t.hm, hmMin, hmMax);
+                                var dateStr = fmtDate(t.startDate);
+                                var levelStr = isMobile ? t.level.replace('WTA ','') : t.level;
+                                var regionStr = isMobile ? (regionShort[t.region] || t.region || '') : (t.region || '');
+                                var nameStr = cleanName(t.name);
                                 html += '<tr>';
                                 html += '<td class="ts-rank-num">' + (i + 1) + '</td>';
                                 html += '<td class="ts-gm" style="background:' + gmBg + '">' + t.gm + '</td>';
                                 html += '<td class="ts-hm" style="background:' + hmBg + '">' + t.hm + '</td>';
-                                html += '<td>' + t.startDate + '</td>';
-                                html += '<td class="ts-name">' + t.name + '</td>';
-                                html += '<td style="background:' + lc + '">' + t.level + '</td>';
+                                html += '<td>' + dateStr + '</td>';
+                                html += '<td class="ts-name">' + nameStr + '</td>';
+                                html += '<td style="background:' + lc + '">' + levelStr + '</td>';
                                 html += '<td style="background:' + sc + '">' + t.surface + '</td>';
-                                html += '<td style="background:' + rc + '">' + (t.region || '') + '</td>';
+                                html += '<td style="background:' + rc + '">' + regionStr + '</td>';
                                 html += '<td>' + t.playerCount + '</td>';
                                 html += '</tr>';
                             }}
