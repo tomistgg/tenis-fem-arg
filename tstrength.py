@@ -154,6 +154,55 @@ def _fetch_tournaments(year):
     return result
 
 
+def _fetch_tournaments_range(year, from_date, to_date):
+    """Fetch WTA tournaments (WTA 125+) within a date range from API."""
+    url = "https://api.wtatennis.com/tennis/tournaments/"
+    valid_levels = {"WTA 500", "WTA 250", "WTA 125"}
+    result = []
+    page = 0
+    while True:
+        params = {
+            "page": page,
+            "pageSize": 100,
+            "excludeLevels": "ITF",
+            "from": from_date,
+            "to": to_date,
+        }
+        try:
+            r = requests.get(url, headers=_WTA_API_HEADERS, params=params, timeout=15)
+            r.raise_for_status()
+            data = r.json()
+            tournaments = data.get("content", [])
+            if not tournaments:
+                break
+            for t in tournaments:
+                level = t.get("level", "")
+                if level not in valid_levels:
+                    continue
+                tid = t["tournamentGroup"]["id"]
+                raw_name = t["tournamentGroup"]["name"]
+                city = t.get("city", "")
+                start_date = t.get("startDate", "")[:10]
+                surface = t.get("surface") or t.get("surfaceType") or t.get("surfaceCode") or ""
+                country = t.get("countryCode") or t.get("country") or t.get("hostCountryCode") or ""
+                result.append({
+                    "id": str(tid),
+                    "name": raw_name,
+                    "city": city,
+                    "level": level,
+                    "startDate": start_date,
+                    "surface": surface,
+                    "country": country,
+                    "year": str(year),
+                })
+            page += 1
+        except Exception as e:
+            print(f"Error fetching tournaments ({from_date} to {to_date}, page {page}): {e}")
+            break
+    result.sort(key=lambda x: x["startDate"])
+    return result
+
+
 def _fetch_main_draw_players(tournament_id, year="2025"):
     """Fetch main draw player names from WTA matches API."""
     url = f"https://api.wtatennis.com/tennis/tournaments/{tournament_id}/{year}/matches"
@@ -194,10 +243,10 @@ def _geometric_mean(values):
 
 
 def build_tstrength_data():
-    """Build tournament strength data for 2025 and 2026 WTA tournaments.
+    """Build tournament strength data for WTA tournaments.
 
-    Returns list of dicts with tournament info, player rankings, HM, and GM.
-    Uses cache to avoid re-fetching tournaments that are already computed.
+    Returns cached entries plus any newly completed tournaments from the last 3 weeks.
+    Only fetches the API for recent tournaments, not the full year lists.
     """
     # Load cache (keyed by "year_id")
     cache = {}
@@ -212,112 +261,107 @@ def build_tstrength_data():
         except Exception:
             pass
 
-    # Load rankings
-    print("Loading rankings for T-Strength...")
-    rankings_index = _load_rankings_index()
+    # Only fetch recent tournaments (last 3 weeks) to find newly completed ones
+    today = datetime.now()
+    today_str = today.strftime("%Y-%m-%d")
+    from_date = (today - timedelta(days=21)).strftime("%Y-%m-%d")
+    year = str(today.year)
 
-    # Fetch tournament lists for both years
-    tournaments = []
-    for year in (2025, 2026):
-        print(f"Fetching {year} WTA tournament list...")
-        year_tournaments = _fetch_tournaments(year)
-        print(f"  Found {len(year_tournaments)} tournaments for {year}")
-        tournaments.extend(year_tournaments)
+    print(f"Fetching recent WTA tournaments ({from_date} to {today_str})...")
+    recent = _fetch_tournaments_range(year, from_date, today_str)
+    print(f"  Found {len(recent)} recent tournaments")
 
-    results = []
-    unranked_players = {}
-    today = datetime.now().strftime("%Y-%m-%d")
+    # Filter to only uncached tournaments
+    new_tournaments = []
+    for t in recent:
+        cache_key = f"{t['year']}_{t['id']}"
+        if cache_key not in cache:
+            new_tournaments.append(t)
 
-    for t in tournaments:
-        tid = t["id"]
-        year = t.get("year", "2025")
-        cache_key = f"{year}_{tid}"
+    if not new_tournaments:
+        print("  No new tournaments to process")
+    else:
+        print(f"  {len(new_tournaments)} new tournaments to process")
 
-        # Skip future tournaments (no matches yet)
-        if t["startDate"] > today:
-            continue
+        # Load rankings only if we have new tournaments
+        print("Loading rankings for T-Strength...")
+        rankings_index = _load_rankings_index()
+        unranked_players = {}
 
-        # Use cache if available
-        if cache_key in cache:
-            results.append(cache[cache_key])
-            continue
+        for t in new_tournaments:
+            tid = t["id"]
+            yr = t.get("year", year)
+            cache_key = f"{yr}_{tid}"
 
-        print(f"  Fetching players for {t['name']} ({t['startDate']})...")
-        players = _fetch_main_draw_players(tid, year)
-        time.sleep(0.3)
+            print(f"  Fetching players for {t['name']} ({t['startDate']})...")
+            players = _fetch_main_draw_players(tid, yr)
+            time.sleep(0.3)
 
-        if not players:
-            # Cache empty result to avoid re-fetching
-            cache[cache_key] = {"id": tid, "name": t["name"], "city": t["city"],
-                          "level": t["level"], "startDate": t["startDate"],
-                          "surface": t.get("surface", ""),
-                          "country": t.get("country", ""),
-                          "year": year,
-                          "rankings": [], "hm": 0, "gm": 0, "playerCount": 0}
-            continue
+            if not players:
+                cache[cache_key] = {"id": tid, "name": t["name"], "city": t["city"],
+                              "level": t["level"], "startDate": t["startDate"],
+                              "surface": t.get("surface", ""),
+                              "country": t.get("country", ""),
+                              "year": yr,
+                              "rankings": [], "hm": 0, "gm": 0, "playerCount": 0}
+                continue
 
-        # Get ranking week (Monday of tournament start)
-        ranking_week = _get_monday(t["startDate"])
-        week_rankings = rankings_index.get(ranking_week, {})
+            ranking_week = _get_monday(t["startDate"])
+            week_rankings = rankings_index.get(ranking_week, {})
 
-        # Match players to rankings, track unranked
-        player_ranks = []
-        for p in players:
-            norm_p = _normalize_name(p)
-            rank = week_rankings.get(norm_p)
-            # Try partial name (first + first-last) if full name not found
-            if rank is None and len(norm_p.split()) >= 3:
-                partial = norm_p.split()[0] + " " + norm_p.split()[1]
-                rank = week_rankings.get(partial)
-            if rank is None:
-                rank = DEFAULT_RANK
-                unranked_players[p] = unranked_players.get(p, [])
-                unranked_players[p].append(t["name"])
-            player_ranks.append(rank)
+            player_ranks = []
+            for p in players:
+                norm_p = _normalize_name(p)
+                rank = week_rankings.get(norm_p)
+                if rank is None and len(norm_p.split()) >= 3:
+                    partial = norm_p.split()[0] + " " + norm_p.split()[1]
+                    rank = week_rankings.get(partial)
+                if rank is None:
+                    rank = DEFAULT_RANK
+                    unranked_players[p] = unranked_players.get(p, [])
+                    unranked_players[p].append(t["name"])
+                player_ranks.append(rank)
 
-        player_ranks.sort()
+            player_ranks.sort()
 
-        hm = round(_harmonic_mean(player_ranks), 1)
-        gm = round(_geometric_mean(player_ranks), 1)
+            hm = round(_harmonic_mean(player_ranks), 1)
+            gm = round(_geometric_mean(player_ranks), 1)
 
-        surface = t.get("surface", "")
-        country = t.get("country", "")
-        region = _REGION_MAP.get(country, country)
+            surface = t.get("surface", "")
+            country = t.get("country", "")
+            region = _REGION_MAP.get(country, country)
 
-        entry = {
-            "id": tid,
-            "name": t["name"],
-            "city": t["city"],
-            "level": t["level"],
-            "startDate": t["startDate"],
-            "surface": surface,
-            "country": country,
-            "region": region,
-            "year": year,
-            "rankings": player_ranks,
-            "hm": hm,
-            "gm": gm,
-            "playerCount": len(player_ranks),
-        }
-        results.append(entry)
+            entry = {
+                "id": tid,
+                "name": t["name"],
+                "city": t["city"],
+                "level": t["level"],
+                "startDate": t["startDate"],
+                "surface": surface,
+                "country": country,
+                "region": region,
+                "year": yr,
+                "rankings": player_ranks,
+                "hm": hm,
+                "gm": gm,
+                "playerCount": len(player_ranks),
+            }
+            cache[cache_key] = entry
 
-    # Sort by date
+        # Save updated cache
+        try:
+            with open(TSTRENGTH_CACHE, "w", encoding="utf-8") as f:
+                json.dump(list(cache.values()), f, indent=2)
+        except Exception as e:
+            print(f"Error saving T-Strength cache: {e}")
+
+        if unranked_players:
+            print(f"\n=== UNRANKED PLAYERS (defaulted to {DEFAULT_RANK}) ===")
+            for player, tourneys in sorted(unranked_players.items()):
+                print(f"  {player}: {', '.join(tourneys)}")
+            print(f"Total: {len(unranked_players)} unranked players\n")
+
+    # Return all cached entries with actual players
+    results = [e for e in cache.values() if e.get("playerCount", 0) > 0]
     results.sort(key=lambda x: x["startDate"])
-
-    # Save cache (include empty entries so they aren't re-fetched)
-    all_cached = list(cache.values()) + [r for r in results if f"{r.get('year','2025')}_{r['id']}" not in cache]
-    try:
-        with open(TSTRENGTH_CACHE, "w", encoding="utf-8") as f:
-            json.dump(all_cached, f, indent=2)
-    except Exception as e:
-        print(f"Error saving T-Strength cache: {e}")
-
-    # Print unranked players
-    if unranked_players:
-        print(f"\n=== UNRANKED PLAYERS (defaulted to {DEFAULT_RANK}) ===")
-        for player, tourneys in sorted(unranked_players.items()):
-            print(f"  {player}: {', '.join(tourneys)}")
-        print(f"Total: {len(unranked_players)} unranked players\n")
-
-    # Only return entries with actual players for the HTML table
-    return [r for r in results if r.get("playerCount", 0) > 0]
+    return results
