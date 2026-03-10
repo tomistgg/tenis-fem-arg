@@ -788,8 +788,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .col-week {{ width: 150px; font-size: 11px; font-weight: bold; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
             .divider-row td {{ background: #e2e8f0; font-weight: bold; text-align: center; padding: 5px 15px; font-size: 11px; border-right: none; }}
             tr.hidden {{ display: none; }}
-            table:not(.calendar-table) tr:hover td {{ background: #f1f5f9; }}
-            table:not(.calendar-table) tr:hover td.sticky-col {{ background: #f1f5f9 !important; }}
+            table:not(.calendar-table) tr:not(.roadtogs-separator):hover td {{ background: #f1f5f9; }}
+            table:not(.calendar-table) tr:not(.roadtogs-separator):hover td.sticky-col {{ background: #f1f5f9 !important; }}
             .dropdown-header {{ background-color: #e2e8f0 !important; font-weight: bold !important; text-align: center !important; padding: 12px 0 !important; font-size: 11px; display: block; }}
             .dropdown-item {{ padding: 8px 15px; text-align: left; background-color: #ffffff; }}
 
