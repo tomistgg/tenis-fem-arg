@@ -2013,6 +2013,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                 <div class="player-select-container">
                                     <select id="playerHistorySelect">
                                         <option value="">Select Player...</option>
+                                        <option value="__ALL__">ALL PLAYERS</option>
                                         {"".join([f'<option value="{name}">{name}</option>' for name in history_players_sorted])}
                                     </select>
                                 </div>
@@ -2161,7 +2162,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             }}
                             function cleanName(n) {{
                                 var cleaned = n.replace(/\\s*\\d{{3}}\\s*/g, ' ').replace(/\\s+/g,' ').trim();
-                                var hashMatch = n.match(/#\d+/);
+                                var hashMatch = n.match(/#\\d+/);
                                 if (hashMatch && cleaned.indexOf(hashMatch[0]) === -1) cleaned += ' ' + hashMatch[0];
                                 return cleaned;
                             }}
@@ -2871,7 +2872,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     if (isDoublesHistoryRow(row)) return;
                     const wName = (row['_winnerName'] || "").toString().toUpperCase();
                     const wNameNormalized = getDisplayName(wName).toUpperCase();
-                    const isWinner = wNameNormalized === selectedPlayer;
+                    const isWinner = selectedPlayer === '__ALL__' ? true : wNameNormalized === selectedPlayer;
                     const resultLabel = getResultLabel(row, isWinner);
                     if (resultLabel) results.add(resultLabel);
 
@@ -3026,8 +3027,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 const nonWO = (matches || []).filter(row => !['Walkover', 'Bye'].includes(row['_resultStatusDesc'] || ''));
                 const total = nonWO.length;
-                if (!selectedPlayer || total === 0) {{
-                    counter.textContent = `Matches: ${{total}} (0-${{total}})`;
+                if (!selectedPlayer || selectedPlayer === '__ALL__' || total === 0) {{
+                    counter.textContent = `Matches: ${{total}}`;
                     return;
                 }}
 
@@ -3065,7 +3066,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const lName = (row['_loserName'] || "").toString().toUpperCase();
                     const wNameNormalized = getDisplayName(wName).toUpperCase();
                     const lNameNormalized = getDisplayName(lName).toUpperCase();
-                    const isWinner = wNameNormalized === selectedPlayer;
+                    const isWinner = selectedPlayer === '__ALL__' ? true : wNameNormalized === selectedPlayer;
 
                     // Surface filter
                     if (selectedSurfaces.length > 0 && !selectedSurfaces.includes(row['SURFACE'] || '')) return false;
@@ -3180,11 +3181,26 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }});
 
                 const parts = [];
-                const playerDisplayName = getDisplayName(selectedPlayer);
+                const isAllPlayers = selectedPlayer === '__ALL__';
                 for (let i = 0; i < matches.length; i++) {{
                     const row = matches[i];
                     const wName = (row['_winnerName'] || "").toString().toUpperCase();
-                    const isWinner = getDisplayName(wName).toUpperCase() === selectedPlayer;
+                    let isWinner;
+                    if (isAllPlayers) {{
+                        const wCountry = (row['_winnerCountry'] || '').toUpperCase();
+                        const lCountry = (row['_loserCountry'] || '').toUpperCase();
+                        // ARG player goes in PLAYER column; if both ARG, winner goes in PLAYER
+                        if (lCountry === 'ARG' && wCountry !== 'ARG') {{
+                            isWinner = false;
+                        }} else {{
+                            isWinner = true;
+                        }}
+                    }} else {{
+                        isWinner = getDisplayName(wName).toUpperCase() === selectedPlayer;
+                    }}
+                    const playerDisplayName = isAllPlayers
+                        ? getDisplayName(isWinner ? wName : (row['_loserName'] || '').toString().toUpperCase())
+                        : getDisplayName(selectedPlayer);
 
                     const rivalName = isWinner ? (row['_loserName'] || '') : (row['_winnerName'] || '');
                     const rivalDisplayName = rivalName ? getDisplayName(rivalName.toUpperCase()) : '';
@@ -3214,6 +3230,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const selectedPlayer = document.getElementById('playerHistorySelect').value.toUpperCase();
                 const tbody = document.getElementById('history-body');
                 const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'OPPONENT'];
+
+                if (selectedPlayer === '__ALL__') {{
+                    const allFiltered = historyData.filter(row => !isDoublesHistoryRow(row));
+                    if (allFiltered.length === 0) {{
+                        tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No matches found.</td></tr>`;
+                        updateHistoryCounter([], '__ALL__');
+                        return;
+                    }}
+                    currentPlayerData = allFiltered;
+                    populateFilters(allFiltered);
+                    renderFilteredMatches(allFiltered, '__ALL__');
+                    return;
+                }}
 
                 if (!selectedPlayer) {{
                     currentPlayerData = [];
