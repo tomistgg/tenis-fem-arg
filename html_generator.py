@@ -1021,7 +1021,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .table-title {{ margin: 0; font-size: 22px; color: #1e293b; flex: 1; text-align: center; }}
             .player-select-container {{ width: 250px; }}
             .history-summary-container {{ width: 250px; text-align: right; }}
-            .history-wl-counter {{ font-size: 14px; font-weight: 700; color: #1e293b; }}
+            .history-wl-counter {{ font-size: 14px; font-weight: 700; color: #1e293b; white-space: nowrap; }}
+            .history-page-btn {{ background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 12px; cursor: pointer; font-size: 0.82rem; color: #1e293b; }}
+            .history-page-btn:disabled {{ opacity: 0.35; cursor: default; }}
+            .history-page-btn:not(:disabled):hover {{ background: #e2e8f0; }}
 
             /* Calendar Styles */
             #view-calendar {{ width: 100%; min-height: 0; }}
@@ -2032,6 +2035,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                         </tbody>
                                     </table>
                                 </div>
+                                <div id="history-pagination" style="display:none; justify-content:center; align-items:center; gap:12px; padding:12px; font-size:0.85rem;"></div>
                             </div>
                         </div>
                     </div>
@@ -2872,7 +2876,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     if (isDoublesHistoryRow(row)) return;
                     const wName = (row['_winnerName'] || "").toString().toUpperCase();
                     const wNameNormalized = getDisplayName(wName).toUpperCase();
-                    const isWinner = selectedPlayer === '__ALL__' ? true : wNameNormalized === selectedPlayer;
+                    const isWinner = selectedPlayer === '__ALL__'
+                        ? !((row['_loserCountry'] || '').toUpperCase() === 'ARG' && (row['_winnerCountry'] || '').toUpperCase() !== 'ARG')
+                        : wNameNormalized === selectedPlayer;
                     const resultLabel = getResultLabel(row, isWinner);
                     if (resultLabel) results.add(resultLabel);
 
@@ -3027,8 +3033,21 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 const nonWO = (matches || []).filter(row => !['Walkover', 'Bye'].includes(row['_resultStatusDesc'] || ''));
                 const total = nonWO.length;
-                if (!selectedPlayer || selectedPlayer === '__ALL__' || total === 0) {{
+                if (!selectedPlayer || total === 0) {{
                     counter.textContent = `Matches: ${{total}}`;
+                    return;
+                }}
+                if (selectedPlayer === '__ALL__') {{
+                    let wins = 0, argVsArg = 0;
+                    nonWO.forEach(row => {{
+                        const wc = (row['_winnerCountry'] || '').toUpperCase();
+                        const lc = (row['_loserCountry'] || '').toUpperCase();
+                        if (wc === 'ARG' && lc === 'ARG') {{ argVsArg++; }}
+                        else if (wc === 'ARG') {{ wins++; }}
+                    }});
+                    const losses = total - wins - argVsArg;
+                    const record = argVsArg > 0 ? `${{wins}}-${{argVsArg}}-${{losses}}` : `${{wins}}-${{losses}}`;
+                    counter.textContent = `Matches: ${{total}} (${{record}})`;
                     return;
                 }}
 
@@ -3066,7 +3085,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const lName = (row['_loserName'] || "").toString().toUpperCase();
                     const wNameNormalized = getDisplayName(wName).toUpperCase();
                     const lNameNormalized = getDisplayName(lName).toUpperCase();
-                    const isWinner = selectedPlayer === '__ALL__' ? true : wNameNormalized === selectedPlayer;
+                    const isWinner = selectedPlayer === '__ALL__'
+                        ? !((row['_loserCountry'] || '').toUpperCase() === 'ARG' && (row['_winnerCountry'] || '').toUpperCase() !== 'ARG')
+                        : wNameNormalized === selectedPlayer;
 
                     // Surface filter
                     if (selectedSurfaces.length > 0 && !selectedSurfaces.includes(row['SURFACE'] || '')) return false;
@@ -3149,6 +3170,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 applyHistoryFilters();
             }}
 
+            const HISTORY_PAGE_SIZE = 1000;
+            let _historyPagedMatches = [];
+            let _historyPagedPlayer = '';
+            let _historyCurrentPage = 1;
+
             function renderFilteredMatches(matches, selectedPlayer) {{
                 const tbody = document.getElementById('history-body');
                 const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'OPPONENT'];
@@ -3157,6 +3183,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 if (matches.length === 0) {{
                     tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No matches found with the selected filters.</td></tr>`;
+                    _updateHistoryPagination(0, 1, 1);
                     return;
                 }}
 
@@ -3180,10 +3207,23 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     return getRoundOrder(displayRound(a['ROUND'], a['TOURNAMENT'])) - getRoundOrder(displayRound(b['ROUND'], b['TOURNAMENT']));
                 }});
 
-                const parts = [];
+                _historyPagedMatches = matches;
+                _historyPagedPlayer = selectedPlayer;
+                _renderHistoryPage(1);
+            }}
+
+            function _renderHistoryPage(page) {{
+                const total = _historyPagedMatches.length;
+                const totalPages = Math.ceil(total / HISTORY_PAGE_SIZE);
+                _historyCurrentPage = Math.max(1, Math.min(page, totalPages));
+                const start = (_historyCurrentPage - 1) * HISTORY_PAGE_SIZE;
+                const pageMatches = _historyPagedMatches.slice(start, start + HISTORY_PAGE_SIZE);
+                const selectedPlayer = _historyPagedPlayer;
                 const isAllPlayers = selectedPlayer === '__ALL__';
-                for (let i = 0; i < matches.length; i++) {{
-                    const row = matches[i];
+
+                const parts = [];
+                for (let i = 0; i < pageMatches.length; i++) {{
+                    const row = pageMatches[i];
                     const wName = (row['_winnerName'] || "").toString().toUpperCase();
                     let isWinner;
                     if (isAllPlayers) {{
@@ -3223,7 +3263,26 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         '</td><td>', opponentFlag + buildPrefix(rSeed, rEntry) + rivalDisplayName,
                         '</td></tr>');
                 }}
-                tbody.innerHTML = parts.join('');
+                document.getElementById('history-body').innerHTML = parts.join('');
+                _updateHistoryPagination(total, _historyCurrentPage, totalPages);
+            }}
+
+            function _updateHistoryPagination(total, currentPage, totalPages) {{
+                const container = document.getElementById('history-pagination');
+                if (!container) return;
+                if (total <= HISTORY_PAGE_SIZE) {{
+                    container.style.display = 'none';
+                    return;
+                }}
+                const start = (currentPage - 1) * HISTORY_PAGE_SIZE + 1;
+                const end = Math.min(currentPage * HISTORY_PAGE_SIZE, total);
+                const prevDisabled = currentPage === 1 ? 'disabled' : '';
+                const nextDisabled = currentPage === totalPages ? 'disabled' : '';
+                container.style.display = 'flex';
+                container.innerHTML =
+                    `<button class="history-page-btn" ${{prevDisabled}} onclick="_renderHistoryPage(_historyCurrentPage - 1)">&#9664; Prev</button>` +
+                    `<span>${{start}}–${{end}} of ${{total}}</span>` +
+                    `<button class="history-page-btn" ${{nextDisabled}} onclick="_renderHistoryPage(_historyCurrentPage + 1)">Next &#9654;</button>`;
             }}
 
             function filterHistoryByPlayer() {{

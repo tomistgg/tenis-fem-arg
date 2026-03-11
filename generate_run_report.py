@@ -232,25 +232,22 @@ def render_markdown(report):
     lines = []
     lines.append(f"# Website Update Report ({now_utc})")
     lines.append("")
-    lines.append("## 1) Argentine Withdrawals (WTA/ITF)")
+
     if report["withdrawals"]:
+        lines.append("## 1) Argentine Withdrawals (WTA/ITF)")
         for item in report["withdrawals"]:
             players = ", ".join(item["players"])
             lines.append(f"- {item['tournament_name']}: {players}")
-    else:
-        lines.append("- None detected.")
+        lines.append("")
 
-    lines.append("")
-    lines.append("## 2) Tournaments that now have an Entry List")
     if report["new_entry_lists"]:
+        lines.append("## 2) Tournaments that now have an Entry List")
         for item in report["new_entry_lists"]:
             lines.append(f"- {item['tournament_name']} ({item['entries_count']} entries)")
-    else:
-        lines.append("- None detected.")
+        lines.append("")
 
-    lines.append("")
-    lines.append("## 3) Matches Added to CSV Files")
     if report["added_matches"]:
+        lines.append("## 3) Matches Added to CSV Files")
         for csv_name, payload in report["added_matches"].items():
             entries = payload["items"]
             lines.append(f"- {csv_name}: {payload['count']} new match(es)")
@@ -258,28 +255,23 @@ def render_markdown(report):
                 lines.append(f"  - {line}")
             if payload["truncated"]:
                 lines.append(f"  - ... and {payload['count'] - len(entries)} more")
-    else:
-        lines.append("- None detected.")
+        lines.append("")
 
-    lines.append("")
-    lines.append("## 4) New Tournament Draws Available")
     if report.get("new_draws"):
+        lines.append("## 4) New Tournament Draws Available")
         for item in report["new_draws"]:
             types_str = ", ".join(item["types"])
             lines.append(f"- {item['name']}: {types_str}")
-    else:
-        lines.append("- None detected.")
+        lines.append("")
 
-    lines.append("")
-    lines.append("## 5) Tournaments Added to Calendar")
     if report["added_calendar_tournaments"]:
+        lines.append("## 5) Tournaments Added to Calendar")
         for item in report["added_calendar_tournaments"]:
             lines.append(
                 f"- {item.get('week_label', '')} | {item.get('name', '')} | "
                 f"{item.get('level', '')} | {item.get('column', '')} | {item.get('continent', '')}"
             )
-    else:
-        lines.append("- None detected.")
+        lines.append("")
 
     return "\n".join(lines)
 
