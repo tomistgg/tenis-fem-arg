@@ -4644,6 +4644,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }})();
 
         </script>
+        <script>
+        (function() {{
+            fetch("http://ip-api.com/json/?fields=country")
+                .then(function(r) {{ return r.json(); }})
+                .then(function(d) {{
+                    fetch("https://script.google.com/macros/s/AKfycbzPF0VRKkJawXA5bCfiu0122ku_X76g_-zAMvSXsa5hMNnLllpFPLN85HU3VN8BrWVT/exec", {{
+                        method: "POST",
+                        body: JSON.stringify({{ country: d.country || "Unknown", page: location.pathname }}),
+                        mode: "no-cors"
+                    }});
+                }});
+        }})();
+        </script>
     </body>
     </html>
     """
