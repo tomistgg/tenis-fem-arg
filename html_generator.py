@@ -692,6 +692,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-album-info {{ padding: 10px 12px 12px; }}
             .gallery-album-title {{ font-size: 12px; font-weight: bold; color: #1e293b; margin-bottom: 4px; }}
             .gallery-album-count {{ font-size: 11px; color: #64748b; }}
+            @media (max-width: 700px) {{
+                .gallery-albums {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
+            }}
             .gallery-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }}
             .gallery-card {{ background: white; border: 1px solid black; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }}
             .gallery-card:hover {{ transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.13); }}
@@ -722,6 +725,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-lb-counter {{ font-size: 12px; color: #475569; margin-top: 8px; }}
             .gallery-lb-download {{ display: inline-block; margin-top: 10px; padding: 8px 14px; background: #75AADB; color: white; border-radius: 8px; font-size: 12px; text-decoration: none; }}
             .gallery-lb-download:hover {{ background: #5a8fb8; }}
+            .gallery-lb-savehint {{ margin-top: 8px; font-size: 11px; color: #94a3b8; }}
             .roadtogs-controls {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }}
             #roadtogs-table {{ width: 100%; table-layout: fixed; }}
             #roadtogs-table th, #roadtogs-table td {{ padding: 8px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; }}
@@ -2301,6 +2305,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             <div class="gallery-lb-players" id="gallery-lb-players"></div>
                             <div class="gallery-lb-counter" id="gallery-lb-counter"></div>
                             <a class="gallery-lb-download" id="gallery-lb-download" href="#" target="_blank" rel="noopener">Download</a>
+                            <div class="gallery-lb-savehint">Long press the image to save on your phone.</div>
                         </div>
                     </div>
                 </div>
