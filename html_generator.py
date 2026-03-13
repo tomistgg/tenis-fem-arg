@@ -685,6 +685,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #gallery-player-select, #gallery-tournament-select {{ min-width: 180px; width: auto; }}
             .clear-btn {{ padding: 8px 14px; border-radius: 8px; border: 2px solid #94a3b8; background: white; font-family: inherit; font-size: 12px; font-weight: bold; color: #475569; cursor: pointer; white-space: nowrap; width: auto; }}
             .clear-btn:hover {{ background: #f1f5f9; }}
+            .gallery-back-btn {{ padding: 8px 12px; background: white; border: 1px solid black; border-radius: 8px; font-family: inherit; font-size: 12px; cursor: pointer; }}
+            .gallery-back-btn:hover {{ background: #f1f5f9; }}
+            .gallery-albums {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 14px; }}
+            .gallery-album-card {{ background: white; border: 1px solid black; border-radius: 10px; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }}
+            .gallery-album-card:hover {{ transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.13); }}
+            .gallery-album-card img {{ width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: #e2e8f0; }}
+            .gallery-album-cover {{ width: 100%; aspect-ratio: 4 / 3; display: flex; align-items: center; justify-content: center; background: #e2e8f0; color: #64748b; font-size: 12px; }}
+            .gallery-album-info {{ padding: 10px 12px 12px; }}
+            .gallery-album-title {{ font-size: 12px; font-weight: bold; color: #1e293b; margin-bottom: 4px; }}
+            .gallery-album-count {{ font-size: 11px; color: #64748b; }}
             .gallery-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }}
             .gallery-card {{ background: white; border: 1px solid black; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }}
             .gallery-card:hover {{ transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.13); }}
@@ -720,6 +730,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-lb-caption {{ font-size: 13px; color: #94a3b8; }}
             .gallery-lb-date {{ font-size: 11px; color: #64748b; margin-top: 2px; }}
             .gallery-lb-counter {{ font-size: 12px; color: #475569; margin-top: 8px; }}
+            .gallery-lb-download {{ display: inline-block; margin-top: 10px; padding: 8px 14px; background: #75AADB; color: white; border-radius: 8px; font-size: 12px; text-decoration: none; }}
+            .gallery-lb-download:hover {{ background: #5a8fb8; }}
             .roadtogs-controls {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }}
             #roadtogs-table {{ width: 100%; table-layout: fixed; }}
             #roadtogs-table th, #roadtogs-table td {{ padding: 8px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; }}
@@ -1825,7 +1837,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
                 <div class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</div>
                 <div class="menu-item" id="btn-tstrength" onclick="switchTab('tstrength')">WTA TRN STR</div>
-                <a class="menu-item" href="https://www.flickr.com/photos/tomistgg/albums" target="_blank" onclick="return confirm('You are about to open a new tab to Flickr.com where the photos are saved, are you sure you want to continue?')">Photo Gallery</a>
+                <div class="menu-item" id="btn-gallery" onclick="switchTab('gallery')">Photo Gallery</div>
             </div>
 
             <div class="main-content">
@@ -2252,6 +2264,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     <div class="header-row">
                         <h1>Gallery</h1>
                     </div>
+                    <div class="gallery-albums" id="gallery-albums"></div>
                     <div class="gallery-controls">
                         <input type="text" id="gallery-search" placeholder="Search player or tournament..." />
                         <select id="gallery-player-select">
@@ -2260,6 +2273,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         <select id="gallery-tournament-select">
                             <option value="">All tournaments</option>
                         </select>
+                        <button class="gallery-back-btn" id="gallery-back-btn" style="display:none;">Back to albums</button>
                         <button class="clear-btn" id="gallery-clear-btn">Clear filters</button>
                     </div>
                     <div class="gallery-pills" id="gallery-pills"></div>
@@ -2304,6 +2318,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             <div class="gallery-lb-caption" id="gallery-lb-caption"></div>
                             <div class="gallery-lb-date" id="gallery-lb-date"></div>
                             <div class="gallery-lb-counter" id="gallery-lb-counter"></div>
+                            <a class="gallery-lb-download" id="gallery-lb-download" href="#" target="_blank" rel="noopener">Download</a>
                         </div>
                     </div>
                 </div>
@@ -4081,7 +4096,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             document.addEventListener('DOMContentLoaded', initRoadToGS);
 
             // ── Gallery ───────────────────────────────────────────────────────
-            const GALLERY_CLOUD_NAME = 'YOUR_CLOUD_NAME';
+            const GALLERY_IK_URL = 'https://ik.imagekit.io/tomistgg';
             const GALLERY_PAGE_SIZE = 24;
             let galleryPhotos = [];
             let galleryFiltered = [];
@@ -4089,9 +4104,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             let galleryLbIndex = 0;
             let galleryFilters = {{ search: '', player: '', tournament: '' }};
             let galleryInited = false;
+            let galleryAlbums = [];
 
-            function galleryThumb(pid) {{ return 'https://res.cloudinary.com/' + GALLERY_CLOUD_NAME + '/image/upload/c_fill,w_400,h_300,q_auto,f_auto/' + pid; }}
-            function galleryFull(pid) {{ return 'https://res.cloudinary.com/' + GALLERY_CLOUD_NAME + '/image/upload/q_auto,f_auto/' + pid; }}
+            function galleryUrl(pid, tr) {{
+                if (!pid) return '';
+                return GALLERY_IK_URL + '/' + pid + (tr ? ('?tr=' + tr) : '');
+            }}
+            function galleryThumb(pid) {{ return galleryUrl(pid, 'w-400,h-300,fo-auto,q-80'); }}
+            function galleryFull(pid) {{ return galleryUrl(pid, 'q-90'); }}
+            function galleryDownload(pid) {{
+                if (!pid) return '';
+                return galleryUrl(pid, 'orig-true') + '&ik-attachment=true';
+            }}
 
             function initGallery() {{
                 if (galleryInited) return;
@@ -4099,9 +4123,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 fetch('data/gallery.json')
                     .then(function(r) {{ return r.json(); }})
                     .then(function(data) {{
-                        galleryPhotos = data;
+                        galleryPhotos = (data || []).map(function(p) {{
+                            return {{
+                                public_id: p.public_id || p.path || '',
+                                tournament: p.tournament || p.album || 'Unsorted',
+                                players: Array.isArray(p.players) ? p.players : [],
+                                caption: p.caption || '',
+                                date: p.date || ''
+                            }};
+                        }});
+                        galleryBuildAlbums();
                         galleryBuildSelects();
                         galleryApplyFilters();
+                        galleryRenderAlbums();
                     }})
                     .catch(function() {{
                         var el = document.getElementById('gallery-empty');
@@ -4111,12 +4145,55 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
 
             function galleryBuildSelects() {{
-                var players = [...new Set(galleryPhotos.flatMap(function(p) {{ return p.players; }}))].sort();
-                var tournaments = [...new Set(galleryPhotos.map(function(p) {{ return p.tournament; }}))].sort();
+                var players = [...new Set(galleryPhotos.flatMap(function(p) {{ return (p.players || []); }}))].sort();
+                var tournaments = [...new Set(galleryPhotos.map(function(p) {{ return p.tournament || 'Unsorted'; }}))].sort();
                 var pSel = document.getElementById('gallery-player-select');
                 players.forEach(function(n) {{ var o = document.createElement('option'); o.value = n; o.textContent = n; pSel.appendChild(o); }});
                 var tSel = document.getElementById('gallery-tournament-select');
                 tournaments.forEach(function(n) {{ var o = document.createElement('option'); o.value = n; o.textContent = n; tSel.appendChild(o); }});
+            }}
+
+            function galleryBuildAlbums() {{
+                var byTourn = {{}};
+                galleryPhotos.forEach(function(ph) {{
+                    var t = ph.tournament || 'Unsorted';
+                    if (!byTourn[t]) {{
+                        byTourn[t] = {{ name: t, count: 0, cover: ph.public_id || '' }};
+                    }}
+                    byTourn[t].count += 1;
+                    if (!byTourn[t].cover && ph.public_id) byTourn[t].cover = ph.public_id;
+                }});
+                galleryAlbums = Object.keys(byTourn).sort().map(function(k) {{ return byTourn[k]; }});
+            }}
+
+            function galleryRenderAlbums() {{
+                var wrap = document.getElementById('gallery-albums');
+                wrap.innerHTML = '';
+                if (!galleryAlbums.length) return;
+                galleryAlbums.forEach(function(alb) {{
+                    var card = document.createElement('div');
+                    card.className = 'gallery-album-card';
+                    if (alb.cover) {{
+                        card.innerHTML = '<img src="' + galleryThumb(alb.cover) + '" alt="' + galleryEsc(alb.name) + '" loading="lazy" />'
+                            + '<div class="gallery-album-info">'
+                            + '<div class="gallery-album-title">' + galleryEsc(alb.name) + '</div>'
+                            + '<div class="gallery-album-count">' + alb.count + ' photos</div>'
+                            + '</div>';
+                    }} else {{
+                        card.innerHTML = '<div class="gallery-album-cover">No cover</div>'
+                            + '<div class="gallery-album-info">'
+                            + '<div class="gallery-album-title">' + galleryEsc(alb.name) + '</div>'
+                            + '<div class="gallery-album-count">' + alb.count + ' photos</div>'
+                            + '</div>';
+                    }}
+                    card.addEventListener('click', function() {{
+                        galleryFilters.tournament = alb.name;
+                        document.getElementById('gallery-tournament-select').value = alb.name;
+                        galleryApplyFilters();
+                        window.scrollTo({{ top: document.getElementById('gallery-grid').offsetTop - 60, behavior: 'smooth' }});
+                    }});
+                    wrap.appendChild(card);
+                }});
             }}
 
             function galleryApplyFilters() {{
@@ -4125,10 +4202,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 var tournament = galleryFilters.tournament;
                 var q = search.toLowerCase();
                 galleryFiltered = galleryPhotos.filter(function(ph) {{
-                    if (player && ph.players.indexOf(player) === -1) return false;
+                    var players = ph.players || [];
+                    if (player && players.indexOf(player) === -1) return false;
                     if (tournament && ph.tournament !== tournament) return false;
                     if (q) {{
-                        var hay = ph.players.concat([ph.tournament, ph.caption || '']).join(' ').toLowerCase();
+                        var hay = players.concat([ph.tournament, ph.caption || '']).join(' ').toLowerCase();
                         if (hay.indexOf(q) === -1) return false;
                     }}
                     return true;
@@ -4146,14 +4224,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     var idx = galleryRendered + i;
                     var card = document.createElement('div');
                     card.className = 'gallery-card';
-                    var playerTags = ph.players.map(function(p) {{
+                    var players = ph.players || [];
+                    var playerTags = players.map(function(p) {{
                         return '<span class="gallery-tag" data-type="player" data-val="' + galleryEsc(p) + '">' + galleryEsc(p) + '</span>';
                     }}).join('');
                     var tournTag = '<span class="gallery-tag" data-type="tournament" data-val="' + galleryEsc(ph.tournament) + '">' + galleryEsc(ph.tournament) + '</span>';
-                    card.innerHTML = '<img src="' + galleryThumb(ph.public_id) + '" alt="' + galleryEsc(ph.players.join(', ')) + '" loading="lazy" />'
+                    var playersLabel = players.length ? players.join(' \u00b7 ') : '';
+                    card.innerHTML = '<img src="' + galleryThumb(ph.public_id) + '" alt="' + galleryEsc(playersLabel || ph.tournament) + '" loading="lazy" />'
                         + '<div class="gallery-card-info">'
                         + '<div class="gallery-card-tourn">' + galleryEsc(ph.tournament) + '</div>'
-                        + '<div class="gallery-card-players">' + galleryEsc(ph.players.join(' \u00b7 ')) + '</div>'
+                        + '<div class="gallery-card-players">' + galleryEsc(playersLabel) + '</div>'
                         + (ph.date ? '<div class="gallery-card-date">' + galleryEsc(ph.date) + '</div>' : '')
                         + '<div class="gallery-tags">' + playerTags + tournTag + '</div>'
                         + '</div>';
@@ -4174,6 +4254,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('gallery-count').textContent = n + ' foto' + (n !== 1 ? 's' : '');
                 document.getElementById('gallery-empty').style.display = n === 0 ? 'block' : 'none';
                 document.getElementById('gallery-loadmore-wrap').style.display = galleryRendered < galleryFiltered.length ? 'block' : 'none';
+                var showAlbums = !galleryFilters.tournament;
+                document.getElementById('gallery-albums').style.display = showAlbums ? 'grid' : 'none';
+                document.getElementById('gallery-back-btn').style.display = showAlbums ? 'none' : 'inline-block';
                 galleryRenderPills();
             }}
 
@@ -4217,13 +4300,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             function galleryShowLb() {{
                 var ph = galleryFiltered[galleryLbIndex];
+                var players = ph.players || [];
                 document.getElementById('gallery-lb-img').src = galleryFull(ph.public_id);
-                document.getElementById('gallery-lb-img').alt = ph.players.join(', ');
+                document.getElementById('gallery-lb-img').alt = players.join(', ') || ph.tournament;
                 document.getElementById('gallery-lb-tourn').textContent = ph.tournament;
-                document.getElementById('gallery-lb-players').textContent = ph.players.join(' \u00b7 ');
+                document.getElementById('gallery-lb-players').textContent = players.join(' \u00b7 ');
                 document.getElementById('gallery-lb-caption').textContent = ph.caption || '';
                 document.getElementById('gallery-lb-date').textContent = ph.date || '';
                 document.getElementById('gallery-lb-counter').textContent = (galleryLbIndex + 1) + ' / ' + galleryFiltered.length;
+                document.getElementById('gallery-lb-download').href = galleryDownload(ph.public_id);
             }}
 
             document.getElementById('gallery-lb-close').addEventListener('click', galleryCloseLb);
@@ -4244,6 +4329,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }});
             document.getElementById('gallery-player-select').addEventListener('change', function(e) {{ galleryFilters.player = e.target.value; galleryApplyFilters(); }});
             document.getElementById('gallery-tournament-select').addEventListener('change', function(e) {{ galleryFilters.tournament = e.target.value; galleryApplyFilters(); }});
+            document.getElementById('gallery-back-btn').addEventListener('click', function() {{
+                galleryFilters.tournament = '';
+                document.getElementById('gallery-tournament-select').value = '';
+                galleryApplyFilters();
+                window.scrollTo({{ top: document.getElementById('gallery-albums').offsetTop - 60, behavior: 'smooth' }});
+            }});
             document.getElementById('gallery-clear-btn').addEventListener('click', function() {{
                 galleryFilters = {{ search: '', player: '', tournament: '' }};
                 document.getElementById('gallery-search').value = '';
@@ -4665,3 +4756,4 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     """
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html_template)
+
