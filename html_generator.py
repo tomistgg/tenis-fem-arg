@@ -684,6 +684,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #gallery-player-filter {{ min-width: 180px; width: auto; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; font-family: inherit; font-size: 12px; }}
             .gallery-back-btn {{ padding: 8px 12px; background: white; border: 1px solid black; border-radius: 8px; font-family: inherit; font-size: 12px; cursor: pointer; }}
             .gallery-back-btn:hover {{ background: #f1f5f9; }}
+            #gallery-album-title {{ font-size: 13px; color: #64748b; margin-top: -6px; }}
             .gallery-albums {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 14px; }}
             .gallery-album-card {{ background: white; border: 1px solid black; border-radius: 10px; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }}
             .gallery-album-card:hover {{ transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.13); }}
@@ -2254,6 +2255,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div id="view-gallery" class="single-layout" style="display: none;">
                     <div class="header-row">
                         <h1>Gallery</h1>
+                        <div id="gallery-album-title" style="display:none;"></div>
                     </div>
                     <div class="gallery-albums" id="gallery-albums"></div>
                     <div class="gallery-controls">
@@ -4252,7 +4254,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     var playersLabel = players.length ? players.join(' \u00b7 ') : '';
                     card.innerHTML = '<img src="' + galleryThumb(ph.public_id, ph.tournament) + '" alt="' + galleryEsc(playersLabel || ph.tournament) + '" loading="lazy" />'
                         + '<div class="gallery-card-info">'
-                        + '<div class="gallery-card-tourn">' + galleryEsc(ph.tournament) + '</div>'
                         + '<div class="gallery-card-players">' + galleryEsc(playersLabel) + '</div>'
                         + '</div>';
                     card.addEventListener('click', (function(capturedIdx) {{
@@ -4270,6 +4271,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('gallery-albums').style.display = showAlbums ? 'grid' : 'none';
                 document.getElementById('gallery-back-btn').style.display = showAlbums ? 'none' : 'inline-block';
                 document.getElementById('gallery-player-filter').style.display = showAlbums ? 'none' : 'inline-block';
+                var titleEl = document.getElementById('gallery-album-title');
+                titleEl.style.display = showAlbums ? 'none' : 'block';
+                titleEl.textContent = showAlbums ? '' : galleryCurrentAlbum;
                 if (showAlbums) {{
                     document.getElementById('gallery-count').textContent = '';
                     document.getElementById('gallery-empty').style.display = 'none';
