@@ -4654,9 +4654,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }});
             }}
 
-            fetch("https://ip-api.com/json/?fields=country")
+            fetch("https://ipapi.co/json/")
                 .then(function(r) {{ return r.json(); }})
-                .then(function(d) {{ sendVisit(d.country); }})
+                .then(function(d) {{ sendVisit(d.country_name || d.country); }})
                 .catch(function() {{ sendVisit("Unknown"); }});
         }})();
         </script>
