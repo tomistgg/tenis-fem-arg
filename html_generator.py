@@ -725,19 +725,26 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-lb-download:hover {{ background: #5a8fb8; }}
             .gallery-lb-savehint {{ margin-top: 8px; font-size: 11px; color: #94a3b8; }}
             .home-hero {{ width: 100%; display: flex; flex-direction: column; align-items: center; gap: 18px; }}
+            .home-title {{ order: 0; }}
+            .home-grid {{ order: 1; }}
             .home-title {{ font-size: 26px; color: #1e293b; margin: 0; text-align: center; }}
-            .home-grid {{ width: 100%; max-width: 1200px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 0 auto; }}
-            .home-btn {{ padding: 18px 12px; border: 2px solid #75AADB; border-radius: 6px; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; min-height: 92px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; }}
+            .home-grid {{ width: 100%; max-width: 1200px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 0 auto; justify-items: center; }}
+            .home-btn {{ padding: 18px 12px; border: 2px solid #75AADB; border-radius: 6px; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; min-height: 92px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; overflow: hidden; width: 100%; }}
             .home-icon {{ width: 28px; height: 28px; stroke: #1e293b; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }}
             .home-icon-img {{ width: 30px; height: 30px; object-fit: contain; }}
             .home-btn .home-icon {{ margin-left: 6px; }}
-            .home-label {{ flex: 1; text-align: center; padding-right: 28px; }}
+            .home-btn .home-icon-img {{ margin-left: 6px; }}
+            .home-label {{ flex: 1; text-align: center; padding-right: 28px; word-break: break-word; }}
             .home-icon-fill {{ fill: #1e293b; stroke: none; }}
             .home-btn:hover {{ background: #d9ecf8; }}
             .home-hero {{ min-height: 80vh; justify-content: center; }}
             @media (max-width: 900px) {{
-                .home-grid {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
-                .home-btn.last {{ grid-column: 2 / span 1; }}
+                .home-hero {{ min-height: 0; padding: 4px 0 4px; gap: 8px; }}
+                .home-title {{ margin-bottom: 2px; font-size: 24px; }}
+                .home-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; max-width: 460px; padding: 0 10px; }}
+                .home-btn {{ min-height: 78px; font-size: 13px; padding: 10px 8px; }}
+                .home-label {{ padding-right: 0; }}
+                .home-btn.last {{ grid-column: auto; }}
             }}
             .home-mode #sidebar {{ display: none; }}
             .home-mode .main-content {{ width: 100%; margin-left: 0; }}
