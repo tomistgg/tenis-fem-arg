@@ -4097,9 +4097,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             function galleryUrl(pid, tr, tournament) {{
                 if (!pid) return '';
-                var path = pid;
-                if (tournament && pid.indexOf('/') === -1) {{
-                    path = tournament + '/' + pid;
+                var cleanPid = pid.replace(/^\\//, '');
+                var path = cleanPid;
+                if (tournament) {{
+                    var prefix = tournament + '/';
+                    if (cleanPid.indexOf(prefix) !== 0) {{
+                        path = prefix + cleanPid;
+                    }}
                 }}
                 return GALLERY_IK_URL + '/' + path + (tr ? ('?tr=' + tr) : '');
             }}
