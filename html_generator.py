@@ -4646,38 +4646,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         </script>
         <script>
         (function() {{
-            function sendVisit(payload) {{
+            function sendVisit(country) {{
                 fetch("https://script.google.com/macros/s/AKfycbzPF0VRKkJawXA5bCfiu0122ku_X76g_-zAMvSXsa5hMNnLllpFPLN85HU3VN8BrWVT/exec", {{
                     method: "POST",
-                    body: JSON.stringify(payload),
+                    body: JSON.stringify({{ country: country || "Unknown", page: location.pathname }}),
                     mode: "no-cors"
                 }});
             }}
 
             fetch("https://ipapi.co/json/")
                 .then(function(r) {{ return r.json(); }})
-                .then(function(d) {{
-                    sendVisit({{
-                        ip: d.ip || "",
-                        network: d.network || "",
-                        version: d.version || "",
-                        city: d.city || "",
-                        region: d.region || "",
-                        country_name: d.country_name || d.country || "Unknown",
-                        page: location.pathname
-                    }});
-                }})
-                .catch(function() {{
-                    sendVisit({{
-                        ip: "",
-                        network: "",
-                        version: "",
-                        city: "",
-                        region: "",
-                        country_name: "Unknown",
-                        page: location.pathname
-                    }});
-                }});
+                .then(function(d) {{ sendVisit(d.country_name || d.country); }})
+                .catch(function() {{ sendVisit("Unknown"); }});
         }})();
         </script>
     </body>
