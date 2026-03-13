@@ -739,10 +739,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .home-btn:hover {{ background: #d9ecf8; }}
             .home-hero {{ min-height: 80vh; justify-content: center; }}
             @media (max-width: 900px) {{
+                body.home-mode {{ overflow: hidden; }}
+                .home-mode .main-content {{ padding: 8px 6px 6px; }}
                 .home-hero {{ min-height: 0; padding: 4px 0 4px; gap: 8px; }}
                 .home-title {{ margin-bottom: 2px; font-size: 24px; }}
-                .home-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; max-width: 460px; padding: 0 10px; }}
-                .home-btn {{ min-height: 78px; font-size: 13px; padding: 10px 8px; }}
+                .home-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: calc(100vw - 20px); max-width: 420px; padding: 0; }}
+                .home-btn {{ min-height: 78px; font-size: 13px; padding: 10px 8px; width: 100%; }}
                 .home-label {{ padding-right: 0; }}
                 .home-btn.last {{ grid-column: auto; }}
             }}
