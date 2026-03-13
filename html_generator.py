@@ -724,6 +724,24 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-lb-download {{ display: inline-block; margin-top: 10px; padding: 8px 14px; background: #75AADB; color: white; border-radius: 8px; font-size: 12px; text-decoration: none; }}
             .gallery-lb-download:hover {{ background: #5a8fb8; }}
             .gallery-lb-savehint {{ margin-top: 8px; font-size: 11px; color: #94a3b8; }}
+            .home-hero {{ width: 100%; display: flex; flex-direction: column; align-items: center; gap: 18px; }}
+            .home-title {{ font-size: 26px; color: #1e293b; margin: 0; text-align: center; }}
+            .home-grid {{ width: 100%; max-width: 1200px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 0 auto; }}
+            .home-btn {{ padding: 18px 12px; border: 2px solid #75AADB; border-radius: 6px; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; min-height: 92px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; }}
+            .home-icon {{ width: 28px; height: 28px; stroke: #1e293b; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }}
+            .home-icon-img {{ width: 30px; height: 30px; object-fit: contain; }}
+            .home-btn .home-icon {{ margin-left: 6px; }}
+            .home-label {{ flex: 1; text-align: center; padding-right: 28px; }}
+            .home-icon-fill {{ fill: #1e293b; stroke: none; }}
+            .home-btn:hover {{ background: #d9ecf8; }}
+            .home-hero {{ min-height: 80vh; justify-content: center; }}
+            @media (max-width: 900px) {{
+                .home-grid {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }}
+                .home-btn.last {{ grid-column: 2 / span 1; }}
+            }}
+            .home-mode #sidebar {{ display: none; }}
+            .home-mode .main-content {{ width: 100%; margin-left: 0; }}
+            .calendar-mode .main-content {{ padding-top: 8px; padding-bottom: 8px; }}
             .roadtogs-controls {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }}
             #roadtogs-table {{ width: 100%; table-layout: fixed; }}
             #roadtogs-table th, #roadtogs-table td {{ padding: 8px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; }}
@@ -1815,12 +1833,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
         </style>
     </head>
-    <body onload="renderHistoryTable();">
+    <body class="home-mode" onload="renderHistoryTable();">
         <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">\\u2630</button>
         <div class="app-container">
             <div class="sidebar" id="sidebar">
                 <div class="sidebar-header">WT Argentina</div>
-                <div class="menu-item active" id="btn-upcoming" onclick="switchTab('upcoming')">Upcoming Tournaments</div>
+                <div class="menu-item" id="btn-upcoming" onclick="switchTab('upcoming')">Upcoming Tournaments</div>
                 <div class="menu-item" id="btn-entrylists" onclick="switchTab('entrylists')">Entry Lists</div>
                 <div class="menu-item" id="btn-draws" onclick="switchTab('draws')">Draws</div>
                 <div class="menu-item" id="btn-calendar" onclick="switchTab('calendar')">Calendar</div>
@@ -1833,7 +1851,55 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             </div>
 
             <div class="main-content">
-                <div id="view-upcoming" class="single-layout">
+                <div id="view-home" class="single-layout">
+                    <div class="home-hero">
+                        <h1 class="home-title">Women's Tennis Argentina</h1>
+                        <div class="home-grid">
+                            <button class="home-btn" onclick="switchTab('gallery')">
+                                <img class="home-icon-img" src="assets/camera.png" alt="Camera icon" />
+                                <span class="home-label">Photo Gallery</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('upcoming')">
+                                <img class="home-icon-img" src="assets/trophy.png" alt="Trophy icon" />
+                                <span class="home-label">Upcoming Tournaments</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('entrylists')">
+                                <img class="home-icon-img" src="assets/files.png" alt="Files icon" />
+                                <span class="home-label">Entry Lists</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('draws')">
+                                <img class="home-icon-img" src="assets/tournament.png" alt="Tournament icon" />
+                                <span class="home-label">Draws</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('calendar')">
+                                <img class="home-icon-img" src="assets/calendar.png" alt="Calendar icon" />
+                                <span class="home-label">Calendar</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('rankings')">
+                                <img class="home-icon-img" src="assets/list.png" alt="List icon" />
+                                <span class="home-label">WTA Rankings</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('roadtogs')">
+                                <img class="home-icon-img" src="assets/data.png" alt="Data icon" />
+                                <span class="home-label">Points Breakdown</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('history')">
+                                <img class="home-icon-img" src="assets/tennis-player.png" alt="Tennis player icon" />
+                                <span class="home-label">Match History</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('fedbcup')">
+                                <img class="home-icon-img" src="assets/argentina.png" alt="Argentina flag icon" />
+                                <span class="home-label">Fed/BJK Cup</span>
+                            </button>
+                            <button class="home-btn last" onclick="switchTab('tstrength')">
+                                <img class="home-icon-img" src="assets/score-board.png" alt="Analytics icon" />
+                                <span class="home-label">WTA Tournament Strength</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-upcoming" class="single-layout" style="display: none;">
                     <div class="header-row">
                         <div class="search-container">
                             <input type="text" id="s" placeholder="Search player..." oninput="filter()">
@@ -2363,9 +2429,27 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }});
 
             // Close mobile menu when tab is clicked
+            let homeLocked = false;
             function switchTab(tabName) {{
+                if (tabName === 'home' && homeLocked) return;
                 document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-                document.getElementById('btn-' + tabName).classList.add('active');
+                const btn = document.getElementById('btn-' + tabName);
+                if (btn) btn.classList.add('active');
+
+                if (tabName !== 'home') {{
+                    homeLocked = true;
+                    const homeView = document.getElementById('view-home');
+                    if (homeView) homeView.style.display = 'none';
+                    document.body.classList.remove('home-mode');
+                }} else {{
+                    document.body.classList.add('home-mode');
+                }}
+
+                if (tabName === 'calendar') {{
+                    document.body.classList.add('calendar-mode');
+                }} else {{
+                    document.body.classList.remove('calendar-mode');
+                }}
 
                 document.getElementById('view-upcoming').style.display = (tabName === 'upcoming') ? 'flex' : 'none';
                 document.getElementById('view-entrylists').style.display = (tabName === 'entrylists') ? 'flex' : 'none';
@@ -2390,6 +2474,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     document.getElementById('sidebar').classList.add('mobile-hidden');
                 }}
             }}
+
+            document.body.classList.add('home-mode');
 
             function switchFedBjkTab(subTab) {{
                 document.getElementById('fedbcup-view-players').style.display = (subTab === 'players') ? '' : 'none';
