@@ -681,6 +681,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .draw-player .set-score.lost {{ color: #dc2626; }}
             .draw-no-draws {{ text-align: center; color: #94a3b8; padding: 40px; font-size: 12px; }}
             .gallery-controls {{ display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }}
+            #gallery-player-filter {{ min-width: 180px; width: auto; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; font-family: inherit; font-size: 12px; }}
             .gallery-back-btn {{ padding: 8px 12px; background: white; border: 1px solid black; border-radius: 8px; font-family: inherit; font-size: 12px; cursor: pointer; }}
             .gallery-back-btn:hover {{ background: #f1f5f9; }}
             .gallery-albums {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 14px; }}
@@ -2256,6 +2257,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     <div class="gallery-albums" id="gallery-albums"></div>
                     <div class="gallery-controls">
                         <button class="gallery-back-btn" id="gallery-back-btn" style="display:none;">Back to albums</button>
+                        <select id="gallery-player-filter" style="display:none;">
+                            <option value="">All players</option>
+                        </select>
                     </div>
                     <div class="gallery-count" id="gallery-count"></div>
                     <div class="gallery-grid" id="gallery-grid"></div>
@@ -4080,9 +4084,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             let galleryRendered = 0;
             let galleryLbIndex = 0;
             let galleryCurrentAlbum = '';
+            let galleryPlayerFilter = '';
             let galleryInited = false;
             let galleryAlbums = [];
             let galleryLbList = [];
+            let galleryCurrentList = [];
 
             function galleryUrl(pid, tr) {{
                 if (!pid) return '';
@@ -4105,7 +4111,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             return {{
                                 public_id: p.public_id || p.path || '',
                                 tournament: p.tournament || p.album || 'Unsorted',
-                                players: Array.isArray(p.players) ? p.players : []
+                                players: Array.isArray(p.players) ? p.players : [],
+                                is_cover: p.is_cover === true || p.cover === true
                             }};
                         }});
                         galleryBuildAlbums();
@@ -4121,15 +4128,28 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             function galleryBuildAlbums() {{
                 var byTourn = {{}};
+                var order = [];
                 galleryPhotos.forEach(function(ph) {{
                     var t = ph.tournament || 'Unsorted';
                     if (!byTourn[t]) {{
-                        byTourn[t] = {{ name: t, count: 0, cover: ph.public_id || '' }};
+                        byTourn[t] = {{ name: t, count: 0, cover: ph.public_id || '', coverLocked: false }};
+                        order.push(t);
                     }}
                     byTourn[t].count += 1;
-                    if (!byTourn[t].cover && ph.public_id) byTourn[t].cover = ph.public_id;
+                    if (ph.is_cover && ph.public_id) {{
+                        byTourn[t].cover = ph.public_id;
+                        byTourn[t].coverLocked = true;
+                    }} else if (!byTourn[t].coverLocked && !byTourn[t].cover && ph.public_id) {{
+                        byTourn[t].cover = ph.public_id;
+                    }}
                 }});
-                galleryAlbums = Object.keys(byTourn).sort().map(function(k) {{ return byTourn[k]; }});
+                // Newest albums first (based on first appearance in data/gallery.json)
+                order.reverse();
+                galleryAlbums = order.map(function(k) {{
+                    var a = byTourn[k];
+                    delete a.coverLocked;
+                    return a;
+                }});
             }}
 
             function galleryRenderAlbums() {{
@@ -4164,12 +4184,46 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function galleryApplyAlbum() {{
                 var filtered = galleryPhotos.filter(function(ph) {{
                     if (!galleryCurrentAlbum) return false;
-                    return ph.tournament === galleryCurrentAlbum;
+                    if (ph.tournament !== galleryCurrentAlbum) return false;
+                    if (galleryPlayerFilter) {{
+                        return (ph.players || []).indexOf(galleryPlayerFilter) !== -1;
+                    }}
+                    return true;
                 }});
+                galleryShuffle(filtered);
+                galleryCurrentList = filtered;
+                galleryBuildPlayerFilter();
                 galleryRendered = 0;
                 document.getElementById('gallery-grid').innerHTML = '';
-                galleryRenderBatch(filtered);
-                galleryUpdateUI(filtered.length);
+                galleryRenderBatch(galleryCurrentList);
+                galleryUpdateUI(galleryCurrentList.length);
+            }}
+
+            function galleryShuffle(list) {{
+                for (var i = list.length - 1; i > 0; i--) {{
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var tmp = list[i];
+                    list[i] = list[j];
+                    list[j] = tmp;
+                }}
+            }}
+
+            function galleryBuildPlayerFilter() {{
+                var sel = document.getElementById('gallery-player-filter');
+                sel.innerHTML = '<option value=\"\">All players</option>';
+                if (!galleryCurrentAlbum) return;
+                var names = new Set();
+                galleryPhotos.forEach(function(ph) {{
+                    if (ph.tournament !== galleryCurrentAlbum) return;
+                    (ph.players || []).forEach(function(p) {{ names.add(p); }});
+                }});
+                Array.from(names).sort().forEach(function(n) {{
+                    var o = document.createElement('option');
+                    o.value = n;
+                    o.textContent = n;
+                    sel.appendChild(o);
+                }});
+                sel.value = galleryPlayerFilter;
             }}
 
             function galleryRenderBatch(filtered) {{
@@ -4205,6 +4259,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 var showAlbums = !galleryCurrentAlbum;
                 document.getElementById('gallery-albums').style.display = showAlbums ? 'grid' : 'none';
                 document.getElementById('gallery-back-btn').style.display = showAlbums ? 'none' : 'inline-block';
+                document.getElementById('gallery-player-filter').style.display = showAlbums ? 'none' : 'inline-block';
                 if (showAlbums) {{
                     document.getElementById('gallery-count').textContent = '';
                     document.getElementById('gallery-empty').style.display = 'none';
@@ -4257,16 +4312,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             document.getElementById('gallery-back-btn').addEventListener('click', function() {{
                 galleryCurrentAlbum = '';
+                galleryPlayerFilter = '';
                 document.getElementById('gallery-grid').innerHTML = '';
                 galleryRendered = 0;
                 galleryUpdateUI(0);
                 window.scrollTo({{ top: document.getElementById('gallery-albums').offsetTop - 60, behavior: 'smooth' }});
             }});
+            document.getElementById('gallery-player-filter').addEventListener('change', function(e) {{
+                galleryPlayerFilter = e.target.value;
+                galleryApplyAlbum();
+            }});
             document.getElementById('gallery-loadmore-btn').addEventListener('click', function() {{
                 if (!galleryCurrentAlbum) return;
-                var filtered = galleryPhotos.filter(function(ph) {{ return ph.tournament === galleryCurrentAlbum; }});
-                galleryRenderBatch(filtered);
-                document.getElementById('gallery-loadmore-wrap').style.display = galleryRendered < filtered.length ? 'block' : 'none';
+                galleryRenderBatch(galleryCurrentList);
+                document.getElementById('gallery-loadmore-wrap').style.display = galleryRendered < galleryCurrentList.length ? 'block' : 'none';
             }});
 
             // ===== DRAWS =====
