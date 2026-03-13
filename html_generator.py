@@ -698,7 +698,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-card-info {{ padding: 10px 12px 12px; }}
             .gallery-card-tourn {{ font-size: 10px; font-weight: bold; color: #75AADB; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }}
             .gallery-card-players {{ font-size: 12px; color: #1e293b; margin-bottom: 4px; line-height: 1.4; }}
-            .gallery-card-date {{ font-size: 11px; color: #64748b; margin-bottom: 8px; }}
             .gallery-tags {{ display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }}
             .gallery-tag {{ font-size: 10px; background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 12px; cursor: pointer; border: 1px solid #cbd5e1; line-height: 1.6; transition: background 0.15s, color 0.15s; }}
             .gallery-tag:hover {{ background: #75AADB; color: white; border-color: #75AADB; }}
@@ -719,8 +718,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-lb-info {{ color: white; margin-top: 14px; text-align: center; max-width: min(78vw, 1100px); }}
             .gallery-lb-tourn {{ font-size: 11px; color: #75AADB; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }}
             .gallery-lb-players {{ font-size: 15px; font-weight: bold; margin: 4px 0 2px; }}
-            .gallery-lb-caption {{ font-size: 13px; color: #94a3b8; }}
-            .gallery-lb-date {{ font-size: 11px; color: #64748b; margin-top: 2px; }}
             .gallery-lb-counter {{ font-size: 12px; color: #475569; margin-top: 8px; }}
             .gallery-lb-download {{ display: inline-block; margin-top: 10px; padding: 8px 14px; background: #75AADB; color: white; border-radius: 8px; font-size: 12px; text-decoration: none; }}
             .gallery-lb-download:hover {{ background: #5a8fb8; }}
@@ -2298,8 +2295,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         <div class="gallery-lb-info">
                             <div class="gallery-lb-tourn" id="gallery-lb-tourn"></div>
                             <div class="gallery-lb-players" id="gallery-lb-players"></div>
-                            <div class="gallery-lb-caption" id="gallery-lb-caption"></div>
-                            <div class="gallery-lb-date" id="gallery-lb-date"></div>
                             <div class="gallery-lb-counter" id="gallery-lb-counter"></div>
                             <a class="gallery-lb-download" id="gallery-lb-download" href="#" target="_blank" rel="noopener">Download</a>
                         </div>
@@ -4110,9 +4105,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             return {{
                                 public_id: p.public_id || p.path || '',
                                 tournament: p.tournament || p.album || 'Unsorted',
-                                players: Array.isArray(p.players) ? p.players : [],
-                                caption: p.caption || '',
-                                date: p.date || ''
+                                players: Array.isArray(p.players) ? p.players : []
                             }};
                         }});
                         galleryBuildAlbums();
@@ -4196,7 +4189,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         + '<div class="gallery-card-info">'
                         + '<div class="gallery-card-tourn">' + galleryEsc(ph.tournament) + '</div>'
                         + '<div class="gallery-card-players">' + galleryEsc(playersLabel) + '</div>'
-                        + (ph.date ? '<div class="gallery-card-date">' + galleryEsc(ph.date) + '</div>' : '')
                         + '<div class="gallery-tags">' + playerTags + tournTag + '</div>'
                         + '</div>';
                     card.addEventListener('click', (function(capturedIdx) {{
@@ -4210,12 +4202,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
 
             function galleryUpdateUI(n) {{
-                document.getElementById('gallery-count').textContent = n + ' foto' + (n !== 1 ? 's' : '');
-                document.getElementById('gallery-empty').style.display = n === 0 ? 'block' : 'none';
-                document.getElementById('gallery-loadmore-wrap').style.display = galleryRendered < n ? 'block' : 'none';
                 var showAlbums = !galleryCurrentAlbum;
                 document.getElementById('gallery-albums').style.display = showAlbums ? 'grid' : 'none';
                 document.getElementById('gallery-back-btn').style.display = showAlbums ? 'none' : 'inline-block';
+                if (showAlbums) {{
+                    document.getElementById('gallery-count').textContent = '';
+                    document.getElementById('gallery-empty').style.display = 'none';
+                    document.getElementById('gallery-loadmore-wrap').style.display = 'none';
+                    return;
+                }}
+                document.getElementById('gallery-count').textContent = n + ' foto' + (n !== 1 ? 's' : '');
+                document.getElementById('gallery-empty').style.display = n === 0 ? 'block' : 'none';
+                document.getElementById('gallery-loadmore-wrap').style.display = galleryRendered < n ? 'block' : 'none';
             }}
 
             function galleryEsc(s) {{
@@ -4242,8 +4240,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('gallery-lb-img').alt = players.join(', ') || ph.tournament;
                 document.getElementById('gallery-lb-tourn').textContent = ph.tournament;
                 document.getElementById('gallery-lb-players').textContent = players.join(' \u00b7 ');
-                document.getElementById('gallery-lb-caption').textContent = ph.caption || '';
-                document.getElementById('gallery-lb-date').textContent = ph.date || '';
                 document.getElementById('gallery-lb-counter').textContent = (galleryLbIndex + 1) + ' / ' + galleryLbList.length;
                 document.getElementById('gallery-lb-download').href = galleryDownload(ph.public_id);
             }}
