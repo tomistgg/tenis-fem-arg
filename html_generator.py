@@ -681,10 +681,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .draw-player .set-score.lost {{ color: #dc2626; }}
             .draw-no-draws {{ text-align: center; color: #94a3b8; padding: 40px; font-size: 12px; }}
             .gallery-controls {{ display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }}
-            #gallery-search {{ width: 250px; }}
-            #gallery-player-select, #gallery-tournament-select {{ min-width: 180px; width: auto; }}
-            .clear-btn {{ padding: 8px 14px; border-radius: 8px; border: 2px solid #94a3b8; background: white; font-family: inherit; font-size: 12px; font-weight: bold; color: #475569; cursor: pointer; white-space: nowrap; width: auto; }}
-            .clear-btn:hover {{ background: #f1f5f9; }}
             .gallery-back-btn {{ padding: 8px 12px; background: white; border: 1px solid black; border-radius: 8px; font-family: inherit; font-size: 12px; cursor: pointer; }}
             .gallery-back-btn:hover {{ background: #f1f5f9; }}
             .gallery-albums {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 14px; }}
@@ -706,10 +702,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-tags {{ display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }}
             .gallery-tag {{ font-size: 10px; background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 12px; cursor: pointer; border: 1px solid #cbd5e1; line-height: 1.6; transition: background 0.15s, color 0.15s; }}
             .gallery-tag:hover {{ background: #75AADB; color: white; border-color: #75AADB; }}
-            .filter-pill {{ display: flex; align-items: center; gap: 6px; background: #75AADB; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }}
-            .filter-pill button {{ background: none; border: none; color: white; cursor: pointer; font-size: 15px; line-height: 1; padding: 0; opacity: 0.8; width: auto; }}
-            .filter-pill button:hover {{ opacity: 1; }}
-            .gallery-pills {{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }}
             .gallery-count {{ font-size: 12px; color: #64748b; margin-bottom: 14px; }}
             .gallery-loadmore-wrap {{ text-align: center; margin-top: 24px; }}
             .gallery-loadmore-btn {{ padding: 10px 32px; background: #75AADB; color: white; border: none; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: bold; cursor: pointer; }}
@@ -2266,17 +2258,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                     <div class="gallery-albums" id="gallery-albums"></div>
                     <div class="gallery-controls">
-                        <input type="text" id="gallery-search" placeholder="Search player or tournament..." />
-                        <select id="gallery-player-select">
-                            <option value="">All players</option>
-                        </select>
-                        <select id="gallery-tournament-select">
-                            <option value="">All tournaments</option>
-                        </select>
                         <button class="gallery-back-btn" id="gallery-back-btn" style="display:none;">Back to albums</button>
-                        <button class="clear-btn" id="gallery-clear-btn">Clear filters</button>
                     </div>
-                    <div class="gallery-pills" id="gallery-pills"></div>
                     <div class="gallery-count" id="gallery-count"></div>
                     <div class="gallery-grid" id="gallery-grid"></div>
                     <div class="gallery-loadmore-wrap" id="gallery-loadmore-wrap" style="display:none;">
@@ -4099,12 +4082,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             const GALLERY_IK_URL = 'https://ik.imagekit.io/tomistgg';
             const GALLERY_PAGE_SIZE = 24;
             let galleryPhotos = [];
-            let galleryFiltered = [];
             let galleryRendered = 0;
             let galleryLbIndex = 0;
-            let galleryFilters = {{ search: '', player: '', tournament: '' }};
+            let galleryCurrentAlbum = '';
             let galleryInited = false;
             let galleryAlbums = [];
+            let galleryLbList = [];
 
             function galleryUrl(pid, tr) {{
                 if (!pid) return '';
@@ -4133,24 +4116,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             }};
                         }});
                         galleryBuildAlbums();
-                        galleryBuildSelects();
-                        galleryApplyFilters();
                         galleryRenderAlbums();
+                        galleryApplyAlbum();
                     }})
                     .catch(function() {{
                         var el = document.getElementById('gallery-empty');
                         el.style.display = 'block';
                         el.textContent = 'Could not load gallery.';
                     }});
-            }}
-
-            function galleryBuildSelects() {{
-                var players = [...new Set(galleryPhotos.flatMap(function(p) {{ return (p.players || []); }}))].sort();
-                var tournaments = [...new Set(galleryPhotos.map(function(p) {{ return p.tournament || 'Unsorted'; }}))].sort();
-                var pSel = document.getElementById('gallery-player-select');
-                players.forEach(function(n) {{ var o = document.createElement('option'); o.value = n; o.textContent = n; pSel.appendChild(o); }});
-                var tSel = document.getElementById('gallery-tournament-select');
-                tournaments.forEach(function(n) {{ var o = document.createElement('option'); o.value = n; o.textContent = n; tSel.appendChild(o); }});
             }}
 
             function galleryBuildAlbums() {{
@@ -4187,39 +4160,28 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             + '</div>';
                     }}
                     card.addEventListener('click', function() {{
-                        galleryFilters.tournament = alb.name;
-                        document.getElementById('gallery-tournament-select').value = alb.name;
-                        galleryApplyFilters();
+                        galleryCurrentAlbum = alb.name;
+                        galleryApplyAlbum();
                         window.scrollTo({{ top: document.getElementById('gallery-grid').offsetTop - 60, behavior: 'smooth' }});
                     }});
                     wrap.appendChild(card);
                 }});
             }}
 
-            function galleryApplyFilters() {{
-                var search = galleryFilters.search;
-                var player = galleryFilters.player;
-                var tournament = galleryFilters.tournament;
-                var q = search.toLowerCase();
-                galleryFiltered = galleryPhotos.filter(function(ph) {{
-                    var players = ph.players || [];
-                    if (player && players.indexOf(player) === -1) return false;
-                    if (tournament && ph.tournament !== tournament) return false;
-                    if (q) {{
-                        var hay = players.concat([ph.tournament, ph.caption || '']).join(' ').toLowerCase();
-                        if (hay.indexOf(q) === -1) return false;
-                    }}
-                    return true;
+            function galleryApplyAlbum() {{
+                var filtered = galleryPhotos.filter(function(ph) {{
+                    if (!galleryCurrentAlbum) return false;
+                    return ph.tournament === galleryCurrentAlbum;
                 }});
                 galleryRendered = 0;
                 document.getElementById('gallery-grid').innerHTML = '';
-                galleryRenderBatch();
-                galleryUpdateUI();
+                galleryRenderBatch(filtered);
+                galleryUpdateUI(filtered.length);
             }}
 
-            function galleryRenderBatch() {{
+            function galleryRenderBatch(filtered) {{
                 var grid = document.getElementById('gallery-grid');
-                var batch = galleryFiltered.slice(galleryRendered, galleryRendered + GALLERY_PAGE_SIZE);
+                var batch = filtered.slice(galleryRendered, galleryRendered + GALLERY_PAGE_SIZE);
                 batch.forEach(function(ph, i) {{
                     var idx = galleryRendered + i;
                     var card = document.createElement('div');
@@ -4239,9 +4201,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         + '</div>';
                     card.addEventListener('click', (function(capturedIdx) {{
                         return function(e) {{
-                            var tagEl = e.target.closest('.gallery-tag');
-                            if (tagEl) {{ gallerySetFilter(tagEl.dataset.type, tagEl.dataset.val); }}
-                            else {{ galleryOpenLb(capturedIdx); }}
+                            galleryOpenLb(capturedIdx, filtered);
                         }};
                     }})(idx));
                     grid.appendChild(card);
@@ -4249,45 +4209,22 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 galleryRendered += batch.length;
             }}
 
-            function galleryUpdateUI() {{
-                var n = galleryFiltered.length;
+            function galleryUpdateUI(n) {{
                 document.getElementById('gallery-count').textContent = n + ' foto' + (n !== 1 ? 's' : '');
                 document.getElementById('gallery-empty').style.display = n === 0 ? 'block' : 'none';
-                document.getElementById('gallery-loadmore-wrap').style.display = galleryRendered < galleryFiltered.length ? 'block' : 'none';
-                var showAlbums = !galleryFilters.tournament;
+                document.getElementById('gallery-loadmore-wrap').style.display = galleryRendered < n ? 'block' : 'none';
+                var showAlbums = !galleryCurrentAlbum;
                 document.getElementById('gallery-albums').style.display = showAlbums ? 'grid' : 'none';
                 document.getElementById('gallery-back-btn').style.display = showAlbums ? 'none' : 'inline-block';
-                galleryRenderPills();
-            }}
-
-            function galleryRenderPills() {{
-                var c = document.getElementById('gallery-pills');
-                c.innerHTML = '';
-                if (galleryFilters.search) galleryAddPill(c, '"' + galleryFilters.search + '"', function() {{ galleryFilters.search = ''; document.getElementById('gallery-search').value = ''; galleryApplyFilters(); }});
-                if (galleryFilters.player) galleryAddPill(c, galleryFilters.player, function() {{ galleryFilters.player = ''; document.getElementById('gallery-player-select').value = ''; galleryApplyFilters(); }});
-                if (galleryFilters.tournament) galleryAddPill(c, galleryFilters.tournament, function() {{ galleryFilters.tournament = ''; document.getElementById('gallery-tournament-select').value = ''; galleryApplyFilters(); }});
-            }}
-
-            function galleryAddPill(container, label, onRemove) {{
-                var pill = document.createElement('div');
-                pill.className = 'filter-pill';
-                pill.innerHTML = '<span>' + galleryEsc(label) + '</span><button>&#x2715;</button>';
-                pill.querySelector('button').addEventListener('click', onRemove);
-                container.appendChild(pill);
-            }}
-
-            function gallerySetFilter(type, val) {{
-                if (type === 'player') {{ galleryFilters.player = val; document.getElementById('gallery-player-select').value = val; }}
-                if (type === 'tournament') {{ galleryFilters.tournament = val; document.getElementById('gallery-tournament-select').value = val; }}
-                galleryApplyFilters();
             }}
 
             function galleryEsc(s) {{
                 return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
             }}
 
-            function galleryOpenLb(index) {{
+            function galleryOpenLb(index, list) {{
                 galleryLbIndex = index;
+                galleryLbList = list || [];
                 galleryShowLb();
                 document.getElementById('gallery-lb').classList.add('open');
                 document.body.style.overflow = 'hidden';
@@ -4299,7 +4236,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
 
             function galleryShowLb() {{
-                var ph = galleryFiltered[galleryLbIndex];
+                var ph = galleryLbList[galleryLbIndex];
                 var players = ph.players || [];
                 document.getElementById('gallery-lb-img').src = galleryFull(ph.public_id);
                 document.getElementById('gallery-lb-img').alt = players.join(', ') || ph.tournament;
@@ -4307,44 +4244,33 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('gallery-lb-players').textContent = players.join(' \u00b7 ');
                 document.getElementById('gallery-lb-caption').textContent = ph.caption || '';
                 document.getElementById('gallery-lb-date').textContent = ph.date || '';
-                document.getElementById('gallery-lb-counter').textContent = (galleryLbIndex + 1) + ' / ' + galleryFiltered.length;
+                document.getElementById('gallery-lb-counter').textContent = (galleryLbIndex + 1) + ' / ' + galleryLbList.length;
                 document.getElementById('gallery-lb-download').href = galleryDownload(ph.public_id);
             }}
 
             document.getElementById('gallery-lb-close').addEventListener('click', galleryCloseLb);
-            document.getElementById('gallery-lb-prev').addEventListener('click', function() {{ galleryLbIndex = (galleryLbIndex - 1 + galleryFiltered.length) % galleryFiltered.length; galleryShowLb(); }});
-            document.getElementById('gallery-lb-next').addEventListener('click', function() {{ galleryLbIndex = (galleryLbIndex + 1) % galleryFiltered.length; galleryShowLb(); }});
+            document.getElementById('gallery-lb-prev').addEventListener('click', function() {{ galleryLbIndex = (galleryLbIndex - 1 + galleryLbList.length) % galleryLbList.length; galleryShowLb(); }});
+            document.getElementById('gallery-lb-next').addEventListener('click', function() {{ galleryLbIndex = (galleryLbIndex + 1) % galleryLbList.length; galleryShowLb(); }});
             document.getElementById('gallery-lb').addEventListener('click', function(e) {{ if (e.target === document.getElementById('gallery-lb')) galleryCloseLb(); }});
             document.addEventListener('keydown', function(e) {{
                 if (!document.getElementById('gallery-lb').classList.contains('open')) return;
                 if (e.key === 'Escape') galleryCloseLb();
-                if (e.key === 'ArrowLeft') {{ galleryLbIndex = (galleryLbIndex - 1 + galleryFiltered.length) % galleryFiltered.length; galleryShowLb(); }}
-                if (e.key === 'ArrowRight') {{ galleryLbIndex = (galleryLbIndex + 1) % galleryFiltered.length; galleryShowLb(); }}
+                if (e.key === 'ArrowLeft') {{ galleryLbIndex = (galleryLbIndex - 1 + galleryLbList.length) % galleryLbList.length; galleryShowLb(); }}
+                if (e.key === 'ArrowRight') {{ galleryLbIndex = (galleryLbIndex + 1) % galleryLbList.length; galleryShowLb(); }}
             }});
 
-            var gallerySearchTimer;
-            document.getElementById('gallery-search').addEventListener('input', function(e) {{
-                clearTimeout(gallerySearchTimer);
-                gallerySearchTimer = setTimeout(function() {{ galleryFilters.search = e.target.value.trim(); galleryApplyFilters(); }}, 250);
-            }});
-            document.getElementById('gallery-player-select').addEventListener('change', function(e) {{ galleryFilters.player = e.target.value; galleryApplyFilters(); }});
-            document.getElementById('gallery-tournament-select').addEventListener('change', function(e) {{ galleryFilters.tournament = e.target.value; galleryApplyFilters(); }});
             document.getElementById('gallery-back-btn').addEventListener('click', function() {{
-                galleryFilters.tournament = '';
-                document.getElementById('gallery-tournament-select').value = '';
-                galleryApplyFilters();
+                galleryCurrentAlbum = '';
+                document.getElementById('gallery-grid').innerHTML = '';
+                galleryRendered = 0;
+                galleryUpdateUI(0);
                 window.scrollTo({{ top: document.getElementById('gallery-albums').offsetTop - 60, behavior: 'smooth' }});
             }});
-            document.getElementById('gallery-clear-btn').addEventListener('click', function() {{
-                galleryFilters = {{ search: '', player: '', tournament: '' }};
-                document.getElementById('gallery-search').value = '';
-                document.getElementById('gallery-player-select').value = '';
-                document.getElementById('gallery-tournament-select').value = '';
-                galleryApplyFilters();
-            }});
             document.getElementById('gallery-loadmore-btn').addEventListener('click', function() {{
-                galleryRenderBatch();
-                document.getElementById('gallery-loadmore-wrap').style.display = galleryRendered < galleryFiltered.length ? 'block' : 'none';
+                if (!galleryCurrentAlbum) return;
+                var filtered = galleryPhotos.filter(function(ph) {{ return ph.tournament === galleryCurrentAlbum; }});
+                galleryRenderBatch(filtered);
+                document.getElementById('gallery-loadmore-wrap').style.display = galleryRendered < filtered.length ? 'block' : 'none';
             }});
 
             // ===== DRAWS =====
