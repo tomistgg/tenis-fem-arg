@@ -239,6 +239,7 @@ def load_match_history():
         os.path.join(DATA_DIR, 'og_matches_arg.csv'),
         os.path.join(DATA_DIR, 'bjkc_matches_arg.csv'),
         os.path.join(DATA_DIR, 'united_cup_matches_arg.csv'),
+        os.path.join(DATA_DIR, 'manually_added_matches.csv'),
     ]
     for file_path in matches_files:
         try:
