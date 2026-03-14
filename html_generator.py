@@ -4834,10 +4834,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             let _visitGeo = null;
             let _lastTrackedPage = null;
 
-            function sendVisit(country, region, city, pageOverride) {{
+            function sendVisit(ip, country, region, city, pageOverride) {{
                 fetch("https://script.google.com/macros/s/AKfycbzPF0VRKkJawXA5bCfiu0122ku_X76g_-zAMvSXsa5hMNnLllpFPLN85HU3VN8BrWVT/exec", {{
                     method: "POST",
                     body: JSON.stringify({{
+                        ip: ip || "",
                         country: country || "Unknown",
                         region: region || "",
                         city: city || "",
@@ -4852,7 +4853,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if (_lastTrackedPage === pageOverride) return;
                 _lastTrackedPage = pageOverride;
                 const geo = _visitGeo || {{}};
-                sendVisit(geo.country, geo.region, geo.city, pageOverride);
+                sendVisit(geo.ip, geo.country, geo.region, geo.city, pageOverride);
             }}
             window.trackVisit = trackVisit;
 
@@ -4860,9 +4861,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .then(function(r) {{ return r.json(); }})
                 .then(function(d) {{
                     _visitGeo = {{
+                        ip: d.ip || ""
                         country: d.country_name || d.country || "Unknown",
                         region: d.region || d.region_code || "",
-                        city: d.city || ""
+                        city: d.city || "",
                     }};
                     trackVisit(location.pathname + "#home");
                 }})
