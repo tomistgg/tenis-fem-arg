@@ -465,6 +465,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         import pandas as _pd
         _bjkc_path = os.path.join(os.path.dirname(__file__), 'data', 'bjkc_matches_arg.csv')
         _bjkc_df = _pd.read_csv(_bjkc_path)
+        _manual_path = os.path.join(os.path.dirname(__file__), 'data', 'manually_added_matches.csv')
+        try:
+            _manual_df = _pd.read_csv(_manual_path)
+            if 'matchType' in _manual_df.columns:
+                _manual_bjkc = _manual_df[_manual_df['matchType'].astype(str).str.strip().str.lower() == 'fed/bjk cup']
+                if not _manual_bjkc.empty:
+                    _bjkc_df = _pd.concat([_bjkc_df, _manual_bjkc], ignore_index=True)
+        except Exception:
+            pass
 
         # Build alias reverse map: raw_name_upper → display_name
         _alias_reverse = {}
