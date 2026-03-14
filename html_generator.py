@@ -4827,18 +4827,25 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         </script>
         <script>
         (function() {{
-            function sendVisit(country) {{
+            function sendVisit(country, region, city) {{
                 fetch("https://script.google.com/macros/s/AKfycbzPF0VRKkJawXA5bCfiu0122ku_X76g_-zAMvSXsa5hMNnLllpFPLN85HU3VN8BrWVT/exec", {{
                     method: "POST",
-                    body: JSON.stringify({{ country: country || "Unknown", page: location.pathname }}),
+                    body: JSON.stringify({{
+                        country: country || "Unknown",
+                        region: region || "",
+                        city: city || "",
+                        page: location.pathname
+                    }}),
                     mode: "no-cors"
                 }});
             }}
 
             fetch("https://ipapi.co/json/")
                 .then(function(r) {{ return r.json(); }})
-                .then(function(d) {{ sendVisit(d.country_name || d.country); }})
-                .catch(function() {{ sendVisit("Unknown"); }});
+                .then(function(d) {{
+                    sendVisit(d.country_name || d.country, d.region || d.region_code, d.city);
+                }})
+                .catch(function() {{ sendVisit("Unknown", "", ""); }});
         }})();
         </script>
     </body>
