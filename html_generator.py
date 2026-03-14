@@ -1,4 +1,5 @@
 import json
+import re
 from html import escape
 import os
 from datetime import datetime, timedelta
@@ -103,7 +104,24 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         if week not in draws_by_week:
             draws_by_week[week] = []
         draws_by_week[week].append((t_key, tdata))
-    for week in sorted(draws_by_week.keys(), key=lambda w: w):
+    def _week_sort_key(label):
+        if not label:
+            return datetime.max
+        m = re.search(r'Week of\\s+([A-Za-z]+)\\s+(\\d{1,2})(?:,?\\s+(\\d{4}))?', label, re.I)
+        if not m:
+            return datetime.max
+        month = m.group(1)
+        day = int(m.group(2))
+        year = int(m.group(3)) if m.group(3) else datetime.now().year
+        try:
+            return datetime.strptime(f"{month} {day} {year}", "%B %d %Y")
+        except ValueError:
+            try:
+                return datetime.strptime(f"{month} {day} {year}", "%b %d %Y")
+            except ValueError:
+                return datetime.max
+
+    for week in sorted(draws_by_week.keys(), key=_week_sort_key):
         items = draws_by_week[week]
         items.sort(key=lambda x: get_tournament_sort_order(x[1].get("level", "")))
         draws_dropdown_html += f'<optgroup label="{week.upper()}">'
@@ -675,7 +693,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .draw-player .name {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
             .draw-player .country {{ flex-shrink: 0; width: 16px; min-width: 16px; display: inline-block; text-align: center; }}
             .draw-player .sets {{ display: flex; gap: 0; margin-left: 3px; flex-shrink: 0; }}
-            .draw-player .set-score {{ font-size: 9px; width: 11px; text-align: center; position: relative; }}
+            .draw-player .set-score {{ font-size: 9px; width: 16px; text-align: center; position: relative; }}
+            .draw-player .set-score.wo {{ text-align: left; padding-left: 0; transform: translateX(-8px); }}
             .draw-player .set-score sup {{ font-size: 6px; position: absolute; top: -2px; }}
             .draw-player .set-score.won {{ color: #059669; }}
             .draw-player .set-score.lost {{ color: #dc2626; }}
@@ -1816,6 +1835,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .draw-player .seed-entry {{ width: 24px; }}
                 .draw-player .country {{ font-size: 7px; width: 13px; min-width: 13px; }}
                 .draw-player .set-score {{ font-size: 6px; width: 8px; }}
+                .draw-player .set-score.wo {{ transform: translateX(-6px); }}
                 .draw-player .set-score sup {{ font-size: 4px; }}
                 .draw-no-draws {{ font-size: 9px; padding: 20px; }}
 
@@ -4521,18 +4541,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
 
             function parseScore(scoreStr) {{
-                if (!scoreStr) return {{ sets: [], retired: false }};
+                if (!scoreStr) return {{ sets: [], retired: false, walkover: false }};
                 const parts = scoreStr.trim().split(/\\s+/);
                 const sets = [];
                 let retired = false;
+                let walkover = false;
                 for (const p of parts) {{
                     if (p === 'RET' || p === 'DEF') {{ retired = true; continue; }}
+                    if (p === 'W/O' || p === 'WO' || p === 'W.O.') {{ walkover = true; continue; }}
                     const m = p.match(/^(\\d+)(?:\\((\\d+)\\))?$/);
                     if (m) {{
                         sets.push({{ w: parseInt(m[1].charAt(0)), l: parseInt(m[1].charAt(1) || '0'), tb: m[2] || null }});
                     }}
                 }}
-                return {{ sets, retired }};
+                return {{ sets, retired, walkover }};
             }}
 
             function isMatchWinner(playerName, winnerName) {{
@@ -4564,7 +4586,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 return null;
             }}
 
-            function renderPlayer(player, isBye, isQualifier, isWinner, isTop, scoreData, matchConcluded) {{
+            function renderPlayer(player, isBye, isQualifier, isWinner, isTop, scoreData, matchConcluded, showWalkover) {{
                 const flag = player ? countryFlag(player.country, false) : '';
                 const flagHtml = '<span class="country">' + flag + '</span>';
                 let seedEntry = '<span class="seed-entry"></span>';
@@ -4603,6 +4625,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             setsHtml += '<span class="set-score">&nbsp;</span>';
                         }}
                     }}
+                }} else if (matchConcluded && isWinner && showWalkover) {{
+                    setsHtml += '<span class="set-score won wo">W.O.</span>';
                 }}
                 const isArg = player && player.country === 'ARG' && !matchConcluded;
                 const cls = 'draw-player' + (isWinner ? ' winner' : '') + (isArg ? ' arg-player' : '');
@@ -4613,11 +4637,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const scoreData = match ? parseScore(match.score) : null;
                 const winnerPlayer = match ? getWinnerPlayer(match, players) : null;
                 const matchConcluded = !!winnerPlayer;
+                const showWalkover = !!(matchConcluded && match && (!match.score || (scoreData && scoreData.walkover)));
                 const p1IsWinner = winnerPlayer && p1 && isMatchWinner(p1.name, match.winner_name);
                 const p2IsWinner = winnerPlayer && p2 && isMatchWinner(p2.name, match.winner_name);
                 return '<div class="draw-match">' +
-                    renderPlayer(p1, isBye1, isQ1, p1IsWinner, true, matchConcluded ? scoreData : null, matchConcluded) +
-                    renderPlayer(p2, isBye2, isQ2, p2IsWinner, false, matchConcluded ? scoreData : null, matchConcluded) +
+                    renderPlayer(p1, isBye1, isQ1, p1IsWinner, true, matchConcluded ? scoreData : null, matchConcluded, showWalkover) +
+                    renderPlayer(p2, isBye2, isQ2, p2IsWinner, false, matchConcluded ? scoreData : null, matchConcluded, showWalkover) +
                     '</div>';
             }}
 
@@ -4628,10 +4653,64 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const drawSize = data.draw_size || players.length;
                 const pdfRoundLabels = data.round_labels || [];
                 const numRounds = data.num_rounds || Math.ceil(Math.log2(drawSize));
+                const playersByPos = new Map(players.map(p => [p.pos, p]));
+                const playerPosSet = new Set(players.map(p => p.pos));
+                const matchMap = new Map(matches.map(m => [`${{m.round}}:${{m.match_num}}`, m]));
+                const isQualifying = (data.draw_type || '').toUpperCase().includes('QUAL') || currentDrawType === 'QS';
+
+                function getMatch(roundNum, matchNum) {{
+                    return matchMap.get(`${{roundNum}}:${{matchNum}}`) || null;
+                }}
+
+                function formatRoundLabel(label, roundIdx) {{
+                    const norm = (label || '').trim();
+                    if (isQualifying) {{
+                        if (/^Round of\\s+\\d+$/i.test(norm)) {{
+                            const ordinals = ['1st Round', '2nd Round', '3rd Round', '4th Round', '5th Round', '6th Round'];
+                            return ordinals[roundIdx] || ('Round ' + (roundIdx + 1));
+                        }}
+                        return label;
+                    }}
+                    if (/^(1st|2nd|3rd|4th)\\s+Round$/i.test(norm) || /^R\\d+$/i.test(norm)) {{
+                        const roundOf = Math.round(drawSize / Math.pow(2, roundIdx));
+                        if (roundOf >= 2) return 'Round of ' + roundOf;
+                    }}
+                    return label;
+                }}
+
+                function getAdvancer(roundNum, matchNum) {{
+                    if (roundNum <= 0) return null;
+                    const match = getMatch(roundNum, matchNum);
+                    if (match && match.winner_name) {{
+                        const winner = getWinnerPlayer(match, players);
+                        if (winner) return winner;
+                        return null;
+                    }}
+                    if (roundNum === 1) {{
+                        const pos1 = matchNum * 2 + 1;
+                        const pos2 = matchNum * 2 + 2;
+                        const p1 = playersByPos.get(pos1) || null;
+                        const p2 = playersByPos.get(pos2) || null;
+                        const bye1 = byes.has(pos1);
+                        const bye2 = byes.has(pos2);
+                        if (bye1 && !bye2) return p2;
+                        if (bye2 && !bye1) return p1;
+                        return null;
+                    }}
+                    return null;
+                }}
+
+                function hasPlayerInRange(startPos, endPos) {{
+                    for (let pos = startPos; pos <= endPos; pos++) {{
+                        if (playerPosSet.has(pos)) return true;
+                    }}
+                    return false;
+                }}
 
                 let html = '';
                 for (let r = 0; r < numRounds; r++) {{
-                    const label = r < pdfRoundLabels.length ? pdfRoundLabels[r] : 'R' + (r + 1);
+                    const rawLabel = r < pdfRoundLabels.length ? pdfRoundLabels[r] : 'R' + (r + 1);
+                    const label = formatRoundLabel(rawLabel, r);
                     html += '<div class="draw-round" data-round="' + r + '"><div class="draw-round-header" data-round="' + r + '" onclick="filterDrawFromRound(' + r + ')" title="Click to show from this round">' + label + '</div>';
 
                     if (r === 0) {{
@@ -4639,48 +4718,32 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         for (let m = 0; m < numMatches; m++) {{
                             const pos1 = m * 2 + 1;
                             const pos2 = m * 2 + 2;
-                            const p1 = players.find(p => p.pos === pos1) || null;
-                            const p2 = players.find(p => p.pos === pos2) || null;
+                            const p1 = playersByPos.get(pos1) || null;
+                            const p2 = playersByPos.get(pos2) || null;
                             const isBye1 = byes.has(pos1);
                             const isBye2 = byes.has(pos2);
                             const isQ1 = !p1 && !isBye1;
                             const isQ2 = !p2 && !isBye2;
-                            const match = matches.find(mt => mt.round === 1 && mt.match_num === m) || null;
+                            const match = getMatch(1, m);
                             html += '<div class="draw-match-wrapper">' + renderMatch(p1, p2, isBye1, isBye2, isQ1, isQ2, match, players) + '</div>';
                         }}
                     }} else {{
                         const numMatches = Math.floor(drawSize / Math.pow(2, r + 1));
                         for (let m = 0; m < numMatches; m++) {{
-                            const match = matches.find(mt => mt.round === r + 1 && mt.match_num === m) || null;
-                            // Find the two feed matches from previous round
-                            const feedTop = matches.find(mt => mt.round === r && mt.match_num === m * 2) || null;
-                            const feedBot = matches.find(mt => mt.round === r && mt.match_num === m * 2 + 1) || null;
-                            let p1 = null, p2 = null;
-                            // If r==1, feed matches are R1; check for BYE auto-advances too
-                            if (r === 1) {{
-                                // Top feed: winner of R1 match m*2, or BYE auto-advance
-                                const topPos1 = m * 4 + 1, topPos2 = m * 4 + 2;
-                                if (feedTop && feedTop.winner_name) {{
-                                    p1 = getWinnerPlayer(feedTop, players);
-                                }} else if (byes.has(topPos1) && !byes.has(topPos2)) {{
-                                    p1 = players.find(p => p.pos === topPos2) || null;
-                                }} else if (byes.has(topPos2) && !byes.has(topPos1)) {{
-                                    p1 = players.find(p => p.pos === topPos1) || null;
-                                }}
-                                // Bottom feed
-                                const botPos1 = m * 4 + 3, botPos2 = m * 4 + 4;
-                                if (feedBot && feedBot.winner_name) {{
-                                    p2 = getWinnerPlayer(feedBot, players);
-                                }} else if (byes.has(botPos1) && !byes.has(botPos2)) {{
-                                    p2 = players.find(p => p.pos === botPos2) || null;
-                                }} else if (byes.has(botPos2) && !byes.has(botPos1)) {{
-                                    p2 = players.find(p => p.pos === botPos1) || null;
-                                }}
-                            }} else {{
-                                if (feedTop && feedTop.winner_name) p1 = getWinnerPlayer(feedTop, players);
-                                if (feedBot && feedBot.winner_name) p2 = getWinnerPlayer(feedBot, players);
-                            }}
-                            html += '<div class="draw-match-wrapper">' + renderMatch(p1, p2, false, false, false, false, match, players) + '</div>';
+                            const match = getMatch(r + 1, m);
+                            const p1 = getAdvancer(r, m * 2);
+                            const p2 = getAdvancer(r, m * 2 + 1);
+                            const groupStart = m * Math.pow(2, r + 1) + 1;
+                            const halfSize = Math.pow(2, r);
+                            const topStart = groupStart;
+                            const topEnd = groupStart + halfSize - 1;
+                            const botStart = groupStart + halfSize;
+                            const botEnd = groupStart + Math.pow(2, r + 1) - 1;
+                            const topHasPlayer = hasPlayerInRange(topStart, topEnd);
+                            const botHasPlayer = hasPlayerInRange(botStart, botEnd);
+                            const isBye1 = !p1 && !!p2 && !topHasPlayer;
+                            const isBye2 = !p2 && !!p1 && !botHasPlayer;
+                            html += '<div class="draw-match-wrapper">' + renderMatch(p1, p2, isBye1, isBye2, false, false, match, players) + '</div>';
                         }}
                     }}
                     html += '</div>';
