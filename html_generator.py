@@ -2478,6 +2478,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 applyMobileHistoryLayout();
 
+                if (window.trackVisit) {{
+                    window.trackVisit(location.pathname + "#" + tabName);
+                }}
+
                 // Close mobile menu after selecting
                 if (window.innerWidth <= 768) {{
                     document.getElementById('sidebar').classList.add('mobile-hidden');
@@ -4827,25 +4831,45 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         </script>
         <script>
         (function() {{
-            function sendVisit(country, region, city) {{
+            let _visitGeo = null;
+            let _lastTrackedPage = null;
+
+            function sendVisit(country, region, city, pageOverride) {{
                 fetch("https://script.google.com/macros/s/AKfycbzPF0VRKkJawXA5bCfiu0122ku_X76g_-zAMvSXsa5hMNnLllpFPLN85HU3VN8BrWVT/exec", {{
                     method: "POST",
                     body: JSON.stringify({{
                         country: country || "Unknown",
                         region: region || "",
                         city: city || "",
-                        page: location.pathname
+                        page: pageOverride || location.pathname
                     }}),
                     mode: "no-cors"
                 }});
             }}
 
+            function trackVisit(pageOverride) {{
+                if (!pageOverride) pageOverride = location.pathname;
+                if (_lastTrackedPage === pageOverride) return;
+                _lastTrackedPage = pageOverride;
+                const geo = _visitGeo || {{}};
+                sendVisit(geo.country, geo.region, geo.city, pageOverride);
+            }}
+            window.trackVisit = trackVisit;
+
             fetch("https://ipapi.co/json/")
                 .then(function(r) {{ return r.json(); }})
                 .then(function(d) {{
-                    sendVisit(d.country_name || d.country, d.region || d.region_code, d.city);
+                    _visitGeo = {{
+                        country: d.country_name || d.country || "Unknown",
+                        region: d.region || d.region_code || "",
+                        city: d.city || ""
+                    }};
+                    trackVisit(location.pathname + "#home");
                 }})
-                .catch(function() {{ sendVisit("Unknown", "", ""); }});
+                .catch(function() {{
+                    _visitGeo = {{ country: "Unknown", region: "", city: "" }};
+                    trackVisit(location.pathname + "#home");
+                }});
         }})();
         </script>
     </body>
@@ -4853,4 +4877,3 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     """
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html_template)
-
