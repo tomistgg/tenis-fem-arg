@@ -4861,15 +4861,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .then(function(r) {{ return r.json(); }})
                 .then(function(d) {{
                     _visitGeo = {{
-                        ip: d.ip || ""
+                        ip: d.ip || "",
                         country: d.country_name || d.country || "Unknown",
                         region: d.region || d.region_code || "",
-                        city: d.city || "",
+                        city: d.city || ""
                     }};
                     trackVisit(location.pathname + "#home");
                 }})
                 .catch(function() {{
-                    _visitGeo = {{ country: "Unknown", region: "", city: "" }};
+                    _visitGeo = {{ ip: "", country: "Unknown", region: "", city: "" }};
                     trackVisit(location.pathname + "#home");
                 }});
         }})();
