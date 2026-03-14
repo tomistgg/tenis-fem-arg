@@ -110,8 +110,24 @@ def build_tournament_groups():
     return tournament_groups
 
 
+_WTA_TWO_WEEK_NAMES = [
+    'Australian Open', 'Roland Garros', 'Wimbledon', 'US Open',
+    'Indian Wells', 'Miami', 'Madrid', 'Rome', 'Internazionali'
+]
+
+
+def _is_two_week_wta(level, raw_name, city, display_name):
+    if level.lower().replace(" ", "") == "grandslam":
+        return True
+    hay = " ".join([raw_name or "", city or "", display_name or ""]).lower()
+    return any(n.lower() in hay for n in _WTA_TWO_WEEK_NAMES)
+
+
 def get_draws_tournament_list():
-    """Get WTA tournaments for the draws page: past week, current week, and next week."""
+    """Get WTA tournaments for the draws page.
+
+    Show current + next week. Only include last week if the event is a 2-week tournament.
+    """
     today = datetime.now()
     current_monday = today - timedelta(days=today.weekday())
     current_monday = current_monday.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -146,9 +162,6 @@ def get_draws_tournament_list():
 
         monday = get_monday_from_date(start_date)
 
-        if not (past_monday <= monday < two_weeks_later):
-            continue
-
         week_label = format_week_label(monday)
         t_url = f"https://www.wtatennis.com/tournaments/{tournament_id}/{name}/{year}/player-list"
         if level.lower().replace(" ", "") == "grandslam":
@@ -156,6 +169,14 @@ def get_draws_tournament_list():
         else:
             display_name = f"{level} {city}{suffix}"
         display_name = fix_display_name(display_name)
+        is_two_week = _is_two_week_wta(level, raw_name, city, display_name)
+
+        if monday < current_monday:
+            if not (monday == past_monday and is_two_week):
+                continue
+        else:
+            if not (monday < two_weeks_later):
+                continue
 
         if week_label not in result:
             result[week_label] = {}

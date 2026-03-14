@@ -238,7 +238,9 @@ def get_dynamic_itf_calendar(driver, num_weeks=3):
 
 
 def get_draws_itf_tournament_list(driver):
-    """Get ITF tournaments for the draws page: past week, current week, and next week.
+    """Get ITF tournaments for the draws page.
+
+    Show current + next week. Only include last week if the event is multi-week.
 
     Returns dict: week_label -> {tournamentKey -> {name, level, tournamentId, ...}}
     Requires Selenium driver to fetch tournamentIds via GetEventFilters.
@@ -271,8 +273,13 @@ def get_draws_itf_tournament_list(driver):
         except ValueError:
             continue
         monday = start_date - timedelta(days=start_date.weekday())
-        if not (past_monday <= monday < two_weeks_later):
-            continue
+        is_multiweek = (item.get('category') or '') == "ITF Womens Multi-Week Circuit"
+        if monday < current_monday:
+            if not (monday == past_monday and is_multiweek):
+                continue
+        else:
+            if not (monday < two_weeks_later):
+                continue
         tournaments.append(item)
         name_counts[t_name] = name_counts.get(t_name, 0) + 1
 
@@ -318,8 +325,6 @@ def get_draws_itf_tournament_list(driver):
         monday = start_date - timedelta(days=start_date.weekday())
         week_label = format_week_label(monday)
         level = get_itf_level(item.get('tournamentName', ''))
-        is_multiweek = (item.get('category') or '') == "ITF Womens Multi-Week Circuit"
-
         if week_label not in result:
             result[week_label] = {}
         result[week_label][key] = {
