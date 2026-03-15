@@ -1,4 +1,5 @@
 import csv
+import json
 import os
 import re
 import time
@@ -88,9 +89,7 @@ def fetch_tournaments_for_year(year):
     page = 0
     while True:
         url = CALENDAR_URL.format(year=year, page=page)
-        response = requests.get(url, headers=HEADERS)
-        response.raise_for_status()
-        data = response.json()
+        data = fetch_json(url)
         page_content = data.get("content", [])
         all_tournaments.extend(page_content)
 
@@ -210,9 +209,18 @@ def _map_round(raw_round, draw_level, q_map):
 
 def fetch_matches(tournament_id, year):
     url = MATCHES_URL.format(tournament_id=tournament_id, year=year)
+    return fetch_json(url).get("matches", [])
+
+
+def fetch_json(url):
     response = requests.get(url, headers=HEADERS)
     response.raise_for_status()
-    return response.json().get("matches", [])
+    raw = response.content
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        text = raw.decode("latin-1")
+    return json.loads(text)
 
 
 def deduplicate(rows):
