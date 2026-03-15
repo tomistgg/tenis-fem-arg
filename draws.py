@@ -50,7 +50,7 @@ def _is_winner_name(text):
 
 
 def _parse_page(text):
-    """Parse a single page's text into players, byes, result entries, and round labels.
+    """Parse a single page's text into players, byes, qualifier placeholders, result entries, and round labels.
 
     The text from get_text() has the player entries split across multiple lines:
       position_line:  '1'  or  '3 Q'  or  '8'  or  '23'
@@ -68,6 +68,7 @@ def _parse_page(text):
 
     players = []
     byes = set()
+    qualifiers = set()
     result_entries = []
     round_labels = []
     in_footer = False
@@ -159,6 +160,7 @@ def _parse_page(text):
 
             # Qualifier placeholder (empty Q spot)
             if line == 'Qualifier' and current_pos is not None:
+                qualifiers.add(current_pos)
                 current_pos = None
                 continue
 
@@ -216,7 +218,7 @@ def _parse_page(text):
                     result_entries[-1]["score"] = line
             # Skip standalone numbers (seed annotations), country codes, etc.
 
-    return players, byes, result_entries, round_labels
+    return players, byes, qualifiers, result_entries, round_labels
 
 
 def parse_draw_pdf(pdf_bytes):
@@ -245,14 +247,16 @@ def parse_draw_pdf(pdf_bytes):
 
     all_players = []
     all_byes = set()
+    all_qualifiers = set()
     page_results = []
     round_labels = []
 
     for page_idx in range(num_pages):
         text = doc[page_idx].get_text() or ""
-        players, byes, result_entries, labels = _parse_page(text)
+        players, byes, qualifiers, result_entries, labels = _parse_page(text)
         all_players.extend(players)
         all_byes.update(byes)
+        all_qualifiers.update(qualifiers)
         page_results.append(result_entries)
         if not round_labels and labels:
             round_labels = labels
@@ -270,7 +274,7 @@ def parse_draw_pdf(pdf_bytes):
 
     # Compute draw size from max position
     max_pos = max(
-        [p["pos"] for p in unique_players] + list(all_byes),
+        [p["pos"] for p in unique_players] + list(all_byes) + list(all_qualifiers),
         default=0
     )
     draw_size = max_pos
@@ -298,6 +302,7 @@ def parse_draw_pdf(pdf_bytes):
         "players": unique_players,
         "matches": all_matches,
         "byes": sorted(all_byes),
+        "qualifiers": sorted(all_qualifiers),
         "round_labels": round_labels,
         "num_rounds": num_rounds,
     }
