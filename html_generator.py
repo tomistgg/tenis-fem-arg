@@ -778,7 +778,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
             .home-mode #sidebar {{ display: none; }}
             .home-mode .main-content {{ width: 100%; margin-left: 0; }}
-            .calendar-mode .main-content {{ padding-top: 8px; padding-bottom: 8px; }}
+            @media (min-width: 769px) {{
+                .calendar-mode .main-content {{ padding-top: 8px; padding-bottom: 8px; }}
+            }}
             .roadtogs-controls {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }}
             #roadtogs-table {{ width: 100%; table-layout: fixed; }}
             #roadtogs-table th, #roadtogs-table td {{ padding: 8px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; }}
