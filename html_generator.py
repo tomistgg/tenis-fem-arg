@@ -1049,6 +1049,22 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #history-table td {{ font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
             #history-table td:nth-child(2) {{ white-space: normal; overflow: visible; text-overflow: clip; }} /* Allow TOURNAMENT to wrap */
             #history-table td:nth-child(8) {{ white-space: normal; overflow: visible; text-overflow: clip; }} /* Allow OPPONENT to wrap */
+            #history-table .opponent-cell {{
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                width: 100%;
+            }}
+            #history-table .opponent-flag {{
+                flex: 0 0 auto;
+                display: flex;
+                align-items: center;
+            }}
+            #history-table .opponent-name {{
+                flex: 1 1 auto;
+                min-width: 0;
+                overflow-wrap: anywhere;
+            }}
 
             /* Filter Panel Styles */
             .history-layout {{ display: flex; gap: 20px; width: 100%; align-items: flex-start; }}
@@ -3380,7 +3396,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const rEntry = isWinner ? (row['_loserEntry'] || '') : (row['_winnerEntry'] || '');
 
                     const rivalCountry = isWinner ? (row['_loserCountry'] || '') : (row['_winnerCountry'] || '');
-                    const opponentFlag = (rivalCountry && rivalCountry !== '-') ? (countryFlagHistory(rivalCountry, false) + ' ') : '';
+                    const opponentFlag = (rivalCountry && rivalCountry !== '-') ? countryFlagHistory(rivalCountry, false) : '';
+                    const opponentCell = `<span class="opponent-cell">${{
+                        opponentFlag ? `<span class="opponent-flag">${{opponentFlag}}</span>` : ''
+                    }}<span class="opponent-name">${{buildPrefix(rSeed, rEntry) + rivalDisplayName}}</span></span>`;
 
                     parts.push('<tr><td>', formatDate(row['DATE'] || ''),
                         '</td><td>', row['TOURNAMENT'] || '',
@@ -3389,7 +3408,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         '</td><td>', buildPrefix(pSeed, pEntry) + playerDisplayName,
                         '</td><td>', isWinner ? 'W' : 'L',
                         '</td><td>', isWinner ? (row['SCORE'] || '') : reverseScore(row['SCORE'] || ''),
-                        '</td><td>', opponentFlag + buildPrefix(rSeed, rEntry) + rivalDisplayName,
+                        '</td><td>', opponentCell,
                         '</td></tr>');
                 }}
                 document.getElementById('history-body').innerHTML = parts.join('');
