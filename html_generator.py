@@ -4662,10 +4662,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
 
             function renderMatch(p1, p2, isBye1, isBye2, isQ1, isQ2, match, players) {{
-                const scoreData = match ? parseScore(match.score) : null;
-                const winnerPlayer = match ? getWinnerPlayer(match, players) : null;
-                const matchConcluded = !!winnerPlayer;
-                const showWalkover = !!(matchConcluded && match && (!match.score || (scoreData && scoreData.walkover)));
+                const scoreText = (match && match.score) ? String(match.score).trim() : '';
+                // Only treat a match as concluded if we have a non-empty score.
+                // WTA PDFs often show "advanced" names in later rounds before matches are played (e.g., seeds with byes),
+                // and parsing those as winners breaks early-round pairings (Miami WTA 1000 case).
+                const matchConcluded = !!(match && match.winner_name && scoreText);
+                const scoreData = matchConcluded ? parseScore(scoreText) : null;
+                const winnerPlayer = matchConcluded ? getWinnerPlayer(match, players) : null;
+                const showWalkover = !!(matchConcluded && scoreData && scoreData.walkover);
                 const p1IsWinner = winnerPlayer && p1 && isMatchWinner(p1.name, match.winner_name);
                 const p2IsWinner = winnerPlayer && p2 && isMatchWinner(p2.name, match.winner_name);
                 return '<div class="draw-match">' +
@@ -4709,7 +4713,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 function getAdvancer(roundNum, matchNum) {{
                     if (roundNum <= 0) return null;
                     const match = getMatch(roundNum, matchNum);
-                    if (match && match.winner_name) {{
+                    const scoreText = (match && match.score) ? String(match.score).trim() : '';
+                    if (match && match.winner_name && scoreText) {{
                         const winner = getWinnerPlayer(match, players);
                         if (winner) return winner;
                         return null;
