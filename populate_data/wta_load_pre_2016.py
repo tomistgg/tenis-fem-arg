@@ -120,6 +120,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
 
     t_id = tourney_meta.get('tournamentId')
     t_name = tourney_meta.get('tournamentName')
+    match_type = "ITF" if isinstance(t_name, str) and t_name.startswith("$") else "WTA"
     t_cat = tourney_meta.get('category')
     t_surf = tourney_meta.get('surfaceDesc')
     t_indoor = tourney_meta.get('indoorOrOutDoor', '')
@@ -228,7 +229,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
                         continue
 
                     rows.append({
-                        "matchType": "WTA",
+                        "matchType": match_type,
                         "matchId": matchId,
                         "date": t_date,
                         "tournamentId": t_id,
