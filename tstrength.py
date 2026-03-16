@@ -24,6 +24,18 @@ _WTA_API_HEADERS = {
 
 DEFAULT_RANK = 2000
 
+_IGNORE_TOURNAMENT_NAMES = {
+    "UNITED CUP",
+}
+
+
+def _is_ignored_tournament(name):
+    if not name:
+        return False
+    norm = str(name).strip().upper()
+    return norm in _IGNORE_TOURNAMENT_NAMES
+
+
 # Map country codes to regions
 _REGION_MAP = {
     # North America
@@ -132,6 +144,8 @@ def _fetch_tournaments(year):
                     continue
                 tid = t["tournamentGroup"]["id"]
                 raw_name = t["tournamentGroup"]["name"]
+                if _is_ignored_tournament(raw_name):
+                    continue
                 city = t.get("city", "")
                 start_date = t.get("startDate", "")[:10]
                 surface = t.get("surface") or t.get("surfaceType") or t.get("surfaceCode") or ""
@@ -181,6 +195,8 @@ def _fetch_tournaments_range(year, from_date, to_date):
                     continue
                 tid = t["tournamentGroup"]["id"]
                 raw_name = t["tournamentGroup"]["name"]
+                if _is_ignored_tournament(raw_name):
+                    continue
                 city = t.get("city", "")
                 start_date = t.get("startDate", "")[:10]
                 surface = t.get("surface") or t.get("surfaceType") or t.get("surfaceCode") or ""
@@ -247,7 +263,23 @@ def build_tstrength_data():
 
     Returns cached entries plus any newly completed tournaments from the last 3 weeks.
     Only fetches the API for recent tournaments, not the full year lists.
+
+    Note: If a tournament was previously cached with 0 players (e.g., API data
+    temporarily unavailable), it will be retried when it appears in the recent
+    window again.
     """
+    def _needs_refresh(cached_entry):
+        if not cached_entry:
+            return True
+        if cached_entry.get("playerCount", 0) <= 0:
+            return True
+        if cached_entry.get("gm", 0) <= 0 or cached_entry.get("hm", 0) <= 0:
+            return True
+        rankings = cached_entry.get("rankings")
+        if isinstance(rankings, list) and len(rankings) == 0:
+            return True
+        return False
+
     # Load cache (keyed by "year_id")
     cache = {}
     if os.path.exists(TSTRENGTH_CACHE):
@@ -255,27 +287,52 @@ def build_tstrength_data():
             with open(TSTRENGTH_CACHE, encoding="utf-8") as f:
                 cached_list = json.load(f)
             for entry in cached_list:
+                if _is_ignored_tournament(entry.get("name", "")):
+                    continue
                 year = entry.get("year", "2025")
                 cache_key = f"{year}_{entry['id']}"
                 cache[cache_key] = entry
         except Exception:
             pass
 
-    # Only fetch recent tournaments (last 3 weeks) to find newly completed ones
     today = datetime.now()
     today_str = today.strftime("%Y-%m-%d")
-    from_date = (today - timedelta(days=21)).strftime("%Y-%m-%d")
     year = str(today.year)
+
+    # Auto-backfill: if a run was missed for >3 weeks, widen the window so we still pick up
+    # tournaments that finished while the script wasn't running.
+    jan1 = datetime(today.year, 1, 1)
+    last_dt = None
+    for e in cache.values():
+        if str(e.get("year", "")) != year:
+            continue
+        if e.get("playerCount", 0) <= 0:
+            continue
+        sd = (e.get("startDate") or "")[:10]
+        if not sd:
+            continue
+        try:
+            dt = datetime.strptime(sd, "%Y-%m-%d")
+        except Exception:
+            continue
+        if last_dt is None or dt > last_dt:
+            last_dt = dt
+
+    if last_dt is None:
+        from_date = jan1.strftime("%Y-%m-%d")
+    else:
+        from_dt = max(jan1, last_dt - timedelta(days=21))
+        from_date = from_dt.strftime("%Y-%m-%d")
 
     print(f"Fetching recent WTA tournaments ({from_date} to {today_str})...")
     recent = _fetch_tournaments_range(year, from_date, today_str)
     print(f"  Found {len(recent)} recent tournaments")
 
-    # Filter to only uncached tournaments
+    # Filter to only uncached tournaments, plus cached placeholders that need a retry
     new_tournaments = []
     for t in recent:
         cache_key = f"{t['year']}_{t['id']}"
-        if cache_key not in cache:
+        if cache_key not in cache or _needs_refresh(cache.get(cache_key)):
             new_tournaments.append(t)
 
     if not new_tournaments:
@@ -348,10 +405,21 @@ def build_tstrength_data():
             }
             cache[cache_key] = entry
 
+        still_empty = []
+        for t in new_tournaments:
+            cache_key = f"{t.get('year', year)}_{t['id']}"
+            if cache.get(cache_key, {}).get("playerCount", 0) <= 0:
+                still_empty.append(f"{t.get('name', t['id'])} ({t.get('startDate', '')})")
+        if still_empty:
+            print("\nWARNING: Some tournaments still have no player data after retry:")
+            for label in still_empty:
+                print(f"  - {label}")
+
         # Save updated cache
         try:
+            filtered_cache_values = [e for e in cache.values() if not _is_ignored_tournament(e.get("name", ""))]
             with open(TSTRENGTH_CACHE, "w", encoding="utf-8") as f:
-                json.dump(list(cache.values()), f, indent=2)
+                json.dump(filtered_cache_values, f, indent=2)
         except Exception as e:
             print(f"Error saving T-Strength cache: {e}")
 
@@ -362,6 +430,9 @@ def build_tstrength_data():
             print(f"Total: {len(unranked_players)} unranked players\n")
 
     # Return all cached entries with actual players
-    results = [e for e in cache.values() if e.get("playerCount", 0) > 0]
+    results = [
+        e for e in cache.values()
+        if (not _is_ignored_tournament(e.get("name", ""))) and e.get("playerCount", 0) > 0
+    ]
     results.sort(key=lambda x: x["startDate"])
     return results
