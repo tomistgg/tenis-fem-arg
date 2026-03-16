@@ -267,8 +267,36 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     gs_cutoffs_json = json.dumps(gs_data)
 
     # Build calendar HTML
-    col_keys = ["wta_tour", "wta_125", "itf"]
-    col_labels = {"wta_tour": "WTA TOUR", "wta_125": "WTA 125", "itf": "ITF"}
+    def get_calendar_filter_key(level):
+        lvl = (level or "").strip().lower().replace(" ", "")
+        if lvl == "grandslam":
+            return "gs"
+        if "wta125" in lvl or lvl == "125" or lvl.endswith("wta125"):
+            return "wta125"
+        if lvl.startswith("wta"):
+            if "125" in lvl:
+                return "wta125"
+            if any(x in lvl for x in ["250", "500", "1000", "wtafinals", "finals"]):
+                return "wta_tour"
+            return "wta_tour"
+        if lvl in {"w15", "w35", "w50", "w75", "w100"}:
+            return lvl
+        if lvl.startswith("w") and lvl[1:].isdigit():
+            return "itf_other"
+        return "other"
+
+    def get_calendar_surface_key(surface: str) -> str:
+        s = (surface or "").lower()
+        if "clay" in s:
+            return "clay"
+        if "grass" in s:
+            return "grass"
+        return "hard"
+
+    col_groups = [
+        {"label": "WTA", "keys": ["wta_tour", "wta_125"]},
+        {"label": "ITF", "keys": ["itf"]},
+    ]
     cont_labels = CONTINENT_LABELS
 
     calendar_html = '<table class="calendar-table"><thead><tr>'
@@ -277,19 +305,28 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         calendar_html += f'<th class="cal-week-header">{week["week_label"]}</th>'
     calendar_html += '</tr></thead><tbody>'
 
-    for ck in col_keys:
+    for group in col_groups:
         for ci, cont in enumerate(CONTINENT_KEYS):
             row_cls = "cal-group-first" if ci == 0 else ("cal-group-last" if ci == len(CONTINENT_KEYS) - 1 else "")
-            calendar_html += f'<tr class="{row_cls}">' if row_cls else '<tr>'
+            if row_cls:
+                calendar_html += f'<tr class="{row_cls}" data-cal-row-continent="{cont}">'
+            else:
+                calendar_html += f'<tr data-cal-row-continent="{cont}">'
             if ci == 0:
-                calendar_html += f'<td class="cal-cat-label" rowspan="{len(CONTINENT_KEYS)}">{col_labels[ck]}</td>'
+                calendar_html += f'<td class="cal-cat-label" rowspan="{len(CONTINENT_KEYS)}">{group["label"]}</td>'
             calendar_html += f'<td class="cal-cont-label">{cont_labels[cont]}</td>'
             for week in calendar_data:
                 calendar_html += '<td class="cal-cell">'
-                if week["columns"][ck][cont]:
-                    for t in week["columns"][ck][cont]:
+                tournaments = []
+                for ck in group["keys"]:
+                    tournaments.extend(week.get("columns", {}).get(ck, {}).get(cont, []) or [])
+                if tournaments:
+                    tournaments.sort(key=lambda x: get_tournament_sort_order(x.get("level", "")))
+                    for t in tournaments:
                         sc = get_surface_class(t.get("surface", ""))
-                        calendar_html += f'<span class="calendar-tournament {sc}">{t["name"]}</span>'
+                        fk = get_calendar_filter_key(t.get("level", ""))
+                        sk = get_calendar_surface_key(t.get("surface", ""))
+                        calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-continent="{cont}" data-cal-surface="{sk}">{t["name"]}</span>'
                 calendar_html += '</td>'
             calendar_html += '</tr>'
 
@@ -778,6 +815,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
             .home-mode #sidebar {{ display: none; }}
             .home-mode .main-content {{ width: 100%; margin-left: 0; }}
+            .calendar-mode .main-content {{ overflow-x: hidden; }}
             @media (min-width: 769px) {{
                 .calendar-mode .main-content {{ padding-top: 8px; padding-bottom: 8px; }}
             }}
@@ -1105,8 +1143,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             /* Calendar Styles */
             #view-calendar {{ width: 100%; min-height: 0; }}
-            .calendar-container {{ width: 100%; min-width: 100%; min-height: 0; margin-bottom: 0; display: block; }}
-            .calendar-container .table-wrapper {{ display: block; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; border-right: 1px solid #1e293b; }}
+            .calendar-container {{ width: 100%; min-width: 100%; min-height: 0; margin-bottom: 0; display: block; box-sizing: border-box; }}
+            .calendar-toolbar {{ display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; align-items: center; margin: 0 0 10px; position: sticky; top: 0; z-index: 50; background: #f8fafc; border-bottom: 1px solid #cbd5e1; padding: 10px 8px; box-sizing: border-box; }}
+            .cal-dd {{ position: relative; }}
+            .cal-dd-btn {{ display: inline-flex; align-items: center; justify-content: flex-start; padding: 8px 32px 8px 12px; border-radius: 8px; border: 2px solid #94a3b8; background: white; color: #1e293b; font-size: 13px; font-weight: bold; cursor: pointer; user-select: none; background-image: url(\"data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\"); background-repeat: no-repeat; background-position: right 10px center; }}
+            .cal-dd-btn:hover {{ background-color: white; }}
+            .cal-dd-panel {{ position: absolute; top: calc(100% + 6px); left: 0; width: max-content; min-width: 170px; max-width: min(320px, calc(100vw - 20px)); max-height: 280px; overflow: auto; background: white; border: 2px solid #94a3b8; border-radius: 8px; padding: 6px; box-shadow: 0 12px 28px rgba(0,0,0,0.12); display: none; z-index: 60; }}
+            .cal-dd.open .cal-dd-panel {{ display: block; }}
+            .cal-dd-item {{ display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; user-select: none; }}
+            .cal-dd-item:hover {{ background: transparent; }}
+            .cal-dd-item input {{ width: 14px; height: 14px; margin: 0; }}
+            .cal-dd-item span {{ font-size: 12px; font-weight: 700; color: #1e293b; }}
+            .calendar-container .table-wrapper {{ display: block; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; border-right: 1px solid #1e293b; box-sizing: border-box; cursor: grab; overscroll-behavior-x: contain; }}
+            .calendar-container .table-wrapper.dragging {{ cursor: grabbing; }}
             .calendar-table {{ border-collapse: separate; border-spacing: 0; width: max-content; min-width: max-content; table-layout: auto; border: 1px solid black; }}
             .calendar-table th {{ padding: 4px 4px; vertical-align: top; border-bottom: 2px solid #1e293b; border-right: 1px solid #1e293b; }}
             .calendar-table td {{ padding: 4px 4px; vertical-align: top; border-bottom: 1px solid #94a3b8; border-right: 1px solid #94a3b8; }}
@@ -1656,6 +1705,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 /* Calendar mobile */
                 .calendar-container .table-wrapper {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
+                .calendar-toolbar {{ gap: 8px; margin-bottom: 8px; top: 0; }}
+                .cal-week-header {{ position: static; }}
+                .cal-cat-header {{ top: unset; }}
+                .cal-cont-header {{ top: unset; }}
+                .cal-dd-btn {{ padding: 6px 28px 6px 10px; font-size: 11px; background-position: right 8px center; }}
                 .cal-week-header {{ font-size: 7px; padding: 3px 3px; min-width: 80px; }}
                 .cal-cat-header, .cal-cont-header {{ font-size: 7px; }}
                 .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
@@ -2327,8 +2381,51 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 </div>
 
                 <div id="view-calendar" class="single-layout" style="display: none;">
+                    <div class="calendar-toolbar" id="calendar-toolbar">
+                        <div class="cal-dd" data-cal-dd="categories">
+                            <button type="button" class="cal-dd-btn" data-cal-dd-btn aria-expanded="false">
+                                Categories
+                            </button>
+                        <div class="cal-dd-panel" role="menu">
+                            <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="gs" checked><span>GS</span></label>
+                            <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="wta_tour" checked><span>WTA TOUR</span></label>
+                            <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="wta125" checked><span>WTA 125</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="w100" checked><span>W100</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="w75" checked><span>W75</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="w50" checked><span>W50</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="w35" checked><span>W35</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="w15" checked><span>W15</span></label>
+                            </div>
+                        </div>
+
+                        <div class="cal-dd" data-cal-dd="region">
+                            <button type="button" class="cal-dd-btn" data-cal-dd-btn aria-expanded="false">
+                                Region
+                            </button>
+                            <div class="cal-dd-panel" role="menu">
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-continent-toggle="south_america" checked><span>S America</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-continent-toggle="north_central_america" checked><span>N/C America</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-continent-toggle="europe" checked><span>Europe</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-continent-toggle="africa" checked><span>Africa</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-continent-toggle="asia" checked><span>Asia</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-continent-toggle="oceania" checked><span>Oceania</span></label>
+                            </div>
+                        </div>
+
+                        <div class="cal-dd" data-cal-dd="surface">
+                            <button type="button" class="cal-dd-btn" data-cal-dd-btn aria-expanded="false">
+                                Surface
+                            </button>
+                            <div class="cal-dd-panel" role="menu">
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-surface-toggle="hard" checked><span>Hard</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-surface-toggle="clay" checked><span>Clay</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-surface-toggle="grass" checked><span>Grass</span></label>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="content-card calendar-container">
-                        <div class="table-wrapper">
+                        <div class="table-wrapper" tabindex="0" aria-label="Calendar table">
                             {calendar_html}
                         </div>
                     </div>
@@ -2486,6 +2583,189 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             // Close mobile menu when tab is clicked
             let homeLocked = false;
+            let calendarFiltersInitialized = false;
+            function closeAllCalendarDropdowns() {{
+                const toolbar = document.getElementById('calendar-toolbar');
+                if (!toolbar) return;
+                toolbar.querySelectorAll('.cal-dd.open').forEach(dd => {{
+                    dd.classList.remove('open');
+                    const btn = dd.querySelector('[data-cal-dd-btn]');
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                }});
+            }}
+            function initCalendarDropdowns() {{
+                const toolbar = document.getElementById('calendar-toolbar');
+                if (!toolbar) return;
+                if (toolbar.dataset.calDdInit === '1') return;
+                toolbar.dataset.calDdInit = '1';
+
+                toolbar.addEventListener('click', function(e) {{
+                    const btn = e.target.closest('[data-cal-dd-btn]');
+                    if (!btn) return;
+                    const dd = btn.closest('.cal-dd');
+                    if (!dd) return;
+                    const wasOpen = dd.classList.contains('open');
+                    closeAllCalendarDropdowns();
+                    if (!wasOpen) {{
+                        dd.classList.add('open');
+                        btn.setAttribute('aria-expanded', 'true');
+                    }}
+                    e.preventDefault();
+                }});
+
+                if (!window.__calendarDdDocInit) {{
+                    window.__calendarDdDocInit = true;
+                    document.addEventListener('click', function(e) {{
+                        const tb = document.getElementById('calendar-toolbar');
+                        if (!tb) return;
+                        if (!tb.contains(e.target)) closeAllCalendarDropdowns();
+                    }});
+                    document.addEventListener('keydown', function(e) {{
+                        if (e.key === 'Escape') closeAllCalendarDropdowns();
+                    }});
+                }}
+            }}
+            function initCalendarHorizontalScroll() {{
+                const view = document.getElementById('view-calendar');
+                if (!view) return;
+                if (view.dataset.calHScrollInit === '1') return;
+                const wrapper = view.querySelector('.table-wrapper');
+                if (!wrapper) return;
+                view.dataset.calHScrollInit = '1';
+
+                function hasHorizontalOverflow() {{
+                    return (wrapper.scrollWidth - wrapper.clientWidth) > 2;
+                }}
+
+                view.addEventListener('wheel', function(e) {{
+                    if (e.ctrlKey) return;
+                    if (e.target && e.target.closest && e.target.closest('.cal-dd-panel')) return;
+                    let delta = 0;
+                    if (e.deltaX && Math.abs(e.deltaX) > 0) delta = e.deltaX;
+                    else if (e.shiftKey && e.deltaY && Math.abs(e.deltaY) > 0) delta = e.deltaY;
+                    if (!delta) return;
+                    if (!hasHorizontalOverflow()) return;
+                    wrapper.scrollLeft += delta;
+                    e.preventDefault();
+                }}, {{ passive: false }});
+
+                wrapper.addEventListener('wheel', function(e) {{
+                    if (e.ctrlKey) return;
+                    if (e.shiftKey) return;
+                    if (e.target && e.target.closest && e.target.closest('.cal-dd-panel')) return;
+                    if (!hasHorizontalOverflow()) return;
+                    if (!e.deltaY || Math.abs(e.deltaY) < 1) return;
+                    if (e.deltaX && Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+                    const before = wrapper.scrollLeft;
+                    wrapper.scrollLeft += e.deltaY;
+                    if (wrapper.scrollLeft !== before) e.preventDefault();
+                }}, {{ passive: false }});
+
+                let dragging = false;
+                let dragStartX = 0;
+                let dragStartScrollLeft = 0;
+                wrapper.addEventListener('mousedown', function(e) {{
+                    if (e.button !== 0) return;
+                    if (!hasHorizontalOverflow()) return;
+                    dragging = true;
+                    wrapper.classList.add('dragging');
+                    dragStartX = e.pageX;
+                    dragStartScrollLeft = wrapper.scrollLeft;
+                }});
+                window.addEventListener('mouseup', function() {{
+                    dragging = false;
+                    wrapper.classList.remove('dragging');
+                }});
+                window.addEventListener('mousemove', function(e) {{
+                    if (!dragging) return;
+                    const dx = e.pageX - dragStartX;
+                    wrapper.scrollLeft = dragStartScrollLeft - dx;
+                }});
+
+            }}
+            function syncCalendarRowspans() {{
+                const table = document.querySelector('#view-calendar .calendar-table');
+                if (!table) return;
+                const rows = Array.from(table.querySelectorAll('tbody tr'));
+                if (!rows.length) return;
+
+                const groupFirstRows = Array.from(table.querySelectorAll('tbody tr.cal-group-first'));
+                if (!groupFirstRows.length) return;
+
+                for (let gi = 0; gi < groupFirstRows.length; gi++) {{
+                    const startRow = groupFirstRows[gi];
+                    const startIdx = rows.indexOf(startRow);
+                    if (startIdx === -1) continue;
+                    const nextStartRow = (gi + 1 < groupFirstRows.length) ? groupFirstRows[gi + 1] : null;
+                    const endIdx = nextStartRow ? rows.indexOf(nextStartRow) : rows.length;
+                    if (endIdx === -1) continue;
+
+                    const groupRows = rows.slice(startIdx, endIdx);
+                    if (!groupRows.length) continue;
+
+                    const catCell = groupRows.map(r => r.querySelector('.cal-cat-label')).find(Boolean);
+                    if (!catCell) continue;
+
+                    if (catCell.parentElement) catCell.parentElement.removeChild(catCell);
+                    groupRows.forEach(r => {{
+                        r.querySelectorAll('.cal-cat-label').forEach(c => c.remove());
+                    }});
+
+                    const visibleRows = groupRows.filter(r => r.style.display !== 'none');
+                    const targetRow = visibleRows.length ? visibleRows[0] : groupRows[0];
+                    targetRow.insertBefore(catCell, targetRow.firstChild);
+                    catCell.rowSpan = visibleRows.length ? visibleRows.length : groupRows.length;
+                }}
+            }}
+            function applyCalendarFilters() {{
+                const levelToggles = document.querySelectorAll('[data-cal-filter-toggle]');
+                const continentToggles = document.querySelectorAll('[data-cal-continent-toggle]');
+                const surfaceToggles = document.querySelectorAll('[data-cal-surface-toggle]');
+                if (!levelToggles.length && !continentToggles.length && !surfaceToggles.length) return;
+
+                const activeLevels = new Set();
+                levelToggles.forEach(cb => {{ if (cb.checked) activeLevels.add(cb.dataset.calFilterToggle); }});
+
+                const activeContinents = new Set();
+                continentToggles.forEach(cb => {{ if (cb.checked) activeContinents.add(cb.dataset.calContinentToggle); }});
+
+                const activeSurfaces = new Set();
+                surfaceToggles.forEach(cb => {{ if (cb.checked) activeSurfaces.add(cb.dataset.calSurfaceToggle); }});
+
+                document.querySelectorAll('#view-calendar tr[data-cal-row-continent]').forEach(row => {{
+                    const rowCont = row.dataset.calRowContinent || '';
+                    let show = true;
+                    if (continentToggles.length && rowCont && !activeContinents.has(rowCont)) show = false;
+                    row.style.display = show ? '' : 'none';
+                }});
+                syncCalendarRowspans();
+
+                document.querySelectorAll('#view-calendar [data-cal-filter]').forEach(el => {{
+                    const levelKey = el.dataset.calFilter || '';
+                    const contKey = el.dataset.calContinent || '';
+                    const surfKey = el.dataset.calSurface || '';
+
+                    let visible = true;
+                    if (levelToggles.length && levelKey && !activeLevels.has(levelKey)) visible = false;
+                    if (continentToggles.length && contKey && !activeContinents.has(contKey)) visible = false;
+                    if (surfaceToggles.length && surfKey && !activeSurfaces.has(surfKey)) visible = false;
+
+                    el.style.display = visible ? '' : 'none';
+                }});
+            }}
+            function initCalendarFilters() {{
+                if (calendarFiltersInitialized) {{
+                    applyCalendarFilters();
+                    return;
+                }}
+                initCalendarDropdowns();
+                initCalendarHorizontalScroll();
+                const toggles = document.querySelectorAll('[data-cal-filter-toggle], [data-cal-continent-toggle], [data-cal-surface-toggle]');
+                if (!toggles.length) return;
+                toggles.forEach(cb => cb.addEventListener('change', applyCalendarFilters));
+                calendarFiltersInitialized = true;
+                applyCalendarFilters();
+            }}
             function switchTab(tabName) {{
                 if (tabName === 'home' && homeLocked) return;
                 document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
@@ -2522,6 +2802,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if (tabName === 'gallery') initGallery();
                 if (tabName === 'entrylists') updateEntryList();
                 if (tabName === 'draws') updateDraw();
+                if (tabName === 'calendar') initCalendarFilters();
 
                 applyMobileHistoryLayout();
 
@@ -2536,6 +2817,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
 
             document.body.classList.add('home-mode');
+            document.addEventListener('DOMContentLoaded', initCalendarFilters);
 
             function switchFedBjkTab(subTab) {{
                 document.getElementById('fedbcup-view-players').style.display = (subTab === 'players') ? '' : 'none';
