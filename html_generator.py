@@ -2265,8 +2265,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                     <div class="ts-controls">
                         <div class="ts-row1"><button id="ts-sort-toggle" onclick="tsToggleSort()">Order by Strength</button>
+                        <button id="ts-view-toggle" onclick="tsToggleView()">View Qualy</button>
                         <select id="ts-filter-year" onchange="tsRender()"><option value="2026">2026</option><option value="2025">2025</option></select></div>
-                        <div class="ts-row2"><select id="ts-filter-level" onchange="tsRender()"><option value="">All Levels</option><option value="WTA 500">WTA 500</option><option value="WTA 250">WTA 250</option><option value="WTA 125">WTA 125</option></select>
+                        <div class="ts-row2"><select id="ts-filter-level" onchange="tsRender()"><option value="">All Levels</option><option value="WTA 1000">WTA 1000</option><option value="WTA 500">WTA 500</option><option value="WTA 250">WTA 250</option><option value="WTA 125">WTA 125</option></select>
                         <select id="ts-filter-surface" onchange="tsRender()"><option value="">All Surfaces</option><option value="Hard">Hard</option><option value="Clay">Clay</option><option value="Grass">Grass</option></select>
                         <select id="ts-filter-region" onchange="tsRender()"><option value="">All Regions</option><option value="Europe">Europe</option><option value="North America">North America</option><option value="South America">South America</option><option value="Asia">Asia</option><option value="Middle East">Middle East</option><option value="Oceania">Oceania</option><option value="Africa">Africa</option></select></div>
                     </div>
@@ -2284,7 +2285,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     (function() {{
                         var tsData = {tstrength_json_str};
                         var tsSort = 'date';
-                        var levelColors = {{"WTA 500":"#aa00ff88","WTA 250":"#0055ff88","WTA 125":"#ffaa0088"}};
+                        var tsView = 'MD'; // 'MD' or 'Q'
+                        var levelColors = {{"WTA 1000":"#d946ef55","WTA 500":"#aa00ff88","WTA 250":"#0055ff88","WTA 125":"#ffaa0088"}};
                         var surfaceColors = {{"Hard":"#0055ff88","Clay":"#ff550088","Grass":"#00bb3388","Carpet":"#aa00ff88"}};
                         var regionColors = {{"Europe":"#0055ff88","North America":"#ff111188","South America":"#00bb3388","Asia":"#ffaa0088","Oceania":"#aa00ff88","Middle East":"#ff660088","Africa":"#ff330088"}};
 
@@ -2313,6 +2315,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             tsRender();
                         }};
 
+                        function tsUpdateViewToggle() {{
+                            var btn = document.getElementById('ts-view-toggle');
+                            if (!btn) return;
+                            btn.textContent = (tsView === 'MD') ? 'View Qualy' : 'View MD';
+                        }}
+
+                        window.tsToggleView = function() {{
+                            tsView = (tsView === 'MD') ? 'Q' : 'MD';
+                            tsUpdateViewToggle();
+                            tsRender();
+                        }};
+
                         window.tsRender = function() {{
                             var fy = document.getElementById('ts-filter-year').value;
                             var fl = document.getElementById('ts-filter-level').value;
@@ -2323,7 +2337,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                 if (fl && t.level !== fl) return false;
                                 if (fs && t.surface !== fs) return false;
                                 if (fr && t.region !== fr) return false;
-                                return true;
+                                var d = (t.draw || 'MD');
+                                if (tsView === 'Q') return d === 'Q' || d === 'QUALY';
+                                return d === 'MD' || d === 'M' || d === 'MAIN';
                             }});
                             if (tsSort === 'strength') {{
                                 filtered.sort(function(a, b) {{ return a.gm - b.gm; }});
@@ -2375,6 +2391,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             }}
                             tbody.innerHTML = html;
                         }};
+                        tsUpdateViewToggle();
                         tsRender();
                     }})();
                     </script>

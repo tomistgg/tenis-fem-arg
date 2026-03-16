@@ -120,7 +120,7 @@ def _load_rankings_index():
 def _fetch_tournaments(year):
     """Fetch all WTA tournaments (WTA 125+) for a given year from API, paginating."""
     url = "https://api.wtatennis.com/tennis/tournaments/"
-    valid_levels = {"WTA 500", "WTA 250", "WTA 125"}
+    valid_levels = {"WTA 1000", "WTA 500", "WTA 250", "WTA 125"}
     result = []
     page = 0
     while True:
@@ -171,7 +171,7 @@ def _fetch_tournaments(year):
 def _fetch_tournaments_range(year, from_date, to_date):
     """Fetch WTA tournaments (WTA 125+) within a date range from API."""
     url = "https://api.wtatennis.com/tennis/tournaments/"
-    valid_levels = {"WTA 500", "WTA 250", "WTA 125"}
+    valid_levels = {"WTA 1000", "WTA 500", "WTA 250", "WTA 125"}
     result = []
     page = 0
     while True:
@@ -220,41 +220,47 @@ def _fetch_tournaments_range(year, from_date, to_date):
 
 
 def _fetch_main_draw_players(tournament_id, year="2025"):
-    """Fetch main draw player names from WTA matches API.
+    raise NotImplementedError("Use _fetch_tournament_matches + _extract_draw_players instead.")
 
-    Returns a tuple: (players, participants_locked)
 
-    participants_locked is True when every known main-draw participant has at least
-    one played match recorded (i.e., the participant set cannot change anymore).
-    """
+def _fetch_tournament_matches(tournament_id, year="2025"):
+    """Fetch tournament matches from WTA API (includes main draw + qualifying)."""
     url = f"https://api.wtatennis.com/tennis/tournaments/{tournament_id}/{year}/matches"
     try:
         r = requests.get(url, headers=_WTA_API_HEADERS, timeout=15)
         r.raise_for_status()
         data = r.json()
-        matches = data.get("matches", [])
-        main_matches = [m for m in matches if m.get("DrawLevelType") == "M" and m.get("DrawMatchType") == "S"]
-
-        all_players = set()
-        played_players = set()
-        for m in main_matches:
-            match_state = str(m.get("MatchState", "") or "").strip().upper()
-            result_string = str(m.get("ResultString", "") or "").strip()
-            is_played = bool(result_string) or match_state in {"F", "L"}
-            for suffix in ("A", "B"):
-                first = m.get(f"PlayerNameFirst{suffix}", "")
-                last = m.get(f"PlayerNameLast{suffix}", "")
-                if last:
-                    name = f"{first} {last}".strip()
-                    all_players.add(name)
-                    if is_played:
-                        played_players.add(name)
-
-        participants_locked = bool(all_players) and all_players.issubset(played_players)
-        return sorted(all_players), participants_locked
+        return data.get("matches", []) or []
     except Exception as e:
         print(f"  Error fetching matches for {tournament_id}: {e}")
-        return [], False
+        return []
+
+
+def _extract_draw_players(matches, draw_level_type):
+    """Extract singles players for a given draw level (e.g., 'M' for MD, 'Q' for qualy).
+
+    Returns (players, participants_locked).
+    participants_locked is True when every known participant in this draw has at least
+    one played match recorded (i.e., they cannot be replaced anymore).
+    """
+    draw_matches = [m for m in matches if m.get("DrawLevelType") == draw_level_type and m.get("DrawMatchType") == "S"]
+    all_players = set()
+    played_players = set()
+    for m in draw_matches:
+        match_state = str(m.get("MatchState", "") or "").strip().upper()
+        result_string = str(m.get("ResultString", "") or "").strip()
+        is_played = bool(result_string) or match_state in {"F", "L"}
+        for suffix in ("A", "B"):
+            first = m.get(f"PlayerNameFirst{suffix}", "")
+            last = m.get(f"PlayerNameLast{suffix}", "")
+            if last:
+                name = f"{first} {last}".strip()
+                all_players.add(name)
+                if is_played:
+                    played_players.add(name)
+
+    participants_locked = bool(all_players) and all_players.issubset(played_players)
+    return sorted(all_players), participants_locked
 
 
 def _harmonic_mean(values):
@@ -272,11 +278,14 @@ def _geometric_mean(values):
     return math.exp(log_sum / len(values))
 
 
-def build_tstrength_data():
+def build_tstrength_data(from_year=None, full_backfill=False):
     """Build tournament strength data for WTA tournaments.
 
-    Returns cached entries plus any newly completed tournaments from the last 3 weeks.
-    Only fetches the API for recent tournaments, not the full year lists.
+    Default mode (full_backfill=False):
+      Returns cached entries plus any newly available draws from a rolling window.
+
+    Full backfill mode (full_backfill=True):
+      Scans tournaments from from_year (inclusive) through today and fills the cache.
 
     Note: If a tournament was previously cached with 0 players (e.g., API data
     temporarily unavailable), it will be retried when it appears in the recent
@@ -305,52 +314,85 @@ def build_tstrength_data():
             for entry in cached_list:
                 if _is_ignored_tournament(entry.get("name", "")):
                     continue
+                draw = (entry.get("draw") or entry.get("drawType") or "MD").strip().upper()
+                if draw in {"M", "MAIN"}:
+                    draw = "MD"
+                if draw in {"QUALY", "QUAL", "Q"}:
+                    draw = "Q"
+                entry["draw"] = draw
                 year = entry.get("year", "2025")
-                cache_key = f"{year}_{entry['id']}"
+                cache_key = f"{year}_{entry['id']}_{draw}"
                 cache[cache_key] = entry
         except Exception:
             pass
 
     today = datetime.now()
     today_str = today.strftime("%Y-%m-%d")
-    year = str(today.year)
+    current_year = str(today.year)
 
-    # Auto-backfill: if a run was missed for >3 weeks, widen the window so we still pick up
-    # tournaments that finished while the script wasn't running.
-    jan1 = datetime(today.year, 1, 1)
-    last_dt = None
-    for e in cache.values():
-        if str(e.get("year", "")) != year:
-            continue
-        if e.get("playerCount", 0) <= 0:
-            continue
-        sd = (e.get("startDate") or "")[:10]
-        if not sd:
-            continue
-        try:
-            dt = datetime.strptime(sd, "%Y-%m-%d")
-        except Exception:
-            continue
-        if last_dt is None or dt > last_dt:
-            last_dt = dt
-
-    if last_dt is None:
-        from_date = jan1.strftime("%Y-%m-%d")
+    tournaments_to_consider = []
+    if full_backfill:
+        start_year = int(from_year) if from_year is not None else int(current_year)
+        end_year = int(current_year)
+        print(f"Full backfill: scanning {start_year}..{end_year} (through {today_str})")
+        for y in range(start_year, end_year + 1):
+            ys = str(y)
+            if ys == current_year:
+                print(f"Fetching {ys} tournaments (YTD)...")
+                tournaments_to_consider.extend(_fetch_tournaments_range(ys, f"{ys}-01-01", today_str))
+            else:
+                print(f"Fetching {ys} tournaments (full year)...")
+                tournaments_to_consider.extend(_fetch_tournaments(ys))
+        print(f"  Found {len(tournaments_to_consider)} tournaments in range")
     else:
-        from_dt = max(jan1, last_dt - timedelta(days=21))
-        from_date = from_dt.strftime("%Y-%m-%d")
+        # Auto-backfill: if a run was missed for >3 weeks, widen the window so we still pick up
+        # tournaments that finished while the script wasn't running.
+        jan1 = datetime(today.year, 1, 1)
+        last_dt = None
+        for e in cache.values():
+            if str(e.get("year", "")) != current_year:
+                continue
+            if e.get("playerCount", 0) <= 0:
+                continue
+            sd = (e.get("startDate") or "")[:10]
+            if not sd:
+                continue
+            try:
+                dt = datetime.strptime(sd, "%Y-%m-%d")
+            except Exception:
+                continue
+            if last_dt is None or dt > last_dt:
+                last_dt = dt
 
-    print(f"Fetching recent WTA tournaments ({from_date} to {today_str})...")
-    recent = _fetch_tournaments_range(year, from_date, today_str)
-    print(f"  Found {len(recent)} recent tournaments")
+        if last_dt is None:
+            from_date = jan1.strftime("%Y-%m-%d")
+        else:
+            from_dt = max(jan1, last_dt - timedelta(days=21))
+            from_date = from_dt.strftime("%Y-%m-%d")
 
-    # Filter to only uncached tournaments, plus cached placeholders that need a retry
-    new_tournaments = []
-    for t in recent:
-        cache_key = f"{t['year']}_{t['id']}"
-        cached = cache.get(cache_key)
-        if cache_key not in cache or _needs_refresh(cached) or ("participantsLocked" not in (cached or {})):
-            new_tournaments.append(t)
+        print(f"Fetching recent WTA tournaments ({from_date} to {today_str})...")
+        tournaments_to_consider = _fetch_tournaments_range(current_year, from_date, today_str)
+        print(f"  Found {len(tournaments_to_consider)} recent tournaments")
+
+    # Filter to only uncached tournaments, plus cached placeholders that need a retry (per draw)
+    tournament_needs = {}
+    for t in tournaments_to_consider:
+        level = (t.get("level") or "").strip()
+        allowed_draws = {"Q"}
+        if level in {"WTA 125", "WTA 250", "WTA 500"}:
+            allowed_draws.add("MD")
+        needs = set()
+        for draw in ("MD", "Q"):
+            if draw not in allowed_draws:
+                continue
+            cache_key = f"{t['year']}_{t['id']}_{draw}"
+            cached = cache.get(cache_key)
+            if cache_key not in cache or _needs_refresh(cached) or ("participantsLocked" not in (cached or {})):
+                needs.add(draw)
+        if needs:
+            tournament_needs[f"{t['year']}_{t['id']}"] = needs
+
+    new_tournaments = [t for t in tournaments_to_consider if f"{t['year']}_{t['id']}" in tournament_needs]
 
     if not new_tournaments:
         print("  No new tournaments to process")
@@ -364,71 +406,82 @@ def build_tstrength_data():
 
         for t in new_tournaments:
             tid = t["id"]
-            yr = t.get("year", year)
-            cache_key = f"{yr}_{tid}"
+            yr = t.get("year", current_year)
+            needs = tournament_needs.get(f"{yr}_{tid}", set())
 
             print(f"  Fetching players for {t['name']} ({t['startDate']})...")
-            players, participants_locked = _fetch_main_draw_players(tid, yr)
+            matches = _fetch_tournament_matches(tid, yr)
             time.sleep(0.3)
-
-            if (not players) or (not participants_locked):
-                cache[cache_key] = {"id": tid, "name": t["name"], "city": t["city"],
-                              "level": t["level"], "startDate": t["startDate"],
-                              "surface": t.get("surface", ""),
-                              "country": t.get("country", ""),
-                              "year": yr,
-                              "participantsLocked": False,
-                              "rankings": [], "hm": 0, "gm": 0, "playerCount": 0}
-                continue
 
             ranking_week = _get_monday(t["startDate"])
             week_rankings = rankings_index.get(ranking_week, {})
-
-            player_ranks = []
-            for p in players:
-                norm_p = _normalize_name(p)
-                rank = week_rankings.get(norm_p)
-                if rank is None and len(norm_p.split()) >= 3:
-                    partial = norm_p.split()[0] + " " + norm_p.split()[1]
-                    rank = week_rankings.get(partial)
-                if rank is None:
-                    rank = DEFAULT_RANK
-                    unranked_players[p] = unranked_players.get(p, [])
-                    unranked_players[p].append(t["name"])
-                player_ranks.append(rank)
-
-            player_ranks.sort()
-
-            hm = round(_harmonic_mean(player_ranks), 1)
-            gm = round(_geometric_mean(player_ranks), 1)
 
             surface = t.get("surface", "")
             country = t.get("country", "")
             region = _REGION_MAP.get(country, country)
 
-            entry = {
-                "id": tid,
-                "name": t["name"],
-                "city": t["city"],
-                "level": t["level"],
-                "startDate": t["startDate"],
-                "surface": surface,
-                "country": country,
-                "region": region,
-                "year": yr,
-                "participantsLocked": True,
-                "rankings": player_ranks,
-                "hm": hm,
-                "gm": gm,
-                "playerCount": len(player_ranks),
-            }
-            cache[cache_key] = entry
+            for draw in ("MD", "Q"):
+                if draw not in needs:
+                    continue
+                draw_level = "M" if draw == "MD" else "Q"
+                players, participants_locked = _extract_draw_players(matches, draw_level)
+                cache_key = f"{yr}_{tid}_{draw}"
+                if (not players) or (not participants_locked):
+                    cache[cache_key] = {
+                        "id": tid, "name": t["name"], "city": t["city"],
+                        "level": t["level"], "startDate": t["startDate"],
+                        "surface": surface,
+                        "country": country,
+                        "region": region,
+                        "year": yr,
+                        "draw": draw,
+                        "participantsLocked": False,
+                        "rankings": [], "hm": 0, "gm": 0, "playerCount": 0
+                    }
+                    continue
+
+                player_ranks = []
+                for p in players:
+                    norm_p = _normalize_name(p)
+                    rank = week_rankings.get(norm_p)
+                    if rank is None and len(norm_p.split()) >= 3:
+                        partial = norm_p.split()[0] + " " + norm_p.split()[1]
+                        rank = week_rankings.get(partial)
+                    if rank is None:
+                        rank = DEFAULT_RANK
+                        unranked_players[p] = unranked_players.get(p, [])
+                        unranked_players[p].append(f"{t['name']} ({draw})")
+                    player_ranks.append(rank)
+
+                player_ranks.sort()
+                hm = round(_harmonic_mean(player_ranks), 1)
+                gm = round(_geometric_mean(player_ranks), 1)
+
+                entry = {
+                    "id": tid,
+                    "name": t["name"],
+                    "city": t["city"],
+                    "level": t["level"],
+                    "startDate": t["startDate"],
+                    "surface": surface,
+                    "country": country,
+                    "region": region,
+                    "year": yr,
+                    "draw": draw,
+                    "participantsLocked": True,
+                    "rankings": player_ranks,
+                    "hm": hm,
+                    "gm": gm,
+                    "playerCount": len(player_ranks),
+                }
+                cache[cache_key] = entry
 
         still_empty = []
         for t in new_tournaments:
-            cache_key = f"{t.get('year', year)}_{t['id']}"
-            if cache.get(cache_key, {}).get("playerCount", 0) <= 0:
-                still_empty.append(f"{t.get('name', t['id'])} ({t.get('startDate', '')})")
+            for draw in sorted(tournament_needs.get(f"{t.get('year', current_year)}_{t['id']}", set())):
+                cache_key = f"{t.get('year', current_year)}_{t['id']}_{draw}"
+                if cache.get(cache_key, {}).get("playerCount", 0) <= 0:
+                    still_empty.append(f"{t.get('name', t['id'])} ({t.get('startDate', '')}) [{draw}]")
         if still_empty:
             print("\nWARNING: Some tournaments still have no player data after retry:")
             for label in still_empty:
