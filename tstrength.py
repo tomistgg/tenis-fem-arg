@@ -220,27 +220,41 @@ def _fetch_tournaments_range(year, from_date, to_date):
 
 
 def _fetch_main_draw_players(tournament_id, year="2025"):
-    """Fetch main draw player names from WTA matches API."""
+    """Fetch main draw player names from WTA matches API.
+
+    Returns a tuple: (players, participants_locked)
+
+    participants_locked is True when every known main-draw participant has at least
+    one played match recorded (i.e., the participant set cannot change anymore).
+    """
     url = f"https://api.wtatennis.com/tennis/tournaments/{tournament_id}/{year}/matches"
-    params = {"states": "L, C"}
     try:
-        r = requests.get(url, headers=_WTA_API_HEADERS, params=params, timeout=15)
+        r = requests.get(url, headers=_WTA_API_HEADERS, timeout=15)
         r.raise_for_status()
         data = r.json()
         matches = data.get("matches", [])
         main_matches = [m for m in matches if m.get("DrawLevelType") == "M" and m.get("DrawMatchType") == "S"]
 
-        players = set()
+        all_players = set()
+        played_players = set()
         for m in main_matches:
+            match_state = str(m.get("MatchState", "") or "").strip().upper()
+            result_string = str(m.get("ResultString", "") or "").strip()
+            is_played = bool(result_string) or match_state in {"F", "L"}
             for suffix in ("A", "B"):
                 first = m.get(f"PlayerNameFirst{suffix}", "")
                 last = m.get(f"PlayerNameLast{suffix}", "")
                 if last:
-                    players.add(f"{first} {last}".strip())
-        return sorted(players)
+                    name = f"{first} {last}".strip()
+                    all_players.add(name)
+                    if is_played:
+                        played_players.add(name)
+
+        participants_locked = bool(all_players) and all_players.issubset(played_players)
+        return sorted(all_players), participants_locked
     except Exception as e:
         print(f"  Error fetching matches for {tournament_id}: {e}")
-        return []
+        return [], False
 
 
 def _harmonic_mean(values):
@@ -274,6 +288,8 @@ def build_tstrength_data():
         if cached_entry.get("playerCount", 0) <= 0:
             return True
         if cached_entry.get("gm", 0) <= 0 or cached_entry.get("hm", 0) <= 0:
+            return True
+        if cached_entry.get("participantsLocked") is False:
             return True
         rankings = cached_entry.get("rankings")
         if isinstance(rankings, list) and len(rankings) == 0:
@@ -332,7 +348,8 @@ def build_tstrength_data():
     new_tournaments = []
     for t in recent:
         cache_key = f"{t['year']}_{t['id']}"
-        if cache_key not in cache or _needs_refresh(cache.get(cache_key)):
+        cached = cache.get(cache_key)
+        if cache_key not in cache or _needs_refresh(cached) or ("participantsLocked" not in (cached or {})):
             new_tournaments.append(t)
 
     if not new_tournaments:
@@ -351,15 +368,16 @@ def build_tstrength_data():
             cache_key = f"{yr}_{tid}"
 
             print(f"  Fetching players for {t['name']} ({t['startDate']})...")
-            players = _fetch_main_draw_players(tid, yr)
+            players, participants_locked = _fetch_main_draw_players(tid, yr)
             time.sleep(0.3)
 
-            if not players:
+            if (not players) or (not participants_locked):
                 cache[cache_key] = {"id": tid, "name": t["name"], "city": t["city"],
                               "level": t["level"], "startDate": t["startDate"],
                               "surface": t.get("surface", ""),
                               "country": t.get("country", ""),
                               "year": yr,
+                              "participantsLocked": False,
                               "rankings": [], "hm": 0, "gm": 0, "playerCount": 0}
                 continue
 
@@ -398,6 +416,7 @@ def build_tstrength_data():
                 "country": country,
                 "region": region,
                 "year": yr,
+                "participantsLocked": True,
                 "rankings": player_ranks,
                 "hm": hm,
                 "gm": gm,
@@ -432,7 +451,9 @@ def build_tstrength_data():
     # Return all cached entries with actual players
     results = [
         e for e in cache.values()
-        if (not _is_ignored_tournament(e.get("name", ""))) and e.get("playerCount", 0) > 0
+        if (not _is_ignored_tournament(e.get("name", "")))
+        and e.get("playerCount", 0) > 0
+        and (e.get("participantsLocked") is not False)
     ]
     results.sort(key=lambda x: x["startDate"])
     return results
