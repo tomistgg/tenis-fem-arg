@@ -426,6 +426,13 @@ def _parse_itf_score(teams, winner_idx):
         if w_val is None or l_val is None:
             continue
         # Combine winner+loser games like WTA format: "64" means 6-4
+        #
+        # Special case: match-tiebreaks (super tiebreaks) can be 10+ points
+        # (e.g. 11-9). Those must not be encoded as compact digits because
+        # downstream rendering would interpret "119" as "1-1".
+        if w_val >= 10 or l_val >= 10:
+            parts.append(f"{w_val}-{l_val}")
+            continue
         tb = ls.get("losingScore")
         if tb is not None and tb > 0:
             parts.append(f"{w_val}{l_val}({tb})")

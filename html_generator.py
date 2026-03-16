@@ -4861,9 +4861,35 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 for (const p of parts) {{
                     if (p === 'RET' || p === 'DEF') {{ retired = true; continue; }}
                     if (p === 'W/O' || p === 'WO' || p === 'W.O.') {{ walkover = true; continue; }}
-                    const m = p.match(/^(\\d+)(?:\\((\\d+)\\))?$/);
-                    if (m) {{
-                        sets.push({{ w: parseInt(m[1].charAt(0)), l: parseInt(m[1].charAt(1) || '0'), tb: m[2] || null }});
+                    // Accept both compact WTA-like set tokens ("64", "76(4)") and match-tiebreak tokens ("11-9").
+                    // Also handle legacy compact match-tiebreak encoding like "119" (11-9) or "108" (10-8).
+                    const mh = p.match(/^\\[?(\\d+)[-:\\/](\\d+)\\]?(?:\\((\\d+)\\))?$/);
+                    if (mh) {{
+                        sets.push({{ w: parseInt(mh[1], 10), l: parseInt(mh[2], 10), tb: mh[3] || null }});
+                        continue;
+                    }}
+                    const mc = p.match(/^(\\d+)(?:\\((\\d+)\\))?$/);
+                    if (mc) {{
+                        const digits = mc[1];
+                        let w = null;
+                        let l = null;
+                        if (digits.length === 2) {{
+                            w = parseInt(digits.charAt(0), 10);
+                            l = parseInt(digits.charAt(1), 10);
+                        }} else if (digits.length === 3) {{
+                            w = parseInt(digits.slice(0, 2), 10);
+                            l = parseInt(digits.slice(2), 10);
+                        }} else if (digits.length === 4) {{
+                            w = parseInt(digits.slice(0, 2), 10);
+                            l = parseInt(digits.slice(2), 10);
+                        }} else {{
+                            const mid = Math.floor(digits.length / 2);
+                            w = parseInt(digits.slice(0, mid), 10);
+                            l = parseInt(digits.slice(mid), 10);
+                        }}
+                        if (!Number.isNaN(w) && !Number.isNaN(l)) {{
+                            sets.push({{ w, l, tb: mc[2] || null }});
+                        }}
                     }}
                 }}
                 return {{ sets, retired, walkover }};
