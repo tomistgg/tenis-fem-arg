@@ -61,18 +61,14 @@ jobs:
       - name: Build run report
         if: always()
         run: |
-          python generate_run_report.py --before .run_snapshot/data --after data --output .run_snapshot/run_report.md
+          python generate_run_report.py --before .run_snapshot/data --after data --output .run_snapshot/run_report.md --email-output .run_snapshot/email_report.md
 
       - name: Check if report exists
         if: always()
         id: check_report
         run: |
-          if [ -f .run_snapshot/run_report.md ]; then
+          if [ -f .run_snapshot/email_report.md ]; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "body<<DELIMITER_EOF" >> "$GITHUB_OUTPUT"
-            cat .run_snapshot/run_report.md >> "$GITHUB_OUTPUT"
-            echo "" >> "$GITHUB_OUTPUT"
-            echo "DELIMITER_EOF" >> "$GITHUB_OUTPUT"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
@@ -81,7 +77,7 @@ jobs:
         if: always()
         id: check_content
         run: |
-          if grep -qP "^- (?!None detected\.)" .run_snapshot/run_report.md 2>/dev/null; then
+          if grep -qP "^- (?!None detected\.)" .run_snapshot/email_report.md 2>/dev/null; then
             echo "has_content=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_content=false" >> "$GITHUB_OUTPUT"
@@ -108,7 +104,7 @@ jobs:
           subject: "WTA Site Update Report - ${{ github.repository }} - Run #${{ github.run_number }}"
           to: ${{ secrets.RECEIVE_ALERT }}
           from: WTA Tracker
-          body: ${{ steps.check_report.outputs.body }}
+          body: file://.run_snapshot/email_report.md
 
       - name: Commit and push changes
         run: |

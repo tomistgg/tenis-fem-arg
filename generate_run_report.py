@@ -2,9 +2,11 @@ import argparse
 import csv
 import json
 import os
+import unicodedata
 from datetime import datetime, timezone
 
 MAX_MATCH_LINES_PER_FILE = 50
+RANKINGS_CSV_FILES = ["wta_rankings_00_09.csv", "wta_rankings_10_19.csv", "wta_rankings_20_29.csv"]
 
 
 def load_json(path):
@@ -23,6 +25,48 @@ def normalize_name(value):
 
 def normalize_country(value):
     return (value or "").strip().upper()
+
+
+def strip_accents(text):
+    s = (text or "").strip()
+    if not s:
+        return ""
+    return "".join(ch for ch in unicodedata.normalize("NFKD", s) if not unicodedata.combining(ch))
+
+
+def normalize_rank_key(value):
+    s = strip_accents(value).upper()
+    s = " ".join(s.split())
+    return s
+
+
+def name_variants(value):
+    base = normalize_rank_key(value)
+    if not base:
+        return set()
+    out = {base}
+    if "-" in base:
+        out.add(" ".join(base.replace("-", " ").split()))
+    return out
+
+
+def load_rankings_name_set(dir_path):
+    names = set()
+    for fname in RANKINGS_CSV_FILES:
+        path = os.path.join(dir_path, fname)
+        if not os.path.exists(path):
+            continue
+        try:
+            with open(path, "r", encoding="utf-8-sig", newline="") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    raw = row.get("player") or row.get("Player") or row.get("PLAYER") or ""
+                    for v in name_variants(raw):
+                        if v:
+                            names.add(v)
+        except Exception:
+            continue
+    return names
 
 
 def get_tournament_label(t_key, before_snapshot, after_snapshot):
@@ -61,6 +105,26 @@ def format_match_line(row):
     return " | ".join(parts)
 
 
+def get_match_players(row):
+    winner = (row.get("winnerName") or row.get("_winnerName") or row.get("WINNERNAME") or row.get("WINNER_NAME") or "").strip()
+    loser = (row.get("loserName") or row.get("_loserName") or row.get("LOSERNAME") or row.get("LOSER_NAME") or "").strip()
+    out = []
+    if winner:
+        out.append(winner)
+    if loser:
+        out.append(loser)
+    # Avoid duplicates while keeping order.
+    seen = set()
+    uniq = []
+    for n in out:
+        k = normalize_rank_key(n)
+        if not k or k in seen:
+            continue
+        seen.add(k)
+        uniq.append(n)
+    return uniq
+
+
 def load_csv_rows(path):
     if not os.path.exists(path):
         return [], []
@@ -95,6 +159,8 @@ def compute_report(before_dir, after_dir):
         "added_matches": {},
         "added_calendar_tournaments": [],
     }
+
+    rankings_names = None
 
     before_entry = load_json(os.path.join(before_dir, "entry_lists_cache.json")) or {}
     after_entry = load_json(os.path.join(after_dir, "entry_lists_cache.json")) or {}
@@ -168,7 +234,20 @@ def compute_report(before_dir, after_dir):
             if not key:
                 continue
             if key not in before_map:
-                added.append(format_match_line(row))
+                if rankings_names is None:
+                    rankings_names = load_rankings_name_set(after_dir)
+
+                match_line = format_match_line(row)
+                missing = []
+                for player in get_match_players(row):
+                    has_any = any(v in rankings_names for v in name_variants(player))
+                    if not has_any:
+                        missing.append(player)
+
+                added.append({
+                    "line": match_line,
+                    "missing_players": missing,
+                })
 
         if added:
             report["added_matches"][csv_name] = {
@@ -227,6 +306,31 @@ def compute_report(before_dir, after_dir):
     return report
 
 
+def render_email_markdown(report):
+    now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    lines = []
+    lines.append(f"# New Matches Added ({now_utc})")
+    lines.append("")
+
+    if not report.get("added_matches"):
+        lines.append("None detected.")
+        return "\n".join(lines)
+
+    for csv_name, payload in report["added_matches"].items():
+        lines.append(f"## {csv_name}")
+        for item in payload.get("items") or []:
+            match_line = item.get("line") if isinstance(item, dict) else str(item)
+            lines.append(f"- {match_line}")
+            missing = item.get("missing_players") if isinstance(item, dict) else []
+            for name in (missing or []):
+                lines.append(f"  {name} not found in rankings.")
+        if payload.get("truncated"):
+            lines.append(f"- ... and {payload['count'] - len(payload.get('items') or [])} more")
+        lines.append("")
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def render_markdown(report):
     now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     lines = []
@@ -252,7 +356,10 @@ def render_markdown(report):
             entries = payload["items"]
             lines.append(f"- {csv_name}: {payload['count']} new match(es)")
             for line in entries:
-                lines.append(f"  - {line}")
+                if isinstance(line, dict):
+                    lines.append(f"  - {line.get('line', '')}")
+                else:
+                    lines.append(f"  - {line}")
             if payload["truncated"]:
                 lines.append(f"  - ... and {payload['count'] - len(entries)} more")
         lines.append("")
@@ -281,13 +388,25 @@ def main():
     parser.add_argument("--before", required=True, help="Directory with pre-run snapshot files")
     parser.add_argument("--after", required=True, help="Directory with post-run data files")
     parser.add_argument("--output", required=True, help="Output report markdown file")
+    parser.add_argument("--email-output", help="Optional output markdown file for email alerts")
     args = parser.parse_args()
 
     report = compute_report(args.before, args.after)
     markdown = render_markdown(report)
+    email_markdown = render_email_markdown(report) if args.email_output else None
 
+    out_dir = os.path.dirname(args.output)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
     with open(args.output, "w", encoding="utf-8") as f:
         f.write(markdown)
+
+    if args.email_output and email_markdown is not None:
+        email_dir = os.path.dirname(args.email_output)
+        if email_dir:
+            os.makedirs(email_dir, exist_ok=True)
+        with open(args.email_output, "w", encoding="utf-8") as f:
+            f.write(email_markdown)
 
     print(markdown)
 
