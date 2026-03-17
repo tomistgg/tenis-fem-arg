@@ -1082,13 +1082,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #history-table th:nth-child(2) {{ width: auto; }} /* TOURNAMENT */
             #history-table th:nth-child(3) {{ width: 70px; }} /* SURFACE */
             #history-table th:nth-child(4) {{ width: 100px; }} /* ROUND */
-            #history-table th:nth-child(5) {{ width: auto; }} /* PLAYER */
-            #history-table th:nth-child(6) {{ width: 50px; }} /* RESULT */
-            #history-table th:nth-child(7) {{ width: 120px; }} /* SCORE */
-            #history-table th:nth-child(8) {{ width: auto; min-width: 200px; }} /* OPPONENT */
+            #history-table th:nth-child(5) {{ width: 44px; }} /* RANK */
+            #history-table th:nth-child(6) {{ width: auto; }} /* PLAYER */
+            #history-table th:nth-child(7) {{ width: 110px; }} /* SCORE */
+            #history-table th:nth-child(8) {{ width: 72px; white-space: nowrap; }} /* OPP RANK */
+            #history-table th:nth-child(9) {{ width: auto; min-width: 260px; }} /* OPPONENT */
             #history-table td {{ font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
             #history-table td:nth-child(2) {{ white-space: normal; overflow: visible; text-overflow: clip; }} /* Allow TOURNAMENT to wrap */
-            #history-table td:nth-child(8) {{ white-space: normal; overflow: visible; text-overflow: clip; }} /* Allow OPPONENT to wrap */
+            #history-table td:nth-child(9) {{ white-space: normal; overflow: visible; text-overflow: clip; }} /* Allow OPPONENT to wrap */
             #history-table .opponent-cell {{
                 display: flex;
                 align-items: center;
@@ -1105,6 +1106,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 min-width: 0;
                 overflow-wrap: anywhere;
             }}
+            #history-table .score-win {{ color: #166534; font-weight: 800; }}
+            #history-table .score-loss {{ color: #b91c1c; font-weight: 800; }}
 
             /* Filter Panel Styles */
             .history-layout {{ display: flex; gap: 20px; width: 100%; align-items: flex-start; }}
@@ -1118,6 +1121,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .filter-option {{ padding: 6px 10px; margin-bottom: 4px; font-size: 12px; text-align: left; cursor: pointer; user-select: none; border-radius: 3px; transition: background 0.15s; }}
             .filter-option:hover {{ background: #e2e8f0; }}
             .filter-option.selected {{ font-weight: bold; background: #dbeafe; color: #1e40af; }}
+            .rank-filter-row {{ display: flex; gap: 8px; align-items: center; }}
+            .rank-filter-input {{ width: 72px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; }}
+            .rank-filter-mode {{ flex: 1; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; }}
             .filter-actions {{ margin-top: 20px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }}
             .filter-instructions {{ font-size: 10px; color: #64748b; flex: 1; line-height: 1.3; padding-left: 15px; }}
             .filter-btn {{ padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: bold; white-space: nowrap; }}
@@ -1547,6 +1553,37 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .filter-option {{ font-size: 7px; padding: 2px 3px; margin-bottom: 1px; }}
                 .filter-options.scrollable {{ max-height: 120px; }}
 
+                /* Rank filters: force last row with 2 half-width boxes */
+                .rank-filter-last-row {{
+                    width: 100%;
+                    display: flex;
+                    gap: 4px;
+                    order: 98;
+                    align-items: flex-start; /* prevent the collapsed box from stretching to open box height */
+                }}
+                .rank-filter-last-row .filter-group {{
+                    flex: 1 1 0;
+                    min-width: 0;
+                    margin-bottom: 0;
+                    align-self: flex-start;
+                }}
+                .rank-filter-last-row .rank-filter-row {{
+                    gap: 4px;
+                }}
+                .rank-filter-last-row .rank-filter-input {{
+                    width: 42px;
+                    min-width: 42px;
+                    padding: 2px 3px;
+                    border-radius: 4px;
+                    font-size: 8px;
+                }}
+                .rank-filter-last-row .rank-filter-mode {{
+                    padding: 2px 3px;
+                    border-radius: 4px;
+                    font-size: 8px;
+                    min-width: 0;
+                }}
+
                 .table-header-section {{
                     flex-direction: column;
                     gap: 10px;
@@ -1630,14 +1667,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     line-height: 1.15;
                 }}
 
-                #history-table th:nth-child(1), #history-table td:nth-child(1) {{ width: 10%; }}
-                #history-table th:nth-child(2), #history-table td:nth-child(2) {{ width: 18%; }}
-                #history-table th:nth-child(3), #history-table td:nth-child(3) {{ width: 9%; }}
-                #history-table th:nth-child(4), #history-table td:nth-child(4) {{ width: 9%; }}
-                #history-table th:nth-child(5), #history-table td:nth-child(5) {{ width: 17%; }}
-                #history-table th:nth-child(6), #history-table td:nth-child(6) {{ width: 6%; }}
-                #history-table th:nth-child(7), #history-table td:nth-child(7) {{ width: 13%; }}
-                #history-table th:nth-child(8), #history-table td:nth-child(8) {{ width: 18%; }}
+                #history-table th:nth-child(1), #history-table td:nth-child(1) {{ width: 9%; }}
+                #history-table th:nth-child(2), #history-table td:nth-child(2) {{ width: 16%; }}
+                #history-table th:nth-child(3), #history-table td:nth-child(3) {{ width: 8%; }}
+                #history-table th:nth-child(4), #history-table td:nth-child(4) {{ width: 7%; }}
+                #history-table th:nth-child(5), #history-table td:nth-child(5) {{ width: 6%; }}
+                #history-table th:nth-child(6), #history-table td:nth-child(6) {{ width: 15%; }}
+                #history-table th:nth-child(7), #history-table td:nth-child(7) {{ width: 12%; }}
+                #history-table th:nth-child(8), #history-table td:nth-child(8) {{ width: 9%; }}
+                #history-table th:nth-child(9), #history-table td:nth-child(9) {{ width: 18%; }}
+                #history-table th:nth-child(8) {{ white-space: nowrap !important; }}
 
                 /* Fed/BJK Cup toggle buttons mobile */
                 .fedbcup-btn {{ font-size: 12px; padding: 8px 0; }}
@@ -2185,6 +2224,38 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                 <div class="filter-options" id="filter-match-type"></div>
                             </div>
 
+                                <div class="rank-filter-last-row">
+                                    <div class="filter-group collapsed">
+                                    <div class="filter-group-title" onclick="toggleRankFilterGroup(this)">
+                                        As Rank <span class="collapse-icon"></span>
+                                    </div>
+                                    <div class="filter-options" style="padding: 8px;">
+                                        <div class="rank-filter-row">
+                                            <input id="filter-as-rank" class="rank-filter-input" inputmode="numeric" placeholder="#" value="" oninput="this.value=this.value.replace(/\\D/g,''); applyHistoryFilters();">
+                                            <select id="filter-as-rank-mode" class="rank-filter-mode" onchange="applyHistoryFilters();">
+                                                <option value="higher">or Higher</option>
+                                                <option value="lower">or Lower</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="filter-group collapsed">
+                                    <div class="filter-group-title" onclick="toggleRankFilterGroup(this)">
+                                        VS Rank <span class="collapse-icon"></span>
+                                    </div>
+                                    <div class="filter-options" style="padding: 8px;">
+                                        <div class="rank-filter-row">
+                                            <input id="filter-vs-rank" class="rank-filter-input" inputmode="numeric" placeholder="#" value="" oninput="this.value=this.value.replace(/\\D/g,''); applyHistoryFilters();">
+                                            <select id="filter-vs-rank-mode" class="rank-filter-mode" onchange="applyHistoryFilters();">
+                                                <option value="higher">or Higher</option>
+                                                <option value="lower">or Lower</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="filter-actions">
                                 <div class="filter-instructions">Ctrl+Click to select multiple options.</div>
                                 <button class="filter-btn filter-btn-clear" onclick="clearHistoryFilters()">Reset Filters</button>
@@ -2576,11 +2647,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if (window.innerWidth > 768) return html;
                 return String(html).replace('width:16px;height:11px', 'width:12px;height:8px');
             }}
-            function syncHistoryResultHeader() {{
-                const th = document.querySelector('#history-head th:nth-child(6)');
-                if (!th) return;
-                th.textContent = window.innerWidth <= 768 ? 'RES' : 'RESULT';
-            }}
             function toggleMobileMenu() {{
                 const sidebar = document.getElementById('sidebar');
                 sidebar.classList.toggle('mobile-hidden');
@@ -2970,7 +3036,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         document.getElementById('sidebar').classList.add('mobile-hidden');
                     }}
                     applyMobileHistoryLayout();
-                    syncHistoryResultHeader();
                 }});
             }});
 
@@ -3223,15 +3288,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if (!historyData || historyData.length === 0) return;
 
                 // Define column headers (excluding hidden _ columns)
-                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'OPPONENT'];
+                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'RANK', 'PLAYER', 'SCORE', 'OPP_RANK', 'OPPONENT'];
                 let headHtml = '<tr>';
                 displayColumns.forEach(col => {{
-                    const headerText = (window.innerWidth <= 768 && col === 'RESULT') ? 'RES' : col.replace('_', ' ');
+                    const headerText = col.replace('_', ' ');
                     headHtml += `<th>${{headerText}}</th>`;
                 }});
                 headHtml += '</tr>';
                 thead.innerHTML = headHtml;
-                syncHistoryResultHeader();
 
                 // Set initial placeholder message
                 tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px; color: #64748b;">Select a player to view their matches</td></tr>`;
@@ -3241,6 +3305,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             function toggleFilterGroup(element) {{
                 element.parentElement.classList.toggle('collapsed');
+            }}
+
+            function toggleRankFilterGroup(element) {{
+                const group = element.closest('.filter-group');
+                if (!group) return;
+                const row = group.closest('.rank-filter-last-row');
+                if (row) {{
+                    row.querySelectorAll('.filter-group').forEach(g => {{
+                        if (g !== group) g.classList.add('collapsed');
+                    }});
+                }}
+                group.classList.toggle('collapsed');
             }}
 
             function getRowMatchType(row) {{
@@ -3524,6 +3600,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const selectedSeeds = getSelectedFilterValues('filter-seed');
                 const selectedMatchTypes = getSelectedFilterValues('filter-match-type');
 
+                const asRankInput = document.getElementById('filter-as-rank');
+                const asRankModeEl = document.getElementById('filter-as-rank-mode');
+                const vsRankInput = document.getElementById('filter-vs-rank');
+                const vsRankModeEl = document.getElementById('filter-vs-rank-mode');
+                const asRankVal = asRankInput && asRankInput.value ? parseInt(asRankInput.value, 10) : null;
+                const asRankMode = asRankModeEl ? asRankModeEl.value : 'higher';
+                const vsRankVal = vsRankInput && vsRankInput.value ? parseInt(vsRankInput.value, 10) : null;
+                const vsRankMode = vsRankModeEl ? vsRankModeEl.value : 'higher';
+
                 // Filter the data (if nothing selected in a category, show all)
                 const filtered = currentPlayerData.filter(row => {{
                     if (isDoublesHistoryRow(row)) return false;
@@ -3598,6 +3683,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const matchType = getRowMatchType(row);
                     if (selectedMatchTypes.length > 0 && !selectedMatchTypes.includes(matchType)) return false;
 
+                    // Rank filters
+                    if (asRankVal !== null) {{
+                        const pr = parseInt(isWinner ? (row['_winnerRank'] || '') : (row['_loserRank'] || ''), 10);
+                        if (isNaN(pr)) return false;
+                        if (asRankMode === 'higher' && pr > asRankVal) return false;
+                        if (asRankMode === 'lower' && pr < asRankVal) return false;
+                    }}
+                    if (vsRankVal !== null) {{
+                        const vr = parseInt(isWinner ? (row['_loserRank'] || '') : (row['_winnerRank'] || ''), 10);
+                        if (isNaN(vr)) return false;
+                        if (vsRankMode === 'higher' && vr > vsRankVal) return false;
+                        if (vsRankMode === 'lower' && vr < vsRankVal) return false;
+                    }}
+
                     return true;
                 }});
 
@@ -3612,6 +3711,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }});
                 // Reset opponent select dropdown
                 $('#filter-opponent-select').val('').trigger('change');
+                // Reset rank filters
+                const asRankInput = document.getElementById('filter-as-rank');
+                const vsRankInput = document.getElementById('filter-vs-rank');
+                const asRankMode = document.getElementById('filter-as-rank-mode');
+                const vsRankMode = document.getElementById('filter-vs-rank-mode');
+                if (asRankInput) asRankInput.value = '';
+                if (vsRankInput) vsRankInput.value = '';
+                if (asRankMode) asRankMode.value = 'higher';
+                if (vsRankMode) vsRankMode.value = 'higher';
                 // Auto-apply filters (which will show all matches since nothing is selected)
                 applyHistoryFilters();
             }}
@@ -3623,7 +3731,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             function renderFilteredMatches(matches, selectedPlayer) {{
                 const tbody = document.getElementById('history-body');
-                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'OPPONENT'];
+                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'RANK', 'PLAYER', 'SCORE', 'OPP_RANK', 'OPPONENT'];
                 matches = (matches || []).filter(row => !isDoublesHistoryRow(row));
                 updateHistoryCounter(matches, selectedPlayer);
 
@@ -3702,13 +3810,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         opponentFlag ? `<span class="opponent-flag">${{opponentFlag}}</span>` : ''
                     }}<span class="opponent-name">${{buildPrefix(rSeed, rEntry) + rivalDisplayName}}</span></span>`;
 
+                    const playerRank = (isWinner ? (row['_winnerRank'] || '') : (row['_loserRank'] || '')).toString();
+                    const oppRank = (isWinner ? (row['_loserRank'] || '') : (row['_winnerRank'] || '')).toString();
+                    const scoreText = isWinner ? (row['SCORE'] || '') : reverseScore(row['SCORE'] || '');
+                    const scoreClass = isWinner ? 'score-win' : 'score-loss';
+
                     parts.push('<tr><td>', formatDate(row['DATE'] || ''),
                         '</td><td>', row['TOURNAMENT'] || '',
                         '</td><td>', row['SURFACE'] || '',
                         '</td><td>', displayRound(row['ROUND'] || '', row['TOURNAMENT'] || ''),
+                        '</td><td>', playerRank,
                         '</td><td>', buildPrefix(pSeed, pEntry) + playerDisplayName,
-                        '</td><td>', isWinner ? 'W' : 'L',
-                        '</td><td>', isWinner ? (row['SCORE'] || '') : reverseScore(row['SCORE'] || ''),
+                        '</td><td>', `<span class="${{scoreClass}}">${{scoreText}}</span>`,
+                        '</td><td>', oppRank,
                         '</td><td>', opponentCell,
                         '</td></tr>');
                 }}
@@ -3737,7 +3851,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function filterHistoryByPlayer() {{
                 const selectedPlayer = document.getElementById('playerHistorySelect').value.toUpperCase();
                 const tbody = document.getElementById('history-body');
-                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'PLAYER', 'RESULT', 'SCORE', 'OPPONENT'];
+                const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'RANK', 'PLAYER', 'SCORE', 'OPP_RANK', 'OPPONENT'];
 
                 if (selectedPlayer === '__ALL__') {{
                     const allFiltered = historyData.filter(row => !isDoublesHistoryRow(row));
@@ -3759,6 +3873,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             const el = document.getElementById(id);
                             if (el) el.innerHTML = '';
                         }});
+                    const asRankInput = document.getElementById('filter-as-rank');
+                    const vsRankInput = document.getElementById('filter-vs-rank');
+                    const asRankMode = document.getElementById('filter-as-rank-mode');
+                    const vsRankMode = document.getElementById('filter-vs-rank-mode');
+                    if (asRankInput) asRankInput.value = '';
+                    if (vsRankInput) vsRankInput.value = '';
+                    if (asRankMode) asRankMode.value = 'higher';
+                    if (vsRankMode) vsRankMode.value = 'higher';
                     const oppSelect = document.getElementById('filter-opponent-select');
                     if (oppSelect) {{
                         if ($(oppSelect).data('select2')) {{

@@ -147,6 +147,18 @@ def save_json_file(path, payload):
         json.dump(payload, f, indent=2, ensure_ascii=False)
 
 
+def save_json_array_one_line_per_item(path, items):
+    """Write a JSON array with one compact object per line (easy to diff/edit)."""
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("[\n")
+        for i, item in enumerate(items or []):
+            if i:
+                f.write(",\n")
+            f.write("  ")
+            f.write(json.dumps(item, ensure_ascii=False))
+        f.write("\n]\n")
+
+
 def override_country_for_player(player_name, country_code):
     key = (player_name or "").strip().upper()
     if key in COUNTRY_OVERRIDES:

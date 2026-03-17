@@ -73,7 +73,7 @@ def fetch_from_api(date_str):
         "week_date": date_str,
         "rank":      p.get("Rank", ""),
         "points":    p.get("Points", ""),
-        "player":    to_title_case(p.get("Player", "")),
+        "player":    (p.get("OfficialPlayer") or to_title_case(p.get("Player", "")) or "").strip(),
         "country":   p.get("Country", ""),
         "dob":       p.get("DOB", ""),
     } for p in data]

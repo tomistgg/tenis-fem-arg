@@ -263,10 +263,12 @@ def get_rankings(date_str, nationality=None):
     ranking_results = []
     for p in all_players:
         if not p.get('player'): continue
-        wta_name = p.get('player', {}).get('fullName').strip().upper()
-        display_name = NAME_LOOKUP.get(wta_name, wta_name)
+        official_name = (p.get('player', {}).get('fullName') or '').strip()
+        official_upper = official_name.upper()
+        display_name = NAME_LOOKUP.get(official_upper, official_upper)
         ranking_results.append({
             "Player": display_name,
+            "OfficialPlayer": official_name,
             "Rank": p.get('ranking'),
             "Country": p.get('player', {}).get('countryCode', ''),
             "Key": display_name,
@@ -292,11 +294,15 @@ def _load_wta_csv():
                 d = row["week_date"]
                 if d not in _wta_csv_cache:
                     _wta_csv_cache[d] = []
+                official_name = row["player"]
+                official_upper = official_name.upper()
+                display_upper = NAME_LOOKUP.get(official_upper, official_upper)
                 _wta_csv_cache[d].append({
-                    "Player":  row["player"].upper(),
+                    "Player":  display_upper,
+                    "OfficialPlayer": official_upper,
                     "Rank":    int(row["rank"]) if row.get("rank") else None,
                     "Country": row["country"],
-                    "Key":     row["player"].upper(),
+                    "Key":     display_upper,
                     "Points":  int(row["points"]) if row.get("points") else 0,
                     "DOB":     row.get("dob", ""),
                 })
@@ -310,7 +316,7 @@ def _save_wta_csv_date(date_str, players):
     with open(WTA_RANKINGS_CSV, "a", encoding="utf-8", newline="") as f:
         writer = _csv.writer(f)
         for p in players:
-            name = (p.get("Player") or "").title()
+            name = (p.get("OfficialPlayer") or p.get("Player") or "").strip()
             writer.writerow([date_str, p.get("Rank", ""), p.get("Points", 0), name, p.get("Country", ""), p.get("DOB", "")])
 
 

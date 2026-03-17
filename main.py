@@ -1,4 +1,5 @@
 import os
+import json
 import pandas as pd
 import csv
 from datetime import datetime, timedelta
@@ -11,7 +12,8 @@ from config import ENTRY_LISTS_CACHE_FILE, NAME_LOOKUP
 from utils import (
     fix_encoding, fix_encoding_keep_accents,
     load_cache, save_cache, merge_entry_list,
-    save_json_file, normalize_country_overrides, load_csv_rows
+    save_json_file, save_json_array_one_line_per_item,
+    normalize_country_overrides, load_csv_rows
 )
 from calendar_builder import (
     get_monday_offset, generate_dynamic_monday_map,
@@ -20,7 +22,7 @@ from calendar_builder import (
 from wta import (
     build_tournament_groups, get_full_wta_calendar,
     get_wta_rankings_cached, scrape_tournament_players,
-    get_draws_tournament_list
+    get_draws_tournament_list, _load_wta_csv
 )
 from itf import (
     get_full_itf_calendar, get_itf_players,
@@ -36,6 +38,287 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 TOURNAMENT_SNAPSHOT_FILE = os.path.join(DATA_DIR, "tournament_snapshot.json")
 CALENDAR_SNAPSHOT_FILE = os.path.join(DATA_DIR, "calendar_snapshot.json")
+PLAYER_ALIASES_WTA_ITF_FILE = os.path.join(DATA_DIR, "player_aliases_wta_itf.json")
+
+
+def _normalize_name_for_lookup(name):
+    """Normalize names for cross-source lookups (case/accents/whitespace)."""
+    if not name:
+        return ""
+    return " ".join(fix_encoding(str(name)).strip().upper().split())
+
+
+def _map_to_display_name_upper(name):
+    """Map aliases to display name (from `player_aliases.json`) when possible."""
+    if not name:
+        return ""
+    raw_upper = " ".join(str(name).strip().upper().split())
+    if not raw_upper:
+        return ""
+    # Try raw first, then encoding/accents-normalised key (common in older datasets).
+    alt_upper = _normalize_name_for_lookup(raw_upper)
+    return NAME_LOOKUP.get(raw_upper) or NAME_LOOKUP.get(alt_upper) or raw_upper
+
+
+def _monday_from_date_str(date_str):
+    if not date_str:
+        return None
+    base = str(date_str).strip()
+    if len(base) >= 10:
+        base = base[:10]
+    try:
+        d = datetime.strptime(base, "%Y-%m-%d")
+    except Exception:
+        return None
+    monday = d - timedelta(days=d.weekday())
+    return monday.strftime("%Y-%m-%d")
+
+
+def enrich_history_with_wta_ranks(cleaned_history):
+    """Add `_winnerRank` / `_loserRank` to cleaned history rows (empty if unknown)."""
+    if not cleaned_history:
+        return cleaned_history
+
+    # Optional: map ITF-side names to WTA-side names (to resolve rankings even when
+    # the match dataset uses ITF spelling while rankings CSV uses WTA spelling).
+    aliases_lookup = {}
+    if os.path.exists(PLAYER_ALIASES_WTA_ITF_FILE):
+        try:
+            with open(PLAYER_ALIASES_WTA_ITF_FILE, "r", encoding="utf-8") as f:
+                items = json.load(f)
+            if not isinstance(items, list):
+                items = []
+        except Exception:
+            items = []
+        for it in items:
+            if not isinstance(it, dict):
+                continue
+            itf_name = (it.get("itf_name") or "").strip()
+            wta_names = it.get("wta_names") or []
+            if not isinstance(wta_names, list):
+                wta_names = []
+            cand_norms = []
+            for n in wta_names:
+                n = str(n or "").strip()
+                if not n:
+                    continue
+                n_norm = _normalize_name_for_lookup(n)
+                if n_norm and n_norm not in cand_norms:
+                    cand_norms.append(n_norm)
+                disp_norm = _normalize_name_for_lookup(_map_to_display_name_upper(n))
+                if disp_norm and disp_norm not in cand_norms:
+                    cand_norms.append(disp_norm)
+            if not itf_name or not cand_norms:
+                continue
+            # Allow lookups by raw ITF name or by our display-mapped key.
+            for k in {_normalize_name_for_lookup(itf_name), _normalize_name_for_lookup(_map_to_display_name_upper(itf_name))}:
+                if not k:
+                    continue
+                if k not in aliases_lookup:
+                    aliases_lookup[k] = []
+                for cn in cand_norms:
+                    if cn not in aliases_lookup[k]:
+                        aliases_lookup[k].append(cn)
+
+    csv_by_week = _load_wta_csv() or {}
+    week_index_cache = {}
+
+    def _index_variants(name):
+        """Generate additional lookup keys for common WTA naming variants (e.g., married-name hyphens)."""
+        if not name:
+            return []
+        base_upper = " ".join(str(name).strip().upper().split())
+        if not base_upper:
+            return []
+        out = []
+        for cand in [base_upper, base_upper.replace("-", " ")]:
+            norm = _normalize_name_for_lookup(cand)
+            if norm and norm not in out:
+                out.append(norm)
+        parts = base_upper.split()
+        if len(parts) >= 2 and any("-" in p for p in parts[1:]):
+            stripped = parts[:]
+            for i in range(1, len(stripped)):
+                if "-" in stripped[i]:
+                    stripped[i] = stripped[i].split("-")[0]
+            norm = _normalize_name_for_lookup(" ".join(stripped))
+            if norm and norm not in out:
+                out.append(norm)
+        return out
+
+    def week_index(week_date):
+        if week_date in week_index_cache:
+            return week_index_cache[week_date]
+        idx = {}
+        for p in (csv_by_week.get(week_date) or []):
+            r = p.get("Rank", "")
+            if r is None or r == "":
+                continue
+            raw = p.get("OfficialPlayer") or p.get("Player", "")
+            rank_str = str(r)
+            for key_name in [raw, _map_to_display_name_upper(raw)]:
+                for k in _index_variants(key_name):
+                    idx[k] = rank_str
+        week_index_cache[week_date] = idx
+        return idx
+
+    def resolve_rank(name_raw, idx):
+        """Resolve a ranking for a raw name using direct and alias-based lookups."""
+        if not name_raw:
+            return ""
+        raw_norm = _normalize_name_for_lookup(name_raw)
+        disp_norm = _normalize_name_for_lookup(_map_to_display_name_upper(name_raw))
+        rank = idx.get(disp_norm) or idx.get(raw_norm) or ""
+        if rank:
+            return rank
+        # Alias-based lookup: try ITF name -> WTA name candidates.
+        for k in (disp_norm, raw_norm):
+            if not k:
+                continue
+            for cand in (aliases_lookup.get(k) or []):
+                rank = idx.get(cand) or ""
+                if rank:
+                    return rank
+        return ""
+
+    for row in cleaned_history:
+        row["_winnerRank"] = ""
+        row["_loserRank"] = ""
+        week_date = _monday_from_date_str(row.get("DATE", ""))
+        if not week_date or week_date not in csv_by_week:
+            continue
+        idx = week_index(week_date)
+        row["_winnerRank"] = resolve_rank(row.get("_winnerName", ""), idx)
+        row["_loserRank"] = resolve_rank(row.get("_loserName", ""), idx)
+
+    return cleaned_history
+
+
+def build_player_aliases_wta_itf(cleaned_history):
+    """Build list of {wta_names, itf_name} from match history across match types."""
+    if not cleaned_history:
+        return []
+
+    itf_side_types = {"ITF", "Fed/BJK Cup"}
+    by_key = {}
+
+    for row in cleaned_history:
+        mt = (row.get("MATCH_TYPE") or "").strip()
+        is_itf_side = mt in itf_side_types
+        for raw_name in [row.get("_winnerName", ""), row.get("_loserName", "")]:
+            if not raw_name:
+                continue
+            # Skip doubles pairs formatted like "Player A / Player B"
+            if "/" in str(raw_name):
+                continue
+            # Group by our display-name mapping so variants (e.g. "Maria Carle" vs
+            # "Maria Lourdes Carle") land on the same player key.
+            key = _normalize_name_for_lookup(_map_to_display_name_upper(raw_name))
+            if not key:
+                continue
+            if key not in by_key:
+                by_key[key] = {"wta_names": [], "itf_name": ""}
+            if is_itf_side:
+                if not by_key[key].get("itf_name"):
+                    by_key[key]["itf_name"] = str(raw_name).strip()
+            else:
+                cand = str(raw_name).strip()
+                if cand and cand not in by_key[key]["wta_names"]:
+                    by_key[key]["wta_names"].append(cand)
+
+    # Sort: prefer WTA name, else ITF name, else key.
+    def sort_key(item):
+        v = item[1]
+        name = (v.get("wta_names") or [None])[0] or v.get("itf_name") or item[0]
+        return _normalize_name_for_lookup(name)
+
+    return [by_key[k] for k, _ in sorted(by_key.items(), key=sort_key)]
+
+
+def _aliases_wta_itf_key(item):
+    """Stable key for merging {wta_names,itf_name} entries across runs/manual edits."""
+    if not isinstance(item, dict):
+        return ""
+    itf_name = (item.get("itf_name") or "").strip()
+    wta_names = item.get("wta_names") or []
+    first_wta = ""
+    if isinstance(wta_names, list) and wta_names:
+        first_wta = str(wta_names[0] or "").strip()
+    base = itf_name or first_wta
+    return _normalize_name_for_lookup(_map_to_display_name_upper(base))
+
+
+def merge_player_aliases_wta_itf(existing_items, generated_items):
+    """Merge manual edits (extra wta_names) into the freshly generated list."""
+    existing_by_key = {}
+    for it in (existing_items or []):
+        key = _aliases_wta_itf_key(it)
+        if not key:
+            continue
+        existing_by_key[key] = it
+
+    merged = []
+    seen = set()
+
+    for it in (generated_items or []):
+        key = _aliases_wta_itf_key(it)
+        if not key or key in seen:
+            continue
+        seen.add(key)
+
+        out = {"wta_names": list(it.get("wta_names") or []), "itf_name": (it.get("itf_name") or "").strip()}
+        prev = existing_by_key.get(key)
+        if isinstance(prev, dict):
+            # Preserve any existing ITF name if generated is empty.
+            if not out["itf_name"]:
+                out["itf_name"] = (prev.get("itf_name") or "").strip()
+            # Union WTA names preserving order (generated first).
+            prev_wta = prev.get("wta_names") or []
+            if isinstance(prev_wta, list):
+                for n in prev_wta:
+                    n = str(n or "").strip()
+                    if n and n not in out["wta_names"]:
+                        out["wta_names"].append(n)
+        merged.append(out)
+
+    # Append existing-only items (e.g. manually added players not found in this run)
+    for key, prev in existing_by_key.items():
+        if key in seen:
+            continue
+        if not isinstance(prev, dict):
+            continue
+        out = {
+            "wta_names": [str(n or "").strip() for n in (prev.get("wta_names") or []) if str(n or "").strip()],
+            "itf_name": (prev.get("itf_name") or "").strip(),
+        }
+        merged.append(out)
+
+    return merged
+
+
+def ensure_hyphen_space_variants(items):
+    """For any hyphenated name, ensure a space-variant exists in wta_names."""
+    for it in items or []:
+        if not isinstance(it, dict):
+            continue
+        wta_names = it.get("wta_names") or []
+        if not isinstance(wta_names, list):
+            wta_names = []
+        itf_name = (it.get("itf_name") or "").strip()
+
+        seeds = [str(n or "").strip() for n in wta_names if str(n or "").strip()]
+        if itf_name:
+            seeds.append(itf_name)
+
+        add = []
+        for name in seeds:
+            if "-" in name:
+                spaced = " ".join(name.replace("-", " ").split())
+                if spaced and spaced not in wta_names and spaced not in add:
+                    add.append(spaced)
+        if add:
+            it["wta_names"] = wta_names + add
+    return items
 
 
 def create_driver():
@@ -116,11 +399,15 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
     ranking_cache = {}
     unranked_schedule = {}
 
-    for week, tourneys in tournament_groups.items():
-        print(f"Processing {week}...")
-        week_monday = next((k for k, v in monday_map.items() if v == week), None)
-        if week_monday is None:
+    mondays = sorted(monday_map.keys())
+    total_weeks = len(mondays) or 4
+
+    for i, week_monday in enumerate(mondays, start=1):
+        print(f"Processing Tournaments ({i}/{total_weeks})")
+        week = monday_map.get(week_monday)
+        if not week:
             continue
+        tourneys = tournament_groups.get(week, {})
 
         md_date = get_monday_offset(week_monday, 4)
         q_date = get_monday_offset(week_monday, 3)
@@ -380,6 +667,17 @@ def main():
 
         # 5. Load match history
         match_history_data, cleaned_history = load_match_history()
+        enrich_history_with_wta_ranks(cleaned_history)
+        generated_aliases = build_player_aliases_wta_itf(cleaned_history)
+        if os.path.exists(PLAYER_ALIASES_WTA_ITF_FILE):
+            try:
+                with open(PLAYER_ALIASES_WTA_ITF_FILE, "r", encoding="utf-8") as f:
+                    existing_aliases = json.load(f)
+            except Exception:
+                existing_aliases = []
+            generated_aliases = merge_player_aliases_wta_itf(existing_aliases, generated_aliases)
+        generated_aliases = ensure_hyphen_space_variants(generated_aliases)
+        save_json_array_one_line_per_item(PLAYER_ALIASES_WTA_ITF_FILE, generated_aliases)
 
         # 5b. Fetch ITF draws tournament list (needs Selenium for GetEventFilters)
         print("Fetching ITF draws tournament list...")
@@ -391,34 +689,45 @@ def main():
     draws_store = {}
     draws_tournaments = get_draws_tournament_list()
     current_year = str(datetime.now().year)
-    for week, tourneys in draws_tournaments.items():
-        for t_key, t_info in tourneys.items():
-            print(f"Fetching draws for {t_info['name']}...")
-            t_draws = fetch_tournament_draws(t_key, current_year)
-            if t_draws:
-                draws_store[t_key] = {
-                    "name": t_info["name"],
-                    "level": t_info.get("level", ""),
-                    "week": week,
-                    "draws": t_draws,
-                }
+    wta_draw_jobs = []
+    for week, tourneys in (draws_tournaments or {}).items():
+        for t_key, t_info in (tourneys or {}).items():
+            wta_draw_jobs.append((week, t_key, t_info))
+
+    total_wta_draws = len(wta_draw_jobs) or 1
+    for i, (week, t_key, t_info) in enumerate(wta_draw_jobs, start=1):
+        print(f"Fetching WTA Draws ({i}/{total_wta_draws})")
+        t_draws = fetch_tournament_draws(t_key, current_year)
+        if t_draws:
+            draws_store[t_key] = {
+                "name": t_info["name"],
+                "level": t_info.get("level", ""),
+                "week": week,
+                "draws": t_draws,
+            }
 
     # 6b. Fetch ITF draws (uses requests.post, no Selenium needed)
-    for week, tourneys in itf_draws_tournaments.items():
-        for t_key, t_info in tourneys.items():
-            print(f"Fetching ITF draws for {t_info['name']}...")
-            tid = t_info.get("tournamentId")
+    itf_draw_jobs = []
+    for week, tourneys in (itf_draws_tournaments or {}).items():
+        for t_key, t_info in (tourneys or {}).items():
+            tid = (t_info or {}).get("tournamentId")
             if not tid:
                 continue
-            is_multiweek = t_info.get("is_multiweek", False)
-            t_draws = fetch_itf_tournament_draws(tid, is_multiweek=is_multiweek)
-            if t_draws:
-                draws_store[t_key] = {
-                    "name": t_info["name"],
-                    "level": t_info.get("level", ""),
-                    "week": week,
-                    "draws": t_draws,
-                }
+            itf_draw_jobs.append((week, t_key, t_info))
+
+    total_itf_draws = len(itf_draw_jobs) or 1
+    for i, (week, t_key, t_info) in enumerate(itf_draw_jobs, start=1):
+        print(f"Fetching ITF Draws ({i}/{total_itf_draws})")
+        tid = t_info.get("tournamentId")
+        is_multiweek = t_info.get("is_multiweek", False)
+        t_draws = fetch_itf_tournament_draws(tid, is_multiweek=is_multiweek)
+        if t_draws:
+            draws_store[t_key] = {
+                "name": t_info["name"],
+                "level": t_info.get("level", ""),
+                "week": week,
+                "draws": t_draws,
+            }
 
     # Save draws snapshot (tournament key -> list of draw types available)
     draws_snapshot = {}
@@ -435,6 +744,7 @@ def main():
     build_calendar_snapshot(calendar_data)
 
     # 7b. Build tournament strength data (cached)
+    print("Processing WTA Tournament Strength")
     tstrength_data = build_tstrength_data()
 
     # 8. Generate HTML
