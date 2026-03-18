@@ -3080,15 +3080,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const line = lines[i].trim();
                     if (!line) continue;
                     const cols = line.split(',');
-                    if (cols.length < 5) continue;
+                    // Expected columns: week_date,id,rank,points,player,country,dob
+                    if (cols.length < 7) continue;
                     const date = cols[0].trim();
                     if (!cache[date]) cache[date] = [];
                     cache[date].push({{
-                        r: parseInt(cols[1]) || null,
-                        pts: parseInt(cols[2]) || 0,
-                        n: cols[3] || '',
-                        c: cols[4] || '',
-                        d: (cols[5] || '').replace(/\\r/g, '').trim()
+                        r: parseInt(cols[2]) || null,
+                        pts: parseInt(cols[3]) || 0,
+                        n: cols[4] || '',
+                        c: cols[5] || '',
+                        d: (cols[6] || '').replace(/\\r/g, '').trim()
                     }});
                 }}
                 return cache;

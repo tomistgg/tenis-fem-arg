@@ -9,7 +9,7 @@ from config import WTA_RANKINGS_CSV
 from wta import get_rankings
 
 RANKINGS_CSV = WTA_RANKINGS_CSV
-CSV_FIELDNAMES = ["week_date", "rank", "points", "player", "country", "dob"]
+CSV_FIELDNAMES = ["week_date", "id", "rank", "points", "player", "country", "dob"]
 
 
 def to_title_case(name):
@@ -71,6 +71,7 @@ def fetch_from_api(date_str):
     print(f"  Fetched {len(data)} players.")
     return [{
         "week_date": date_str,
+        "id":        p.get("Id", ""),
         "rank":      p.get("Rank", ""),
         "points":    p.get("Points", ""),
         "player":    (p.get("OfficialPlayer") or to_title_case(p.get("Player", "")) or "").strip(),

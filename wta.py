@@ -14,6 +14,11 @@ from calendar_builder import get_next_monday, get_monday_from_date, format_week_
 
 
 _wta_tournaments_raw = None  # module-level cache for raw WTA tournament API data
+_REQUESTS_SESSION = requests.Session()
+
+
+class WtaApiRateLimited(RuntimeError):
+    pass
 
 
 def _fetch_wta_tournaments_raw():
@@ -237,10 +242,12 @@ def get_full_wta_calendar():
 
 def get_rankings(date_str, nationality=None):
     all_players, page = [], 0
+    seen_keys = set()
     while True:
         params = {
             "page": page,
-            "pageSize": 100,
+            # Larger pages reduce total request count (helps avoid CloudFront/WAF throttling).
+            "pageSize": 2000,
             "type": "rankSingles",
             "sort": "asc",
             "metric": "SINGLES",
@@ -251,24 +258,81 @@ def get_rankings(date_str, nationality=None):
             params["nationality"] = nationality
 
         try:
-            r = requests.get(API_URL, params=params, headers=HEADERS, timeout=10)
-            data = r.json()
+            last_err = None
+            data = None
+            req_headers = dict(HEADERS or {})
+            req_headers.setdefault("Accept", "application/json, text/plain, */*")
+            req_headers.setdefault("Accept-Language", "en-US,en;q=0.9")
+            req_headers.setdefault("Origin", "https://www.wtatennis.com")
+            req_headers.setdefault("Referer", "https://www.wtatennis.com/")
+            saw_rate_limit = False
+            for attempt in range(8):
+                try:
+                    r = _REQUESTS_SESSION.get(API_URL, params=params, headers=req_headers, timeout=30)
+                    # Retry on throttling / transient server errors.
+                    if r.status_code in (429, 500, 502, 503, 504):
+                        saw_rate_limit = saw_rate_limit or (r.status_code == 429)
+                        time.sleep(min(120.0, 5.0 * (2 ** attempt)))
+                        continue
+                    ctype = (r.headers.get("content-type") or "").lower()
+                    if "text/html" in ctype:
+                        # CloudFront/WAF blocks often come back as HTML.
+                        saw_rate_limit = True
+                        time.sleep(min(120.0, 5.0 * (2 ** attempt)))
+                        continue
+                    r.raise_for_status()
+                    data = r.json()
+                    last_err = None
+                    break
+                except Exception as e:
+                    last_err = e
+                    time.sleep(min(120.0, 5.0 * (2 ** attempt)))
+            if last_err is not None and data is None:
+                if saw_rate_limit and page == 0:
+                    raise WtaApiRateLimited(f"WTA API rate limited for {date_str}")
+                break
             items = data.get('content', []) if isinstance(data, dict) else data
             if not items: break
-            all_players.extend(items)
+            # Defensive de-dup in case the API repeats pages (seen in the wild).
+            new_items = []
+            for it in items:
+                player = it.get("player") or {}
+                key = (
+                    player.get("id")
+                    or player.get("fullName")
+                    or (it.get("ranking"), player.get("countryCode"), player.get("dateOfBirth"))
+                )
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
+                new_items.append(it)
+            if not new_items:
+                break
+            all_players.extend(new_items)
             page += 1
-            time.sleep(0.1)
-        except: break
+            time.sleep(0.25)
+        except WtaApiRateLimited:
+            raise
+        except Exception:
+            break
 
     ranking_results = []
     for p in all_players:
         if not p.get('player'): continue
+        player_obj = p.get("player") or {}
+        player_id = (
+            player_obj.get("id")
+            or player_obj.get("playerId")
+            or p.get("playerId")
+            or p.get("id")
+        )
         official_name = (p.get('player', {}).get('fullName') or '').strip()
         official_upper = official_name.upper()
         display_name = NAME_LOOKUP.get(official_upper, official_upper)
         ranking_results.append({
             "Player": display_name,
             "OfficialPlayer": official_name,
+            "Id": player_id,
             "Rank": p.get('ranking'),
             "Country": p.get('player', {}).get('countryCode', ''),
             "Key": display_name,
@@ -289,17 +353,19 @@ def _load_wta_csv():
     for csv_file in [WTA_RANKINGS_CSV_00_09, WTA_RANKINGS_CSV_10_19, WTA_RANKINGS_CSV]:
         if not _os.path.exists(csv_file):
             continue
-        with open(csv_file, encoding="utf-8") as f:
+        with open(csv_file, encoding="utf-8-sig") as f:
             for row in _csv.DictReader(f):
                 d = row["week_date"]
                 if d not in _wta_csv_cache:
                     _wta_csv_cache[d] = []
+                pid = (row.get("id") or row.get("player_id") or row.get("playerId") or "").strip()
                 official_name = row["player"]
                 official_upper = official_name.upper()
                 display_upper = NAME_LOOKUP.get(official_upper, official_upper)
                 _wta_csv_cache[d].append({
                     "Player":  display_upper,
                     "OfficialPlayer": official_upper,
+                    "Id": pid,
                     "Rank":    int(row["rank"]) if row.get("rank") else None,
                     "Country": row["country"],
                     "Key":     display_upper,
@@ -317,7 +383,7 @@ def _save_wta_csv_date(date_str, players):
         writer = _csv.writer(f)
         for p in players:
             name = (p.get("OfficialPlayer") or p.get("Player") or "").strip()
-            writer.writerow([date_str, p.get("Rank", ""), p.get("Points", 0), name, p.get("Country", ""), p.get("DOB", "")])
+            writer.writerow([date_str, p.get("Id", ""), p.get("Rank", ""), p.get("Points", 0), name, p.get("Country", ""), p.get("DOB", "")])
 
 
 def get_wta_rankings_cached(date_str, nationality=None):
