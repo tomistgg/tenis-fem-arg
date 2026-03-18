@@ -3,10 +3,23 @@ import csv
 import json
 import os
 import unicodedata
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 MAX_MATCH_LINES_PER_FILE = 50
 RANKINGS_CSV_FILES = ["wta_rankings_00_09.csv", "wta_rankings_10_19.csv", "wta_rankings_20_29.csv"]
+ALIASES_JSON_FILE = "player_aliases_wta_itf.json"
+
+
+def save_json_array_one_line_per_item(path, items):
+    """Write a JSON array with one compact object per line (easy to diff/edit)."""
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("[\n")
+        for i, item in enumerate(items or []):
+            if i:
+                f.write(",\n")
+            f.write("  ")
+            f.write(json.dumps(item, ensure_ascii=False))
+        f.write("\n]\n")
 
 
 def load_json(path):
@@ -70,6 +83,109 @@ def load_rankings_name_set(dir_path):
     return names
 
 
+def monday_from_date_str(value):
+    s = (value or "").strip()
+    if not s:
+        return ""
+    if len(s) >= 10:
+        s = s[:10]
+    try:
+        d = datetime.strptime(s, "%Y-%m-%d").date()
+    except Exception:
+        return ""
+    monday = d - timedelta(days=d.weekday())
+    return monday.strftime("%Y-%m-%d")
+
+
+def is_itf_id(value):
+    s = (value or "").strip()
+    return s.isdigit() and (len(s) >= 9 or s.startswith("800"))
+
+
+def is_wta_id(value):
+    s = (value or "").strip()
+    return s.isdigit() and not is_itf_id(s)
+
+
+def load_aliases(path):
+    items = load_json(path) or []
+    if not isinstance(items, list):
+        return []
+    return [it for it in items if isinstance(it, dict)]
+
+
+def build_alias_indexes(items):
+    by_wta = {}
+    by_itf = {}
+    by_name = {}
+
+    def _index_name(ent, name):
+        for k in name_variants(name or ""):
+            by_name.setdefault(k, [])
+            if ent not in by_name[k]:
+                by_name[k].append(ent)
+
+    for it in items:
+        wid = (it.get("wta_id") or "").strip()
+        iid = (it.get("itf_id") or "").strip()
+        if wid and wid not in by_wta:
+            by_wta[wid] = it
+        if iid and iid not in by_itf:
+            by_itf[iid] = it
+        _index_name(it, it.get("wta_name") or "")
+        _index_name(it, it.get("display_name") or "")
+        _index_name(it, it.get("itf_name") or "")
+
+    return by_wta, by_itf, by_name
+
+
+def load_rankings_by_week(dir_path, weeks):
+    """Return ({week: {wta_id: {rank, player}}}, {week: {norm_name: wta_id}})."""
+    weeks = {w for w in (weeks or set()) if w}
+    if not weeks:
+        return {}, {}
+
+    needed_files = set()
+    for w in weeks:
+        try:
+            year = int(w[:4])
+        except Exception:
+            continue
+        if 2000 <= year <= 2009:
+            needed_files.add("wta_rankings_00_09.csv")
+        elif 2010 <= year <= 2019:
+            needed_files.add("wta_rankings_10_19.csv")
+        else:
+            needed_files.add("wta_rankings_20_29.csv")
+
+    by_week = {w: {} for w in weeks}
+    name_to_id = {w: {} for w in weeks}
+
+    for fname in sorted(needed_files):
+        path = os.path.join(dir_path, fname)
+        if not os.path.exists(path):
+            continue
+        try:
+            with open(path, "r", encoding="utf-8-sig", newline="") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    week = (row.get("week_date") or row.get("week") or "").strip()
+                    if week not in weeks:
+                        continue
+                    pid = (row.get("id") or row.get("player_id") or row.get("playerId") or "").strip()
+                    rank = (row.get("rank") or row.get("Rank") or "").strip()
+                    player = (row.get("player") or row.get("Player") or "").strip()
+                    if not pid:
+                        continue
+                    by_week[week][pid] = {"rank": rank, "player": player}
+                    for v in name_variants(player):
+                        name_to_id[week].setdefault(v, pid)
+        except Exception:
+            continue
+
+    return by_week, name_to_id
+
+
 def get_tournament_label(t_key, before_snapshot, after_snapshot):
     if isinstance(after_snapshot, dict) and t_key in after_snapshot:
         return after_snapshot[t_key].get("name") or t_key
@@ -126,6 +242,18 @@ def get_match_players(row):
     return uniq
 
 
+def iter_match_sides(row):
+    """Yield (side, player_id, player_name) for winner+loser."""
+    w_id = (row.get("winnerId") or row.get("WINNERID") or row.get("winner_id") or "").strip()
+    w_name = (row.get("winnerName") or row.get("_winnerName") or row.get("WINNERNAME") or row.get("WINNER_NAME") or "").strip()
+    l_id = (row.get("loserId") or row.get("LOSERID") or row.get("loser_id") or "").strip()
+    l_name = (row.get("loserName") or row.get("_loserName") or row.get("LOSERNAME") or row.get("LOSER_NAME") or "").strip()
+    if w_name:
+        yield "winner", w_id, w_name
+    if l_name:
+        yield "loser", l_id, l_name
+
+
 def load_csv_rows(path):
     if not os.path.exists(path):
         return [], []
@@ -161,7 +289,12 @@ def compute_report(before_dir, after_dir):
         "added_calendar_tournaments": [],
     }
 
-    rankings_names = None
+    aliases_path = os.path.join(after_dir, ALIASES_JSON_FILE)
+    aliases_items = load_aliases(aliases_path)
+    by_wta, by_itf, by_alias_name = build_alias_indexes(aliases_items)
+    aliases_changed = False
+
+    added_rows_by_csv = {}
 
     before_entry = load_json(os.path.join(before_dir, "entry_lists_cache.json")) or {}
     after_entry = load_json(os.path.join(after_dir, "entry_lists_cache.json")) or {}
@@ -235,27 +368,174 @@ def compute_report(before_dir, after_dir):
             if not key:
                 continue
             if key not in before_map:
-                if rankings_names is None:
-                    rankings_names = load_rankings_name_set(after_dir)
-
                 match_line = format_match_line(row)
-                missing = []
-                for player in get_match_players(row):
-                    has_any = any(v in rankings_names for v in name_variants(player))
-                    if not has_any:
-                        missing.append(player)
-
-                added.append({
-                    "line": match_line,
-                    "missing_players": missing,
-                })
+                added.append({"line": match_line, "row": row})
 
         if added:
+            added_rows_by_csv[csv_name] = added
+
+    if added_rows_by_csv:
+        needed_weeks = set()
+        for rows in added_rows_by_csv.values():
+            for item in rows:
+                row = item.get("row") or {}
+                week = monday_from_date_str(row.get("date") or row.get("DATE") or "")
+                if week:
+                    needed_weeks.add(week)
+
+        rankings_by_week, ranking_name_to_id = load_rankings_by_week(after_dir, needed_weeks)
+
+        def index_alias_entry(ent):
+            wid = (ent.get("wta_id") or "").strip()
+            iid = (ent.get("itf_id") or "").strip()
+            if wid:
+                by_wta[wid] = ent
+            if iid:
+                by_itf[iid] = ent
+            for field in ("wta_name", "display_name", "itf_name"):
+                for k in name_variants(ent.get(field) or ""):
+                    by_alias_name.setdefault(k, [])
+                    if ent not in by_alias_name[k]:
+                        by_alias_name[k].append(ent)
+
+        def maybe_fill_wta_names(ent, wta_id, week):
+            nonlocal aliases_changed
+            if not wta_id or not week:
+                return
+            info = (rankings_by_week.get(week) or {}).get(wta_id) or {}
+            player_name = (info.get("player") or "").strip()
+            if not player_name:
+                return
+            if not (ent.get("wta_name") or "").strip():
+                ent["wta_name"] = player_name
+                aliases_changed = True
+            if not (ent.get("display_name") or "").strip():
+                ent["display_name"] = player_name
+                aliases_changed = True
+            if aliases_changed:
+                index_alias_entry(ent)
+
+        def ensure_player_and_collect_issues(pid, name, week):
+            nonlocal aliases_changed
+            pid = (pid or "").strip()
+            name = (name or "").strip()
+            week = (week or "").strip()
+
+            ent = None
+            if is_wta_id(pid):
+                ent = by_wta.get(pid)
+                if ent is None:
+                    info = (rankings_by_week.get(week) or {}).get(pid) if week else None
+                    wta_name = ((info or {}).get("player") or "").strip() or name
+                    ent = {
+                        "display_name": wta_name,
+                        "wta_id": pid,
+                        "wta_name": wta_name,
+                        "itf_id": "",
+                        "itf_name": "",
+                        "bjkc_name": "",
+                    }
+                    aliases_items.append(ent)
+                    aliases_changed = True
+                    index_alias_entry(ent)
+                maybe_fill_wta_names(ent, pid, week)
+            elif is_itf_id(pid):
+                ent = by_itf.get(pid)
+                if ent is None:
+                    ent = {
+                        "display_name": "",
+                        "wta_id": "",
+                        "wta_name": "",
+                        "itf_id": pid,
+                        "itf_name": name,
+                        "bjkc_name": "",
+                    }
+                    aliases_items.append(ent)
+                    aliases_changed = True
+                    index_alias_entry(ent)
+                elif name and not (ent.get("itf_name") or "").strip():
+                    ent["itf_name"] = name
+                    aliases_changed = True
+                    index_alias_entry(ent)
+            else:
+                # Non-numeric ids are rare; try to match by name to avoid duplicates.
+                for k in name_variants(name):
+                    hits = by_alias_name.get(k) or []
+                    if hits:
+                        ent = hits[0]
+                        break
+                if ent is None and name:
+                    ent = {
+                        "display_name": "",
+                        "wta_id": "",
+                        "wta_name": "",
+                        "itf_id": "",
+                        "itf_name": name,
+                        "bjkc_name": "",
+                    }
+                    aliases_items.append(ent)
+                    aliases_changed = True
+                    index_alias_entry(ent)
+
+            wta_id = ""
+            if is_wta_id(pid):
+                wta_id = pid
+            elif ent is not None:
+                wta_id = (ent.get("wta_id") or "").strip()
+
+            # Try to map ITF-only entries by name from rankings for that week.
+            if ent is not None and not wta_id and week and name:
+                name_map = ranking_name_to_id.get(week) or {}
+                for k in name_variants(name):
+                    hit = name_map.get(k)
+                    if hit:
+                        ent["wta_id"] = hit
+                        aliases_changed = True
+                        index_alias_entry(ent)
+                        maybe_fill_wta_names(ent, hit, week)
+                        wta_id = hit
+                        break
+
+            rank = ""
+            if wta_id and week:
+                rank = ((rankings_by_week.get(week) or {}).get(wta_id) or {}).get("rank") or ""
+
+            issues = []
+            if wta_id and week and not rank:
+                issues.append(f"{name} (wta_id {wta_id}) not found in rankings for week {week}.")
+            if not wta_id:
+                itf_only_id = (ent.get("itf_id") or "").strip() if isinstance(ent, dict) else ""
+                if itf_only_id:
+                    issues.append(f"{name} only has itf_id {itf_only_id} (no wta_id in aliases).")
+                elif pid:
+                    issues.append(f"{name} has id {pid} (cannot map to WTA rankings).")
+                else:
+                    issues.append(f"{name} has no id (cannot map to WTA rankings).")
+            return issues
+
+        for csv_name, rows in added_rows_by_csv.items():
+            processed = []
+            for item in rows:
+                row = item.get("row") or {}
+                week = monday_from_date_str(row.get("date") or row.get("DATE") or "")
+                issues = []
+                for _, pid, name in iter_match_sides(row):
+                    issues.extend(ensure_player_and_collect_issues(pid, name, week))
+                processed.append({"line": item.get("line", ""), "issues": issues})
+
             report["added_matches"][csv_name] = {
-                "count": len(added),
-                "items": added[:MAX_MATCH_LINES_PER_FILE],
-                "truncated": len(added) > MAX_MATCH_LINES_PER_FILE,
+                "count": len(processed),
+                "items": processed[:MAX_MATCH_LINES_PER_FILE],
+                "truncated": len(processed) > MAX_MATCH_LINES_PER_FILE,
             }
+
+        if aliases_changed:
+            def _sort_key(ent):
+                return normalize_rank_key(
+                    (ent.get("display_name") or ent.get("wta_name") or ent.get("itf_name") or "")
+                )
+
+            save_json_array_one_line_per_item(aliases_path, sorted(aliases_items, key=_sort_key))
 
     before_calendar = load_json(os.path.join(before_dir, "calendar_snapshot.json")) or []
     after_calendar = load_json(os.path.join(after_dir, "calendar_snapshot.json")) or []
@@ -360,9 +640,9 @@ def render_email_markdown(report):
         for item in payload.get("items") or []:
             match_line = item.get("line") if isinstance(item, dict) else str(item)
             lines.append(f"- {match_line}")
-            missing = item.get("missing_players") if isinstance(item, dict) else []
-            for name in (missing or []):
-                lines.append(f"  {name} not found in rankings.")
+            issues = item.get("issues") if isinstance(item, dict) else []
+            for msg in (issues or []):
+                lines.append(f"  {msg}")
         if payload.get("truncated"):
             lines.append(f"- ... and {payload['count'] - len(payload.get('items') or [])} more")
         lines.append("")

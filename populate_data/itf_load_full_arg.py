@@ -429,6 +429,25 @@ if __name__ == "__main__":
 
         if all_matches:
             final_matches_df = pd.DataFrame(all_matches)
+
+            def _normalize_seed(value):
+                if value is None or (hasattr(pd, "isna") and pd.isna(value)):
+                    return ""
+                s = str(value).strip()
+                if not s or s.lower() == "nan":
+                    return ""
+                try:
+                    f = float(s)
+                    if f.is_integer():
+                        return str(int(f))
+                except Exception:
+                    pass
+                return s
+
+            for col in ("winnerSeed", "loserSeed"):
+                if col in final_matches_df.columns:
+                    final_matches_df[col] = final_matches_df[col].map(_normalize_seed)
+
             final_matches_df.to_csv(output_path, mode='a', header=write_header, index=False, encoding='utf-8-sig')
             write_header = False
             print(f"\nSUCCESS! Appended {len(final_matches_df)} ARG matches from {year} to:\n{output_path}")

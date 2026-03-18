@@ -375,6 +375,24 @@ def update_csv_smart(filename, new_data_df, reset_if_not_current_week=False, cur
     else:
         final_df = new_data_df
 
+    def _normalize_seed(value):
+        if value is None or (hasattr(pd, "isna") and pd.isna(value)):
+            return ""
+        s = str(value).strip()
+        if not s or s.lower() == "nan":
+            return ""
+        try:
+            f = float(s)
+            if f.is_integer():
+                return str(int(f))
+        except Exception:
+            pass
+        return s
+
+    for col in ("winnerSeed", "loserSeed"):
+        if col in final_df.columns:
+            final_df[col] = final_df[col].map(_normalize_seed)
+
     final_df.to_csv(file_path, index=False, encoding='utf-8-sig')
 
 if __name__ == "__main__":
