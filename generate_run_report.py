@@ -13,7 +13,8 @@ def load_json(path):
     if not os.path.exists(path):
         return None
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        # Use utf-8-sig to tolerate BOM-prefixed JSON files (common on Windows).
+        with open(path, "r", encoding="utf-8-sig") as f:
             return json.load(f)
     except Exception:
         return None
@@ -309,15 +310,53 @@ def compute_report(before_dir, after_dir):
 def render_email_markdown(report):
     now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     lines = []
-    lines.append(f"# New Matches Added ({now_utc})")
+    lines.append(f"# Website Update Alerts ({now_utc})")
     lines.append("")
 
-    if not report.get("added_matches"):
+    has_any = any(
+        [
+            bool(report.get("withdrawals")),
+            bool(report.get("new_entry_lists")),
+            bool(report.get("added_matches")),
+            bool(report.get("new_draws")),
+            bool(report.get("added_calendar_tournaments")),
+        ]
+    )
+    if not has_any:
         lines.append("None detected.")
-        return "\n".join(lines)
+        return "\n".join(lines).rstrip() + "\n"
+
+    if report.get("withdrawals"):
+        lines.append("## 1) Argentine Withdrawals (WTA/ITF)")
+        for item in report["withdrawals"]:
+            players = ", ".join(item["players"])
+            lines.append(f"- {item['tournament_name']}: {players}")
+        lines.append("")
+
+    if report.get("new_entry_lists"):
+        lines.append("## 2) Tournaments that now have an Entry List")
+        for item in report["new_entry_lists"]:
+            lines.append(f"- {item['tournament_name']} ({item['entries_count']} entries)")
+        lines.append("")
+
+    if report.get("new_draws"):
+        lines.append("## 3) New Tournament Draws Available")
+        for item in report["new_draws"]:
+            types_str = ", ".join(item["types"])
+            lines.append(f"- {item['name']}: {types_str}")
+        lines.append("")
+
+    if report.get("added_calendar_tournaments"):
+        lines.append("## 4) Tournaments Added to Calendar")
+        for item in report["added_calendar_tournaments"]:
+            lines.append(
+                f"- {item.get('week_label', '')} | {item.get('name', '')} | "
+                f"{item.get('level', '')} | {item.get('column', '')} | {item.get('continent', '')}"
+            )
+        lines.append("")
 
     for csv_name, payload in report["added_matches"].items():
-        lines.append(f"## {csv_name}")
+        lines.append(f"## 5) Matches Added ({csv_name})")
         for item in payload.get("items") or []:
             match_line = item.get("line") if isinstance(item, dict) else str(item)
             lines.append(f"- {match_line}")
