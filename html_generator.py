@@ -62,6 +62,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     with open(points_dist_path, 'r', encoding='utf-8') as f:
         points_distribution = json.load(f)
 
+    # Persist match history to a separate JSON file so the website can lazy-load it on demand.
+    # This keeps `index.html` small enough to reliably load on mobile.
+    history_data_path = os.path.join(os.path.dirname(__file__), 'data', 'history_data.json')
+    try:
+        with open(history_data_path, 'w', encoding='utf-8') as f:
+            json.dump(cleaned_history or [], f, ensure_ascii=False, separators=(',', ':'))
+    except Exception:
+        pass
+
     # Load tournament draw sizes (combined WTA + ITF)
     draw_sizes_path = os.path.join(os.path.dirname(__file__), 'data', 'tournament_draw_sizes.json')
     try:
@@ -2620,7 +2629,27 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         </div>
         <script>
             const tournamentData = {json.dumps(tournament_store)};
-            const historyData = {json.dumps(cleaned_history)};
+            let historyData = null;
+            let _historyDataPromise = null;
+            function ensureHistoryDataLoaded() {{
+                if (Array.isArray(historyData)) return Promise.resolve(historyData);
+                if (_historyDataPromise) return _historyDataPromise;
+                _historyDataPromise = fetch('data/history_data.json', {{ cache: 'no-cache' }})
+                    .then(r => {{
+                        if (!r.ok) throw new Error('HTTP ' + r.status);
+                        return r.json();
+                    }})
+                    .then(d => {{
+                        historyData = Array.isArray(d) ? d : [];
+                        _historyDataPromise = null;
+                        return historyData;
+                    }})
+                    .catch(err => {{
+                        _historyDataPromise = null;
+                        throw err;
+                    }});
+                return _historyDataPromise;
+            }}
             const playerMapping = {json.dumps(PLAYER_MAPPING)};
             const pointsDistribution = {json.dumps(points_distribution)};
             const itfDrawSizes = {json.dumps(itf_draw_sizes)};
@@ -3286,8 +3315,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const thead = document.getElementById('history-head');
                 const tbody = document.getElementById('history-body');
 
-                if (!historyData || historyData.length === 0) return;
-
                 // Define column headers (excluding hidden _ columns)
                 const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'RANK', 'PLAYER', 'SCORE', 'OPP_RANK', 'OPPONENT'];
                 let headHtml = '<tr>';
@@ -3849,12 +3876,21 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     `<button class="history-page-btn" ${{nextDisabled}} onclick="_renderHistoryPage(_historyCurrentPage + 1)">Next &#9654;</button>`;
             }}
 
-            function filterHistoryByPlayer() {{
+            async function filterHistoryByPlayer() {{
                 const selectedPlayer = document.getElementById('playerHistorySelect').value.toUpperCase();
                 const tbody = document.getElementById('history-body');
                 const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'RANK', 'PLAYER', 'SCORE', 'OPP_RANK', 'OPPONENT'];
 
                 if (selectedPlayer === '__ALL__') {{
+                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px; color: #64748b;">Loading match history...</td></tr>`;
+                    try {{
+                        await ensureHistoryDataLoaded();
+                    }} catch (err) {{
+                        console.error('Failed to load match history:', err);
+                        tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">Failed to load match history. Please refresh and try again.</td></tr>`;
+                        updateHistoryCounter([], '__ALL__');
+                        return;
+                    }}
                     const allFiltered = historyData.filter(row => !isDoublesHistoryRow(row));
                     if (allFiltered.length === 0) {{
                         tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No matches found.</td></tr>`;
@@ -3891,6 +3927,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     }}
                     tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">Select a player...</td></tr>`;
                     updateHistoryCounter([], '');
+                    return;
+                }}
+
+                tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px; color: #64748b;">Loading match history...</td></tr>`;
+                try {{
+                    await ensureHistoryDataLoaded();
+                }} catch (err) {{
+                    console.error('Failed to load match history:', err);
+                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">Failed to load match history. Please refresh and try again.</td></tr>`;
+                    updateHistoryCounter([], selectedPlayer);
                     return;
                 }}
 
@@ -3935,21 +3981,43 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             let _rtgs_pointsLookup = null, _rtgs_itfDrawLookup = null, _rtgs_wtaDrawLookup = null;
 
             function _rtgs_initLookups() {{
-                if (_rtgs_pointsLookup) return;
-                _rtgs_pointsLookup = {{}};
-                pointsDistribution.forEach(p => {{ _rtgs_pointsLookup[p.Description] = p; }});
-                _rtgs_itfDrawLookup = {{}};
-                itfDrawSizes.forEach(t => {{
-                    const key = (t.tournamentName||'') + '|' + (t.date||'');
-                    _rtgs_itfDrawLookup[key] = {{description:t.description, mainDrawSize:t.mainDrawSize}};
-                    const wm = (t.tournamentName||'').match(/^(.+?)\\s*\\(Week \\d+\\)$/);
-                    if (wm) _rtgs_itfDrawLookup[wm[1].trim()+'|'+(t.date||'')] = _rtgs_itfDrawLookup[key];
-                }});
-                _rtgs_wtaDrawLookup = {{}};
-                wtaDrawSizes.forEach(t => {{
-                    if (!t.description || !t.tournamentId) return;
-                    _rtgs_wtaDrawLookup[String(parseInt(t.tournamentId)||t.tournamentId)] = {{description:t.description, mainDrawSize:t.mainDrawSize}};
-                }});
+                if (!_rtgs_pointsLookup) {{
+                    _rtgs_pointsLookup = {{}};
+                    pointsDistribution.forEach(p => {{ _rtgs_pointsLookup[p.Description] = p; }});
+                    _rtgs_itfDrawLookup = {{}};
+                    itfDrawSizes.forEach(t => {{
+                        const key = (t.tournamentName||'') + '|' + (t.date||'');
+                        _rtgs_itfDrawLookup[key] = {{description:t.description, mainDrawSize:t.mainDrawSize}};
+                        const wm = (t.tournamentName||'').match(/^(.+?)\\s*\\(Week \\d+\\)$/);
+                        if (wm) _rtgs_itfDrawLookup[wm[1].trim()+'|'+(t.date||'')] = _rtgs_itfDrawLookup[key];
+                    }});
+                    _rtgs_wtaDrawLookup = {{}};
+                    wtaDrawSizes.forEach(t => {{
+                        if (!t.description || !t.tournamentId) return;
+                        _rtgs_wtaDrawLookup[String(parseInt(t.tournamentId)||t.tournamentId)] = {{description:t.description, mainDrawSize:t.mainDrawSize}};
+                    }});
+                }}
+
+                if (!_rtgs_twoWeekFreezeMondays) {{
+                    const s = new Set();
+                    (Array.isArray(historyData) ? historyData : []).forEach(r => {{
+                        const tName = r['TOURNAMENT'] || '';
+                        const draw = (r['DRAW'] || '').toUpperCase();
+                        const cat = (r['CATEGORY'] || '').trim();
+                        const mt = (r['MATCH_TYPE'] || '').trim();
+                        const isGenuine2Week = mt === 'GS' || cat === 'WTA 1000' || cat === 'Premier Mandatory' || cat === 'Premier 5';
+                        if (draw === 'M' && isGenuine2Week && _rtgs_twoWeekNames.some(n => tName.includes(n))) {{
+                            const mon = _rtgs_monday(r['DATE'] || '');
+                            if (mon) {{
+                                s.add(mon);
+                                const w2 = new Date(mon);
+                                w2.setUTCDate(w2.getUTCDate() + 7);
+                                s.add(w2.toISOString().slice(0, 10));
+                            }}
+                        }}
+                    }});
+                    _rtgs_twoWeekFreezeMondays = s;
+                }}
             }}
 
             function _rtgs_monday(dateStr) {{
@@ -3962,28 +4030,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             // 2-week tournaments that freeze rankings for 2 consecutive weeks
             const _rtgs_twoWeekNames = ['Australian Open','Roland Garros','Wimbledon','US Open','Indian Wells','Miami','Madrid','Internazionali','Rome'];
             // Main-draw mondays of genuine 2-week tournaments (GS + WTA 1000 only).
-            // Qualifying and lower-tier tournaments excluded so week-1 detection works correctly.
-            // Each main-draw monday also adds mon+7 to cover both weeks of the freeze.
-            const _rtgs_twoWeekFreezeMondays = (() => {{
-                const s = new Set();
-                historyData.forEach(r => {{
-                    const tName = r['TOURNAMENT'] || '';
-                    const draw = (r['DRAW'] || '').toUpperCase();
-                    const cat = (r['CATEGORY'] || '').trim();
-                    const mt = (r['MATCH_TYPE'] || '').trim();
-                    const isGenuine2Week = mt === 'GS' || cat === 'WTA 1000' || cat === 'Premier Mandatory' || cat === 'Premier 5';
-                    if (draw === 'M' && isGenuine2Week && _rtgs_twoWeekNames.some(n => tName.includes(n))) {{
-                        const mon = _rtgs_monday(r['DATE'] || '');
-                        if (mon) {{
-                            s.add(mon);
-                            const w2 = new Date(mon);
-                            w2.setUTCDate(w2.getUTCDate() + 7);
-                            s.add(w2.toISOString().slice(0, 10));
-                        }}
-                    }}
-                }});
-                return s;
-            }})();
+            // Computed lazily once match history is loaded.
+            let _rtgs_twoWeekFreezeMondays = null;
 
             function _rtgs_mdKey(round, result, drawSize) {{
                 if (round==='Final') return result==='W'?'W':'F';
@@ -4006,6 +4054,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             function computeBest18(selectedPlayer, windowEndStr) {{
                 _rtgs_initLookups();
+                if (!Array.isArray(historyData)) return 0;
                 const windowEnd = new Date(windowEndStr);
                 const windowStart = new Date(windowEnd);
                 windowStart.setDate(windowStart.getDate() - 385); // 55 weeks: wide enough for W15/W35 +7 effective date shift
@@ -4176,7 +4225,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 $(select).on('change', renderRoadToGS);
             }}
 
-            function renderRoadToGS() {{
+            async function renderRoadToGS() {{
                 const selectedPlayer = document.getElementById('roadtogsPlayerSelect').value.toUpperCase();
                 const tbody = document.getElementById('roadtogs-body');
 
@@ -4186,6 +4235,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     updateGSCutoffTables('');
                     return;
                 }}
+
+                tbody.innerHTML = '<tr><td colspan="5" style="padding: 20px; color: #64748b;">Loading match history...</td></tr>';
+                try {{
+                    await ensureHistoryDataLoaded();
+                }} catch (err) {{
+                    console.error('Failed to load match history:', err);
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding: 20px;">Failed to load match history. Please refresh and try again.</td></tr>';
+                    document.getElementById('roadtogs-points-total').textContent = 'Points: 0';
+                    updateGSCutoffTables('');
+                    return;
+                }}
+                _rtgs_initLookups();
 
                 // Round ordering for determining the "last" (deepest) round
                 const roundOrder = {{'QR1':1,'QR2':2,'QR3':3,'QR4':4,'Round Robin':4.5,'1st Round':5,'2nd Round':6,'3rd Round':7,'4th Round':8,'5th Round':9,'Quarter Finals':10,'Quarter-finals':10,'Semi-finals':11,'Final':12}};
