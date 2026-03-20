@@ -280,6 +280,7 @@ def get_draws_itf_tournament_list(driver):
         else:
             if not (monday < two_weeks_later):
                 continue
+        item['_is_multiweek'] = is_multiweek
         tournaments.append(item)
         name_counts[t_name] = name_counts.get(t_name, 0) + 1
 
@@ -320,6 +321,7 @@ def get_draws_itf_tournament_list(driver):
         if not tid:
             continue
         key = item.get('_key', '')
+        is_multiweek = bool(item.get('_is_multiweek'))
         start_str = (item.get('startDate') or '')[:10]
         start_date = datetime.strptime(start_str, "%Y-%m-%d")
         monday = start_date - timedelta(days=start_date.weekday())

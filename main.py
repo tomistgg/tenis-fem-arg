@@ -39,6 +39,7 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 TOURNAMENT_SNAPSHOT_FILE = os.path.join(DATA_DIR, "tournament_snapshot.json")
 CALENDAR_SNAPSHOT_FILE = os.path.join(DATA_DIR, "calendar_snapshot.json")
 PLAYER_ALIASES_WTA_ITF_FILE = os.path.join(DATA_DIR, "player_aliases_wta_itf.json")
+DRAWS_STORE_CACHE_FILE = os.path.join(DATA_DIR, "draws_store_cache.json")
 
 
 def _normalize_name_for_lookup(name):
@@ -586,8 +587,11 @@ def main():
     finally:
         driver.quit()
 
-    # 6. Fetch WTA draws (past week + current week + next week)
-    draws_store = {}
+    # 6. Fetch draws (WTA + ITF). Keep a persistent cache so draws don't "disappear"
+    # when a fetch fails temporarily.
+    draws_store = load_cache(DRAWS_STORE_CACHE_FILE) or {}
+    if not isinstance(draws_store, dict):
+        draws_store = {}
     draws_tournaments = get_draws_tournament_list()
     current_year = str(datetime.now().year)
     wta_draw_jobs = []
@@ -598,13 +602,20 @@ def main():
     total_wta_draws = len(wta_draw_jobs) or 1
     for i, (week, t_key, t_info) in enumerate(wta_draw_jobs, start=1):
         print(f"Fetching WTA Draws ({i}/{total_wta_draws})")
-        t_draws = fetch_tournament_draws(t_key, current_year)
-        if t_draws:
+        prev = draws_store.get(t_key) if isinstance(draws_store.get(t_key), dict) else {}
+        prev_draws = (prev or {}).get("draws") or {}
+        t_draws = fetch_tournament_draws(t_key, current_year) or {}
+        merged_draws = t_draws if t_draws else prev_draws
+        if merged_draws:
+            if not t_draws and prev_draws:
+                print(f"  Using cached WTA draws for: {t_info.get('name','')}")
             draws_store[t_key] = {
                 "name": t_info["name"],
                 "level": t_info.get("level", ""),
                 "week": week,
-                "draws": t_draws,
+                "startDate": t_info.get("startDate"),
+                "endDate": t_info.get("endDate"),
+                "draws": merged_draws,
             }
 
     # 6b. Fetch ITF draws (uses requests.post, no Selenium needed)
@@ -621,14 +632,42 @@ def main():
         print(f"Fetching ITF Draws ({i}/{total_itf_draws})")
         tid = t_info.get("tournamentId")
         is_multiweek = t_info.get("is_multiweek", False)
-        t_draws = fetch_itf_tournament_draws(tid, is_multiweek=is_multiweek)
-        if t_draws:
+        prev = draws_store.get(t_key) if isinstance(draws_store.get(t_key), dict) else {}
+        prev_draws = (prev or {}).get("draws") or {}
+        t_draws = fetch_itf_tournament_draws(tid, is_multiweek=is_multiweek) or {}
+        merged_draws = t_draws if t_draws else prev_draws
+        if merged_draws:
+            if not t_draws and prev_draws:
+                print(f"  Using cached ITF draws for: {t_info.get('name','')}")
             draws_store[t_key] = {
                 "name": t_info["name"],
                 "level": t_info.get("level", ""),
                 "week": week,
-                "draws": t_draws,
+                "startDate": t_info.get("startDate"),
+                "endDate": t_info.get("endDate"),
+                "draws": merged_draws,
             }
+
+    # Prune draws for tournaments that are definitely over (endDate < today).
+    today = datetime.now().date()
+    keys_to_delete = []
+    for t_key, tdata in (draws_store or {}).items():
+        if not isinstance(tdata, dict):
+            continue
+        end = (tdata.get("endDate") or "")[:10]
+        if not end:
+            continue
+        try:
+            end_date = datetime.strptime(end, "%Y-%m-%d").date()
+        except Exception:
+            continue
+        if end_date < today:
+            keys_to_delete.append(t_key)
+    for t_key in keys_to_delete:
+        draws_store.pop(t_key, None)
+
+    # Persist draws cache so a successful draw doesn't disappear on a later failed run.
+    save_json_file(DRAWS_STORE_CACHE_FILE, draws_store)
 
     # Save draws snapshot (tournament key -> list of draw types available)
     draws_snapshot = {}
