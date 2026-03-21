@@ -465,9 +465,10 @@ def _build_itf_match_entry(match, teams, round_num, match_idx):
         return None
 
     # Abbreviate: use only first letter of first given name, like WTA "J. Riera"
-    given = wp.get("givenName", "")
+    given = wp.get("givenName") or ""
     abbrev = given[0] + "." if given else ""
-    winner_name = f"{abbrev} {wp.get('familyName', '')}"
+    family = wp.get("familyName") or ""
+    winner_name = f"{abbrev} {family}".strip()
 
     score = _parse_itf_score(teams, winner_idx)
     if result_code == "RET":
@@ -524,9 +525,14 @@ def _parse_itf_draw(data):
             player = team_players[0] if team_players and team_players[0] else None
 
             if player:
-                family = player.get("familyName", "")
-                given = player.get("givenName", "")
-                name = f"{family.upper()}, {given}"
+                family = (player.get("familyName") or "").strip()
+                given = (player.get("givenName") or "").strip()
+                if family and given:
+                    name = f"{family.upper()}, {given}"
+                elif family:
+                    name = family.upper()
+                else:
+                    name = given
                 country = player.get("nationality", "")
                 seed = str(team.get("seeding")) if team.get("seeding") else ""
                 entry_raw = team.get("entryStatus") or ""
