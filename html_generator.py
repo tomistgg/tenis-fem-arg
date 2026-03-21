@@ -55,7 +55,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                   cleaned_history, calendar_data, match_history_data, wta_rankings=None,
                   national_team_data=None, captains_data=None, draws_data=None,
                   tstrength_data=None):
-    """Generate the complete HTML page and write it to index.html."""
+    """Generate the full app page (app.html) + a lightweight launcher (index.html)."""
 
     # Load points distribution
     points_dist_path = os.path.join(os.path.dirname(__file__), 'data', 'points_distribution.json')
@@ -683,6 +683,101 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     tstrength_json_str = _json.dumps(tstrength_json_list)
 
     # Generate the full HTML template
+    router_script = """
+        <script>
+        (function() {
+            const VALID_TABS = new Set([
+                'home',
+                'upcoming',
+                'entrylists',
+                'draws',
+                'calendar',
+                'rankings',
+                'roadtogs',
+                'history',
+                'fedbcup',
+                'tstrength',
+                'gallery',
+            ]);
+
+            const originalSwitchTab = window.switchTab;
+            if (typeof originalSwitchTab !== 'function') return;
+
+            window.switchTab = function(tabName) {
+                originalSwitchTab(tabName);
+                if (!tabName) return;
+                try {
+                    const desired = '#' + tabName;
+                    if (location.hash !== desired) history.replaceState(null, '', desired);
+                } catch (e) {}
+            };
+
+            function tabFromHash() {
+                const raw = (location.hash || '').replace(/^#/, '').trim().toLowerCase();
+                if (!raw) return '';
+                return VALID_TABS.has(raw) ? raw : '';
+            }
+
+            function applyRoute() {
+                const tab = tabFromHash();
+                if (tab) window.switchTab(tab);
+            }
+
+            document.addEventListener('DOMContentLoaded', applyRoute);
+            window.addEventListener('hashchange', applyRoute);
+        })();
+        </script>
+    """
+
+    launcher_template = """<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>WT Argentina</title>
+  <style>
+    @font-face { font-family: 'Montserrat'; src: url('Montserrat-SemiBold.ttf'); }
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: hidden; max-width: 100vw; }
+    body { font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; }
+
+    .home-hero { width: 100%; min-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 8px 12px; box-sizing: border-box; }
+    .home-title { font-size: 26px; color: #1e293b; margin: 0; text-align: center; }
+    .home-grid { width: 100%; max-width: 1200px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 0 auto; justify-items: center; }
+    .home-btn { padding: 18px 12px; border: 2px solid #75AADB; border-radius: 6px; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; min-height: 92px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; overflow: hidden; width: 100%; text-decoration: none; box-sizing: border-box; }
+    .home-icon-img { width: 30px; height: 30px; object-fit: contain; margin-left: 6px; flex-shrink: 0; }
+    .home-label { flex: 1; text-align: center; padding-right: 28px; word-break: break-word; }
+    .home-btn:hover { background: #d9ecf8; }
+
+    @media (max-width: 900px) {
+      .home-hero { min-height: 0; padding: 12px 10px; gap: 10px; }
+      .home-title { margin: 4px 0 2px; font-size: 24px; }
+      .home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: calc(100vw - 20px); max-width: 420px; padding: 0; }
+      .home-btn { min-height: 78px; font-size: 13px; padding: 10px 8px; width: 100%; }
+      .home-label { padding-right: 0; }
+      .home-btn.last { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="home-hero">
+    <h1 class="home-title">Women's Tennis Argentina</h1>
+    <div class="home-grid">
+      <a class="home-btn" href="app.html#gallery"><img class="home-icon-img" src="assets/camera.png" alt="Camera icon"><span class="home-label">Photo Gallery</span></a>
+      <a class="home-btn" href="app.html#upcoming"><img class="home-icon-img" src="assets/trophy.png" alt="Trophy icon"><span class="home-label">Upcoming Tournaments</span></a>
+      <a class="home-btn" href="app.html#entrylists"><img class="home-icon-img" src="assets/files.png" alt="Files icon"><span class="home-label">Entry Lists</span></a>
+      <a class="home-btn" href="app.html#draws"><img class="home-icon-img" src="assets/tournament.png" alt="Tournament icon"><span class="home-label">Draws</span></a>
+      <a class="home-btn" href="app.html#calendar"><img class="home-icon-img" src="assets/calendar.png" alt="Calendar icon"><span class="home-label">Calendar</span></a>
+      <a class="home-btn" href="app.html#rankings"><img class="home-icon-img" src="assets/list.png" alt="List icon"><span class="home-label">WTA Rankings</span></a>
+      <a class="home-btn" href="app.html#roadtogs"><img class="home-icon-img" src="assets/data.png" alt="Data icon"><span class="home-label">Points Breakdown</span></a>
+      <a class="home-btn" href="app.html#history"><img class="home-icon-img" src="assets/tennis-player.png" alt="Tennis player icon"><span class="home-label">Match History</span></a>
+      <a class="home-btn" href="app.html#fedbcup"><img class="home-icon-img" src="assets/argentina.png" alt="Argentina flag icon"><span class="home-label">Fed/BJK Cup</span></a>
+      <a class="home-btn last" href="app.html#tstrength"><img class="home-icon-img" src="assets/score-board.png" alt="Analytics icon"><span class="home-label">WTA Tournament Strength</span></a>
+    </div>
+  </div>
+</body>
+</html>
+"""
+
     html_template = f"""
     <!DOCTYPE html>
     <html lang="es">
@@ -5473,16 +5568,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         region: d.region || d.region_code || "",
                         city: d.city || ""
                     }};
-                    trackVisit(location.pathname + "#home");
+                    trackVisit(location.pathname + (location.hash || "#home"));
                 }})
                 .catch(function() {{
                     _visitGeo = {{ ip: "", country: "Unknown", region: "", city: "" }};
-                    trackVisit(location.pathname + "#home");
+                    trackVisit(location.pathname + (location.hash || "#home"));
                 }});
         }})();
         </script>
+{router_script}
     </body>
     </html>
     """
-    with open("index.html", "w", encoding="utf-8") as f:
+    with open("app.html", "w", encoding="utf-8") as f:
         f.write(html_template)
+
+    with open("index.html", "w", encoding="utf-8") as f:
+        f.write(launcher_template)
