@@ -700,15 +700,92 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 'gallery',
             ]);
 
+            const PATHS = {
+                home: '',
+                upcoming: 'upcoming',
+                entrylists: 'entrylists',
+                draws: 'draws',
+                calendar: 'calendar',
+                rankings: 'rankings',
+                roadtogs: 'roadtogs',
+                history: 'history',
+                fedbcup: 'fedbcup',
+                tstrength: 'tstrength',
+                gallery: 'gallery'
+            };
+
+            function getBasePath() {
+                try {
+                    const base = new URL(document.baseURI);
+                    let path = base.pathname || '/';
+                    if (path.endsWith('.html')) {
+                        path = path.replace(/[^/]+$/, '');
+                    }
+                    if (!path.endsWith('/')) path += '/';
+                    return path;
+                } catch (e) {
+                    return '/';
+                }
+            }
+
+            function buildDesiredPath(tabName) {
+                const basePath = getBasePath();
+                const slug = PATHS[tabName] || '';
+                return basePath + (slug ? (slug + '/') : '');
+            }
+
+            function buildFileUrl(tabName) {
+                const slug = PATHS[tabName] || '';
+                const suffix = slug ? (slug + '/index.html') : 'index.html';
+                try {
+                    return new URL(suffix, document.baseURI).toString();
+                } catch (e) {
+                    return suffix;
+                }
+            }
+
+            function _isFileProtocol() {
+                return location.protocol === 'file:';
+            }
+
+            function _isAppFile() {
+                return /\\bapp\\.html$/i.test(location.pathname || '');
+            }
+
+            function _appFileUrl(tabName) {
+                try {
+                    const appUrl = new URL('app.html', document.baseURI).toString();
+                    return tabName ? (appUrl + '#' + tabName) : appUrl;
+                } catch (e) {
+                    return tabName ? ('app.html#' + tabName) : 'app.html';
+                }
+            }
+
             const originalSwitchTab = window.switchTab;
             if (typeof originalSwitchTab !== 'function') return;
 
             window.switchTab = function(tabName) {
-                originalSwitchTab(tabName);
                 if (!tabName) return;
                 try {
-                    const desired = '#' + tabName;
-                    if (location.hash !== desired) history.replaceState(null, '', desired);
+                    if (_isFileProtocol()) {
+                        if (!_isAppFile()) {
+                            location.href = _appFileUrl(tabName);
+                            return;
+                        }
+                        originalSwitchTab(tabName);
+                        const desiredHash = '#' + tabName;
+                        if (location.hash !== desiredHash) {
+                            history.replaceState(null, '', desiredHash);
+                        }
+                        return;
+                    }
+                    originalSwitchTab(tabName);
+                    const desiredPath = buildDesiredPath(tabName);
+                    if (location.pathname !== desiredPath) {
+                        history.replaceState(null, '', desiredPath);
+                    } else if (location.hash) {
+                        history.replaceState(null, '', desiredPath);
+                    }
                 } catch (e) {}
             };
 
@@ -718,8 +795,23 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 return VALID_TABS.has(raw) ? raw : '';
             }
 
+            function tabFromPath() {
+                const basePath = getBasePath();
+                let path = location.pathname || '';
+                if (path.startsWith(basePath)) path = path.slice(basePath.length);
+                path = path.replace(/^\\/+/, '');
+                if (!path || path === 'index.html' || path === 'app.html') return 'home';
+                const first = path.split('/')[0].trim().toLowerCase();
+                return VALID_TABS.has(first) ? first : '';
+            }
+
             function applyRoute() {
-                const tab = tabFromHash();
+                if (_isFileProtocol() && !_isAppFile()) {
+                    const tab = tabFromPath() || tabFromHash() || 'home';
+                    location.replace(_appFileUrl(tab));
+                    return;
+                }
+                const tab = tabFromHash() || tabFromPath();
                 if (tab) window.switchTab(tab);
             }
 
@@ -762,28 +854,40 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
   <div class="home-hero">
     <h1 class="home-title">Women's Tennis Argentina</h1>
     <div class="home-grid">
-      <a class="home-btn" href="app.html#gallery"><img class="home-icon-img" src="assets/camera.png" alt="Camera icon"><span class="home-label">Photo Gallery</span></a>
-      <a class="home-btn" href="app.html#upcoming"><img class="home-icon-img" src="assets/trophy.png" alt="Trophy icon"><span class="home-label">Upcoming Tournaments</span></a>
-      <a class="home-btn" href="app.html#entrylists"><img class="home-icon-img" src="assets/files.png" alt="Files icon"><span class="home-label">Entry Lists</span></a>
-      <a class="home-btn" href="app.html#draws"><img class="home-icon-img" src="assets/tournament.png" alt="Tournament icon"><span class="home-label">Draws</span></a>
-      <a class="home-btn" href="app.html#calendar"><img class="home-icon-img" src="assets/calendar.png" alt="Calendar icon"><span class="home-label">Calendar</span></a>
-      <a class="home-btn" href="app.html#rankings"><img class="home-icon-img" src="assets/list.png" alt="List icon"><span class="home-label">WTA Rankings</span></a>
-      <a class="home-btn" href="app.html#roadtogs"><img class="home-icon-img" src="assets/data.png" alt="Data icon"><span class="home-label">Points Breakdown</span></a>
-      <a class="home-btn" href="app.html#history"><img class="home-icon-img" src="assets/tennis-player.png" alt="Tennis player icon"><span class="home-label">Match History</span></a>
-      <a class="home-btn" href="app.html#fedbcup"><img class="home-icon-img" src="assets/argentina.png" alt="Argentina flag icon"><span class="home-label">Fed/BJK Cup</span></a>
-      <a class="home-btn last" href="app.html#tstrength"><img class="home-icon-img" src="assets/score-board.png" alt="Analytics icon"><span class="home-label">WTA Tournament Strength</span></a>
+      <a class="home-btn" href="gallery/"><img class="home-icon-img" src="assets/camera.png" alt="Camera icon"><span class="home-label">Photo Gallery</span></a>
+      <a class="home-btn" href="upcoming/"><img class="home-icon-img" src="assets/trophy.png" alt="Trophy icon"><span class="home-label">Upcoming Tournaments</span></a>
+      <a class="home-btn" href="entrylists/"><img class="home-icon-img" src="assets/files.png" alt="Files icon"><span class="home-label">Entry Lists</span></a>
+      <a class="home-btn" href="draws/"><img class="home-icon-img" src="assets/tournament.png" alt="Tournament icon"><span class="home-label">Draws</span></a>
+      <a class="home-btn" href="calendar/"><img class="home-icon-img" src="assets/calendar.png" alt="Calendar icon"><span class="home-label">Calendar</span></a>
+      <a class="home-btn" href="rankings/"><img class="home-icon-img" src="assets/list.png" alt="List icon"><span class="home-label">WTA Rankings</span></a>
+      <a class="home-btn" href="roadtogs/"><img class="home-icon-img" src="assets/data.png" alt="Data icon"><span class="home-label">Points Breakdown</span></a>
+      <a class="home-btn" href="history/"><img class="home-icon-img" src="assets/tennis-player.png" alt="Tennis player icon"><span class="home-label">Match History</span></a>
+      <a class="home-btn" href="fedbcup/"><img class="home-icon-img" src="assets/argentina.png" alt="Argentina flag icon"><span class="home-label">Fed/BJK Cup</span></a>
+      <a class="home-btn last" href="tstrength/"><img class="home-icon-img" src="assets/score-board.png" alt="Analytics icon"><span class="home-label">WTA Tournament Strength</span></a>
     </div>
   </div>
+  <script>
+    (function() {
+      if (location.protocol !== 'file:') return;
+      document.querySelectorAll('.home-btn[href]').forEach(function(link) {
+        const href = link.getAttribute('href') || '';
+        const slug = href.replace(/\\/+$/, '').split('/').filter(Boolean).pop() || '';
+        link.setAttribute('href', slug ? ('app.html#' + slug) : 'app.html');
+      });
+    })();
+  </script>
 </body>
 </html>
 """
 
-    html_template = f"""
+    def build_html_template(base_href):
+        return f"""
     <!DOCTYPE html>
     <html lang="es">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        <base href="{base_href}">
         <title>WT Argentina</title>
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -794,6 +898,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .mobile-only {{ display: none; }}
             .desktop-only {{ display: inline; }}
             body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; min-height: 100vh; overflow-y: auto; overflow-x: auto; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }}
+            body.preload .app-container {{ visibility: hidden; }}
+            body.preload .mobile-menu-toggle {{ visibility: hidden; }}
             .app-container {{ display: flex; width: 100%; min-height: 100vh; }}
             .sidebar {{ width: 180px; background: #1e293b; color: white; display: flex; flex-direction: column; flex-shrink: 0; min-height: 100vh; }}
             .sidebar-header {{ padding: 25px 15px; font-size: 15px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #475569; }}
@@ -2086,7 +2192,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
         </style>
     </head>
-    <body class="home-mode" onload="renderHistoryTable();">
+    <body class="preload home-mode" onload="renderHistoryTable();">
         <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">\\u2630</button>
         <div class="app-container">
             <div class="sidebar" id="sidebar">
@@ -2974,6 +3080,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 applyCalendarFilters();
             }}
             function switchTab(tabName) {{
+                document.body.classList.remove('preload');
                 if (tabName === 'home' && homeLocked) return;
                 document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
                 const btn = document.getElementById('btn-' + tabName);
@@ -3014,7 +3121,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 applyMobileHistoryLayout();
 
                 if (window.trackVisit) {{
-                    window.trackVisit(location.pathname + "#" + tabName);
+                    window.trackVisit(location.pathname);
                 }}
 
                 // Close mobile menu after selecting
@@ -3022,8 +3129,34 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     document.getElementById('sidebar').classList.add('mobile-hidden');
                 }}
             }}
+            function getInitialTab() {{
+                const valid = new Set([
+                    'home',
+                    'upcoming',
+                    'entrylists',
+                    'draws',
+                    'calendar',
+                    'rankings',
+                    'roadtogs',
+                    'history',
+                    'fedbcup',
+                    'tstrength',
+                    'gallery',
+                ]);
+                const rawHash = (location.hash || '').replace(/^#/, '').trim().toLowerCase();
+                if (rawHash && valid.has(rawHash)) return rawHash;
+                let path = location.pathname || '';
+                path = path.replace(/\\/index\\.html$/i, '/').replace(/\\/app\\.html$/i, '/');
+                const parts = path.split('/').filter(Boolean);
+                if (!parts.length) return 'home';
+                let last = parts[parts.length - 1].toLowerCase();
+                if ((last === 'index.html' || last === 'app.html') && parts.length > 1) {{
+                    last = parts[parts.length - 2].toLowerCase();
+                }}
+                return valid.has(last) ? last : 'home';
+            }}
 
-            document.body.classList.add('home-mode');
+            switchTab(getInitialTab());
             document.addEventListener('DOMContentLoaded', initCalendarFilters);
 
             function switchFedBjkTab(subTab) {{
@@ -5568,11 +5701,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         region: d.region || d.region_code || "",
                         city: d.city || ""
                     }};
-                    trackVisit(location.pathname + (location.hash || "#home"));
+                    trackVisit(location.pathname);
                 }})
                 .catch(function() {{
                     _visitGeo = {{ ip: "", country: "Unknown", region: "", city: "" }};
-                    trackVisit(location.pathname + (location.hash || "#home"));
+                    trackVisit(location.pathname);
                 }});
         }})();
         </script>
@@ -5580,8 +5713,27 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     </body>
     </html>
     """
+
+    html_template = build_html_template("./")
     with open("app.html", "w", encoding="utf-8") as f:
         f.write(html_template)
+
+    # Build clean URL pages (e.g., /history/, /draws/)
+    for tab in [
+        "gallery",
+        "upcoming",
+        "entrylists",
+        "draws",
+        "calendar",
+        "rankings",
+        "roadtogs",
+        "history",
+        "fedbcup",
+        "tstrength",
+    ]:
+        os.makedirs(tab, exist_ok=True)
+        with open(os.path.join(tab, "index.html"), "w", encoding="utf-8") as f:
+            f.write(build_html_template("../"))
 
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(launcher_template)
