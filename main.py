@@ -86,7 +86,7 @@ def enrich_history_with_wta_ranks(cleaned_history):
     itf_id_to_wta_id = {}
     if os.path.exists(PLAYER_ALIASES_WTA_ITF_FILE):
         try:
-            with open(PLAYER_ALIASES_WTA_ITF_FILE, "r", encoding="utf-8") as f:
+            with open(PLAYER_ALIASES_WTA_ITF_FILE, "r", encoding="utf-8-sig") as f:
                 items = json.load(f)
             if not isinstance(items, list):
                 items = []
@@ -580,6 +580,13 @@ def main():
         # 5. Load match history
         match_history_data, cleaned_history = load_match_history()
         enrich_history_with_wta_ranks(cleaned_history)
+        # Always rebuild history_data.json on each run
+        try:
+            history_data_path = os.path.join(DATA_DIR, "history_data.json")
+            with open(history_data_path, "w", encoding="utf-8") as f:
+                json.dump(cleaned_history or [], f, ensure_ascii=False, separators=(",", ":"))
+        except Exception as e:
+            print(f"Error writing history_data.json: {e}")
 
         # 5b. Fetch ITF draws tournament list (needs Selenium for GetEventFilters)
         print("Fetching ITF draws tournament list...")
