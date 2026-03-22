@@ -13408,6 +13408,18 @@
         "matches": [
           {
             "round": 1,
+            "match_num": 0,
+            "winner_name": "A. Shubladze",
+            "score": "60 62"
+          },
+          {
+            "round": 1,
+            "match_num": 1,
+            "winner_name": "A. Chanta",
+            "score": "62 62"
+          },
+          {
+            "round": 1,
             "match_num": 2,
             "winner_name": "V. Panshina",
             "score": "26 64 60"
@@ -13423,6 +13435,42 @@
             "match_num": 4,
             "winner_name": "E. Reyngold",
             "score": "46 62 64"
+          },
+          {
+            "round": 1,
+            "match_num": 5,
+            "winner_name": "X. Yao",
+            "score": "46 63 64"
+          },
+          {
+            "round": 1,
+            "match_num": 6,
+            "winner_name": "Y. Yang",
+            "score": "46 75 62"
+          },
+          {
+            "round": 1,
+            "match_num": 7,
+            "winner_name": "E. Ovcharenko",
+            "score": "61 64"
+          },
+          {
+            "round": 1,
+            "match_num": 8,
+            "winner_name": "A. Ibragimova",
+            "score": "61 62"
+          },
+          {
+            "round": 1,
+            "match_num": 11,
+            "winner_name": "Z. Li",
+            "score": "62 60"
+          },
+          {
+            "round": 1,
+            "match_num": 15,
+            "winner_name": "E. Shimizu",
+            "score": "62 57 62"
           }
         ],
         "byes": [],
@@ -13720,6 +13768,18 @@
           },
           {
             "round": 1,
+            "match_num": 9,
+            "winner_name": "S. Ronde",
+            "score": "63 75"
+          },
+          {
+            "round": 1,
+            "match_num": 10,
+            "winner_name": "K. Bhatia",
+            "score": "61 62"
+          },
+          {
+            "round": 1,
             "match_num": 11,
             "winner_name": "S. Anugonda",
             "score": "60 21 RET"
@@ -13825,14 +13885,7 @@
             "seed": "",
             "entry": "WC",
             "name": "PETKOVIC, Ana",
-            "country": ""
-          },
-          {
-            "pos": 12,
-            "seed": "5",
-            "entry": "",
-            "name": "GRANT, Tyra Caterina",
-            "country": "ITA"
+            "country": "CRO"
           },
           {
             "pos": 13,
@@ -13863,14 +13916,24 @@
             "country": "HUN"
           }
         ],
-        "matches": [],
-        "byes": [],
+        "matches": [
+          {
+            "round": 1,
+            "match_num": 0,
+            "winner_name": "A. Petkovic",
+            "score": ""
+          }
+        ],
+        "byes": [
+          12
+        ],
         "qualifiers": [],
         "round_labels": [
           "Q1",
-          "Q2"
+          "Q2",
+          "Qualifier"
         ],
-        "num_rounds": 2
+        "num_rounds": 3
       }
     }
   },
