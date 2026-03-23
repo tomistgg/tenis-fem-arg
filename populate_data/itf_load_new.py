@@ -192,22 +192,8 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     t_indoor = tourney_meta.get('indoorOrOutDoor', '')
     t_io = 'I' if t_indoor == 'Indoor' else 'O'
     t_nation = tourney_meta.get('hostNation')
-    
-    base_date = tourney_meta.get('startDate')
-    
-    if base_date and "T" in base_date:
-        base_date = base_date.split("T")[0]
-
-    t_date = base_date 
-
-    if base_date and week_offset > 0:
-        try:
-            date_obj = datetime.strptime(base_date, '%Y-%m-%d')
-            adjusted_date_obj = date_obj + timedelta(days=7 * week_offset)
-            t_date = adjusted_date_obj.strftime('%Y-%m-%d')
-        except Exception as e:
-            print(f"[!] Date parsing failed for {base_date}: {e}")
-            t_date = base_date
+    # Requirement: load ITF matches using the ingestion date (today), not ITF event date.
+    t_date = datetime.today().strftime('%Y-%m-%d')
 
     ko_groups = data.get("koGroups", [])
 
