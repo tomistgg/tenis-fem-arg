@@ -92,6 +92,33 @@ def _get_monday(date_str):
     return monday.strftime("%Y-%m-%d")
 
 
+def _resolve_ranking_week(start_date, draw, rankings_index, available_weeks):
+    """Resolve the ranking week to use for a tournament draw.
+
+    Qualifying often starts on Sunday, so using the tournament's Monday start date
+    can point to a ranking week that isn't published yet. For Q draw we anchor on
+    Sunday (start date - 1 day), then fall back to the latest available ranking
+    week <= desired week.
+    """
+    try:
+        dt = datetime.strptime((start_date or "")[:10], "%Y-%m-%d")
+    except Exception:
+        return _get_monday(start_date)
+
+    if draw == "Q":
+        dt = dt - timedelta(days=1)
+
+    desired_week = (dt - timedelta(days=dt.weekday())).strftime("%Y-%m-%d")
+    if rankings_index.get(desired_week):
+        return desired_week
+
+    for week in reversed(available_weeks):
+        if week <= desired_week and rankings_index.get(week):
+            return week
+
+    return available_weeks[-1] if available_weeks else desired_week
+
+
 def _load_rankings_index():
     """Load all rankings into a dict: {week_date: {normalized_name: rank}}.
 
@@ -303,6 +330,8 @@ def build_tstrength_data(from_year=None, full_backfill=False):
         rankings = cached_entry.get("rankings")
         if isinstance(rankings, list) and len(rankings) == 0:
             return True
+        if isinstance(rankings, list) and rankings and all(int(r) == DEFAULT_RANK for r in rankings):
+            return True
         return False
 
     # Load cache (keyed by "year_id")
@@ -402,6 +431,7 @@ def build_tstrength_data(from_year=None, full_backfill=False):
         # Load rankings only if we have new tournaments
         print("Loading rankings for T-Strength...")
         rankings_index = _load_rankings_index()
+        available_weeks = sorted(rankings_index.keys())
         unranked_players = {}
 
         for t in new_tournaments:
@@ -413,9 +443,6 @@ def build_tstrength_data(from_year=None, full_backfill=False):
             matches = _fetch_tournament_matches(tid, yr)
             time.sleep(0.3)
 
-            ranking_week = _get_monday(t["startDate"])
-            week_rankings = rankings_index.get(ranking_week, {})
-
             surface = t.get("surface", "")
             country = t.get("country", "")
             region = _REGION_MAP.get(country, country)
@@ -423,6 +450,8 @@ def build_tstrength_data(from_year=None, full_backfill=False):
             for draw in ("MD", "Q"):
                 if draw not in needs:
                     continue
+                ranking_week = _resolve_ranking_week(t["startDate"], draw, rankings_index, available_weeks)
+                week_rankings = rankings_index.get(ranking_week, {})
                 draw_level = "M" if draw == "MD" else "Q"
                 players, participants_locked = _extract_draw_players(matches, draw_level)
                 cache_key = f"{yr}_{tid}_{draw}"
