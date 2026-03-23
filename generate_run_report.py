@@ -37,6 +37,10 @@ def normalize_name(value):
     return (value or "").strip().upper()
 
 
+def normalize_exact_name(value):
+    return " ".join(((value or "").strip().upper()).split())
+
+
 def normalize_country(value):
     return (value or "").strip().upper()
 
@@ -140,10 +144,10 @@ def build_alias_indexes(items):
 
 
 def load_rankings_by_week(dir_path, weeks):
-    """Return ({week: {wta_id: {rank, player}}}, {week: {norm_name: wta_id}})."""
+    """Return (by_week, variant_name_to_id, exact_name_to_id)."""
     weeks = {w for w in (weeks or set()) if w}
     if not weeks:
-        return {}, {}
+        return {}, {}, {}
 
     needed_files = set()
     for w in weeks:
@@ -160,6 +164,7 @@ def load_rankings_by_week(dir_path, weeks):
 
     by_week = {w: {} for w in weeks}
     name_to_id = {w: {} for w in weeks}
+    exact_name_to_id = {w: {} for w in weeks}
 
     for fname in sorted(needed_files):
         path = os.path.join(dir_path, fname)
@@ -180,10 +185,13 @@ def load_rankings_by_week(dir_path, weeks):
                     by_week[week][pid] = {"rank": rank, "player": player}
                     for v in name_variants(player):
                         name_to_id[week].setdefault(v, pid)
+                    exact = normalize_exact_name(player)
+                    if exact and exact not in exact_name_to_id[week]:
+                        exact_name_to_id[week][exact] = pid
         except Exception:
             continue
 
-    return by_week, name_to_id
+    return by_week, name_to_id, exact_name_to_id
 
 
 def get_tournament_label(t_key, before_snapshot, after_snapshot):
@@ -383,7 +391,7 @@ def compute_report(before_dir, after_dir):
                 if week:
                     needed_weeks.add(week)
 
-        rankings_by_week, ranking_name_to_id = load_rankings_by_week(after_dir, needed_weeks)
+        rankings_by_week, _, ranking_exact_name_to_id = load_rankings_by_week(after_dir, needed_weeks)
 
         def index_alias_entry(ent):
             wid = (ent.get("wta_id") or "").strip()
@@ -422,6 +430,8 @@ def compute_report(before_dir, after_dir):
             week = (week or "").strip()
 
             ent = None
+            alias_missing = False
+            alias_incomplete = False
             if is_wta_id(pid):
                 ent = by_wta.get(pid)
                 if ent is None:
@@ -439,9 +449,12 @@ def compute_report(before_dir, after_dir):
                     aliases_changed = True
                     index_alias_entry(ent)
                 maybe_fill_wta_names(ent, pid, week)
+                # Do not emit email issues for WTA-id players.
+                return []
             elif is_itf_id(pid):
                 ent = by_itf.get(pid)
                 if ent is None:
+                    alias_missing = True
                     ent = {
                         "display_name": "",
                         "wta_id": "",
@@ -457,6 +470,30 @@ def compute_report(before_dir, after_dir):
                     ent["itf_name"] = name
                     aliases_changed = True
                     index_alias_entry(ent)
+
+                wta_id_existing = (ent.get("wta_id") or "").strip() if isinstance(ent, dict) else ""
+                if wta_id_existing and week:
+                    maybe_fill_wta_names(ent, wta_id_existing, week)
+
+                wta_id_existing = (ent.get("wta_id") or "").strip() if isinstance(ent, dict) else ""
+                wta_name_existing = (ent.get("wta_name") or "").strip() if isinstance(ent, dict) else ""
+                if not wta_id_existing or not wta_name_existing:
+                    alias_incomplete = True
+
+                # For ITF entries missing WTA mapping, try exact name lookup in rankings CSV for this week.
+                if ent is not None and week and name and alias_incomplete:
+                    hit = (ranking_exact_name_to_id.get(week) or {}).get(normalize_exact_name(name))
+                    if hit:
+                        ent["wta_id"] = hit
+                        info = (rankings_by_week.get(week) or {}).get(hit) or {}
+                        player_name = (info.get("player") or "").strip()
+                        if player_name:
+                            ent["wta_name"] = player_name
+                            if not (ent.get("display_name") or "").strip():
+                                ent["display_name"] = player_name
+                        aliases_changed = True
+                        index_alias_entry(ent)
+                        maybe_fill_wta_names(ent, hit, week)
             else:
                 # Non-numeric ids are rare; try to match by name to avoid duplicates.
                 for k in name_variants(name):
@@ -476,41 +513,22 @@ def compute_report(before_dir, after_dir):
                     aliases_items.append(ent)
                     aliases_changed = True
                     index_alias_entry(ent)
-
-            wta_id = ""
-            if is_wta_id(pid):
-                wta_id = pid
-            elif ent is not None:
-                wta_id = (ent.get("wta_id") or "").strip()
-
-            # Try to map ITF-only entries by name from rankings for that week.
-            if ent is not None and not wta_id and week and name:
-                name_map = ranking_name_to_id.get(week) or {}
-                for k in name_variants(name):
-                    hit = name_map.get(k)
-                    if hit:
-                        ent["wta_id"] = hit
-                        aliases_changed = True
-                        index_alias_entry(ent)
-                        maybe_fill_wta_names(ent, hit, week)
-                        wta_id = hit
-                        break
-
-            rank = ""
-            if wta_id and week:
-                rank = ((rankings_by_week.get(week) or {}).get(wta_id) or {}).get("rank") or ""
-
             issues = []
-            if wta_id and week and not rank:
-                issues.append(f"{name} (wta_id {wta_id}) not found in rankings for week {week}.")
-            if not wta_id:
-                itf_only_id = (ent.get("itf_id") or "").strip() if isinstance(ent, dict) else ""
-                if itf_only_id:
-                    issues.append(f"{name} only has itf_id {itf_only_id} (no wta_id in aliases).")
-                elif pid:
-                    issues.append(f"{name} has id {pid} (cannot map to WTA rankings).")
-                else:
-                    issues.append(f"{name} has no id (cannot map to WTA rankings).")
+            # Only emit issues for unresolved ITF alias mapping gaps.
+            if is_itf_id(pid):
+                itf_id = (ent.get("itf_id") or "").strip() if isinstance(ent, dict) else pid
+                itf_name = (ent.get("itf_name") or "").strip() if isinstance(ent, dict) else name
+                wta_id = (ent.get("wta_id") or "").strip() if isinstance(ent, dict) else ""
+                wta_name = (ent.get("wta_name") or "").strip() if isinstance(ent, dict) else ""
+                if (alias_missing or alias_incomplete) and (not wta_id or not wta_name):
+                    if week:
+                        issues.append(
+                            f"{itf_name or name} (itf_id {itf_id}) unresolved in aliases after exact rankings lookup for week {week}."
+                        )
+                    else:
+                        issues.append(
+                            f"{itf_name or name} (itf_id {itf_id}) unresolved in aliases after exact rankings lookup."
+                        )
             return issues
 
         for csv_name, rows in added_rows_by_csv.items():
