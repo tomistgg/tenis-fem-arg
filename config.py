@@ -1,23 +1,116 @@
 import os
 import json
+import unicodedata
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
+PLAYER_ALIASES_WTA_ITF_FILE = os.path.join(DATA_DIR, "player_aliases_wta_itf.json")
 
-def load_player_mapping(filename=os.path.join(DATA_DIR, "player_aliases.json")):
+def _compact_spaces(value):
+    return " ".join(str(value or "").strip().split())
+
+
+def _fold_accents(value):
+    if not value:
+        return ""
+    nfkd = unicodedata.normalize("NFKD", value)
+    return "".join(ch for ch in nfkd if not unicodedata.combining(ch))
+
+
+def _add_unique(target_list, value):
+    v = _compact_spaces(value)
+    if v and v not in target_list:
+        target_list.append(v)
+
+
+def _lookup_keys(value):
+    base = _compact_spaces(value).upper()
+    if not base:
+        return []
+    keys = [base]
+
+    folded = _fold_accents(base)
+    if folded and folded not in keys:
+        keys.append(folded)
+
+    dehyphen = _compact_spaces(base.replace("-", " "))
+    if dehyphen and dehyphen not in keys:
+        keys.append(dehyphen)
+
+    folded_dehyphen = _fold_accents(dehyphen)
+    if folded_dehyphen and folded_dehyphen not in keys:
+        keys.append(folded_dehyphen)
+
+    return keys
+
+
+def load_player_mapping(filename=PLAYER_ALIASES_WTA_ITF_FILE):
     if not os.path.exists(filename):
-        print(f"Alerta: No se encontr\u00f3 {filename}.")
+        print(f"Alerta: No se encontro {filename}.")
         return {}
-    with open(filename, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(filename, "r", encoding="utf-8-sig") as f:
+            raw = json.load(f)
+    except Exception as e:
+        print(f"Alerta: error leyendo {filename}: {e}")
+        return {}
+
+    mapping = {}
+
+    # Backward compatibility: if legacy dict mapping is passed, keep it usable.
+    if isinstance(raw, dict):
+        for display_name, aliases in raw.items():
+            display = _compact_spaces(display_name)
+            if not display:
+                continue
+            bucket = mapping.setdefault(display, [])
+            _add_unique(bucket, display)
+            if isinstance(aliases, list):
+                for alias in aliases:
+                    _add_unique(bucket, alias)
+        return mapping
+
+    if not isinstance(raw, list):
+        return {}
+
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+
+        display = _compact_spaces(
+            item.get("display_name")
+            or item.get("wta_name")
+            or item.get("itf_name")
+            or item.get("bjkc_name")
+        )
+        if not display:
+            continue
+
+        bucket = mapping.setdefault(display, [])
+        for key in ("display_name", "wta_name", "itf_name", "bjkc_name"):
+            _add_unique(bucket, item.get(key))
+
+        extra_aliases = item.get("aliases")
+        if isinstance(extra_aliases, list):
+            for alias in extra_aliases:
+                _add_unique(bucket, alias)
+
+    return mapping
 
 
 PLAYER_MAPPING = load_player_mapping()
 
 NAME_LOOKUP = {}
 for display_name, aliases in PLAYER_MAPPING.items():
+    display_upper = _compact_spaces(display_name).upper()
+    if not display_upper:
+        continue
+    for key in _lookup_keys(display_upper):
+        NAME_LOOKUP[key] = display_upper
+
     for alias in aliases:
-        NAME_LOOKUP[alias.strip().upper()] = display_name.upper()
+        for key in _lookup_keys(alias):
+            NAME_LOOKUP[key] = display_upper
 
 WTA_RANKINGS_CSV = os.path.join(DATA_DIR, "wta_rankings_20_29.csv")
 WTA_RANKINGS_CSV_10_19 = os.path.join(DATA_DIR, "wta_rankings_10_19.csv")

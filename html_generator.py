@@ -524,12 +524,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         # Build alias reverse map: raw_name_upper → display_name
         _alias_reverse = {}
         try:
-            _aliases_path = os.path.join(os.path.dirname(__file__), 'data', 'player_aliases.json')
-            with open(_aliases_path, encoding='utf-8') as _af:
-                _aliases_data = json.load(_af)
-            for _display_name, _raw_list in _aliases_data.items():
-                for _raw in _raw_list:
-                    _alias_reverse[_raw.strip().upper()] = _display_name
+            for _display_name, _raw_list in (PLAYER_MAPPING or {}).items():
+                if not isinstance(_display_name, str):
+                    continue
+                _display_clean = _display_name.strip()
+                if not _display_clean:
+                    continue
+                _alias_reverse[_display_clean.upper()] = _display_clean
+                if isinstance(_raw_list, list):
+                    for _raw in _raw_list:
+                        if isinstance(_raw, str) and _raw.strip():
+                            _alias_reverse[_raw.strip().upper()] = _display_clean
         except Exception:
             pass
 
@@ -3163,10 +3168,38 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             const _displayNameCache = {{}};
             (function() {{
                 for (const [displayName, aliases] of Object.entries(playerMapping)) {{
+                    if (!displayName) continue;
+                    _displayNameCache[String(displayName).toUpperCase()] = displayName;
+                    if (!Array.isArray(aliases)) continue;
                     for (const alias of aliases) {{
-                        _displayNameCache[alias.toUpperCase()] = displayName;
+                        if (!alias) continue;
+                        _displayNameCache[String(alias).toUpperCase()] = displayName;
                     }}
                 }}
+            }})();
+            (function() {{
+                fetch('data/player_aliases_wta_itf.json', {{ cache: 'no-cache' }})
+                    .then(function(r) {{ return r && r.ok ? r.json() : []; }})
+                    .then(function(items) {{
+                        if (!Array.isArray(items)) return;
+                        items.forEach(function(item) {{
+                            if (!item || typeof item !== 'object') return;
+                            const displayName = String(item.display_name || '').trim();
+                            if (!displayName) return;
+                            _displayNameCache[displayName.toUpperCase()] = displayName;
+
+                            const aliases = [item.display_name, item.wta_name, item.itf_name, item.bjkc_name];
+                            if (Array.isArray(item.aliases)) {{
+                                for (const extra of item.aliases) aliases.push(extra);
+                            }}
+                            for (const alias of aliases) {{
+                                const aliasText = String(alias || '').trim();
+                                if (!aliasText) continue;
+                                _displayNameCache[aliasText.toUpperCase()] = displayName;
+                            }}
+                        }});
+                    }})
+                    .catch(function() {{}});
             }})();
 
             function getDisplayName(upperCaseName) {{

@@ -50,7 +50,7 @@ def _normalize_name_for_lookup(name):
 
 
 def _map_to_display_name_upper(name):
-    """Map aliases to display name (from `player_aliases.json`) when possible."""
+    """Map aliases to display_name (from `player_aliases_wta_itf.json`) when possible."""
     if not name:
         return ""
     raw_upper = " ".join(str(name).strip().upper().split())
