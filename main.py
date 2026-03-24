@@ -8,7 +8,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
-from config import ENTRY_LISTS_CACHE_FILE, NAME_LOOKUP
+from config import ENTRY_LISTS_CACHE_FILE, NAME_LOOKUP, repair_name_text
 from utils import (
     fix_encoding, fix_encoding_keep_accents,
     load_cache, save_cache, merge_entry_list,
@@ -95,12 +95,12 @@ def enrich_history_with_wta_ranks(cleaned_history):
         for it in items:
             if not isinstance(it, dict):
                 continue
-            itf_name = (it.get("itf_name") or "").strip()
+            itf_name = repair_name_text(it.get("itf_name")).strip()
             # New format: {display_name,wta_id,wta_name,itf_id,itf_name,bjkc_name}
             itf_id = (it.get("itf_id") or "").strip()
             wta_id = (it.get("wta_id") or "").strip()
-            wta_name = (it.get("wta_name") or "").strip()
-            display_name = (it.get("display_name") or "").strip()
+            wta_name = repair_name_text(it.get("wta_name")).strip()
+            display_name = repair_name_text(it.get("display_name")).strip()
             if itf_id and wta_id and itf_id not in itf_id_to_wta_id:
                 itf_id_to_wta_id[itf_id] = wta_id
             cand_norms = []

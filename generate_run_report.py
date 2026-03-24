@@ -5,9 +5,21 @@ import os
 import unicodedata
 from datetime import datetime, timezone, timedelta
 
+from config import repair_name_text
+
 MAX_MATCH_LINES_PER_FILE = 50
 RANKINGS_CSV_FILES = ["wta_rankings_00_09.csv", "wta_rankings_10_19.csv", "wta_rankings_20_29.csv"]
 ALIASES_JSON_FILE = "player_aliases_wta_itf.json"
+
+
+def repair_nested_strings(value):
+    if isinstance(value, dict):
+        return {k: repair_nested_strings(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [repair_nested_strings(v) for v in value]
+    if isinstance(value, str):
+        return repair_name_text(value)
+    return value
 
 
 def save_json_array_one_line_per_item(path, items):
@@ -18,7 +30,7 @@ def save_json_array_one_line_per_item(path, items):
             if i:
                 f.write(",\n")
             f.write("  ")
-            f.write(json.dumps(item, ensure_ascii=False))
+            f.write(json.dumps(repair_nested_strings(item), ensure_ascii=False))
         f.write("\n]\n")
 
 
@@ -34,11 +46,11 @@ def load_json(path):
 
 
 def normalize_name(value):
-    return (value or "").strip().upper()
+    return repair_name_text(value).strip().upper()
 
 
 def normalize_exact_name(value):
-    return " ".join(((value or "").strip().upper()).split())
+    return " ".join(repair_name_text(value).strip().upper().split())
 
 
 def normalize_country(value):
@@ -46,7 +58,7 @@ def normalize_country(value):
 
 
 def strip_accents(text):
-    s = (text or "").strip()
+    s = repair_name_text(text).strip()
     if not s:
         return ""
     return "".join(ch for ch in unicodedata.normalize("NFKD", s) if not unicodedata.combining(ch))
@@ -115,7 +127,7 @@ def load_aliases(path):
     items = load_json(path) or []
     if not isinstance(items, list):
         return []
-    return [it for it in items if isinstance(it, dict)]
+    return [repair_nested_strings(it) for it in items if isinstance(it, dict)]
 
 
 def build_alias_indexes(items):

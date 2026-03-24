@@ -6,8 +6,41 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 PLAYER_ALIASES_WTA_ITF_FILE = os.path.join(DATA_DIR, "player_aliases_wta_itf.json")
 
+_MOJIBAKE_REPLACEMENTS = {
+    "\u00ed\u00a1": "á",
+    "\u00ed\u00a8": "è",
+    "\u00ed\u00a9": "é",
+    "\u00ed\u00b1": "ñ",
+    "\u00ed\u00b3": "ó",
+    "\u00ed\u00bc": "ü",
+    "\u00ed\u02c6": "È",
+}
+
+
+def repair_name_text(value):
+    text = str(value or "")
+    if not text:
+        return ""
+
+    repaired = text
+
+    # Handle the more common UTF-8-decoded-as-Latin-1 mojibake first.
+    if any(token in repaired for token in ("Ã", "Â", "â€", "â€™", "â€œ", "â€\x9d")):
+        for source_encoding in ("latin-1", "cp1252"):
+            try:
+                repaired = repaired.encode(source_encoding).decode("utf-8")
+                break
+            except (UnicodeEncodeError, UnicodeDecodeError):
+                continue
+
+    # Then patch the OEM-codepage style sequences present in player_aliases_wta_itf.json.
+    for bad, good in _MOJIBAKE_REPLACEMENTS.items():
+        repaired = repaired.replace(bad, good)
+
+    return repaired
+
 def _compact_spaces(value):
-    return " ".join(str(value or "").strip().split())
+    return " ".join(repair_name_text(value).strip().split())
 
 
 def _fold_accents(value):
