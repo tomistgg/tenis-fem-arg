@@ -4158,12 +4158,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 const filtered = historyData.filter(row => {{
                     if (isDoublesHistoryRow(row)) return false;
-                    const wName = (row['_winnerName'] || "").toString().toUpperCase();
-                    const lName = (row['_loserName'] || "").toString().toUpperCase();
-                    // Normalize names using the player mapping to match aliases
-                    const wNameNormalized = getDisplayName(wName).toUpperCase();
-                    const lNameNormalized = getDisplayName(lName).toUpperCase();
-                    return wNameNormalized === selectedPlayer || lNameNormalized === selectedPlayer;
+                    // For a selected player, only keep rows where she is the rendered PLAYER side.
+                    // This guarantees PLAYER remains the ARG-side view and nationality-switch rows
+                    // where she appears only as OPPONENT are excluded (but still visible in ALL).
+                    const perspective = getHistoryPerspective(row, selectedPlayer);
+                    const playerNameNormalized = perspective.isWinner
+                        ? perspective.winnerNameNormalized
+                        : perspective.loserNameNormalized;
+                    return playerNameNormalized === selectedPlayer;
                 }});
 
                 if (filtered.length === 0) {{
