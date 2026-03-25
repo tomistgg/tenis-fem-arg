@@ -3280,7 +3280,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const y = parseInt(year);
                 if (y >= 2020) return 'data/wta_rankings_20_29.csv';
                 if (y >= 2010) return 'data/wta_rankings_10_19.csv';
-                return 'data/wta_rankings_00_09.csv';
+                if (y >= 2001) return 'data/wta_rankings_00_09.csv';
+                return 'data/wta_rankings_83_99.csv';
             }}
             function _parseCsvText(text) {{
                 const cache = {{}};

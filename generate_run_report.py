@@ -8,7 +8,7 @@ from datetime import datetime, timezone, timedelta
 from config import repair_name_text
 
 MAX_MATCH_LINES_PER_FILE = 50
-RANKINGS_CSV_FILES = ["wta_rankings_00_09.csv", "wta_rankings_10_19.csv", "wta_rankings_20_29.csv"]
+RANKINGS_CSV_FILES = ["wta_rankings_83_99.csv", "wta_rankings_00_09.csv", "wta_rankings_10_19.csv", "wta_rankings_20_29.csv"]
 ALIASES_JSON_FILE = "player_aliases_wta_itf.json"
 
 
@@ -167,7 +167,11 @@ def load_rankings_by_week(dir_path, weeks):
             year = int(w[:4])
         except Exception:
             continue
-        if 2000 <= year <= 2009:
+        if year <= 2000:
+            needed_files.add("wta_rankings_83_99.csv")
+            if year == 2000:
+                needed_files.add("wta_rankings_00_09.csv")
+        elif 2001 <= year <= 2009:
             needed_files.add("wta_rankings_00_09.csv")
         elif 2010 <= year <= 2019:
             needed_files.add("wta_rankings_10_19.csv")
@@ -178,7 +182,9 @@ def load_rankings_by_week(dir_path, weeks):
     name_to_id = {w: {} for w in weeks}
     exact_name_to_id = {w: {} for w in weeks}
 
-    for fname in sorted(needed_files):
+    for fname in RANKINGS_CSV_FILES:
+        if fname not in needed_files:
+            continue
         path = os.path.join(dir_path, fname)
         if not os.path.exists(path):
             continue

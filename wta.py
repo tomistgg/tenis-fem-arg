@@ -8,7 +8,11 @@ from bs4 import BeautifulSoup
 import csv as _csv
 import os as _os
 
-from config import API_URL, HEADERS, NAME_LOOKUP, WTA_RANKINGS_CSV, WTA_RANKINGS_CSV_10_19, WTA_RANKINGS_CSV_00_09
+from config import (
+    API_URL, HEADERS, NAME_LOOKUP,
+    WTA_RANKINGS_CSV, WTA_RANKINGS_CSV_10_19,
+    WTA_RANKINGS_CSV_00_09, WTA_RANKINGS_CSV_83_99
+)
 from utils import fix_display_name, format_player_name
 from calendar_builder import get_next_monday, get_monday_from_date, format_week_label
 
@@ -350,12 +354,17 @@ def _load_wta_csv():
     if _wta_csv_cache is not None:
         return _wta_csv_cache
     _wta_csv_cache = {}
-    for csv_file in [WTA_RANKINGS_CSV_00_09, WTA_RANKINGS_CSV_10_19, WTA_RANKINGS_CSV]:
+    # Load higher-priority decade files first so overlapping 2000 weeks prefer
+    # the dedicated 00_09 CSV, while older-only weeks still come from 83_99.
+    for csv_file in [WTA_RANKINGS_CSV, WTA_RANKINGS_CSV_10_19, WTA_RANKINGS_CSV_00_09, WTA_RANKINGS_CSV_83_99]:
         if not _os.path.exists(csv_file):
             continue
+        existing_dates = set(_wta_csv_cache.keys())
         with open(csv_file, encoding="utf-8-sig") as f:
             for row in _csv.DictReader(f):
                 d = row["week_date"]
+                if d in existing_dates:
+                    continue
                 if d not in _wta_csv_cache:
                     _wta_csv_cache[d] = []
                 pid = (row.get("id") or row.get("player_id") or row.get("playerId") or "").strip()
