@@ -3580,6 +3580,65 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 return wName.includes('/') || lName.includes('/');
             }}
 
+            function getHistoryPerspective(row, selectedPlayer) {{
+                const winnerNameRaw = (row['_winnerName'] || "").toString().toUpperCase();
+                const loserNameRaw = (row['_loserName'] || "").toString().toUpperCase();
+                const winnerNameNormalized = getDisplayName(winnerNameRaw).toUpperCase();
+                const loserNameNormalized = getDisplayName(loserNameRaw).toUpperCase();
+                const winnerCountry = (row['_winnerCountry'] || '').toString().trim().toUpperCase();
+                const loserCountry = (row['_loserCountry'] || '').toString().trim().toUpperCase();
+
+                // Always keep the ARG side in PLAYER when only one side is ARG.
+                if (winnerCountry === 'ARG' && loserCountry !== 'ARG') {{
+                    return {{
+                        isWinner: true,
+                        winnerNameRaw,
+                        loserNameRaw,
+                        winnerNameNormalized,
+                        loserNameNormalized
+                    }};
+                }}
+                if (loserCountry === 'ARG' && winnerCountry !== 'ARG') {{
+                    return {{
+                        isWinner: false,
+                        winnerNameRaw,
+                        loserNameRaw,
+                        winnerNameNormalized,
+                        loserNameNormalized
+                    }};
+                }}
+
+                // If both are ARG (or neither), preserve selected-player perspective when possible.
+                if (selectedPlayer && selectedPlayer !== '__ALL__') {{
+                    if (winnerNameNormalized === selectedPlayer) {{
+                        return {{
+                            isWinner: true,
+                            winnerNameRaw,
+                            loserNameRaw,
+                            winnerNameNormalized,
+                            loserNameNormalized
+                        }};
+                    }}
+                    if (loserNameNormalized === selectedPlayer) {{
+                        return {{
+                            isWinner: false,
+                            winnerNameRaw,
+                            loserNameRaw,
+                            winnerNameNormalized,
+                            loserNameNormalized
+                        }};
+                    }}
+                }}
+
+                return {{
+                    isWinner: true,
+                    winnerNameRaw,
+                    loserNameRaw,
+                    winnerNameNormalized,
+                    loserNameNormalized
+                }};
+            }}
+
             function getRoundFilterLabel(row) {{
                 const roundValue = (row['ROUND'] || '').toString().trim();
                 if (!roundValue) return '';
@@ -3605,11 +3664,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 playerMatches.forEach(row => {{
                     if (isDoublesHistoryRow(row)) return;
-                    const wName = (row['_winnerName'] || "").toString().toUpperCase();
-                    const wNameNormalized = getDisplayName(wName).toUpperCase();
-                    const isWinner = selectedPlayer === '__ALL__'
-                        ? !((row['_loserCountry'] || '').toUpperCase() === 'ARG' && (row['_winnerCountry'] || '').toUpperCase() !== 'ARG')
-                        : wNameNormalized === selectedPlayer;
+                    const perspective = getHistoryPerspective(row, selectedPlayer);
+                    const isWinner = perspective.isWinner;
                     const resultLabel = getResultLabel(row, isWinner);
                     if (resultLabel) results.add(resultLabel);
 
@@ -3784,9 +3840,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 let wins = 0;
                 nonWO.forEach(row => {{
-                    const wName = (row['_winnerName'] || '').toString().toUpperCase();
-                    const wNameNormalized = getDisplayName(wName).toUpperCase();
-                    if (wNameNormalized === selectedPlayer) wins += 1;
+                    if (getHistoryPerspective(row, selectedPlayer).isWinner) wins += 1;
                 }});
                 const losses = total - wins;
                 counter.textContent = `Matches: ${{total}} (${{wins}}-${{losses}})`;
@@ -3821,13 +3875,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 // Filter the data (if nothing selected in a category, show all)
                 const filtered = currentPlayerData.filter(row => {{
                     if (isDoublesHistoryRow(row)) return false;
-                    const wName = (row['_winnerName'] || "").toString().toUpperCase();
-                    const lName = (row['_loserName'] || "").toString().toUpperCase();
-                    const wNameNormalized = getDisplayName(wName).toUpperCase();
-                    const lNameNormalized = getDisplayName(lName).toUpperCase();
-                    const isWinner = selectedPlayer === '__ALL__'
-                        ? !((row['_loserCountry'] || '').toUpperCase() === 'ARG' && (row['_winnerCountry'] || '').toUpperCase() !== 'ARG')
-                        : wNameNormalized === selectedPlayer;
+                    const perspective = getHistoryPerspective(row, selectedPlayer);
+                    const isWinner = perspective.isWinner;
 
                     // Surface filter
                     if (selectedSurfaces.length > 0 && !selectedSurfaces.includes(row['SURFACE'] || '')) return false;
@@ -3982,28 +4031,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const start = (_historyCurrentPage - 1) * HISTORY_PAGE_SIZE;
                 const pageMatches = _historyPagedMatches.slice(start, start + HISTORY_PAGE_SIZE);
                 const selectedPlayer = _historyPagedPlayer;
-                const isAllPlayers = selectedPlayer === '__ALL__';
 
                 const parts = [];
                 for (let i = 0; i < pageMatches.length; i++) {{
                     const row = pageMatches[i];
-                    const wName = (row['_winnerName'] || "").toString().toUpperCase();
-                    let isWinner;
-                    if (isAllPlayers) {{
-                        const wCountry = (row['_winnerCountry'] || '').toUpperCase();
-                        const lCountry = (row['_loserCountry'] || '').toUpperCase();
-                        // ARG player goes in PLAYER column; if both ARG, winner goes in PLAYER
-                        if (lCountry === 'ARG' && wCountry !== 'ARG') {{
-                            isWinner = false;
-                        }} else {{
-                            isWinner = true;
-                        }}
-                    }} else {{
-                        isWinner = getDisplayName(wName).toUpperCase() === selectedPlayer;
-                    }}
-                    const playerDisplayName = isAllPlayers
-                        ? getDisplayName(isWinner ? wName : (row['_loserName'] || '').toString().toUpperCase())
-                        : getDisplayName(selectedPlayer);
+                    const perspective = getHistoryPerspective(row, selectedPlayer);
+                    const isWinner = perspective.isWinner;
+                    const playerNameRaw = isWinner ? perspective.winnerNameRaw : perspective.loserNameRaw;
+                    const playerDisplayName = getDisplayName(playerNameRaw);
 
                     const rivalName = isWinner ? (row['_loserName'] || '') : (row['_winnerName'] || '');
                     const rivalDisplayName = rivalName ? getDisplayName(rivalName.toUpperCase()) : '';

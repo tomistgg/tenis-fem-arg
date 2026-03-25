@@ -60,6 +60,11 @@ def parse_args():
     parser.add_argument("--output-csv", default=DEFAULT_OUTPUT_CSV, help="Output CSV path.")
     parser.add_argument("--progress-file", default=DEFAULT_PROGRESS_FILE, help="Append-only JSONL progress path.")
     parser.add_argument("--aliases-file", default=PLAYER_ALIASES_WTA_ITF_FILE, help="Path to player_aliases_wta_itf.json.")
+    parser.add_argument(
+        "--ids-file",
+        default="",
+        help="Optional CSV/text file with WTA ids to process (supports header 'wta_id' or one id per line).",
+    )
     parser.add_argument("--limit", type=int, default=0, help="Optional cap on how many players to process.")
     parser.add_argument("--start-at-id", default="", help="Optional WTA id to start from.")
     parser.add_argument("--only-id", default="", help="Only process one WTA id.")
@@ -72,7 +77,7 @@ def ensure_parent_dir(path):
         os.makedirs(parent, exist_ok=True)
 
 
-def load_players(aliases_file):
+def load_alias_players(aliases_file):
     with open(aliases_file, "r", encoding="utf-8-sig") as f:
         raw = json.load(f)
 
@@ -90,6 +95,76 @@ def load_players(aliases_file):
             "display_name": repair_name_text(item.get("display_name")).strip(),
             "wta_name": repair_name_text(item.get("wta_name")).strip(),
             "itf_name": repair_name_text(item.get("itf_name")).strip(),
+        })
+    return players
+
+
+def load_wta_ids(ids_file):
+    if not ids_file:
+        return []
+    if not os.path.exists(ids_file):
+        raise FileNotFoundError(f"WTA id file not found: {ids_file}")
+
+    player_ids = []
+    seen_ids = set()
+
+    def append_wta_id(value):
+        wta_id = str(value or "").strip()
+        if not wta_id or wta_id in seen_ids:
+            return
+        seen_ids.add(wta_id)
+        player_ids.append(wta_id)
+
+    with open(ids_file, "r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        fieldnames = [str(name or "").strip().lower() for name in (reader.fieldnames or [])]
+        has_header_id = "wta_id" in fieldnames or "id" in fieldnames
+        if has_header_id:
+            id_key = "wta_id" if "wta_id" in (reader.fieldnames or []) else "id"
+            # Resolve the exact key with original casing from the file.
+            for key in (reader.fieldnames or []):
+                lowered = str(key or "").strip().lower()
+                if lowered in ("wta_id", "id"):
+                    id_key = key
+                    break
+            for row in reader:
+                append_wta_id(row.get(id_key))
+            return player_ids
+
+    with open(ids_file, "r", encoding="utf-8-sig") as f:
+        for line in f:
+            value = str(line or "").strip()
+            if not value:
+                continue
+            value = value.split(",", 1)[0].strip()
+            if value.lower() in ("wta_id", "id"):
+                continue
+            append_wta_id(value)
+
+    return player_ids
+
+
+def load_players(aliases_file, ids_file=""):
+    alias_players = load_alias_players(aliases_file)
+    alias_by_id = {player["wta_id"]: player for player in alias_players}
+    target_ids = load_wta_ids(ids_file)
+
+    if not target_ids:
+        return alias_players
+
+    players = []
+    for wta_id in target_ids:
+        base_player = alias_by_id.get(wta_id, {
+            "wta_id": wta_id,
+            "display_name": "",
+            "wta_name": "",
+            "itf_name": "",
+        })
+        players.append({
+            "wta_id": wta_id,
+            "display_name": base_player.get("display_name", ""),
+            "wta_name": base_player.get("wta_name", ""),
+            "itf_name": base_player.get("itf_name", ""),
         })
     return players
 
@@ -144,7 +219,8 @@ def load_csv_player_ids(output_csv):
     with open(output_csv, "r", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            player_id = str(row.get("id") or "").strip()
+            normalized = {str(key or "").lstrip("\ufeff"): value for key, value in row.items()}
+            player_id = str(normalized.get("id") or "").strip()
             if player_id:
                 player_ids.add(player_id)
 
@@ -172,11 +248,12 @@ def purge_player_rows(output_csv, player_id):
         writer = csv.DictWriter(dst, fieldnames=CSV_FIELDNAMES)
         writer.writeheader()
         for row in reader:
-            current_id = str(row.get("id") or "").strip()
+            normalized = {str(key or "").lstrip("\ufeff"): value for key, value in row.items()}
+            current_id = str(normalized.get("id") or "").strip()
             if current_id == player_id:
                 removed_any = True
                 continue
-            writer.writerow({field: row.get(field, "") for field in CSV_FIELDNAMES})
+            writer.writerow({field: normalized.get(field, "") for field in CSV_FIELDNAMES})
 
     os.replace(tmp_path, output_csv)
     return removed_any
@@ -343,7 +420,10 @@ def build_progress_entry(player, from_date, to_date, status, rows_seen, rows_wri
 
 def main():
     args = parse_args()
-    players = load_players(args.aliases_file)
+    players = load_players(
+        args.aliases_file,
+        ids_file=str(args.ids_file or "").strip(),
+    )
     players = select_players(
         players,
         start_at_id=str(args.start_at_id or "").strip(),
@@ -366,6 +446,8 @@ def main():
     print(f"Completed players already recorded: {len(completed_ids)}")
     print(f"Output CSV: {args.output_csv}")
     print(f"Progress file: {args.progress_file}")
+    if args.ids_file:
+        print(f"WTA id source file: {args.ids_file}")
     print(f"Date range: {args.from_date} -> {args.to_date}")
     print(f"Minimum seconds between API requests: {args.sleep_seconds}")
 
