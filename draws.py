@@ -49,6 +49,11 @@ def _is_winner_name(text):
     return bool(re.match(r'^[A-Z][a-z]*\.\s+\S', text))
 
 
+# First code point must be any Unicode letter, not only ASCII, so names like
+# "SÁNCHEZ, Ana Sofia" are parsed correctly.
+_NAME_WITH_COMMA_RE = r'([^\W\d_][^,]*,\s*.+)'
+
+
 def _parse_page(text):
     """Parse a single page's text into players, byes, qualifier placeholders, result entries, and round labels.
 
@@ -118,11 +123,13 @@ def _parse_page(text):
         if not players_done:
             # Combined line: "POS ENTRY SEED NAME, First" e.g. "1 WC 1 NAVARRO, Emma"
             combo_match = re.match(
-                r'^(\d+)\s+(WC|LL|PR|SE|ALT|Alt|Q)\s+(\d+)\s+([A-Z][A-Z\s]+,\s*.+)$', line)
+                rf'^(\d+)\s+(WC|LL|PR|SE|ALT|Alt|Q)(?:\s+(\d+))?\s+{_NAME_WITH_COMMA_RE}$',
+                line
+            )
             if combo_match:
                 current_pos = int(combo_match.group(1))
                 current_entry = combo_match.group(2)
-                current_seed = combo_match.group(3)
+                current_seed = combo_match.group(3) or ""
                 name = combo_match.group(4).strip()
                 country = ""
                 inline_country = re.match(r'^(.+?)([A-Z]{3})$', name)
@@ -165,15 +172,15 @@ def _parse_page(text):
                 continue
 
             # Name line: "[seed] LASTNAME, Firstname" or just "LASTNAME, Firstname"
-            name_match = re.match(r'^(?:(\d+)\s+)?([A-Z][A-Z\s]+,\s*.+)$', line)
+            name_match = re.match(rf'^(?:(\d+)\s+)?{_NAME_WITH_COMMA_RE}$', line)
             # Handle wrapped names: "LASTNAME," on one line, "Firstname" on next
             if not name_match and current_pos is not None:
-                wrap_match = re.match(r'^(?:(\d+)\s+)?([A-Z][A-Z\s]+,)\s*$', line)
+                wrap_match = re.match(r'^(?:(\d+)\s+)?([^\W\d_][^,]*,)\s*$', line)
                 if wrap_match and i < len(lines):
                     next_line = lines[i].strip()
                     if next_line and re.match(r'^[A-Z][a-z]', next_line):
                         combined = wrap_match.group(2) + ' ' + next_line
-                        name_match = re.match(r'^(?:(\d+)\s+)?([A-Z][A-Z\s]+,\s*.+)$',
+                        name_match = re.match(rf'^(?:(\d+)\s+)?{_NAME_WITH_COMMA_RE}$',
                                               (wrap_match.group(1) + ' ' if wrap_match.group(1) else '') + combined)
                         if name_match:
                             i += 1
