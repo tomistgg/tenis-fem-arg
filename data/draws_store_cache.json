@@ -1337,6 +1337,195 @@
     "startDate": "2026-03-30T00:00:00",
     "endDate": "2026-04-05T00:00:00",
     "draws": {
+      "MDS": {
+        "tournament_name": "",
+        "location": "",
+        "dates": "",
+        "prize": "",
+        "surface": "",
+        "draw_type": "",
+        "draw_size": 32,
+        "players": [
+          {
+            "pos": 1,
+            "seed": "1",
+            "entry": "",
+            "name": "TARARUDEE, Lanlana",
+            "country": "THA"
+          },
+          {
+            "pos": 2,
+            "seed": "",
+            "entry": "",
+            "name": "YOU, Xiaodi",
+            "country": "CHN"
+          },
+          {
+            "pos": 3,
+            "seed": "",
+            "entry": "",
+            "name": "SAWANGKAEW, Mananchaya",
+            "country": "THA"
+          },
+          {
+            "pos": 4,
+            "seed": "",
+            "entry": "WC",
+            "name": "SHI, Han",
+            "country": "CHN"
+          },
+          {
+            "pos": 6,
+            "seed": "",
+            "entry": "",
+            "name": "SHIBAHARA, Ena",
+            "country": "JPN"
+          },
+          {
+            "pos": 7,
+            "seed": "",
+            "entry": "",
+            "name": "GASANOVA, Anastasia",
+            "country": "RUS"
+          },
+          {
+            "pos": 8,
+            "seed": "6",
+            "entry": "",
+            "name": "DART, Harriet",
+            "country": "GBR"
+          },
+          {
+            "pos": 9,
+            "seed": "3",
+            "entry": "",
+            "name": "ZHU, Lin",
+            "country": "CHN"
+          },
+          {
+            "pos": 10,
+            "seed": "",
+            "entry": "",
+            "name": "WANG, Xiyu",
+            "country": "CHN"
+          },
+          {
+            "pos": 11,
+            "seed": "",
+            "entry": "",
+            "name": "TIAN, Fangran",
+            "country": "CHN"
+          },
+          {
+            "pos": 12,
+            "seed": "",
+            "entry": "",
+            "name": "SERBAN, Raluca Georgiana",
+            "country": "CYP"
+          },
+          {
+            "pos": 13,
+            "seed": "",
+            "entry": "",
+            "name": "GUO, Hanyu",
+            "country": "CHN"
+          },
+          {
+            "pos": 16,
+            "seed": "7",
+            "entry": "",
+            "name": "HIBINO, Nao",
+            "country": "JPN"
+          },
+          {
+            "pos": 17,
+            "seed": "8",
+            "entry": "",
+            "name": "MA, YeXin",
+            "country": "CHN"
+          },
+          {
+            "pos": 18,
+            "seed": "",
+            "entry": "WC",
+            "name": "REN, Yufei",
+            "country": "CHN"
+          },
+          {
+            "pos": 20,
+            "seed": "",
+            "entry": "",
+            "name": "SWAN, Katie",
+            "country": "GBR"
+          },
+          {
+            "pos": 21,
+            "seed": "",
+            "entry": "",
+            "name": "HONTAMA, Mai",
+            "country": "JPN"
+          },
+          {
+            "pos": 23,
+            "seed": "",
+            "entry": "",
+            "name": "KU, Yeonwoo",
+            "country": "KOR"
+          },
+          {
+            "pos": 24,
+            "seed": "4",
+            "entry": "",
+            "name": "PRESTON, Taylah",
+            "country": "AUS"
+          },
+          {
+            "pos": 25,
+            "seed": "5",
+            "entry": "",
+            "name": "IATCENKO, Polina",
+            "country": "RUS"
+          },
+          {
+            "pos": 27,
+            "seed": "",
+            "entry": "WC",
+            "name": "BAI, Zhuoxuan",
+            "country": "CHN"
+          },
+          {
+            "pos": 28,
+            "seed": "",
+            "entry": "",
+            "name": "INOUE, Hina",
+            "country": "USA"
+          },
+          {
+            "pos": 30,
+            "seed": "",
+            "entry": "WC",
+            "name": "ZHANG, Ruien",
+            "country": "CHN"
+          },
+          {
+            "pos": 32,
+            "seed": "2",
+            "entry": "",
+            "name": "SAKATSUME, Himeno",
+            "country": "JPN"
+          }
+        ],
+        "matches": [],
+        "byes": [],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
+      },
       "QS": {
         "tournament_name": "",
         "location": "",
@@ -1667,6 +1856,42 @@
             "match_num": 15,
             "winner_name": "M. Matsuda",
             "score": "36 63 64"
+          },
+          {
+            "round": 2,
+            "match_num": 0,
+            "winner_name": "S. Lansere",
+            "score": "63 64"
+          },
+          {
+            "round": 2,
+            "match_num": 1,
+            "winner_name": "Z. Li",
+            "score": "63 64"
+          },
+          {
+            "round": 2,
+            "match_num": 2,
+            "winner_name": "A. Falei",
+            "score": "63 67 76(1)"
+          },
+          {
+            "round": 2,
+            "match_num": 3,
+            "winner_name": "K. Sidorova",
+            "score": "60 64"
+          },
+          {
+            "round": 2,
+            "match_num": 4,
+            "winner_name": "M. Kubka",
+            "score": "67 60 RET"
+          },
+          {
+            "round": 2,
+            "match_num": 7,
+            "winner_name": "M. Matsuda",
+            "score": "62 62"
           }
         ],
         "byes": [],
@@ -4199,7 +4424,7 @@
             "pos": 6,
             "seed": "",
             "entry": "",
-            "name": "Allie",
+            "name": "RHODEN, Allie",
             "country": "USA"
           },
           {
@@ -4367,7 +4592,7 @@
             "pos": 30,
             "seed": "",
             "entry": "WC",
-            "name": "Gloria Helen",
+            "name": "SCOTT, Gloria Helen",
             "country": "CHI"
           },
           {
