@@ -2,6 +2,7 @@
 
 import math
 import re
+import unicodedata
 import requests
 import fitz
 
@@ -47,6 +48,93 @@ def _is_winner_name(text):
     if not text:
         return False
     return bool(re.match(r'^[A-Z][a-z]*\.\s+\S', text))
+
+
+def _fold_name(text):
+    """Normalize names for robust matching (case/accents/spacing)."""
+    text = text or ""
+    text = unicodedata.normalize("NFKD", text)
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    text = text.upper()
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+def _split_player_name(player_name):
+    """Split 'LAST, First' style names into (last, first)."""
+    player_name = (player_name or "").strip()
+    if not player_name:
+        return "", ""
+    if "," in player_name:
+        last, first = player_name.split(",", 1)
+        return last.strip(), first.strip()
+    parts = player_name.split()
+    if len(parts) == 1:
+        return parts[0], ""
+    return parts[-1], " ".join(parts[:-1])
+
+
+def _parse_winner_name_parts(winner_name):
+    """Split abbreviated winner names like 'A. S. Sanchez' into pieces."""
+    clean = (winner_name or "").replace("...", "").strip()
+    m = re.match(r'^((?:[^\W\d_]+\.\s*)+)(.+)$', clean, flags=re.UNICODE)
+    if not m:
+        return clean, ""
+    initials = "".join(re.findall(r'([^\W\d_])\.', m.group(1), flags=re.UNICODE)).upper()
+    family = m.group(2).strip()
+    return family, initials
+
+
+def _player_name_matches_winner(player_name, winner_name):
+    """Return True when a full draw player name matches an abbreviated winner name."""
+    if not player_name or not winner_name:
+        return False
+
+    # Exact normalized match first.
+    p_norm = _fold_name(re.sub(r"\.\.\.$", "", player_name))
+    w_raw = (winner_name or "").strip()
+    w_norm = _fold_name(re.sub(r"\.\.\.$", "", w_raw))
+    if p_norm == w_norm:
+        return True
+
+    truncated = w_raw.endswith("...")
+    player_last, player_first = _split_player_name(player_name)
+    winner_last, winner_initials = _parse_winner_name_parts(w_raw)
+    p_last_norm = _fold_name(player_last)
+    w_last_norm = _fold_name(winner_last)
+    if not p_last_norm or not w_last_norm:
+        return False
+    if p_last_norm != w_last_norm:
+        if not (truncated and len(w_last_norm) >= 5 and p_last_norm.startswith(w_last_norm)):
+            return False
+
+    # If we have winner initials, enforce first-initial agreement to avoid surname collisions.
+    if winner_initials and player_first:
+        first_tokens = re.findall(r"[A-Z]+", _fold_name(player_first))
+        if first_tokens and first_tokens[0] and first_tokens[0][0] != winner_initials[0]:
+            return False
+    return True
+
+
+def _infer_match_num_from_winner_name(winner_name, round_num, players, used_match_nums):
+    """Infer the bracket match index from winner name + player positions."""
+    if not winner_name or round_num < 1 or not players:
+        return None
+
+    positions = []
+    for p in players:
+        pos = p.get("pos")
+        name = p.get("name", "")
+        if isinstance(pos, int) and pos > 0 and _player_name_matches_winner(name, winner_name):
+            positions.append(pos)
+
+    if len(positions) != 1:
+        return None
+
+    inferred = ((positions[0] - 1) // 2) // (2 ** (round_num - 1))
+    if used_match_nums is not None and inferred in used_match_nums:
+        return None
+    return inferred
 
 
 # First code point must be any Unicode letter, not only ASCII, so names like
@@ -293,7 +381,7 @@ def parse_draw_pdf(pdf_bytes):
     all_matches = []
     for page_idx, entries in enumerate(page_results):
         page_match_offset = page_idx * r1_per_page
-        matches = _group_into_rounds(entries, r1_per_page, page_match_offset)
+        matches = _group_into_rounds(entries, r1_per_page, page_match_offset, unique_players)
         all_matches.extend(matches)
 
     num_rounds = len(round_labels) if round_labels else None
@@ -315,7 +403,7 @@ def parse_draw_pdf(pdf_bytes):
     }
 
 
-def _group_into_rounds(entries, r1_count, match_offset):
+def _group_into_rounds(entries, r1_count, match_offset, players=None):
     """Group result entries into rounds.
 
     R1 has r1_count entries, R2 has r1_count/2, R3 has r1_count/4, etc.
@@ -327,8 +415,18 @@ def _group_into_rounds(entries, r1_count, match_offset):
 
     while pos < len(entries) and expected >= 1:
         round_entries = entries[pos:pos + expected]
+        used_match_nums = set()
         for match_num, entry in enumerate(round_entries):
-            if round_num == 1:
+            inferred_match_num = _infer_match_num_from_winner_name(
+                entry.get("name", ""),
+                round_num,
+                players,
+                used_match_nums,
+            ) if players else None
+            if inferred_match_num is not None:
+                actual_match_num = inferred_match_num
+                used_match_nums.add(actual_match_num)
+            elif round_num == 1:
                 actual_match_num = match_num + match_offset
             else:
                 actual_match_num = match_num + match_offset // (2 ** (round_num - 1))
