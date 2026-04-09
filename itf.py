@@ -1,12 +1,17 @@
 import time
 import json
 import random
+import re
 import requests
+from html import unescape
 from datetime import datetime, timedelta
 
 from config import NAME_LOOKUP, ITF_CACHE_FILE
 from utils import get_cached_rankings
 from calendar_builder import get_next_monday
+
+ITF_BASE_URL = "https://www.itftennis.com"
+ITF_CALENDAR_PAGE_URL = f"{ITF_BASE_URL}/en/tournament-calendar/womens-world-tennis-tour-calendar/"
 
 
 def get_itf_level(tournament_name):
@@ -100,6 +105,206 @@ def parse_itf_entry_list(itf_entries):
 
 
 _itf_calendar_raw = None  # module-level cache for raw ITF calendar items
+_itf_session_warmed = False
+
+
+def _collapse_ws(text):
+    return " ".join(str(text or "").split())
+
+
+def _strip_html(html_snippet):
+    # Keep plain text extraction lightweight and dependency-free.
+    plain = re.sub(r"<[^>]+>", " ", html_snippet or "")
+    return _collapse_ws(unescape(plain))
+
+
+def _extract_first_number(text, allow_decimal=False):
+    if not text:
+        return ""
+    pattern = r"\d+(?:\.\d+)?" if allow_decimal else r"\d+"
+    m = re.search(pattern, str(text))
+    return m.group(0) if m else ""
+
+
+def _is_blocked_or_html_response(raw_text):
+    raw = (raw_text or "").strip()
+    if not raw:
+        return True
+    low = raw.lower()
+    if "incapsula" in low or "request unsuccessful" in low:
+        return True
+    return low.startswith("<html") or low.startswith("<!doctype html")
+
+
+def _ensure_itf_session(driver):
+    global _itf_session_warmed
+    if _itf_session_warmed:
+        return
+    try:
+        driver.get(ITF_CALENDAR_PAGE_URL)
+        time.sleep(random.uniform(4, 6))
+    except Exception as e:
+        print(f"Warning warming ITF session: {e}")
+    _itf_session_warmed = True
+
+
+def _fetch_itf_text(driver, url, timeout_ms=12000):
+    script = """
+const url = arguments[0];
+const timeoutMs = arguments[1];
+const done = arguments[arguments.length - 1];
+
+let sent = false;
+const finish = (payload) => {
+  if (sent) return;
+  sent = true;
+  done(payload);
+};
+
+const controller = new AbortController();
+const timer = setTimeout(() => {
+  controller.abort();
+  finish({ ok: false, error: "timeout" });
+}, timeoutMs);
+
+fetch(url, { credentials: "include", signal: controller.signal, cache: "no-store" })
+  .then((resp) => resp.text().then((text) => finish({ ok: true, status: resp.status, text })))
+  .catch((err) => finish({ ok: false, error: String(err) }))
+  .finally(() => clearTimeout(timer));
+"""
+    try:
+        result = driver.execute_async_script(script, url, int(timeout_ms))
+        if isinstance(result, dict) and result.get("ok"):
+            return result.get("text", "")
+        return ""
+    except Exception:
+        return ""
+
+
+def _fetch_itf_json(driver, url, timeout_ms=12000, retries=2):
+    _ensure_itf_session(driver)
+    for attempt in range(retries):
+        raw = _fetch_itf_text(driver, url, timeout_ms=timeout_ms)
+        if raw and not _is_blocked_or_html_response(raw):
+            try:
+                return json.loads(raw)
+            except Exception:
+                pass
+        if attempt < retries - 1:
+            try:
+                driver.get(ITF_CALENDAR_PAGE_URL)
+                time.sleep(random.uniform(2, 4))
+            except Exception:
+                pass
+    return None
+
+
+def _lookup_acceptance_url_from_calendar(tournament_key):
+    key_norm = (tournament_key or "").strip().lower()
+    if not key_norm:
+        return None
+
+    for item in (_itf_calendar_raw or []):
+        item_key = (item.get("tournamentKey") or "").strip().lower()
+        item_link = (item.get("tournamentLink") or "").strip()
+        link_key = item_link.rstrip("/").split("/")[-1].lower() if item_link else ""
+        if key_norm not in {item_key, link_key}:
+            continue
+        base = item_link if item_link.startswith("http") else f"{ITF_BASE_URL}{item_link}"
+        return base.rstrip("/") + "/acceptance-list"
+    return None
+
+
+def _parse_acceptance_html_sections(page_html):
+    if not page_html:
+        return []
+
+    section_matches = re.findall(
+        r'<div class="acceptance-lists__details">\s*<h3>(.*?)</h3>.*?<tbody class="acceptance-list__information">(.*?)</tbody>',
+        page_html,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    if not section_matches:
+        return []
+
+    parsed = []
+    for heading_html, tbody_html in section_matches:
+        heading = _strip_html(heading_html).upper()
+        if "MAIN DRAW" in heading:
+            class_code = "MDA"
+        elif "QUALIFYING" in heading:
+            class_code = "Q"
+        elif "ALTERNATE" in heading:
+            class_code = "A"
+        else:
+            # Skip withdrawals and unknown sections.
+            continue
+
+        entries = []
+        rows = re.findall(r"<tr[^>]*>(.*?)</tr>", tbody_html, flags=re.IGNORECASE | re.DOTALL)
+        for row_html in rows:
+            cols = re.findall(r"<td[^>]*>(.*?)</td>", row_html, flags=re.IGNORECASE | re.DOTALL)
+            if len(cols) < 2:
+                continue
+
+            pos_text = _strip_html(cols[0]) or "-"
+
+            player_text = _strip_html(cols[1])
+            if not player_text:
+                continue
+            country = "-"
+            display_name = player_text
+            country_match = re.match(r"^([A-Z]{3})\s+(.+)$", player_text)
+            if country_match:
+                country = country_match.group(1).strip()
+                display_name = country_match.group(2).strip()
+
+            wta_rank = _extract_first_number(_strip_html(cols[2]) if len(cols) > 2 else "")
+            itf_rank = _extract_first_number(_strip_html(cols[3]) if len(cols) > 3 else "")
+            wtn = _extract_first_number(_strip_html(cols[4]) if len(cols) > 4 else "", allow_decimal=True)
+            priority = _strip_html(cols[6]) if len(cols) > 6 else ""
+
+            player_node = {
+                "givenName": display_name,
+                "familyName": "",
+                "nationalityCode": country,
+                "atpWtaRank": wta_rank,
+                "itfBTRank": itf_rank,
+                "worldRating": wtn,
+            }
+            entries.append({
+                "positionDisplay": pos_text,
+                "priority": priority,
+                "players": [player_node],
+            })
+
+        if entries:
+            parsed.append({
+                "entryClassification": heading,
+                "entryClassificationCode": class_code,
+                "entries": entries,
+            })
+
+    return parsed
+
+
+def _build_name_map(entry_classifications):
+    name_map = {}
+    for classification in entry_classifications or []:
+        desc = classification.get("entryClassification", "").upper()
+        code = classification.get("entryClassificationCode", "")
+        if "WITHDRAWAL" in desc:
+            continue
+
+        for entry in classification.get("entries") or []:
+            pos = entry.get("positionDisplay", "")
+            suffix = "" if code in ("MDA", "JR", "SE", "WC") else (f" (ALT {pos})" if code in ("ALT", "A") or "ALTERNATE" in desc else " (Q)")
+            players = entry.get("players") or []
+            for p in players:
+                full_name = f"{p.get('givenName', '')} {p.get('familyName', '')}".strip().upper()
+                matched_name = NAME_LOOKUP.get(full_name, full_name)
+                name_map[matched_name] = suffix
+    return name_map
 
 
 def _fetch_itf_calendar_raw(driver):
@@ -117,12 +322,18 @@ def _fetch_itf_calendar_raw(driver):
     take = 500
 
     while True:
-        url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetCalendar?circuitCode=WT&dateFrom={date_from}&dateTo={date_to}&skip={skip}&take={take}"
+        url = (
+            f"{ITF_BASE_URL}/tennis/api/TournamentApi/GetCalendar?"
+            f"circuitCode=WT&searchString=&skip={skip}&take={take}"
+            f"&dateFrom={date_from}&dateTo={date_to}"
+            f"&isOrderAscending=true&orderField=startDate"
+        )
         try:
-            driver.get(url)
-            time.sleep(random.uniform(3, 5))
-            raw_content = driver.find_element("tag name", "body").text
-            data = json.loads(raw_content)
+            data = _fetch_itf_json(driver, url, timeout_ms=12000, retries=2)
+            if not isinstance(data, dict):
+                if skip == 0:
+                    print("Error fetching full ITF calendar (skip=0): empty or non-JSON response")
+                break
             items = data.get('items', [])
             if not items:
                 break
@@ -187,34 +398,27 @@ def get_full_itf_calendar(driver):
 
 
 def get_itf_players(tournament_key, driver):
-    url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetAcceptanceList?tournamentKey={tournament_key}&circuitCode=WT"
+    key = (tournament_key or "").strip()
+    key_lower = key.lower()
+    url = f"{ITF_BASE_URL}/tennis/api/TournamentApi/GetAcceptanceList?tournamentKey={key_lower}&circuitCode=WT"
     try:
-        driver.get(url)
-        time.sleep(random.uniform(4, 6))
-        raw_content = driver.find_element("tag name", "body").text
-        start = raw_content.find('[')
-        end = raw_content.rfind(']') + 1
-        if start == -1: return [], {}
+        data = _fetch_itf_json(driver, url, timeout_ms=10000, retries=2)
+        root_data = []
+        if isinstance(data, list) and data:
+            root_data = data[0].get("entryClassifications", []) if isinstance(data[0], dict) else []
 
-        data = json.loads(raw_content[start:end])
+        # Fallback: parse rendered acceptance page HTML when API is empty/unavailable.
+        if not root_data:
+            acceptance_url = _lookup_acceptance_url_from_calendar(key_lower)
+            if acceptance_url:
+                try:
+                    driver.get(acceptance_url)
+                    time.sleep(random.uniform(3, 5))
+                    root_data = _parse_acceptance_html_sections(driver.page_source)
+                except Exception:
+                    root_data = []
 
-        root_data = data[0].get("entryClassifications", []) if data else []
-
-        name_map = {}
-        for classification in root_data:
-            desc = classification.get("entryClassification", "").upper()
-            code = classification.get("entryClassificationCode", "")
-            if "WITHDRAWAL" in desc: continue
-
-            for entry in classification.get("entries") or []:
-                pos = entry.get("positionDisplay", "")
-                suffix = "" if code in ("MDA", "JR", "SE", "WC") else (f" (ALT {pos})" if code == "ALT" or "ALTERNATE" in desc else " (Q)")
-                players = entry.get("players") or []
-                for p in players:
-                    full_name = f"{p.get('givenName', '')} {p.get('familyName', '')}".strip().upper()
-                    matched_name = NAME_LOOKUP.get(full_name, full_name)
-                    name_map[matched_name] = suffix
-
+        name_map = _build_name_map(root_data)
         return root_data, name_map
     except Exception as e:
         print(f"Error en {tournament_key}: {e}")
@@ -303,13 +507,11 @@ def get_draws_itf_tournament_list(driver):
         if not key:
             item['_tid'] = None
             continue
+        key = key.lower()
         item['_key'] = key
-        api_url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
+        api_url = f"{ITF_BASE_URL}/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
         try:
-            driver.get(api_url)
-            time.sleep(1)
-            raw = driver.find_element("tag name", "body").text.strip()
-            data = json.loads(raw)
+            data = _fetch_itf_json(driver, api_url, timeout_ms=9000, retries=2) or {}
             item['_tid'] = data.get("tournamentId")
         except Exception:
             item['_tid'] = None
