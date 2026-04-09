@@ -1,5 +1,6 @@
 import requests
 import json
+import csv
 from datetime import datetime
 import os
 import pandas as pd
@@ -151,6 +152,7 @@ def main():
                     "tournamentId": tie_data.get('_name'), "tournamentCategory": "Fed/BJK Cup",
                     "surface": surface, "inOrOutdoor": "I" if surface.startswith("I.") else "O",
                     "tournamentCountry": venue_country, "resultStatusDesc": m.get('resultStatusDesc', ''),
+                    "matchOrder": int(m['orderInRound']) if m.get('orderInRound') is not None else None,
                     "result": get_score_string(s1.get('sideSets'), s2.get('sideSets'), is_s1),
                     "winnerId": win.get('id'), "winnerEntry": "", "winnerSeed": "", "winnerName": get_p(win), "winnerCountry": get_c(win),
                     "loserId": los.get('id'), "loserEntry": "", "loserSeed": "", "loserName": get_p(los), "loserCountry": get_c(los)
@@ -166,30 +168,42 @@ def main():
     final_df = final_df.rename(columns={"eventName": "tournamentName", "drawName": "draw"})
     
     cols = ["matchType", "matchId", "date", "tournamentId", "tournamentName", "tournamentCategory", "surface",
-            "inOrOutdoor", "tournamentCountry", "roundName", "draw", "result", "resultStatusDesc", "winnerId", "winnerEntry",
+            "inOrOutdoor", "tournamentCountry", "roundName", "draw", "matchOrder", "result", "resultStatusDesc", "winnerId", "winnerEntry",
             "winnerSeed", "winnerName", "winnerCountry", "loserId", "loserEntry", "loserSeed", "loserName", "loserCountry"]
     
     # Filter final dataframe to only include the required columns
-    final_df = final_df[cols]
+    final_df = final_df[cols].copy()
+    final_df['matchOrder'] = pd.to_numeric(final_df['matchOrder'], errors='coerce').astype('Int64')
     
     csv_filename = os.path.join(DATA_DIR, "bjkc_matches_arg.csv")
     
-    # Check if file exists to only append new records
+    # Upsert mode: refresh existing matchIds and append new ones.
     if os.path.exists(csv_filename):
         existing_df = pd.read_csv(csv_filename)
-        
-        # Filter final_df to only include matchIds that are not in the existing CSV
-        new_matches = final_df[~final_df['matchId'].isin(existing_df['matchId'])]
-        
-        if not new_matches.empty:
-            # Append without writing the header again
-            new_matches.to_csv(csv_filename, mode='a', header=False, index=False)
-            print(f"\nDone! Appended {len(new_matches)} new matches to '{csv_filename}'.")
-        else:
-            print(f"\nDone! No new matches found. '{csv_filename}' is already up to date.")
+
+        for col in cols:
+            if col not in existing_df.columns:
+                existing_df[col] = pd.NA
+        existing_df = existing_df[cols].copy()
+        existing_df['matchOrder'] = pd.to_numeric(existing_df['matchOrder'], errors='coerce').astype('Int64')
+
+        existing_ids = set(existing_df['matchId'].dropna().astype(str))
+        incoming_ids = set(final_df['matchId'].dropna().astype(str))
+
+        inserted_count = len(incoming_ids - existing_ids)
+        updated_count = len(incoming_ids & existing_ids)
+
+        combined_df = pd.concat(
+            [existing_df[~existing_df['matchId'].astype(str).isin(incoming_ids)], final_df],
+            ignore_index=True
+        )
+        combined_df['matchOrder'] = pd.to_numeric(combined_df['matchOrder'], errors='coerce').astype('Int64')
+        combined_df.to_csv(csv_filename, index=False, quoting=csv.QUOTE_ALL, lineterminator="\r\n")
+
+        print(f"\nDone! Upserted {len(final_df)} matches ({inserted_count} inserted, {updated_count} refreshed) into '{csv_filename}'.")
     else:
         # File doesn't exist, create it and write headers
-        final_df.to_csv(csv_filename, index=False)
+        final_df.to_csv(csv_filename, index=False, quoting=csv.QUOTE_ALL, lineterminator="\r\n")
         print(f"\nDone! Saved {len(final_df)} rows to a new file '{csv_filename}'.")
 
 if __name__ == "__main__":
