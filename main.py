@@ -431,8 +431,20 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
 
     # Remove tournaments no longer in the next 4 weeks
     active_keys = set()
+    active_itf_keys = set()
     for tourneys in tournament_groups.values():
-        active_keys.update(tourneys.keys())
+        for t_key in tourneys.keys():
+            active_keys.add(t_key)
+            if not str(t_key).startswith("http"):
+                active_itf_keys.add(t_key)
+
+    # Defensive fallback: when ITF calendar fetch fails for a run, keep previous ITF
+    # entry lists instead of deleting them from cache.
+    if not active_itf_keys:
+        for cached_key in entry_cache.keys():
+            if not str(cached_key).startswith("http"):
+                active_keys.add(cached_key)
+
     entry_cache = {k: v for k, v in entry_cache.items() if k in active_keys}
 
     return schedule_map, tournament_store, entry_cache, unranked_schedule

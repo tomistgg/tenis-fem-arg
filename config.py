@@ -150,6 +150,7 @@ WTA_RANKINGS_CSV_10_19 = os.path.join(DATA_DIR, "wta_rankings_10_19.csv")
 WTA_RANKINGS_CSV_00_09 = os.path.join(DATA_DIR, "wta_rankings_00_09.csv")
 WTA_RANKINGS_CSV_83_99 = os.path.join(DATA_DIR, "wta_rankings_83_99.csv")
 ITF_CACHE_FILE = os.path.join(DATA_DIR, "itf_rankings_cache.json")
+ITF_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "itf_calendar_cache.json")
 ENTRY_LISTS_CACHE_FILE = os.path.join(DATA_DIR, "entry_lists_cache.json")
 
 API_URL = "https://api.wtatennis.com/tennis/players/ranked"

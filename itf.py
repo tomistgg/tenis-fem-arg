@@ -2,11 +2,12 @@ import time
 import json
 import random
 import re
+import os
 import requests
 from html import unescape
 from datetime import datetime, timedelta
 
-from config import NAME_LOOKUP, ITF_CACHE_FILE
+from config import NAME_LOOKUP, ITF_CACHE_FILE, ITF_CALENDAR_CACHE_FILE
 from utils import get_cached_rankings
 from calendar_builder import get_next_monday
 
@@ -108,6 +109,49 @@ _itf_calendar_raw = None  # module-level cache for raw ITF calendar items
 _itf_session_warmed = False
 
 
+def _load_itf_calendar_disk_cache(target_year=None):
+    if not os.path.exists(ITF_CALENDAR_CACHE_FILE):
+        return []
+    try:
+        with open(ITF_CALENDAR_CACHE_FILE, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+    except Exception:
+        return []
+
+    # Backward compatibility: plain list payload.
+    if isinstance(payload, list):
+        return payload
+
+    if not isinstance(payload, dict):
+        return []
+
+    items = payload.get("items")
+    if not isinstance(items, list):
+        return []
+
+    cache_year = payload.get("year")
+    if target_year and cache_year and str(cache_year) != str(target_year):
+        return []
+
+    return items
+
+
+def _save_itf_calendar_disk_cache(items, year):
+    if not isinstance(items, list) or not items:
+        return
+    payload = {
+        "year": int(year),
+        "fetchedAt": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "count": len(items),
+        "items": items,
+    }
+    try:
+        with open(ITF_CALENDAR_CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2, ensure_ascii=False)
+    except Exception:
+        pass
+
+
 def _collapse_ws(text):
     return " ".join(str(text or "").split())
 
@@ -136,13 +180,17 @@ def _is_blocked_or_html_response(raw_text):
     return low.startswith("<html") or low.startswith("<!doctype html")
 
 
-def _ensure_itf_session(driver):
+def _ensure_itf_session(driver, force_navigation=False):
     global _itf_session_warmed
-    if _itf_session_warmed:
+    if _itf_session_warmed and not force_navigation:
+        return
+    if not force_navigation:
+        # Start lightweight: use browser fetch first and only navigate if retries fail.
+        _itf_session_warmed = True
         return
     try:
         driver.get(ITF_CALENDAR_PAGE_URL)
-        time.sleep(random.uniform(4, 6))
+        time.sleep(random.uniform(2.5, 4))
     except Exception as e:
         print(f"Warning warming ITF session: {e}")
     _itf_session_warmed = True
@@ -191,11 +239,11 @@ def _fetch_itf_json(driver, url, timeout_ms=12000, retries=2):
             except Exception:
                 pass
         if attempt < retries - 1:
-            try:
-                driver.get(ITF_CALENDAR_PAGE_URL)
-                time.sleep(random.uniform(2, 4))
-            except Exception:
-                pass
+            if attempt == 0:
+                # Escalate to a full page load only after the first failed fetch.
+                _ensure_itf_session(driver, force_navigation=True)
+            else:
+                time.sleep(random.uniform(1, 2))
     return None
 
 
@@ -314,12 +362,13 @@ def _fetch_itf_calendar_raw(driver):
         return _itf_calendar_raw
 
     today = datetime.now()
-    date_from = f"{today.year}-01-01"
-    date_to = f"{today.year}-12-31"
+    current_year = today.year
+    date_from = f"{current_year}-01-01"
+    date_to = f"{current_year}-12-31"
 
     all_items = []
     skip = 0
-    take = 500
+    take = 250
 
     while True:
         url = (
@@ -329,7 +378,7 @@ def _fetch_itf_calendar_raw(driver):
             f"&isOrderAscending=true&orderField=startDate"
         )
         try:
-            data = _fetch_itf_json(driver, url, timeout_ms=12000, retries=2)
+            data = _fetch_itf_json(driver, url, timeout_ms=12000, retries=3)
             if not isinstance(data, dict):
                 if skip == 0:
                     print("Error fetching full ITF calendar (skip=0): empty or non-JSON response")
@@ -340,12 +389,26 @@ def _fetch_itf_calendar_raw(driver):
             all_items.extend(items)
 
             total = data.get('totalItems', 0)
-            if skip + take >= total:
+            batch_size = len(items)
+            if total and (skip + batch_size >= total):
                 break
-            skip += take
+            if batch_size <= 0:
+                break
+            skip += batch_size
         except Exception as e:
             print(f"Error fetching full ITF calendar (skip={skip}): {e}")
             break
+
+    if all_items:
+        _itf_calendar_raw = all_items
+        _save_itf_calendar_disk_cache(all_items, current_year)
+        return _itf_calendar_raw
+
+    cached_items = _load_itf_calendar_disk_cache(target_year=current_year)
+    if cached_items:
+        print(f"Using cached ITF calendar fallback ({len(cached_items)} items).")
+        _itf_calendar_raw = cached_items
+        return _itf_calendar_raw
 
     _itf_calendar_raw = all_items
     return _itf_calendar_raw
