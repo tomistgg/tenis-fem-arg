@@ -3577,7 +3577,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function isDoublesHistoryRow(row) {{
                 const wName = (row['_winnerName'] || '').toString();
                 const lName = (row['_loserName'] || '').toString();
-                return wName.includes('/') || lName.includes('/');
+                const playerName = (row['PLAYER'] || '').toString();
+                const opponentName = (row['OPPONENT'] || '').toString();
+                return (
+                    wName.includes('/') ||
+                    lName.includes('/') ||
+                    playerName.includes('/') ||
+                    opponentName.includes('/')
+                );
             }}
 
             function getHistoryPerspective(row, selectedPlayer) {{
@@ -3818,7 +3825,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const counter = document.getElementById('history-wl-counter');
                 if (!counter) return;
 
-                const nonWO = (matches || []).filter(row => !['Walkover', 'Bye'].includes(row['_resultStatusDesc'] || ''));
+                const nonWO = (matches || []).filter(row =>
+                    !isDoublesHistoryRow(row) &&
+                    !['Walkover', 'Bye'].includes(row['_resultStatusDesc'] || '')
+                );
                 const total = nonWO.length;
                 if (!selectedPlayer || total === 0) {{
                     counter.textContent = `Matches: ${{total}}`;
