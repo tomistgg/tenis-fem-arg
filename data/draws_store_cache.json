@@ -3172,17 +3172,8 @@
           "Final"
         ],
         "num_rounds": 5
-      }
-    }
-  },
-  "w-itf-usa-2026-010": {
-    "name": "W35 Boca Raton, FL",
-    "level": "W35",
-    "week": "Week of April 6",
-    "startDate": "2026-04-06T00:00:00",
-    "endDate": "2026-04-12T00:00:00",
-    "draws": {
-      "MDS": {
+      },
+      "QS": {
         "tournament_name": "",
         "location": "",
         "dates": "",
@@ -3195,382 +3186,740 @@
             "pos": 1,
             "seed": "1",
             "entry": "",
-            "name": "DAY, Kayla",
+            "name": "STEINER, Valentina",
+            "country": "GER"
+          },
+          {
+            "pos": 3,
+            "seed": "",
+            "entry": "",
+            "name": "DUDA, Ewa",
+            "country": "POL"
+          },
+          {
+            "pos": 4,
+            "seed": "12",
+            "entry": "",
+            "name": "LOMBARDINI, Marta",
+            "country": "ITA"
+          },
+          {
+            "pos": 5,
+            "seed": "2",
+            "entry": "",
+            "name": "CHIESA, Enola",
+            "country": "ITA"
+          },
+          {
+            "pos": 7,
+            "seed": "",
+            "entry": "",
+            "name": "CHERNY, Isabelle",
+            "country": "GBR"
+          },
+          {
+            "pos": 8,
+            "seed": "9",
+            "entry": "",
+            "name": "TOMA, Maria",
+            "country": "ROU"
+          },
+          {
+            "pos": 9,
+            "seed": "3",
+            "entry": "",
+            "name": "GADAMAURI, Tamila",
+            "country": "BEL"
+          },
+          {
+            "pos": 11,
+            "seed": "",
+            "entry": "",
+            "name": "VISMANE, Daniela",
+            "country": "LAT"
+          },
+          {
+            "pos": 12,
+            "seed": "14",
+            "entry": "",
+            "name": "MOCCIA, Carlotta",
+            "country": "ITA"
+          },
+          {
+            "pos": 13,
+            "seed": "4",
+            "entry": "",
+            "name": "KOVACKOVA, Alena",
+            "country": "CZE"
+          },
+          {
+            "pos": 14,
+            "seed": "",
+            "entry": "",
+            "name": "GASPARINI, Carolina",
+            "country": "ITA"
+          },
+          {
+            "pos": 15,
+            "seed": "",
+            "entry": "WC",
+            "name": "DE SANTIS, Gloria",
+            "country": "ITA"
+          },
+          {
+            "pos": 16,
+            "seed": "10",
+            "entry": "",
+            "name": "MARIC, Dunja",
+            "country": "SRB"
+          },
+          {
+            "pos": 17,
+            "seed": "5",
+            "entry": "",
+            "name": "INISAN, Eleejah",
+            "country": "FRA"
+          },
+          {
+            "pos": 18,
+            "seed": "",
+            "entry": "WC",
+            "name": "ZHU, Lingling",
+            "country": "CHN"
+          },
+          {
+            "pos": 19,
+            "seed": "",
+            "entry": "",
+            "name": "DEL BALZO RUITI, Sofia",
+            "country": "ITA"
+          },
+          {
+            "pos": 20,
+            "seed": "11",
+            "entry": "",
+            "name": "LONGUEVILLE, Romane",
+            "country": "BEL"
+          },
+          {
+            "pos": 21,
+            "seed": "6",
+            "entry": "",
+            "name": "RICCI, Beatrice",
+            "country": "ITA"
+          },
+          {
+            "pos": 22,
+            "seed": "",
+            "entry": "",
+            "name": "KOELZER, Romy",
+            "country": "GER"
+          },
+          {
+            "pos": 23,
+            "seed": "",
+            "entry": "",
+            "name": "KLASEN, Anna",
+            "country": "GER"
+          },
+          {
+            "pos": 24,
+            "seed": "13",
+            "entry": "",
+            "name": "GARCIA-PEREZ, Georgina",
+            "country": "ESP"
+          },
+          {
+            "pos": 25,
+            "seed": "7",
+            "entry": "",
+            "name": "SZABO, Briana",
+            "country": "ROU"
+          },
+          {
+            "pos": 26,
+            "seed": "",
+            "entry": "",
+            "name": "ESCOBAR, Valerie Michelle",
+            "country": "GER"
+          },
+          {
+            "pos": 27,
+            "seed": "",
+            "entry": "",
+            "name": "MAIS, Gaia",
+            "country": "ITA"
+          },
+          {
+            "pos": 28,
+            "seed": "15",
+            "entry": "",
+            "name": "ALVISI, Eleonora",
+            "country": "ITA"
+          },
+          {
+            "pos": 29,
+            "seed": "8",
+            "entry": "",
+            "name": "KONJIKUSIC, Petra",
+            "country": "SRB"
+          },
+          {
+            "pos": 30,
+            "seed": "",
+            "entry": "",
+            "name": "SAKELLARIDI, Alexandra",
+            "country": "GRE"
+          },
+          {
+            "pos": 31,
+            "seed": "",
+            "entry": "",
+            "name": "VILAR, Gabriela",
+            "country": "USA"
+          },
+          {
+            "pos": 32,
+            "seed": "16",
+            "entry": "",
+            "name": "ANSON SANCHEZ, Celia",
+            "country": "ESP"
+          }
+        ],
+        "matches": [
+          {
+            "round": 1,
+            "match_num": 1,
+            "winner_name": "M. Lombardini",
+            "score": "60 63"
+          },
+          {
+            "round": 1,
+            "match_num": 3,
+            "winner_name": "M. Toma",
+            "score": "60 61"
+          },
+          {
+            "round": 1,
+            "match_num": 5,
+            "winner_name": "D. Vismane",
+            "score": "61 61"
+          },
+          {
+            "round": 1,
+            "match_num": 6,
+            "winner_name": "A. Kovackova",
+            "score": "61 60"
+          },
+          {
+            "round": 1,
+            "match_num": 7,
+            "winner_name": "D. Maric",
+            "score": "64 64"
+          },
+          {
+            "round": 1,
+            "match_num": 8,
+            "winner_name": "E. Inisan",
+            "score": "61 63"
+          },
+          {
+            "round": 1,
+            "match_num": 9,
+            "winner_name": "R. Longueville",
+            "score": "60 60"
+          },
+          {
+            "round": 1,
+            "match_num": 10,
+            "winner_name": "B. Ricci",
+            "score": "61 61"
+          },
+          {
+            "round": 1,
+            "match_num": 11,
+            "winner_name": "G. Garcia-Perez",
+            "score": "46 63 10-5"
+          },
+          {
+            "round": 1,
+            "match_num": 12,
+            "winner_name": "B. Szabo",
+            "score": "60 60"
+          },
+          {
+            "round": 1,
+            "match_num": 13,
+            "winner_name": "E. Alvisi",
+            "score": "62 63"
+          },
+          {
+            "round": 1,
+            "match_num": 14,
+            "winner_name": "P. Konjikusic",
+            "score": "62 61"
+          },
+          {
+            "round": 1,
+            "match_num": 15,
+            "winner_name": "C. Anson Sanchez",
+            "score": "61 60"
+          },
+          {
+            "round": 2,
+            "match_num": 0,
+            "winner_name": "V. Steiner",
+            "score": "64 60"
+          },
+          {
+            "round": 2,
+            "match_num": 1,
+            "winner_name": "M. Toma",
+            "score": "36 62 10-7"
+          },
+          {
+            "round": 2,
+            "match_num": 2,
+            "winner_name": "D. Vismane",
+            "score": "36 64 10-6"
+          },
+          {
+            "round": 2,
+            "match_num": 3,
+            "winner_name": "A. Kovackova",
+            "score": "62 75"
+          },
+          {
+            "round": 2,
+            "match_num": 4,
+            "winner_name": "E. Inisan",
+            "score": "75 64"
+          },
+          {
+            "round": 2,
+            "match_num": 5,
+            "winner_name": "B. Ricci",
+            "score": "76(4) 63"
+          },
+          {
+            "round": 2,
+            "match_num": 6,
+            "winner_name": "B. Szabo",
+            "score": "61 64"
+          },
+          {
+            "round": 2,
+            "match_num": 7,
+            "winner_name": "P. Konjikusic",
+            "score": "64 61"
+          }
+        ],
+        "byes": [
+          2,
+          6,
+          10
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16"
+        ],
+        "num_rounds": 2
+      }
+    }
+  },
+  "w-itf-usa-2026-010": {
+    "name": "W35 Boca Raton, FL",
+    "level": "W35",
+    "week": "Week of April 6",
+    "startDate": "2026-04-06T00:00:00",
+    "endDate": "2026-04-12T00:00:00",
+    "draws": {
+      "QS": {
+        "tournament_name": "",
+        "location": "",
+        "dates": "",
+        "prize": "",
+        "surface": "",
+        "draw_type": "",
+        "draw_size": 32,
+        "players": [
+          {
+            "pos": 1,
+            "seed": "1",
+            "entry": "",
+            "name": "ROBINSON, Jada",
             "country": "USA"
           },
           {
             "pos": 2,
             "seed": "",
             "entry": "",
-            "name": "XU, Shilin",
-            "country": "CHN"
+            "name": "BARTHA, Panna",
+            "country": "HUN"
           },
           {
             "pos": 3,
             "seed": "",
-            "entry": "Q",
-            "name": "EWING, Salma",
-            "country": "USA"
+            "entry": "",
+            "name": "TABUNSHCHYK, Anna",
+            "country": "CAN"
           },
           {
             "pos": 4,
-            "seed": "",
+            "seed": "15",
             "entry": "",
-            "name": "HU, Victoria",
-            "country": "USA"
+            "name": "HERRMANN, Sina",
+            "country": "GER"
           },
           {
             "pos": 5,
-            "seed": "",
+            "seed": "2",
             "entry": "",
-            "name": "JOKIC, Katarina",
-            "country": "SRB"
+            "name": "VAN IMPE, Amelie",
+            "country": "BEL"
           },
           {
             "pos": 6,
             "seed": "",
-            "entry": "Q",
-            "name": "HERRMANN, Sina",
-            "country": "GER"
+            "entry": "",
+            "name": "DJOUBRI, Salma",
+            "country": "FRA"
           },
           {
             "pos": 7,
             "seed": "",
             "entry": "",
-            "name": "TEIXIDO GARCIA, Aran",
-            "country": "ESP"
+            "name": "HITT, Zoe",
+            "country": "USA"
           },
           {
             "pos": 8,
-            "seed": "6",
+            "seed": "11",
             "entry": "",
-            "name": "VEDDER, Eva",
-            "country": "NED"
+            "name": "MALKIN, Misa",
+            "country": "USA"
           },
           {
             "pos": 9,
             "seed": "3",
-            "entry": "WC",
-            "name": "LIU, Claire",
+            "entry": "",
+            "name": "EWING, Salma",
             "country": "USA"
           },
           {
             "pos": 10,
             "seed": "",
-            "entry": "",
-            "name": "IVANOVA, Dasha",
-            "country": "USA"
+            "entry": "WC",
+            "name": "VAKALAPUDI, Selin",
+            "country": "CAN"
           },
           {
             "pos": 11,
             "seed": "",
-            "entry": "",
-            "name": "DITTMANN, Gina Marie",
-            "country": "GER"
+            "entry": "WC",
+            "name": "SHABASHKEVICH, Katerina",
+            "country": "USA"
           },
           {
             "pos": 12,
-            "seed": "",
-            "entry": "Q",
-            "name": "AYRAULT, Hannah",
-            "country": "USA"
+            "seed": "14",
+            "entry": "",
+            "name": "MENDONCA, Sofia",
+            "country": "BRA"
           },
           {
             "pos": 13,
-            "seed": "",
-            "entry": "Q",
-            "name": "SNELLS, Jamilah",
-            "country": "USA"
+            "seed": "4",
+            "entry": "",
+            "name": "SAHDIIEVA, Anita",
+            "country": "UKR"
           },
           {
             "pos": 14,
             "seed": "",
             "entry": "",
-            "name": "PIERI, Tatiana",
-            "country": "ITA"
+            "name": "BROWN, Baylen",
+            "country": "USA"
           },
           {
             "pos": 15,
             "seed": "",
-            "entry": "SE",
-            "name": "JOHNSON, Sofia",
-            "country": "GBR"
+            "entry": "",
+            "name": "MOTOSONO, Kianah",
+            "country": "PER"
           },
           {
             "pos": 16,
-            "seed": "8",
+            "seed": "9",
             "entry": "",
-            "name": "ROGERS, Anna",
+            "name": "BROADUS, Savannah",
             "country": "USA"
           },
           {
             "pos": 17,
-            "seed": "7",
-            "entry": "WC",
-            "name": "URHOBO, Akasha",
-            "country": "USA"
+            "seed": "5",
+            "entry": "",
+            "name": "BERTACCHI, Anastasia",
+            "country": "ITA"
           },
           {
             "pos": 18,
             "seed": "",
-            "entry": "Q",
-            "name": "FRODIN, Thea",
+            "entry": "",
+            "name": "IMBO NLOGA, Samantha",
             "country": "USA"
           },
           {
             "pos": 19,
             "seed": "",
             "entry": "WC",
-            "name": "OLIVER, Natalie",
+            "name": "AYRAULT, Hannah",
             "country": "USA"
           },
           {
             "pos": 20,
-            "seed": "",
-            "entry": "WC",
-            "name": "SAFFAR, Yael",
+            "seed": "16",
+            "entry": "",
+            "name": "NGOUNOUE, Malkia",
             "country": "USA"
           },
           {
             "pos": 21,
-            "seed": "",
+            "seed": "6",
             "entry": "",
-            "name": "HERRERO LINANA, Alicia",
-            "country": "ESP"
+            "name": "FRODIN, Thea",
+            "country": "USA"
           },
           {
             "pos": 22,
             "seed": "",
-            "entry": "Q",
-            "name": "ROWINSKA, Malwina",
-            "country": "POL"
+            "entry": "",
+            "name": "DIIANNI, Jensen",
+            "country": "USA"
           },
           {
             "pos": 23,
             "seed": "",
             "entry": "",
-            "name": "SIEG, Madison",
+            "name": "TAHIRI, Mirabelle",
             "country": "USA"
           },
           {
             "pos": 24,
-            "seed": "4",
+            "seed": "10",
             "entry": "",
-            "name": "TIKHONOVA, Anastasia",
-            "country": "RUS"
+            "name": "RENCHELI, Abigail",
+            "country": "USA"
           },
           {
             "pos": 25,
-            "seed": "5",
+            "seed": "7",
             "entry": "",
-            "name": "FITA BOLUDA, Angela",
-            "country": "ESP"
+            "name": "SNELLS, Jamilah",
+            "country": "USA"
           },
           {
             "pos": 26,
             "seed": "",
-            "entry": "",
-            "name": "MUSHIKA, Mio",
-            "country": "JPN"
+            "entry": "WC",
+            "name": "JAUFFRET, Capucine",
+            "country": "USA"
           },
           {
             "pos": 27,
             "seed": "",
             "entry": "",
-            "name": "PEDRETTI, Thaisa Grana",
-            "country": "BRA"
-          },
-          {
-            "pos": 28,
-            "seed": "",
-            "entry": "",
-            "name": "MA, Lea",
+            "name": "LOPEZ, Paola",
             "country": "USA"
           },
           {
-            "pos": 29,
-            "seed": "",
+            "pos": 28,
+            "seed": "12",
             "entry": "",
-            "name": "CABEZAS DOMINGUEZ, Sofia Elena",
-            "country": "VEN"
+            "name": "MILLAN ACOSTA, Ingrid Carolina",
+            "country": "MEX"
+          },
+          {
+            "pos": 29,
+            "seed": "8",
+            "entry": "",
+            "name": "IYENGAR, Maya",
+            "country": "USA"
           },
           {
             "pos": 30,
             "seed": "",
-            "entry": "Q",
-            "name": "VAN IMPE, Amelie",
-            "country": "BEL"
+            "entry": "WC",
+            "name": "SCHAEFER, Dominique",
+            "country": "USA"
           },
           {
             "pos": 31,
             "seed": "",
-            "entry": "Q",
-            "name": "BROADUS, Savannah",
-            "country": "USA"
+            "entry": "",
+            "name": "ROWINSKA, Malwina",
+            "country": "POL"
           },
           {
             "pos": 32,
-            "seed": "2",
+            "seed": "13",
             "entry": "",
-            "name": "STOIANA, Mary",
-            "country": "USA"
+            "name": "BREDBERG CANIZARES, Didi",
+            "country": "ESP"
           }
         ],
         "matches": [
           {
             "round": 1,
             "match_num": 0,
-            "winner_name": "K. Day",
-            "score": "36 63 60"
+            "winner_name": "P. Bartha",
+            "score": "64 60"
           },
           {
             "round": 1,
             "match_num": 1,
-            "winner_name": "V. Hu",
-            "score": "63 60"
+            "winner_name": "S. Herrmann",
+            "score": "75 36 11-9"
           },
           {
             "round": 1,
             "match_num": 2,
-            "winner_name": "K. Jokic",
-            "score": "75 63"
+            "winner_name": "A. Van Impe",
+            "score": "36 76(2) 10-1"
           },
           {
             "round": 1,
             "match_num": 3,
-            "winner_name": "E. Vedder",
-            "score": "64 76(3)"
+            "winner_name": "M. Malkin",
+            "score": "61 61"
           },
           {
             "round": 1,
             "match_num": 4,
-            "winner_name": "C. Liu",
-            "score": "62 63"
+            "winner_name": "S. Ewing",
+            "score": "64 61"
           },
           {
             "round": 1,
             "match_num": 5,
-            "winner_name": "H. Ayrault",
-            "score": "36 64 10 RET"
+            "winner_name": "K. Shabashkevich",
+            "score": "64 64"
           },
           {
             "round": 1,
             "match_num": 6,
-            "winner_name": "T. Pieri",
-            "score": "63 61"
+            "winner_name": "A. Sahdiieva",
+            "score": "64 61"
           },
           {
             "round": 1,
             "match_num": 7,
-            "winner_name": "A. Rogers",
-            "score": "16 62 62"
+            "winner_name": "S. Broadus",
+            "score": "60 61"
           },
           {
             "round": 1,
             "match_num": 8,
-            "winner_name": "A. Urhobo",
-            "score": "63 64"
+            "winner_name": "A. Bertacchi",
+            "score": "62 63"
           },
           {
             "round": 1,
             "match_num": 9,
-            "winner_name": "Y. Saffar",
-            "score": "75 36 62"
+            "winner_name": "H. Ayrault",
+            "score": "67 64 10-6"
           },
           {
             "round": 1,
             "match_num": 10,
-            "winner_name": "A. Herrero Linana",
-            "score": "62 62"
+            "winner_name": "T. Frodin",
+            "score": "61 62"
           },
           {
             "round": 1,
             "match_num": 11,
-            "winner_name": "M. Sieg",
-            "score": "63 62"
+            "winner_name": "A. Rencheli",
+            "score": "61 62"
           },
           {
             "round": 1,
             "match_num": 12,
-            "winner_name": "A. Fita Boluda",
-            "score": "75 63"
+            "winner_name": "J. Snells",
+            "score": "63 61"
           },
           {
             "round": 1,
             "match_num": 13,
-            "winner_name": "T. Pedretti",
-            "score": "67 62 76(8)"
+            "winner_name": "P. Lopez",
+            "score": "61 64"
           },
           {
             "round": 1,
             "match_num": 14,
-            "winner_name": "A. Van Impe",
-            "score": "76(5) 57 62"
+            "winner_name": "D. Schaefer",
+            "score": "64 46 10-5"
           },
           {
             "round": 1,
             "match_num": 15,
-            "winner_name": "M. Stoiana",
+            "winner_name": "M. Rowinska",
             "score": "63 75"
           },
           {
             "round": 2,
             "match_num": 0,
-            "winner_name": "K. Day",
-            "score": "76(4) 76(11)"
+            "winner_name": "S. Herrmann",
+            "score": "75 75"
           },
           {
             "round": 2,
             "match_num": 1,
-            "winner_name": "K. Jokic",
-            "score": "64 64"
+            "winner_name": "A. Van Impe",
+            "score": "60 60"
           },
           {
             "round": 2,
             "match_num": 2,
-            "winner_name": "C. Liu",
-            "score": "62 61"
+            "winner_name": "S. Ewing",
+            "score": "64 62"
           },
           {
             "round": 2,
             "match_num": 3,
-            "winner_name": "T. Pieri",
-            "score": "62 60"
+            "winner_name": "S. Broadus",
+            "score": "76(4) 63"
           },
           {
             "round": 2,
             "match_num": 4,
-            "winner_name": "A. Urhobo",
-            "score": "60 63"
+            "winner_name": "H. Ayrault",
+            "score": "46 61 10-6"
           },
           {
             "round": 2,
             "match_num": 5,
-            "winner_name": "M. Sieg",
-            "score": "06 64 61"
+            "winner_name": "T. Frodin",
+            "score": "64 62"
           },
           {
             "round": 2,
             "match_num": 6,
-            "winner_name": "A. Fita Boluda",
-            "score": "64 75"
+            "winner_name": "J. Snells",
+            "score": "63 63"
           },
           {
             "round": 2,
             "match_num": 7,
-            "winner_name": "M. Stoiana",
-            "score": "64 60"
+            "winner_name": "M. Rowinska",
+            "score": "64 36 11-9"
           }
         ],
         "byes": [],
         "round_labels": [
           "Round of 32",
-          "Round of 16",
-          "Quarterfinals",
-          "Semifinals",
-          "Final"
+          "Round of 16"
         ],
-        "num_rounds": 5
+        "num_rounds": 2
       }
     }
   },
@@ -4004,420 +4353,6 @@
     "startDate": "2026-04-06T00:00:00",
     "endDate": "2026-04-12T00:00:00",
     "draws": {
-      "MDS": {
-        "tournament_name": "",
-        "location": "",
-        "dates": "",
-        "prize": "",
-        "surface": "",
-        "draw_type": "",
-        "draw_size": 32,
-        "players": [
-          {
-            "pos": 1,
-            "seed": "1",
-            "entry": "",
-            "name": "KUZMOVA, Katarina",
-            "country": "SVK"
-          },
-          {
-            "pos": 2,
-            "seed": "",
-            "entry": "",
-            "name": "MASLENKOVA, Milana",
-            "country": "UZB"
-          },
-          {
-            "pos": 3,
-            "seed": "",
-            "entry": "",
-            "name": "POCHTOVYK, Krystyna",
-            "country": "UKR"
-          },
-          {
-            "pos": 4,
-            "seed": "",
-            "entry": "Q",
-            "name": "PIERONI, Sveva",
-            "country": "ITA"
-          },
-          {
-            "pos": 5,
-            "seed": "",
-            "entry": "",
-            "name": "CEMBRANOS, Paula",
-            "country": "SUI"
-          },
-          {
-            "pos": 6,
-            "seed": "",
-            "entry": "",
-            "name": "ARTEMEVA, Valeriia",
-            "country": "RUS"
-          },
-          {
-            "pos": 7,
-            "seed": "",
-            "entry": "WC",
-            "name": "ODORIZZI, Caterina",
-            "country": "ITA"
-          },
-          {
-            "pos": 8,
-            "seed": "5",
-            "entry": "",
-            "name": "MILOVANOVA, Victoria",
-            "country": "RUS"
-          },
-          {
-            "pos": 9,
-            "seed": "4",
-            "entry": "",
-            "name": "ZELINSKAYA, Daria",
-            "country": "RUS"
-          },
-          {
-            "pos": 10,
-            "seed": "",
-            "entry": "",
-            "name": "MARTIANOVA, Sofia",
-            "country": "RUS"
-          },
-          {
-            "pos": 11,
-            "seed": "",
-            "entry": "",
-            "name": "BATAIKINA, Kira",
-            "country": "RUS"
-          },
-          {
-            "pos": 12,
-            "seed": "",
-            "entry": "Q",
-            "name": "TURKMEN, Doga",
-            "country": "TUR"
-          },
-          {
-            "pos": 13,
-            "seed": "",
-            "entry": "Q",
-            "name": "KUCIKOVA, Kiara Nina",
-            "country": "SVK"
-          },
-          {
-            "pos": 14,
-            "seed": "",
-            "entry": "Q",
-            "name": "GIANNINI, NICOLE",
-            "country": "BRA"
-          },
-          {
-            "pos": 15,
-            "seed": "",
-            "entry": "",
-            "name": "SAMARDZIC, Ayline Esina",
-            "country": "SUI"
-          },
-          {
-            "pos": 16,
-            "seed": "6",
-            "entry": "",
-            "name": "SACCO, Federica",
-            "country": "ITA"
-          },
-          {
-            "pos": 17,
-            "seed": "8",
-            "entry": "",
-            "name": "BOSMAN, Coco",
-            "country": "NED"
-          },
-          {
-            "pos": 18,
-            "seed": "",
-            "entry": "",
-            "name": "POPOVIC, Karla",
-            "country": "CRO"
-          },
-          {
-            "pos": 19,
-            "seed": "",
-            "entry": "Q",
-            "name": "FEDOROVA, Aglaya",
-            "country": "RUS"
-          },
-          {
-            "pos": 20,
-            "seed": "",
-            "entry": "",
-            "name": "CADAR, Elena-Teodora",
-            "country": "ROU"
-          },
-          {
-            "pos": 21,
-            "seed": "",
-            "entry": "WC",
-            "name": "KHARLANOVA, Darya",
-            "country": "RUS"
-          },
-          {
-            "pos": 22,
-            "seed": "",
-            "entry": "WC",
-            "name": "KLYS, Natalia",
-            "country": "POL"
-          },
-          {
-            "pos": 23,
-            "seed": "",
-            "entry": "Q",
-            "name": "SNIGIREVA, Anna",
-            "country": "RUS"
-          },
-          {
-            "pos": 24,
-            "seed": "3",
-            "entry": "",
-            "name": "KROITOR, Kristina",
-            "country": "RUS"
-          },
-          {
-            "pos": 25,
-            "seed": "7",
-            "entry": "",
-            "name": "VLADSON, Laima",
-            "country": "UZB"
-          },
-          {
-            "pos": 26,
-            "seed": "",
-            "entry": "WC",
-            "name": "STOPPEL, Jasmina",
-            "country": "GER"
-          },
-          {
-            "pos": 27,
-            "seed": "",
-            "entry": "Q",
-            "name": "SOZAONOVA, Nina",
-            "country": "RUS"
-          },
-          {
-            "pos": 28,
-            "seed": "",
-            "entry": "",
-            "name": "DIATLOVA, Kateryna",
-            "country": "UKR"
-          },
-          {
-            "pos": 29,
-            "seed": "",
-            "entry": "Q",
-            "name": "JOVANOVIC, Mirjana",
-            "country": "SRB"
-          },
-          {
-            "pos": 30,
-            "seed": "",
-            "entry": "",
-            "name": "GADIENT, Nicole",
-            "country": "SUI"
-          },
-          {
-            "pos": 31,
-            "seed": "",
-            "entry": "",
-            "name": "SEDYSHEVA, Anna",
-            "country": "RUS"
-          },
-          {
-            "pos": 32,
-            "seed": "2",
-            "entry": "",
-            "name": "SHINIKOVA, Isabella",
-            "country": "BUL"
-          }
-        ],
-        "matches": [
-          {
-            "round": 1,
-            "match_num": 0,
-            "winner_name": "K. Kuzmova",
-            "score": "61 60"
-          },
-          {
-            "round": 1,
-            "match_num": 1,
-            "winner_name": "S. Pieroni",
-            "score": "36 75 76(3)"
-          },
-          {
-            "round": 1,
-            "match_num": 2,
-            "winner_name": "P. Cembranos",
-            "score": "75 60"
-          },
-          {
-            "round": 1,
-            "match_num": 3,
-            "winner_name": "V. Milovanova",
-            "score": "62 61"
-          },
-          {
-            "round": 1,
-            "match_num": 4,
-            "winner_name": "D. Zelinskaya",
-            "score": "62 63"
-          },
-          {
-            "round": 1,
-            "match_num": 5,
-            "winner_name": "K. Bataikina",
-            "score": "61 64"
-          },
-          {
-            "round": 1,
-            "match_num": 6,
-            "winner_name": "K. Kucikova",
-            "score": "67 61 61"
-          },
-          {
-            "round": 1,
-            "match_num": 7,
-            "winner_name": "F. Sacco",
-            "score": "62 61"
-          },
-          {
-            "round": 1,
-            "match_num": 8,
-            "winner_name": "K. Popovic",
-            "score": "63 64"
-          },
-          {
-            "round": 1,
-            "match_num": 9,
-            "winner_name": "A. Fedorova",
-            "score": "60 62"
-          },
-          {
-            "round": 1,
-            "match_num": 10,
-            "winner_name": "D. Kharlanova",
-            "score": "61 62"
-          },
-          {
-            "round": 1,
-            "match_num": 11,
-            "winner_name": "K. Kroitor",
-            "score": "36 63 63"
-          },
-          {
-            "round": 1,
-            "match_num": 12,
-            "winner_name": "L. Vladson",
-            "score": "62 60"
-          },
-          {
-            "round": 1,
-            "match_num": 13,
-            "winner_name": "K. Diatlova",
-            "score": "76(6) 75"
-          },
-          {
-            "round": 1,
-            "match_num": 14,
-            "winner_name": "N. Gadient",
-            "score": "64 64"
-          },
-          {
-            "round": 1,
-            "match_num": 15,
-            "winner_name": "I. Shinikova",
-            "score": "76(6) 61"
-          },
-          {
-            "round": 2,
-            "match_num": 0,
-            "winner_name": "K. Kuzmova",
-            "score": "61 63"
-          },
-          {
-            "round": 2,
-            "match_num": 1,
-            "winner_name": "V. Milovanova",
-            "score": "75 36 61"
-          },
-          {
-            "round": 2,
-            "match_num": 2,
-            "winner_name": "D. Zelinskaya",
-            "score": "61 63"
-          },
-          {
-            "round": 2,
-            "match_num": 3,
-            "winner_name": "F. Sacco",
-            "score": "63 61"
-          },
-          {
-            "round": 2,
-            "match_num": 4,
-            "winner_name": "K. Popovic",
-            "score": "60 36 63"
-          },
-          {
-            "round": 2,
-            "match_num": 5,
-            "winner_name": "K. Kroitor",
-            "score": "62 64"
-          },
-          {
-            "round": 2,
-            "match_num": 6,
-            "winner_name": "K. Diatlova",
-            "score": "36 64 64"
-          },
-          {
-            "round": 2,
-            "match_num": 7,
-            "winner_name": "I. Shinikova",
-            "score": "63 46 61"
-          },
-          {
-            "round": 3,
-            "match_num": 0,
-            "winner_name": "K. Kuzmova",
-            "score": "62 62"
-          },
-          {
-            "round": 3,
-            "match_num": 1,
-            "winner_name": "D. Zelinskaya",
-            "score": "63 46 63"
-          },
-          {
-            "round": 3,
-            "match_num": 2,
-            "winner_name": "K. Popovic",
-            "score": "76(5) 64"
-          },
-          {
-            "round": 3,
-            "match_num": 3,
-            "winner_name": "I. Shinikova",
-            "score": "63 46 63"
-          }
-        ],
-        "byes": [],
-        "round_labels": [
-          "Round of 32",
-          "Round of 16",
-          "Quarterfinals",
-          "Semifinals",
-          "Final"
-        ],
-        "num_rounds": 5
-      },
       "QS": {
         "tournament_name": "",
         "location": "",
@@ -4908,420 +4843,6 @@
     "startDate": "2026-04-06T00:00:00",
     "endDate": "2026-04-12T00:00:00",
     "draws": {
-      "MDS": {
-        "tournament_name": "",
-        "location": "",
-        "dates": "",
-        "prize": "",
-        "surface": "",
-        "draw_type": "",
-        "draw_size": 32,
-        "players": [
-          {
-            "pos": 1,
-            "seed": "1",
-            "entry": "",
-            "name": "VAN EMST, Sarah",
-            "country": "NED"
-          },
-          {
-            "pos": 2,
-            "seed": "",
-            "entry": "Q",
-            "name": "KMIECIK, Anna",
-            "country": "POL"
-          },
-          {
-            "pos": 3,
-            "seed": "",
-            "entry": "",
-            "name": "HATOUKA, Yuliya",
-            "country": "BLR"
-          },
-          {
-            "pos": 4,
-            "seed": "",
-            "entry": "",
-            "name": "MINCHEVA, Vlada",
-            "country": "RUS"
-          },
-          {
-            "pos": 5,
-            "seed": "",
-            "entry": "",
-            "name": "SEVCIKOVA, Linda",
-            "country": "CZE"
-          },
-          {
-            "pos": 6,
-            "seed": "",
-            "entry": "Q",
-            "name": "OLIVER SANCHEZ, Maria",
-            "country": "ESP"
-          },
-          {
-            "pos": 7,
-            "seed": "",
-            "entry": "Q",
-            "name": "WILDGRUBER, Anja",
-            "country": "GER"
-          },
-          {
-            "pos": 8,
-            "seed": "5",
-            "entry": "",
-            "name": "RAPOLU, Malaika",
-            "country": "USA"
-          },
-          {
-            "pos": 9,
-            "seed": "4",
-            "entry": "",
-            "name": "MELISS, Verena",
-            "country": "ITA"
-          },
-          {
-            "pos": 10,
-            "seed": "",
-            "entry": "",
-            "name": "PETRETIC, Laia",
-            "country": "FRA"
-          },
-          {
-            "pos": 11,
-            "seed": "",
-            "entry": "",
-            "name": "YESYPCHUK, Daria",
-            "country": "UKR"
-          },
-          {
-            "pos": 12,
-            "seed": "",
-            "entry": "WC",
-            "name": "MARIANI, Matilde",
-            "country": "ITA"
-          },
-          {
-            "pos": 13,
-            "seed": "",
-            "entry": "",
-            "name": "KARUNARATNE, Adithya",
-            "country": "HKG"
-          },
-          {
-            "pos": 14,
-            "seed": "",
-            "entry": "Q",
-            "name": "BERGEN, Mariia",
-            "country": "UKR"
-          },
-          {
-            "pos": 15,
-            "seed": "",
-            "entry": "WC",
-            "name": "MATEVA, Aleksandra",
-            "country": "BUL"
-          },
-          {
-            "pos": 16,
-            "seed": "6",
-            "entry": "",
-            "name": "DAAVETTILA, Sara",
-            "country": "USA"
-          },
-          {
-            "pos": 17,
-            "seed": "8",
-            "entry": "",
-            "name": "RAGGI, Angelica",
-            "country": "ITA"
-          },
-          {
-            "pos": 18,
-            "seed": "",
-            "entry": "JR",
-            "name": "KONSTANTINOVA, Yoana",
-            "country": "BUL"
-          },
-          {
-            "pos": 19,
-            "seed": "",
-            "entry": "WC",
-            "name": "URSO, Aurora",
-            "country": "ITA"
-          },
-          {
-            "pos": 20,
-            "seed": "",
-            "entry": "",
-            "name": "REY GARCIA, Alba",
-            "country": "ESP"
-          },
-          {
-            "pos": 21,
-            "seed": "",
-            "entry": "Q",
-            "name": "KOMANO, Margaux",
-            "country": "FRA"
-          },
-          {
-            "pos": 22,
-            "seed": "",
-            "entry": "Q",
-            "name": "LOSCIALE, Valentina",
-            "country": "ITA"
-          },
-          {
-            "pos": 23,
-            "seed": "",
-            "entry": "",
-            "name": "VELDMAN, Klara",
-            "country": "NED"
-          },
-          {
-            "pos": 24,
-            "seed": "3",
-            "entry": "",
-            "name": "ADESHINA, Esther",
-            "country": "GBR"
-          },
-          {
-            "pos": 25,
-            "seed": "7",
-            "entry": "",
-            "name": "GANZ, Fiona",
-            "country": "SUI"
-          },
-          {
-            "pos": 26,
-            "seed": "",
-            "entry": "",
-            "name": "KUBAREVA, Anna",
-            "country": "BLR"
-          },
-          {
-            "pos": 27,
-            "seed": "",
-            "entry": "",
-            "name": "FONTENEL, Chelsea",
-            "country": "SUI"
-          },
-          {
-            "pos": 28,
-            "seed": "",
-            "entry": "Q",
-            "name": "MALONEY, Eliz",
-            "country": "GBR"
-          },
-          {
-            "pos": 29,
-            "seed": "",
-            "entry": "",
-            "name": "HAGEMAN, Madelief",
-            "country": "NED"
-          },
-          {
-            "pos": 30,
-            "seed": "",
-            "entry": "Q",
-            "name": "SORIANO SANTIAGO, Marta",
-            "country": "ESP"
-          },
-          {
-            "pos": 31,
-            "seed": "",
-            "entry": "WC",
-            "name": "LEBEAU, Yelena",
-            "country": "FRA"
-          },
-          {
-            "pos": 32,
-            "seed": "2",
-            "entry": "",
-            "name": "VORACEK, Eva Marie",
-            "country": "GER"
-          }
-        ],
-        "matches": [
-          {
-            "round": 1,
-            "match_num": 0,
-            "winner_name": "A. Kmiecik",
-            "score": "63 16 61"
-          },
-          {
-            "round": 1,
-            "match_num": 1,
-            "winner_name": "V. Mincheva",
-            "score": "64 63"
-          },
-          {
-            "round": 1,
-            "match_num": 2,
-            "winner_name": "M. Oliver sanchez",
-            "score": "76(4) 75"
-          },
-          {
-            "round": 1,
-            "match_num": 3,
-            "winner_name": "M. Rapolu",
-            "score": "63 63"
-          },
-          {
-            "round": 1,
-            "match_num": 4,
-            "winner_name": "V. Meliss",
-            "score": "64 62"
-          },
-          {
-            "round": 1,
-            "match_num": 5,
-            "winner_name": "D. Yesypchuk",
-            "score": "62 63"
-          },
-          {
-            "round": 1,
-            "match_num": 6,
-            "winner_name": "A. Karunaratne",
-            "score": "75 76(4)"
-          },
-          {
-            "round": 1,
-            "match_num": 7,
-            "winner_name": "S. Daavettila",
-            "score": "61 61"
-          },
-          {
-            "round": 1,
-            "match_num": 8,
-            "winner_name": "A. Raggi",
-            "score": "06 76(8) 75"
-          },
-          {
-            "round": 1,
-            "match_num": 9,
-            "winner_name": "A. Rey Garcia",
-            "score": "61 62"
-          },
-          {
-            "round": 1,
-            "match_num": 10,
-            "winner_name": "M. Komano",
-            "score": "64 67 60"
-          },
-          {
-            "round": 1,
-            "match_num": 11,
-            "winner_name": "E. Adeshina",
-            "score": "61 26 63"
-          },
-          {
-            "round": 1,
-            "match_num": 12,
-            "winner_name": "A. Kubareva",
-            "score": "60 61"
-          },
-          {
-            "round": 1,
-            "match_num": 13,
-            "winner_name": "E. Maloney",
-            "score": "75 64"
-          },
-          {
-            "round": 1,
-            "match_num": 14,
-            "winner_name": "M. Soriano Santiago",
-            "score": "64 63"
-          },
-          {
-            "round": 1,
-            "match_num": 15,
-            "winner_name": "E. Voracek",
-            "score": "76(2) 61"
-          },
-          {
-            "round": 2,
-            "match_num": 0,
-            "winner_name": "A. Kmiecik",
-            "score": "75 36 64"
-          },
-          {
-            "round": 2,
-            "match_num": 1,
-            "winner_name": "M. Rapolu",
-            "score": "76(2) 62"
-          },
-          {
-            "round": 2,
-            "match_num": 2,
-            "winner_name": "D. Yesypchuk",
-            "score": "64 64"
-          },
-          {
-            "round": 2,
-            "match_num": 3,
-            "winner_name": "S. Daavettila",
-            "score": "61 64"
-          },
-          {
-            "round": 2,
-            "match_num": 4,
-            "winner_name": "A. Raggi",
-            "score": "61 63"
-          },
-          {
-            "round": 2,
-            "match_num": 5,
-            "winner_name": "E. Adeshina",
-            "score": "62 62"
-          },
-          {
-            "round": 2,
-            "match_num": 6,
-            "winner_name": "E. Maloney",
-            "score": "75 26 62"
-          },
-          {
-            "round": 2,
-            "match_num": 7,
-            "winner_name": "E. Voracek",
-            "score": "16 62 75"
-          },
-          {
-            "round": 3,
-            "match_num": 0,
-            "winner_name": "M. Rapolu",
-            "score": "64 62"
-          },
-          {
-            "round": 3,
-            "match_num": 1,
-            "winner_name": "D. Yesypchuk",
-            "score": "64 61"
-          },
-          {
-            "round": 3,
-            "match_num": 2,
-            "winner_name": "A. Raggi",
-            "score": "64 64"
-          },
-          {
-            "round": 3,
-            "match_num": 3,
-            "winner_name": "E. Voracek",
-            "score": "61 RET"
-          }
-        ],
-        "byes": [],
-        "round_labels": [
-          "Round of 32",
-          "Round of 16",
-          "Quarterfinals",
-          "Semifinals",
-          "Final"
-        ],
-        "num_rounds": 5
-      },
       "QS": {
         "tournament_name": "",
         "location": "",
@@ -5944,7 +5465,7 @@
     "startDate": "2026-04-06T00:00:00",
     "endDate": "2026-04-12T00:00:00",
     "draws": {
-      "QS": {
+      "MDS": {
         "tournament_name": "",
         "location": "",
         "dates": "",
@@ -5957,379 +5478,382 @@
             "pos": 1,
             "seed": "1",
             "entry": "",
-            "name": "MARTINEZ SOLIS, Claudia Sofia",
-            "country": "MEX"
+            "name": "TOPALOVA, Gergana",
+            "country": "BUL"
           },
           {
             "pos": 2,
             "seed": "",
             "entry": "",
-            "name": "ELIZAROVA, Serafima",
-            "country": "USA"
+            "name": "NORIN, Fanny",
+            "country": "SWE"
           },
           {
             "pos": 3,
             "seed": "",
-            "entry": "",
-            "name": "PRICE, Gabriella",
+            "entry": "WC",
+            "name": "BROWN, Jaedan",
             "country": "USA"
           },
           {
             "pos": 4,
-            "seed": "15",
-            "entry": "",
-            "name": "SCHLEPPHORST, Athina",
-            "country": "GBR"
+            "seed": "",
+            "entry": "WC",
+            "name": "VALDEZ, Nadia Elle",
+            "country": "USA"
           },
           {
             "pos": 5,
-            "seed": "2",
-            "entry": "",
-            "name": "DEAN, Jenna",
-            "country": "USA"
+            "seed": "",
+            "entry": "Q",
+            "name": "DVORACKOVA, Anna",
+            "country": "CZE"
           },
           {
             "pos": 6,
             "seed": "",
-            "entry": "",
-            "name": "MCPHILLIPS, Kyle",
-            "country": "USA"
+            "entry": "JR",
+            "name": "BIELINSKA, Sofiia",
+            "country": "UKR"
           },
           {
             "pos": 7,
             "seed": "",
-            "entry": "",
-            "name": "GRUBER, Taylor",
-            "country": "USA"
+            "entry": "Q",
+            "name": "FETECAU, Irina",
+            "country": "ROU"
           },
           {
             "pos": 8,
-            "seed": "9",
+            "seed": "5",
             "entry": "",
-            "name": "EVTIMOVA, Dia",
-            "country": "BUL"
+            "name": "EGOROVA, Daria",
+            "country": "RUS"
           },
           {
             "pos": 9,
             "seed": "3",
             "entry": "",
-            "name": "ALLEN, Kolie",
+            "name": "COLLINS, Kylie",
             "country": "USA"
           },
           {
             "pos": 10,
             "seed": "",
             "entry": "",
-            "name": "HARVEY, Ashleigh",
+            "name": "COLEMAN, Elizabeth",
             "country": "USA"
           },
           {
             "pos": 11,
             "seed": "",
             "entry": "",
-            "name": "KAUR, Basant",
-            "country": "USA"
+            "name": "BOHRER MARTINS, Carolina",
+            "country": "BRA"
           },
           {
             "pos": 12,
-            "seed": "10",
-            "entry": "",
-            "name": "VOZNIAK, Khrystyna",
-            "country": "UKR"
+            "seed": "",
+            "entry": "Q",
+            "name": "CORVI, Aurora",
+            "country": "ITA"
           },
           {
             "pos": 13,
-            "seed": "4",
+            "seed": "",
             "entry": "",
-            "name": "FETECAU, Irina",
-            "country": "ROU"
+            "name": "PETRUZELOVA, Lucie",
+            "country": "CZE"
           },
           {
             "pos": 14,
             "seed": "",
-            "entry": "",
-            "name": "CRUMP, Alessandra",
+            "entry": "JR",
+            "name": "SOHNS, Margaret",
             "country": "USA"
           },
           {
             "pos": 15,
             "seed": "",
-            "entry": "",
-            "name": "TIKHONKO, Michelle",
+            "entry": "Q",
+            "name": "SHUMATE, Sara",
             "country": "USA"
           },
           {
             "pos": 16,
-            "seed": "16",
+            "seed": "6",
             "entry": "",
-            "name": "BARRY, Sarah",
-            "country": "NZL"
+            "name": "SCHOPPE, Ellie",
+            "country": "USA"
           },
           {
             "pos": 17,
-            "seed": "5",
+            "seed": "8",
             "entry": "",
-            "name": "KONONOVA, Maria",
-            "country": "RUS"
+            "name": "PAYNE, Bella",
+            "country": "USA"
           },
           {
             "pos": 18,
             "seed": "",
-            "entry": "WC",
-            "name": "SINGEORZAN, Juliana Nicole",
-            "country": "USA"
+            "entry": "",
+            "name": "HERAZO, Maria",
+            "country": "COL"
           },
           {
             "pos": 19,
             "seed": "",
-            "entry": "",
-            "name": "BJORK, June",
-            "country": "SWE"
+            "entry": "JR",
+            "name": "KORPANEC DAVIES, Allegra",
+            "country": "GBR"
           },
           {
             "pos": 20,
-            "seed": "11",
-            "entry": "",
-            "name": "DVORACKOVA, Anna",
-            "country": "CZE"
+            "seed": "",
+            "entry": "Q",
+            "name": "VOZNIAK, Khrystyna",
+            "country": "UKR"
           },
           {
             "pos": 21,
-            "seed": "6",
-            "entry": "",
-            "name": "JARA, Sydney",
+            "seed": "",
+            "entry": "Q",
+            "name": "DEAN, Jenna",
             "country": "USA"
           },
           {
             "pos": 22,
             "seed": "",
             "entry": "",
-            "name": "STRYKOVA, Justyna Anna",
-            "country": "CZE"
+            "name": "TANGUILIG, Carson",
+            "country": "USA"
           },
           {
             "pos": 23,
             "seed": "",
-            "entry": "",
-            "name": "SHARABURA, Kate",
-            "country": "USA"
+            "entry": "Q",
+            "name": "SCHLEPPHORST, Athina",
+            "country": "GBR"
           },
           {
             "pos": 24,
-            "seed": "13",
+            "seed": "4",
             "entry": "",
-            "name": "CORVI, Aurora",
-            "country": "ITA"
+            "name": "GRUBOR, Ana",
+            "country": "CAN"
           },
           {
             "pos": 25,
             "seed": "7",
-            "entry": "",
-            "name": "GROTH, Georgina",
-            "country": "GER"
+            "entry": "SR",
+            "name": "MARKHAM, Ava",
+            "country": "USA"
           },
           {
             "pos": 26,
             "seed": "",
-            "entry": "",
-            "name": "BEDNARCZYK, Christina",
-            "country": "GER"
-          },
-          {
-            "pos": 27,
-            "seed": "",
-            "entry": "",
-            "name": "FRISSORA, Eva",
-            "country": "USA"
-          },
-          {
-            "pos": 28,
-            "seed": "12",
-            "entry": "",
+            "entry": "Q",
             "name": "JACKSON, Emma",
             "country": "USA"
           },
           {
+            "pos": 27,
+            "seed": "",
+            "entry": "WC",
+            "name": "MORENO, Carlota",
+            "country": "USA"
+          },
+          {
+            "pos": 28,
+            "seed": "",
+            "entry": "WC",
+            "name": "YE, Sarah",
+            "country": "USA"
+          },
+          {
             "pos": 29,
-            "seed": "8",
+            "seed": "",
             "entry": "",
-            "name": "KUJOVIC, Katarina",
-            "country": "BEL"
+            "name": "RODRIGUEZ, Ava",
+            "country": "USA"
           },
           {
             "pos": 30,
             "seed": "",
             "entry": "",
-            "name": "SHUMATE, Sara",
-            "country": "USA"
+            "name": "LIU, Kallista",
+            "country": "HKG"
           },
           {
             "pos": 31,
             "seed": "",
             "entry": "",
-            "name": "RINCON, Ana Maria",
-            "country": "USA"
+            "name": "MAQUET, Margaux",
+            "country": "BEL"
           },
           {
             "pos": 32,
-            "seed": "14",
+            "seed": "2",
             "entry": "",
-            "name": "GABRIEL, Anais",
-            "country": "SUI"
+            "name": "APPLETON, Emily",
+            "country": "GBR"
           }
         ],
         "matches": [
           {
             "round": 1,
             "match_num": 0,
-            "winner_name": "S. Elizarova",
+            "winner_name": "G. Topalova",
+            "score": "75 62"
+          },
+          {
+            "round": 1,
+            "match_num": 1,
+            "winner_name": "J. Brown",
+            "score": "61 62"
+          },
+          {
+            "round": 1,
+            "match_num": 2,
+            "winner_name": "S. Bielinska",
+            "score": "64 63"
+          },
+          {
+            "round": 1,
+            "match_num": 3,
+            "winner_name": "D. Egorova",
             "score": "61 63"
           },
           {
             "round": 1,
-            "match_num": 1,
-            "winner_name": "A. Schlepphorst",
-            "score": "46 64 10-6"
-          },
-          {
-            "round": 1,
-            "match_num": 2,
-            "winner_name": "J. Dean",
-            "score": "63 64"
-          },
-          {
-            "round": 1,
-            "match_num": 3,
-            "winner_name": "T. Gruber",
-            "score": "62 16 10-7"
-          },
-          {
-            "round": 1,
             "match_num": 4,
-            "winner_name": "K. Allen",
-            "score": "60 60"
-          },
-          {
-            "round": 1,
-            "match_num": 5,
-            "winner_name": "K. Vozniak",
-            "score": "60 60"
-          },
-          {
-            "round": 1,
-            "match_num": 6,
-            "winner_name": "I. Fetecau",
-            "score": "60 61"
-          },
-          {
-            "round": 1,
-            "match_num": 7,
-            "winner_name": "M. Tikhonko",
-            "score": "67 62 10-5"
-          },
-          {
-            "round": 1,
-            "match_num": 8,
-            "winner_name": "M. Kononova",
-            "score": "64 61"
-          },
-          {
-            "round": 1,
-            "match_num": 9,
-            "winner_name": "A. Dvorackova",
+            "winner_name": "K. Collins",
             "score": "61 64"
           },
           {
             "round": 1,
+            "match_num": 5,
+            "winner_name": "C. Bohrer Martins",
+            "score": "62 61"
+          },
+          {
+            "round": 1,
+            "match_num": 6,
+            "winner_name": "L. Petruzelova",
+            "score": "63 61"
+          },
+          {
+            "round": 1,
+            "match_num": 7,
+            "winner_name": "E. Schoppe",
+            "score": "76(5) 60"
+          },
+          {
+            "round": 1,
+            "match_num": 8,
+            "winner_name": "B. Payne",
+            "score": "64 62"
+          },
+          {
+            "round": 1,
+            "match_num": 9,
+            "winner_name": "A. Korpanec Davies",
+            "score": "60 64"
+          },
+          {
+            "round": 1,
             "match_num": 10,
-            "winner_name": "J. Strykova",
-            "score": "46 61 10-2"
+            "winner_name": "C. Tanguilig",
+            "score": "60 63"
           },
           {
             "round": 1,
             "match_num": 11,
-            "winner_name": "A. Corvi",
-            "score": "64 36 10-4"
+            "winner_name": "A. Grubor",
+            "score": "57 64 60"
           },
           {
             "round": 1,
             "match_num": 12,
-            "winner_name": "G. Groth",
-            "score": "26 62 10-5"
+            "winner_name": "A. Markham",
+            "score": "61 62"
           },
           {
             "round": 1,
             "match_num": 13,
-            "winner_name": "E. Jackson",
-            "score": "61 60"
+            "winner_name": "C. Moreno",
+            "score": "62 62"
           },
           {
             "round": 1,
             "match_num": 14,
-            "winner_name": "S. Shumate",
-            "score": "26 60 11-9"
+            "winner_name": "A. Rodriguez",
+            "score": "61 76(2)"
           },
           {
             "round": 1,
             "match_num": 15,
-            "winner_name": "A. Gabriel",
-            "score": "76 64"
+            "winner_name": "M. Maquet",
+            "score": "63 64"
           },
           {
             "round": 2,
             "match_num": 0,
-            "winner_name": "A. Schlepphorst",
-            "score": "57 64 10-6"
+            "winner_name": "G. Topalova",
+            "score": "60 63"
           },
           {
             "round": 2,
             "match_num": 1,
-            "winner_name": "J. Dean",
-            "score": "64 62"
+            "winner_name": "D. Egorova",
+            "score": "61 62"
           },
           {
             "round": 2,
             "match_num": 2,
-            "winner_name": "K. Vozniak",
-            "score": "64 63"
+            "winner_name": "K. Collins",
+            "score": "62 46 64"
           },
           {
             "round": 2,
             "match_num": 3,
-            "winner_name": "I. Fetecau",
-            "score": "62 60"
+            "winner_name": "E. Schoppe",
+            "score": "36 60 76(2)"
           },
           {
             "round": 2,
             "match_num": 4,
-            "winner_name": "A. Dvorackova",
-            "score": "62 67 10-7"
+            "winner_name": "B. Payne",
+            "score": "36 63 64"
           },
           {
             "round": 2,
             "match_num": 5,
-            "winner_name": "A. Corvi",
-            "score": "63 36 10-6"
+            "winner_name": "C. Tanguilig",
+            "score": "64 67 64"
           },
           {
             "round": 2,
             "match_num": 6,
-            "winner_name": "E. Jackson",
-            "score": "64 64"
+            "winner_name": "C. Moreno",
+            "score": "75 64"
           },
           {
             "round": 2,
             "match_num": 7,
-            "winner_name": "S. Shumate",
-            "score": "36 64 10-7"
+            "winner_name": "M. Maquet",
+            "score": "61 64"
           }
         ],
         "byes": [],
         "round_labels": [
           "Round of 32",
-          "Round of 16"
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
         ],
-        "num_rounds": 2
+        "num_rounds": 5
       }
     }
   },
