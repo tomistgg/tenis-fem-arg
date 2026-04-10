@@ -134,7 +134,10 @@ def main():
             formatted_date = raw_date.split('T')[0] if raw_date else ""
 
             venue_country = tie_data.get('venue', {}).get('country', {}).get('name', '')
-            surface = tie_data.get('surfaceFriendlyName', '')
+            surface = (tie_data.get('surfaceFriendlyName') or '').strip()
+            # API can omit current-season surface for some ties; default to Clay as requested.
+            if (not surface) and formatted_date.startswith(f"{START_YEAR}-"):
+                surface = "Clay"
 
             for m in tie_data.get('matches', []):
                 sides = m.get('sides', [])
