@@ -42,6 +42,57 @@ PLAYER_ALIASES_WTA_ITF_FILE = os.path.join(DATA_DIR, "player_aliases_wta_itf.jso
 DRAWS_STORE_CACHE_FILE = os.path.join(DATA_DIR, "draws_store_cache.json")
 
 
+def _canonical_draw_store_key(t_key):
+    """Normalize draw cache keys so ITF keys are case-stable across runs."""
+    key = str(t_key or "").strip()
+    if not key:
+        return ""
+    if key.lower().startswith("w-itf-"):
+        return key.lower()
+    return key
+
+
+def _merge_draw_store_entry(existing, incoming):
+    """Merge two draw cache entries, preferring non-empty incoming metadata and newer draw payloads."""
+    if not isinstance(existing, dict):
+        existing = {}
+    if not isinstance(incoming, dict):
+        incoming = {}
+    if not existing:
+        return dict(incoming)
+    if not incoming:
+        return dict(existing)
+
+    merged = dict(existing)
+    for field in ("name", "level", "week", "startDate", "endDate"):
+        value = incoming.get(field)
+        if value is not None and str(value).strip() != "":
+            merged[field] = value
+
+    existing_draws = existing.get("draws") if isinstance(existing.get("draws"), dict) else {}
+    incoming_draws = incoming.get("draws") if isinstance(incoming.get("draws"), dict) else {}
+    if existing_draws or incoming_draws:
+        merged_draws = {}
+        merged_draws.update(existing_draws)
+        merged_draws.update(incoming_draws)
+        merged["draws"] = merged_draws
+
+    return merged
+
+
+def _normalize_draws_store_keys(draws_store):
+    """Collapse case-only ITF key duplicates into a single canonical cache key."""
+    if not isinstance(draws_store, dict):
+        return {}
+    normalized = {}
+    for raw_key, tdata in draws_store.items():
+        canonical_key = _canonical_draw_store_key(raw_key)
+        if not canonical_key:
+            continue
+        normalized[canonical_key] = _merge_draw_store_entry(normalized.get(canonical_key), tdata)
+    return normalized
+
+
 def _normalize_name_for_lookup(name):
     """Normalize names for cross-source lookups (case/accents/whitespace)."""
     if not name:
@@ -625,6 +676,7 @@ def main():
     draws_store = load_cache(DRAWS_STORE_CACHE_FILE) or {}
     if not isinstance(draws_store, dict):
         draws_store = {}
+    draws_store = _normalize_draws_store_keys(draws_store)
     draws_tournaments = get_draws_tournament_list()
     current_year = str(datetime.now().year)
     wta_draw_jobs = []
@@ -635,14 +687,15 @@ def main():
     total_wta_draws = len(wta_draw_jobs) or 1
     for i, (week, t_key, t_info) in enumerate(wta_draw_jobs, start=1):
         print(f"Fetching WTA Draws ({i}/{total_wta_draws})")
-        prev = draws_store.get(t_key) if isinstance(draws_store.get(t_key), dict) else {}
+        store_key = _canonical_draw_store_key(t_key)
+        prev = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
         prev_draws = (prev or {}).get("draws") or {}
         t_draws = fetch_tournament_draws(t_key, current_year) or {}
         merged_draws = t_draws if t_draws else prev_draws
         if merged_draws:
             if not t_draws and prev_draws:
                 print(f"  Using cached WTA draws for: {t_info.get('name','')}")
-            draws_store[t_key] = {
+            draws_store[store_key] = {
                 "name": t_info["name"],
                 "level": t_info.get("level", ""),
                 "week": week,
@@ -665,14 +718,15 @@ def main():
         print(f"Fetching ITF Draws ({i}/{total_itf_draws})")
         tid = t_info.get("tournamentId")
         is_multiweek = t_info.get("is_multiweek", False)
-        prev = draws_store.get(t_key) if isinstance(draws_store.get(t_key), dict) else {}
+        store_key = _canonical_draw_store_key(t_key)
+        prev = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
         prev_draws = (prev or {}).get("draws") or {}
         t_draws = fetch_itf_tournament_draws(tid, is_multiweek=is_multiweek) or {}
         merged_draws = t_draws if t_draws else prev_draws
         if merged_draws:
             if not t_draws and prev_draws:
                 print(f"  Using cached ITF draws for: {t_info.get('name','')}")
-            draws_store[t_key] = {
+            draws_store[store_key] = {
                 "name": t_info["name"],
                 "level": t_info.get("level", ""),
                 "week": week,
