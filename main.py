@@ -626,12 +626,44 @@ def build_calendar_snapshot(calendar_data):
 
 def main():
     driver = create_driver()
+    itf_draws_tournaments = {}
+    prefetched_itf_draws = {}
     try:
         # 1. Fetch full-year ITF calendar first (populates cache for dynamic subset)
         full_itf = get_full_itf_calendar(driver)
 
         # 2. Build tournament groups (WTA + ITF) — uses cached ITF data
         tournament_groups, monday_map = build_all_tournament_groups(driver)
+
+        # 2b. Fetch ITF draws tournament list and prefetch draw payloads before
+        # heavier ITF traffic later in the run.
+        print("Fetching ITF draws tournament list...")
+        itf_draws_tournaments = get_draws_itf_tournament_list(driver)
+        itf_prefetch_jobs = []
+        for week, tourneys in (itf_draws_tournaments or {}).items():
+            for t_key, t_info in (tourneys or {}).items():
+                tid = (t_info or {}).get("tournamentId")
+                if not tid:
+                    continue
+                itf_prefetch_jobs.append((week, t_key, t_info))
+
+        total_itf_prefetch = len(itf_prefetch_jobs) or 1
+        for i, (week, t_key, t_info) in enumerate(itf_prefetch_jobs, start=1):
+            print(f"Prefetching ITF Draws ({i}/{total_itf_prefetch})")
+            tid = t_info.get("tournamentId")
+            is_multiweek = t_info.get("is_multiweek", False)
+            dvr = create_driver()
+            try:
+                t_draws = fetch_itf_tournament_draws(
+                    tid, is_multiweek=is_multiweek, driver=dvr
+                ) or {}
+            finally:
+                try:
+                    dvr.quit()
+                except Exception:
+                    pass
+            if t_draws:
+                prefetched_itf_draws[_canonical_draw_store_key(t_key)] = t_draws
 
         # 3. Fetch ARG player rankings
         players_data, arg_names_set, all_wta_players = fetch_arg_players()
@@ -665,9 +697,6 @@ def main():
         except Exception as e:
             print(f"Error writing history_data.json: {e}")
 
-        # 5b. Fetch ITF draws tournament list (needs Selenium for GetEventFilters)
-        print("Fetching ITF draws tournament list...")
-        itf_draws_tournaments = get_draws_itf_tournament_list(driver)
     finally:
         driver.quit()
 
@@ -708,7 +737,7 @@ def main():
                 "draws": merged_draws,
             }
 
-    # 6b. Fetch ITF draws (uses requests.post, no Selenium needed)
+    # 6b. Fetch ITF draws (prefer prefetched payloads captured earlier in the run)
     itf_draw_jobs = []
     for week, tourneys in (itf_draws_tournaments or {}).items():
         for t_key, t_info in (tourneys or {}).items():
@@ -725,12 +754,49 @@ def main():
         store_key = _canonical_draw_store_key(t_key)
         prev = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
         prev_draws = (prev or {}).get("draws") or {}
-        t_draws = fetch_itf_tournament_draws(tid, is_multiweek=is_multiweek) or {}
+
+        t_draws = (
+            prefetched_itf_draws.get(store_key)
+            if isinstance(prefetched_itf_draws.get(store_key), dict)
+            else {}
+        )
+        if not t_draws:
+            # Use a fresh browser session per tournament; ITF anti-bot filtering can
+            # degrade a long-lived session and return blocked HTML for API endpoints.
+            itf_draw_driver = create_driver()
+            try:
+                t_draws = fetch_itf_tournament_draws(
+                    tid, is_multiweek=is_multiweek, driver=itf_draw_driver
+                ) or {}
+            finally:
+                try:
+                    itf_draw_driver.quit()
+                except Exception:
+                    pass
+
         merged_draws = {}
         if isinstance(prev_draws, dict):
             merged_draws.update(prev_draws)
         if isinstance(t_draws, dict):
             merged_draws.update(t_draws)
+        # Extra gap-fill pass: if one ITF draw type is missing, try a couple of
+        # fresh sessions to recover the other type before falling back to cache.
+        if set(merged_draws.keys()) != {"MDS", "QS"}:
+            for _ in range(2):
+                retry_driver = create_driver()
+                try:
+                    extra_draws = fetch_itf_tournament_draws(
+                        tid, is_multiweek=is_multiweek, driver=retry_driver
+                    ) or {}
+                finally:
+                    try:
+                        retry_driver.quit()
+                    except Exception:
+                        pass
+                if isinstance(extra_draws, dict):
+                    merged_draws.update(extra_draws)
+                if set(merged_draws.keys()) == {"MDS", "QS"}:
+                    break
         if merged_draws:
             if not t_draws and prev_draws:
                 print(f"  Using cached ITF draws for: {t_info.get('name','')}")

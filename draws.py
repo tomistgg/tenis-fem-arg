@@ -1,5 +1,6 @@
 """Parse WTA draw PDFs and ITF draw JSON data."""
 
+import json
 import math
 import re
 import unicodedata
@@ -505,6 +506,74 @@ def _fetch_itf_drawsheet(tournament_id, classification, week_number=0):
         return None
 
 
+def _fetch_itf_drawsheet_via_driver(tournament_id, classification, week_number, driver, timeout_ms=15000):
+    """Fetch an ITF drawsheet via browser fetch() in Selenium context."""
+    if driver is None:
+        return None
+
+    payload = {
+        "circuitCode": "WT",
+        "eventClassificationCode": classification,
+        "matchTypeCode": "S",
+        "tourType": "WT",
+        "tournamentId": str(tournament_id),
+        "weekNumber": int(week_number),
+    }
+
+    script = """
+const url = arguments[0];
+const payload = arguments[1];
+const timeoutMs = arguments[2];
+const done = arguments[arguments.length - 1];
+
+let sent = false;
+const finish = (obj) => {
+  if (sent) return;
+  sent = true;
+  done(obj);
+};
+
+const controller = new AbortController();
+const timer = setTimeout(() => {
+  controller.abort();
+  finish({ ok: false, error: "timeout" });
+}, timeoutMs);
+
+fetch(url, {
+  method: "POST",
+  credentials: "include",
+  cache: "no-store",
+  headers: {
+    "Content-Type": "application/json",
+    "Accept": "application/json, text/plain, */*"
+  },
+  body: JSON.stringify(payload),
+  signal: controller.signal,
+})
+  .then(async (resp) => {
+    const text = await resp.text();
+    finish({ ok: true, status: resp.status, text });
+  })
+  .catch((err) => finish({ ok: false, error: String(err) }))
+  .finally(() => clearTimeout(timer));
+"""
+    try:
+        result = driver.execute_async_script(script, _ITF_DRAWSHEET_URL, payload, int(timeout_ms))
+    except Exception:
+        return None
+    if not isinstance(result, dict) or not result.get("ok") or int(result.get("status", 0)) != 200:
+        return None
+
+    text = str(result.get("text") or "").strip()
+    if not text.startswith("{"):
+        return None
+    try:
+        data = json.loads(text)
+    except Exception:
+        return None
+    return data if isinstance(data, dict) else None
+
+
 def _parse_itf_score(teams, winner_idx):
     """Build a WTA-style score string from ITF score data.
 
@@ -703,7 +772,7 @@ def _parse_itf_draw(data):
     }
 
 
-def fetch_itf_tournament_draws(tournament_id, is_multiweek=False):
+def fetch_itf_tournament_draws(tournament_id, is_multiweek=False, driver=None):
     """Fetch and parse ITF draws for a tournament. Returns dict like WTA draws."""
     draws = {}
     # Multi-week circuits can expose drawsheet data under different week numbers
@@ -716,7 +785,19 @@ def fetch_itf_tournament_draws(tournament_id, is_multiweek=False):
 
     for classification, dtype_code, dtype_label in _ITF_DRAW_TYPES:
         for week_number in week_candidates:
-            raw = _fetch_itf_drawsheet(tournament_id, classification, week_number)
+            raw = None
+            # ITF API can be intermittently blocked for plain requests; retry and
+            # fall back to browser-context fetch when Selenium driver is provided.
+            for _ in range(2):
+                raw = _fetch_itf_drawsheet(tournament_id, classification, week_number)
+                if raw and raw.get("koGroups"):
+                    break
+                if driver is not None:
+                    raw = _fetch_itf_drawsheet_via_driver(
+                        tournament_id, classification, week_number, driver
+                    )
+                    if raw and raw.get("koGroups"):
+                        break
             if not (raw and raw.get("koGroups")):
                 continue
             try:
