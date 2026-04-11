@@ -691,7 +691,11 @@ def main():
         prev = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
         prev_draws = (prev or {}).get("draws") or {}
         t_draws = fetch_tournament_draws(t_key, current_year) or {}
-        merged_draws = t_draws if t_draws else prev_draws
+        merged_draws = {}
+        if isinstance(prev_draws, dict):
+            merged_draws.update(prev_draws)
+        if isinstance(t_draws, dict):
+            merged_draws.update(t_draws)
         if merged_draws:
             if not t_draws and prev_draws:
                 print(f"  Using cached WTA draws for: {t_info.get('name','')}")
@@ -722,7 +726,11 @@ def main():
         prev = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
         prev_draws = (prev or {}).get("draws") or {}
         t_draws = fetch_itf_tournament_draws(tid, is_multiweek=is_multiweek) or {}
-        merged_draws = t_draws if t_draws else prev_draws
+        merged_draws = {}
+        if isinstance(prev_draws, dict):
+            merged_draws.update(prev_draws)
+        if isinstance(t_draws, dict):
+            merged_draws.update(t_draws)
         if merged_draws:
             if not t_draws and prev_draws:
                 print(f"  Using cached ITF draws for: {t_info.get('name','')}")

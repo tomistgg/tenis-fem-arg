@@ -706,14 +706,24 @@ def _parse_itf_draw(data):
 def fetch_itf_tournament_draws(tournament_id, is_multiweek=False):
     """Fetch and parse ITF draws for a tournament. Returns dict like WTA draws."""
     draws = {}
+    # Multi-week circuits can expose drawsheet data under different week numbers
+    # depending on event timing. Try the preferred week first, then fall back.
+    preferred_week = 1 if is_multiweek else 0
+    week_candidates = []
+    for wn in (preferred_week, 0, 1):
+        if wn not in week_candidates:
+            week_candidates.append(wn)
+
     for classification, dtype_code, dtype_label in _ITF_DRAW_TYPES:
-        week_number = 1 if is_multiweek else 0
-        raw = _fetch_itf_drawsheet(tournament_id, classification, week_number)
-        if raw and raw.get("koGroups"):
+        for week_number in week_candidates:
+            raw = _fetch_itf_drawsheet(tournament_id, classification, week_number)
+            if not (raw and raw.get("koGroups")):
+                continue
             try:
                 parsed = _parse_itf_draw(raw)
                 if parsed and parsed["players"]:
                     draws[dtype_code] = parsed
+                    break
             except Exception as e:
                 print(f"Error parsing ITF {dtype_label} for {tournament_id}: {e}")
     return draws
