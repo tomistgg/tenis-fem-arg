@@ -2,6 +2,8 @@ import os
 import json
 import pandas as pd
 import csv
+import random
+import time
 from datetime import datetime, timedelta
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -40,6 +42,7 @@ TOURNAMENT_SNAPSHOT_FILE = os.path.join(DATA_DIR, "tournament_snapshot.json")
 CALENDAR_SNAPSHOT_FILE = os.path.join(DATA_DIR, "calendar_snapshot.json")
 PLAYER_ALIASES_WTA_ITF_FILE = os.path.join(DATA_DIR, "player_aliases_wta_itf.json")
 DRAWS_STORE_CACHE_FILE = os.path.join(DATA_DIR, "draws_store_cache.json")
+ENABLE_ITF_DRAWS_PREFETCH = False
 
 
 def _canonical_draw_store_key(t_key):
@@ -639,31 +642,32 @@ def main():
         # heavier ITF traffic later in the run.
         print("Fetching ITF draws tournament list...")
         itf_draws_tournaments = get_draws_itf_tournament_list(driver)
-        itf_prefetch_jobs = []
-        for week, tourneys in (itf_draws_tournaments or {}).items():
-            for t_key, t_info in (tourneys or {}).items():
-                tid = (t_info or {}).get("tournamentId")
-                if not tid:
-                    continue
-                itf_prefetch_jobs.append((week, t_key, t_info))
+        if ENABLE_ITF_DRAWS_PREFETCH:
+            itf_prefetch_jobs = []
+            for week, tourneys in (itf_draws_tournaments or {}).items():
+                for t_key, t_info in (tourneys or {}).items():
+                    tid = (t_info or {}).get("tournamentId")
+                    if not tid:
+                        continue
+                    itf_prefetch_jobs.append((week, t_key, t_info))
 
-        total_itf_prefetch = len(itf_prefetch_jobs) or 1
-        for i, (week, t_key, t_info) in enumerate(itf_prefetch_jobs, start=1):
-            print(f"Prefetching ITF Draws ({i}/{total_itf_prefetch})")
-            tid = t_info.get("tournamentId")
-            is_multiweek = t_info.get("is_multiweek", False)
-            dvr = create_driver()
-            try:
-                t_draws = fetch_itf_tournament_draws(
-                    tid, is_multiweek=is_multiweek, driver=dvr
-                ) or {}
-            finally:
+            total_itf_prefetch = len(itf_prefetch_jobs) or 1
+            for i, (week, t_key, t_info) in enumerate(itf_prefetch_jobs, start=1):
+                print(f"Prefetching ITF Draws ({i}/{total_itf_prefetch})")
+                tid = t_info.get("tournamentId")
+                is_multiweek = t_info.get("is_multiweek", False)
+                dvr = create_driver()
                 try:
-                    dvr.quit()
-                except Exception:
-                    pass
-            if t_draws:
-                prefetched_itf_draws[_canonical_draw_store_key(t_key)] = t_draws
+                    t_draws = fetch_itf_tournament_draws(
+                        tid, is_multiweek=is_multiweek, driver=dvr
+                    ) or {}
+                finally:
+                    try:
+                        dvr.quit()
+                    except Exception:
+                        pass
+                if t_draws:
+                    prefetched_itf_draws[_canonical_draw_store_key(t_key)] = t_draws
 
         # 3. Fetch ARG player rankings
         players_data, arg_names_set, all_wta_players = fetch_arg_players()
@@ -747,8 +751,13 @@ def main():
             itf_draw_jobs.append((week, t_key, t_info))
 
     total_itf_draws = len(itf_draw_jobs) or 1
+    itf_cooloff_applied = False
+    itf_consecutive_empty = 0
     for i, (week, t_key, t_info) in enumerate(itf_draw_jobs, start=1):
         print(f"Fetching ITF Draws ({i}/{total_itf_draws})")
+        # Keep request cadence gentle to avoid ITF anti-bot throttling.
+        if i > 1:
+            time.sleep(random.uniform(0.8, 1.8))
         tid = t_info.get("tournamentId")
         is_multiweek = t_info.get("is_multiweek", False)
         store_key = _canonical_draw_store_key(t_key)
@@ -771,6 +780,27 @@ def main():
             finally:
                 try:
                     itf_draw_driver.quit()
+                except Exception:
+                    pass
+        if (
+            not t_draws
+            and not itf_cooloff_applied
+            and i == 1
+            and len(itf_draw_jobs) >= 6
+        ):
+            # ITF often enforces a short temporary block after the tournament-id burst.
+            # Wait once, then retry the same event with a fresh session.
+            print("  ITF cooldown triggered (65s) before retrying draw fetch...")
+            time.sleep(65)
+            itf_cooloff_applied = True
+            retry_after_cooloff_driver = create_driver()
+            try:
+                t_draws = fetch_itf_tournament_draws(
+                    tid, is_multiweek=is_multiweek, driver=retry_after_cooloff_driver
+                ) or {}
+            finally:
+                try:
+                    retry_after_cooloff_driver.quit()
                 except Exception:
                     pass
 
@@ -798,6 +828,7 @@ def main():
                 if set(merged_draws.keys()) == {"MDS", "QS"}:
                     break
         if merged_draws:
+            itf_consecutive_empty = 0
             if not t_draws and prev_draws:
                 print(f"  Using cached ITF draws for: {t_info.get('name','')}")
             draws_store[store_key] = {
@@ -808,6 +839,13 @@ def main():
                 "endDate": t_info.get("endDate"),
                 "draws": merged_draws,
             }
+        else:
+            itf_consecutive_empty += 1
+            if itf_consecutive_empty >= 3 and i < total_itf_draws:
+                # Back off periodically to recover from temporary ITF throttling.
+                print("  ITF backoff triggered (35s) after consecutive empty draws...")
+                time.sleep(35)
+                itf_consecutive_empty = 0
 
     # Prune draws for tournaments that are definitely over (endDate < today).
     today = datetime.now().date()

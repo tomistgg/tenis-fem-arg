@@ -107,6 +107,10 @@ def parse_itf_entry_list(itf_entries):
 
 _itf_calendar_raw = None  # module-level cache for raw ITF calendar items
 _itf_session_warmed = False
+_itf_event_filters_cache = None
+_ITF_EVENT_FILTERS_CACHE_FILE = os.path.join(
+    os.path.dirname(ITF_CALENDAR_CACHE_FILE), "itf_event_filters_cache.json"
+)
 
 
 def _load_itf_calendar_disk_cache(target_year=None):
@@ -148,6 +152,30 @@ def _save_itf_calendar_disk_cache(items, year):
     try:
         with open(ITF_CALENDAR_CACHE_FILE, "w", encoding="utf-8") as f:
             json.dump(payload, f, indent=2, ensure_ascii=False)
+    except Exception:
+        pass
+
+
+def _load_itf_event_filters_cache():
+    global _itf_event_filters_cache
+    if isinstance(_itf_event_filters_cache, dict):
+        return _itf_event_filters_cache
+    if not os.path.exists(_ITF_EVENT_FILTERS_CACHE_FILE):
+        _itf_event_filters_cache = {}
+        return _itf_event_filters_cache
+    try:
+        with open(_ITF_EVENT_FILTERS_CACHE_FILE, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+        _itf_event_filters_cache = raw if isinstance(raw, dict) else {}
+    except Exception:
+        _itf_event_filters_cache = {}
+    return _itf_event_filters_cache
+
+
+def _save_itf_event_filters_cache(cache_obj):
+    try:
+        with open(_ITF_EVENT_FILTERS_CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(cache_obj or {}, f, ensure_ascii=False, separators=(",", ":"))
     except Exception:
         pass
 
@@ -562,6 +590,8 @@ def get_draws_itf_tournament_list(driver):
             item['_display_name'] = t_name
 
     # Fetch tournamentIds
+    event_filters_cache = _load_itf_event_filters_cache()
+    cache_dirty = False
     for item in tournaments:
         key = item.get('tournamentKey') or ''
         if not key:
@@ -572,12 +602,24 @@ def get_draws_itf_tournament_list(driver):
             continue
         key = key.lower()
         item['_key'] = key
+        cached_tid = event_filters_cache.get(key)
+        if isinstance(cached_tid, int) and cached_tid > 0:
+            item['_tid'] = cached_tid
+            continue
         api_url = f"{ITF_BASE_URL}/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
         try:
             data = _fetch_itf_json(driver, api_url, timeout_ms=9000, retries=2) or {}
-            item['_tid'] = data.get("tournamentId")
+            tid = data.get("tournamentId")
+            item['_tid'] = tid
+            if isinstance(tid, int) and tid > 0:
+                event_filters_cache[key] = tid
+                cache_dirty = True
         except Exception:
             item['_tid'] = None
+        time.sleep(random.uniform(0.7, 1.3))
+
+    if cache_dirty:
+        _save_itf_event_filters_cache(event_filters_cache)
 
     # Build result grouped by week
     result = {}

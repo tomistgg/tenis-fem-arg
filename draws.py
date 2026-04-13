@@ -3,6 +3,8 @@
 import json
 import math
 import re
+import time
+import random
 import unicodedata
 import requests
 import fitz
@@ -482,6 +484,20 @@ _ITF_ENTRY_MAP = {
 }
 
 
+def _prime_itf_draw_session(driver, tournament_id):
+    """Warm browser session on the tournament print page to reduce ITF API blocking."""
+    if driver is None:
+        return
+    try:
+        driver.get(
+            "https://www.itftennis.com/en/tournament/draws-and-results/print/"
+            f"?tournamentId={tournament_id}&circuitCode=WT"
+        )
+        time.sleep(random.uniform(1.8, 3.2))
+    except Exception:
+        pass
+
+
 def _fetch_itf_drawsheet(tournament_id, classification, week_number=0):
     """Fetch an ITF drawsheet via POST API (no Selenium needed)."""
     headers = {
@@ -779,25 +795,32 @@ def fetch_itf_tournament_draws(tournament_id, is_multiweek=False, driver=None):
     # depending on event timing. Try the preferred week first, then fall back.
     preferred_week = 1 if is_multiweek else 0
     week_candidates = []
-    for wn in (preferred_week, 0, 1):
+    for wn in (preferred_week, 0, 1, 2):
         if wn not in week_candidates:
             week_candidates.append(wn)
+
+    if driver is not None:
+        _prime_itf_draw_session(driver, tournament_id)
 
     for classification, dtype_code, dtype_label in _ITF_DRAW_TYPES:
         for week_number in week_candidates:
             raw = None
-            # ITF API can be intermittently blocked for plain requests; retry and
-            # fall back to browser-context fetch when Selenium driver is provided.
-            for _ in range(2):
-                raw = _fetch_itf_drawsheet(tournament_id, classification, week_number)
-                if raw and raw.get("koGroups"):
-                    break
+            # ITF API is highly sensitive to bot-rate patterns. Prefer browser-context
+            # fetches when a driver exists, and pace retries with jitter.
+            for attempt in range(4):
                 if driver is not None:
                     raw = _fetch_itf_drawsheet_via_driver(
                         tournament_id, classification, week_number, driver
                     )
                     if raw and raw.get("koGroups"):
                         break
+                    if attempt == 1:
+                        _prime_itf_draw_session(driver, tournament_id)
+                else:
+                    raw = _fetch_itf_drawsheet(tournament_id, classification, week_number)
+                    if raw and raw.get("koGroups"):
+                        break
+                time.sleep(random.uniform(0.5, 1.4))
             if not (raw and raw.get("koGroups")):
                 continue
             try:
