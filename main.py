@@ -374,6 +374,68 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
     tournament_store = {}
     ranking_cache = {}
     unranked_schedule = {}
+    itf_schedule_pending = {}
+    unranked_itf_pending = {}
+
+    def _priority_num(value):
+        text = str(value or "").strip()
+        if text.isdigit():
+            return int(text)
+        return 9999
+
+    def _entry_type_rank(entry_type):
+        et = str(entry_type or "").upper()
+        if et == "MAIN":
+            return 0
+        if et == "QUAL":
+            return 1
+        if et == "ALT":
+            return 2
+        return 3
+
+    def _safe_pos_num(value):
+        try:
+            return int(value)
+        except Exception:
+            return 9999
+
+    def _queue_itf_entry(container, player_key, week_label, tournament_key, tournament_name, suffix, priority, entry_type, pos_num):
+        if not player_key or not week_label:
+            return
+        by_week = container.setdefault(player_key, {})
+        items = by_week.setdefault(week_label, [])
+        if any(item.get("tournament_key") == tournament_key for item in items):
+            return
+        items.append({
+            "tournament_key": tournament_key,
+            "name": tournament_name,
+            "suffix": suffix or "",
+            "priority": priority,
+            "entry_type": entry_type,
+            "pos_num": _safe_pos_num(pos_num),
+        })
+
+    def _itf_item_sort_key(item):
+        return (
+            _priority_num(item.get("priority")),
+            _entry_type_rank(item.get("entry_type")),
+            _safe_pos_num(item.get("pos_num")),
+            str(item.get("name") or "").lower(),
+        )
+
+    def _flush_itf_pending(target_map, pending_map):
+        for p_key, weeks_map in pending_map.items():
+            if p_key not in target_map:
+                target_map[p_key] = {}
+            for week_label, items in weeks_map.items():
+                if not items:
+                    continue
+                sorted_items = sorted(items, key=_itf_item_sort_key)
+                formatted = "<br>".join(f"{it['name']}{it['suffix']}" for it in sorted_items)
+                if week_label in target_map[p_key] and target_map[p_key][week_label]:
+                    target_map[p_key][week_label] += f"<br>{formatted}"
+                else:
+                    target_map[p_key][week_label] = formatted
 
     mondays = sorted(monday_map.keys())
     total_weeks = len(mondays) or 4
@@ -451,16 +513,48 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                 entry_cache[key] = tourney_players_list
                 tournament_store[key] = tourney_players_list
 
+                itf_player_meta = {}
+                for p in tourney_players_list:
+                    raw_upper = p.get('name', '').upper()
+                    p_key = NAME_LOOKUP.get(raw_upper, raw_upper)
+                    candidate = {
+                        'priority': str(p.get('priority', '')).strip(),
+                        'entry_type': p.get('type', ''),
+                        'pos_num': p.get('pos_num', 9999),
+                    }
+                    prev = itf_player_meta.get(p_key)
+                    if not prev:
+                        itf_player_meta[p_key] = candidate
+                        continue
+                    prev_key = (
+                        _entry_type_rank(prev.get('entry_type')),
+                        _priority_num(prev.get('priority')),
+                        _safe_pos_num(prev.get('pos_num')),
+                    )
+                    cand_key = (
+                        _entry_type_rank(candidate.get('entry_type')),
+                        _priority_num(candidate.get('priority')),
+                        _safe_pos_num(candidate.get('pos_num')),
+                    )
+                    if cand_key < prev_key:
+                        itf_player_meta[p_key] = candidate
+
                 for p_name, suffix in itf_name_map.items():
                     if p_name not in arg_names_set:
                         continue
-                    if p_name not in schedule_map:
-                        schedule_map[p_name] = {}
-                    if week in schedule_map[p_name]:
-                        if t_name not in schedule_map[p_name][week]:
-                            schedule_map[p_name][week] += f"<br>{t_name}{suffix}"
-                    else:
-                        schedule_map[p_name][week] = f"{t_name}{suffix}"
+                    suffix_text = suffix.get('suffix', '') if isinstance(suffix, dict) else str(suffix or '')
+                    p_meta = itf_player_meta.get(p_name, {})
+                    _queue_itf_entry(
+                        itf_schedule_pending,
+                        p_name,
+                        week,
+                        key,
+                        t_name,
+                        suffix_text,
+                        p_meta.get('priority', ''),
+                        p_meta.get('entry_type', ''),
+                        p_meta.get('pos_num', 9999),
+                    )
                 for p in tourney_players_list:
                     raw_upper = p['name'].upper()
                     p_key = NAME_LOOKUP.get(raw_upper, raw_upper)
@@ -475,13 +569,20 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                         suffix = ' (Q)'
                     else:
                         suffix = f" (ALT {p.get('pos', '')})" if p.get('pos') else ' (ALT)'
-                    if p_key not in unranked_schedule:
-                        unranked_schedule[p_key] = {}
-                    if week in unranked_schedule[p_key]:
-                        if t_name not in unranked_schedule[p_key][week]:
-                            unranked_schedule[p_key][week] += f"<br>{t_name}{suffix}"
-                    else:
-                        unranked_schedule[p_key][week] = f"{t_name}{suffix}"
+                    _queue_itf_entry(
+                        unranked_itf_pending,
+                        p_key,
+                        week,
+                        key,
+                        t_name,
+                        suffix,
+                        str(p.get('priority', '')).strip(),
+                        p_type,
+                        p.get('pos_num', 9999),
+                    )
+
+    _flush_itf_pending(schedule_map, itf_schedule_pending)
+    _flush_itf_pending(unranked_schedule, unranked_itf_pending)
 
     # Remove tournaments no longer in the next 4 weeks
     active_keys = set()
