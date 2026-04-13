@@ -10,7 +10,7 @@ from wta import get_rankings
 
 RANKINGS_CSV = WTA_RANKINGS_CSV
 CSV_FIELDNAMES = ["week_date", "id", "rank", "points", "player", "country", "dob"]
-MIN_CURRENT_WEEK_ROWS = 800
+MIN_CURRENT_WEEK_ROWS = 1000
 
 
 def to_title_case(name):
