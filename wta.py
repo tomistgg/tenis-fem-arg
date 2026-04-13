@@ -25,6 +25,10 @@ class WtaApiRateLimited(RuntimeError):
     pass
 
 
+class WtaApiPartialData(RuntimeError):
+    pass
+
+
 def _fetch_wta_tournaments_raw():
     """Fetch all WTA tournaments from 1 week ago to end of year (single API call)."""
     global _wta_tournaments_raw
@@ -292,8 +296,13 @@ def get_rankings(date_str, nationality=None):
                     last_err = e
                     time.sleep(min(120.0, 5.0 * (2 ** attempt)))
             if last_err is not None and data is None:
-                if saw_rate_limit and page == 0:
-                    raise WtaApiRateLimited(f"WTA API rate limited for {date_str}")
+                if saw_rate_limit:
+                    raise WtaApiRateLimited(f"WTA API rate limited for {date_str} (page {page})")
+                if page > 0:
+                    raise WtaApiPartialData(
+                        f"WTA rankings fetch interrupted for {date_str} at page {page} "
+                        f"after {len(all_players)} players: {last_err}"
+                    )
                 break
             items = data.get('content', []) if isinstance(data, dict) else data
             if not items: break

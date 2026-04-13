@@ -10,6 +10,7 @@ from wta import get_rankings
 
 RANKINGS_CSV = WTA_RANKINGS_CSV
 CSV_FIELDNAMES = ["week_date", "id", "rank", "points", "player", "country", "dob"]
+MIN_CURRENT_WEEK_ROWS = 800
 
 
 def to_title_case(name):
@@ -64,7 +65,11 @@ def rewrite_csv(by_date):
 def fetch_from_api(date_str):
     """Fetch rankings from API and return as CSV-format row dicts."""
     print(f"  Fetching from API for {date_str}...")
-    data = get_rankings(date_str)
+    try:
+        data = get_rankings(date_str)
+    except Exception as e:
+        print(f"  Error fetching rankings for {date_str}: {e}")
+        return []
     if not data:
         print(f"  Could not fetch rankings for {date_str}.")
         return []
@@ -103,7 +108,24 @@ def main():
             by_date[this_monday] = rows
             needs_rewrite = True
     else:
-        print(f"This week ({this_monday}) already in CSV ({len(by_date[this_monday])} players).")
+        current_count = len(by_date[this_monday])
+        print(f"This week ({this_monday}) already in CSV ({current_count} players).")
+        if current_count < MIN_CURRENT_WEEK_ROWS:
+            print(
+                f"This week looks partial (<{MIN_CURRENT_WEEK_ROWS}). "
+                "Re-fetching to recover from an interrupted run..."
+            )
+            rows = fetch_from_api(this_monday)
+            if rows:
+                if len(rows) > current_count:
+                    by_date[this_monday] = rows
+                    needs_rewrite = True
+                    print(f"Updated {this_monday}: {current_count} -> {len(rows)} players.")
+                else:
+                    print(
+                        f"Re-fetch returned {len(rows)} players (not greater than {current_count}); "
+                        "keeping current CSV rows."
+                    )
 
     # --- Step 3: check CSV is sorted ---
     if not needs_rewrite and not csv_is_sorted(by_date):
