@@ -275,6 +275,23 @@ def _fetch_itf_json(driver, url, timeout_ms=12000, retries=2):
     return None
 
 
+def _fetch_itf_json_via_navigation(driver, url, settle_seconds=1.0):
+    """Fallback fetch path: navigate directly to JSON endpoint and parse body text."""
+    if driver is None:
+        return None
+    try:
+        driver.get(url)
+        time.sleep(max(0.0, float(settle_seconds)))
+        body = driver.find_element("tag name", "body")
+        raw = (body.text or "").strip()
+        if not raw or _is_blocked_or_html_response(raw):
+            return None
+        parsed = json.loads(raw)
+        return parsed if isinstance(parsed, dict) else None
+    except Exception:
+        return None
+
+
 def _lookup_acceptance_url_from_calendar(tournament_key):
     key_norm = (tournament_key or "").strip().lower()
     if not key_norm:
@@ -610,6 +627,13 @@ def get_draws_itf_tournament_list(driver):
         try:
             data = _fetch_itf_json(driver, api_url, timeout_ms=9000, retries=2) or {}
             tid = data.get("tournamentId")
+            if not (isinstance(tid, int) and tid > 0):
+                # Fallback: some ITF sessions block browser fetch() but still return
+                # JSON when navigating directly to the endpoint.
+                nav_data = _fetch_itf_json_via_navigation(driver, api_url, settle_seconds=random.uniform(0.8, 1.5)) or {}
+                nav_tid = nav_data.get("tournamentId")
+                if isinstance(nav_tid, int) and nav_tid > 0:
+                    tid = nav_tid
             item['_tid'] = tid
             if isinstance(tid, int) and tid > 0:
                 event_filters_cache[key] = tid
@@ -625,8 +649,6 @@ def get_draws_itf_tournament_list(driver):
     result = {}
     for item in tournaments:
         tid = item.get('_tid')
-        if not tid:
-            continue
         key = item.get('_key', '')
         is_multiweek = bool(item.get('_is_multiweek'))
         start_str = (item.get('startDate') or '')[:10]

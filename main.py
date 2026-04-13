@@ -33,7 +33,7 @@ from itf import (
     get_draws_itf_tournament_list
 )
 from html_generator import generate_html
-from draws import fetch_tournament_draws, fetch_itf_tournament_draws
+from draws import fetch_tournament_draws, fetch_itf_tournament_draws, get_itf_tournament_id
 from tstrength import build_tstrength_data
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -847,6 +847,25 @@ def main():
     for week, tourneys in (itf_draws_tournaments or {}).items():
         for t_key, t_info in (tourneys or {}).items():
             tid = (t_info or {}).get("tournamentId")
+            if not tid and isinstance(t_key, str) and t_key.lower().startswith("w-itf-"):
+                # Best-effort fallback: resolve missing tournamentId in an isolated
+                # browser session. This helps when the earlier bulk ID pass is
+                # partially blocked by ITF anti-bot filtering.
+                for attempt in range(2):
+                    resolver_driver = create_driver()
+                    try:
+                        resolved_tid = get_itf_tournament_id(t_key, resolver_driver)
+                    finally:
+                        try:
+                            resolver_driver.quit()
+                        except Exception:
+                            pass
+                    if resolved_tid:
+                        tid = resolved_tid
+                        t_info["tournamentId"] = resolved_tid
+                        break
+                    if attempt == 0:
+                        time.sleep(random.uniform(1.0, 2.0))
             if not tid:
                 continue
             itf_draw_jobs.append((week, t_key, t_info))
