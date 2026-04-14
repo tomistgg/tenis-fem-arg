@@ -4960,6 +4960,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             let galleryCurrentAlbum = '';
             let galleryPlayerFilter = '';
             let galleryInited = false;
+            let galleryLoading = false;
             let galleryAlbums = [];
             let galleryLbList = [];
             let galleryCurrentList = [];
@@ -4997,10 +4998,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
 
             function initGallery() {{
-                if (galleryInited) return;
-                galleryInited = true;
+                if (galleryInited && galleryPhotos.length) return;
+                if (galleryLoading) return;
+                galleryLoading = true;
                 fetch('data/gallery.json', {{ cache: 'no-store' }})
-                    .then(function(r) {{ return r.json(); }})
+                    .then(function(r) {{
+                        if (!r || !r.ok) throw new Error('gallery_fetch_failed');
+                        return r.json();
+                    }})
                     .then(function(data) {{
                         galleryPhotos = (data || []).map(function(p) {{
                             var pid = p.public_id || p.path || '';
@@ -5015,14 +5020,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                 is_cover: p.is_cover === true || p.cover === true
                             }};
                         }});
+                        galleryInited = true;
                         galleryBuildAlbums();
                         galleryRenderAlbums();
                         galleryApplyAlbum();
                     }})
                     .catch(function() {{
+                        galleryInited = false;
                         var el = document.getElementById('gallery-empty');
                         el.style.display = 'block';
                         el.textContent = 'Could not load gallery.';
+                    }})
+                    .finally(function() {{
+                        galleryLoading = false;
                     }});
             }}
 
