@@ -56,6 +56,10 @@ jobs:
 
       - name: Run update script
         id: main_update
+        env:
+          IMAGEKIT_PRIVATE_KEY: ${{ secrets.IMAGEKIT_PRIVATE_KEY }}
+          IMAGEKIT_GALLERY_ROOT: ${{ secrets.IMAGEKIT_GALLERY_ROOT }}
+          IMAGEKIT_API_URL: ${{ secrets.IMAGEKIT_API_URL }}
         run: python main.py
 
       - name: Build run report

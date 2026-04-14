@@ -4964,6 +4964,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             let galleryLbList = [];
             let galleryCurrentList = [];
 
+            function galleryEncodePath(path) {{
+                return String(path || '')
+                    .split('/')
+                    .map(function(seg) {{
+                        try {{
+                            return encodeURIComponent(decodeURIComponent(seg));
+                        }} catch (e) {{
+                            return encodeURIComponent(seg);
+                        }}
+                    }})
+                    .join('/');
+            }}
+
             function galleryUrl(pid, tr, tournament) {{
                 if (!pid) return '';
                 var cleanPid = pid.replace(/^\\//, '');
@@ -4974,7 +4987,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         path = prefix + cleanPid;
                     }}
                 }}
-                return GALLERY_IK_URL + '/' + path + (tr ? ('?tr=' + tr) : '');
+                return GALLERY_IK_URL + '/' + galleryEncodePath(path) + (tr ? ('?tr=' + tr) : '');
             }}
             function galleryThumb(pid, tournament) {{ return galleryUrl(pid, 'w-400,h-300,fo-auto,q-80', tournament); }}
             function galleryFull(pid, tournament) {{ return galleryUrl(pid, 'q-90', tournament); }}

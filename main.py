@@ -35,6 +35,7 @@ from itf import (
 from html_generator import generate_html
 from draws import fetch_tournament_draws, fetch_itf_tournament_draws, get_itf_tournament_id
 from tstrength import build_tstrength_data
+from populate_data.imagekit_gallery_sync import sync_gallery_manifest
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -757,6 +758,19 @@ def build_calendar_snapshot(calendar_data):
 
 
 def main():
+    gallery_path = os.path.join(DATA_DIR, "gallery.json")
+    try:
+        sync_result = sync_gallery_manifest(gallery_path)
+        if sync_result.get("status") == "updated":
+            print(
+                f"Gallery sync: updated {sync_result.get('count', 0)} photos "
+                f"from ImageKit root {sync_result.get('root', '/')}"
+            )
+        else:
+            print(f"Gallery sync: skipped ({sync_result.get('reason', 'unknown')})")
+    except Exception as e:
+        print(f"Gallery sync: failed ({e})")
+
     driver = create_driver()
     itf_draws_tournaments = {}
     prefetched_itf_draws = {}
