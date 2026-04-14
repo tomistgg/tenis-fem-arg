@@ -4999,7 +4999,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function initGallery() {{
                 if (galleryInited) return;
                 galleryInited = true;
-                fetch('data/gallery.json')
+                fetch('data/gallery.json', {{ cache: 'no-store' }})
                     .then(function(r) {{ return r.json(); }})
                     .then(function(data) {{
                         galleryPhotos = (data || []).map(function(p) {{
