@@ -399,6 +399,15 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
         except Exception:
             return 9999
 
+    def _suffix_from_itf_player(player_row):
+        p_type = (player_row or {}).get('type', '')
+        if p_type == 'MAIN':
+            return ''
+        if p_type == 'QUAL':
+            return ' (Q)'
+        pos = (player_row or {}).get('pos', '')
+        return f" (ALT {pos})" if pos else ' (ALT)'
+
     def _queue_itf_entry(container, player_key, week_label, tournament_key, tournament_name, suffix, priority, entry_type, pos_num):
         if not player_key or not week_label:
             return
@@ -506,9 +515,15 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
             if 'cancel' in t_name.lower():
                 continue
             if not key.startswith("http"):
+                cached_players = entry_cache.get(key, [])
+                if not isinstance(cached_players, list):
+                    cached_players = []
                 itf_entries, itf_name_map = get_itf_players(key, driver)
-                tourney_players_list = parse_itf_entry_list(itf_entries)
-                tourney_players_list = merge_entry_list(entry_cache.get(key, []), tourney_players_list)
+                fresh_players = parse_itf_entry_list(itf_entries)
+                used_cached_acceptance = bool(cached_players) and not fresh_players
+                tourney_players_list = merge_entry_list(cached_players, fresh_players)
+                if used_cached_acceptance:
+                    print(f"  Using cached ITF acceptance list for: {t_name}")
                 normalize_country_overrides(tourney_players_list, "name", "country")
                 entry_cache[key] = tourney_players_list
                 tournament_store[key] = tourney_players_list
@@ -555,6 +570,24 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                         p_meta.get('entry_type', ''),
                         p_meta.get('pos_num', 9999),
                     )
+                if not itf_name_map:
+                    for p in tourney_players_list:
+                        raw_upper = p.get('name', '').upper()
+                        p_key = NAME_LOOKUP.get(raw_upper, raw_upper)
+                        if p_key not in arg_names_set:
+                            continue
+                        p_meta = itf_player_meta.get(p_key, {})
+                        _queue_itf_entry(
+                            itf_schedule_pending,
+                            p_key,
+                            week,
+                            key,
+                            t_name,
+                            _suffix_from_itf_player(p),
+                            p_meta.get('priority', ''),
+                            p_meta.get('entry_type', ''),
+                            p_meta.get('pos_num', 9999),
+                        )
                 for p in tourney_players_list:
                     raw_upper = p['name'].upper()
                     p_key = NAME_LOOKUP.get(raw_upper, raw_upper)
@@ -563,12 +596,7 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                     if p.get('country', '') != 'ARG':
                         continue
                     p_type = p.get('type', '')
-                    if p_type == 'MAIN':
-                        suffix = ''
-                    elif p_type == 'QUAL':
-                        suffix = ' (Q)'
-                    else:
-                        suffix = f" (ALT {p.get('pos', '')})" if p.get('pos') else ' (ALT)'
+                    suffix = _suffix_from_itf_player(p)
                     _queue_itf_entry(
                         unranked_itf_pending,
                         p_key,
@@ -813,9 +841,11 @@ def main():
     draws_store = _normalize_draws_store_keys(draws_store)
     draws_tournaments = get_draws_tournament_list()
     current_year = str(datetime.now().year)
+    active_draw_keys = set()
     wta_draw_jobs = []
     for week, tourneys in (draws_tournaments or {}).items():
         for t_key, t_info in (tourneys or {}).items():
+            active_draw_keys.add(_canonical_draw_store_key(t_key))
             wta_draw_jobs.append((week, t_key, t_info))
 
     total_wta_draws = len(wta_draw_jobs) or 1
@@ -846,6 +876,8 @@ def main():
     itf_draw_jobs = []
     for week, tourneys in (itf_draws_tournaments or {}).items():
         for t_key, t_info in (tourneys or {}).items():
+            store_key = _canonical_draw_store_key(t_key)
+            active_draw_keys.add(store_key)
             tid = (t_info or {}).get("tournamentId")
             if not tid and isinstance(t_key, str) and t_key.lower().startswith("w-itf-"):
                 # Best-effort fallback: resolve missing tournamentId in an isolated
@@ -867,6 +899,18 @@ def main():
                     if attempt == 0:
                         time.sleep(random.uniform(1.0, 2.0))
             if not tid:
+                existing = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
+                existing_draws = existing.get("draws") if isinstance(existing.get("draws"), dict) else {}
+                if existing_draws:
+                    print(f"  Keeping cached ITF draws for: {t_info.get('name', '')} (missing tournamentId)")
+                    draws_store[store_key] = _merge_draw_store_entry(existing, {
+                        "name": t_info.get("name", ""),
+                        "level": t_info.get("level", ""),
+                        "week": week,
+                        "startDate": t_info.get("startDate"),
+                        "endDate": t_info.get("endDate"),
+                        "draws": existing_draws,
+                    })
                 continue
             itf_draw_jobs.append((week, t_key, t_info))
 
@@ -972,6 +1016,8 @@ def main():
     keys_to_delete = []
     for t_key, tdata in (draws_store or {}).items():
         if not isinstance(tdata, dict):
+            continue
+        if _canonical_draw_store_key(t_key) in active_draw_keys:
             continue
         end = (tdata.get("endDate") or "")[:10]
         if not end:
