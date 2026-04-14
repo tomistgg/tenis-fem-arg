@@ -6,6 +6,7 @@ import os
 import requests
 from html import unescape
 from datetime import datetime, timedelta
+from time import monotonic
 
 from config import NAME_LOOKUP, ITF_CACHE_FILE, ITF_CALENDAR_CACHE_FILE
 from utils import get_cached_rankings
@@ -13,6 +14,36 @@ from calendar_builder import get_next_monday
 
 ITF_BASE_URL = "https://www.itftennis.com"
 ITF_CALENDAR_PAGE_URL = f"{ITF_BASE_URL}/en/tournament-calendar/womens-world-tennis-tour-calendar/"
+
+# ITF rate limiting / anti-block pacing.
+_ITF_MIN_REQUEST_INTERVAL = float(os.getenv("ITF_API_MIN_INTERVAL_SEC", "0.9"))
+_ITF_REQUEST_JITTER_MAX = float(os.getenv("ITF_API_REQUEST_JITTER_SEC", "0.35"))
+_ITF_BLOCK_BACKOFF_BASE = float(os.getenv("ITF_API_BLOCK_BACKOFF_BASE_SEC", "3.0"))
+_ITF_BLOCK_BACKOFF_MAX = float(os.getenv("ITF_API_BLOCK_BACKOFF_MAX_SEC", "15.0"))
+_itf_next_request_at = 0.0
+_itf_block_streak = 0
+
+
+def _itf_wait_for_rate_limit():
+    global _itf_next_request_at
+    now = monotonic()
+    if _itf_next_request_at > now:
+        time.sleep(_itf_next_request_at - now)
+
+    jitter = random.uniform(0.0, max(0.0, _ITF_REQUEST_JITTER_MAX))
+    _itf_next_request_at = monotonic() + max(0.0, _ITF_MIN_REQUEST_INTERVAL + jitter)
+
+
+def _itf_note_blocked_response():
+    global _itf_block_streak, _itf_next_request_at
+    _itf_block_streak += 1
+    backoff = min(_ITF_BLOCK_BACKOFF_MAX, _ITF_BLOCK_BACKOFF_BASE * (2 ** (_itf_block_streak - 1)))
+    _itf_next_request_at = max(_itf_next_request_at, monotonic() + backoff)
+
+
+def _itf_note_successful_response():
+    global _itf_block_streak
+    _itf_block_streak = 0
 
 
 def get_itf_level(tournament_name):
@@ -225,6 +256,7 @@ def _ensure_itf_session(driver, force_navigation=False):
 
 
 def _fetch_itf_text(driver, url, timeout_ms=12000):
+    _itf_wait_for_rate_limit()
     script = """
 const url = arguments[0];
 const timeoutMs = arguments[1];
@@ -263,9 +295,13 @@ def _fetch_itf_json(driver, url, timeout_ms=12000, retries=2):
         raw = _fetch_itf_text(driver, url, timeout_ms=timeout_ms)
         if raw and not _is_blocked_or_html_response(raw):
             try:
-                return json.loads(raw)
+                parsed = json.loads(raw)
+                _itf_note_successful_response()
+                return parsed
             except Exception:
                 pass
+        if raw and _is_blocked_or_html_response(raw):
+            _itf_note_blocked_response()
         if attempt < retries - 1:
             if attempt == 0:
                 # Escalate to a full page load only after the first failed fetch.
@@ -280,16 +316,60 @@ def _fetch_itf_json_via_navigation(driver, url, settle_seconds=1.0):
     if driver is None:
         return None
     try:
+        _itf_wait_for_rate_limit()
         driver.get(url)
         time.sleep(max(0.0, float(settle_seconds)))
         body = driver.find_element("tag name", "body")
         raw = (body.text or "").strip()
         if not raw or _is_blocked_or_html_response(raw):
+            if raw:
+                _itf_note_blocked_response()
             return None
         parsed = json.loads(raw)
+        _itf_note_successful_response()
         return parsed if isinstance(parsed, dict) else None
     except Exception:
         return None
+
+
+def _fetch_itf_json_via_requests(url, timeout=10, retries=2):
+    """Fallback fetch path: direct HTTP request outside browser session."""
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/124.0.0.0 Safari/537.36"
+        ),
+        "Accept": "application/json, text/plain, */*",
+        "Referer": ITF_CALENDAR_PAGE_URL,
+    }
+    for attempt in range(retries):
+        try:
+            _itf_wait_for_rate_limit()
+            resp = requests.get(url, headers=headers, timeout=timeout)
+            raw = (resp.text or "").strip()
+            if not raw or _is_blocked_or_html_response(raw):
+                if raw:
+                    _itf_note_blocked_response()
+                if attempt < retries - 1:
+                    time.sleep(random.uniform(0.6, 1.2))
+                continue
+            try:
+                parsed = resp.json()
+                _itf_note_successful_response()
+                return parsed
+            except Exception:
+                try:
+                    parsed = json.loads(raw)
+                    _itf_note_successful_response()
+                    return parsed
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        if attempt < retries - 1:
+            time.sleep(random.uniform(0.6, 1.2))
+    return None
 
 
 def _lookup_acceptance_url_from_calendar(tournament_key):
@@ -514,6 +594,16 @@ def get_itf_players(tournament_key, driver):
         root_data = []
         if isinstance(data, list) and data:
             root_data = data[0].get("entryClassifications", []) if isinstance(data[0], dict) else []
+        elif isinstance(data, dict):
+            root_data = data.get("entryClassifications", [])
+
+        # Fallback 1: direct requests path when browser/session is blocked.
+        if not root_data:
+            req_data = _fetch_itf_json_via_requests(url, timeout=10, retries=2)
+            if isinstance(req_data, list) and req_data:
+                root_data = req_data[0].get("entryClassifications", []) if isinstance(req_data[0], dict) else []
+            elif isinstance(req_data, dict):
+                root_data = req_data.get("entryClassifications", [])
 
         # Fallback: parse rendered acceptance page HTML when API is empty/unavailable.
         if not root_data:
