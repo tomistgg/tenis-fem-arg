@@ -910,11 +910,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .draw-player .set-score.won {{ color: #059669; }}
             .draw-player .set-score.lost {{ color: #dc2626; }}
             .draw-no-draws {{ text-align: center; color: #94a3b8; padding: 40px; font-size: 12px; }}
-            .gallery-controls {{ display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }}
+            .gallery-controls {{ display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; margin-left: 5px; }}
             #gallery-player-filter {{ min-width: 180px; width: auto; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; font-family: inherit; font-size: 12px; }}
             .gallery-back-btn {{ padding: 8px 12px; background: white; border: 1px solid black; border-radius: 8px; font-family: inherit; font-size: 12px; cursor: pointer; }}
             .gallery-back-btn:hover {{ background: #f1f5f9; }}
-            #gallery-album-title {{ font-size: 13px; color: #64748b; margin-top: -6px; }}
+            #gallery-album-title {{ font-size: 13px; color: #64748b; margin-top: -6px; text-align: center; width: 100%; }}
             .gallery-albums {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 14px; }}
             .gallery-album-card {{ background: white; border: 1px solid black; border-radius: 10px; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }}
             .gallery-album-card:hover {{ transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.13); }}
@@ -933,7 +933,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-card-info {{ padding: 10px 12px 12px; }}
             .gallery-card-tourn {{ font-size: 10px; font-weight: bold; color: #75AADB; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }}
             .gallery-card-players {{ font-size: 12px; color: #1e293b; margin-bottom: 4px; line-height: 1.4; }}
-            .gallery-count {{ font-size: 12px; color: #64748b; margin-bottom: 14px; }}
+            .gallery-count {{ font-size: 12px; color: #64748b; margin-bottom: 14px; margin-left: 5px; }}
             .gallery-loadmore-wrap {{ text-align: center; margin-top: 24px; }}
             .gallery-loadmore-btn {{ padding: 10px 32px; background: #75AADB; color: white; border: none; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: bold; cursor: pointer; }}
             .gallery-loadmore-btn:hover {{ background: #5a8fb8; }}
