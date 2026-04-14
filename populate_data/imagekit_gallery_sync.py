@@ -8,6 +8,7 @@ import requests
 
 DEFAULT_API_URL = "https://api.imagekit.io/v1/files"
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif", ".heic", ".heif"}
+NON_PLAYER_TAGS = {"cover", "album-cover", "album_cover"}
 
 
 def _normalize_root(root: Optional[str]) -> str:
@@ -120,16 +121,54 @@ def _coerce_players(value: Any) -> List[str]:
     return []
 
 
+def _dedupe_preserve_order(values: List[str]) -> List[str]:
+    out: List[str] = []
+    seen = set()
+    for value in values:
+        text = str(value or "").strip()
+        key = text.lower()
+        if not text or key in seen:
+            continue
+        seen.add(key)
+        out.append(text)
+    return out
+
+
+def _players_from_tags(item: Dict[str, Any]) -> List[str]:
+    tags = item.get("tags")
+    if not isinstance(tags, list):
+        return []
+
+    parsed: List[str] = []
+    for raw_tag in tags:
+        tag = str(raw_tag or "").strip()
+        if not tag:
+            continue
+        lowered = tag.lower()
+        if lowered in NON_PLAYER_TAGS:
+            continue
+
+        # Accept plain names ("Mell Reasco"), pipe/comma-separated values,
+        # and slug-like values ("mell-reasco").
+        names = _coerce_players(tag)
+        if len(names) == 1 and "-" in names[0] and " " not in names[0]:
+            names = [_slug_to_player_name(names[0])]
+        parsed.extend(names)
+
+    return _dedupe_preserve_order(parsed)
+
+
 def _metadata_players(item: Dict[str, Any]) -> List[str]:
     custom = item.get("customMetadata")
     if not isinstance(custom, dict):
         custom = {}
+    from_metadata: List[str] = []
     for key in ("players", "player_names", "player", "athletes"):
         if key in custom:
             parsed = _coerce_players(custom.get(key))
             if parsed:
-                return parsed
-    return []
+                from_metadata.extend(parsed)
+    return _dedupe_preserve_order(from_metadata + _players_from_tags(item))
 
 
 def _metadata_tournament(item: Dict[str, Any]) -> str:
@@ -156,7 +195,7 @@ def _metadata_is_cover(item: Dict[str, Any]) -> Optional[bool]:
     tags = item.get("tags")
     if isinstance(tags, list):
         lowered = {str(t).strip().lower() for t in tags if str(t).strip()}
-        if "cover" in lowered or "album-cover" in lowered:
+        if any(tag in lowered for tag in NON_PLAYER_TAGS):
             return True
     return None
 
@@ -320,4 +359,3 @@ def sync_gallery_manifest(
         "root": root,
         "endpoint": endpoint,
     }
-
