@@ -798,6 +798,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     .home-hero { width: 100%; min-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 8px 12px; box-sizing: border-box; }
     .home-title { font-size: 26px; color: #1e293b; margin: 0; text-align: center; }
+    .home-note { margin: -2px 0 4px; font-size: 14px; color: #334155; text-align: center; }
+    .home-note strong { color: #75AADB; }
     .home-grid { width: 100%; max-width: 1200px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 0 auto; justify-items: center; }
     .home-btn { padding: 18px 12px; border: 2px solid #75AADB; border-radius: 6px; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; min-height: 92px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; overflow: hidden; width: 100%; text-decoration: none; box-sizing: border-box; }
     .home-icon-img { width: 30px; height: 30px; object-fit: contain; margin-left: 6px; flex-shrink: 0; }
@@ -807,6 +809,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     @media (max-width: 900px) {
       .home-hero { min-height: 0; padding: 12px 10px; gap: 10px; }
       .home-title { margin: 4px 0 2px; font-size: 24px; }
+      .home-note { margin: 0 0 2px; font-size: 13px; }
       .home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: calc(100vw - 20px); max-width: 420px; padding: 0; }
       .home-btn { min-height: 78px; font-size: 13px; padding: 10px 8px; width: 100%; }
       .home-label { padding-right: 0; }
@@ -817,6 +820,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 <body>
   <div class="home-hero">
     <h1 class="home-title">Women's Tennis Argentina</h1>
+    <p class="home-note">Ahora pueden entrar desde <strong>wtarg.com</strong> (m&aacute;s f&aacute;cil de recordar).</p>
     <div class="home-grid">
       <a class="home-btn" href="gallery/index.html"><img class="home-icon-img" src="assets/camera.png" alt="Camera icon"><span class="home-label">Photo Gallery</span></a>
       <a class="home-btn" href="upcoming/index.html"><img class="home-icon-img" src="assets/trophy.png" alt="Trophy icon"><span class="home-label">Upcoming Tournaments</span></a>
@@ -952,8 +956,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-lb-savehint {{ margin-top: 8px; font-size: 11px; color: #94a3b8; }}
             .home-hero {{ width: 100%; display: flex; flex-direction: column; align-items: center; gap: 18px; }}
             .home-title {{ order: 0; }}
+            .home-note {{ order: 1; }}
             .home-grid {{ order: 1; }}
             .home-title {{ font-size: 26px; color: #1e293b; margin: 0; text-align: center; }}
+            .home-note {{ margin: -2px 0 4px; font-size: 14px; color: #334155; text-align: center; }}
+            .home-note strong {{ color: #75AADB; }}
+            .home-grid {{ order: 2; }}
             .home-grid {{ width: 100%; max-width: 1200px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 0 auto; justify-items: center; }}
             .home-btn {{ padding: 18px 12px; border: 2px solid #75AADB; border-radius: 6px; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; min-height: 92px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; overflow: hidden; width: 100%; }}
             .home-icon {{ width: 28px; height: 28px; stroke: #1e293b; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }}
@@ -969,6 +977,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .home-mode .main-content {{ padding: 8px 6px 6px; }}
                 .home-hero {{ min-height: 0; padding: 8px 0 2px; gap: 6px; }}
                 .home-title {{ margin: 4px 0 2px; font-size: 24px; }}
+                .home-note {{ margin: 0 0 2px; font-size: 13px; }}
                 .home-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: calc(100vw - 20px); max-width: 420px; padding: 0; }}
                 .home-btn {{ min-height: 78px; font-size: 13px; padding: 10px 8px; width: 100%; }}
                 .home-label {{ padding-right: 0; }}
@@ -2164,6 +2173,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div id="view-home" class="single-layout">
                     <div class="home-hero">
                         <h1 class="home-title">Women's Tennis Argentina</h1>
+                        <p class="home-note">Ahora pueden entrar desde <strong>wtarg.com</strong> (m&aacute;s f&aacute;cil de recordar).</p>
                         <div class="home-grid">
                             <button class="home-btn" onclick="switchTab('gallery')">
                                 <img class="home-icon-img" src="assets/camera.png" alt="Camera icon" />
