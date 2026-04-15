@@ -152,6 +152,7 @@ WTA_RANKINGS_CSV_83_99 = os.path.join(DATA_DIR, "wta_rankings_83_99.csv")
 ITF_CACHE_FILE = os.path.join(DATA_DIR, "itf_rankings_cache.json")
 ITF_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "itf_calendar_cache.json")
 ENTRY_LISTS_CACHE_FILE = os.path.join(DATA_DIR, "entry_lists_cache.json")
+ITF_ACCEPTANCE_STATE_FILE = os.path.join(DATA_DIR, "itf_acceptance_state.json")
 
 API_URL = "https://api.wtatennis.com/tennis/players/ranked"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"}

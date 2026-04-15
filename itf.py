@@ -16,7 +16,7 @@ ITF_BASE_URL = "https://www.itftennis.com"
 ITF_CALENDAR_PAGE_URL = f"{ITF_BASE_URL}/en/tournament-calendar/womens-world-tennis-tour-calendar/"
 
 # ITF rate limiting / anti-block pacing.
-_ITF_MIN_REQUEST_INTERVAL = float(os.getenv("ITF_API_MIN_INTERVAL_SEC", "0.9"))
+_ITF_MIN_REQUEST_INTERVAL = float(os.getenv("ITF_API_MIN_INTERVAL_SEC", "5.0"))
 _ITF_REQUEST_JITTER_MAX = float(os.getenv("ITF_API_REQUEST_JITTER_SEC", "0.35"))
 _ITF_BLOCK_BACKOFF_BASE = float(os.getenv("ITF_API_BLOCK_BACKOFF_BASE_SEC", "3.0"))
 _ITF_BLOCK_BACKOFF_MAX = float(os.getenv("ITF_API_BLOCK_BACKOFF_MAX_SEC", "15.0"))
@@ -624,18 +624,34 @@ def get_itf_players(tournament_key, driver):
 
 
 def get_dynamic_itf_calendar(driver, num_weeks=3):
-    """Get ITF calendar for the next N weeks, filtered from the full-year cache."""
+    """Get ITF calendar for the next N weeks, filtered from the full-year cache.
+
+    Also includes current-week tournaments when today is Monday or Tuesday,
+    or when the tournament is multi-week (spans into next week).
+    """
+    today = datetime.now()
     next_monday = get_next_monday()
     date_from = next_monday.strftime("%Y-%m-%d")
     date_to = (next_monday + timedelta(weeks=num_weeks)).strftime("%Y-%m-%d")
+    current_monday_str = (today - timedelta(days=today.weekday())).strftime("%Y-%m-%d")
+    is_mon_or_tue = today.weekday() <= 1
 
     all_items = _fetch_itf_calendar_raw(driver)
 
     filtered = []
     for item in all_items:
         start = (item.get('startDate') or '')[:10]
-        if start and date_from <= start < date_to:
+        if not start:
+            continue
+        if date_from <= start < date_to:
             filtered.append(item)
+            continue
+        # Include current-week tournaments on Mon/Tue, or if they span into next week
+        if current_monday_str <= start < date_from:
+            end = (item.get('endDate') or '')[:10]
+            is_multiweek = bool(end and end >= date_from)
+            if is_mon_or_tue or is_multiweek:
+                filtered.append(item)
     return filtered
 
 

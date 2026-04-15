@@ -10,7 +10,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
-from config import ENTRY_LISTS_CACHE_FILE, NAME_LOOKUP, repair_name_text
+from config import ENTRY_LISTS_CACHE_FILE, ITF_ACCEPTANCE_STATE_FILE, NAME_LOOKUP, repair_name_text
 from utils import (
     fix_encoding, fix_encoding_keep_accents,
     load_cache, save_cache, merge_entry_list,
@@ -19,7 +19,7 @@ from utils import (
 )
 from calendar_builder import (
     get_monday_offset, generate_dynamic_monday_map,
-    build_calendar_data
+    build_calendar_data, format_week_label
 )
 from wta import (
     build_tournament_groups, get_full_wta_calendar,
@@ -33,7 +33,7 @@ from itf import (
     get_draws_itf_tournament_list
 )
 from html_generator import generate_html
-from draws import fetch_tournament_draws, fetch_itf_tournament_draws, get_itf_tournament_id
+from draws import fetch_tournament_draws, fetch_itf_tournament_draws, get_itf_tournament_id, _draw_is_complete
 from tstrength import build_tstrength_data
 from populate_data.imagekit_gallery_sync import sync_gallery_manifest
 
@@ -43,6 +43,7 @@ TOURNAMENT_SNAPSHOT_FILE = os.path.join(DATA_DIR, "tournament_snapshot.json")
 CALENDAR_SNAPSHOT_FILE = os.path.join(DATA_DIR, "calendar_snapshot.json")
 PLAYER_ALIASES_WTA_ITF_FILE = os.path.join(DATA_DIR, "player_aliases_wta_itf.json")
 DRAWS_STORE_CACHE_FILE = os.path.join(DATA_DIR, "draws_store_cache.json")
+DRAW_FETCH_ERRORS_FILE = os.path.join(DATA_DIR, "draw_fetch_errors.json")
 ENABLE_ITF_DRAWS_PREFETCH = False
 
 
@@ -311,6 +312,15 @@ def build_all_tournament_groups(driver):
     monday_map = generate_dynamic_monday_map(num_weeks=4)
     itf_monday_map = generate_dynamic_monday_map(num_weeks=3)
 
+    # Add current week's Monday if any current-week tournaments were included
+    today = datetime.now()
+    current_monday = today - timedelta(days=today.weekday())
+    current_monday_str = current_monday.strftime("%Y-%m-%d")
+    current_monday_label = format_week_label(current_monday)
+    if current_monday_label in tournament_groups and tournament_groups[current_monday_label]:
+        monday_map = {current_monday_str: current_monday_label, **monday_map}
+        itf_monday_map = {current_monday_str: current_monday_label, **itf_monday_map}
+
     itf_items = get_dynamic_itf_calendar(driver, num_weeks=3)
 
     for label in monday_map.values():
@@ -369,6 +379,55 @@ def fetch_arg_players():
     return players_data, arg_names_set, all_wta_players
 
 
+def _itf_acceptance_list_available(start_date_str, today):
+    """Return True if the ITF acceptance list should be available yet.
+
+    Entry lists for a given week are published on the Friday that is 3 weeks
+    before the tournament's start Monday (Mon - 17 days = Friday 3 weeks prior).
+    """
+    if not start_date_str:
+        return True
+    try:
+        start_dt = datetime.strptime(start_date_str[:10], "%Y-%m-%d")
+    except ValueError:
+        return True
+    week_monday = start_dt - timedelta(days=start_dt.weekday())
+    threshold_friday = week_monday - timedelta(days=17)
+    return today.date() >= threshold_friday.date()
+
+
+def _acceptance_fingerprint(players):
+    """Stable fingerprint of a player list used to detect acceptance-list changes."""
+    if not players:
+        return ""
+    key_fields = sorted(
+        (p.get("name", ""), p.get("type", ""), p.get("pos_num", 9999))
+        for p in players
+    )
+    return json.dumps(key_fields, ensure_ascii=False, separators=(",", ":"))
+
+
+def _load_acceptance_state():
+    """Load per-tournament acceptance-check state (last_changed_date) from disk."""
+    if not os.path.exists(ITF_ACCEPTANCE_STATE_FILE):
+        return {}
+    try:
+        with open(ITF_ACCEPTANCE_STATE_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _save_acceptance_state(state):
+    """Persist per-tournament acceptance-check state to disk."""
+    try:
+        with open(ITF_ACCEPTANCE_STATE_FILE, "w", encoding="utf-8") as f:
+            json.dump(state, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"Warning: could not save ITF acceptance state: {e}")
+
+
 def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, entry_cache):
     """Process WTA & ITF tournaments: scrape entry lists, build schedule map."""
     schedule_map = {}
@@ -377,6 +436,13 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
     unranked_schedule = {}
     itf_schedule_pending = {}
     unranked_itf_pending = {}
+
+    _now = datetime.now()
+    today_str = _now.strftime("%Y-%m-%d")
+    current_monday_str = (_now - timedelta(days=_now.weekday())).strftime("%Y-%m-%d")
+    next_monday_str = (_now + timedelta(days=7 - _now.weekday())).strftime("%Y-%m-%d")
+    acceptance_state = _load_acceptance_state()
+    acceptance_state_dirty = False
 
     def _priority_num(value):
         text = str(value or "").strip()
@@ -456,6 +522,7 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
         if not week:
             continue
         tourneys = tournament_groups.get(week, {})
+        is_current_week = week_monday < next_monday_str
 
         md_date = get_monday_offset(week_monday, 4)
         q_date = get_monday_offset(week_monday, 3)
@@ -519,12 +586,39 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                 cached_players = entry_cache.get(key, [])
                 if not isinstance(cached_players, list):
                     cached_players = []
-                itf_entries, itf_name_map = get_itf_players(key, driver)
-                fresh_players = parse_itf_entry_list(itf_entries)
-                used_cached_acceptance = bool(cached_players) and not fresh_players
-                tourney_players_list = merge_entry_list(cached_players, fresh_players)
-                if used_cached_acceptance:
-                    print(f"  Using cached ITF acceptance list for: {t_name}")
+
+                already_updated_today = acceptance_state.get(key, {}).get("last_changed_date") == today_str
+                start_date_str = t_info.get("startDate", "")
+                list_available = _itf_acceptance_list_available(start_date_str, _now)
+
+                if is_current_week:
+                    # Tournament week already started — use cache, don't hit API
+                    tourney_players_list = list(cached_players)
+                    itf_name_map = {}
+                elif already_updated_today:
+                    print(f"  ITF acceptance list already updated today, skipping fetch: {t_name}")
+                    tourney_players_list = list(cached_players)
+                    itf_name_map = {}
+                elif not list_available:
+                    # Entry list not published yet (before Friday 3 weeks prior)
+                    tourney_players_list = list(cached_players)
+                    itf_name_map = {}
+                else:
+                    itf_entries, itf_name_map = get_itf_players(key, driver)
+                    fresh_players = parse_itf_entry_list(itf_entries)
+                    if fresh_players:
+                        cached_fp = _acceptance_fingerprint(cached_players)
+                        fresh_fp = _acceptance_fingerprint(fresh_players)
+                        if cached_fp != fresh_fp:
+                            print(f"  ITF acceptance list updated for: {t_name}")
+                            acceptance_state[key] = {"last_changed_date": today_str}
+                            acceptance_state_dirty = True
+                        else:
+                            print(f"  No changes in ITF acceptance list yet for: {t_name}")
+                    else:
+                        print(f"  Using cached ITF acceptance list (fetch failed): {t_name}")
+                    tourney_players_list = merge_entry_list(cached_players, fresh_players)
+
                 normalize_country_overrides(tourney_players_list, "name", "country")
                 entry_cache[key] = tourney_players_list
                 tournament_store[key] = tourney_players_list
@@ -609,6 +703,9 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                         p_type,
                         p.get('pos_num', 9999),
                     )
+
+    if acceptance_state_dirty:
+        _save_acceptance_state(acceptance_state)
 
     _flush_itf_pending(schedule_map, itf_schedule_pending)
     _flush_itf_pending(unranked_schedule, unranked_itf_pending)
@@ -931,6 +1028,7 @@ def main():
     total_itf_draws = len(itf_draw_jobs) or 1
     itf_cooloff_applied = False
     itf_consecutive_empty = 0
+    draw_fetch_errors = []
     for i, (week, t_key, t_info) in enumerate(itf_draw_jobs, start=1):
         print(f"Fetching ITF Draws ({i}/{total_itf_draws})")
         # Keep request cadence gentle to avoid ITF anti-bot throttling.
@@ -941,6 +1039,21 @@ def main():
         store_key = _canonical_draw_store_key(t_key)
         prev = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
         prev_draws = (prev or {}).get("draws") or {}
+
+        # Skip fetching entirely if all cached draws are already complete.
+        qs_complete = _draw_is_complete(prev_draws.get("QS"))
+        mds_complete = _draw_is_complete(prev_draws.get("MDS"))
+        if mds_complete and (qs_complete or "QS" not in prev_draws):
+            print(f"  Draws complete, using cache: {t_info.get('name','')}")
+            draws_store[store_key] = _merge_draw_store_entry(prev, {
+                "name": t_info["name"],
+                "level": t_info.get("level", ""),
+                "week": week,
+                "startDate": t_info.get("startDate"),
+                "endDate": t_info.get("endDate"),
+                "draws": prev_draws,
+            })
+            continue
 
         t_draws = (
             prefetched_itf_draws.get(store_key)
@@ -953,7 +1066,8 @@ def main():
             itf_draw_driver = create_driver()
             try:
                 t_draws = fetch_itf_tournament_draws(
-                    tid, is_multiweek=is_multiweek, driver=itf_draw_driver
+                    tid, is_multiweek=is_multiweek, driver=itf_draw_driver,
+                    cached_draws=prev_draws
                 ) or {}
             finally:
                 try:
@@ -974,7 +1088,8 @@ def main():
             retry_after_cooloff_driver = create_driver()
             try:
                 t_draws = fetch_itf_tournament_draws(
-                    tid, is_multiweek=is_multiweek, driver=retry_after_cooloff_driver
+                    tid, is_multiweek=is_multiweek, driver=retry_after_cooloff_driver,
+                    cached_draws=prev_draws
                 ) or {}
             finally:
                 try:
@@ -994,7 +1109,8 @@ def main():
                 retry_driver = create_driver()
                 try:
                     extra_draws = fetch_itf_tournament_draws(
-                        tid, is_multiweek=is_multiweek, driver=retry_driver
+                        tid, is_multiweek=is_multiweek, driver=retry_driver,
+                        cached_draws=merged_draws
                     ) or {}
                 finally:
                     try:
@@ -1019,11 +1135,18 @@ def main():
             }
         else:
             itf_consecutive_empty += 1
+            draw_fetch_errors.append({
+                "key": t_key,
+                "name": t_info.get("name", t_key),
+            })
             if itf_consecutive_empty >= 3 and i < total_itf_draws:
                 # Back off periodically to recover from temporary ITF throttling.
                 print("  ITF backoff triggered (35s) after consecutive empty draws...")
                 time.sleep(35)
                 itf_consecutive_empty = 0
+
+    # Write draw fetch errors for this run (always overwrite so stale errors are cleared).
+    save_json_file(DRAW_FETCH_ERRORS_FILE, draw_fetch_errors)
 
     # Prune draws for tournaments that are definitely over (endDate < today).
     today = datetime.now().date()

@@ -788,9 +788,25 @@ def _parse_itf_draw(data):
     }
 
 
-def fetch_itf_tournament_draws(tournament_id, is_multiweek=False, driver=None):
-    """Fetch and parse ITF draws for a tournament. Returns dict like WTA draws."""
+def _draw_is_complete(draw_data):
+    """Return True if the draw's final round has at least one match result."""
+    if not isinstance(draw_data, dict):
+        return False
+    matches = draw_data.get("matches") or []
+    num_rounds = draw_data.get("num_rounds") or 0
+    if not num_rounds:
+        return False
+    return any(m.get("round") == num_rounds for m in matches)
+
+
+def fetch_itf_tournament_draws(tournament_id, is_multiweek=False, driver=None, cached_draws=None):
+    """Fetch and parse ITF draws for a tournament. Returns dict like WTA draws.
+
+    Pass cached_draws (dict keyed by dtype_code like "MDS"/"QS") to skip
+    re-fetching draw types that are already complete.
+    """
     draws = {}
+    cached_draws = cached_draws or {}
     # Multi-week circuits can expose drawsheet data under different week numbers
     # depending on event timing. Try the preferred week first, then fall back.
     preferred_week = 1 if is_multiweek else 0
@@ -803,6 +819,10 @@ def fetch_itf_tournament_draws(tournament_id, is_multiweek=False, driver=None):
         _prime_itf_draw_session(driver, tournament_id)
 
     for classification, dtype_code, dtype_label in _ITF_DRAW_TYPES:
+        # Skip fetching if the cached draw for this type is already complete.
+        if _draw_is_complete(cached_draws.get(dtype_code)):
+            draws[dtype_code] = cached_draws[dtype_code]
+            continue
         for week_number in week_candidates:
             raw = None
             # ITF API is highly sensitive to bot-rate patterns. Prefer browser-context

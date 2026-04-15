@@ -66,8 +66,12 @@ def _fetch_wta_tournaments_raw():
 
 
 def build_tournament_groups():
+    today = datetime.now()
     next_monday = get_next_monday()
+    current_monday = today - timedelta(days=today.weekday())
+    current_monday = current_monday.replace(hour=0, minute=0, second=0, microsecond=0)
     four_weeks_later = next_monday + timedelta(weeks=4)
+    is_mon_or_tue = today.weekday() <= 1
 
     raw_tournaments = _fetch_wta_tournaments_raw()
 
@@ -98,7 +102,15 @@ def build_tournament_groups():
 
         monday = get_monday_from_date(start_date)
 
-        if not (next_monday <= monday < four_weeks_later):
+        is_current_week = (monday == current_monday)
+        if is_current_week:
+            # Include on Mon/Tue, or always for 2-week tournaments
+            is_two_week = _is_two_week_wta(level, raw_name, city, "")
+            end_dt = datetime.strptime(end_date[:10], "%Y-%m-%d") if end_date else None
+            is_multiweek = bool(end_dt and end_dt >= next_monday)
+            if not (is_mon_or_tue or is_two_week or is_multiweek):
+                continue
+        elif not (next_monday <= monday < four_weeks_later):
             continue
 
         week_label = format_week_label(monday)

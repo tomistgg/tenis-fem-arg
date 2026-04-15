@@ -116,6 +116,7 @@ def fetch_itf_ids_to_json(keys_list, driver=None):
         driver = create_driver()
 
     results = []
+    consecutive_failures = 0
     try:
         if owns_driver:
             driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
@@ -124,20 +125,45 @@ def fetch_itf_ids_to_json(keys_list, driver=None):
         for key in keys_list:
             api_url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
 
-            driver.get(api_url)
-            time.sleep(1)
+            fetched = False
+            for attempt in range(2):
+                if attempt > 0:
+                    # Re-warm the session before retry
+                    driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
+                    time.sleep(5)
 
-            try:
-                raw_content = driver.find_element("tag name", "body").text.strip()
-                data = json.loads(raw_content)
+                driver.get(api_url)
+                time.sleep(3.5)
 
-                if data and "tournamentId" in data:
-                    results.append({
-                        "tournamentKey": key,
-                        "tournamentId": data["tournamentId"]
-                    })
-            except Exception as e:
-                print(f"[!] Failed to fetch ID for {key}: {e}")
+                raw_content = ""
+                try:
+                    raw_content = driver.find_element("tag name", "body").text.strip()
+                except Exception:
+                    pass
+
+                if not raw_content:
+                    continue
+
+                try:
+                    data = json.loads(raw_content)
+                    if data and "tournamentId" in data:
+                        results.append({
+                            "tournamentKey": key,
+                            "tournamentId": data["tournamentId"]
+                        })
+                        fetched = True
+                        consecutive_failures = 0
+                        break
+                except Exception as e:
+                    print(f"[!] Failed to fetch ID for {key}: {e}")
+
+            if not fetched:
+                consecutive_failures += 1
+                if consecutive_failures >= 3:
+                    print(f"  ITF ID fetch: backing off 30s after {consecutive_failures} consecutive failures...")
+                    driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
+                    time.sleep(30)
+                    consecutive_failures = 0
     finally:
         if owns_driver:
             driver.quit()

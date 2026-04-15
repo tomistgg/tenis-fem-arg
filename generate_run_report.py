@@ -620,6 +620,12 @@ def compute_report(before_dir, after_dir):
             new_draws.append({"name": t_name, "types": labels})
     report["new_draws"] = new_draws
 
+    # Draw fetch failures (tournaments where ITF returned no data and no cache exists)
+    failed_draw_fetches = load_json(os.path.join(after_dir, "draw_fetch_errors.json")) or []
+    report["failed_draw_fetches"] = [
+        item for item in failed_draw_fetches if isinstance(item, dict)
+    ]
+
     return report
 
 
@@ -636,6 +642,7 @@ def render_email_markdown(report):
             bool(report.get("added_matches")),
             bool(report.get("new_draws")),
             bool(report.get("added_calendar_tournaments")),
+            bool(report.get("failed_draw_fetches")),
         ]
     )
     if not has_any:
@@ -681,6 +688,14 @@ def render_email_markdown(report):
                 lines.append(f"  {msg}")
         if payload.get("truncated"):
             lines.append(f"- ... and {payload['count'] - len(payload.get('items') or [])} more")
+        lines.append("")
+
+    if report.get("failed_draw_fetches"):
+        lines.append("## 6) Draw Fetch Failures")
+        for item in report["failed_draw_fetches"]:
+            name = item.get("name") or item.get("key", "")
+            key = item.get("key", "")
+            lines.append(f"- Could not load Drawsheet for {name} ({key})")
         lines.append("")
 
     return "\n".join(lines).rstrip() + "\n"
