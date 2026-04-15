@@ -101,12 +101,17 @@ def _split_player_name(player_name):
 
 
 def _parse_winner_name_parts(winner_name):
-    """Split abbreviated winner names like 'A. S. Sanchez' into pieces."""
+    """Split abbreviated winner names like 'A. S. Sanchez' or 'Xin. Wang' into pieces.
+
+    Returns (family_name, initials_string) where initials captures the FIRST character
+    of each abbreviated token (e.g. 'Xin.' → 'X', not 'n').
+    """
     clean = (winner_name or "").replace("...", "").strip()
     m = re.match(r'^((?:[^\W\d_]+\.\s*)+)(.+)$', clean, flags=re.UNICODE)
     if not m:
         return clean, ""
-    initials = "".join(re.findall(r'([^\W\d_])\.', m.group(1), flags=re.UNICODE)).upper()
+    # Capture first letter of each "Token." group, e.g. "Xin." → 'X', "A." → 'A'
+    initials = "".join(re.findall(r'([^\W\d_])[^\W\d_]*\.', m.group(1), flags=re.UNICODE)).upper()
     family = m.group(2).strip()
     return family, initials
 
@@ -454,8 +459,10 @@ def _group_into_rounds(entries, r1_count, match_offset, players=None):
                 used_match_nums.add(actual_match_num)
             elif round_num == 1:
                 actual_match_num = match_num + match_offset
+                used_match_nums.add(actual_match_num)
             else:
                 actual_match_num = match_num + match_offset // (2 ** (round_num - 1))
+                used_match_nums.add(actual_match_num)
             matches.append({
                 "round": round_num,
                 "match_num": actual_match_num,
