@@ -811,15 +811,32 @@ def _parse_itf_draw(data):
     }
 
 
-def _draw_is_complete(draw_data):
-    """Return True if the draw's final round has at least one match result."""
+def _draw_is_complete(draw_data, is_qualifying=False):
+    """Return True if the draw is fully finished.
+
+    For main draws: the final round having at least one result is sufficient,
+    since a final cannot be played without all prior rounds being done.
+
+    For qualifying: ALL expected matches in the final qualifying round must be
+    present, because multiple simultaneous final-round matches exist and any one
+    could finish before the others.  The expected count is inferred from the
+    number of first-round matches (draw_size / 2^(num_rounds-1)).
+    """
     if not isinstance(draw_data, dict):
         return False
     matches = draw_data.get("matches") or []
     num_rounds = draw_data.get("num_rounds") or 0
     if not num_rounds:
         return False
-    return any(m.get("round") == num_rounds for m in matches)
+    final_round_matches = [m for m in matches if m.get("round") == num_rounds]
+    if not final_round_matches:
+        return False
+    if is_qualifying and num_rounds > 1:
+        r1_count = sum(1 for m in matches if m.get("round") == 1)
+        expected_final = r1_count // (2 ** (num_rounds - 1))
+        if expected_final > 0 and len(final_round_matches) < expected_final:
+            return False
+    return True
 
 
 def fetch_itf_tournament_draws(tournament_id, is_multiweek=False, driver=None, cached_draws=None):
@@ -843,7 +860,7 @@ def fetch_itf_tournament_draws(tournament_id, is_multiweek=False, driver=None, c
 
     for classification, dtype_code, dtype_label in _ITF_DRAW_TYPES:
         # Skip fetching if the cached draw for this type is already complete.
-        if _draw_is_complete(cached_draws.get(dtype_code)):
+        if _draw_is_complete(cached_draws.get(dtype_code), is_qualifying=(dtype_code == "QS")):
             draws[dtype_code] = cached_draws[dtype_code]
             continue
         for week_number in week_candidates:

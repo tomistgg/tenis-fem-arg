@@ -19,6 +19,10 @@ from calendar_builder import get_next_monday, get_monday_from_date, format_week_
 _wta_tournaments_raw = None  # module-level cache for raw WTA tournament API data
 _REQUESTS_SESSION = requests.Session()
 
+_WTA_MAX_ATTEMPTS = 8
+_WTA_BACKOFF_BASE_SEC = 5.0
+_WTA_BACKOFF_MAX_SEC = 120.0
+
 
 class WtaApiRateLimited(RuntimeError):
     pass
@@ -282,19 +286,19 @@ def get_rankings(date_str, nationality=None):
             req_headers.setdefault("Origin", "https://www.wtatennis.com")
             req_headers.setdefault("Referer", "https://www.wtatennis.com/")
             saw_rate_limit = False
-            for attempt in range(8):
+            for attempt in range(_WTA_MAX_ATTEMPTS):
                 try:
                     r = _REQUESTS_SESSION.get(API_URL, params=params, headers=req_headers, timeout=30)
                     # Retry on throttling / transient server errors.
                     if r.status_code in (429, 500, 502, 503, 504):
                         saw_rate_limit = saw_rate_limit or (r.status_code == 429)
-                        time.sleep(min(120.0, 5.0 * (2 ** attempt)))
+                        time.sleep(min(_WTA_BACKOFF_MAX_SEC, _WTA_BACKOFF_BASE_SEC * (2 ** attempt)))
                         continue
                     ctype = (r.headers.get("content-type") or "").lower()
                     if "text/html" in ctype:
                         # CloudFront/WAF blocks often come back as HTML.
                         saw_rate_limit = True
-                        time.sleep(min(120.0, 5.0 * (2 ** attempt)))
+                        time.sleep(min(_WTA_BACKOFF_MAX_SEC, _WTA_BACKOFF_BASE_SEC * (2 ** attempt)))
                         continue
                     r.raise_for_status()
                     data = r.json()
@@ -302,7 +306,7 @@ def get_rankings(date_str, nationality=None):
                     break
                 except Exception as e:
                     last_err = e
-                    time.sleep(min(120.0, 5.0 * (2 ** attempt)))
+                    time.sleep(min(_WTA_BACKOFF_MAX_SEC, _WTA_BACKOFF_BASE_SEC * (2 ** attempt)))
             if last_err is not None and data is None:
                 if saw_rate_limit:
                     raise WtaApiRateLimited(f"WTA API rate limited for {date_str} (page {page})")

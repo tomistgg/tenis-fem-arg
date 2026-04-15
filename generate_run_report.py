@@ -1,3 +1,6 @@
+# NOTE: This script runs after main.py in CI (see hourly-update.yml).
+# It imports from config and utils — keep those modules free of heavy
+# runtime dependencies (Selenium, pandas, etc.) so this script stays lightweight.
 import argparse
 import csv
 import json
@@ -5,7 +8,7 @@ import os
 from datetime import datetime, timezone, timedelta
 
 from config import repair_name_text
-from utils import fix_encoding
+from utils import fix_encoding, save_json_array_one_line_per_item
 
 MAX_MATCH_LINES_PER_FILE = 50
 RANKINGS_CSV_FILES = ["wta_rankings_83_99.csv", "wta_rankings_00_09.csv", "wta_rankings_10_19.csv", "wta_rankings_20_29.csv"]
@@ -21,17 +24,6 @@ def repair_nested_strings(value):
         return repair_name_text(value)
     return value
 
-
-def save_json_array_one_line_per_item(path, items):
-    """Write a JSON array with one compact object per line (easy to diff/edit)."""
-    with open(path, "w", encoding="utf-8") as f:
-        f.write("[\n")
-        for i, item in enumerate(items or []):
-            if i:
-                f.write(",\n")
-            f.write("  ")
-            f.write(json.dumps(repair_nested_strings(item), ensure_ascii=False))
-        f.write("\n]\n")
 
 
 def load_json(path):
@@ -568,7 +560,7 @@ def compute_report(before_dir, after_dir):
                     (ent.get("display_name") or ent.get("wta_name") or ent.get("itf_name") or "")
                 )
 
-            save_json_array_one_line_per_item(aliases_path, sorted(aliases_items, key=_sort_key))
+            save_json_array_one_line_per_item(aliases_path, sorted(aliases_items, key=_sort_key), transform=repair_nested_strings)
 
     before_calendar = load_json(os.path.join(before_dir, "calendar_snapshot.json")) or []
     after_calendar = load_json(os.path.join(after_dir, "calendar_snapshot.json")) or []
@@ -623,6 +615,34 @@ def compute_report(before_dir, after_dir):
         item for item in failed_draw_fetches if isinstance(item, dict)
     ]
 
+    # Stale draws: active tournaments whose draw hasn't been refreshed in >24h
+    draws_store = load_json(os.path.join(after_dir, "draws_store_cache.json")) or {}
+    stale_draws = []
+    now_utc = datetime.now(timezone.utc)
+    today_str = now_utc.strftime("%Y-%m-%d")
+    for t_key, entry in draws_store.items():
+        if not isinstance(entry, dict):
+            continue
+        end_date = (entry.get("endDate") or "")[:10]
+        if end_date and end_date < today_str:
+            continue  # tournament is over
+        fetched_at_str = entry.get("fetchedAt")
+        if not fetched_at_str:
+            continue  # no timestamp yet (pre-existing cache entries)
+        try:
+            fetched_at = datetime.strptime(fetched_at_str, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        except Exception:
+            continue
+        age_hours = (now_utc - fetched_at).total_seconds() / 3600
+        if age_hours > 24:
+            stale_draws.append({
+                "name": entry.get("name", t_key),
+                "key": t_key,
+                "fetched_at": fetched_at_str,
+                "age_hours": round(age_hours, 1),
+            })
+    report["stale_draws"] = stale_draws
+
     return report
 
 
@@ -640,6 +660,7 @@ def render_email_markdown(report):
             bool(report.get("new_draws")),
             bool(report.get("added_calendar_tournaments")),
             bool(report.get("failed_draw_fetches")),
+            bool(report.get("stale_draws")),
         ]
     )
     if not has_any:
@@ -693,6 +714,12 @@ def render_email_markdown(report):
             name = item.get("name") or item.get("key", "")
             key = item.get("key", "")
             lines.append(f"- Could not load Drawsheet for {name} ({key})")
+        lines.append("")
+
+    if report.get("stale_draws"):
+        lines.append("## 7) Stale Draws (Not Updated in 24h)")
+        for item in report["stale_draws"]:
+            lines.append(f"- {item['name']} — last fetched {item['fetched_at']} ({item['age_hours']}h ago)")
         lines.append("")
 
     return "\n".join(lines).rstrip() + "\n"

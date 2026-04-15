@@ -152,15 +152,19 @@ def save_json_file(path, payload):
         json.dump(payload, f, indent=2, ensure_ascii=False)
 
 
-def save_json_array_one_line_per_item(path, items):
-    """Write a JSON array with one compact object per line (easy to diff/edit)."""
+def save_json_array_one_line_per_item(path, items, transform=None):
+    """Write a JSON array with one compact object per line (easy to diff/edit).
+
+    Optional transform(item) callable is applied to each item before serialization,
+    e.g. to repair encoding on all nested strings before writing.
+    """
     with open(path, "w", encoding="utf-8") as f:
         f.write("[\n")
         for i, item in enumerate(items or []):
             if i:
                 f.write(",\n")
             f.write("  ")
-            f.write(json.dumps(item, ensure_ascii=False))
+            f.write(json.dumps(transform(item) if transform else item, ensure_ascii=False))
         f.write("\n]\n")
 
 

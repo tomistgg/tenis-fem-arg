@@ -4,7 +4,7 @@ import pandas as pd
 import csv
 import random
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -972,6 +972,7 @@ def main():
         if isinstance(t_draws, dict):
             merged_draws.update(t_draws)
         if merged_draws:
+            fetched_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ") if t_draws else (prev or {}).get("fetchedAt")
             if not t_draws and prev_draws:
                 print(f"  Using cached WTA draws for: {t_info.get('name','')}")
             draws_store[store_key] = {
@@ -980,6 +981,7 @@ def main():
                 "week": week,
                 "startDate": t_info.get("startDate"),
                 "endDate": t_info.get("endDate"),
+                "fetchedAt": fetched_at,
                 "draws": merged_draws,
             }
 
@@ -1041,7 +1043,7 @@ def main():
         prev_draws = (prev or {}).get("draws") or {}
 
         # Skip fetching entirely if all cached draws are already complete.
-        qs_complete = _draw_is_complete(prev_draws.get("QS"))
+        qs_complete = _draw_is_complete(prev_draws.get("QS"), is_qualifying=True)
         mds_complete = _draw_is_complete(prev_draws.get("MDS"))
         if mds_complete and (qs_complete or "QS" not in prev_draws):
             print(f"  Draws complete, using cache: {t_info.get('name','')}")
@@ -1123,6 +1125,7 @@ def main():
                     break
         if merged_draws:
             itf_consecutive_empty = 0
+            fetched_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ") if t_draws else (prev or {}).get("fetchedAt")
             if not t_draws and prev_draws:
                 print(f"  Using cached ITF draws for: {t_info.get('name','')}")
             draws_store[store_key] = {
@@ -1131,6 +1134,7 @@ def main():
                 "week": week,
                 "startDate": t_info.get("startDate"),
                 "endDate": t_info.get("endDate"),
+                "fetchedAt": fetched_at,
                 "draws": merged_draws,
             }
         else:
