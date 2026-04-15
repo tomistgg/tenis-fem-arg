@@ -45,6 +45,33 @@ def _is_score(text):
     ))
 
 
+def _is_completed_score(score_str):
+    """Return True only if every set token in score_str represents a finished set.
+
+    A finished set has at least one player on 6+ games (or 10+ for match tiebreaks).
+    RET/DEF tokens mark the match as complete regardless of the score.
+    Rejects live/in-progress scores like '44 44' or '53 31'.
+    """
+    parts = score_str.strip().split()
+    has_set = False
+    for p in parts:
+        if p in ('RET', 'DEF'):
+            return True
+        m = re.match(r'^(\d+)(?:\(\d+\))?$', p)
+        if not m:
+            continue
+        digits = m.group(1)
+        if len(digits) < 2:
+            continue
+        mid = len(digits) // 2
+        w_games = int(digits[:mid])
+        l_games = int(digits[mid:])
+        if max(w_games, l_games) < 6:
+            return False  # set is not finished (e.g. '44', '53')
+        has_set = True
+    return has_set
+
+
 def _is_winner_name(text):
     """Check if a line is a winner name like 'A. Sabalenka' or 'Xin. Wang'."""
     text = text.strip()
@@ -311,8 +338,8 @@ def _parse_page(text):
                 name = re.sub(r'\s+\d+$', '', line).strip()
                 result_entries.append({"name": name, "score": ""})
             elif _is_score(line):
-                # Attach score to the last name entry
-                if result_entries and not result_entries[-1]["score"]:
+                # Only attach score if every set is finished (guards against live/in-progress scores)
+                if result_entries and not result_entries[-1]["score"] and _is_completed_score(line):
                     result_entries[-1]["score"] = line
             # Skip standalone numbers (seed annotations), country codes, etc.
 

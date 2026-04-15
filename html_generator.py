@@ -5354,6 +5354,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         }}
                     }}
                 }}
+                // Reject live/in-progress scores: every regular set must have one player on 6+ games.
+                // Avoids displaying mid-match snapshots like '44 44' as if they were final results.
+                if (!retired && !walkover) {{
+                    for (const s of sets) {{
+                        if (Math.max(s.w, s.l) < 6) {{
+                            return {{ sets: [], retired: false, walkover: false }};
+                        }}
+                    }}
+                }}
                 return {{ sets, retired, walkover }};
             }}
 
