@@ -176,7 +176,6 @@ def _save_itf_calendar_disk_cache(items, year):
         return
     payload = {
         "year": int(year),
-        "fetchedAt": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
         "count": len(items),
         "items": items,
     }

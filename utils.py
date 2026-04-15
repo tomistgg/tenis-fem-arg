@@ -16,41 +16,46 @@ def format_player_name(text):
     return text.title()
 
 
+# Common UTF-8-decoded-as-Latin-1 mojibake indicators
+_MOJIBAKE_MARKERS = ('\u00c3', '\u00c3\u00a1', '\u00c3\u00a9', '\u00c3\u00ad', '\u00c3\u00b3', '\u00c3\u00ba')
+
+
+def _repair_mojibake(text):
+    """Re-decode text that was mistakenly decoded as Latin-1 instead of UTF-8."""
+    if any(m in text for m in _MOJIBAKE_MARKERS):
+        try:
+            return text.encode('latin-1').decode('utf-8')
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            pass
+    return text
+
+
 def fix_encoding(text):
-    """Fix encoding issues and normalize special characters"""
+    """Fix encoding issues and normalize special characters (strips accents)."""
     if not text:
         return ""
-    try:
-        if '\u00c3' in text or '\u00c3\u00a1' in text or '\u00c3\u00a9' in text or '\u00c3\u00ad' in text or '\u00c3\u00b3' in text or '\u00c3\u00ba' in text:
-            text = text.encode('latin-1').decode('utf-8')
-    except (UnicodeDecodeError, UnicodeEncodeError):
-        pass
+    text = _repair_mojibake(text)
     try:
         nfkd_form = unicodedata.normalize('NFKD', text)
-        text_without_accents = "".join([c for c in nfkd_form if not unicodedata.combining(c)])
-        return text_without_accents
-    except:
+        return "".join(c for c in nfkd_form if not unicodedata.combining(c))
+    except Exception:
         return text
 
 
 def fix_encoding_keep_accents(text):
-    """Fix encoding issues but preserve accents"""
+    """Fix encoding issues but preserve accents."""
     if not text:
         return ""
-    try:
-        if '\u00c3' in text or '\u00c3\u00a1' in text or '\u00c3\u00a9' in text or '\u00c3\u00ad' in text or '\u00c3\u00b3' in text or '\u00c3\u00ba' in text:
-            text = text.encode('latin-1').decode('utf-8')
-    except (UnicodeDecodeError, UnicodeEncodeError):
-        pass
-    return text
+    return _repair_mojibake(text)
 
 
 def load_cache(cache_file):
-    """Load rankings cache from JSON file"""
-    if os.path.exists(cache_file):
+    """Load cache from JSON file. Returns {} if the file does not exist."""
+    try:
         with open(cache_file, "r", encoding="utf-8") as f:
             return json.load(f)
-    return {}
+    except FileNotFoundError:
+        return {}
 
 
 def save_cache(cache_file, cache_data):
