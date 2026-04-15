@@ -7,8 +7,9 @@ import os
 import re
 import requests
 import time
-import unicodedata
 from datetime import datetime, timedelta
+
+from utils import fix_encoding
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -78,11 +79,7 @@ _REGION_MAP = {
 
 def _normalize_name(name):
     """Normalize a player name for matching: strip accents, uppercase, collapse spaces."""
-    # Strip accents/diacritics
-    nfkd = unicodedata.normalize("NFKD", name)
-    ascii_name = "".join(c for c in nfkd if not unicodedata.combining(c))
-    # Uppercase and collapse multiple spaces
-    return re.sub(r"\s+", " ", ascii_name.upper().strip())
+    return re.sub(r"\s+", " ", fix_encoding(name).upper().strip())
 
 
 def _get_monday(date_str):
@@ -262,7 +259,7 @@ def _needs_refresh(cached_entry):
     rankings = cached_entry.get("rankings")
     if isinstance(rankings, list) and len(rankings) == 0:
         return True
-    if isinstance(rankings, list) and rankings and all(int(r) == DEFAULT_RANK for r in rankings):
+    if isinstance(rankings, list) and rankings and all(r == DEFAULT_RANK for r in rankings):
         return True
     return False
 
@@ -458,10 +455,6 @@ def build_tstrength_data(from_year=None, full_backfill=False):
                 cache_key = f"{t.get('year', current_year)}_{t['id']}_{draw}"
                 if cache.get(cache_key, {}).get("playerCount", 0) <= 0:
                     still_empty.append(f"{t.get('name', t['id'])} ({t.get('startDate', '')}) [{draw}]")
-        if still_empty:
-            print("\nWARNING: Some tournaments still have no player data after retry:")
-            for label in still_empty:
-                print(f"  - {label}")
 
         # Save updated cache
         try:

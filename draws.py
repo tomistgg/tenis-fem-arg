@@ -5,9 +5,10 @@ import math
 import re
 import time
 import random
-import unicodedata
 import requests
 import fitz
+
+from utils import fix_encoding
 
 
 _DRAW_TYPES = [
@@ -82,12 +83,7 @@ def _is_winner_name(text):
 
 def _fold_name(text):
     """Normalize names for robust matching (case/accents/spacing)."""
-    text = text or ""
-    text = unicodedata.normalize("NFKD", text)
-    text = "".join(ch for ch in text if not unicodedata.combining(ch))
-    text = text.upper()
-    text = re.sub(r"\s+", " ", text).strip()
-    return text
+    return re.sub(r"\s+", " ", fix_encoding(text or "").upper()).strip()
 
 
 def _split_player_name(player_name):

@@ -79,7 +79,7 @@ def parse_itf_entry_list(itf_entries):
             try:
                 pos_digits = ''.join(filter(str.isdigit, str(pos)))
                 pos_num = int(pos_digits) if pos_digits else 999
-            except:
+            except Exception:
                 pos_num = 999
 
             priority = str(entry.get("priority") or "").strip()
@@ -833,7 +833,7 @@ def get_itf_rankings(nationality="ARG"):
 
             skip += take
             time.sleep(0.1)
-        except:
+        except Exception:
             break
 
     ranking_results = []

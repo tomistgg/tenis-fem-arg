@@ -2,10 +2,10 @@ import argparse
 import csv
 import json
 import os
-import unicodedata
 from datetime import datetime, timezone, timedelta
 
 from config import repair_name_text
+from utils import fix_encoding
 
 MAX_MATCH_LINES_PER_FILE = 50
 RANKINGS_CSV_FILES = ["wta_rankings_83_99.csv", "wta_rankings_00_09.csv", "wta_rankings_10_19.csv", "wta_rankings_20_29.csv"]
@@ -58,10 +58,7 @@ def normalize_country(value):
 
 
 def strip_accents(text):
-    s = repair_name_text(text).strip()
-    if not s:
-        return ""
-    return "".join(ch for ch in unicodedata.normalize("NFKD", s) if not unicodedata.combining(ch))
+    return fix_encoding(repair_name_text(text))
 
 
 def normalize_rank_key(value):

@@ -1,7 +1,6 @@
 import re
 import time
 import requests
-import unicodedata
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 
@@ -13,7 +12,7 @@ from config import (
     WTA_RANKINGS_CSV, WTA_RANKINGS_CSV_10_19,
     WTA_RANKINGS_CSV_00_09, WTA_RANKINGS_CSV_83_99
 )
-from utils import fix_display_name, format_player_name
+from utils import fix_display_name, fix_encoding, format_player_name
 from calendar_builder import get_next_monday, get_monday_from_date, format_week_label
 
 
@@ -81,8 +80,7 @@ def build_tournament_groups():
         tournament_id = tournament["tournamentGroup"]["id"]
         raw_name = tournament["tournamentGroup"]["name"]
 
-        nfkd_form = unicodedata.normalize('NFKD', raw_name)
-        clean_name = "".join([c for c in nfkd_form if not unicodedata.combining(c)])
+        clean_name = fix_encoding(raw_name)
 
         suffix = ""
         if "#" in clean_name:
@@ -166,8 +164,7 @@ def get_draws_tournament_list():
         tournament_id = tournament["tournamentGroup"]["id"]
         raw_name = tournament["tournamentGroup"]["name"]
 
-        nfkd_form = unicodedata.normalize('NFKD', raw_name)
-        clean_name = "".join([c for c in nfkd_form if not unicodedata.combining(c)])
+        clean_name = fix_encoding(raw_name)
 
         suffix = ""
         if "#" in clean_name:
@@ -233,8 +230,7 @@ def get_full_wta_calendar():
         city = t["city"].title()
 
         raw_name = t["tournamentGroup"]["name"]
-        nfkd_form = unicodedata.normalize('NFKD', raw_name)
-        clean_name = "".join([c for c in nfkd_form if not unicodedata.combining(c)])
+        clean_name = fix_encoding(raw_name)
         suffix = ""
         if "#" in clean_name:
             parts = clean_name.split("#")
@@ -460,7 +456,7 @@ def fetch_player_info(player_id):
         country = player.get("countryCode")
         if name:
             return {"name": name, "country": country}
-    except:
+    except Exception:
         pass
     return None
 
