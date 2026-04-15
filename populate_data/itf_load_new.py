@@ -234,6 +234,12 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
                     seen_q[rd] = int(rn) if isinstance(rn, (int, float)) else 9999
         q_map = {rd: f"QR{i + 1}" for i, (rd, _) in enumerate(sorted(seen_q.items(), key=lambda x: x[1]))}
 
+    def get_p(t):
+        ps = t.get("players", [])
+        if not ps or not isinstance(ps[0], dict): return "Unknown", "", ""
+        p = ps[0]
+        return p.get('playerId',''), f"{p.get('givenName','')} {p.get('familyName','')}".strip(), p.get('nationality','')
+
     for group in ko_groups:
         rounds = group.get("rounds", [])
         for rnd in rounds:
@@ -242,23 +248,17 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
             for match in matches:
                 try:
                     if match.get("playStatusCode") != "PC" and match.get("resultStatusCode") not in ("WO", "BYE"): continue
-                    
+
                     matchId = match.get("matchId")
                     teams = match.get("teams", [])
                     if len(teams) < 2: continue
-                    
+
                     is_winner_0 = str(teams[0].get("isWinner")).lower() == "true"
-                    
+
                     if is_winner_0:
                         winner, loser = teams[0], teams[1]
                     else:
                         winner, loser = teams[1], teams[0]
-                    
-                    def get_p(t):
-                        ps = t.get("players", [])
-                        if not ps or not isinstance(ps[0], dict): return "Unknown", "", ""
-                        p = ps[0]
-                        return p.get('playerId',''), f"{p.get('givenName','')} {p.get('familyName','')}".strip(), p.get('nationality','')
 
                     w_id, w_n, w_c = get_p(winner)
                     l_id, l_n, l_c = get_p(loser)

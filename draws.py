@@ -858,10 +858,8 @@ def get_itf_tournament_id(tournament_key, driver):
     api_url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={tournament_key}"
     try:
         driver.get(api_url)
-        import time
         time.sleep(1)
         raw = driver.find_element("tag name", "body").text.strip()
-        import json
         data = json.loads(raw)
         return data.get("tournamentId")
     except Exception:

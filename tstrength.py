@@ -144,57 +144,6 @@ def _load_rankings_index():
     return index
 
 
-def _fetch_tournaments(year):
-    """Fetch all WTA tournaments (WTA 125+) for a given year from API, paginating."""
-    url = "https://api.wtatennis.com/tennis/tournaments/"
-    valid_levels = {"WTA 1000", "WTA 500", "WTA 250", "WTA 125"}
-    result = []
-    page = 0
-    while True:
-        params = {
-            "page": page,
-            "pageSize": 100,
-            "excludeLevels": "ITF",
-            "from": f"{year}-01-01",
-            "to": f"{year}-12-31",
-        }
-        try:
-            r = requests.get(url, headers=_WTA_API_HEADERS, params=params, timeout=15)
-            r.raise_for_status()
-            data = r.json()
-            tournaments = data.get("content", [])
-            if not tournaments:
-                break
-            for t in tournaments:
-                level = t.get("level", "")
-                if level not in valid_levels:
-                    continue
-                tid = t["tournamentGroup"]["id"]
-                raw_name = t["tournamentGroup"]["name"]
-                if _is_ignored_tournament(raw_name):
-                    continue
-                city = t.get("city", "")
-                start_date = t.get("startDate", "")[:10]
-                surface = t.get("surface") or t.get("surfaceType") or t.get("surfaceCode") or ""
-                country = t.get("countryCode") or t.get("country") or t.get("hostCountryCode") or ""
-                result.append({
-                    "id": str(tid),
-                    "name": raw_name,
-                    "city": city,
-                    "level": level,
-                    "startDate": start_date,
-                    "surface": surface,
-                    "country": country,
-                    "year": str(year),
-                })
-            page += 1
-        except Exception as e:
-            print(f"Error fetching {year} tournaments (page {page}): {e}")
-            break
-    result.sort(key=lambda x: x["startDate"])
-    return result
-
-
 def _fetch_tournaments_range(year, from_date, to_date):
     """Fetch WTA tournaments (WTA 125+) within a date range from API."""
     url = "https://api.wtatennis.com/tennis/tournaments/"
@@ -244,10 +193,6 @@ def _fetch_tournaments_range(year, from_date, to_date):
             break
     result.sort(key=lambda x: x["startDate"])
     return result
-
-
-def _fetch_main_draw_players(tournament_id, year="2025"):
-    raise NotImplementedError("Use _fetch_tournament_matches + _extract_draw_players instead.")
 
 
 def _fetch_tournament_matches(tournament_id, year="2025"):
@@ -305,6 +250,23 @@ def _geometric_mean(values):
     return math.exp(log_sum / len(values))
 
 
+def _needs_refresh(cached_entry):
+    if not cached_entry:
+        return True
+    if cached_entry.get("playerCount", 0) <= 0:
+        return True
+    if cached_entry.get("gm", 0) <= 0 or cached_entry.get("hm", 0) <= 0:
+        return True
+    if cached_entry.get("participantsLocked") is False:
+        return True
+    rankings = cached_entry.get("rankings")
+    if isinstance(rankings, list) and len(rankings) == 0:
+        return True
+    if isinstance(rankings, list) and rankings and all(int(r) == DEFAULT_RANK for r in rankings):
+        return True
+    return False
+
+
 def build_tstrength_data(from_year=None, full_backfill=False):
     """Build tournament strength data for WTA tournaments.
 
@@ -318,21 +280,6 @@ def build_tstrength_data(from_year=None, full_backfill=False):
     temporarily unavailable), it will be retried when it appears in the recent
     window again.
     """
-    def _needs_refresh(cached_entry):
-        if not cached_entry:
-            return True
-        if cached_entry.get("playerCount", 0) <= 0:
-            return True
-        if cached_entry.get("gm", 0) <= 0 or cached_entry.get("hm", 0) <= 0:
-            return True
-        if cached_entry.get("participantsLocked") is False:
-            return True
-        rankings = cached_entry.get("rankings")
-        if isinstance(rankings, list) and len(rankings) == 0:
-            return True
-        if isinstance(rankings, list) and rankings and all(int(r) == DEFAULT_RANK for r in rankings):
-            return True
-        return False
 
     # Load cache (keyed by "year_id")
     cache = {}
