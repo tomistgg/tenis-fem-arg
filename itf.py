@@ -491,6 +491,7 @@ def _fetch_itf_calendar_raw(driver):
     date_to = f"{current_year}-12-31"
 
     all_items = []
+    expected_total = 0
     skip = 0
     take = 250
 
@@ -513,6 +514,8 @@ def _fetch_itf_calendar_raw(driver):
             all_items.extend(items)
 
             total = data.get('totalItems', 0)
+            if skip == 0 and total:
+                expected_total = total
             batch_size = len(items)
             if total and (skip + batch_size >= total):
                 break
@@ -523,10 +526,21 @@ def _fetch_itf_calendar_raw(driver):
             print(f"Error fetching full ITF calendar (skip={skip}): {e}")
             break
 
-    if all_items:
+    fetch_complete = all_items and (not expected_total or len(all_items) >= expected_total)
+    if fetch_complete:
         _itf_calendar_raw = all_items
         _save_itf_calendar_disk_cache(all_items, current_year)
         return _itf_calendar_raw
+
+    # Partial or empty fetch — prefer disk cache to avoid overwriting complete data
+    if all_items and not expected_total:
+        # totalItems not reported by API; treat as complete
+        _itf_calendar_raw = all_items
+        _save_itf_calendar_disk_cache(all_items, current_year)
+        return _itf_calendar_raw
+
+    if all_items:
+        print(f"Partial ITF calendar fetch ({len(all_items)}/{expected_total}) — using disk cache to avoid false-positive new-tournament alerts.")
 
     cached_items = _load_itf_calendar_disk_cache(target_year=current_year)
     if cached_items:
