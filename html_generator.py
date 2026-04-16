@@ -792,7 +792,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>WT Argentina</title>
   <style>
-    @font-face { font-family: 'Montserrat'; src: url('Montserrat-SemiBold.ttf'); }
+    @font-face { font-family: 'Montserrat'; src: url('assets/Montserrat-SemiBold.ttf'); }
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: hidden; max-width: 100vw; }
     body { font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; }
 
@@ -850,7 +850,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
         <style>
-            @font-face {{ font-family: 'Montserrat'; src: url('Montserrat-SemiBold.ttf'); }}
+            @font-face {{ font-family: 'Montserrat'; src: url('assets/Montserrat-SemiBold.ttf'); }}
             html {{ -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: hidden; max-width: 100vw; }}
             .mobile-only {{ display: none; }}
             .desktop-only {{ display: inline; }}

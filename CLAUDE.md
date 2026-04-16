@@ -6,13 +6,7 @@ Workflow Orchestration
 • Use plan mode for verification steps, not just implementation.
 • Write detailed specifications upfront to reduce ambiguity.
 
-2. Self-Improvement Loop
-• After any correction from the user, update lessons.md with the relevant pattern.
-• Create rules for yourself that prevent repeating the same mistake.
-• Iterate on these lessons rigorously until the mistake rate declines.
-• Review lessons at the start of each session when relevant to the project.
-
-3. Verification Before Done
+2. Verification Before Done
 • Never mark a task complete without proving it works.
 • Diff behavior between main and your changes when relevant.
 • Ask: “Would a staff engineer approve this?”
