@@ -113,7 +113,7 @@
             .gallery-lb-counter { font-size: 12px; color: #475569; margin-top: 8px; }
             .gallery-lb-download { display: inline-block; margin-top: 10px; padding: 8px 14px; background: #75AADB; color: white; border-radius: 9999px; font-size: 12px; text-decoration: none; }
             .gallery-lb-download:hover { background: #5a8fb8; }
-            .gallery-lb-savehint { margin-top: 8px; font-size: 11px; color: #94a3b8; }
+            .gallery-lb-savehint { margin-bottom: 8px; font-size: 11px; color: #94a3b8; }
             .home-hero { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 18px; }
             .home-title { order: 0; }
             .home-note { order: 1; }
@@ -1307,6 +1307,20 @@
                 #roadtogs-points-total {
                     font-size: 11px !important;
                 }
+
+                /* Gallery title: push down from top menu */
+                #view-gallery .header-row { margin-top: 10px; }
+
+                /* Reset Filters button: smaller on mobile */
+                .filter-btn-clear { font-size: 9px; padding: 4px 10px; }
+
+                /* Upcoming search: narrower and shorter */
+                #view-upcoming .search-container { width: auto; }
+                #view-upcoming #s { width: 130px; max-width: 130px; padding: 4px 8px; font-size: 10px; }
+
+                /* Rankings: Show ARG slightly left, date picker same height as button */
+                #view-rankings .rankings-controls { padding-right: 8px; }
+                #view-rankings .rankings-toggle-btn, #view-rankings .rankings-date-picker { height: 30px; box-sizing: border-box; }
             }
 
             /* iOS WebKit-specific: keep Upcoming columns tight and consistent with desktop emulation */
@@ -8027,11 +8041,11 @@
                             <button class="gallery-lb-nav" id="gallery-lb-next">&#8250;</button>
                         </div>
                         <div class="gallery-lb-info">
+                            <div class="gallery-lb-savehint">Long press the image to save on your phone.</div>
                             <div class="gallery-lb-tourn" id="gallery-lb-tourn"></div>
                             <div class="gallery-lb-players" id="gallery-lb-players"></div>
                             <div class="gallery-lb-counter" id="gallery-lb-counter"></div>
                             <a class="gallery-lb-download" id="gallery-lb-download" href="#" target="_blank" rel="noopener">Download</a>
-                            <div class="gallery-lb-savehint">Long press the image to save on your phone.</div>
                         </div>
                     </div>
                 </div>
