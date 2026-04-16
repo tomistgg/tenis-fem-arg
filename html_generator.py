@@ -5041,7 +5041,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 return GALLERY_IK_URL + '/' + galleryEncodePath(path) + (tr ? ('?tr=' + tr) : '');
             }}
             function galleryThumb(pid, tournament) {{ return galleryUrl(pid, 'w-400,h-300,fo-auto,q-80', tournament); }}
-            function galleryFull(pid, tournament) {{ return galleryUrl(pid, 'q-90', tournament); }}
+            function galleryFull(pid, tournament) {{ return galleryUrl(pid, 'w-1200,q-85', tournament); }}
             function galleryDownload(pid, tournament) {{
                 if (!pid) return '';
                 return galleryUrl(pid, 'orig-true', tournament) + '&ik-attachment=true';
@@ -5254,6 +5254,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('gallery-lb-players').textContent = players.join(' \u00b7 ');
                 document.getElementById('gallery-lb-counter').textContent = (galleryLbIndex + 1) + ' / ' + galleryLbList.length;
                 document.getElementById('gallery-lb-download').href = galleryDownload(ph.public_id, ph.tournament);
+                var list = galleryLbList; var n = list.length;
+                [-1, 1].forEach(function(d) {{
+                    var adj = list[(galleryLbIndex + d + n) % n];
+                    if (adj) {{ var img = new Image(); img.src = galleryFull(adj.public_id, adj.tournament); }}
+                }});
             }}
 
             function galleryLbNav(dir) {{ galleryLbIndex = (galleryLbIndex + dir + galleryLbList.length) % galleryLbList.length; galleryShowLb(); }}
