@@ -805,6 +805,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     .home-icon-img { width: 30px; height: 30px; object-fit: contain; margin-left: 6px; flex-shrink: 0; }
     .home-label { flex: 1; text-align: center; padding-right: 28px; word-break: break-word; }
     .home-btn:hover { background: #d9ecf8; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
+    .home-btn:active { background: #b8d9f0; transform: scale(0.97); box-shadow: none; }
 
     @media (max-width: 900px) {
       .home-hero { min-height: 0; padding: 12px 10px; gap: 10px; }
@@ -823,7 +824,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     <p class="home-note">Ahora pueden entrar desde <strong>wtarg.com</strong> (m&aacute;s f&aacute;cil de recordar).</p>
     <div class="home-grid">
       <a class="home-btn" href="gallery/index.html"><img class="home-icon-img" src="assets/camera.png" alt="Camera icon"><span class="home-label">Photo Gallery</span></a>
-      <a class="home-btn" href="upcoming/index.html"><img class="home-icon-img" src="assets/trophy.png" alt="Trophy icon"><span class="home-label">Upcoming Tournaments</span></a>
+      <a class="home-btn" href="upcoming/index.html"><img class="home-icon-img" src="assets/trophy.png" alt="Trophy icon"><span class="home-label">Schedule</span></a>
       <a class="home-btn" href="entrylists/index.html"><img class="home-icon-img" src="assets/files.png" alt="Files icon"><span class="home-label">Entry Lists</span></a>
       <a class="home-btn" href="draws/index.html"><img class="home-icon-img" src="assets/tournament.png" alt="Tournament icon"><span class="home-label">Draws</span></a>
       <a class="home-btn" href="calendar/index.html"><img class="home-icon-img" src="assets/calendar.png" alt="Calendar icon"><span class="home-label">Calendar</span></a>
@@ -953,6 +954,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-lb-counter {{ font-size: 12px; color: #475569; margin-top: 8px; }}
             .gallery-lb-download {{ display: inline-block; margin-top: 10px; padding: 8px 14px; background: #75AADB; color: white; border-radius: 9999px; font-size: 12px; text-decoration: none; }}
             .gallery-lb-download:hover {{ background: #5a8fb8; }}
+            .gallery-lb-actions {{ display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 10px; }}
+            .gallery-lb-nav-mob {{ display: none; }}
             .gallery-lb-savehint {{ margin-bottom: 8px; font-size: 11px; color: #94a3b8; }}
             .home-hero {{ width: 100%; display: flex; flex-direction: column; align-items: center; gap: 18px; }}
             .home-title {{ order: 0; }}
@@ -971,6 +974,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .home-label {{ flex: 1; text-align: center; padding-right: 28px; word-break: break-word; }}
             .home-icon-fill {{ fill: #1e293b; stroke: none; }}
             .home-btn:hover {{ background: #d9ecf8; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }}
+            .home-btn:active {{ background: #b8d9f0; transform: scale(0.97); box-shadow: none; }}
             .home-hero {{ min-height: 80vh; justify-content: center; }}
             @media (max-width: 900px) {{
                 body.home-mode {{ overflow: hidden; }}
@@ -1392,7 +1396,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .sidebar-header {{ display: none; }}
 
                 .main-content {{
-                    padding: 56px 1px 8px 1px;
+                    padding: 56px 5px 8px 5px;
                     width: 100%;
                     box-sizing: border-box;
                 }}
@@ -1405,7 +1409,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     white-space: normal;
                     min-height: 40px;
                     padding: 4px 3px !important;
-                    font-size: 8px;
+                    font-size: 9px;
                     line-height: 1.1;
                     text-align: center;
                     display: flex;
@@ -2118,6 +2122,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
 
+                /* Draws mobile: fade right edge to hint at horizontal scroll */
+                .draw-bracket-wrapper {{
+                    -webkit-mask-image: linear-gradient(to right, black 95%, transparent 100%);
+                    mask-image: linear-gradient(to right, black 95%, transparent 100%);
+                }}
+
                 /* Draws mobile */
                 .draws-toolbar {{ padding: 4px 8px; gap: 6px; flex-wrap: wrap; justify-content: center; }}
                 #draws-tournament-select {{ font-size: 10px; min-width: 0; width: 100%; padding: 5px 22px 5px 7px; }}
@@ -2150,6 +2160,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 /* Gallery title: push down from top menu */
                 #view-gallery .header-row {{ margin-top: 10px; }}
+                /* Gallery lightbox: show mobile nav buttons beside Download, hide desktop ones */
+                .gallery-lb-nav-desk {{ display: none; }}
+                .gallery-lb-nav-mob {{ display: flex; width: 54px; height: 54px; font-size: 36px; }}
+                /* Schedule: remove excess gap between title and table */
+                #view-upcoming .header-row {{ margin-bottom: 6px; }}
 
                 /* Reset Filters button: smaller on mobile */
                 .filter-btn-clear {{ font-size: 9px; padding: 4px 10px; }}
@@ -2185,12 +2200,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         <div class="app-container">
             <div class="sidebar" id="sidebar">
                 <div class="sidebar-header">WT Argentina</div>
-                <div class="menu-item" id="btn-upcoming" onclick="switchTab('upcoming')">Upcoming Tournaments</div>
+                <div class="menu-item" id="btn-upcoming" onclick="switchTab('upcoming')">Schedule</div>
                 <div class="menu-item" id="btn-entrylists" onclick="switchTab('entrylists')">Entry Lists</div>
                 <div class="menu-item" id="btn-draws" onclick="switchTab('draws')">Draws</div>
                 <div class="menu-item" id="btn-calendar" onclick="switchTab('calendar')">Calendar</div>
-                <div class="menu-item" id="btn-rankings" onclick="switchTab('rankings')">WTA Rankings</div>
-                <div class="menu-item" id="btn-roadtogs" onclick="switchTab('roadtogs')">Points Breakdown</div>
+                <div class="menu-item" id="btn-rankings" onclick="switchTab('rankings')"><span class="desktop-only">WTA Rankings</span><span class="mobile-only">WTA Ranks</span></div>
+                <div class="menu-item" id="btn-roadtogs" onclick="switchTab('roadtogs')"><span class="desktop-only">Points Breakdown</span><span class="mobile-only">Points Breakd.</span></div>
                 <div class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</div>
                 <div class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</div>
                 <div class="menu-item" id="btn-tstrength" onclick="switchTab('tstrength')">WTA TRN STR</div>
@@ -2209,7 +2224,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             </button>
                             <button class="home-btn" onclick="switchTab('upcoming')">
                                 <img class="home-icon-img" src="assets/trophy.png" alt="Trophy icon" />
-                                <span class="home-label">Upcoming Tournaments</span>
+                                <span class="home-label">Schedule</span>
                             </button>
                             <button class="home-btn" onclick="switchTab('entrylists')">
                                 <img class="home-icon-img" src="assets/files.png" alt="Files icon" />
@@ -2249,7 +2264,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 <div id="view-upcoming" class="single-layout" style="display: none;">
                     <div class="header-row">
-                        <h1>Upcoming Tournaments</h1>
+                        <h1>Schedule</h1>
                     </div>
                     <div class="content-card">
                         <div class="table-wrapper">
@@ -2313,7 +2328,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                 </div>
                             </div>
                             <div class="rankings-btn-end">
-                                <button id="rankings-toggle-btn" class="rankings-toggle-btn" onclick="toggleRankingsScope()">Show ARG</button>
+                                <button id="rankings-toggle-btn" class="rankings-toggle-btn" onclick="toggleRankingsScope()">Show 🇦🇷</button>
                             </div>
                         </div>
                     </div>
@@ -2798,16 +2813,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     <div class="gallery-lb-inner">
                         <button class="gallery-lb-close" id="gallery-lb-close">&#x2715;</button>
                         <div class="gallery-lb-img-wrap">
-                            <button class="gallery-lb-nav" id="gallery-lb-prev">&#8249;</button>
+                            <button class="gallery-lb-nav gallery-lb-nav-desk" id="gallery-lb-prev">&#8249;</button>
                             <img class="gallery-lb-img" id="gallery-lb-img" src="" alt="" />
-                            <button class="gallery-lb-nav" id="gallery-lb-next">&#8250;</button>
+                            <button class="gallery-lb-nav gallery-lb-nav-desk" id="gallery-lb-next">&#8250;</button>
                         </div>
                         <div class="gallery-lb-info">
                             <div class="gallery-lb-savehint">Long press the image to save on your phone.</div>
                             <div class="gallery-lb-tourn" id="gallery-lb-tourn"></div>
                             <div class="gallery-lb-players" id="gallery-lb-players"></div>
                             <div class="gallery-lb-counter" id="gallery-lb-counter"></div>
-                            <a class="gallery-lb-download" id="gallery-lb-download" href="#" target="_blank" rel="noopener">Download</a>
+                            <div class="gallery-lb-actions">
+                                <button class="gallery-lb-nav gallery-lb-nav-mob" onclick="galleryLbNav(-1)">&#8249;</button>
+                                <a class="gallery-lb-download" id="gallery-lb-download" href="#" target="_blank" rel="noopener">Download</a>
+                                <button class="gallery-lb-nav gallery-lb-nav-mob" onclick="galleryLbNav(1)">&#8250;</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3295,7 +3314,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 showArgOnly = !showArgOnly;
                 const btn = document.getElementById('rankings-toggle-btn');
                 const view = document.getElementById('view-rankings');
-                if (btn) btn.textContent = showArgOnly ? 'Show ALL' : 'Show ARG';
+                if (btn) btn.textContent = showArgOnly ? 'Show ALL' : 'Show \U0001F1E6\U0001F1F7';
                 if (view) view.classList.toggle('rankings-show-all', !showArgOnly);
                 filterRankings();
             }}
@@ -5237,9 +5256,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('gallery-lb-download').href = galleryDownload(ph.public_id, ph.tournament);
             }}
 
+            function galleryLbNav(dir) {{ galleryLbIndex = (galleryLbIndex + dir + galleryLbList.length) % galleryLbList.length; galleryShowLb(); }}
             document.getElementById('gallery-lb-close').addEventListener('click', galleryCloseLb);
-            document.getElementById('gallery-lb-prev').addEventListener('click', function() {{ galleryLbIndex = (galleryLbIndex - 1 + galleryLbList.length) % galleryLbList.length; galleryShowLb(); }});
-            document.getElementById('gallery-lb-next').addEventListener('click', function() {{ galleryLbIndex = (galleryLbIndex + 1) % galleryLbList.length; galleryShowLb(); }});
+            document.getElementById('gallery-lb-prev').addEventListener('click', function() {{ galleryLbNav(-1); }});
+            document.getElementById('gallery-lb-next').addEventListener('click', function() {{ galleryLbNav(1); }});
             document.getElementById('gallery-lb').addEventListener('click', function(e) {{ if (e.target === document.getElementById('gallery-lb')) galleryCloseLb(); }});
             document.addEventListener('keydown', function(e) {{
                 if (!document.getElementById('gallery-lb').classList.contains('open')) return;
