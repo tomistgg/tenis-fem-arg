@@ -1314,13 +1314,13 @@
                 /* Reset Filters button: smaller on mobile */
                 .filter-btn-clear { font-size: 9px; padding: 4px 10px; }
 
-                /* Upcoming search: narrower and shorter */
-                #view-upcoming .search-container { width: auto; }
-                #view-upcoming #s { width: 130px; max-width: 130px; padding: 4px 8px; font-size: 10px; }
-
-                /* Rankings: Show ARG slightly left, date picker same height as button */
-                #view-rankings .rankings-controls { padding-right: 8px; }
-                #view-rankings .rankings-toggle-btn, #view-rankings .rankings-date-picker { height: 30px; box-sizing: border-box; }
+                /* Rankings: stop date picker from growing so Show ARG sits left of it */
+                #view-rankings .rankings-filter-container { flex: 0 0 auto !important; }
+                /* Rankings: sync date picker, selects, and button to same height */
+                #view-rankings .rankings-date-picker { height: 30px; box-sizing: border-box; }
+                #view-rankings .rankings-date-select { height: 30px; line-height: 30px; box-sizing: border-box; }
+                #view-rankings .rankings-load-btn { height: 30px; box-sizing: border-box; }
+                #view-rankings .rankings-toggle-btn { height: 30px; box-sizing: border-box; }
             }
 
             /* iOS WebKit-specific: keep Upcoming columns tight and consistent with desktop emulation */
@@ -1404,9 +1404,6 @@
 
                 <div id="view-upcoming" class="single-layout" style="display: none;">
                     <div class="header-row">
-                        <div class="search-container">
-                            <input type="text" id="s" placeholder="Search player..." oninput="filter()">
-                        </div>
                         <h1>Upcoming Tournaments</h1>
                     </div>
                     <div class="content-card">
