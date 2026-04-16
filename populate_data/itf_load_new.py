@@ -12,6 +12,8 @@ from datetime import datetime, timedelta
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "..", "data")
 TOURNAMENT_LINK_PREFIX = "/en/tournament/"
+ITF_EVENT_FILTERS_CACHE_FILE = os.path.join(DATA_DIR, "itf_event_filters_cache.json")
+ITF_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "itf_calendar_cache.json")
 
 def get_week_start_end(today=None):
     if today is None:
@@ -34,34 +36,27 @@ def create_driver():
 
 
 def get_itf_calendar_for_range(start_date, end_date, driver=None):
-    owns_driver = driver is None
-    if owns_driver:
-        driver = create_driver()
+    api_url = (
+        f"https://www.itftennis.com/tennis/api/TournamentApi/GetCalendar?"
+        f"circuitCode=WT&searchString=&skip=0&take=1000&dateFrom={start_date}&dateTo={end_date}"
+        f"&isOrderAscending=true&orderField=startDate"
+    )
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        ),
+        "Accept": "application/json, text/plain, */*",
+        "Referer": "https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/",
+    }
 
     all_tournaments = []
     seen_ids = set()
 
     try:
-        driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
-        time.sleep(5)
-
-        api_url = (
-            f"https://www.itftennis.com/tennis/api/TournamentApi/GetCalendar?"
-            f"circuitCode=WT&searchString=&skip=0&take=1000&dateFrom={start_date}&dateTo={end_date}"
-            f"&isOrderAscending=true&orderField=startDate"
-        )
-
-        driver.get(api_url)
-        time.sleep(2)
-
-        raw_content = driver.find_element("tag name", "body").text.strip()
-        if not raw_content:
-            return []
-
-        try:
-            range_data = json.loads(raw_content)
-        except json.JSONDecodeError:
-            return []
+        resp = requests.get(api_url, headers=headers, timeout=15)
+        resp.raise_for_status()
+        range_data = resp.json()
 
         if isinstance(range_data, dict):
             range_data = range_data.get('items') or range_data.get('data') or []
@@ -82,9 +77,6 @@ def get_itf_calendar_for_range(start_date, end_date, driver=None):
     except Exception as e:
         print(f"[!] Calendar fetch error: {e}")
         return []
-    finally:
-        if owns_driver:
-            driver.quit()
 
 def create_tournament_df(tournament_list):
     if not tournament_list:
@@ -407,6 +399,49 @@ def update_csv_smart(filename, new_data_df, reset_if_not_current_week=False, cur
 
     final_df.to_csv(file_path, index=False, encoding='utf-8-sig')
 
+def _load_cached_tournament_ids():
+    """Load ITF tournament IDs from the persistent event-filters cache.
+
+    Returns a dict mapping tournamentKey (lowercase) -> tournamentId (str).
+    Used as a fallback when the live Selenium-based ID fetch is blocked.
+    """
+    try:
+        with open(ITF_EVENT_FILTERS_CACHE_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if not isinstance(data, dict):
+            return {}
+        return {k.lower(): str(v) for k, v in data.items() if v}
+    except Exception:
+        return {}
+
+
+def _load_cached_calendar_tournaments(week_start, week_end):
+    """Load ITF tournament entries from the persistent calendar cache that fall
+    within [week_start, week_end].  Returns a list of raw tournament dicts in
+    the same shape as the live GetCalendar API response so they can be fed
+    directly into create_tournament_df().
+    """
+    try:
+        with open(ITF_CALENDAR_CACHE_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        items = data.get("items", []) if isinstance(data, dict) else (data or [])
+    except Exception:
+        return []
+
+    results = []
+    for item in items:
+        start = str(item.get("startDate") or "")[:10]
+        if not start:
+            continue
+        try:
+            start_dt = datetime.strptime(start, "%Y-%m-%d").date()
+        except ValueError:
+            continue
+        if week_start <= start_dt <= week_end:
+            results.append(item)
+    return results
+
+
 if __name__ == "__main__":
     week_start, week_end = get_week_start_end()
     last_week_start = week_start - timedelta(days=7)
@@ -432,7 +467,12 @@ if __name__ == "__main__":
                 seen_keys.add(key)
 
         if not raw_data:
-            raise SystemExit(0)
+            # Live calendar fetch blocked — fall back to the persisted cache so
+            # we can still pick up match results for tournaments already known.
+            print("[!] Live calendar fetch returned no results; using cached calendar as fallback.")
+            raw_data = _load_cached_calendar_tournaments(last_week_start, next_week_end)
+            if not raw_data:
+                raise SystemExit(0)
 
         tournaments_df = create_tournament_df(raw_data)
 
@@ -445,6 +485,22 @@ if __name__ == "__main__":
         driver.quit()
 
     final_df = merge_ids_with_pandas(tournaments_df, json_ids_string)
+
+    # If the live ID fetch returned no results (ITF blocked), fall back to the
+    # persistent itf_event_filters_cache.json so we still fetch drawsheets for
+    # the current set of known tournaments.
+    cached_ids = _load_cached_tournament_ids()
+    missing_id_mask = final_df["tournamentId"].isna()
+    if missing_id_mask.any() and cached_ids:
+        print(f"[!] {missing_id_mask.sum()} tournament(s) missing IDs from live fetch; filling from cache.")
+        for idx in final_df.index[missing_id_mask]:
+            key = str(final_df.at[idx, "tournamentKey"] or "").strip().lower()
+            cached_id = cached_ids.get(key)
+            if cached_id:
+                try:
+                    final_df.at[idx, "tournamentId"] = float(cached_id)
+                except (ValueError, TypeError):
+                    pass
     final_df['tournamentId'] = final_df['tournamentId'].fillna(0).astype(int).astype(str).replace('0', '')
 
     all_matches = []
