@@ -281,5 +281,9 @@ if __name__ == "__main__":
 
             time.sleep(0.3)
 
+    if not all_rows:
+        print("\nNo matches fetched from API (all requests failed). Aborting to preserve existing data.")
+        raise SystemExit(1)
+
     all_rows.extend(MANUAL_MATCHES)
     save_csv(all_rows, OUTPUT_FILE)

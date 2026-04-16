@@ -353,6 +353,10 @@ def main():
         except: continue
 
     # Phase 3: Final Merge and Column Order
+    if not match_results:
+        print("\nNo match results fetched (all Phase 2 requests failed). Aborting to preserve existing data.")
+        return
+
     final_df = pd.merge(df_ties, pd.DataFrame(match_results), on="tieId", how="inner")
     final_df = final_df.rename(columns={"eventName": "tournamentName", "drawName": "draw"})
     
