@@ -188,6 +188,10 @@ def main():
         missing.values(), key=lambda x: (x.get("tournamentName") or "", x.get("tournamentLink") or "")
     )
 
+    if not tournament_list and os.path.exists(OUTPUT_JSON):
+        print("\nNo tournaments found (all API requests may have failed). Aborting to preserve existing data.")
+        return
+
     with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
         json.dump(tournament_list, f, ensure_ascii=False, indent=2)
 

@@ -534,6 +534,10 @@ def main():
     # Combine and save
     all_results = wta_results + itf_results
 
+    if not all_results:
+        print("\nNo tournament data fetched (all API requests failed). Aborting to preserve existing data.")
+        return
+
     with open(OUTPUT_PATH, 'w', encoding='utf-8') as f:
         json.dump(all_results, f, indent=2, ensure_ascii=False)
 
