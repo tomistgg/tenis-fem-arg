@@ -801,10 +801,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     .home-note { margin: -2px 0 4px; font-size: 14px; color: #334155; text-align: center; }
     .home-note strong { color: #75AADB; }
     .home-grid { width: 100%; max-width: 1200px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 0 auto; justify-items: center; }
-    .home-btn { padding: 18px 12px; border: 2px solid #75AADB; border-radius: 12px; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; min-height: 92px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; overflow: hidden; width: 100%; text-decoration: none; box-sizing: border-box; }
+    .home-btn { padding: 18px 12px; border: 2px solid #75AADB; border-radius: 12px; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; min-height: 92px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; overflow: hidden; width: 100%; text-decoration: none; box-sizing: border-box; transition: background 0.15s, transform 0.15s, box-shadow 0.15s; }
     .home-icon-img { width: 30px; height: 30px; object-fit: contain; margin-left: 6px; flex-shrink: 0; }
     .home-label { flex: 1; text-align: center; padding-right: 28px; word-break: break-word; }
-    .home-btn:hover { background: #d9ecf8; }
+    .home-btn:hover { background: #d9ecf8; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
 
     @media (max-width: 900px) {
       .home-hero { min-height: 0; padding: 12px 10px; gap: 10px; }
@@ -963,14 +963,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .home-note strong {{ color: #75AADB; }}
             .home-grid {{ order: 2; }}
             .home-grid {{ width: 100%; max-width: 1200px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 0 auto; justify-items: center; }}
-            .home-btn {{ padding: 18px 12px; border: 2px solid #75AADB; border-radius: 12px; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; min-height: 92px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; overflow: hidden; width: 100%; }}
+            .home-btn {{ padding: 18px 12px; border: 2px solid #75AADB; border-radius: 12px; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; min-height: 92px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; overflow: hidden; width: 100%; transition: background 0.15s, transform 0.15s, box-shadow 0.15s; }}
             .home-icon {{ width: 28px; height: 28px; stroke: #1e293b; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }}
             .home-icon-img {{ width: 30px; height: 30px; object-fit: contain; }}
             .home-btn .home-icon {{ margin-left: 6px; }}
             .home-btn .home-icon-img {{ margin-left: 6px; }}
             .home-label {{ flex: 1; text-align: center; padding-right: 28px; word-break: break-word; }}
             .home-icon-fill {{ fill: #1e293b; stroke: none; }}
-            .home-btn:hover {{ background: #d9ecf8; }}
+            .home-btn:hover {{ background: #d9ecf8; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }}
             .home-hero {{ min-height: 80vh; justify-content: center; }}
             @media (max-width: 900px) {{
                 body.home-mode {{ overflow: hidden; }}
@@ -1030,7 +1030,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .table-wrapper {{ overflow-x: auto; width: 100%; }}
             table {{ border-collapse: separate; border-spacing: 0; width: 100%; table-layout: fixed; border: 1px solid #cbd5e1; }}
             #view-upcoming table {{ width: max-content; min-width: 100%; }}
-            th {{ position: sticky; top: 0; background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%) !important; color: white; padding: 10px 15px; font-size: 11px; font-weight: bold; border-bottom: 2px solid #475569; border-right: 1px solid rgba(255,255,255,0.25); z-index: 10; text-transform: uppercase; text-align: center; }}
+            th {{ position: sticky; top: 0; background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%) !important; color: white; padding: 10px 15px; font-size: 11px; font-weight: bold; border-bottom: 2px solid rgba(0,0,0,0.25); border-right: 1px solid rgba(255,255,255,0.25); z-index: 10; text-transform: uppercase; text-align: center; }}
             td {{ padding: 8px 12px; border-bottom: 1px solid #cbd5e1; text-align: center; font-size: 13px; border-right: 1px solid #cbd5e1; }}
             #view-entrylists td {{ font-size: 12px; padding: 6px 10px; }}
             #view-entrylists table {{ table-layout: auto; }}
@@ -1334,7 +1334,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .calendar-container .table-wrapper {{ display: block; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; border-right: 1px solid #475569; box-sizing: border-box; cursor: grab; overscroll-behavior-x: contain; }}
             .calendar-container .table-wrapper.dragging {{ cursor: grabbing; }}
             .calendar-table {{ border-collapse: separate; border-spacing: 0; width: max-content; min-width: max-content; table-layout: auto; border: 1px solid #cbd5e1; }}
-            .calendar-table th {{ padding: 4px 4px; vertical-align: top; border-bottom: 2px solid #475569; border-right: 1px solid rgba(255,255,255,0.25); }}
+            .calendar-table th {{ padding: 4px 4px; vertical-align: top; border-bottom: 2px solid rgba(0,0,0,0.25); border-right: 1px solid rgba(255,255,255,0.25); }}
             .calendar-table td {{ padding: 4px 4px; vertical-align: top; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; }}
             .cal-week-header {{ background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%); color: white; font-size: 10px; font-weight: bold; text-align: center; white-space: nowrap; padding: 6px 6px; position: sticky; top: 0; z-index: 10; min-width: 90px; }}
             .cal-cat-header {{ background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%); color: white; position: sticky; top: 0; left: 0; z-index: 15; width: 24px; min-width: 24px; max-width: 24px; box-sizing: border-box; }}
