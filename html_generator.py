@@ -860,7 +860,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .sidebar-header {{ padding: 25px 15px; font-size: 15px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #475569; }}
             .menu-item {{ padding: 15px 20px; cursor: pointer; color: #cbd5e1; font-size: 14px; border-bottom: 1px solid #334155; transition: 0.2s; text-decoration: none; display: block; }}
             .menu-item:hover {{ background: #334155; color: white; }}
-            .menu-item.active {{ background: #75AADB; color: white; font-weight: bold; }}
+            .menu-item.active {{ background: rgba(255,255,255,0.08); color: white; font-weight: bold; border-left: 3px solid #3B82F6; padding-left: 17px; }}
             .main-content {{ flex: 1; overflow-y: visible; background: #f8fafc; padding: 20px; display: flex; flex-direction: column; }}
             .single-layout {{ width: 100%; min-width: 0; display: flex; flex-direction: column; }}
             #view-upcoming {{ max-width: 1200px; margin: 0 auto; }}
