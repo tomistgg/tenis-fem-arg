@@ -4079,8 +4079,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const scoreText = isWinner ? (row['SCORE'] || '') : reverseScore(row['SCORE'] || '');
                     const scoreClass = isWinner ? 'score-win' : 'score-loss';
 
+                    const rowMatchType = (row['MATCH_TYPE'] || '').trim();
+                    const rowCategory = (row['CATEGORY'] || '').trim();
+                    const displayTournament = rowMatchType === 'WTA' && rowCategory
+                        ? rowCategory + ' ' + (row['TOURNAMENT'] || '')
+                        : (row['TOURNAMENT'] || '');
+
                     parts.push('<tr><td>', formatDate(row['DATE'] || ''),
-                        '</td><td>', row['TOURNAMENT'] || '',
+                        '</td><td>', displayTournament,
                         '</td><td>', row['SURFACE'] || '',
                         '</td><td>', displayRound(row['ROUND'] || '', row['TOURNAMENT'] || ''),
                         '</td><td>', playerRank,
