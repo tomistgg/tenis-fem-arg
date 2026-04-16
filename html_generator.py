@@ -2154,12 +2154,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 /* Reset Filters button: smaller on mobile */
                 .filter-btn-clear {{ font-size: 9px; padding: 4px 10px; }}
 
-                /* Rankings: stop date picker from growing so Show ARG sits left of it */
-                #view-rankings .rankings-filter-container {{ flex: 0 0 auto !important; }}
-                /* Rankings: sync date picker, selects, and button to same height */
+                /* Rankings mobile layout:
+                   Row 1 — search input (flexible) + Show ARG button
+                   Row 2 — date filter centered */
+                #view-rankings .search-container {{ flex: 1 1 auto !important; width: auto !important; order: 1 !important; }}
+                #view-rankings #rankings-search {{ width: 100% !important; }}
+                #view-rankings .rankings-btn-end {{ order: 1 !important; flex: 0 0 auto !important; }}
+                #view-rankings .rankings-filter-container {{ flex: 0 0 100% !important; order: 2 !important; justify-content: center; }}
+                /* Consistent heights */
                 #view-rankings .rankings-date-picker {{ height: 30px; box-sizing: border-box; }}
                 #view-rankings .rankings-date-select {{ height: 30px; line-height: 30px; box-sizing: border-box; }}
-                #view-rankings .rankings-load-btn {{ height: 30px; box-sizing: border-box; }}
+                #view-rankings .rankings-load-btn {{ height: 30px; padding: 0 9px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }}
                 #view-rankings .rankings-toggle-btn {{ height: 30px; box-sizing: border-box; }}
             }}
 
