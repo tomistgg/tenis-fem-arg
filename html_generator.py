@@ -1822,6 +1822,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     width: 100%;
                 }}
 
+                .gallery-grid {{ grid-template-columns: repeat(3, 1fr); gap: 8px; }}
+                .gallery-card-players {{ font-size: 9px; }}
+                .gallery-card-tourn {{ font-size: 8px; }}
+                .gallery-card-info {{ padding: 6px 8px 8px; }}
+
                 /* History table */
                 #view-history .table-wrapper {{
                     overflow-x: auto;
