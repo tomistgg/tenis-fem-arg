@@ -40,10 +40,12 @@ def _is_score(text):
     text = text.strip()
     if not text:
         return False
-    return bool(re.match(
-        r'^[\d]+(?:\(\d+\))?\s+[\d]+(?:\(\d+\))?(?:\s+[\d]+(?:\(\d+\))?)?(?:\s+RET)?(?:\s+DEF)?$',
-        text
-    ))
+    _S = r'[\d]+(?:\(\d+\))?'
+    # Standard score: 2 or 3 set tokens (no RET/DEF required)
+    standard = rf'^(?:{_S}\s+){{1,2}}{_S}$'
+    # Retired/defaulted: 1–3 set tokens followed by RET or DEF
+    retired  = rf'^{_S}(?:\s+{_S}){{0,2}}\s+(?:RET|DEF)$'
+    return bool(re.match(standard, text) or re.match(retired, text))
 
 
 def _is_completed_score(score_str):

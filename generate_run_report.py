@@ -5,6 +5,7 @@ import argparse
 import csv
 import json
 import os
+import re
 from datetime import datetime, timezone, timedelta
 
 from config import repair_name_text
@@ -643,7 +644,74 @@ def compute_report(before_dir, after_dir):
             })
     report["stale_draws"] = stale_draws
 
+    # Bad draw scores: concluded matches whose score violates tennis rules
+    bad_draw_scores = []
+    for t_key, entry in draws_store.items():
+        if not isinstance(entry, dict):
+            continue
+        t_name = entry.get("name", t_key)
+        for draw_type, draw in (entry.get("draws") or {}).items():
+            if not isinstance(draw, dict):
+                continue
+            draw_label = {"MDS": "Main Draw", "QS": "Qualifying"}.get(draw_type, draw_type)
+            for m in (draw.get("matches") or []):
+                if not isinstance(m, dict):
+                    continue
+                winner = m.get("winner_name") or ""
+                score = m.get("score") or ""
+                if winner and score and _is_bad_draw_score(score):
+                    bad_draw_scores.append({
+                        "tournament_name": t_name,
+                        "draw_label": draw_label,
+                        "round": m.get("round", "?"),
+                        "match_num": m.get("match_num", "?"),
+                        "winner_name": winner,
+                        "score": score,
+                    })
+    report["bad_draw_scores"] = bad_draw_scores
+
     return report
+
+
+def _parse_compact_set(token):
+    """Parse a compact set token (e.g. '64', '76(4)') into (winner_games, loser_games).
+    Returns None if not a recognisable set token."""
+    mc = re.match(r'^\[?(\d+)[-:/](\d+)\]?(?:\(\d+\))?$', token)
+    if mc:
+        return int(mc.group(1)), int(mc.group(2))
+    mc2 = re.match(r'^(\d+)(?:\(\d+\))?$', token)
+    if mc2:
+        d = mc2.group(1)
+        if len(d) == 2:
+            return int(d[0]), int(d[1])
+        if len(d) == 3:
+            return int(d[:2]), int(d[2])
+        if len(d) == 4:
+            return int(d[:2]), int(d[2:])
+        mid = len(d) // 2
+        return int(d[:mid]), int(d[mid:])
+    return None
+
+
+def _is_bad_draw_score(score_str):
+    """Return True if a concluded match score violates basic tennis rules.
+
+    A score is bad when every parsed set has both players below 6 games
+    AND the match is not a walkover or retirement — e.g. '22 22' or '44'.
+    Retirements ('65 RET') and walkovers ('W/O') are always valid.
+    """
+    if not score_str or not score_str.strip():
+        return False
+    parts = score_str.strip().upper().split()
+    non_score_tokens = {'RET', 'DEF', 'W/O', 'WO', 'W.O.'}
+    if any(p in non_score_tokens for p in parts):
+        return False  # retirement or walkover — valid regardless of game counts
+    for p in parts:
+        parsed = _parse_compact_set(p)
+        if parsed and max(parsed) >= 6:
+            return False  # at least one complete set found — valid
+    # Every set token has max games < 6 (or nothing was parseable)
+    return True
 
 
 def render_email_markdown(report):
@@ -661,6 +729,7 @@ def render_email_markdown(report):
             bool(report.get("added_calendar_tournaments")),
             bool(report.get("failed_draw_fetches")),
             bool(report.get("stale_draws")),
+            bool(report.get("bad_draw_scores")),
         ]
     )
     if not has_any:
@@ -720,6 +789,16 @@ def render_email_markdown(report):
         lines.append("## 7) Stale Draws (Not Updated in 24h)")
         for item in report["stale_draws"]:
             lines.append(f"- {item['name']} — last fetched {item['fetched_at']} ({item['age_hours']}h ago)")
+        lines.append("")
+
+    if report.get("bad_draw_scores"):
+        lines.append("## 8) Draw Matches with Invalid Scores")
+        for item in report["bad_draw_scores"]:
+            lines.append(
+                f"- {item['tournament_name']} ({item['draw_label']}) "
+                f"R{item['round']}M{item['match_num']}: "
+                f"winner={item['winner_name']} score=\"{item['score']}\""
+            )
         lines.append("")
 
     return "\n".join(lines).rstrip() + "\n"
