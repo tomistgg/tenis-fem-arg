@@ -912,11 +912,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .draw-no-draws {{ text-align: center; color: #94a3b8; padding: 40px; font-size: 12px; }}
             .gallery-controls {{ display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; margin-left: 5px; }}
             #gallery-player-filter {{ min-width: 180px; width: auto; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; font-family: inherit; font-size: 12px; }}
-            .gallery-back-btn {{ padding: 8px 12px; background: white; border: 1px solid black; border-radius: 8px; font-family: inherit; font-size: 12px; cursor: pointer; }}
+            .gallery-back-btn {{ padding: 8px 12px; background: white; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 12px; cursor: pointer; }}
             .gallery-back-btn:hover {{ background: #f1f5f9; }}
             #gallery-album-title {{ font-size: 13px; color: #64748b; margin-top: -6px; text-align: center; width: 100%; }}
             .gallery-albums {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 14px; }}
-            .gallery-album-card {{ background: white; border: 1px solid black; border-radius: 10px; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }}
+            .gallery-album-card {{ background: white; border: 1px solid #cbd5e1; border-radius: 10px; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }}
             .gallery-album-card:hover {{ transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.13); }}
             .gallery-album-card img {{ width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: #e2e8f0; }}
             .gallery-album-cover {{ width: 100%; aspect-ratio: 4 / 3; display: flex; align-items: center; justify-content: center; background: #e2e8f0; color: #64748b; font-size: 12px; }}
@@ -927,7 +927,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .gallery-albums {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
             }}
             .gallery-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }}
-            .gallery-card {{ background: white; border: 1px solid black; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }}
+            .gallery-card {{ background: white; border: 1px solid #cbd5e1; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }}
             .gallery-card:hover {{ transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.13); }}
             .gallery-card img {{ width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: #e2e8f0; }}
             .gallery-card-info {{ padding: 10px 12px 12px; }}
@@ -1025,12 +1025,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #rankings-search {{ width: 190px; }}
             input, select {{ padding: 8px 12px; border-radius: 8px; border: 2px solid #94a3b8; font-family: inherit; font-size: 13px; width: 250px; box-sizing: border-box; }}
             select {{ background: white; font-weight: bold; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }}
-            .content-card {{ background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.05); width: 100%; border: 1px solid black; }}
+            .content-card {{ background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.05); width: 100%; border: 1px solid #cbd5e1; }}
             .table-wrapper {{ overflow-x: auto; width: 100%; }}
-            table {{ border-collapse: separate; border-spacing: 0; width: 100%; table-layout: fixed; border: 1px solid black; }}
+            table {{ border-collapse: separate; border-spacing: 0; width: 100%; table-layout: fixed; border: 1px solid #cbd5e1; }}
             #view-upcoming table {{ width: max-content; min-width: 100%; }}
-            th {{ position: sticky; top: 0; background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%) !important; color: white; padding: 10px 15px; font-size: 11px; font-weight: bold; border-bottom: 2px solid #1e293b; border-right: 1px solid #1e293b; z-index: 10; text-transform: uppercase; text-align: center; }}
-            td {{ padding: 8px 12px; border-bottom: 1px solid #94a3b8; text-align: center; font-size: 13px; border-right: 1px solid #94a3b8; }}
+            th {{ position: sticky; top: 0; background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%) !important; color: white; padding: 10px 15px; font-size: 11px; font-weight: bold; border-bottom: 2px solid #475569; border-right: 1px solid rgba(255,255,255,0.25); z-index: 10; text-transform: uppercase; text-align: center; }}
+            td {{ padding: 8px 12px; border-bottom: 1px solid #cbd5e1; text-align: center; font-size: 13px; border-right: 1px solid #cbd5e1; }}
             #view-entrylists td {{ font-size: 12px; padding: 6px 10px; }}
             #view-entrylists table {{ table-layout: auto; }}
             #view-entrylists .entry-content {{ align-items: flex-start; }}
@@ -1038,7 +1038,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             /* Entry Lists layout */
             .entry-layout {{ display: flex; flex-direction: row; gap: 25px; width: 100%; }}
-            .entry-menu {{ width: 480px; flex-shrink: 0; display: flex; flex-wrap: wrap; align-items: stretch; background: white; border: 1px solid black; align-self: flex-start; }}
+            .entry-menu {{ width: 480px; flex-shrink: 0; display: flex; flex-wrap: wrap; align-items: stretch; background: white; border: 1px solid #cbd5e1; align-self: flex-start; }}
             .entry-menu-header {{ width: 100%; background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%); color: white; font-size: 14px; font-weight: bold; text-align: center; padding: 12px; }}
             .entry-menu-week {{ width: 100%; background: #e2e8f0; font-size: 11px; font-weight: bold; text-align: center; padding: 8px; color: #475569; border-bottom: 1px solid #cbd5e1; }}
             .entry-menu-item {{ flex: 1 1 calc(33.333% - 1px); min-width: 0; padding: 10px 8px; font-size: 12px; cursor: pointer; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; color: #334155; transition: background 0.15s; text-align: center; box-sizing: border-box; }}
@@ -1281,7 +1281,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             /* Filter Panel Styles */
             .history-layout {{ display: flex; gap: 20px; width: 100%; align-items: flex-start; }}
-            .filter-panel {{ width: 250px; padding: 15px; flex-shrink: 0; border: 2px solid black; background: white; align-self: flex-start; }}
+            .filter-panel {{ width: 250px; padding: 15px; flex-shrink: 0; border: 2px solid #cbd5e1; background: white; align-self: flex-start; }}
             .filter-panel h3 {{ margin: -15px -15px 15px -15px; font-size: 16px; color: white; text-align: center; font-weight: bold; background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%); border: none; padding: 12px; border-radius: 0; }}
             .filter-group {{ margin-bottom: 20px; text-align: left; }}
             .filter-group-title {{ font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 8px; cursor: pointer; user-select: none; display: flex; justify-content: center; align-items: center; text-align: center; position: relative; }}
@@ -1330,19 +1330,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .cal-dd-item:hover {{ background: transparent; }}
             .cal-dd-item input {{ width: 14px; height: 14px; margin: 0; }}
             .cal-dd-item span {{ font-size: 12px; font-weight: 700; color: #1e293b; }}
-            .calendar-container .table-wrapper {{ display: block; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; border-right: 1px solid #1e293b; box-sizing: border-box; cursor: grab; overscroll-behavior-x: contain; }}
+            .calendar-container .table-wrapper {{ display: block; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; border-right: 1px solid #475569; box-sizing: border-box; cursor: grab; overscroll-behavior-x: contain; }}
             .calendar-container .table-wrapper.dragging {{ cursor: grabbing; }}
-            .calendar-table {{ border-collapse: separate; border-spacing: 0; width: max-content; min-width: max-content; table-layout: auto; border: 1px solid black; }}
-            .calendar-table th {{ padding: 4px 4px; vertical-align: top; border-bottom: 2px solid #1e293b; border-right: 1px solid #1e293b; }}
-            .calendar-table td {{ padding: 4px 4px; vertical-align: top; border-bottom: 1px solid #94a3b8; border-right: 1px solid #94a3b8; }}
+            .calendar-table {{ border-collapse: separate; border-spacing: 0; width: max-content; min-width: max-content; table-layout: auto; border: 1px solid #cbd5e1; }}
+            .calendar-table th {{ padding: 4px 4px; vertical-align: top; border-bottom: 2px solid #475569; border-right: 1px solid rgba(255,255,255,0.25); }}
+            .calendar-table td {{ padding: 4px 4px; vertical-align: top; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; }}
             .cal-week-header {{ background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%); color: white; font-size: 10px; font-weight: bold; text-align: center; white-space: nowrap; padding: 6px 6px; position: sticky; top: 0; z-index: 10; min-width: 90px; }}
             .cal-cat-header {{ background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%); color: white; position: sticky; top: 0; left: 0; z-index: 15; width: 24px; min-width: 24px; max-width: 24px; box-sizing: border-box; }}
             .cal-cont-header {{ background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%); color: white; position: sticky; top: 0; left: 24px; z-index: 15; min-width: 58px; }}
             .cal-cat-label {{ background: #1e293b; color: white; font-size: 11px; font-weight: bold; text-align: center; vertical-align: middle !important; text-transform: uppercase; writing-mode: vertical-lr; text-orientation: mixed; transform: rotate(180deg); padding: 0; width: 24px; min-width: 24px; max-width: 24px; position: sticky; left: 0; z-index: 14; border-color: #1e293b !important; box-shadow: inset 0 0 0 50px #1e293b; box-sizing: border-box; flex: 0 0 24px; }}
             .cal-cont-label {{ background: #f1f5f9; font-size: 10px; font-weight: 600; color: #475569; text-align: center; vertical-align: middle !important; white-space: nowrap; position: sticky; left: 24px; z-index: 14; min-width: 58px; }}
             .cal-cell {{ font-size: 10px; min-height: 24px; vertical-align: middle !important; }}
-            .cal-group-first td {{ border-top: 1px solid #1e293b; }}
-            .cal-group-last td {{ border-bottom: 1px solid #1e293b; }}
+            .cal-group-first td {{ border-top: 1px solid #475569; }}
+            .cal-group-last td {{ border-bottom: 1px solid #475569; }}
             .calendar-tournament {{ display: block; font-size: 10px; padding: 2px 6px; border-radius: 3px; line-height: 1.3; font-weight: 600; white-space: nowrap; margin: 1px 0; }}
             .cal-clay {{ background: #e8a882; color: #5c2e0e; }}
             .cal-hard {{ background: #88b4e8; color: #1a3a5c; }}
@@ -1420,7 +1420,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     display: flex;
                     flex-wrap: wrap;
                     align-items: stretch;
-                    border: 1px solid black;
+                    border: 1px solid #cbd5e1;
                 }}
                 .entry-menu-header {{
                     width: 100%;
