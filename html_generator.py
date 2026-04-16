@@ -801,7 +801,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     .home-note { margin: -2px 0 4px; font-size: 14px; color: #334155; text-align: center; }
     .home-note strong { color: #75AADB; }
     .home-grid { width: 100%; max-width: 1200px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 0 auto; justify-items: center; }
-    .home-btn { padding: 18px 12px; border: 2px solid #75AADB; border-radius: 6px; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; min-height: 92px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; overflow: hidden; width: 100%; text-decoration: none; box-sizing: border-box; }
+    .home-btn { padding: 18px 12px; border: 2px solid #75AADB; border-radius: 12px; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; min-height: 92px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; overflow: hidden; width: 100%; text-decoration: none; box-sizing: border-box; }
     .home-icon-img { width: 30px; height: 30px; object-fit: contain; margin-left: 6px; flex-shrink: 0; }
     .home-label { flex: 1; text-align: center; padding-right: 28px; word-break: break-word; }
     .home-btn:hover { background: #d9ecf8; }
@@ -878,8 +878,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #draws-tournament-select option {{ font-size: 11px; font-weight: normal; background: white; padding: 4px 8px; }}
             .draws-type-btns {{ display: flex; gap: 0; }}
             .draw-type-btn {{ padding: 4px 10px; border: 1px solid #cbd5e1; background: white; font-family: inherit; font-size: 10px; font-weight: 600; color: #64748b; cursor: pointer; }}
-            .draw-type-btn:first-child {{ border-radius: 6px 0 0 6px; }}
-            .draw-type-btn:last-child {{ border-radius: 0 6px 6px 0; border-left: none; }}
+            .draw-type-btn:first-child {{ border-radius: 8px 0 0 8px; }}
+            .draw-type-btn:last-child {{ border-radius: 0 8px 8px 0; border-left: none; }}
             .draw-type-btn.active {{ background: #1e293b; color: white; border-color: #1e293b; }}
             .draw-bracket-wrapper {{ overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 110px); padding-bottom: 12px; }}
             .draw-bracket {{ display: flex; gap: 0; padding: 6px; min-width: max-content; position: relative; }}
@@ -888,7 +888,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .draw-round-header {{ text-align: center; font-weight: bold; font-size: 9px; color: #64748b; padding: 3px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; background: #f8fafc; z-index: 2; cursor: pointer; }}
             .draw-round-header:hover {{ color: #1e40af; text-decoration: underline; }}
             .draw-round-header.active-filter {{ color: #1e40af; }}
-            .draw-filter-reset {{ display: none; font-size: 10px; color: #64748b; cursor: pointer; padding: 4px 10px; border: 1px solid #cbd5e1; border-radius: 6px; background: white; font-family: inherit; }}
+            .draw-filter-reset {{ display: none; font-size: 10px; color: #64748b; cursor: pointer; padding: 4px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; font-family: inherit; }}
             .draw-filter-reset:hover {{ background: #f1f5f9; color: #1e293b; }}
             .draw-filter-reset.visible {{ display: inline-block; }}
             .draw-match-wrapper {{ flex: 1; display: flex; align-items: center; padding: 2px 0; }}
@@ -935,7 +935,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-card-players {{ font-size: 12px; color: #1e293b; margin-bottom: 4px; line-height: 1.4; }}
             .gallery-count {{ font-size: 12px; color: #64748b; margin-bottom: 14px; margin-left: 5px; }}
             .gallery-loadmore-wrap {{ text-align: center; margin-top: 24px; }}
-            .gallery-loadmore-btn {{ padding: 10px 32px; background: #75AADB; color: white; border: none; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: bold; cursor: pointer; }}
+            .gallery-loadmore-btn {{ padding: 10px 32px; background: #75AADB; color: white; border: none; border-radius: 9999px; font-family: inherit; font-size: 13px; font-weight: bold; cursor: pointer; }}
             .gallery-loadmore-btn:hover {{ background: #5a8fb8; }}
             .gallery-empty {{ text-align: center; color: #64748b; padding: 60px 20px; font-size: 14px; }}
             .gallery-lb {{ display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.93); z-index: 1000; align-items: center; justify-content: center; }}
@@ -951,7 +951,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-lb-tourn {{ font-size: 11px; color: #75AADB; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }}
             .gallery-lb-players {{ font-size: 15px; font-weight: bold; margin: 4px 0 2px; }}
             .gallery-lb-counter {{ font-size: 12px; color: #475569; margin-top: 8px; }}
-            .gallery-lb-download {{ display: inline-block; margin-top: 10px; padding: 8px 14px; background: #75AADB; color: white; border-radius: 8px; font-size: 12px; text-decoration: none; }}
+            .gallery-lb-download {{ display: inline-block; margin-top: 10px; padding: 8px 14px; background: #75AADB; color: white; border-radius: 9999px; font-size: 12px; text-decoration: none; }}
             .gallery-lb-download:hover {{ background: #5a8fb8; }}
             .gallery-lb-savehint {{ margin-top: 8px; font-size: 11px; color: #94a3b8; }}
             .home-hero {{ width: 100%; display: flex; flex-direction: column; align-items: center; gap: 18px; }}
@@ -963,7 +963,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .home-note strong {{ color: #75AADB; }}
             .home-grid {{ order: 2; }}
             .home-grid {{ width: 100%; max-width: 1200px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 0 auto; justify-items: center; }}
-            .home-btn {{ padding: 18px 12px; border: 2px solid #75AADB; border-radius: 6px; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; min-height: 92px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; overflow: hidden; width: 100%; }}
+            .home-btn {{ padding: 18px 12px; border: 2px solid #75AADB; border-radius: 12px; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; min-height: 92px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; overflow: hidden; width: 100%; }}
             .home-icon {{ width: 28px; height: 28px; stroke: #1e293b; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }}
             .home-icon-img {{ width: 30px; height: 30px; object-fit: contain; }}
             .home-btn .home-icon {{ margin-left: 6px; }}
@@ -1123,8 +1123,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 color: #334155;
                 transition: background 0.2s, color 0.2s;
             }}
-            .fedbcup-btn:first-child {{ border-radius: 6px 0 0 6px; }}
-            .fedbcup-btn:last-child {{ border-radius: 0 6px 6px 0; }}
+            .fedbcup-btn:first-child {{ border-radius: 8px 0 0 8px; }}
+            .fedbcup-btn:last-child {{ border-radius: 0 8px 8px 0; }}
             .fedbcup-btn.active {{ background: #75AADB; color: #fff; }}
             .fedbcup-btn:hover:not(.active) {{ background: #cbd5e1; }}
 
@@ -1184,9 +1184,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #view-tstrength {{ display: flex; flex-direction: column; align-items: center; }}
             .tstrength-wrapper {{ overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 160px); }}
             .ts-controls {{ display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; justify-content: center; }}
-            .ts-controls button {{ padding: 4px 8px; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; background: #75AADB; color: #fff; border-color: #75AADB; font-family: inherit; min-width: 0; }}
+            .ts-controls button {{ padding: 4px 8px; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; background: #75AADB; color: #fff; border-color: #75AADB; font-family: inherit; min-width: 0; }}
             .ts-controls button:hover {{ opacity: 0.85; }}
-            .ts-controls select {{ padding: 3px 18px 3px 4px; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: inherit; width: 100px; text-align-last: center; }}
+            .ts-controls select {{ padding: 3px 18px 3px 4px; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; width: 100px; text-align-last: center; }}
             #ts-filter-year {{ width: 60px; }}
             .ts-explanation {{ max-width: 700px; margin: 0 auto 8px auto; font-size: 11px; color: #64748b; line-height: 1.4; }}
             .ts-explanation p {{ margin: 2px 0; }}
@@ -1286,17 +1286,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .filter-group {{ margin-bottom: 20px; text-align: left; }}
             .filter-group-title {{ font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 8px; cursor: pointer; user-select: none; display: flex; justify-content: center; align-items: center; text-align: center; position: relative; }}
             .filter-group-title:hover {{ color: #75AADB; }}
-            .filter-options {{ border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px; background: #f8fafc; text-align: left; }}
+            .filter-options {{ border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; background: #f8fafc; text-align: left; }}
             .filter-options.scrollable {{ max-height: 180px; overflow-y: auto; }}
             .filter-option {{ padding: 6px 10px; margin-bottom: 4px; font-size: 12px; text-align: left; cursor: pointer; user-select: none; border-radius: 3px; transition: background 0.15s; }}
             .filter-option:hover {{ background: #e2e8f0; }}
             .filter-option.selected {{ font-weight: bold; background: #dbeafe; color: #1e40af; }}
             .rank-filter-row {{ display: flex; gap: 8px; align-items: center; }}
-            .rank-filter-input {{ width: 72px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; }}
-            .rank-filter-mode {{ flex: 1; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; }}
+            .rank-filter-input {{ width: 72px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; }}
+            .rank-filter-mode {{ flex: 1; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; }}
             .filter-actions {{ margin-top: 20px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }}
             .filter-instructions {{ font-size: 10px; color: #64748b; flex: 1; line-height: 1.3; padding-left: 15px; }}
-            .filter-btn {{ padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: bold; white-space: nowrap; }}
+            .filter-btn {{ padding: 8px 16px; border: none; border-radius: 9999px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: bold; white-space: nowrap; }}
             .filter-btn-clear {{ background: #e2e8f0; color: #475569; }}
             .filter-btn-clear:hover {{ background: #cbd5e1; }}
             #filter-opponent-select {{ font-size: 11px; }}
@@ -1306,14 +1306,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .filter-group.collapsed .opponent-select-container {{ display: none; }}
             .filter-group.collapsed .collapse-icon::before {{ content: '\u25bc'; }}
             .filter-group:not(.collapsed) .collapse-icon::before {{ content: '\u25b2'; }}
-            .filter-search {{ width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: inherit; font-size: 11px; margin-bottom: 8px; box-sizing: border-box; }}
+            .filter-search {{ width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 11px; margin-bottom: 8px; box-sizing: border-box; }}
             .filter-search:focus {{ outline: none; border-color: #75AADB; }}
             .table-header-section {{ margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }}
             .table-title {{ margin: 0; font-size: 22px; color: #1e293b; flex: 1; text-align: center; }}
             .player-select-container {{ width: 250px; }}
             .history-summary-container {{ width: 250px; text-align: right; }}
             .history-wl-counter {{ font-size: 14px; font-weight: 700; color: #1e293b; white-space: nowrap; }}
-            .history-page-btn {{ background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 12px; cursor: pointer; font-size: 0.82rem; color: #1e293b; }}
+            .history-page-btn {{ background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 9999px; padding: 4px 12px; cursor: pointer; font-size: 0.82rem; color: #1e293b; }}
             .history-page-btn:disabled {{ opacity: 0.35; cursor: default; }}
             .history-page-btn:not(:disabled):hover {{ background: #e2e8f0; }}
 
@@ -1349,7 +1349,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .cal-grass {{ background: #7cc89a; color: #1a4a2e; }}
 
             /* Mobile Menu Toggle */
-            .mobile-menu-toggle {{ display: none; position: fixed; top: 15px; left: 15px; z-index: 1000; background: #1e293b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 18px; }}
+            .mobile-menu-toggle {{ display: none; position: fixed; top: 15px; left: 15px; z-index: 1000; background: #1e293b; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 18px; }}
             .sidebar.mobile-hidden {{ transform: translateX(-100%); }}
 
             /* Responsive Styles */
@@ -1715,7 +1715,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     flex: 1 1 100px;
                     min-width: 95px;
                     border: 1px solid #d1d5db;
-                    border-radius: 4px;
+                    border-radius: 6px;
                     padding: 2px;
                     background: #f8fafc;
                 }}
@@ -1744,12 +1744,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     width: 42px;
                     min-width: 42px;
                     padding: 2px 3px;
-                    border-radius: 4px;
+                    border-radius: 6px;
                     font-size: 8px;
                 }}
                 .rank-filter-last-row .rank-filter-mode {{
                     padding: 2px 3px;
-                    border-radius: 4px;
+                    border-radius: 6px;
                     font-size: 8px;
                     min-width: 0;
                 }}
