@@ -1699,7 +1699,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     margin-right: auto;
                     padding: 4px;
                     margin-bottom: 0;
-                    border: 2px solid black;
+                    border: 2px solid #cbd5e1;
                     display: flex;
                     flex-wrap: wrap;
                     gap: 4px;
