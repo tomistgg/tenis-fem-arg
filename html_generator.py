@@ -5382,7 +5382,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const commaIdx = pNorm.indexOf(',');
                 if (commaIdx > 0) {{
                     const playerLast = pNorm.substring(0, commaIdx).trim();
-                    const wm = wNorm.match(/^[A-Z]+\\.\\s+(.+)$/);
+                    const wm = wNorm.match(/^(?:[A-Z]+\\.\\s+)+(.+)$/);
                     if (wm) {{
                         const winnerLast = wm[1].trim();
                         if (playerLast === winnerLast) return true;
