@@ -30,10 +30,10 @@ from itf import (
     get_full_itf_calendar, get_itf_players,
     get_dynamic_itf_calendar, get_itf_rankings_cached,
     get_itf_level, parse_itf_entry_list,
-    get_draws_itf_tournament_list
+    get_draws_itf_tournament_list, _load_itf_event_filters_cache
 )
 from html_generator import generate_html
-from draws import fetch_tournament_draws, fetch_itf_tournament_draws, get_itf_tournament_id, _draw_is_complete
+from draws import fetch_tournament_draws, fetch_itf_tournament_draws, _draw_is_complete
 from tstrength import build_tstrength_data
 from populate_data.imagekit_gallery_sync import sync_gallery_manifest
 
@@ -986,6 +986,10 @@ def main():
             }
 
     # 6b. Fetch ITF draws (prefer prefetched payloads captured earlier in the run)
+    # process_tournaments (step 4) has already fetched and cached tournament IDs
+    # via get_itf_players → itf_event_filters_cache.json. Use that cache to fill
+    # any IDs that were missing when get_draws_itf_tournament_list ran earlier.
+    _event_filters_cache = _load_itf_event_filters_cache()
     itf_draw_jobs = []
     for week, tourneys in (itf_draws_tournaments or {}).items():
         for t_key, t_info in (tourneys or {}).items():
@@ -993,24 +997,10 @@ def main():
             active_draw_keys.add(store_key)
             tid = (t_info or {}).get("tournamentId")
             if not tid and isinstance(t_key, str) and t_key.lower().startswith("w-itf-"):
-                # Best-effort fallback: resolve missing tournamentId in an isolated
-                # browser session. This helps when the earlier bulk ID pass is
-                # partially blocked by ITF anti-bot filtering.
-                for attempt in range(2):
-                    resolver_driver = create_driver()
-                    try:
-                        resolved_tid = get_itf_tournament_id(t_key, resolver_driver)
-                    finally:
-                        try:
-                            resolver_driver.quit()
-                        except Exception:
-                            pass
-                    if resolved_tid:
-                        tid = resolved_tid
-                        t_info["tournamentId"] = resolved_tid
-                        break
-                    if attempt == 0:
-                        time.sleep(random.uniform(1.0, 2.0))
+                cached_tid = _event_filters_cache.get(t_key.lower())
+                if isinstance(cached_tid, int) and cached_tid > 0:
+                    tid = cached_tid
+                    t_info["tournamentId"] = cached_tid
             if not tid:
                 existing = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
                 existing_draws = existing.get("draws") if isinstance(existing.get("draws"), dict) else {}

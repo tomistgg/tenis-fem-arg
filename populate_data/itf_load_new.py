@@ -56,13 +56,18 @@ def get_itf_calendar_for_range(start_date, end_date, driver=None):
     try:
         resp = requests.get(api_url, headers=headers, timeout=15)
         resp.raise_for_status()
+        raw = resp.text.strip()
+        # Incapsula returns an HTML block page instead of JSON when it blocks the
+        # request. Detect this and treat it the same as a failed fetch.
+        if not raw or raw.startswith("<"):
+            raise ValueError("Blocked response (HTML instead of JSON)")
         range_data = resp.json()
 
         if isinstance(range_data, dict):
             range_data = range_data.get('items') or range_data.get('data') or []
 
         if not isinstance(range_data, list):
-            return []
+            raise ValueError("Unexpected response shape")
 
         for tournament in range_data:
             if isinstance(tournament, dict):
@@ -76,7 +81,6 @@ def get_itf_calendar_for_range(start_date, end_date, driver=None):
 
     except Exception as e:
         print(f"[!] Calendar fetch error: {e}")
-        return []
 
 def create_tournament_df(tournament_list):
     if not tournament_list:
