@@ -298,9 +298,10 @@ def build_row_key(row, headers):
 
 
 def _check_stale_itf_matches(csv_path, cal_cache_path, now_utc):
-    """Return a warning dict if ITF matches are >36h stale during an active tournament week."""
-    # Find the latest ingestion date in the CSV
+    """Return a warning dict if ITF matches are >36h stale and Argentine players are still alive."""
     latest_date = None
+    matches_by_tournament = {}  # tournament name (lower) -> list of rows
+
     if os.path.exists(csv_path):
         try:
             with open(csv_path, "r", encoding="utf-8-sig", newline="") as f:
@@ -308,6 +309,9 @@ def _check_stale_itf_matches(csv_path, cal_cache_path, now_utc):
                     d = (row.get("date") or "").strip()[:10]
                     if d and (latest_date is None or d > latest_date):
                         latest_date = d
+                    t_name = (row.get("tournamentName") or "").strip().lower()
+                    if t_name:
+                        matches_by_tournament.setdefault(t_name, []).append(row)
         except Exception:
             pass
 
@@ -323,11 +327,12 @@ def _check_stale_itf_matches(csv_path, cal_cache_path, now_utc):
     if age_hours <= 36:
         return None  # fresh enough
 
-    # Only warn if there are tournaments actively running this week
+    # Only warn for tournaments where an Argentine player is still alive in the draw
     today_str = now_utc.strftime("%Y-%m-%d")
     active_tournaments = []
     cal_data = load_json(cal_cache_path) or {}
     items = cal_data.get("items", []) if isinstance(cal_data, dict) else []
+
     for item in items:
         if not isinstance(item, dict):
             continue
@@ -336,11 +341,33 @@ def _check_stale_itf_matches(csv_path, cal_cache_path, now_utc):
         status = (item.get("status") or item.get("tournamentStatus") or "").lower()
         if "cancel" in status:
             continue
-        if start and end and start <= today_str <= end:
-            active_tournaments.append(item.get("tournamentName") or item.get("name") or "?")
+        if not (start and end and start <= today_str <= end):
+            continue
+
+        t_name = item.get("tournamentName") or item.get("name") or "?"
+        tournament_matches = matches_by_tournament.get(t_name.strip().lower(), [])
+
+        if not tournament_matches:
+            continue  # no ARG match data for this tournament — can't confirm participation
+
+        # A player is still alive if they won at least one match and never lost
+        arg_losers = set()
+        arg_winners = set()
+        for m in tournament_matches:
+            if (m.get("loserCountry") or "").strip().upper() == "ARG":
+                loser = (m.get("loserName") or "").strip()
+                if loser and loser != "Bye":
+                    arg_losers.add(loser)
+            if (m.get("winnerCountry") or "").strip().upper() == "ARG":
+                winner = (m.get("winnerName") or "").strip()
+                if winner:
+                    arg_winners.add(winner)
+
+        if arg_winners - arg_losers:
+            active_tournaments.append(t_name)
 
     if not active_tournaments:
-        return None  # no active tournaments, staleness is expected
+        return None
 
     return {
         "latest_date": latest_date,
