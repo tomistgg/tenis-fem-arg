@@ -12,6 +12,32 @@ DATA_DIR = os.path.join(BASE_DIR, "..", "data")
 TOURNAMENT_LINK_PREFIX = "/en/tournament/"
 ITF_EVENT_FILTERS_CACHE_FILE = os.path.join(DATA_DIR, "itf_event_filters_cache.json")
 ITF_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "itf_calendar_cache.json")
+ITF_BLOCKED_RESPONSES_FILE = os.path.join(DATA_DIR, "itf_blocked_responses.json")
+
+ITF_BLOCKED_RESPONSES = []
+
+def _is_itf_block_page(text):
+    raw = str(text or "")
+    upper = raw.upper()
+    return raw.startswith("<") and "NOINDEX" in upper and "NOFOLLOW" in upper
+
+
+def _record_itf_block(tournament_id, code, week_number):
+    item = {
+        "endpoint": "drawsheet",
+        "tournament_id": str(tournament_id or "").strip(),
+        "code": str(code or "").strip(),
+        "week_number": "" if week_number in (None, "") else str(week_number),
+    }
+    for existing in ITF_BLOCKED_RESPONSES:
+        if (
+            existing.get("endpoint") == item["endpoint"]
+            and existing.get("tournament_id") == item["tournament_id"]
+            and existing.get("code") == item["code"]
+            and existing.get("week_number") == item["week_number"]
+        ):
+            return
+    ITF_BLOCKED_RESPONSES.append(item)
 
 def get_week_start_end(today=None):
     if today is None:
@@ -178,6 +204,8 @@ def fetch_api_data(tId, classification, week_number=0, driver=None):
         response = requests.post(url, json=payload, headers=headers,
                                  cookies=browser_cookies if browser_cookies else None)
         raw = response.text.strip()
+        if _is_itf_block_page(raw):
+            _record_itf_block(tId, classification, week_number)
         if response.status_code == 200 and raw and not raw.startswith("<"):
             return response.json()
     except Exception:
@@ -213,6 +241,10 @@ fetch(url, {
                 if isinstance(data, dict):
                     return data
             else:
+                if isinstance(result, dict) and result.get("error") == "html":
+                    preview = result.get("preview", "")
+                    if _is_itf_block_page(preview):
+                        _record_itf_block(tId, classification, week_number)
                 print(f"    [debug] browser fetch: {result}")
         except Exception as e:
             print(f"    [debug] browser exception: {e}")
@@ -667,6 +699,9 @@ if __name__ == "__main__":
             driver.quit()
         except Exception:
             pass
+
+    with open(ITF_BLOCKED_RESPONSES_FILE, "w", encoding="utf-8") as f:
+        json.dump(ITF_BLOCKED_RESPONSES, f, ensure_ascii=False, indent=2)
 
     if all_matches:
         new_matches_df = pd.DataFrame(all_matches)

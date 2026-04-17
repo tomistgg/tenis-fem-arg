@@ -668,6 +668,11 @@ def compute_report(before_dir, after_dir):
         item for item in failed_draw_fetches if isinstance(item, dict)
     ]
 
+    blocked_itf_responses = load_json(os.path.join(after_dir, "itf_blocked_responses.json")) or []
+    report["blocked_itf_responses"] = [
+        item for item in blocked_itf_responses if isinstance(item, dict)
+    ]
+
     # Stale draws: active tournaments whose draw hasn't been refreshed in >24h
     draws_store = load_json(os.path.join(after_dir, "draws_store_cache.json")) or {}
     stale_draws = []
@@ -788,6 +793,7 @@ def render_email_markdown(report):
             bool(report.get("new_draws")),
             bool(report.get("added_calendar_tournaments")),
             bool(report.get("failed_draw_fetches")),
+            bool(report.get("blocked_itf_responses")),
             bool(report.get("stale_draws")),
             bool(report.get("stale_itf_matches")),
             bool(report.get("bad_draw_scores")),
@@ -846,8 +852,21 @@ def render_email_markdown(report):
             lines.append(f"- Could not load Drawsheet for {name} ({key})")
         lines.append("")
 
+    if report.get("blocked_itf_responses"):
+        lines.append("## 7) ITF Blocked Responses")
+        for item in report["blocked_itf_responses"]:
+            endpoint = item.get("endpoint") or "itf"
+            tournament_name = item.get("tournament_name") or ""
+            tournament_id = item.get("tournament_id") or ""
+            code = item.get("code") or ""
+            week_number = item.get("week_number") or ""
+            context_parts = [p for p in [tournament_name, f"id={tournament_id}" if tournament_id else "", f"code={code}" if code else "", f"week={week_number}" if week_number else ""] if p]
+            context = " | ".join(context_parts) if context_parts else "general ITF request"
+            lines.append(f"- Block page detected on {endpoint}: {context}")
+        lines.append("")
+
     if report.get("stale_draws"):
-        lines.append("## 7) Stale Draws (Not Updated in 24h)")
+        lines.append("## 8) Stale Draws (Not Updated in 24h)")
         for item in report["stale_draws"]:
             lines.append(f"- {item['name']} — last fetched {item['fetched_at']} ({item['age_hours']}h ago)")
         lines.append("")
@@ -855,13 +874,13 @@ def render_email_markdown(report):
     if report.get("stale_itf_matches"):
         item = report["stale_itf_matches"]
         tourns = ", ".join(item["active_tournaments"])
-        lines.append("## 8) ITF Match Data Stale")
+        lines.append("## 9) ITF Match Data Stale")
         lines.append(f"- Last ingested match date: {item['latest_date']} ({item['age_hours']}h ago)")
         lines.append(f"- Active tournaments with no recent data: {tourns}")
         lines.append("")
 
     if report.get("bad_draw_scores"):
-        lines.append("## 9) Draw Matches with Invalid Scores")
+        lines.append("## 10) Draw Matches with Invalid Scores")
         for item in report["bad_draw_scores"]:
             lines.append(
                 f"- {item['tournament_name']} ({item['draw_label']}) "
