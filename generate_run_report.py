@@ -887,7 +887,12 @@ def render_email_markdown(report):
             tournament_id = item.get("tournament_id") or ""
             code = item.get("code") or ""
             week_number = item.get("week_number") or ""
-            context_parts = [p for p in [tournament_name, f"id={tournament_id}" if tournament_id else "", f"code={code}" if code else "", f"week={week_number}" if week_number else ""] if p]
+            context_parts = [p for p in [
+                tournament_name,
+                f"id={tournament_id}" if tournament_id else "",
+                f"code={code}" if code else "",
+                f"week={week_number}" if week_number not in ("", None) else "",
+            ] if p]
             context = " | ".join(context_parts) if context_parts else "general ITF request"
             lines.append(f"- Block page detected on {endpoint}: {context}")
         lines.append("")

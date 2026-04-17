@@ -22,10 +22,11 @@ def _is_itf_block_page(text):
     return raw.startswith("<") and "NOINDEX" in upper and "NOFOLLOW" in upper
 
 
-def _record_itf_block(tournament_id, code, week_number):
+def _record_itf_block(tournament_id, code, week_number, tournament_name=""):
     item = {
         "endpoint": "drawsheet",
         "tournament_id": str(tournament_id or "").strip(),
+        "tournament_name": str(tournament_name or "").strip(),
         "code": str(code or "").strip(),
         "week_number": "" if week_number in (None, "") else str(week_number),
     }
@@ -173,7 +174,7 @@ def merge_ids_with_pandas(calendar_df, json_ids_string):
         return calendar_df
 
 
-def fetch_api_data(tId, classification, week_number=0, driver=None):
+def fetch_api_data(tId, classification, week_number=0, driver=None, tournament_name=""):
     url = "https://www.itftennis.com/tennis/api/TournamentApi/GetDrawsheet"
     payload = {
         "circuitCode": "WT",
@@ -205,7 +206,7 @@ def fetch_api_data(tId, classification, week_number=0, driver=None):
                                  cookies=browser_cookies if browser_cookies else None)
         raw = response.text.strip()
         if _is_itf_block_page(raw):
-            _record_itf_block(tId, classification, week_number)
+            _record_itf_block(tId, classification, week_number, tournament_name)
         if response.status_code == 200 and raw and not raw.startswith("<"):
             return response.json()
     except Exception:
@@ -244,7 +245,7 @@ fetch(url, {
                 if isinstance(result, dict) and result.get("error") == "html":
                     preview = result.get("preview", "")
                     if _is_itf_block_page(preview):
-                        _record_itf_block(tId, classification, week_number)
+                        _record_itf_block(tId, classification, week_number, tournament_name)
                 print(f"    [debug] browser fetch: {result}")
         except Exception as e:
             print(f"    [debug] browser exception: {e}")
@@ -277,6 +278,7 @@ def fetch_tournament_draw_data(tournament_id, tournament_name, codes, week_numbe
                     code,
                     week_number=week_number,
                     driver=driver,
+                    tournament_name=tournament_name,
                 )
                 time.sleep(random.uniform(0.7, 1.3))
 
@@ -615,6 +617,7 @@ if __name__ == "__main__":
 
         all_matches = []
         tournaments_list = final_df.to_dict('records')
+        random.shuffle(tournaments_list)
         active_count = 0
 
         try:
@@ -690,7 +693,7 @@ if __name__ == "__main__":
 
             added = len(all_matches) - tourney_matches_before
             print(f"  {tName} (id={tId}): {added} ARG matches found")
-            time.sleep(random.uniform(1.5, 3.0))
+            time.sleep(random.uniform(5.0, 10.0))
 
         print(f"Tournaments processed: {active_count}, total ARG matches found: {len(all_matches)}")
 
