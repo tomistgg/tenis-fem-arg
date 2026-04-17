@@ -2388,7 +2388,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     </head>
     <body class="home-mode" onload="renderHistoryTable();">
         <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">\\u2630</button>
-        <button class="dark-mode-btn dark-mode-btn-mobile" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
         <div class="app-container">
             <div class="sidebar" id="sidebar">
                 <div class="sidebar-header">
@@ -2405,6 +2404,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</div>
                 <div class="menu-item" id="btn-tstrength" onclick="switchTab('tstrength')">WTA TRN STR</div>
                 <div class="menu-item" id="btn-gallery" onclick="switchTab('gallery')">Photo Gallery</div>
+                <button class="dark-mode-btn dark-mode-btn-mobile" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
             </div>
 
             <div class="main-content">
