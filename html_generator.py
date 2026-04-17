@@ -582,6 +582,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             ascending=[False, False, False, True]
         )
 
+        import json as _json_bjkc
+        _all_bjkc_players = set()
+
         for _tid in _tie_meta['tournamentId'].tolist():
             _grp = _bjkc_df[_bjkc_df['tournamentId'] == _tid].copy()
             _first = _grp.iloc[0]
@@ -653,7 +656,21 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     _res_label = 'W' if _arg_won else 'L'
                     _res_style = 'color:#166534;font-weight:bold;' if _arg_won else 'color:#991b1b;font-weight:bold;'
 
-                _rows_html += f"""<tr>
+                _is_doubles = ' / ' in _arg_player
+                _data_type = 'D' if _is_doubles else 'S'
+                if _is_doubles:
+                    _player_parts = [p.strip() for p in _arg_player.split(' / ', 1)]
+                    _data_player = '|'.join(_player_parts)
+                    for _pp in _player_parts:
+                        if _pp:
+                            _all_bjkc_players.add(_pp)
+                else:
+                    _data_player = _arg_player.strip()
+                    if _data_player:
+                        _all_bjkc_players.add(_data_player)
+                _data_result = ('W' if _arg_won else 'L') if _has_result else ''
+
+                _rows_html += f"""<tr data-player="{escape(_data_player)}" data-type="{_data_type}" data-result="{_data_result}">
                         <td style="font-weight:bold;white-space:nowrap;">{_fmt_name(_arg_player)}</td>
                         <td style="{_res_style}text-align:center;">{_res_label}</td>
                         <td style="white-space:nowrap;">{_score_display}</td>
@@ -677,8 +694,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                 </div>
             </div>"""
+        bjkc_players_json = _json_bjkc.dumps(sorted(_all_bjkc_players))
     except Exception as _e:
         bjkc_series_html = f'<p style="color:red;">Error loading BJK Cup data: {escape(str(_e))}</p>'
+        bjkc_players_json = '[]'
 
     # Build T-Strength data as JSON for JS rendering
     if tstrength_data is None:
@@ -775,6 +794,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             function applyRoute() {
                 const tab = tabFromHash() || tabFromPath();
+                if (tab && tab !== 'home') {
+                    window.switchTab(tab);
+                    return;
+                }
+                try {
+                    const saved = localStorage.getItem('lastTab');
+                    if (saved && VALID_TABS.has(saved) && saved !== 'home') {
+                        window.switchTab(saved);
+                        return;
+                    }
+                } catch(e) {}
                 if (tab) window.switchTab(tab);
             }
 
@@ -846,6 +876,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
         <title>WT Argentina</title>
+        <script>(function(){{ var t=localStorage.getItem('theme'); if(t==='dark') document.documentElement.setAttribute('data-theme','dark'); }})();</script>
         <base href="./">
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -858,7 +889,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             body {{ font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; display: flex; min-height: 100vh; overflow-y: auto; overflow-x: auto; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }}
             .app-container {{ display: flex; width: 100%; min-height: 100vh; }}
             .sidebar {{ width: 180px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); color: white; display: flex; flex-direction: column; flex-shrink: 0; min-height: 100vh; }}
-            .sidebar-header {{ padding: 25px 15px; font-size: 15px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #475569; }}
+            .sidebar-header {{ padding: 18px 15px; font-size: 15px; font-weight: 800; color: #75AADB; border-bottom: 1px solid #475569; display: flex; align-items: center; justify-content: space-between; gap: 8px; }}
             .menu-item {{ padding: 15px 20px; cursor: pointer; color: #cbd5e1; font-size: 14px; border-bottom: 1px solid #334155; transition: 0.2s; text-decoration: none; display: block; }}
             .menu-item:hover {{ background: #334155; color: white; border-left: 3px solid rgba(59,130,246,0.3); padding-left: 17px; }}
             .menu-item.active {{ background: rgba(255,255,255,0.08); color: white; font-weight: bold; border-left: 3px solid #3B82F6; padding-left: 17px; }}
@@ -1233,6 +1264,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             /* Series view */
             #fedbcup-view-series {{ width: 100%; }}
+            .fedbcup-series-toolbar {{ display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }}
+            #fedbcup-player-filter {{ padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 12px; background: white; min-width: 180px; }}
+            .fedbcup-record-text {{ font-size: 13px; font-weight: bold; color: #475569; white-space: nowrap; }}
             .bjkc-series-block {{ margin-bottom: 20px; }}
             .bjkc-series-header {{
                 display: flex;
@@ -2193,13 +2227,174 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     }}
                 }}
             }}
+            /* ============================
+               DARK MODE TOGGLE BUTTON
+               ============================ */
+            .dark-mode-btn {{
+                background: rgba(255,255,255,0.1);
+                border: 1px solid rgba(255,255,255,0.25);
+                color: #cbd5e1;
+                border-radius: 16px;
+                padding: 3px 9px;
+                font-size: 13px;
+                font-family: inherit;
+                cursor: pointer;
+                transition: background 0.2s;
+                line-height: 1;
+                flex-shrink: 0;
+            }}
+            .dark-mode-btn:hover {{ background: rgba(255,255,255,0.22); }}
+            [data-theme="dark"] .dark-mode-btn {{
+                background: rgba(255,255,255,0.07);
+                border-color: rgba(255,255,255,0.12);
+                color: #fbbf24;
+            }}
+            [data-theme="dark"] .dark-mode-btn:hover {{ background: rgba(255,255,255,0.15); }}
+            .dark-mode-btn-mobile {{ display: none; }}
+            @media (max-width: 768px) {{
+                .dark-mode-btn-mobile {{
+                    display: block;
+                    position: fixed;
+                    top: 5px;
+                    right: 4px;
+                    z-index: 1002;
+                    padding: 3px 8px;
+                    font-size: 13px;
+                }}
+            }}
+
+            /* ============================
+               DARK MODE OVERRIDES
+               ============================ */
+            [data-theme="dark"] body {{ background: #0f172a; color: #e2e8f0; }}
+            [data-theme="dark"] .main-content {{ background: #111827; }}
+            [data-theme="dark"] h1 {{ color: #e2e8f0; }}
+            [data-theme="dark"] .content-card {{ background: #1e293b; border-color: #334155; }}
+            [data-theme="dark"] table {{ border-color: #334155; }}
+            [data-theme="dark"] td {{ background: #1e293b; border-bottom-color: #334155; border-right-color: #334155; color: #e2e8f0; }}
+            [data-theme="dark"] td.sticky-col {{ background: #1e293b !important; }}
+            [data-theme="dark"] table:not(.calendar-table) tr:not(.roadtogs-separator):hover td {{ background: #273548 !important; }}
+            [data-theme="dark"] table:not(.calendar-table) tr:not(.roadtogs-separator):hover td.sticky-col {{ background: #273548 !important; }}
+            [data-theme="dark"] .row-arg {{ background-color: #1e3a5c !important; }}
+            [data-theme="dark"] #view-rankings.rankings-show-all tr.arg-player-row td {{ background-color: #1e3a5c !important; }}
+            [data-theme="dark"] .divider-row td {{ background: #1a2638; color: #94a3b8; }}
+            [data-theme="dark"] .roadtogs-separator td {{ background: #1e3a5c; color: #93c5fd; }}
+
+            [data-theme="dark"] input,
+            [data-theme="dark"] select {{ background: #1e293b; background-color: #1e293b; color: #e2e8f0; border-color: #475569; }}
+            [data-theme="dark"] input:focus,
+            [data-theme="dark"] select:focus {{ border-color: #75AADB; }}
+            [data-theme="dark"] input::placeholder {{ color: #64748b; }}
+
+            [data-theme="dark"] .home-btn {{ background: #1a3350; border-color: #3b7ec4; color: #e2e8f0; }}
+            [data-theme="dark"] .home-btn:hover {{ background: #1e3a5c; box-shadow: 0 6px 16px rgba(0,0,0,0.4); }}
+            [data-theme="dark"] .home-btn:active {{ background: #162e4a; }}
+            [data-theme="dark"] .home-title {{ color: #e2e8f0; }}
+            [data-theme="dark"] .home-note {{ color: #94a3b8; }}
+
+            [data-theme="dark"] .rankings-toggle-btn {{ background: #1e293b; border-color: #475569; color: #e2e8f0; }}
+            [data-theme="dark"] .rankings-toggle-btn:hover {{ background: #273548; }}
+            [data-theme="dark"] .rankings-date-picker {{ background: #1e293b; border-color: #475569; }}
+            [data-theme="dark"] .rankings-date-select {{ color: #e2e8f0; }}
+            [data-theme="dark"] .rankings-load-btn {{ background: #5a8fb8; }}
+            [data-theme="dark"] #rankings-search {{ background: #1e293b; color: #e2e8f0; border-color: #475569; }}
+
+            [data-theme="dark"] .filter-panel {{ background: #1e293b; border-color: #334155; }}
+            [data-theme="dark"] .filter-panel h3 {{ background: linear-gradient(180deg, #5a8fb8 0%, #3d6a8a 100%); }}
+            [data-theme="dark"] .filter-options {{ background: #162032; border-color: #334155; }}
+            [data-theme="dark"] .filter-option {{ color: #e2e8f0; }}
+            [data-theme="dark"] .filter-option:hover {{ background: #273548; }}
+            [data-theme="dark"] .filter-option.selected {{ background: #1e3a5c; color: #93c5fd; }}
+            [data-theme="dark"] .filter-group {{ border-color: #334155; background: #162032; }}
+            [data-theme="dark"] .filter-group-title {{ color: #94a3b8; }}
+            [data-theme="dark"] .filter-search {{ background: #1e293b; border-color: #475569; color: #e2e8f0; }}
+            [data-theme="dark"] .rank-filter-input,
+            [data-theme="dark"] .rank-filter-mode {{ background: #1e293b; border-color: #475569; color: #e2e8f0; }}
+
+            [data-theme="dark"] .entry-menu {{ background: #1e293b; border-color: #334155; }}
+            [data-theme="dark"] .entry-menu-week {{ background: #162032; color: #94a3b8; border-color: #334155; }}
+            [data-theme="dark"] .entry-menu-item {{ color: #cbd5e1; border-bottom-color: #334155; border-right-color: #334155; }}
+            [data-theme="dark"] .entry-menu-item:hover {{ background: #273548; }}
+            [data-theme="dark"] .entry-menu-item.active {{ background: #1e3a5c; color: #93c5fd; }}
+
+            [data-theme="dark"] .gallery-card,
+            [data-theme="dark"] .gallery-album-card {{ background: #1e293b; border-color: #334155; }}
+            [data-theme="dark"] .gallery-album-title {{ color: #e2e8f0; }}
+            [data-theme="dark"] .gallery-album-count,
+            [data-theme="dark"] .gallery-count,
+            [data-theme="dark"] .gallery-empty {{ color: #94a3b8; }}
+            [data-theme="dark"] .gallery-card-players {{ color: #e2e8f0; }}
+            [data-theme="dark"] .gallery-album-cover {{ background: #273548; color: #94a3b8; }}
+            [data-theme="dark"] .gallery-back-btn {{ background: #1e293b; border-color: #334155; color: #e2e8f0; }}
+            [data-theme="dark"] .gallery-back-btn:hover {{ background: #273548; }}
+            [data-theme="dark"] #gallery-album-title {{ color: #94a3b8; }}
+            [data-theme="dark"] .gallery-card img,
+            [data-theme="dark"] .gallery-album-card img {{ background: #273548; }}
+
+            [data-theme="dark"] .draw-match .draw-player {{ background: #1e293b; border-color: #334155; color: #e2e8f0; }}
+            [data-theme="dark"] .draw-match .draw-player:first-child {{ border-bottom-color: #334155; }}
+            [data-theme="dark"] .draw-match .draw-player.winner {{ background: #0f2d1a; }}
+            [data-theme="dark"] .draw-match .draw-player.arg-player {{ background: #1a3a5c; }}
+            [data-theme="dark"] .draw-match .draw-player.arg-player.winner {{ background: #134e2e; }}
+            [data-theme="dark"] .draw-round-header {{ background: #111827; color: #94a3b8; }}
+            [data-theme="dark"] .draw-round-header:hover {{ color: #93c5fd; }}
+            [data-theme="dark"] .draw-filter-reset {{ background: #1e293b; border-color: #334155; color: #94a3b8; }}
+            [data-theme="dark"] .draw-filter-reset:hover {{ background: #273548; color: #e2e8f0; }}
+            [data-theme="dark"] .draw-type-btn {{ background: #1e293b; border-color: #334155; color: #94a3b8; }}
+            [data-theme="dark"] .draw-type-btn.active {{ background: #334155; color: #e2e8f0; border-color: #475569; }}
+            [data-theme="dark"] .draw-no-draws {{ color: #64748b; }}
+            [data-theme="dark"] #draws-tournament-select {{ background: #1e293b; color: #e2e8f0; border-color: #475569; }}
+            [data-theme="dark"] #draws-tournament-select optgroup {{ background: #273548; color: #94a3b8; }}
+            [data-theme="dark"] #draws-tournament-select option {{ background: #1e293b; color: #e2e8f0; }}
+
+            [data-theme="dark"] .calendar-toolbar {{ background: #111827; border-bottom-color: #334155; }}
+            [data-theme="dark"] .cal-dd-btn {{ background-color: #1e293b; border-color: #475569; color: #e2e8f0; }}
+            [data-theme="dark"] .cal-dd-panel {{ background: #1e293b; border-color: #475569; box-shadow: 0 12px 28px rgba(0,0,0,0.4); }}
+            [data-theme="dark"] .cal-dd-item span {{ color: #e2e8f0; }}
+            [data-theme="dark"] .cal-dd-item:hover {{ background: #273548; }}
+            [data-theme="dark"] .cal-cont-label {{ background: #1e293b; color: #94a3b8; }}
+            [data-theme="dark"] .calendar-table td {{ border-bottom-color: #334155; border-right-color: #334155; }}
+            [data-theme="dark"] .cal-group-first td {{ border-top-color: #475569; }}
+            [data-theme="dark"] .cal-group-last td {{ border-bottom-color: #475569; }}
+
+            [data-theme="dark"] .history-wl-counter {{ color: #e2e8f0; }}
+            [data-theme="dark"] .table-title {{ color: #e2e8f0; }}
+            [data-theme="dark"] .history-page-btn {{ background: #1e293b; border-color: #334155; color: #e2e8f0; }}
+            [data-theme="dark"] .history-page-btn:not(:disabled):hover {{ background: #273548; }}
+
+            [data-theme="dark"] .fedbcup-btn {{ background: #273548; color: #cbd5e1; }}
+            [data-theme="dark"] .fedbcup-btn.active {{ background: #75AADB; color: #fff; }}
+            [data-theme="dark"] .fedbcup-btn:hover:not(.active) {{ background: #334155; }}
+            [data-theme="dark"] #fedbcup-player-filter {{ background: #1e293b; border-color: #475569; color: #e2e8f0; }}
+            [data-theme="dark"] .fedbcup-record-text {{ color: #94a3b8; }}
+            [data-theme="dark"] .bjkc-series-header {{ background: #1e3a5c; }}
+            [data-theme="dark"] .roadtogs-legend {{ color: #94a3b8; }}
+            [data-theme="dark"] .gs-cutoff-table th,
+            [data-theme="dark"] .gs-cutoff-table td {{ border-color: #334155; }}
+            [data-theme="dark"] .gs-cutoff-table thead tr:last-child th {{ background: #273548 !important; color: #94a3b8 !important; }}
+            [data-theme="dark"] .ts-explanation {{ color: #94a3b8; }}
+
+            [data-theme="dark"] .select2-container--default .select2-selection--single {{ background-color: #1e293b; border-color: #475569; }}
+            [data-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered {{ color: #e2e8f0; }}
+            [data-theme="dark"] .select2-dropdown {{ background-color: #1e293b; border-color: #475569; }}
+            [data-theme="dark"] .select2-search--dropdown .select2-search__field {{ background-color: #273548; border-color: #475569; color: #e2e8f0; }}
+            [data-theme="dark"] .select2-results__option {{ color: #e2e8f0; background-color: #1e293b; }}
+            [data-theme="dark"] .select2-results__option--highlighted {{ background-color: #1e3a5c !important; color: #e2e8f0 !important; }}
+            [data-theme="dark"] .select2-container--default .select2-results__option[aria-selected=true] {{ background-color: #273548; }}
+            [data-theme="dark"] .dropdown-header {{ background-color: #273548 !important; color: #94a3b8 !important; }}
+            [data-theme="dark"] .dropdown-item {{ background-color: #1e293b; color: #e2e8f0; }}
+
         </style>
     </head>
     <body class="home-mode" onload="renderHistoryTable();">
         <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">\\u2630</button>
+        <button class="dark-mode-btn dark-mode-btn-mobile" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
         <div class="app-container">
             <div class="sidebar" id="sidebar">
-                <div class="sidebar-header">WT Argentina</div>
+                <div class="sidebar-header">
+                    <span>WT Argentina</span>
+                    <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
+                </div>
                 <div class="menu-item" id="btn-upcoming" onclick="switchTab('upcoming')">Schedule</div>
                 <div class="menu-item" id="btn-entrylists" onclick="switchTab('entrylists')">Entry Lists</div>
                 <div class="menu-item" id="btn-draws" onclick="switchTab('draws')">Draws</div>
@@ -2328,7 +2523,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                 </div>
                             </div>
                             <div class="rankings-btn-end">
-                                <button id="rankings-toggle-btn" class="rankings-toggle-btn" onclick="toggleRankingsScope()">Show 🇦🇷</button>
+                                <button id="rankings-toggle-btn" class="rankings-toggle-btn" onclick="toggleRankingsScope()">Show <img src="assets/argentina.png" style="height:14px;vertical-align:middle;" alt="ARG"></button>
                             </div>
                         </div>
                     </div>
@@ -2537,6 +2732,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         </div>
                     </div>
                     <div id="fedbcup-view-series">
+                        <div class="fedbcup-series-toolbar">
+                            <select id="fedbcup-player-filter" onchange="filterFedBjkPlayer()">
+                                <option value="">All Players</option>
+                            </select>
+                            <span id="fedbcup-record" class="fedbcup-record-text"></span>
+                        </div>
                         {bjkc_series_html}
                     </div>
                 </div>
@@ -2882,6 +3083,25 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if (window.innerWidth > 768) return html;
                 return String(html).replace('width:16px;height:11px', 'width:12px;height:8px');
             }}
+            function toggleDarkMode() {{
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                if (isDark) {{
+                    document.documentElement.removeAttribute('data-theme');
+                    localStorage.setItem('theme', 'light');
+                    document.querySelectorAll('.dark-mode-btn').forEach(function(b) {{ b.textContent = '🌙'; }});
+                }} else {{
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    document.querySelectorAll('.dark-mode-btn').forEach(function(b) {{ b.textContent = '☀️'; }});
+                }}
+            }}
+            // Sync button icons with persisted theme (set by early inline script in <head>)
+            (function() {{
+                if (document.documentElement.getAttribute('data-theme') === 'dark') {{
+                    document.querySelectorAll('.dark-mode-btn').forEach(function(b) {{ b.textContent = '☀️'; }});
+                }}
+            }})();
+
             function toggleMobileMenu() {{
                 const sidebar = document.getElementById('sidebar');
                 sidebar.classList.toggle('mobile-hidden');
@@ -3124,6 +3344,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 applyMobileHistoryLayout();
 
+                if (tabName !== 'home') {{
+                    try {{ localStorage.setItem('lastTab', tabName); }} catch(e) {{}}
+                }}
+
                 if (window.trackVisit) {{
                     window.trackVisit(location.pathname + "#" + tabName);
                 }}
@@ -3137,6 +3361,21 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             document.body.classList.add('home-mode');
             document.addEventListener('DOMContentLoaded', initCalendarFilters);
 
+            const BJKC_PLAYERS = {bjkc_players_json};
+
+            (function() {{
+                const sel = document.getElementById('fedbcup-player-filter');
+                if (sel) {{
+                    BJKC_PLAYERS.forEach(function(p) {{
+                        const o = document.createElement('option');
+                        o.value = p;
+                        o.textContent = p;
+                        sel.appendChild(o);
+                    }});
+                }}
+                updateFedBjkRecord('');
+            }})();
+
             function switchFedBjkTab(subTab) {{
                 document.getElementById('fedbcup-view-players').style.display = (subTab === 'players') ? '' : 'none';
                 document.getElementById('fedbcup-view-captains').style.display = (subTab === 'captains') ? '' : 'none';
@@ -3144,6 +3383,42 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('fedbcup-btn-players').classList.toggle('active', subTab === 'players');
                 document.getElementById('fedbcup-btn-captains').classList.toggle('active', subTab === 'captains');
                 document.getElementById('fedbcup-btn-series').classList.toggle('active', subTab === 'series');
+            }}
+
+            function filterFedBjkPlayer() {{
+                const sel = document.getElementById('fedbcup-player-filter');
+                const player = sel ? sel.value : '';
+                document.querySelectorAll('.bjkc-series-table tbody tr').forEach(function(tr) {{
+                    if (!player) {{ tr.style.display = ''; return; }}
+                    const players = (tr.getAttribute('data-player') || '').split('|');
+                    tr.style.display = players.includes(player) ? '' : 'none';
+                }});
+                document.querySelectorAll('.bjkc-series-block').forEach(function(block) {{
+                    if (!player) {{ block.style.display = ''; return; }}
+                    const rows = block.querySelectorAll('.bjkc-series-table tbody tr');
+                    const visible = Array.from(rows).some(function(r) {{ return r.style.display !== 'none'; }});
+                    block.style.display = visible ? '' : 'none';
+                }});
+                updateFedBjkRecord(player);
+            }}
+
+            function updateFedBjkRecord(player) {{
+                let sw = 0, sl = 0, dw = 0, dl = 0;
+                document.querySelectorAll('.bjkc-series-table tbody tr').forEach(function(tr) {{
+                    const result = tr.getAttribute('data-result');
+                    if (!result) return;
+                    const type = tr.getAttribute('data-type');
+                    const players = (tr.getAttribute('data-player') || '').split('|');
+                    if (player && !players.includes(player)) return;
+                    if (type === 'S') {{ if (result === 'W') sw++; else sl++; }}
+                    else {{ if (result === 'W') dw++; else dl++; }}
+                }});
+                const rec = document.getElementById('fedbcup-record');
+                if (rec) {{
+                    let text = 'S: ' + sw + '-' + sl;
+                    if (dw + dl > 0) text += ' | D: ' + dw + '-' + dl;
+                    rec.textContent = text;
+                }}
             }}
 
             function applyMobileHistoryLayout() {{
@@ -3314,7 +3589,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 showArgOnly = !showArgOnly;
                 const btn = document.getElementById('rankings-toggle-btn');
                 const view = document.getElementById('view-rankings');
-                if (btn) btn.textContent = showArgOnly ? 'Show ALL' : 'Show \U0001F1E6\U0001F1F7';
+                if (btn) btn.innerHTML = showArgOnly ? 'Show ALL' : 'Show <img src="assets/argentina.png" style="height:14px;vertical-align:middle;" alt="ARG">';
                 if (view) view.classList.toggle('rankings-show-all', !showArgOnly);
                 filterRankings();
             }}
