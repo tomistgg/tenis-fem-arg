@@ -297,6 +297,58 @@ def build_row_key(row, headers):
     return None
 
 
+def _check_stale_itf_matches(csv_path, cal_cache_path, now_utc):
+    """Return a warning dict if ITF matches are >36h stale during an active tournament week."""
+    # Find the latest ingestion date in the CSV
+    latest_date = None
+    if os.path.exists(csv_path):
+        try:
+            with open(csv_path, "r", encoding="utf-8-sig", newline="") as f:
+                for row in csv.DictReader(f):
+                    d = (row.get("date") or "").strip()[:10]
+                    if d and (latest_date is None or d > latest_date):
+                        latest_date = d
+        except Exception:
+            pass
+
+    if not latest_date:
+        return None
+
+    try:
+        latest_dt = datetime.strptime(latest_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    except Exception:
+        return None
+
+    age_hours = (now_utc - latest_dt).total_seconds() / 3600
+    if age_hours <= 36:
+        return None  # fresh enough
+
+    # Only warn if there are tournaments actively running this week
+    today_str = now_utc.strftime("%Y-%m-%d")
+    active_tournaments = []
+    cal_data = load_json(cal_cache_path) or {}
+    items = cal_data.get("items", []) if isinstance(cal_data, dict) else []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        start = (item.get("startDate") or "")[:10]
+        end = (item.get("endDate") or "")[:10]
+        status = (item.get("status") or item.get("tournamentStatus") or "").lower()
+        if "cancel" in status:
+            continue
+        if start and end and start <= today_str <= end:
+            active_tournaments.append(item.get("tournamentName") or item.get("name") or "?")
+
+    if not active_tournaments:
+        return None  # no active tournaments, staleness is expected
+
+    return {
+        "latest_date": latest_date,
+        "age_hours": round(age_hours, 1),
+        "active_tournaments": active_tournaments[:5],
+    }
+
+
 def compute_report(before_dir, after_dir):
     report = {
         "withdrawals": [],
@@ -644,6 +696,14 @@ def compute_report(before_dir, after_dir):
             })
     report["stale_draws"] = stale_draws
 
+    # Stale ITF matches: active tournaments running this week but no match ingested in >36h
+    stale_itf_matches = _check_stale_itf_matches(
+        os.path.join(after_dir, "itf_matches_arg.csv"),
+        os.path.join(after_dir, "itf_calendar_cache.json"),
+        now_utc,
+    )
+    report["stale_itf_matches"] = stale_itf_matches
+
     # Bad draw scores: concluded matches whose score violates tennis rules
     bad_draw_scores = []
     for t_key, entry in draws_store.items():
@@ -729,6 +789,7 @@ def render_email_markdown(report):
             bool(report.get("added_calendar_tournaments")),
             bool(report.get("failed_draw_fetches")),
             bool(report.get("stale_draws")),
+            bool(report.get("stale_itf_matches")),
             bool(report.get("bad_draw_scores")),
         ]
     )
@@ -791,8 +852,16 @@ def render_email_markdown(report):
             lines.append(f"- {item['name']} — last fetched {item['fetched_at']} ({item['age_hours']}h ago)")
         lines.append("")
 
+    if report.get("stale_itf_matches"):
+        item = report["stale_itf_matches"]
+        tourns = ", ".join(item["active_tournaments"])
+        lines.append("## 8) ITF Match Data Stale")
+        lines.append(f"- Last ingested match date: {item['latest_date']} ({item['age_hours']}h ago)")
+        lines.append(f"- Active tournaments with no recent data: {tourns}")
+        lines.append("")
+
     if report.get("bad_draw_scores"):
-        lines.append("## 8) Draw Matches with Invalid Scores")
+        lines.append("## 9) Draw Matches with Invalid Scores")
         for item in report["bad_draw_scores"]:
             lines.append(
                 f"- {item['tournament_name']} ({item['draw_label']}) "

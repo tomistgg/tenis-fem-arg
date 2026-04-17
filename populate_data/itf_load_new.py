@@ -1,12 +1,10 @@
 import json
+import random
 import time
 import pandas as pd
 import os
 import requests
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
+import undetected_chromedriver as uc
 from datetime import datetime, timedelta
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -23,16 +21,12 @@ def get_week_start_end(today=None):
     return week_start, week_end
 
 def create_driver():
-    chrome_options = Options()
-    chrome_options.add_argument("--headless=new")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-    chrome_options.add_argument("window-size=1920,1080")
-    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
-    service = Service(ChromeDriverManager().install())
-    return webdriver.Chrome(service=service, options=chrome_options)
+    opts = uc.ChromeOptions()
+    opts.add_argument("--no-sandbox")
+    opts.add_argument("--disable-dev-shm-usage")
+    opts.add_argument("--disable-gpu")
+    opts.add_argument("window-size=1920,1080")
+    return uc.Chrome(options=opts, headless=True)
 
 
 def get_itf_calendar_for_range(start_date, end_date, driver=None):
@@ -107,62 +101,38 @@ def fetch_itf_ids_to_json(keys_list, driver=None):
     if not keys_list:
         return "[]"
 
-    owns_driver = driver is None
-    if owns_driver:
-        driver = create_driver()
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Referer": "https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/",
+    }
 
     results = []
-    consecutive_failures = 0
-    try:
-        if owns_driver:
-            driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
-            time.sleep(5)
+    failed_keys = []
 
-        for key in keys_list:
-            api_url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
+    for key in keys_list:
+        url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
+        fetched = False
+        try:
+            response = requests.get(url, headers=headers, timeout=15)
+            raw = response.text.strip()
+            if response.status_code == 200 and raw and not raw.startswith("<"):
+                data = response.json()
+                if isinstance(data, dict) and "tournamentId" in data:
+                    results.append({"tournamentKey": key, "tournamentId": data["tournamentId"]})
+                    fetched = True
+        except Exception as e:
+            print(f"  [!] requests failed for {key}: {e}")
 
-            fetched = False
-            for attempt in range(2):
-                if attempt > 0:
-                    # Re-warm the session before retry
-                    driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
-                    time.sleep(5)
+        if not fetched:
+            failed_keys.append(key)
 
-                driver.get(api_url)
-                time.sleep(3.5)
-
-                raw_content = ""
-                try:
-                    raw_content = driver.find_element("tag name", "body").text.strip()
-                except Exception:
-                    pass
-
-                if not raw_content:
-                    continue
-
-                try:
-                    data = json.loads(raw_content)
-                    if data and "tournamentId" in data:
-                        results.append({
-                            "tournamentKey": key,
-                            "tournamentId": data["tournamentId"]
-                        })
-                        fetched = True
-                        consecutive_failures = 0
-                        break
-                except Exception as e:
-                    print(f"[!] Failed to fetch ID for {key}: {e}")
-
-            if not fetched:
-                consecutive_failures += 1
-                if consecutive_failures >= 3:
-                    print(f"  ITF ID fetch: backing off 30s after {consecutive_failures} consecutive failures...")
-                    driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
-                    time.sleep(30)
-                    consecutive_failures = 0
-    finally:
-        if owns_driver:
-            driver.quit()
+    fetched_count = len(results)
+    total = len(keys_list)
+    if fetched_count < total:
+        print(f"  [!] {total - fetched_count} tournament(s) missing IDs from live fetch; filling from cache.")
+    else:
+        print(f"  Fetched IDs for all {total} tournaments.")
 
     return json.dumps(results)
 
@@ -195,31 +165,45 @@ def fetch_api_data(tId, classification, week_number=0, driver=None):
         "Content-Type": "application/json"
     }
 
-    # Primary: plain requests — fast, works when ITF doesn't block the IP
+    # Primary: requests with browser cookies (Incapsula validates session cookies)
+    browser_cookies = {}
+    if driver is not None:
+        try:
+            for cookie in driver.get_cookies():
+                browser_cookies[cookie['name']] = cookie['value']
+        except Exception:
+            pass
+
     try:
-        response = requests.post(url, json=payload, headers=headers)
-        response.raise_for_status()
+        response = requests.post(url, json=payload, headers=headers,
+                                 cookies=browser_cookies if browser_cookies else None)
         raw = response.text.strip()
-        if raw and not raw.startswith("<"):
+        if response.status_code == 200 and raw and not raw.startswith("<"):
             return response.json()
     except Exception:
         pass
 
-    # Fallback: browser session fetch — bypasses Incapsula IP blocking on cloud runners
+    # Fallback: fetch directly from browser context (same TLS fingerprint + cookies)
     if driver is not None:
         script = """
 var url = arguments[0], payload = arguments[1], done = arguments[arguments.length - 1];
-var ctrl = new AbortController();
-setTimeout(function() { ctrl.abort(); }, 12000);
 fetch(url, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     credentials: 'include',
-    signal: ctrl.signal,
     body: JSON.stringify(payload)
 })
-.then(function(r) { return r.json(); })
-.then(function(data) { done({ok: true, data: data}); })
+.then(function(r) {
+    var status = r.status;
+    return r.text().then(function(text) {
+        if (text && (text.charAt(0) === '{' || text.charAt(0) === '[')) {
+            try { done({ok: true, data: JSON.parse(text), status: status}); }
+            catch(e) { done({ok: false, error: 'parse:' + e.message, status: status}); }
+        } else {
+            done({ok: false, error: 'html', status: status, preview: text.substring(0, 80)});
+        }
+    });
+})
 .catch(function(e) { done({ok: false, error: String(e)}); });
 """
         try:
@@ -228,10 +212,62 @@ fetch(url, {
                 data = result.get("data")
                 if isinstance(data, dict):
                     return data
-        except Exception:
-            pass
+            else:
+                print(f"    [debug] browser fetch: {result}")
+        except Exception as e:
+            print(f"    [debug] browser exception: {e}")
 
     return None
+
+
+def fetch_tournament_draw_data(tournament_id, tournament_name, codes, week_number=0, max_attempts=2):
+    """Fetch draw data for one tournament using a fresh browser session per attempt.
+
+    This helps avoid ITF/Incapsula session degradation across a long run.
+    """
+    tournament_id = int(tournament_id)
+
+    for attempt in range(1, max_attempts + 1):
+        driver = None
+        results = {}
+        try:
+            driver = create_driver()
+            draw_page_url = (
+                "https://www.itftennis.com/en/tournament/draws-and-results/print/"
+                f"?tournamentId={tournament_id}&circuitCode=WT"
+            )
+            driver.get(draw_page_url)
+            time.sleep(random.uniform(3.5, 5.0))
+
+            for code in codes:
+                results[code] = fetch_api_data(
+                    tournament_id,
+                    code,
+                    week_number=week_number,
+                    driver=driver,
+                )
+                time.sleep(random.uniform(0.7, 1.3))
+
+            if any(results.values()):
+                return results
+        except Exception as e:
+            print(f"  [!] Draw fetch session failed for {tournament_name} (attempt {attempt}): {e}")
+        finally:
+            if driver is not None:
+                try:
+                    driver.quit()
+                except Exception:
+                    pass
+
+        if attempt < max_attempts:
+            cooldown = random.uniform(10.0, 16.0)
+            print(
+                f"  [!] Empty/blocked draw response for {tournament_name}; "
+                f"retrying with a fresh session after {cooldown:.1f}s"
+            )
+            time.sleep(cooldown)
+
+    return {}
 
 def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     if not data or not isinstance(data, dict): return []
@@ -513,7 +549,16 @@ if __name__ == "__main__":
         if tournaments_df is None or tournaments_df.empty:
             raise SystemExit(0)
         keys_list = tournaments_df["tournamentKey"].dropna().unique().tolist()
-        # Reuse same driver for ID fetching (session cookies already set)
+
+        # Warm up browser on ITF BEFORE any API calls so Incapsula session is valid
+        print("  Warming up browser session...")
+        try:
+            driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
+            time.sleep(4)
+            print("  Browser session ready.")
+        except Exception as e:
+            print(f"  [!] Browser warm-up failed: {e}")
+
         json_ids_string = fetch_itf_ids_to_json(keys_list, driver=driver)
 
         final_df = merge_ids_with_pandas(tournaments_df, json_ids_string)
@@ -535,8 +580,16 @@ if __name__ == "__main__":
                         pass
         final_df['tournamentId'] = final_df['tournamentId'].fillna(0).astype(int).astype(str).replace('0', '')
 
+
         all_matches = []
         tournaments_list = final_df.to_dict('records')
+        active_count = 0
+
+        try:
+            driver.quit()
+        except Exception:
+            pass
+        driver = None
 
         for tourney in tournaments_list:
             tId = tourney.get("tournamentId")
@@ -547,7 +600,11 @@ if __name__ == "__main__":
                 continue
 
             if not tId or pd.isna(tId) or str(tId) == "":
+                print(f"  Skipping {tName} — no tournament ID")
                 continue
+
+            active_count += 1
+            tourney_matches_before = len(all_matches)
 
             is_multiweek = tCategory == "ITF Womens Multi-Week Circuit"
 
@@ -556,16 +613,24 @@ if __name__ == "__main__":
                 while True:
                     has_data_this_week = False
 
+                    draw_payloads = fetch_tournament_draw_data(
+                        tId,
+                        tName,
+                        ["Q", "M"],
+                        week_number=week,
+                        max_attempts=2,
+                    )
+
                     for code in ["Q", "M"]:
-                        json_data = fetch_api_data(int(tId), code, week_number=week, driver=driver)
+                        json_data = draw_payloads.get(code)
 
                         if json_data:
                             parsed = parse_drawsheet(json_data, tourney, code, week_offset=(week - 1))
                             if parsed:
                                 all_matches.extend(parsed)
                                 has_data_this_week = True
-
-                        time.sleep(0.2)
+                        else:
+                            print(f"  [!] No data returned for {tName} (id={tId}, code={code}, week={week})")
 
                     if not has_data_this_week:
                         break
@@ -574,25 +639,42 @@ if __name__ == "__main__":
                     if week > 10:
                         break
             else:
+                draw_payloads = fetch_tournament_draw_data(
+                    tId,
+                    tName,
+                    ["Q", "M"],
+                    week_number=0,
+                    max_attempts=2,
+                )
+
                 for code in ["Q", "M"]:
-                    json_data = fetch_api_data(int(tId), code, week_number=0, driver=driver)
+                    json_data = draw_payloads.get(code)
 
                     if json_data:
                         parsed = parse_drawsheet(json_data, tourney, code, week_offset=0)
                         all_matches.extend(parsed)
+                    else:
+                        print(f"  [!] No data returned for {tName} (id={tId}, code={code})")
 
-                    time.sleep(0.2)
+            added = len(all_matches) - tourney_matches_before
+            print(f"  {tName} (id={tId}): {added} ARG matches found")
+            time.sleep(random.uniform(1.5, 3.0))
 
-            time.sleep(0.5)
+        print(f"Tournaments processed: {active_count}, total ARG matches found: {len(all_matches)}")
 
     finally:
-        driver.quit()
+        try:
+            driver.quit()
+        except Exception:
+            pass
 
     if all_matches:
         new_matches_df = pd.DataFrame(all_matches)
-
         update_csv_smart(
             "itf_matches_arg.csv",
             new_matches_df,
             reset_if_not_current_week=False
         )
+        print(f"CSV update complete.")
+    else:
+        print("No new ARG matches found — CSV not updated.")
