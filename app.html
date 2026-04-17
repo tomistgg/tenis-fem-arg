@@ -135,6 +135,8 @@
             .home-icon-fill { fill: #1e293b; stroke: none; }
             .home-btn:hover { background: #d9ecf8; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
             .home-btn:active { background: #b8d9f0; transform: scale(0.97); box-shadow: none; }
+            .home-dark-btn { margin-top: 10px; padding: 10px 24px; border-radius: 20px; border: 2px solid #75AADB; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.15s; }
+            .home-dark-btn:hover { background: #d9ecf8; }
             .home-hero { min-height: 80vh; justify-content: center; }
             @media (max-width: 900px) {
                 body.home-mode { overflow: hidden; }
@@ -272,17 +274,23 @@
             #view-entrylists .content-card { overflow-y: visible; max-height: none; }
 
             /* Fed/BJK Cup toggle buttons */
-            .fedbcup-toggle-row {
+            .fedbcup-header-controls {
                 display: flex;
-                width: 100%;
-                margin-bottom: 8px;
+                align-items: center;
+                gap: 16px;
+                margin-bottom: 12px;
+            }
+            .fedbcup-toggle-row {
+                flex: 1;
+                display: flex;
+                justify-content: center;
             }
             .fedbcup-btn {
-                flex: 1;
-                padding: 10px 0;
+                flex: 0 0 auto;
+                padding: 7px 14px;
                 cursor: pointer;
                 border: none;
-                font-size: 14px;
+                font-size: 12px;
                 font-weight: 600;
                 background: #e2e8f0;
                 color: #334155;
@@ -393,7 +401,7 @@
 
             /* Series view */
             #fedbcup-view-series { width: 100%; }
-            .fedbcup-series-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+            .fedbcup-series-toolbar { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
             #fedbcup-player-filter { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 12px; background: white; min-width: 180px; }
             .fedbcup-record-text { font-size: 13px; font-weight: bold; color: #475569; white-space: nowrap; }
             .bjkc-series-block { margin-bottom: 20px; }
@@ -1025,7 +1033,10 @@
                 #history-table th:nth-child(8) { white-space: nowrap !important; }
 
                 /* Fed/BJK Cup toggle buttons mobile */
-                .fedbcup-btn { font-size: 12px; padding: 8px 0; }
+                .fedbcup-header-controls { flex-direction: column; gap: 8px; align-items: stretch; }
+                .fedbcup-toggle-row { width: 100%; justify-content: flex-start; }
+                .fedbcup-btn { flex: 1; font-size: 12px; padding: 8px 0; }
+                .fedbcup-series-toolbar { width: 100%; }
 
                 /* Player Debuts table mobile */
                 #fedbcup-view-players .table-wrapper {
@@ -1382,13 +1393,17 @@
             .dark-mode-btn-mobile { display: none; }
             @media (max-width: 768px) {
                 .dark-mode-btn-mobile {
-                    display: block;
-                    position: fixed;
-                    top: 5px;
-                    right: 4px;
-                    z-index: 1002;
-                    padding: 3px 8px;
-                    font-size: 13px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 15px 14px;
+                    font-size: 16px;
+                    background: transparent;
+                    border: none;
+                    color: #fbbf24;
+                    cursor: pointer;
+                    flex-shrink: 0;
+                    border-left: 1px solid #334155;
                 }
             }
 
@@ -1420,6 +1435,8 @@
             [data-theme="dark"] .home-btn:active { background: #162e4a; }
             [data-theme="dark"] .home-title { color: #e2e8f0; }
             [data-theme="dark"] .home-note { color: #94a3b8; }
+            [data-theme="dark"] .home-dark-btn { background: #1a3350; border-color: #3b7ec4; color: #e2e8f0; }
+            [data-theme="dark"] .home-dark-btn:hover { background: #1e3a5c; }
 
             [data-theme="dark"] .rankings-toggle-btn { background: #1e293b; border-color: #475569; color: #e2e8f0; }
             [data-theme="dark"] .rankings-toggle-btn:hover { background: #273548; }
@@ -1583,6 +1600,7 @@
                                 <span class="home-label">WTA Tournament Strength</span>
                             </button>
                         </div>
+                        <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()">🌙 <span id="home-dark-label">Dark Mode</span></button>
                     </div>
                 </div>
 
@@ -1831,10 +1849,18 @@
                     <div class="header-row">
                         <h1>Fed/BJK Cup</h1>
                     </div>
-                    <div class="fedbcup-toggle-row">
-                        <button class="fedbcup-btn active" id="fedbcup-btn-series" onclick="switchFedBjkTab('series')">Series</button>
-                        <button class="fedbcup-btn" id="fedbcup-btn-players" onclick="switchFedBjkTab('players')">Player Debuts</button>
-                        <button class="fedbcup-btn" id="fedbcup-btn-captains" onclick="switchFedBjkTab('captains')">Captain Debuts</button>
+                    <div class="fedbcup-header-controls">
+                        <div class="fedbcup-toggle-row">
+                            <button class="fedbcup-btn active" id="fedbcup-btn-series" onclick="switchFedBjkTab('series')">Series</button>
+                            <button class="fedbcup-btn" id="fedbcup-btn-players" onclick="switchFedBjkTab('players')">Player Debuts</button>
+                            <button class="fedbcup-btn" id="fedbcup-btn-captains" onclick="switchFedBjkTab('captains')">Captain Debuts</button>
+                        </div>
+                        <div class="fedbcup-series-toolbar" id="fedbcup-series-toolbar">
+                            <select id="fedbcup-player-filter" onchange="filterFedBjkPlayer()">
+                                <option value="">All Players</option>
+                            </select>
+                            <span id="fedbcup-record" class="fedbcup-record-text"></span>
+                        </div>
                     </div>
                     <div id="fedbcup-view-players" class="content-card" style="display: none;">
                         <div class="table-wrapper">
@@ -1861,12 +1887,6 @@
                         </div>
                     </div>
                     <div id="fedbcup-view-series">
-                        <div class="fedbcup-series-toolbar">
-                            <select id="fedbcup-player-filter" onchange="filterFedBjkPlayer()">
-                                <option value="">All Players</option>
-                            </select>
-                            <span id="fedbcup-record" class="fedbcup-record-text"></span>
-                        </div>
                         <div class="bjkc-series-block">
                 <div class="bjkc-series-header">
                     <span class="bjkc-header-date">2026-04-11</span>
@@ -8292,6 +8312,12 @@
                 if (window.innerWidth > 768) return html;
                 return String(html).replace('width:16px;height:11px', 'width:12px;height:8px');
             }
+            function _syncHomeDarkBtn(isDark) {
+                const lbl = document.getElementById('home-dark-label');
+                const btn = document.getElementById('home-dark-btn');
+                if (lbl) lbl.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+                if (btn) btn.firstChild.textContent = isDark ? '☀️ ' : '🌙 ';
+            }
             function toggleDarkMode() {
                 const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
                 if (isDark) {
@@ -8303,12 +8329,15 @@
                     localStorage.setItem('theme', 'dark');
                     document.querySelectorAll('.dark-mode-btn').forEach(function(b) { b.textContent = '☀️'; });
                 }
+                _syncHomeDarkBtn(!isDark);
             }
             // Sync button icons with persisted theme (set by early inline script in <head>)
             (function() {
-                if (document.documentElement.getAttribute('data-theme') === 'dark') {
+                const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+                if (dark) {
                     document.querySelectorAll('.dark-mode-btn').forEach(function(b) { b.textContent = '☀️'; });
                 }
+                _syncHomeDarkBtn(dark);
             })();
 
             function toggleMobileMenu() {
@@ -8592,6 +8621,8 @@
                 document.getElementById('fedbcup-btn-players').classList.toggle('active', subTab === 'players');
                 document.getElementById('fedbcup-btn-captains').classList.toggle('active', subTab === 'captains');
                 document.getElementById('fedbcup-btn-series').classList.toggle('active', subTab === 'series');
+                const toolbar = document.getElementById('fedbcup-series-toolbar');
+                if (toolbar) toolbar.style.display = (subTab === 'series') ? '' : 'none';
             }
 
             function filterFedBjkPlayer() {
