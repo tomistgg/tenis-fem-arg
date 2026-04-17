@@ -4,10 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>WT Argentina</title>
+  <script>(function(){ var t=localStorage.getItem('theme'); if(t==='dark') document.documentElement.setAttribute('data-theme','dark'); })();</script>
   <style>
     @font-face { font-family: 'Montserrat'; src: url('assets/Montserrat-SemiBold.ttf'); }
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: hidden; max-width: 100vw; }
-    body { font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; }
+    body { font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; transition: background 0.2s; }
 
     .home-hero { width: 100%; min-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 8px 12px; box-sizing: border-box; }
     .home-title { font-size: 26px; color: #1e293b; margin: 0; text-align: center; }
@@ -19,6 +20,17 @@
     .home-label { flex: 1; text-align: center; padding-right: 28px; word-break: break-word; }
     .home-btn:hover { background: #d9ecf8; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
     .home-btn:active { background: #b8d9f0; transform: scale(0.97); box-shadow: none; }
+    .home-dark-btn { margin-top: 10px; padding: 10px 24px; border-radius: 20px; border: 2px solid #75AADB; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.15s; }
+    .home-dark-btn:hover { background: #d9ecf8; }
+
+    [data-theme="dark"] body { background: #0f172a; }
+    [data-theme="dark"] .home-title { color: #e2e8f0; }
+    [data-theme="dark"] .home-note { color: #94a3b8; }
+    [data-theme="dark"] .home-btn { background: #1a3350; border-color: #3b7ec4; color: #e2e8f0; }
+    [data-theme="dark"] .home-btn:hover { background: #1e3a5c; box-shadow: 0 6px 16px rgba(0,0,0,0.4); }
+    [data-theme="dark"] .home-dark-btn { background: #1a3350; border-color: #3b7ec4; color: #e2e8f0; }
+    [data-theme="dark"] .home-dark-btn:hover { background: #1e3a5c; }
+    [data-theme="dark"] .home-icon-img:not(.no-invert) { filter: brightness(0) invert(1); }
 
     @media (max-width: 900px) {
       .home-hero { min-height: 0; padding: 12px 10px; gap: 10px; }
@@ -34,7 +46,6 @@
 <body>
   <div class="home-hero">
     <h1 class="home-title">Women's Tennis Argentina</h1>
-    <p class="home-note">Ahora pueden entrar desde <strong>wtarg.com</strong> (m&aacute;s f&aacute;cil de recordar).</p>
     <div class="home-grid">
       <a class="home-btn" href="gallery/index.html"><img class="home-icon-img" src="assets/camera.png" alt="Camera icon"><span class="home-label">Photo Gallery</span></a>
       <a class="home-btn" href="upcoming/index.html"><img class="home-icon-img" src="assets/trophy.png" alt="Trophy icon"><span class="home-label">Schedule</span></a>
@@ -44,9 +55,32 @@
       <a class="home-btn" href="rankings/index.html"><img class="home-icon-img" src="assets/list.png" alt="List icon"><span class="home-label">WTA Rankings</span></a>
       <a class="home-btn" href="roadtogs/index.html"><img class="home-icon-img" src="assets/data.png" alt="Data icon"><span class="home-label">Points Breakdown</span></a>
       <a class="home-btn" href="history/index.html"><img class="home-icon-img" src="assets/tennis-player.png" alt="Tennis player icon"><span class="home-label">Match History</span></a>
-      <a class="home-btn" href="fedbcup/index.html"><img class="home-icon-img" src="assets/argentina.png" alt="Argentina flag icon"><span class="home-label">Fed/BJK Cup</span></a>
+      <a class="home-btn" href="fedbcup/index.html"><img class="home-icon-img no-invert" src="assets/argentina.png" alt="Argentina flag icon"><span class="home-label">Fed/BJK Cup</span></a>
       <a class="home-btn last" href="tstrength/index.html"><img class="home-icon-img" src="assets/score-board.png" alt="Analytics icon"><span class="home-label">WTA Tournament Strength</span></a>
     </div>
+    <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()">🌙 <span id="home-dark-label">Dark Mode</span></button>
   </div>
+  <script>
+    function toggleDarkMode() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('home-dark-btn').firstChild.textContent = '🌙 ';
+        document.getElementById('home-dark-label').textContent = 'Dark Mode';
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('home-dark-btn').firstChild.textContent = '☀️ ';
+        document.getElementById('home-dark-label').textContent = 'Light Mode';
+      }
+    }
+    (function() {
+      if (document.documentElement.getAttribute('data-theme') === 'dark') {
+        document.getElementById('home-dark-btn').firstChild.textContent = '☀️ ';
+        document.getElementById('home-dark-label').textContent = 'Light Mode';
+      }
+    })();
+  </script>
 </body>
 </html>

@@ -821,10 +821,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>WT Argentina</title>
+  <script>(function(){ var t=localStorage.getItem('theme'); if(t==='dark') document.documentElement.setAttribute('data-theme','dark'); })();</script>
   <style>
     @font-face { font-family: 'Montserrat'; src: url('assets/Montserrat-SemiBold.ttf'); }
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: hidden; max-width: 100vw; }
-    body { font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; }
+    body { font-family: 'Montserrat', sans-serif; background: #f0f4f8; margin: 0; transition: background 0.2s; }
 
     .home-hero { width: 100%; min-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 8px 12px; box-sizing: border-box; }
     .home-title { font-size: 26px; color: #1e293b; margin: 0; text-align: center; }
@@ -836,6 +837,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     .home-label { flex: 1; text-align: center; padding-right: 28px; word-break: break-word; }
     .home-btn:hover { background: #d9ecf8; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
     .home-btn:active { background: #b8d9f0; transform: scale(0.97); box-shadow: none; }
+    .home-dark-btn { margin-top: 10px; padding: 10px 24px; border-radius: 20px; border: 2px solid #75AADB; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.15s; }
+    .home-dark-btn:hover { background: #d9ecf8; }
+
+    [data-theme="dark"] body { background: #0f172a; }
+    [data-theme="dark"] .home-title { color: #e2e8f0; }
+    [data-theme="dark"] .home-note { color: #94a3b8; }
+    [data-theme="dark"] .home-btn { background: #1a3350; border-color: #3b7ec4; color: #e2e8f0; }
+    [data-theme="dark"] .home-btn:hover { background: #1e3a5c; box-shadow: 0 6px 16px rgba(0,0,0,0.4); }
+    [data-theme="dark"] .home-dark-btn { background: #1a3350; border-color: #3b7ec4; color: #e2e8f0; }
+    [data-theme="dark"] .home-dark-btn:hover { background: #1e3a5c; }
+    [data-theme="dark"] .home-icon-img:not(.no-invert) { filter: brightness(0) invert(1); }
 
     @media (max-width: 900px) {
       .home-hero { min-height: 0; padding: 12px 10px; gap: 10px; }
@@ -851,7 +863,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 <body>
   <div class="home-hero">
     <h1 class="home-title">Women's Tennis Argentina</h1>
-    <p class="home-note">Ahora pueden entrar desde <strong>wtarg.com</strong> (m&aacute;s f&aacute;cil de recordar).</p>
     <div class="home-grid">
       <a class="home-btn" href="gallery/index.html"><img class="home-icon-img" src="assets/camera.png" alt="Camera icon"><span class="home-label">Photo Gallery</span></a>
       <a class="home-btn" href="upcoming/index.html"><img class="home-icon-img" src="assets/trophy.png" alt="Trophy icon"><span class="home-label">Schedule</span></a>
@@ -861,10 +872,33 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
       <a class="home-btn" href="rankings/index.html"><img class="home-icon-img" src="assets/list.png" alt="List icon"><span class="home-label">WTA Rankings</span></a>
       <a class="home-btn" href="roadtogs/index.html"><img class="home-icon-img" src="assets/data.png" alt="Data icon"><span class="home-label">Points Breakdown</span></a>
       <a class="home-btn" href="history/index.html"><img class="home-icon-img" src="assets/tennis-player.png" alt="Tennis player icon"><span class="home-label">Match History</span></a>
-      <a class="home-btn" href="fedbcup/index.html"><img class="home-icon-img" src="assets/argentina.png" alt="Argentina flag icon"><span class="home-label">Fed/BJK Cup</span></a>
+      <a class="home-btn" href="fedbcup/index.html"><img class="home-icon-img no-invert" src="assets/argentina.png" alt="Argentina flag icon"><span class="home-label">Fed/BJK Cup</span></a>
       <a class="home-btn last" href="tstrength/index.html"><img class="home-icon-img" src="assets/score-board.png" alt="Analytics icon"><span class="home-label">WTA Tournament Strength</span></a>
     </div>
+    <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()">🌙 <span id="home-dark-label">Dark Mode</span></button>
   </div>
+  <script>
+    function toggleDarkMode() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('home-dark-btn').firstChild.textContent = '🌙 ';
+        document.getElementById('home-dark-label').textContent = 'Dark Mode';
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('home-dark-btn').firstChild.textContent = '☀️ ';
+        document.getElementById('home-dark-label').textContent = 'Light Mode';
+      }
+    }
+    (function() {
+      if (document.documentElement.getAttribute('data-theme') === 'dark') {
+        document.getElementById('home-dark-btn').firstChild.textContent = '☀️ ';
+        document.getElementById('home-dark-label').textContent = 'Light Mode';
+      }
+    })();
+  </script>
 </body>
 </html>
 """
@@ -1027,6 +1061,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .calendar-mode .main-content {{ padding-top: 8px; padding-bottom: 8px; }}
             }}
             .roadtogs-controls {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }}
+            #roadtogs-points-total {{ color: #1e293b; }}
             #roadtogs-table {{ width: 100%; table-layout: fixed; }}
             #roadtogs-table th, #roadtogs-table td {{ padding: 8px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; }}
             #roadtogs-table th:nth-child(1), #roadtogs-table td:nth-child(1) {{ width: 95px; white-space: nowrap; text-align: center; }}
@@ -1148,17 +1183,27 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .fedbcup-header-controls {{
                 display: flex;
                 align-items: center;
-                gap: 16px;
                 margin-bottom: 12px;
             }}
-            .fedbcup-toggle-row {{
+            .fedbcup-filter-left {{
                 flex: 1;
                 display: flex;
-                justify-content: center;
+                align-items: center;
+            }}
+            .fedbcup-toggle-row {{
+                flex: 0 0 auto;
+                display: flex;
+            }}
+            .fedbcup-record-right {{
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
             }}
             .fedbcup-btn {{
-                flex: 0 0 auto;
-                padding: 7px 14px;
+                flex: 0 0 120px;
+                text-align: center;
+                padding: 7px 8px;
                 cursor: pointer;
                 border: none;
                 font-size: 12px;
@@ -1272,7 +1317,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             /* Series view */
             #fedbcup-view-series {{ width: 100%; }}
-            .fedbcup-series-toolbar {{ display: flex; align-items: center; gap: 10px; flex-shrink: 0; }}
+            .fedbcup-series-toolbar {{ display: flex; align-items: center; gap: 10px; }}
             #fedbcup-player-filter {{ padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 12px; background: white; min-width: 180px; }}
             .fedbcup-record-text {{ font-size: 13px; font-weight: bold; color: #475569; white-space: nowrap; }}
             .bjkc-series-block {{ margin-bottom: 20px; }}
@@ -1904,10 +1949,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #history-table th:nth-child(8) {{ white-space: nowrap !important; }}
 
                 /* Fed/BJK Cup toggle buttons mobile */
-                .fedbcup-header-controls {{ flex-direction: column; gap: 8px; align-items: stretch; }}
-                .fedbcup-toggle-row {{ width: 100%; justify-content: flex-start; }}
+                .fedbcup-header-controls {{ flex-direction: row; flex-wrap: wrap; gap: 6px; align-items: center; }}
+                .fedbcup-filter-left {{ flex: 1; min-width: 0; order: 1; visibility: visible !important; }}
+                .fedbcup-filter-left select {{ font-size: 11px; padding: 4px 4px; max-width: 120px; }}
+                .fedbcup-record-right {{ flex: 1; min-width: 0; order: 1; justify-content: flex-end; visibility: visible !important; }}
+                .fedbcup-toggle-row {{ flex: 0 0 100%; order: 2; }}
                 .fedbcup-btn {{ flex: 1; font-size: 12px; padding: 8px 0; }}
-                .fedbcup-series-toolbar {{ width: 100%; }}
 
                 /* Player Debuts table mobile */
                 #fedbcup-view-players .table-wrapper {{
@@ -2264,17 +2311,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .dark-mode-btn-mobile {{ display: none; }}
             @media (max-width: 768px) {{
                 .dark-mode-btn-mobile {{
+                    flex: 1 1 0;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    padding: 15px 14px;
-                    font-size: 16px;
-                    background: transparent;
-                    border: none;
-                    color: #fbbf24;
+                    padding: 4px 3px;
                     cursor: pointer;
-                    flex-shrink: 0;
-                    border-left: 1px solid #334155;
+                    color: #fbbf24;
+                    font-size: 14px;
+                    font-family: inherit;
+                    border: none;
+                    border-right: 1px solid #334155;
+                    background: transparent;
+                    white-space: nowrap;
+                    min-height: 40px;
                 }}
             }}
 
@@ -2308,6 +2358,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             [data-theme="dark"] .home-note {{ color: #94a3b8; }}
             [data-theme="dark"] .home-dark-btn {{ background: #1a3350; border-color: #3b7ec4; color: #e2e8f0; }}
             [data-theme="dark"] .home-dark-btn:hover {{ background: #1e3a5c; }}
+            [data-theme="dark"] .home-icon-img:not(.no-invert) {{ filter: brightness(0) invert(1); }}
 
             [data-theme="dark"] .rankings-toggle-btn {{ background: #1e293b; border-color: #475569; color: #e2e8f0; }}
             [data-theme="dark"] .rankings-toggle-btn:hover {{ background: #273548; }}
@@ -2385,6 +2436,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             [data-theme="dark"] #fedbcup-player-filter {{ background: #1e293b; border-color: #475569; color: #e2e8f0; }}
             [data-theme="dark"] .fedbcup-record-text {{ color: #94a3b8; }}
             [data-theme="dark"] .bjkc-series-header {{ background: #1e3a5c; }}
+            [data-theme="dark"] #roadtogs-points-total {{ color: #e2e8f0; }}
             [data-theme="dark"] .roadtogs-legend {{ color: #94a3b8; }}
             [data-theme="dark"] .gs-cutoff-table th,
             [data-theme="dark"] .gs-cutoff-table td {{ border-color: #334155; }}
@@ -2421,14 +2473,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</div>
                 <div class="menu-item" id="btn-tstrength" onclick="switchTab('tstrength')">WTA TRN STR</div>
                 <div class="menu-item" id="btn-gallery" onclick="switchTab('gallery')">Photo Gallery</div>
-                <button class="dark-mode-btn dark-mode-btn-mobile" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
+                <button class="dark-mode-btn-mobile" id="dark-mode-btn-mobile-nav" onclick="toggleDarkMode()">🌙</button>
             </div>
 
             <div class="main-content">
                 <div id="view-home" class="single-layout">
                     <div class="home-hero">
                         <h1 class="home-title">Women's Tennis Argentina</h1>
-                        <p class="home-note">Ahora pueden entrar desde <strong>wtarg.com</strong> (m&aacute;s f&aacute;cil de recordar).</p>
                         <div class="home-grid">
                             <button class="home-btn" onclick="switchTab('gallery')">
                                 <img class="home-icon-img" src="assets/camera.png" alt="Camera icon" />
@@ -2463,7 +2514,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                 <span class="home-label">Match History</span>
                             </button>
                             <button class="home-btn" onclick="switchTab('fedbcup')">
-                                <img class="home-icon-img" src="assets/argentina.png" alt="Argentina flag icon" />
+                                <img class="home-icon-img no-invert" src="assets/argentina.png" alt="Argentina flag icon" />
                                 <span class="home-label">Fed/BJK Cup</span>
                             </button>
                             <button class="home-btn last" onclick="switchTab('tstrength')">
@@ -2721,15 +2772,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         <h1>Fed/BJK Cup</h1>
                     </div>
                     <div class="fedbcup-header-controls">
+                        <div class="fedbcup-filter-left" id="fedbcup-filter-left">
+                            <select id="fedbcup-player-filter" onchange="filterFedBjkPlayer()">
+                                <option value="">All Players</option>
+                            </select>
+                        </div>
                         <div class="fedbcup-toggle-row">
                             <button class="fedbcup-btn active" id="fedbcup-btn-series" onclick="switchFedBjkTab('series')">Series</button>
                             <button class="fedbcup-btn" id="fedbcup-btn-players" onclick="switchFedBjkTab('players')">Player Debuts</button>
                             <button class="fedbcup-btn" id="fedbcup-btn-captains" onclick="switchFedBjkTab('captains')">Captain Debuts</button>
                         </div>
-                        <div class="fedbcup-series-toolbar" id="fedbcup-series-toolbar">
-                            <select id="fedbcup-player-filter" onchange="filterFedBjkPlayer()">
-                                <option value="">All Players</option>
-                            </select>
+                        <div class="fedbcup-record-right" id="fedbcup-record-right">
                             <span id="fedbcup-record" class="fedbcup-record-text"></span>
                         </div>
                     </div>
@@ -2962,7 +3015,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                 {"".join([f'<option value="{name}">{name}</option>' for name in roadtogs_players_sorted])}
                             </select>
                         </div>
-                        <div id="roadtogs-points-total" style="font-size: 16px; font-weight: bold; color: #1e293b; padding-right: 12px;">Points: 0</div>
+                        <div id="roadtogs-points-total" style="font-size: 16px; font-weight: bold; padding-right: 12px;">Points: 0</div>
                     </div>
                     <div class="roadtogs-cutoffs">
                         {gs_tables_html}
@@ -3108,6 +3161,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const btn = document.getElementById('home-dark-btn');
                 if (lbl) lbl.textContent = isDark ? 'Light Mode' : 'Dark Mode';
                 if (btn) btn.firstChild.textContent = isDark ? '☀️ ' : '🌙 ';
+                const mob = document.getElementById('dark-mode-btn-mobile-nav');
+                if (mob) mob.textContent = isDark ? '☀️' : '🌙';
             }}
             function toggleDarkMode() {{
                 const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -3412,8 +3467,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('fedbcup-btn-players').classList.toggle('active', subTab === 'players');
                 document.getElementById('fedbcup-btn-captains').classList.toggle('active', subTab === 'captains');
                 document.getElementById('fedbcup-btn-series').classList.toggle('active', subTab === 'series');
-                const toolbar = document.getElementById('fedbcup-series-toolbar');
-                if (toolbar) toolbar.style.display = (subTab === 'series') ? '' : 'none';
+                const filterLeft = document.getElementById('fedbcup-filter-left');
+                const recordRight = document.getElementById('fedbcup-record-right');
+                const vis = (subTab === 'series') ? 'visible' : 'hidden';
+                if (filterLeft) filterLeft.style.visibility = vis;
+                if (recordRight) recordRight.style.visibility = vis;
             }}
 
             function filterFedBjkPlayer() {{
