@@ -188,14 +188,34 @@ def fetch_api_data(tId, classification, week_number=0, driver=None):
         "weekNumber": week_number
     }
 
-    # Primary: use the existing browser session — bypasses Incapsula IP blocking
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Referer": f"https://www.itftennis.com/en/tournament/draws-and-results/print/?tournamentId={tId}&circuitCode=WT",
+        "Origin": "https://www.itftennis.com",
+        "Content-Type": "application/json"
+    }
+
+    # Primary: plain requests — fast, works when ITF doesn't block the IP
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+        raw = response.text.strip()
+        if raw and not raw.startswith("<"):
+            return response.json()
+    except Exception:
+        pass
+
+    # Fallback: browser session fetch — bypasses Incapsula IP blocking on cloud runners
     if driver is not None:
         script = """
 var url = arguments[0], payload = arguments[1], done = arguments[arguments.length - 1];
+var ctrl = new AbortController();
+setTimeout(function() { ctrl.abort(); }, 12000);
 fetch(url, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     credentials: 'include',
+    signal: ctrl.signal,
     body: JSON.stringify(payload)
 })
 .then(function(r) { return r.json(); })
@@ -211,22 +231,7 @@ fetch(url, {
         except Exception:
             pass
 
-    # Fallback: plain requests (works on local machine; may be blocked on cloud IPs)
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Referer": f"https://www.itftennis.com/en/tournament/draws-and-results/print/?tournamentId={tId}&circuitCode=WT",
-        "Origin": "https://www.itftennis.com",
-        "Content-Type": "application/json"
-    }
-    try:
-        response = requests.post(url, json=payload, headers=headers)
-        response.raise_for_status()
-        raw = response.text.strip()
-        if not raw or raw.startswith("<"):
-            return None
-        return response.json()
-    except Exception:
-        return None
+    return None
 
 def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     if not data or not isinstance(data, dict): return []
