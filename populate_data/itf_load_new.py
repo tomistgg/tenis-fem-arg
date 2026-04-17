@@ -177,16 +177,8 @@ def merge_ids_with_pandas(calendar_df, json_ids_string):
         return calendar_df
 
 
-def fetch_api_data(tId, classification, week_number=0):
+def fetch_api_data(tId, classification, week_number=0, driver=None):
     url = "https://www.itftennis.com/tennis/api/TournamentApi/GetDrawsheet"
-    
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-        "Referer": f"https://www.itftennis.com/en/tournament/draws-and-results/print/?tournamentId={tId}&circuitCode=WT",
-        "Origin": "https://www.itftennis.com",
-        "Content-Type": "application/json"
-    }
-    
     payload = {
         "circuitCode": "WT",
         "eventClassificationCode": classification,
@@ -195,10 +187,43 @@ def fetch_api_data(tId, classification, week_number=0):
         "tournamentId": f"{tId}",
         "weekNumber": week_number
     }
-    
+
+    # Primary: use the existing browser session — bypasses Incapsula IP blocking
+    if driver is not None:
+        script = """
+var url = arguments[0], payload = arguments[1], done = arguments[arguments.length - 1];
+fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    credentials: 'include',
+    body: JSON.stringify(payload)
+})
+.then(function(r) { return r.json(); })
+.then(function(data) { done({ok: true, data: data}); })
+.catch(function(e) { done({ok: false, error: String(e)}); });
+"""
+        try:
+            result = driver.execute_async_script(script, url, payload)
+            if isinstance(result, dict) and result.get("ok"):
+                data = result.get("data")
+                if isinstance(data, dict):
+                    return data
+        except Exception:
+            pass
+
+    # Fallback: plain requests (works on local machine; may be blocked on cloud IPs)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Referer": f"https://www.itftennis.com/en/tournament/draws-and-results/print/?tournamentId={tId}&circuitCode=WT",
+        "Origin": "https://www.itftennis.com",
+        "Content-Type": "application/json"
+    }
     try:
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
+        raw = response.text.strip()
+        if not raw or raw.startswith("<"):
+            return None
         return response.json()
     except Exception:
         return None
@@ -452,7 +477,7 @@ if __name__ == "__main__":
     next_week_start = week_start + timedelta(days=7)
     next_week_end = next_week_start + timedelta(days=6)
 
-    # Single driver and single calendar call for the full date range
+    # Single driver kept alive through the full run (calendar → IDs → drawsheets)
     driver = create_driver()
     try:
         raw_all = get_itf_calendar_for_range(
@@ -485,77 +510,78 @@ if __name__ == "__main__":
         keys_list = tournaments_df["tournamentKey"].dropna().unique().tolist()
         # Reuse same driver for ID fetching (session cookies already set)
         json_ids_string = fetch_itf_ids_to_json(keys_list, driver=driver)
-    finally:
-        driver.quit()
 
-    final_df = merge_ids_with_pandas(tournaments_df, json_ids_string)
+        final_df = merge_ids_with_pandas(tournaments_df, json_ids_string)
 
-    # If the live ID fetch returned no results (ITF blocked), fall back to the
-    # persistent itf_event_filters_cache.json so we still fetch drawsheets for
-    # the current set of known tournaments.
-    cached_ids = _load_cached_tournament_ids()
-    missing_id_mask = final_df["tournamentId"].isna()
-    if missing_id_mask.any() and cached_ids:
-        print(f"[!] {missing_id_mask.sum()} tournament(s) missing IDs from live fetch; filling from cache.")
-        for idx in final_df.index[missing_id_mask]:
-            key = str(final_df.at[idx, "tournamentKey"] or "").strip().lower()
-            cached_id = cached_ids.get(key)
-            if cached_id:
-                try:
-                    final_df.at[idx, "tournamentId"] = float(cached_id)
-                except (ValueError, TypeError):
-                    pass
-    final_df['tournamentId'] = final_df['tournamentId'].fillna(0).astype(int).astype(str).replace('0', '')
+        # If the live ID fetch returned no results (ITF blocked), fall back to the
+        # persistent itf_event_filters_cache.json so we still fetch drawsheets for
+        # the current set of known tournaments.
+        cached_ids = _load_cached_tournament_ids()
+        missing_id_mask = final_df["tournamentId"].isna()
+        if missing_id_mask.any() and cached_ids:
+            print(f"[!] {missing_id_mask.sum()} tournament(s) missing IDs from live fetch; filling from cache.")
+            for idx in final_df.index[missing_id_mask]:
+                key = str(final_df.at[idx, "tournamentKey"] or "").strip().lower()
+                cached_id = cached_ids.get(key)
+                if cached_id:
+                    try:
+                        final_df.at[idx, "tournamentId"] = float(cached_id)
+                    except (ValueError, TypeError):
+                        pass
+        final_df['tournamentId'] = final_df['tournamentId'].fillna(0).astype(int).astype(str).replace('0', '')
 
-    all_matches = []
-    tournaments_list = final_df.to_dict('records')
+        all_matches = []
+        tournaments_list = final_df.to_dict('records')
 
-    for tourney in tournaments_list:
-        tId = tourney.get("tournamentId")
-        tName = tourney.get("tournamentName")
-        tCategory = tourney.get("category", "")
+        for tourney in tournaments_list:
+            tId = tourney.get("tournamentId")
+            tName = tourney.get("tournamentName")
+            tCategory = tourney.get("category", "")
 
-        if tCategory and str(tCategory).strip().startswith("Tier"):
-            continue
+            if tCategory and str(tCategory).strip().startswith("Tier"):
+                continue
 
-        if not tId or pd.isna(tId) or str(tId) == "":
-            continue
+            if not tId or pd.isna(tId) or str(tId) == "":
+                continue
 
-        is_multiweek = tCategory == "ITF Womens Multi-Week Circuit"
+            is_multiweek = tCategory == "ITF Womens Multi-Week Circuit"
 
-        if is_multiweek:
-            week = 1
-            while True:
-                has_data_this_week = False
+            if is_multiweek:
+                week = 1
+                while True:
+                    has_data_this_week = False
 
+                    for code in ["Q", "M"]:
+                        json_data = fetch_api_data(int(tId), code, week_number=week, driver=driver)
+
+                        if json_data:
+                            parsed = parse_drawsheet(json_data, tourney, code, week_offset=(week - 1))
+                            if parsed:
+                                all_matches.extend(parsed)
+                                has_data_this_week = True
+
+                        time.sleep(0.2)
+
+                    if not has_data_this_week:
+                        break
+
+                    week += 1
+                    if week > 10:
+                        break
+            else:
                 for code in ["Q", "M"]:
-                    json_data = fetch_api_data(int(tId), code, week_number=week)
+                    json_data = fetch_api_data(int(tId), code, week_number=0, driver=driver)
 
                     if json_data:
-                        parsed = parse_drawsheet(json_data, tourney, code, week_offset=(week - 1))
-                        if parsed:
-                            all_matches.extend(parsed)
-                            has_data_this_week = True
+                        parsed = parse_drawsheet(json_data, tourney, code, week_offset=0)
+                        all_matches.extend(parsed)
 
                     time.sleep(0.2)
 
-                if not has_data_this_week:
-                    break
+            time.sleep(0.5)
 
-                week += 1
-                if week > 10:
-                    break
-        else:
-            for code in ["Q", "M"]:
-                json_data = fetch_api_data(int(tId), code, week_number=0)
-
-                if json_data:
-                    parsed = parse_drawsheet(json_data, tourney, code, week_offset=0)
-                    all_matches.extend(parsed)
-
-                time.sleep(0.2)
-
-        time.sleep(0.5)
+    finally:
+        driver.quit()
 
     if all_matches:
         new_matches_df = pd.DataFrame(all_matches)
