@@ -47,13 +47,34 @@ def get_week_start_end(today=None):
     week_end = week_start + timedelta(days=6)              # Sunday
     return week_start, week_end
 
+def _get_chrome_major_version():
+    import subprocess
+    for cmd in (
+        ["google-chrome", "--version"],
+        ["google-chrome-stable", "--version"],
+        ["chromium-browser", "--version"],
+        ["chromium", "--version"],
+    ):
+        try:
+            out = subprocess.check_output(cmd, stderr=subprocess.DEVNULL).decode()
+            version_str = out.strip().split()[-1]
+            return int(version_str.split(".")[0])
+        except Exception:
+            continue
+    return None
+
+
 def create_driver():
     opts = uc.ChromeOptions()
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
     opts.add_argument("--disable-gpu")
     opts.add_argument("window-size=1920,1080")
-    return uc.Chrome(options=opts, headless=True)
+    version_main = _get_chrome_major_version()
+    kwargs = {"options": opts, "headless": True}
+    if version_main:
+        kwargs["version_main"] = version_main
+    return uc.Chrome(**kwargs)
 
 
 def get_itf_calendar_for_range(start_date, end_date, driver=None):
