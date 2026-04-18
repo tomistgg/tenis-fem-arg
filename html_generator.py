@@ -521,7 +521,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         except Exception:
             pass
 
-        # Build alias reverse map: raw_name_upper → display_name
+        # Build alias reverse map: raw_name_upper -> display_name
         _alias_reverse = {}
         try:
             for _display_name, _raw_list in (PLAYER_MAPPING or {}).items():
@@ -589,7 +589,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             _grp = _bjkc_df[_bjkc_df['tournamentId'] == _tid].copy()
             _first = _grp.iloc[0]
 
-            # Determine opponent ISO → name
+            # Determine opponent ISO -> name
             _opp_iso = None
             for _, _mr in _grp.iterrows():
                 if str(_mr.get('winnerCountry', '')) != 'ARG':
@@ -917,6 +917,207 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
         <style>
             @font-face {{ font-family: 'Montserrat'; src: url('assets/Montserrat-SemiBold.ttf'); }}
+
+            /* =========================================================
+               DESIGN TOKENS
+               Edit values here; everything below uses var(--token).
+               Dark mode only needs to override tokens, not every rule.
+               ========================================================= */
+            :root {{
+                /* Surface layers */
+                --c-bg: #f8fafc;
+                --c-surface: #ffffff;
+                --c-surface-alt: #f1f5f9;
+                --c-surface-sunk: #e2e8f0;
+
+                /* Borders */
+                --c-border: #cbd5e1;
+                --c-border-soft: #e2e8f0;
+                --c-border-strong: #94a3b8;
+
+                /* Text */
+                --c-text: #0f172a;
+                --c-text-primary: #1e293b;
+                --c-text-secondary: #334155;
+                --c-text-subtle: #475569;
+                --c-text-muted: #64748b;
+
+                /* Brand (Argentina sky blue) */
+                --c-primary: #75AADB;
+                --c-primary-strong: #4d89c3;
+                --c-primary-hover: #5a8fb8;
+                --c-primary-accent: #3B82F6;
+                --c-primary-deep: #1e40af;
+                --c-primary-soft: #dbeafe;
+                --c-primary-softer: #eaf3fb;
+
+                /* ARG player highlight */
+                --c-arg-tint: #e0f2fe;
+
+                /* Chrome / sidebar - stays dark in both themes. These
+                   tokens are NOT overridden in [data-theme="dark"]. */
+                --c-chrome-bg: #1e293b;
+                --c-chrome-bg-deep: #0f172a;
+                --c-chrome-text: #cbd5e1;
+                --c-chrome-border: #334155;
+                --c-chrome-border-accent: #475569;
+                --c-chrome-hover: #334155;
+
+                /* Semantic */
+                --c-success: #059669;
+                --c-success-strong: #166534;
+                --c-success-soft: #bbf7d0;
+                --c-success-softer: #f0fdf4;
+                --c-error: #dc2626;
+                --c-error-strong: #b91c1c;
+
+                /* Typography scale */
+                --fs-xs: 10px;
+                --fs-sm: 11px;
+                --fs-md: 12px;
+                --fs-lg: 13px;
+                --fs-xl: 14px;
+                --fs-2xl: 16px;
+                --fs-3xl: 20px;
+                --fs-4xl: 22px;
+                --fs-5xl: 26px;
+
+                /* Spacing scale */
+                --sp-1: 4px;
+                --sp-2: 8px;
+                --sp-3: 12px;
+                --sp-4: 16px;
+                --sp-5: 20px;
+                --sp-6: 24px;
+                --sp-8: 32px;
+
+                /* Radius */
+                --radius-sm: 6px;
+                --radius-md: 8px;
+                --radius-lg: 12px;
+                --radius-xl: 16px;
+                --radius-pill: 9999px;
+
+                /* Button heights */
+                --btn-h: 34px;
+                --btn-h-sm: 28px;
+
+                /* Focus ring - shown on :focus-visible (keyboard nav) */
+                --c-focus-ring: rgba(117,170,219,0.55);
+
+                /* Shadow */
+                --shadow-sm: 0 1px 2px rgba(15,23,42,0.06);
+                --shadow-md: 0 4px 16px rgba(15,23,42,0.08);
+                --shadow-lg: 0 8px 24px rgba(0,0,0,0.13);
+                --shadow-hover: 0 6px 16px rgba(0,0,0,0.1);
+
+                /* Gradients - kept as literals so they resolve the same
+                   regardless of theme. */
+                --grad-primary: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%);
+                --grad-chrome: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            }}
+
+            [data-theme="dark"] {{
+                --c-bg: #111827;
+                --c-surface: #1e293b;
+                --c-surface-alt: #273548;
+                --c-surface-sunk: #162032;
+
+                --c-border: #334155;
+                --c-border-soft: #334155;
+                --c-border-strong: #475569;
+
+                --c-text: #e2e8f0;
+                --c-text-primary: #e2e8f0;
+                --c-text-secondary: #cbd5e1;
+                --c-text-subtle: #94a3b8;
+                --c-text-muted: #94a3b8;
+
+                --c-primary-soft: #1e3a5c;
+                --c-primary-softer: #1a3350;
+                --c-arg-tint: #1e3a5c;
+
+                --shadow-md: 0 4px 16px rgba(0,0,0,0.35);
+                --shadow-lg: 0 12px 28px rgba(0,0,0,0.4);
+                --shadow-hover: 0 6px 16px rgba(0,0,0,0.4);
+
+                --c-focus-ring: rgba(125,197,255,0.6);
+            }}
+
+            /* === Button system ===
+               Three styles share one grammar (height, radius, padding, weight).
+               .btn-primary = filled CTA. .btn-secondary = outlined / toggle.
+               .btn-ghost = low-emphasis. .btn-group wraps adjacent .btn into
+               a segmented row. Home grid tiles (.home-btn / .home-dark-btn)
+               are intentionally outside this system. */
+            .btn {{
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                height: var(--btn-h);
+                padding: 0 14px;
+                border-radius: var(--radius-md);
+                border: 1px solid transparent;
+                font-family: inherit;
+                font-size: 13px;
+                font-weight: 600;
+                line-height: 1;
+                white-space: nowrap;
+                cursor: pointer;
+                box-sizing: border-box;
+                transition: background 0.15s, color 0.15s, border-color 0.15s;
+            }}
+            .btn:disabled {{ opacity: 0.35; cursor: default; }}
+            .btn-primary {{ background: var(--c-primary); color: #fff; border-color: var(--c-primary); }}
+            .btn-primary:hover:not(:disabled) {{ background: var(--c-primary-hover); border-color: var(--c-primary-hover); }}
+            .btn-secondary {{ background: var(--c-surface); color: var(--c-text-primary); border-color: var(--c-border-strong); }}
+            .btn-secondary:hover:not(:disabled) {{ background: var(--c-surface-alt); }}
+            .btn-secondary.active {{ background: var(--c-primary); color: #fff; border-color: var(--c-primary); }}
+            .btn-secondary.active:hover:not(:disabled) {{ background: var(--c-primary-hover); border-color: var(--c-primary-hover); }}
+            .btn-ghost {{ background: var(--c-surface-sunk); color: var(--c-text-subtle); border-color: transparent; }}
+            .btn-ghost:hover:not(:disabled) {{ background: var(--c-border); }}
+            .btn-group {{ display: inline-flex; }}
+            .btn-group > .btn {{ border-radius: 0; }}
+            .btn-group > .btn:first-child {{ border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); }}
+            .btn-group > .btn:last-child {{ border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); }}
+            .btn-group > .btn + .btn {{ border-left-width: 0; }}
+
+            /* Dark-mode toggle icons - both SVGs live in the button;
+               CSS shows the one opposite to the current theme. */
+            .dm-icon {{ width: 16px; height: 16px; display: inline-block; vertical-align: middle; flex-shrink: 0; }}
+            .home-dark-btn .dm-icon {{ width: 18px; height: 18px; }}
+            .dm-icon-sun {{ display: none; }}
+            [data-theme="dark"] .dm-icon-moon {{ display: none; }}
+            [data-theme="dark"] .dm-icon-sun {{ display: inline-block; }}
+
+            /* Keyboard focus ring - only fires on :focus-visible, so
+               mouse clicks don't get an outline. Applies globally;
+               components with custom focus styling can opt out. */
+            *:focus-visible {{ outline: 2px solid var(--c-focus-ring); outline-offset: 2px; }}
+
+            /* Skeleton loading - shimmer bars for async table renders. */
+            @keyframes skeleton-shimmer {{
+                0%   {{ background-position: -200px 0; }}
+                100% {{ background-position: calc(200px + 100%) 0; }}
+            }}
+            .skeleton-bar {{
+                display: inline-block;
+                height: 10px;
+                width: 100%;
+                border-radius: 4px;
+                background-color: var(--c-surface-sunk);
+                background-image: linear-gradient(90deg, transparent 0%, var(--c-surface-alt) 50%, transparent 100%);
+                background-size: 200px 100%;
+                background-repeat: no-repeat;
+                animation: skeleton-shimmer 1.2s ease-in-out infinite;
+                vertical-align: middle;
+            }}
+            #view-rankings .skeleton-row td {{ padding: 8px 10px; }}
+            @media (prefers-reduced-motion: reduce) {{
+                .skeleton-bar {{ animation: none; }}
+            }}
+
             html {{ -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: hidden; max-width: 100vw; }}
             .mobile-only {{ display: none; }}
             .desktop-only {{ display: inline; }}
@@ -1061,7 +1262,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .calendar-mode .main-content {{ padding-top: 8px; padding-bottom: 8px; }}
             }}
             .roadtogs-controls {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }}
-            #roadtogs-points-total {{ color: #1e293b; }}
+            #roadtogs-points-total {{ color: var(--c-text-primary); }}
             #roadtogs-table {{ width: 100%; table-layout: fixed; }}
             #roadtogs-table th, #roadtogs-table td {{ padding: 8px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; }}
             #roadtogs-table th:nth-child(1), #roadtogs-table td:nth-child(1) {{ width: 95px; white-space: nowrap; text-align: center; }}
@@ -1070,12 +1271,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #roadtogs-table th:nth-child(3), #roadtogs-table td:nth-child(3) {{ width: 85px; white-space: nowrap; text-align: center; }}
             #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) {{ width: 40px; white-space: nowrap; text-align: center; }}
             #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) {{ width: 95px; white-space: nowrap; text-align: center; }}
-            .roadtogs-separator td {{ background: #334155; color: white; text-align: center !important; font-weight: bold; font-size: 12px; letter-spacing: 1px; padding: 6px 12px !important; }}
+            .roadtogs-separator td {{ background: var(--c-chrome-bg); color: white; text-align: center !important; font-weight: bold; font-size: 12px; letter-spacing: 1px; padding: 6px 12px !important; }}
             .roadtogs-cutoffs {{ margin-bottom: 8px; display: flex; flex-wrap: nowrap; gap: 10px; align-items: flex-start; }}
-            .roadtogs-legend {{ margin-bottom: 12px; font-size: 11px; color: #64748b; line-height: 1.5; }}
-            .gs-cutoff-table {{ border-collapse: collapse !important; font-size: 10px; width: auto !important; table-layout: auto !important; }}
-            .gs-cutoff-table th, .gs-cutoff-table td {{ border: 1px solid #cbd5e1; padding: 2px 6px; text-align: center; }}
-            .gs-cutoff-table thead tr:last-child th {{ background: #f1f5f9 !important; font-weight: bold; color: #475569 !important; }}
+            .roadtogs-legend {{ margin-bottom: 12px; font-size: 11px; color: var(--c-text-muted); line-height: 1.5; }}
+            .gs-cutoff-table {{ border-collapse: collapse; font-size: 10px; width: auto; table-layout: auto; }}
+            .gs-cutoff-table th, .gs-cutoff-table td {{ border: 1px solid var(--c-border); padding: 2px 6px; text-align: center; }}
+            .gs-cutoff-table thead tr:last-child th {{ background: var(--c-surface-alt) !important; font-weight: bold; color: var(--c-text-subtle) !important; }}
             .header-row {{ width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; gap: 10px; }}
             h1 {{ margin: 0; font-size: 22px; color: #1e293b; }}
             .search-container {{ position: absolute; left: 0; top: 50%; transform: translateY(-50%); }}
@@ -1121,17 +1322,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #view-rankings table {{ table-layout: auto; }}
             #view-rankings td {{ font-size: 12px; padding: 6px 10px; }}
             #view-rankings.rankings-show-all tr.arg-player-row td {{ background-color: #e0f2fe !important; }}
-            .sticky-col {{ position: sticky; background: white !important; z-index: 2; }}
-            .row-arg {{ background-color: #e0f2fe !important; }}
+            .sticky-col {{ position: sticky; background: var(--c-surface) !important; z-index: 2; }}
+            .row-arg {{ background-color: var(--c-arg-tint) !important; }}
             td.col-week {{ width: 170px; font-size: 11px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
             th.sticky-col {{ z-index: 11; background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%) !important; color: white; }}
             .col-rank {{ left: 0; width: 32px; min-width: 45px; max-width: 45px; }}
             .col-name {{ left: 45px; width: 112px; min-width: 112px; max-width: 112px; text-align: left; font-weight: bold; }}
             .col-week {{ width: 150px; font-size: 11px; font-weight: bold; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
-            .divider-row td {{ background: #e2e8f0; font-weight: bold; text-align: center; padding: 5px 15px; font-size: 11px; border-right: none; }}
+            .divider-row td {{ background: var(--c-surface-sunk); font-weight: bold; text-align: center; padding: 5px 15px; font-size: 11px; border-right: none; }}
             tr.hidden {{ display: none; }}
-            table:not(.calendar-table) tr:not(.roadtogs-separator):hover td {{ background: #f1f5f9; }}
-            table:not(.calendar-table) tr:not(.roadtogs-separator):hover td.sticky-col {{ background: #f1f5f9 !important; }}
+            table:not(.calendar-table) tbody tr:nth-child(even):not(.divider-row):not(.roadtogs-separator):not(.cal-group-first):not(.cal-group-last) td {{ background: var(--c-surface-alt); }}
+            table:not(.calendar-table) tbody tr:nth-child(even):not(.divider-row):not(.roadtogs-separator):not(.cal-group-first):not(.cal-group-last) td.sticky-col {{ background: var(--c-surface-alt) !important; }}
+            table:not(.calendar-table) tr:not(.roadtogs-separator):hover td {{ background: var(--c-primary-softer) !important; }}
+            table:not(.calendar-table) tr:not(.roadtogs-separator):hover td.sticky-col {{ background: var(--c-primary-softer) !important; }}
             .dropdown-header {{ background-color: #e2e8f0 !important; font-weight: bold !important; text-align: center !important; padding: 12px 0 !important; font-size: 11px; display: block; }}
             .dropdown-item {{ padding: 8px 15px; text-align: left; background-color: #ffffff; }}
 
@@ -1412,29 +1615,29 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             /* Calendar Styles */
             #view-calendar {{ width: 100%; min-height: 0; }}
             .calendar-container {{ width: 100%; min-width: 100%; min-height: 0; margin-bottom: 0; display: block; box-sizing: border-box; }}
-            .calendar-toolbar {{ display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; align-items: center; margin: 0 0 10px; position: sticky; top: 0; z-index: 50; background: #f8fafc; border-bottom: 1px solid #cbd5e1; padding: 10px 8px; box-sizing: border-box; }}
+            .calendar-toolbar {{ display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; align-items: center; margin: 0 0 10px; position: sticky; top: 0; z-index: 50; background: var(--c-bg); border-bottom: 1px solid var(--c-border); padding: 10px 8px; box-sizing: border-box; }}
             .cal-dd {{ position: relative; }}
-            .cal-dd-btn {{ display: inline-flex; align-items: center; justify-content: flex-start; padding: 8px 32px 8px 12px; border-radius: 8px; border: 2px solid #94a3b8; background: white; color: #1e293b; font-size: 13px; font-weight: bold; cursor: pointer; user-select: none; background-image: url(\"data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\"); background-repeat: no-repeat; background-position: right 10px center; }}
-            .cal-dd-btn:hover {{ background-color: white; }}
-            .cal-dd-panel {{ position: absolute; top: calc(100% + 6px); left: 0; width: max-content; min-width: 170px; max-width: min(320px, calc(100vw - 20px)); max-height: 280px; overflow: auto; background: white; border: 2px solid #94a3b8; border-radius: 8px; padding: 6px; box-shadow: 0 12px 28px rgba(0,0,0,0.12); display: none; z-index: 60; }}
+            .cal-dd-btn {{ display: inline-flex; align-items: center; justify-content: flex-start; padding: 8px 32px 8px 12px; border-radius: 8px; border: 2px solid var(--c-border-strong); background-color: var(--c-surface); color: var(--c-text-primary); font-size: 13px; font-weight: bold; cursor: pointer; user-select: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }}
+            .cal-dd-btn:hover {{ background-color: var(--c-surface-alt); }}
+            .cal-dd-panel {{ position: absolute; top: calc(100% + 6px); left: 0; width: max-content; min-width: 170px; max-width: min(320px, calc(100vw - 20px)); max-height: 280px; overflow: auto; background: var(--c-surface); border: 2px solid var(--c-border-strong); border-radius: 8px; padding: 6px; box-shadow: var(--shadow-lg); display: none; z-index: 60; }}
             .cal-dd.open .cal-dd-panel {{ display: block; }}
             .cal-dd-item {{ display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; user-select: none; }}
             .cal-dd-item:hover {{ background: transparent; }}
             .cal-dd-item input {{ width: 14px; height: 14px; margin: 0; }}
-            .cal-dd-item span {{ font-size: 12px; font-weight: 700; color: #1e293b; }}
-            .calendar-container .table-wrapper {{ display: block; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; border-right: 1px solid #475569; box-sizing: border-box; cursor: grab; overscroll-behavior-x: contain; }}
+            .cal-dd-item span {{ font-size: 12px; font-weight: 700; color: var(--c-text-primary); }}
+            .calendar-container .table-wrapper {{ display: block; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; border-right: 1px solid var(--c-text-subtle); box-sizing: border-box; cursor: grab; overscroll-behavior-x: contain; }}
             .calendar-container .table-wrapper.dragging {{ cursor: grabbing; }}
-            .calendar-table {{ border-collapse: separate; border-spacing: 0; width: max-content; min-width: max-content; table-layout: auto; border: 1px solid #cbd5e1; }}
+            .calendar-table {{ border-collapse: separate; border-spacing: 0; width: max-content; min-width: max-content; table-layout: auto; border: 1px solid var(--c-border); }}
             .calendar-table th {{ padding: 4px 4px; vertical-align: top; border-bottom: 2px solid rgba(0,0,0,0.25); border-right: 1px solid rgba(255,255,255,0.25); }}
-            .calendar-table td {{ padding: 4px 4px; vertical-align: top; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; }}
-            .cal-week-header {{ background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%); color: white; font-size: 10px; font-weight: bold; text-align: center; white-space: nowrap; padding: 6px 6px; position: sticky; top: 0; z-index: 10; min-width: 90px; }}
-            .cal-cat-header {{ background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%); color: white; position: sticky; top: 0; left: 0; z-index: 15; width: 24px; min-width: 24px; max-width: 24px; box-sizing: border-box; }}
-            .cal-cont-header {{ background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%); color: white; position: sticky; top: 0; left: 24px; z-index: 15; min-width: 58px; }}
-            .cal-cat-label {{ background: #1e293b; color: white; font-size: 11px; font-weight: bold; text-align: center; vertical-align: middle !important; text-transform: uppercase; writing-mode: vertical-lr; text-orientation: mixed; transform: rotate(180deg); padding: 0; width: 24px; min-width: 24px; max-width: 24px; position: sticky; left: 0; z-index: 14; border-color: #1e293b !important; box-shadow: inset 0 0 0 50px #1e293b; box-sizing: border-box; flex: 0 0 24px; }}
-            .cal-cont-label {{ background: #f1f5f9; font-size: 10px; font-weight: 600; color: #475569; text-align: center; vertical-align: middle !important; white-space: nowrap; position: sticky; left: 24px; z-index: 14; min-width: 58px; }}
+            .calendar-table td {{ padding: 4px 4px; vertical-align: top; border-bottom: 1px solid var(--c-border); border-right: 1px solid var(--c-border); }}
+            .cal-week-header {{ background: linear-gradient(180deg, var(--c-primary) 0%, var(--c-primary-strong) 100%); color: white; font-size: 10px; font-weight: bold; text-align: center; white-space: nowrap; padding: 6px 6px; position: sticky; top: 0; z-index: 10; min-width: 90px; }}
+            .cal-cat-header {{ background: linear-gradient(180deg, var(--c-primary) 0%, var(--c-primary-strong) 100%); color: white; position: sticky; top: 0; left: 0; z-index: 15; width: 24px; min-width: 24px; max-width: 24px; box-sizing: border-box; }}
+            .cal-cont-header {{ background: linear-gradient(180deg, var(--c-primary) 0%, var(--c-primary-strong) 100%); color: white; position: sticky; top: 0; left: 24px; z-index: 15; min-width: 58px; }}
+            .cal-cat-label {{ background: var(--c-chrome-bg); color: white; font-size: 11px; font-weight: bold; text-align: center; vertical-align: middle !important; text-transform: uppercase; writing-mode: vertical-lr; text-orientation: mixed; transform: rotate(180deg); padding: 0; width: 24px; min-width: 24px; max-width: 24px; position: sticky; left: 0; z-index: 14; border-top: 1px solid var(--c-text-subtle); border-bottom: 1px solid var(--c-text-subtle); border-right: 1px solid var(--c-border); box-shadow: inset 0 0 0 50px var(--c-chrome-bg); box-sizing: border-box; flex: 0 0 24px; }}
+            .cal-cont-label {{ background: var(--c-surface-alt); font-size: 10px; font-weight: 600; color: var(--c-text-subtle); text-align: center; vertical-align: middle !important; white-space: nowrap; position: sticky; left: 24px; z-index: 14; min-width: 58px; border-left: 1px solid var(--c-border); }}
             .cal-cell {{ font-size: 10px; min-height: 24px; vertical-align: middle !important; }}
-            .cal-group-first td {{ border-top: 1px solid #475569; }}
-            .cal-group-last td {{ border-bottom: 1px solid #475569; }}
+            .cal-group-first td {{ border-top: 1px solid var(--c-text-subtle); }}
+            .cal-group-last td {{ border-bottom: 1px solid var(--c-text-subtle); }}
             .calendar-tournament {{ display: block; font-size: 10px; padding: 2px 6px; border-radius: 3px; line-height: 1.3; font-weight: 600; white-space: nowrap; margin: 1px 0; }}
             .cal-clay {{ background: #e8a882; color: #5c2e0e; }}
             .cal-hard {{ background: #88b4e8; color: #1a3a5c; }}
@@ -2262,8 +2465,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .filter-btn-clear {{ font-size: 9px; padding: 4px 10px; }}
 
                 /* Rankings mobile layout:
-                   Row 1 — search input (flexible) + Show ARG button
-                   Row 2 — date filter centered */
+                   Row 1 - search input (flexible) + Show ARG button
+                   Row 2 - date filter centered */
                 #view-rankings .search-container {{ flex: 1 1 auto !important; width: auto !important; order: 1 !important; }}
                 #view-rankings #rankings-search {{ width: 100% !important; }}
                 #view-rankings .rankings-btn-end {{ order: 1 !important; flex: 0 0 auto !important; }}
@@ -2327,15 +2530,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     min-height: 40px;
                 }}
             }}
-            /* Dark-mode toggle icons — CSS-driven swap via [data-theme="dark"] */
-            .dm-icon {{ width: 16px; height: 16px; display: inline-block; vertical-align: middle; flex-shrink: 0; }}
-            .home-dark-btn .dm-icon {{ width: 18px; height: 18px; }}
-            .dm-icon-sun {{ display: none; }}
-            [data-theme="dark"] .dm-icon-moon {{ display: none; }}
-            [data-theme="dark"] .dm-icon-sun {{ display: inline-block; }}
-            /* Keyboard focus ring */
-            *:focus-visible {{ outline: 2px solid rgba(117,170,219,0.55); outline-offset: 2px; }}
-            [data-theme="dark"] *:focus-visible {{ outline-color: rgba(125,197,255,0.6); }}
 
             /* ============================
                DARK MODE OVERRIDES
@@ -2415,54 +2609,60 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             [data-theme="dark"] .draw-match .draw-player.arg-player.winner {{ background: #134e2e; }}
             [data-theme="dark"] .draw-round-header {{ background: #111827; color: #94a3b8; }}
             [data-theme="dark"] .draw-round-header:hover {{ color: #93c5fd; }}
-            [data-theme="dark"] .draw-filter-reset {{ background: #1e293b; border-color: #334155; color: #94a3b8; }}
-            [data-theme="dark"] .draw-filter-reset:hover {{ background: #273548; color: #e2e8f0; }}
-            [data-theme="dark"] .draw-type-btn {{ background: #1e293b; border-color: #334155; color: #94a3b8; }}
-            [data-theme="dark"] .draw-type-btn.active {{ background: #334155; color: #e2e8f0; border-color: #475569; }}
-            [data-theme="dark"] .draw-no-draws {{ color: #64748b; }}
-            [data-theme="dark"] #draws-tournament-select {{ background: #1e293b; color: #e2e8f0; border-color: #475569; }}
-            [data-theme="dark"] #draws-tournament-select optgroup {{ background: #273548; color: #94a3b8; }}
-            [data-theme="dark"] #draws-tournament-select option {{ background: #1e293b; color: #e2e8f0; }}
+            [data-theme="dark"] #draws-tournament-select optgroup {{ background: var(--c-surface-alt); color: var(--c-text-subtle); }}
+            [data-theme="dark"] #roadtogs-points-total {{ color: var(--c-text) !important; }}
+            [data-theme="dark"] .calendar-toolbar {{ background: var(--c-bg); border-bottom-color: var(--c-border); }}
+            [data-theme="dark"] .cal-dd-btn {{
+                background-color: var(--c-surface);
+                border-color: var(--c-border-strong);
+                color: var(--c-text);
+                background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            }}
+            [data-theme="dark"] .cal-dd-btn:hover,
+            [data-theme="dark"] .cal-dd.open .cal-dd-btn {{ background-color: var(--c-surface-alt); }}
+            [data-theme="dark"] .cal-dd-panel {{ background: var(--c-surface); border-color: var(--c-border-strong); box-shadow: var(--shadow-lg); }}
+            [data-theme="dark"] .cal-dd-item span {{ color: var(--c-text); }}
 
-            [data-theme="dark"] .calendar-toolbar {{ background: #111827; border-bottom-color: #334155; }}
-            [data-theme="dark"] .cal-dd-btn {{ background-color: #1e293b; border-color: #475569; color: #e2e8f0; }}
-            [data-theme="dark"] .cal-dd-panel {{ background: #1e293b; border-color: #475569; box-shadow: 0 12px 28px rgba(0,0,0,0.4); }}
-            [data-theme="dark"] .cal-dd-item span {{ color: #e2e8f0; }}
-            [data-theme="dark"] .cal-dd-item:hover {{ background: #273548; }}
-            [data-theme="dark"] .cal-cont-label {{ background: #1e293b; color: #94a3b8; }}
-            [data-theme="dark"] .calendar-table td {{ border-bottom-color: #334155; border-right-color: #334155; }}
-            [data-theme="dark"] .cal-group-first td {{ border-top-color: #475569; }}
-            [data-theme="dark"] .cal-group-last td {{ border-bottom-color: #475569; }}
+            /* Calendar - cal-cat-label keeps chrome tone, but cal-cont-label
+               flips to surface in dark */
+            [data-theme="dark"] .cal-cont-label {{ background: var(--c-surface); color: var(--c-text-subtle); }}
+            [data-theme="dark"] .cal-group-first td {{ border-top-color: var(--c-border-strong); }}
+            [data-theme="dark"] .cal-group-last td {{ border-bottom-color: var(--c-border-strong); }}
+            [data-theme="dark"] .cal-cat-label {{ border-top-color: var(--c-border-strong); border-bottom-color: var(--c-border-strong); }}
 
-            [data-theme="dark"] .history-wl-counter {{ color: #e2e8f0; }}
-            [data-theme="dark"] .table-title {{ color: #e2e8f0; }}
-            [data-theme="dark"] .history-page-btn {{ background: #1e293b; border-color: #334155; color: #e2e8f0; }}
-            [data-theme="dark"] .history-page-btn:not(:disabled):hover {{ background: #273548; }}
-
-            [data-theme="dark"] .fedbcup-btn {{ background: #273548; color: #cbd5e1; }}
-            [data-theme="dark"] .fedbcup-btn.active {{ background: #75AADB; color: #fff; }}
-            [data-theme="dark"] .fedbcup-btn:hover:not(.active) {{ background: #334155; }}
-            [data-theme="dark"] #fedbcup-player-filter {{ background: #1e293b; border-color: #475569; color: #e2e8f0; }}
-            [data-theme="dark"] .fedbcup-record-text {{ color: #94a3b8; }}
-            [data-theme="dark"] .bjkc-series-header {{ background: #1e3a5c; }}
-            [data-theme="dark"] #roadtogs-points-total {{ color: #e2e8f0; }}
-            [data-theme="dark"] .roadtogs-legend {{ color: #94a3b8; }}
+            /* FedBCup / BJK - specific accents */
+            [data-theme="dark"] .bjkc-series-header {{ background: var(--c-arg-tint); }}
+            [data-theme="dark"] .roadtogs-cutoffs {{ gap: 12px; }}
+            [data-theme="dark"] .gs-cutoff-table {{
+                border-collapse: separate;
+                border-spacing: 0;
+                border: 1px solid var(--c-border-strong);
+                border-radius: 10px;
+                overflow: hidden;
+                background: var(--c-surface-sunk);
+            }}
             [data-theme="dark"] .gs-cutoff-table th,
-            [data-theme="dark"] .gs-cutoff-table td {{ border-color: #334155; }}
-            [data-theme="dark"] .gs-cutoff-table thead tr:last-child th {{ background: #273548 !important; color: #94a3b8 !important; }}
-            [data-theme="dark"] .ts-explanation {{ color: #94a3b8; }}
+            [data-theme="dark"] .gs-cutoff-table td {{ border-color: var(--c-border); }}
+            [data-theme="dark"] .gs-cutoff-table tbody td {{ color: var(--c-text-secondary); }}
+            [data-theme="dark"] .gs-cutoff-table thead tr:last-child th {{ background: var(--c-surface-alt) !important; color: var(--c-text-subtle) !important; }}
 
-            [data-theme="dark"] .select2-container--default .select2-selection--single {{ background-color: #1e293b; border-color: #475569; }}
-            [data-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered {{ color: #e2e8f0; }}
-            [data-theme="dark"] .select2-dropdown {{ background-color: #1e293b; border-color: #475569; }}
-            [data-theme="dark"] .select2-search--dropdown .select2-search__field {{ background-color: #273548; border-color: #475569; color: #e2e8f0; }}
-            [data-theme="dark"] .select2-results__option {{ color: #e2e8f0; background-color: #1e293b; }}
-            [data-theme="dark"] .select2-results__option--highlighted {{ background-color: #1e3a5c !important; color: #e2e8f0 !important; }}
-            [data-theme="dark"] .select2-container--default .select2-results__option[aria-selected=true] {{ background-color: #273548; }}
-            [data-theme="dark"] .dropdown-header {{ background-color: #273548 !important; color: #94a3b8 !important; }}
-            [data-theme="dark"] .dropdown-item {{ background-color: #1e293b; color: #e2e8f0; }}
+            /* Native select option lists - browsers paint transparent
+               selects white by default, so force the surface color explicitly. */
+            [data-theme="dark"] .rankings-date-select {{ background-color: var(--c-surface); color: var(--c-text); }}
+            [data-theme="dark"] .rankings-date-select option {{ background-color: var(--c-surface); color: var(--c-text); }}
 
-        </style>
+            /* Select2 - third-party markup we don't control */
+            [data-theme="dark"] .select2-container--default .select2-selection--single {{ background-color: var(--c-surface); border-color: var(--c-border-strong); }}
+            [data-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered {{ color: var(--c-text); }}
+            [data-theme="dark"] .select2-dropdown {{ background-color: var(--c-surface); border-color: var(--c-border-strong); }}
+            [data-theme="dark"] .select2-search--dropdown .select2-search__field {{ background-color: var(--c-surface-alt); border-color: var(--c-border-strong); color: var(--c-text); }}
+            [data-theme="dark"] .select2-results__option {{ color: var(--c-text); background-color: var(--c-surface); }}
+            [data-theme="dark"] .select2-results__option--highlighted {{ background-color: var(--c-arg-tint) !important; color: var(--c-text) !important; }}
+            [data-theme="dark"] .select2-container--default .select2-results__option[aria-selected=true] {{ background-color: var(--c-surface-alt); }}
+            [data-theme="dark"] .dropdown-header {{ background-color: var(--c-surface-alt) !important; color: var(--c-text-subtle) !important; }}
+            [data-theme="dark"] .dropdown-item {{ background-color: var(--c-surface); color: var(--c-text); }}
+
+                </style>
     </head>
     <body class="home-mode" onload="renderHistoryTable();">
         <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">\\u2630</button>
@@ -3423,6 +3623,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if (tabName === 'entrylists') updateEntryList();
                 if (tabName === 'draws') updateDraw();
                 if (tabName === 'calendar') initCalendarFilters();
+                if (tabName === 'rankings') initRankingsIfEmpty();
 
                 applyMobileHistoryLayout();
 
@@ -3791,19 +3992,43 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const dd = day.toString().padStart(2,'0');
                 switchRankingWeek(`${{year}}-${{mm}}-${{dd}}`);
             }}
+            function _renderRankingSkeleton(rowCount) {{
+                const tbody = document.getElementById('rankings-body');
+                if (!tbody) return;
+                const widths = ['40%', '80%', '60%', '65%', '55%', '75%', '50%', '70%', '45%', '60%'];
+                let html = '';
+                for (let i = 0; i < rowCount; i++) {{
+                    const w = widths[i % widths.length];
+                    html += '<tr class="skeleton-row">'
+                          + '<td><span class="skeleton-bar" style="width:24px"></span></td>'
+                          + '<td><span class="skeleton-bar" style="width:' + w + '"></span></td>'
+                          + '<td><span class="skeleton-bar" style="width:40px"></span></td>'
+                          + '<td><span class="skeleton-bar" style="width:60px"></span></td>'
+                          + '</tr>';
+                }}
+                tbody.innerHTML = html;
+            }}
             function switchRankingWeek(dateStr) {{
                 const year = dateStr.split('-')[0];
                 const controls = ['rankings-year-select','rankings-month-select','rankings-day-select','rankings-load-btn'].map(id => document.getElementById(id));
                 controls.forEach(el => {{ if(el) {{ el.disabled = true; el.style.opacity = '0.5'; }} }});
+                _renderRankingSkeleton(15);
                 _loadCsvForYear(year)
                     .then(data => {{
                         const players = data[dateStr];
                         if (players) _renderRankingRows(players);
+                        else document.getElementById('rankings-body').innerHTML = '';
                     }})
-                    .catch(() => {{}})
+                    .catch(() => {{ document.getElementById('rankings-body').innerHTML = ''; }})
                     .finally(() => {{
                         controls.forEach(el => {{ if(el) {{ el.disabled = false; el.style.opacity = '1'; }} }});
                     }});
+            }}
+            let _rankingsInitialized = false;
+            function initRankingsIfEmpty() {{
+                if (_rankingsInitialized) return;
+                _rankingsInitialized = true;
+                applyRankingSelection();
             }}
             _populateRankingMonths('{rankings_latest_year_str}', {rankings_latest_month}, {rankings_latest_day});
             function filterNational() {{
@@ -4520,7 +4745,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 container.style.display = 'flex';
                 container.innerHTML =
                     `<button class="history-page-btn" ${{prevDisabled}} onclick="_renderHistoryPage(_historyCurrentPage - 1)">&#9664; Prev</button>` +
-                    `<span>${{start}}–${{end}} of ${{total}}</span>` +
+                    `<span>${{start}}-${{end}} of ${{total}}</span>` +
                     `<button class="history-page-btn" ${{nextDisabled}} onclick="_renderHistoryPage(_historyCurrentPage + 1)">Next &#9654;</button>`;
             }}
 
@@ -4960,7 +5185,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 function getMainDrawPointKey(round, result, drawSize) {{
                     if (round === 'Final') return result === 'W' ? 'W' : 'F';
                     if (result === 'W') {{
-                        // Still in tournament — guaranteed next round; use next round's loss points
+                        // Still in tournament - guaranteed next round; use next round's loss points
                         const _nxt32  = {{'1st Round':'2nd Round','2nd Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'}};
                         const _nxt64  = {{'1st Round':'2nd Round','2nd Round':'3rd Round','3rd Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'}};
                         const _nxt128 = {{'1st Round':'2nd Round','2nd Round':'3rd Round','3rd Round':'4th Round','4th Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'}};
@@ -5363,7 +5588,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             document.addEventListener('DOMContentLoaded', initRoadToGS);
 
-            // ── Gallery ───────────────────────────────────────────────────────
+            // ---- Gallery --------------------------------------------------
             const GALLERY_IK_URL = 'https://ik.imagekit.io/tomistgg';
             const GALLERY_PAGE_SIZE = 24;
             let galleryPhotos = [];
