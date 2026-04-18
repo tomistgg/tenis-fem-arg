@@ -637,8 +637,6 @@ if __name__ == "__main__":
 
 
         all_matches = []
-        tournaments_list = final_df.to_dict('records')
-        random.shuffle(tournaments_list)
         active_count = 0
 
         try:
@@ -647,33 +645,76 @@ if __name__ == "__main__":
             pass
         driver = None
 
-        for tourney in tournaments_list:
-            tId = tourney.get("tournamentId")
-            tName = tourney.get("tournamentName")
-            tCategory = tourney.get("category", "")
+        def _week_key(t):
+            raw = str(t.get("startDate") or "")[:10]
+            try:
+                d = datetime.strptime(raw, "%Y-%m-%d").date()
+                return d - timedelta(days=d.weekday())
+            except ValueError:
+                return raw
 
-            if tCategory and str(tCategory).strip().startswith("Tier"):
-                continue
+        tournaments_list = final_df.to_dict('records')
+        from itertools import groupby
+        tournaments_list.sort(key=_week_key)
+        week_groups = [list(g) for _, g in groupby(tournaments_list, key=_week_key)]
+        for group_idx, week_group in enumerate(week_groups):
+            if group_idx > 0:
+                print(f"  Sleeping 61s before next week's tournaments...")
+                time.sleep(61)
+            random.shuffle(week_group)
+            for tourney in week_group:
+                tId = tourney.get("tournamentId")
+                tName = tourney.get("tournamentName")
+                tCategory = tourney.get("category", "")
 
-            if not tId or pd.isna(tId) or str(tId) == "":
-                print(f"  Skipping {tName} — no tournament ID")
-                continue
+                if tCategory and str(tCategory).strip().startswith("Tier"):
+                    continue
 
-            active_count += 1
-            tourney_matches_before = len(all_matches)
+                if not tId or pd.isna(tId) or str(tId) == "":
+                    print(f"  Skipping {tName} — no tournament ID")
+                    continue
 
-            is_multiweek = tCategory == "ITF Womens Multi-Week Circuit"
+                active_count += 1
+                tourney_matches_before = len(all_matches)
 
-            if is_multiweek:
-                week = 1
-                while True:
-                    has_data_this_week = False
+                is_multiweek = tCategory == "ITF Womens Multi-Week Circuit"
 
+                if is_multiweek:
+                    week = 1
+                    while True:
+                        has_data_this_week = False
+
+                        draw_payloads = fetch_tournament_draw_data(
+                            tId,
+                            tName,
+                            ["Q", "M"],
+                            week_number=week,
+                            max_attempts=2,
+                        )
+
+                        for code in ["Q", "M"]:
+                            json_data = draw_payloads.get(code)
+
+                            if json_data:
+                                parsed = parse_drawsheet(json_data, tourney, code, week_offset=(week - 1))
+                                if parsed:
+                                    all_matches.extend(parsed)
+                                    has_data_this_week = True
+                            else:
+                                print(f"  [!] No data returned for {tName} (id={tId}, code={code}, week={week})")
+
+                        if not has_data_this_week:
+                            break
+
+                        week += 1
+                        if week > 10:
+                            break
+                else:
                     draw_payloads = fetch_tournament_draw_data(
                         tId,
                         tName,
                         ["Q", "M"],
-                        week_number=week,
+                        week_number=0,
                         max_attempts=2,
                     )
 
@@ -681,40 +722,14 @@ if __name__ == "__main__":
                         json_data = draw_payloads.get(code)
 
                         if json_data:
-                            parsed = parse_drawsheet(json_data, tourney, code, week_offset=(week - 1))
-                            if parsed:
-                                all_matches.extend(parsed)
-                                has_data_this_week = True
+                            parsed = parse_drawsheet(json_data, tourney, code, week_offset=0)
+                            all_matches.extend(parsed)
                         else:
-                            print(f"  [!] No data returned for {tName} (id={tId}, code={code}, week={week})")
+                            print(f"  [!] No data returned for {tName} (id={tId}, code={code})")
 
-                    if not has_data_this_week:
-                        break
-
-                    week += 1
-                    if week > 10:
-                        break
-            else:
-                draw_payloads = fetch_tournament_draw_data(
-                    tId,
-                    tName,
-                    ["Q", "M"],
-                    week_number=0,
-                    max_attempts=2,
-                )
-
-                for code in ["Q", "M"]:
-                    json_data = draw_payloads.get(code)
-
-                    if json_data:
-                        parsed = parse_drawsheet(json_data, tourney, code, week_offset=0)
-                        all_matches.extend(parsed)
-                    else:
-                        print(f"  [!] No data returned for {tName} (id={tId}, code={code})")
-
-            added = len(all_matches) - tourney_matches_before
-            print(f"  {tName} (id={tId}): {added} ARG matches found")
-            time.sleep(random.uniform(5.0, 10.0))
+                added = len(all_matches) - tourney_matches_before
+                print(f"  {tName} (id={tId}): {added} ARG matches found")
+                time.sleep(random.uniform(5.0, 10.0))
 
         print(f"Tournaments processed: {active_count}, total ARG matches found: {len(all_matches)}")
 
