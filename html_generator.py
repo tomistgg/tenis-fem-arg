@@ -816,10 +816,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     """
 
     launcher_template = """<!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>WT Argentina</title>
   <script>(function(){ var t=localStorage.getItem('theme'); if(t==='dark') document.documentElement.setAttribute('data-theme','dark'); })();</script>
   <style>
@@ -839,6 +839,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     .home-btn:active { background: #b8d9f0; transform: scale(0.97); box-shadow: none; }
     .home-dark-btn { margin-top: 10px; padding: 10px 24px; border-radius: 20px; border: 2px solid #75AADB; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.15s; }
     .home-dark-btn:hover { background: #d9ecf8; }
+    .dm-icon { width: 18px; height: 18px; display: inline-block; vertical-align: middle; flex-shrink: 0; }
+    .dm-icon-sun { display: none; }
+    [data-theme="dark"] .dm-icon-moon { display: none; }
+    [data-theme="dark"] .dm-icon-sun { display: inline-block; }
+    *:focus-visible { outline: 2px solid rgba(117,170,219,0.55); outline-offset: 2px; }
+    [data-theme="dark"] *:focus-visible { outline-color: rgba(125,197,255,0.6); }
 
     [data-theme="dark"] body { background: #0f172a; }
     [data-theme="dark"] .home-title { color: #e2e8f0; }
@@ -875,7 +881,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
       <a class="home-btn" href="fedbcup/index.html"><img class="home-icon-img no-invert" src="assets/argentina.png" alt="Argentina flag icon"><span class="home-label">Fed/BJK Cup</span></a>
       <a class="home-btn last" href="tstrength/index.html"><img class="home-icon-img" src="assets/score-board.png" alt="Analytics icon"><span class="home-label">WTA Tournament Strength</span></a>
     </div>
-    <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()">🌙 <span id="home-dark-label">Dark Mode</span></button>
+    <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()"><svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg><svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><span id="home-dark-label">Dark Mode</span></button>
   </div>
   <script>
     function toggleDarkMode() {
@@ -883,21 +889,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
       if (isDark) {
         document.documentElement.removeAttribute('data-theme');
         localStorage.setItem('theme', 'light');
-        document.getElementById('home-dark-btn').firstChild.textContent = '🌙 ';
-        document.getElementById('home-dark-label').textContent = 'Dark Mode';
       } else {
         document.documentElement.setAttribute('data-theme', 'dark');
         localStorage.setItem('theme', 'dark');
-        document.getElementById('home-dark-btn').firstChild.textContent = '☀️ ';
-        document.getElementById('home-dark-label').textContent = 'Light Mode';
       }
+      document.getElementById('home-dark-label').textContent = isDark ? 'Dark Mode' : 'Light Mode';
     }
-    (function() {
-      if (document.documentElement.getAttribute('data-theme') === 'dark') {
-        document.getElementById('home-dark-btn').firstChild.textContent = '☀️ ';
-        document.getElementById('home-dark-label').textContent = 'Light Mode';
-      }
-    })();
+    if (document.documentElement.getAttribute('data-theme') === 'dark') {
+      document.getElementById('home-dark-label').textContent = 'Light Mode';
+    }
   </script>
 </body>
 </html>
@@ -905,10 +905,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     html_template = f"""
     <!DOCTYPE html>
-    <html lang="es">
+    <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
         <title>WT Argentina</title>
         <script>(function(){{ var t=localStorage.getItem('theme'); if(t==='dark') document.documentElement.setAttribute('data-theme','dark'); }})();</script>
         <base href="./">
@@ -2327,6 +2327,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     min-height: 40px;
                 }}
             }}
+            /* Dark-mode toggle icons — CSS-driven swap via [data-theme="dark"] */
+            .dm-icon {{ width: 16px; height: 16px; display: inline-block; vertical-align: middle; flex-shrink: 0; }}
+            .home-dark-btn .dm-icon {{ width: 18px; height: 18px; }}
+            .dm-icon-sun {{ display: none; }}
+            [data-theme="dark"] .dm-icon-moon {{ display: none; }}
+            [data-theme="dark"] .dm-icon-sun {{ display: inline-block; }}
+            /* Keyboard focus ring */
+            *:focus-visible {{ outline: 2px solid rgba(117,170,219,0.55); outline-offset: 2px; }}
+            [data-theme="dark"] *:focus-visible {{ outline-color: rgba(125,197,255,0.6); }}
 
             /* ============================
                DARK MODE OVERRIDES
@@ -2461,7 +2470,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             <div class="sidebar" id="sidebar">
                 <div class="sidebar-header">
                     <span>WT Argentina</span>
-                    <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
+                    <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode"><svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg><svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></button>
                 </div>
                 <div class="menu-item" id="btn-upcoming" onclick="switchTab('upcoming')">Schedule</div>
                 <div class="menu-item" id="btn-entrylists" onclick="switchTab('entrylists')">Entry Lists</div>
@@ -2473,7 +2482,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 <div class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</div>
                 <div class="menu-item" id="btn-tstrength" onclick="switchTab('tstrength')">WTA TRN STR</div>
                 <div class="menu-item" id="btn-gallery" onclick="switchTab('gallery')">Photo Gallery</div>
-                <button class="dark-mode-btn-mobile" id="dark-mode-btn-mobile-nav" onclick="toggleDarkMode()">🌙</button>
+                <button class="dark-mode-btn-mobile" id="dark-mode-btn-mobile-nav" onclick="toggleDarkMode()" aria-label="Toggle dark mode"><svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg><svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></button>
             </div>
 
             <div class="main-content">
@@ -2522,7 +2531,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                 <span class="home-label">WTA Tournament Strength</span>
                             </button>
                         </div>
-                        <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()">🌙 <span id="home-dark-label">Dark Mode</span></button>
+                        <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()"><svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg><svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><span id="home-dark-label">Dark Mode</span></button>
                     </div>
                 </div>
 
@@ -3156,35 +3165,24 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if (window.innerWidth > 768) return html;
                 return String(html).replace('width:16px;height:11px', 'width:12px;height:8px');
             }}
+            // Icon swapping is CSS-driven via [data-theme="dark"]; JS only
+            // manages the data-theme attribute, localStorage, and the label.
             function _syncHomeDarkBtn(isDark) {{
                 const lbl = document.getElementById('home-dark-label');
-                const btn = document.getElementById('home-dark-btn');
                 if (lbl) lbl.textContent = isDark ? 'Light Mode' : 'Dark Mode';
-                if (btn) btn.firstChild.textContent = isDark ? '☀️ ' : '🌙 ';
-                const mob = document.getElementById('dark-mode-btn-mobile-nav');
-                if (mob) mob.textContent = isDark ? '☀️' : '🌙';
             }}
             function toggleDarkMode() {{
                 const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
                 if (isDark) {{
                     document.documentElement.removeAttribute('data-theme');
                     localStorage.setItem('theme', 'light');
-                    document.querySelectorAll('.dark-mode-btn').forEach(function(b) {{ b.textContent = '🌙'; }});
                 }} else {{
                     document.documentElement.setAttribute('data-theme', 'dark');
                     localStorage.setItem('theme', 'dark');
-                    document.querySelectorAll('.dark-mode-btn').forEach(function(b) {{ b.textContent = '☀️'; }});
                 }}
                 _syncHomeDarkBtn(!isDark);
             }}
-            // Sync button icons with persisted theme (set by early inline script in <head>)
-            (function() {{
-                const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-                if (dark) {{
-                    document.querySelectorAll('.dark-mode-btn').forEach(function(b) {{ b.textContent = '☀️'; }});
-                }}
-                _syncHomeDarkBtn(dark);
-            }})();
+            _syncHomeDarkBtn(document.documentElement.getAttribute('data-theme') === 'dark');
 
             function toggleMobileMenu() {{
                 const sidebar = document.getElementById('sidebar');
@@ -6182,10 +6180,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         f.write(launcher_template)
 
     route_template = """<!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>WT Argentina</title>
   <meta http-equiv="refresh" content="0; url=../app.html#{tab}">
   <script>

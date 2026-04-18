@@ -1,9 +1,9 @@
 
     <!DOCTYPE html>
-    <html lang="es">
+    <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
         <title>WT Argentina</title>
         <script>(function(){ var t=localStorage.getItem('theme'); if(t==='dark') document.documentElement.setAttribute('data-theme','dark'); })();</script>
         <base href="./">
@@ -97,6 +97,9 @@
                 --btn-h: 34px;
                 --btn-h-sm: 28px;
 
+                /* Focus ring — shown on :focus-visible (keyboard nav) */
+                --c-focus-ring: rgba(117,170,219,0.55);
+
                 /* Shadow */
                 --shadow-sm: 0 1px 2px rgba(15,23,42,0.06);
                 --shadow-md: 0 4px 16px rgba(15,23,42,0.08);
@@ -132,6 +135,8 @@
                 --shadow-md: 0 4px 16px rgba(0,0,0,0.35);
                 --shadow-lg: 0 12px 28px rgba(0,0,0,0.4);
                 --shadow-hover: 0 6px 16px rgba(0,0,0,0.4);
+
+                --c-focus-ring: rgba(125,197,255,0.6);
             }
 
             /* === Button system ===
@@ -173,6 +178,40 @@
             .btn-group > .btn:last-child { border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); }
             .btn-group > .btn + .btn { border-left-width: 0; }
 
+            /* Dark-mode toggle icons — both SVGs live in the button;
+               CSS shows the one opposite to the current theme. */
+            .dm-icon { width: 16px; height: 16px; display: inline-block; vertical-align: middle; flex-shrink: 0; }
+            .home-dark-btn .dm-icon { width: 18px; height: 18px; }
+            .dm-icon-sun { display: none; }
+            [data-theme="dark"] .dm-icon-moon { display: none; }
+            [data-theme="dark"] .dm-icon-sun { display: inline-block; }
+
+            /* Keyboard focus ring — only fires on :focus-visible, so
+               mouse clicks don't get an outline. Applies globally;
+               components with custom focus styling can opt out. */
+            *:focus-visible { outline: 2px solid var(--c-focus-ring); outline-offset: 2px; }
+
+            /* Skeleton loading — shimmer bars for async table renders. */
+            @keyframes skeleton-shimmer {
+                0%   { background-position: -200px 0; }
+                100% { background-position: calc(200px + 100%) 0; }
+            }
+            .skeleton-bar {
+                display: inline-block;
+                height: 10px;
+                width: 100%;
+                border-radius: 4px;
+                background-color: var(--c-surface-sunk);
+                background-image: linear-gradient(90deg, transparent 0%, var(--c-surface-alt) 50%, transparent 100%);
+                background-size: 200px 100%;
+                background-repeat: no-repeat;
+                animation: skeleton-shimmer 1.2s ease-in-out infinite;
+                vertical-align: middle;
+            }
+            #view-rankings .skeleton-row td { padding: 8px 10px; }
+            @media (prefers-reduced-motion: reduce) {
+                .skeleton-bar { animation: none; }
+            }
 
             html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: hidden; max-width: 100vw; }
             .mobile-only { display: none; }
@@ -1625,6 +1664,11 @@
             [data-theme="dark"] .bjkc-series-header { background: var(--c-arg-tint); }
             [data-theme="dark"] .gs-cutoff-table thead tr:last-child th { background: var(--c-surface-alt) !important; color: var(--c-text-subtle) !important; }
 
+            /* Native select option lists — browsers paint transparent
+               selects white by default, so force the surface color explicitly. */
+            [data-theme="dark"] .rankings-date-select { background-color: var(--c-surface); color: var(--c-text); }
+            [data-theme="dark"] .rankings-date-select option { background-color: var(--c-surface); color: var(--c-text); }
+
             /* Select2 — third-party markup we don't control */
             [data-theme="dark"] .select2-container--default .select2-selection--single { background-color: var(--c-surface); border-color: var(--c-border-strong); }
             [data-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered { color: var(--c-text); }
@@ -1644,7 +1688,7 @@
             <div class="sidebar" id="sidebar">
                 <div class="sidebar-header">
                     <span>WT Argentina</span>
-                    <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
+                    <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode"><svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg><svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></button>
                 </div>
                 <div class="menu-item" id="btn-upcoming" onclick="switchTab('upcoming')">Schedule</div>
                 <div class="menu-item" id="btn-entrylists" onclick="switchTab('entrylists')">Entry Lists</div>
@@ -1656,7 +1700,7 @@
                 <div class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</div>
                 <div class="menu-item" id="btn-tstrength" onclick="switchTab('tstrength')">WTA TRN STR</div>
                 <div class="menu-item" id="btn-gallery" onclick="switchTab('gallery')">Photo Gallery</div>
-                <button class="dark-mode-btn-mobile" id="dark-mode-btn-mobile-nav" onclick="toggleDarkMode()">🌙</button>
+                <button class="dark-mode-btn-mobile" id="dark-mode-btn-mobile-nav" onclick="toggleDarkMode()" aria-label="Toggle dark mode"><svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg><svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></button>
             </div>
 
             <div class="main-content">
@@ -1705,7 +1749,7 @@
                                 <span class="home-label">WTA Tournament Strength</span>
                             </button>
                         </div>
-                        <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()">🌙 <span id="home-dark-label">Dark Mode</span></button>
+                        <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()"><svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg><svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><span id="home-dark-label">Dark Mode</span></button>
                     </div>
                 </div>
 
@@ -8419,35 +8463,24 @@
                 if (window.innerWidth > 768) return html;
                 return String(html).replace('width:16px;height:11px', 'width:12px;height:8px');
             }
+            // Icon swapping is CSS-driven via [data-theme="dark"]; JS only
+            // manages the data-theme attribute, localStorage, and the label.
             function _syncHomeDarkBtn(isDark) {
                 const lbl = document.getElementById('home-dark-label');
-                const btn = document.getElementById('home-dark-btn');
                 if (lbl) lbl.textContent = isDark ? 'Light Mode' : 'Dark Mode';
-                if (btn) btn.firstChild.textContent = isDark ? '☀️ ' : '🌙 ';
-                const mob = document.getElementById('dark-mode-btn-mobile-nav');
-                if (mob) mob.textContent = isDark ? '☀️' : '🌙';
             }
             function toggleDarkMode() {
                 const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
                 if (isDark) {
                     document.documentElement.removeAttribute('data-theme');
                     localStorage.setItem('theme', 'light');
-                    document.querySelectorAll('.dark-mode-btn').forEach(function(b) { b.textContent = '🌙'; });
                 } else {
                     document.documentElement.setAttribute('data-theme', 'dark');
                     localStorage.setItem('theme', 'dark');
-                    document.querySelectorAll('.dark-mode-btn').forEach(function(b) { b.textContent = '☀️'; });
                 }
                 _syncHomeDarkBtn(!isDark);
             }
-            // Sync button icons with persisted theme (set by early inline script in <head>)
-            (function() {
-                const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-                if (dark) {
-                    document.querySelectorAll('.dark-mode-btn').forEach(function(b) { b.textContent = '☀️'; });
-                }
-                _syncHomeDarkBtn(dark);
-            })();
+            _syncHomeDarkBtn(document.documentElement.getAttribute('data-theme') === 'dark');
 
             function toggleMobileMenu() {
                 const sidebar = document.getElementById('sidebar');
@@ -8688,6 +8721,7 @@
                 if (tabName === 'entrylists') updateEntryList();
                 if (tabName === 'draws') updateDraw();
                 if (tabName === 'calendar') initCalendarFilters();
+                if (tabName === 'rankings') initRankingsIfEmpty();
 
                 applyMobileHistoryLayout();
 
@@ -9056,19 +9090,43 @@
                 const dd = day.toString().padStart(2,'0');
                 switchRankingWeek(`${year}-${mm}-${dd}`);
             }
+            function _renderRankingSkeleton(rowCount) {
+                const tbody = document.getElementById('rankings-body');
+                if (!tbody) return;
+                const widths = ['40%', '80%', '60%', '65%', '55%', '75%', '50%', '70%', '45%', '60%'];
+                let html = '';
+                for (let i = 0; i < rowCount; i++) {
+                    const w = widths[i % widths.length];
+                    html += '<tr class="skeleton-row">'
+                          + '<td><span class="skeleton-bar" style="width:24px"></span></td>'
+                          + '<td><span class="skeleton-bar" style="width:' + w + '"></span></td>'
+                          + '<td><span class="skeleton-bar" style="width:40px"></span></td>'
+                          + '<td><span class="skeleton-bar" style="width:60px"></span></td>'
+                          + '</tr>';
+                }
+                tbody.innerHTML = html;
+            }
             function switchRankingWeek(dateStr) {
                 const year = dateStr.split('-')[0];
                 const controls = ['rankings-year-select','rankings-month-select','rankings-day-select','rankings-load-btn'].map(id => document.getElementById(id));
                 controls.forEach(el => { if(el) { el.disabled = true; el.style.opacity = '0.5'; } });
+                _renderRankingSkeleton(15);
                 _loadCsvForYear(year)
                     .then(data => {
                         const players = data[dateStr];
                         if (players) _renderRankingRows(players);
+                        else document.getElementById('rankings-body').innerHTML = '';
                     })
-                    .catch(() => {})
+                    .catch(() => { document.getElementById('rankings-body').innerHTML = ''; })
                     .finally(() => {
                         controls.forEach(el => { if(el) { el.disabled = false; el.style.opacity = '1'; } });
                     });
+            }
+            let _rankingsInitialized = false;
+            function initRankingsIfEmpty() {
+                if (_rankingsInitialized) return;
+                _rankingsInitialized = true;
+                applyRankingSelection();
             }
             _populateRankingMonths('2026', 4, 13);
             function filterNational() {
