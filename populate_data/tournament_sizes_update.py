@@ -282,10 +282,43 @@ def itf_find_description(category, actual_main, actual_qual, descriptions):
     return None
 
 
-def fetch_itf_updates(from_date, to_date, itf_descs):
-    """Fetch ITF tournaments for the given date range using Selenium."""
-    print("Fetching ITF tournaments...")
+ITF_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "itf_calendar_cache.json")
+ITF_EVENT_FILTERS_CACHE_FILE = os.path.join(DATA_DIR, "itf_event_filters_cache.json")
 
+
+def _load_itf_calendar_cache(from_date, to_date):
+    """Return filtered items from the persistent year-wide calendar cache."""
+    try:
+        with open(ITF_CALENDAR_CACHE_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        items = data.get("items", []) if isinstance(data, dict) else (data or [])
+    except Exception:
+        return None
+    lo = datetime.strptime(from_date, "%Y-%m-%d").date()
+    hi = datetime.strptime(to_date, "%Y-%m-%d").date()
+    results = []
+    for item in items:
+        s = str(item.get("startDate") or "")[:10]
+        try:
+            sd = datetime.strptime(s, "%Y-%m-%d").date()
+        except ValueError:
+            continue
+        if lo <= sd <= hi:
+            results.append(item)
+    return results if results else None
+
+
+def _load_itf_id_cache():
+    """Return dict of tournamentKey (lower) -> tournamentId from persistent cache."""
+    try:
+        with open(ITF_EVENT_FILTERS_CACHE_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return {k.lower(): str(v) for k, v in data.items() if v} if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _make_itf_driver():
     chrome_options = Options()
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
@@ -294,17 +327,37 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     chrome_options.add_argument("window-size=1920,1080")
     chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
-
     service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=chrome_options)
+    return webdriver.Chrome(service=service, options=chrome_options)
 
-    results = []
 
+def _fill_ids_via_selenium(tournaments):
+    """Fill missing tournamentId fields in-place using a short-lived Selenium session."""
+    driver = _make_itf_driver()
     try:
         driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
         time.sleep(5)
+        for t in tournaments:
+            url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={t['tournamentKey']}"
+            driver.get(url)
+            time.sleep(1)
+            try:
+                raw = driver.find_element("tag name", "body").text.strip()
+                t["tournamentId"] = json.loads(raw).get("tournamentId")
+            except Exception:
+                t["tournamentId"] = None
+    except Exception as e:
+        print(f"  [!] Selenium ID fetch error: {e}")
+    finally:
+        driver.quit()
 
-        # Fetch calendar for the date range
+
+def _fetch_itf_via_selenium(from_date, to_date):
+    """Full Selenium fallback: GetCalendar + GetEventFilters. Returns tournament list or None."""
+    driver = _make_itf_driver()
+    try:
+        driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
+        time.sleep(5)
         api_url = (
             f"https://www.itftennis.com/tennis/api/TournamentApi/GetCalendar?"
             f"circuitCode=WT&searchString=&skip=0&take=500"
@@ -313,16 +366,66 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
         )
         driver.get(api_url)
         time.sleep(2)
-
         raw = driver.find_element("tag name", "body").text.strip()
-        data = json.loads(raw)
-        items = data.get('items', [])
+        items = json.loads(raw).get("items", [])
         print(f"  Found {len(items)} ITF tournaments in range")
 
-        # Filter valid tournaments and get IDs
         seen_keys = set()
         tournaments = []
         for item in items:
+            status = (item.get("status") or "").lower()
+            name = item.get("tournamentName", "")
+            if "cancel" in status or "cancel" in name.lower():
+                continue
+            category = item.get("category", "")
+            if category and category.strip().startswith("Tier"):
+                continue
+            link = item.get("tournamentLink", "")
+            key = link.rstrip("/").split("/")[-1] if link else None
+            if not key or key in seen_keys:
+                continue
+            seen_keys.add(key)
+            tournaments.append({
+                "startDate": item.get("startDate"),
+                "tournamentName": name,
+                "tournamentKey": key,
+                "isMultiweek": category == "ITF Womens Multi-Week Circuit",
+                "tournamentId": None,
+            })
+
+        for t in tournaments:
+            url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={t['tournamentKey']}"
+            driver.get(url)
+            time.sleep(1)
+            try:
+                raw = driver.find_element("tag name", "body").text.strip()
+                t["tournamentId"] = json.loads(raw).get("tournamentId")
+            except Exception:
+                t["tournamentId"] = None
+
+        return tournaments
+    except Exception as e:
+        print(f"  Error in Selenium ITF fetch: {e}")
+        return None
+    finally:
+        driver.quit()
+
+
+def fetch_itf_updates(from_date, to_date, itf_descs):
+    """Fetch ITF tournaments for the given date range, preferring persistent caches."""
+    print("Fetching ITF tournaments...")
+
+    # Try calendar cache first — year-wide cache written by main.py is authoritative.
+    cached_items = _load_itf_calendar_cache(from_date, to_date)
+    id_cache = _load_itf_id_cache()
+
+    results = []
+
+    if cached_items is not None:
+        print(f"  Using calendar cache ({len(cached_items)} items in range).")
+        seen_keys = set()
+        tournaments = []
+        for item in cached_items:
             status = (item.get('status') or '').lower()
             name = item.get('tournamentName', '')
             if 'cancel' in status or 'cancel' in name.lower():
@@ -335,32 +438,24 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
             if not key or key in seen_keys:
                 continue
             seen_keys.add(key)
-
             is_multiweek = category == "ITF Womens Multi-Week Circuit"
+            t_id = id_cache.get(key.lower())
             tournaments.append({
                 "startDate": item.get("startDate"),
                 "tournamentName": name,
                 "tournamentKey": key,
                 "isMultiweek": is_multiweek,
+                "tournamentId": t_id,
             })
-
-        # Fetch tournament IDs
-        for t in tournaments:
-            api_url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={t['tournamentKey']}"
-            driver.get(api_url)
-            time.sleep(1)
-            try:
-                raw = driver.find_element("tag name", "body").text.strip()
-                event_data = json.loads(raw)
-                t["tournamentId"] = event_data.get("tournamentId")
-            except:
-                t["tournamentId"] = None
-
-    except Exception as e:
-        print(f"  Error fetching ITF calendar: {e}")
-        return results
-    finally:
-        driver.quit()
+        missing_ids = [t for t in tournaments if not t["tournamentId"]]
+        if missing_ids:
+            print(f"  {len(missing_ids)} tournament(s) missing IDs from cache; fetching via Selenium.")
+            _fill_ids_via_selenium(missing_ids)
+    else:
+        print("  No calendar cache found; falling back to live Selenium fetch.")
+        tournaments = _fetch_itf_via_selenium(from_date, to_date)
+        if tournaments is None:
+            return results
 
     # Fetch drawsheets for each tournament
     for t in tournaments:

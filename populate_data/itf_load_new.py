@@ -157,41 +157,55 @@ def fetch_itf_ids_to_json(keys_list, driver=None):
     if not keys_list:
         return "[]"
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Accept": "application/json, text/plain, */*",
-        "Referer": "https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/",
-    }
-
+    id_cache = _load_cached_tournament_ids()
     results = []
-    failed_keys = []
+    missing_keys = []
 
-    for idx, key in enumerate(keys_list):
-        url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
-        fetched = False
-        # Pace GetEventFilters calls — back-to-back requests trip Incapsula.
-        if idx > 0:
-            time.sleep(random.uniform(5.0, 10.0))
-        try:
-            response = requests.get(url, headers=headers, timeout=15)
-            raw = response.text.strip()
-            if response.status_code == 200 and raw and not raw.startswith("<"):
-                data = response.json()
-                if isinstance(data, dict) and "tournamentId" in data:
-                    results.append({"tournamentKey": key, "tournamentId": data["tournamentId"]})
-                    fetched = True
-        except Exception as e:
-            print(f"  [!] requests failed for {key}: {e}")
+    for key in keys_list:
+        cached = id_cache.get(key.lower())
+        if cached:
+            results.append({"tournamentKey": key, "tournamentId": cached})
+        else:
+            missing_keys.append(key)
 
-        if not fetched:
-            failed_keys.append(key)
+    if missing_keys:
+        print(f"  Fetching {len(missing_keys)} IDs not in cache (cached {len(results)}/{len(keys_list)}).")
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*",
+            "Referer": "https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/",
+        }
+        newly_fetched = {}
+        for idx, key in enumerate(missing_keys):
+            if idx > 0:
+                time.sleep(random.uniform(5.0, 10.0))
+            url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
+            try:
+                response = requests.get(url, headers=headers, timeout=15)
+                raw = response.text.strip()
+                if response.status_code == 200 and raw and not raw.startswith("<"):
+                    data = response.json()
+                    if isinstance(data, dict) and "tournamentId" in data:
+                        tid = data["tournamentId"]
+                        results.append({"tournamentKey": key, "tournamentId": tid})
+                        newly_fetched[key.lower()] = str(tid)
+            except Exception as e:
+                print(f"  [!] requests failed for {key}: {e}")
 
-    fetched_count = len(results)
-    total = len(keys_list)
-    if fetched_count < total:
-        print(f"  [!] {total - fetched_count} tournament(s) missing IDs from live fetch; filling from cache.")
+        # Write newly fetched IDs back so subsequent scripts skip these calls.
+        if newly_fetched:
+            try:
+                existing = {}
+                if os.path.exists(ITF_EVENT_FILTERS_CACHE_FILE):
+                    with open(ITF_EVENT_FILTERS_CACHE_FILE, "r", encoding="utf-8") as f:
+                        existing = json.load(f)
+                existing.update(newly_fetched)
+                with open(ITF_EVENT_FILTERS_CACHE_FILE, "w", encoding="utf-8") as f:
+                    json.dump(existing, f, ensure_ascii=False, separators=(",", ":"))
+            except Exception:
+                pass
     else:
-        print(f"  Fetched IDs for all {total} tournaments.")
+        print(f"  All {len(keys_list)} tournament IDs resolved from cache.")
 
     return json.dumps(results)
 
