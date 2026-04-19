@@ -10,13 +10,16 @@ import os as _os
 from config import (
     API_URL, HEADERS, NAME_LOOKUP,
     WTA_RANKINGS_CSV, WTA_RANKINGS_CSV_10_19,
-    WTA_RANKINGS_CSV_00_09, WTA_RANKINGS_CSV_83_99
+    WTA_RANKINGS_CSV_00_09, WTA_RANKINGS_CSV_83_99,
+    DATA_DIR
 )
 from utils import fix_display_name, fix_encoding, format_player_name
 from calendar_builder import get_next_monday, get_monday_from_date, format_week_label
 
 
 _wta_tournaments_raw = None  # module-level cache for raw WTA tournament API data
+_WTA_FULL_CALENDAR_CACHE_FILE = _os.path.join(DATA_DIR, "wta_full_calendar_cache.json")
+_WTA_FULL_CALENDAR_TTL = 3 * 60 * 60  # 3 hours
 _REQUESTS_SESSION = requests.Session()
 
 _WTA_MAX_ATTEMPTS = 8
@@ -61,6 +64,17 @@ def _fetch_wta_tournaments_raw():
         response = requests.get(url, headers=headers, params=params, timeout=10)
         data = response.json()
         _wta_tournaments_raw = data.get("content", [])
+        try:
+            import json as _json
+            with open(_WTA_FULL_CALENDAR_CACHE_FILE, "w", encoding="utf-8") as _f:
+                _json.dump({
+                    "fetchedAt": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    "from": from_date,
+                    "to": to_date,
+                    "items": _wta_tournaments_raw,
+                }, _f, ensure_ascii=False, separators=(",", ":"))
+        except Exception:
+            pass
     except Exception as e:
         print(f"Error fetching WTA tournaments: {e}")
         _wta_tournaments_raw = []

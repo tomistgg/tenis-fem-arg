@@ -5,6 +5,7 @@ Incremental update for tournament draw sizes.
 - Removes entries older than 55 weeks
 """
 import json
+import sys
 import time
 import os
 import requests
@@ -16,6 +17,12 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "..", "data")
+
+_REPO_ROOT = os.path.dirname(BASE_DIR)
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
+from itf_drawsheet_cache import get_cached_drawsheet, save_drawsheet
 POINTS_DIST_PATH = os.path.join(DATA_DIR, "points_distribution.json")
 OUTPUT_PATH = os.path.join(DATA_DIR, "tournament_draw_sizes.json")
 
@@ -130,9 +137,30 @@ def wta_build_tournament_name(tournament):
     return title
 
 
+def _load_wta_calendar_cache(from_date, to_date):
+    """Return cached WTA tournament list if fresh and covers the requested range."""
+    try:
+        with open(WTA_CALENDAR_CACHE_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        fetched_at = datetime.strptime(data["fetchedAt"], "%Y-%m-%dT%H:%M:%SZ")
+        age = (datetime.utcnow() - fetched_at).total_seconds()
+        if age > _WTA_CALENDAR_CACHE_TTL:
+            return None
+        if data.get("from", "") > from_date or data.get("to", "") < to_date:
+            return None
+        return data.get("items") or None
+    except Exception:
+        return None
+
+
 def fetch_wta_updates(from_date, to_date, desc_set):
     print("Fetching WTA tournaments...")
-    tournaments = wta_fetch_tournaments(from_date, to_date)
+    cached = _load_wta_calendar_cache(from_date, to_date)
+    if cached is not None:
+        tournaments = cached
+        print(f"  Using WTA calendar cache ({len(tournaments)} tournaments).")
+    else:
+        tournaments = wta_fetch_tournaments(from_date, to_date)
     print(f"  Found {len(tournaments)} WTA tournaments in range")
 
     today = datetime.now()
@@ -186,6 +214,10 @@ def get_itf_level(name):
 
 
 def itf_fetch_drawsheet(t_id, classification, week_number=0):
+    cached = get_cached_drawsheet(t_id, classification, week_number)
+    if cached is not None:
+        return cached
+
     url = "https://www.itftennis.com/tennis/api/TournamentApi/GetDrawsheet"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
@@ -204,8 +236,11 @@ def itf_fetch_drawsheet(t_id, classification, week_number=0):
     try:
         r = requests.post(url, json=payload, headers=headers)
         r.raise_for_status()
-        return r.json()
-    except:
+        data = r.json()
+        if isinstance(data, dict):
+            save_drawsheet(t_id, classification, week_number, data)
+        return data
+    except Exception:
         return None
 
 
@@ -284,6 +319,8 @@ def itf_find_description(category, actual_main, actual_qual, descriptions):
 
 ITF_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "itf_calendar_cache.json")
 ITF_EVENT_FILTERS_CACHE_FILE = os.path.join(DATA_DIR, "itf_event_filters_cache.json")
+WTA_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "wta_calendar_cache.json")
+_WTA_CALENDAR_CACHE_TTL = 3 * 60 * 60  # 3 hours — covers the gap between scripts in one cron run
 
 
 def _load_itf_calendar_cache(from_date, to_date):

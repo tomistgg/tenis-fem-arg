@@ -13,7 +13,7 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from itf_drawsheet_cache import save_drawsheet
+from itf_drawsheet_cache import get_cached_drawsheet, save_drawsheet
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "..", "data")
@@ -221,6 +221,10 @@ def merge_ids_with_pandas(calendar_df, json_ids_string):
 
 
 def fetch_api_data(tId, classification, week_number=0, driver=None, tournament_name=""):
+    cached = get_cached_drawsheet(tId, classification, week_number)
+    if cached is not None:
+        return cached
+
     url = "https://www.itftennis.com/tennis/api/TournamentApi/GetDrawsheet"
     payload = {
         "circuitCode": "WT",

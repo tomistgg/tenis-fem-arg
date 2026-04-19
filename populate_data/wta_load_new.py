@@ -20,6 +20,32 @@ HEADERS = {
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_FILE = os.path.join(_BASE_DIR, "..", "data", "wta_matches_arg.csv")
+WTA_CALENDAR_CACHE_FILE = os.path.join(_BASE_DIR, "..", "data", "wta_calendar_cache.json")
+_WTA_FULL_CALENDAR_CACHE_FILE = os.path.join(_BASE_DIR, "..", "data", "wta_full_calendar_cache.json")
+_WTA_FULL_CALENDAR_TTL = 3 * 60 * 60  # 3 hours
+
+
+def _load_from_full_calendar_cache(from_date, to_date):
+    """Read the year-wide cache written by main.py/wta.py, filtered to the needed window.
+
+    Grand Slams are excluded here since wta_load_new.py handles only WTA-circuit matches.
+    Returns a list of tournament dicts, or None if cache is missing/stale.
+    """
+    try:
+        with open(_WTA_FULL_CALENDAR_CACHE_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        fetched_at = datetime.strptime(data["fetchedAt"], "%Y-%m-%dT%H:%M:%SZ")
+        if (datetime.utcnow() - fetched_at).total_seconds() > _WTA_FULL_CALENDAR_TTL:
+            return None
+        if data.get("from", "") > from_date or data.get("to", "") < to_date:
+            return None
+        return [
+            t for t in (data.get("items") or [])
+            if from_date <= (t.get("startDate") or "")[:10] <= to_date
+            and t.get("level") != "Grand Slam"
+        ]
+    except Exception:
+        return None
 
 CSV_COLUMNS = [
     "matchType", "matchId", "date", "tournamentId",
@@ -242,13 +268,27 @@ if __name__ == "__main__":
     week_start = today - timedelta(days=today.weekday())
     week_end = week_start + timedelta(days=6)
 
-    tournaments = fetch_tournaments_for_range(
-        range_start.strftime("%Y-%m-%d"),
-        range_end.strftime("%Y-%m-%d"),
-    )
+    from_date_str = range_start.strftime("%Y-%m-%d")
+    to_date_str = range_end.strftime("%Y-%m-%d")
+    tournaments = _load_from_full_calendar_cache(from_date_str, to_date_str)
+    if tournaments is not None:
+        print(f"  Using WTA full calendar cache ({len(tournaments)} tournaments in window).")
+    else:
+        tournaments = fetch_tournaments_for_range(from_date_str, to_date_str)
 
     if not tournaments:
         raise SystemExit(0)
+
+    try:
+        with open(WTA_CALENDAR_CACHE_FILE, "w", encoding="utf-8") as _f:
+            json.dump({
+                "fetchedAt": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "from": from_date_str,
+                "to": to_date_str,
+                "items": tournaments,
+            }, _f, ensure_ascii=False, separators=(",", ":"))
+    except Exception:
+        pass
 
     existing_ids = load_existing_match_ids(OUTPUT_FILE)
     new_rows = []
