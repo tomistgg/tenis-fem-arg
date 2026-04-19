@@ -1151,6 +1151,7 @@ def main():
             draw_fetch_errors.append({
                 "key": t_key,
                 "name": t_info.get("name", t_key),
+                "startDate": (t_info.get("startDate") or "")[:10],
             })
             if itf_consecutive_empty >= 3 and i < total_itf_draws:
                 # Back off periodically to recover from temporary ITF throttling.

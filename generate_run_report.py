@@ -689,10 +689,13 @@ def compute_report(before_dir, after_dir):
             new_draws.append({"name": t_name, "types": labels})
     report["new_draws"] = new_draws
 
-    # Draw fetch failures (tournaments where ITF returned no data and no cache exists)
+    # Draw fetch failures (tournaments where ITF returned no data and no cache exists).
+    # Exclude future-dated tournaments — an empty draw before the event starts is
+    # expected (draws aren't published yet), not a real failure.
     failed_draw_fetches = load_json(os.path.join(after_dir, "draw_fetch_errors.json")) or []
     report["failed_draw_fetches"] = [
-        item for item in failed_draw_fetches if isinstance(item, dict)
+        item for item in failed_draw_fetches
+        if isinstance(item, dict) and (item.get("startDate") or "9999") <= today_str
     ]
 
     blocked_itf_responses = load_json(os.path.join(after_dir, "itf_blocked_responses.json")) or []
