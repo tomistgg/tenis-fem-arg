@@ -982,12 +982,31 @@ def main():
             wta_draw_jobs.append((week, t_key, t_info))
 
     total_wta_draws = len(wta_draw_jobs) or 1
-    for i, (week, t_key, t_info) in enumerate(wta_draw_jobs, start=1):
-        print(f"Fetching WTA Draws ({i}/{total_wta_draws})")
-        store_key = _canonical_draw_store_key(t_key)
+    print(f"Fetching WTA Draws (0/{total_wta_draws}) — parallel")
+
+    def _fetch_wta_draw_job(job):
+        week, t_key, t_info = job
+        return week, t_key, t_info, fetch_tournament_draws(t_key, current_year) or {}
+
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    wta_draw_results = {}
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        futures = {pool.submit(_fetch_wta_draw_job, job): job for job in wta_draw_jobs}
+        done = 0
+        for fut in as_completed(futures):
+            done += 1
+            try:
+                week, t_key, t_info, t_draws = fut.result()
+            except Exception as e:
+                week, t_key, t_info = futures[fut]
+                t_draws = {}
+                print(f"  [!] WTA draw fetch failed for {t_info.get('name','')}: {e}")
+            wta_draw_results[_canonical_draw_store_key(t_key)] = (week, t_key, t_info, t_draws)
+            print(f"  WTA draw fetched ({done}/{total_wta_draws}): {t_info.get('name','')}")
+
+    for store_key, (week, t_key, t_info, t_draws) in wta_draw_results.items():
         prev = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
         prev_draws = (prev or {}).get("draws") or {}
-        t_draws = fetch_tournament_draws(t_key, current_year) or {}
         merged_draws = {}
         if isinstance(prev_draws, dict):
             merged_draws.update(prev_draws)
@@ -1048,7 +1067,7 @@ def main():
         # Keep request cadence gentle to avoid ITF anti-bot throttling.
         # draws._fetch_itf_drawsheet bypasses itf.py's rate limiter, so pace here.
         if i > 1:
-            time.sleep(random.uniform(5.0, 15.0))
+            time.sleep(random.uniform(2.0, 6.0))
         tid = t_info.get("tournamentId")
         is_multiweek = t_info.get("is_multiweek", False)
         store_key = _canonical_draw_store_key(t_key)

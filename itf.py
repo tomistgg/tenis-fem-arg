@@ -18,7 +18,8 @@ ITF_CALENDAR_PAGE_URL = f"{ITF_BASE_URL}/en/tournament-calendar/womens-world-ten
 # ITF rate limiting / anti-block pacing.
 # Defaults are deliberately slow — Incapsula rate-limits aggressively on
 # datacenter IPs (GHA runners). Tunable via env vars for local overrides.
-_ITF_MIN_REQUEST_INTERVAL = float(os.getenv("ITF_API_MIN_INTERVAL_SEC", "20.0"))
+_ITF_MIN_REQUEST_INTERVAL = float(os.getenv("ITF_API_MIN_INTERVAL_SEC", "10.0"))
+_ITF_CALENDAR_CACHE_TTL = 3 * 60 * 60  # 3 hours
 _ITF_REQUEST_JITTER_MAX = float(os.getenv("ITF_API_REQUEST_JITTER_SEC", "10.0"))
 _ITF_BLOCK_BACKOFF_BASE = float(os.getenv("ITF_API_BLOCK_BACKOFF_BASE_SEC", "15.0"))
 _ITF_BLOCK_BACKOFF_MAX = float(os.getenv("ITF_API_BLOCK_BACKOFF_MAX_SEC", "60.0"))
@@ -146,7 +147,7 @@ _ITF_EVENT_FILTERS_CACHE_FILE = os.path.join(
 )
 
 
-def _load_itf_calendar_disk_cache(target_year=None):
+def _load_itf_calendar_disk_cache(target_year=None, max_age_seconds=None):
     if not os.path.exists(ITF_CALENDAR_CACHE_FILE):
         return []
     try:
@@ -170,6 +171,18 @@ def _load_itf_calendar_disk_cache(target_year=None):
     if target_year and cache_year and str(cache_year) != str(target_year):
         return []
 
+    if max_age_seconds is not None:
+        fetched_at_str = payload.get("fetchedAt")
+        if not fetched_at_str:
+            return []
+        try:
+            fetched_at = datetime.strptime(fetched_at_str, "%Y-%m-%dT%H:%M:%SZ")
+            age = (datetime.utcnow() - fetched_at).total_seconds()
+            if age > max_age_seconds:
+                return []
+        except Exception:
+            return []
+
     return items
 
 
@@ -178,6 +191,7 @@ def _save_itf_calendar_disk_cache(items, year):
         return
     payload = {
         "year": int(year),
+        "fetchedAt": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
         "count": len(items),
         "items": items,
     }
@@ -489,6 +503,16 @@ def _fetch_itf_calendar_raw(driver):
 
     today = datetime.now()
     current_year = today.year
+
+    # Use the disk cache when it was written within the last 3 hours — itf_load_new.py
+    # runs before main.py and populates this cache, so the live paginated fetch is
+    # almost always redundant on the same cron run.
+    fresh_items = _load_itf_calendar_disk_cache(target_year=current_year, max_age_seconds=_ITF_CALENDAR_CACHE_TTL)
+    if fresh_items:
+        print(f"  Using fresh ITF calendar disk cache ({len(fresh_items)} items).")
+        _itf_calendar_raw = fresh_items
+        return _itf_calendar_raw
+
     date_from = f"{current_year}-01-01"
     date_to = f"{current_year}-12-31"
 
