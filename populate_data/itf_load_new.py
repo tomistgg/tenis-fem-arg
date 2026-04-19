@@ -158,9 +158,12 @@ def fetch_itf_ids_to_json(keys_list, driver=None):
     results = []
     failed_keys = []
 
-    for key in keys_list:
+    for idx, key in enumerate(keys_list):
         url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
         fetched = False
+        # Pace GetEventFilters calls — back-to-back requests trip Incapsula.
+        if idx > 0:
+            time.sleep(random.uniform(5.0, 10.0))
         try:
             response = requests.get(url, headers=headers, timeout=15)
             raw = response.text.strip()
@@ -301,7 +304,7 @@ def fetch_tournament_draw_data(tournament_id, tournament_name, codes, week_numbe
                     driver=driver,
                     tournament_name=tournament_name,
                 )
-                time.sleep(random.uniform(0.7, 1.3))
+                time.sleep(random.uniform(5.0, 10.0))
 
             if any(results.values()):
                 return results
@@ -729,7 +732,7 @@ if __name__ == "__main__":
 
                 added = len(all_matches) - tourney_matches_before
                 print(f"  {tName} (id={tId}): {added} ARG matches found")
-                time.sleep(random.uniform(5.0, 10.0))
+                time.sleep(random.uniform(10.0, 20.0))
 
         print(f"Tournaments processed: {active_count}, total ARG matches found: {len(all_matches)}")
 
