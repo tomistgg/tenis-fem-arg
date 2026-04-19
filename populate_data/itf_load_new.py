@@ -1,11 +1,19 @@
 import json
 import random
+import sys
 import time
 import pandas as pd
 import os
 import requests
 import undetected_chromedriver as uc
 from datetime import datetime, timedelta
+
+# Allow imports from the project root when invoked as `python populate_data/itf_load_new.py`.
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
+from itf_drawsheet_cache import save_drawsheet
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "..", "data")
@@ -232,7 +240,9 @@ def fetch_api_data(tId, classification, week_number=0, driver=None, tournament_n
         if _is_itf_block_page(raw):
             _record_itf_block(tId, classification, week_number, tournament_name)
         if response.status_code == 200 and raw and not raw.startswith("<"):
-            return response.json()
+            data = response.json()
+            save_drawsheet(tId, classification, week_number, data)
+            return data
     except Exception:
         pass
 
@@ -264,6 +274,7 @@ fetch(url, {
             if isinstance(result, dict) and result.get("ok"):
                 data = result.get("data")
                 if isinstance(data, dict):
+                    save_drawsheet(tId, classification, week_number, data)
                     return data
             else:
                 if isinstance(result, dict) and result.get("error") == "html":
