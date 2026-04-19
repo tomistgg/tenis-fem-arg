@@ -583,24 +583,38 @@ def _load_cached_calendar_tournaments(week_start, week_end):
 
 if __name__ == "__main__":
     week_start, week_end = get_week_start_end()
-    last_week_start = week_start - timedelta(days=7)
-    next_week_start = week_start + timedelta(days=7)
-    next_week_end = next_week_start + timedelta(days=6)
+    # Day-of-week tapered window: early-week keeps last week in scope for
+    # late-arriving results, mid-week narrows to just this week, late-week
+    # reaches forward to pick up the next week's entry lists & draws.
+    weekday = datetime.today().weekday()  # 0=Mon, 6=Sun
+    if weekday <= 1:       # Mon, Tue
+        window_start = week_start - timedelta(days=7)
+        window_end = week_end
+        window_label = "last+this week"
+    elif weekday <= 3:     # Wed, Thu
+        window_start = week_start
+        window_end = week_end
+        window_label = "this week"
+    else:                  # Fri, Sat, Sun
+        window_start = week_start
+        window_end = week_end + timedelta(days=7)
+        window_label = "this+next week"
 
     # Single driver kept alive through the full run (calendar → IDs → drawsheets)
     driver = create_driver()
     try:
-        # ITF tournaments in the [last_week, next_week] window are scheduled well
-        # in advance, so the year-wide calendar that main.py refreshed on the
-        # previous cron run is authoritative here. Read it first and only fall
-        # back to a live GetCalendar fetch when the persistent cache is missing
-        # (e.g. very first run on a fresh checkout).
-        cached_items = _load_cached_calendar_tournaments(last_week_start, next_week_end)
+        # ITF tournaments in the window are scheduled well in advance, so the
+        # year-wide calendar that main.py refreshed on the previous cron run is
+        # authoritative here. Read it first and only fall back to a live
+        # GetCalendar fetch when the persistent cache is missing (e.g. very
+        # first run on a fresh checkout).
+        print(f"  ITF calendar window ({window_label}): {window_start} → {window_end}")
+        cached_items = _load_cached_calendar_tournaments(window_start, window_end)
         if not cached_items:
             print("[!] No cached calendar available; falling back to live GetCalendar fetch.")
             cached_items = get_itf_calendar_for_range(
-                last_week_start.strftime("%Y-%m-%d"),
-                next_week_end.strftime("%Y-%m-%d"),
+                window_start.strftime("%Y-%m-%d"),
+                window_end.strftime("%Y-%m-%d"),
                 driver=driver
             ) or []
 
