@@ -306,13 +306,43 @@ fetch(url, {
     return None
 
 
-def fetch_tournament_draw_data(tournament_id, tournament_name, codes, week_number=0, max_attempts=2):
-    """Fetch draw data for one tournament using a fresh browser session per attempt.
+def fetch_tournament_draw_data(tournament_id, tournament_name, codes, week_number=0, max_attempts=2, external_driver=None):
+    """Fetch draw data for one tournament.
 
-    This helps avoid ITF/Incapsula session degradation across a long run.
+    external_driver: reuse an existing session (no create/quit).  When None,
+    fall back to the original per-tournament fresh-session behavior.
     """
     tournament_id = int(tournament_id)
 
+    # If every requested draw is already in the shared cache, skip the browser entirely.
+    cached_results = {code: get_cached_drawsheet(tournament_id, code, week_number) for code in codes}
+    if all(v is not None for v in cached_results.values()):
+        return cached_results
+
+    if external_driver is not None:
+        results = {}
+        try:
+            draw_page_url = (
+                "https://www.itftennis.com/en/tournament/draws-and-results/print/"
+                f"?tournamentId={tournament_id}&circuitCode=WT"
+            )
+            external_driver.get(draw_page_url)
+            time.sleep(random.uniform(2.0, 3.0))
+
+            for code in codes:
+                results[code] = fetch_api_data(
+                    tournament_id,
+                    code,
+                    week_number=week_number,
+                    driver=external_driver,
+                    tournament_name=tournament_name,
+                )
+                time.sleep(random.uniform(2.0, 5.0))
+        except Exception as e:
+            print(f"  [!] Draw fetch failed for {tournament_name} (shared session): {e}")
+        return results
+
+    # Fallback: per-tournament fresh session (used when no shared driver is available).
     for attempt in range(1, max_attempts + 1):
         driver = None
         results = {}
@@ -686,12 +716,8 @@ if __name__ == "__main__":
 
         all_matches = []
         active_count = 0
-
-        try:
-            driver.quit()
-        except Exception:
-            pass
-        driver = None
+        consecutive_empty = 0
+        _MAX_CONSECUTIVE_EMPTY = 2  # Recreate session after this many all-empty results
 
         def _week_key(t):
             raw = str(t.get("startDate") or "")[:10]
@@ -707,8 +733,8 @@ if __name__ == "__main__":
         week_groups = [list(g) for _, g in groupby(tournaments_list, key=_week_key)]
         for group_idx, week_group in enumerate(week_groups):
             if group_idx > 0:
-                print(f"  Sleeping 61s before next week's tournaments...")
-                time.sleep(61)
+                print(f"  Sleeping 35s before next week's tournaments...")
+                time.sleep(35)
             random.shuffle(week_group)
             for tourney in week_group:
                 tId = tourney.get("tournamentId")
@@ -737,7 +763,8 @@ if __name__ == "__main__":
                             tName,
                             ["Q", "M"],
                             week_number=week,
-                            max_attempts=2,
+                            max_attempts=1,
+                            external_driver=driver,
                         )
 
                         for code in ["Q", "M"]:
@@ -763,7 +790,8 @@ if __name__ == "__main__":
                         tName,
                         ["Q", "M"],
                         week_number=0,
-                        max_attempts=2,
+                        max_attempts=1,
+                        external_driver=driver,
                     )
 
                     for code in ["Q", "M"]:
@@ -777,7 +805,28 @@ if __name__ == "__main__":
 
                 added = len(all_matches) - tourney_matches_before
                 print(f"  {tName} (id={tId}): {added} ARG matches found")
-                time.sleep(random.uniform(10.0, 20.0))
+
+                got_any_draw = any(v for v in draw_payloads.values() if v)
+                if got_any_draw:
+                    consecutive_empty = 0
+                else:
+                    consecutive_empty += 1
+                    if consecutive_empty >= _MAX_CONSECUTIVE_EMPTY:
+                        print(f"  [!] {consecutive_empty} consecutive empty results — refreshing browser session.")
+                        try:
+                            if driver:
+                                driver.quit()
+                        except Exception:
+                            pass
+                        driver = create_driver()
+                        try:
+                            driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
+                            time.sleep(3)
+                        except Exception:
+                            pass
+                        consecutive_empty = 0
+
+                time.sleep(random.uniform(5.0, 10.0))
 
         print(f"Tournaments processed: {active_count}, total ARG matches found: {len(all_matches)}")
 

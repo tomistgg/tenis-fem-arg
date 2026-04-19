@@ -959,8 +959,12 @@ def main():
         except Exception as e:
             print(f"Error writing history_data.json: {e}")
 
-    finally:
-        driver.quit()
+    except Exception:
+        try:
+            driver.quit()
+        except Exception:
+            pass
+        raise
 
     # 6. Fetch draws (WTA + ITF). Keep a persistent cache so draws don't "disappear"
     # when a fetch fails temporarily.
@@ -1072,19 +1076,10 @@ def main():
             else {}
         )
         if not t_draws:
-            # Use a fresh browser session per tournament; ITF anti-bot filtering can
-            # degrade a long-lived session and return blocked HTML for API endpoints.
-            itf_draw_driver = create_driver()
-            try:
-                t_draws = fetch_itf_tournament_draws(
-                    tid, is_multiweek=is_multiweek, driver=itf_draw_driver,
-                    cached_draws=prev_draws
-                ) or {}
-            finally:
-                try:
-                    itf_draw_driver.quit()
-                except Exception:
-                    pass
+            t_draws = fetch_itf_tournament_draws(
+                tid, is_multiweek=is_multiweek, driver=driver,
+                cached_draws=prev_draws
+            ) or {}
         if (
             not t_draws
             and not itf_cooloff_applied
@@ -1096,17 +1091,10 @@ def main():
             print("  ITF cooldown triggered (65s) before retrying draw fetch...")
             time.sleep(65)
             itf_cooloff_applied = True
-            retry_after_cooloff_driver = create_driver()
-            try:
-                t_draws = fetch_itf_tournament_draws(
-                    tid, is_multiweek=is_multiweek, driver=retry_after_cooloff_driver,
-                    cached_draws=prev_draws
-                ) or {}
-            finally:
-                try:
-                    retry_after_cooloff_driver.quit()
-                except Exception:
-                    pass
+            t_draws = fetch_itf_tournament_draws(
+                tid, is_multiweek=is_multiweek, driver=driver,
+                cached_draws=prev_draws
+            ) or {}
 
         merged_draws = {}
         if isinstance(prev_draws, dict):
@@ -1117,17 +1105,10 @@ def main():
         # fresh sessions to recover the other type before falling back to cache.
         if set(merged_draws.keys()) != {"MDS", "QS"}:
             for _ in range(2):
-                retry_driver = create_driver()
-                try:
-                    extra_draws = fetch_itf_tournament_draws(
-                        tid, is_multiweek=is_multiweek, driver=retry_driver,
-                        cached_draws=merged_draws
-                    ) or {}
-                finally:
-                    try:
-                        retry_driver.quit()
-                    except Exception:
-                        pass
+                extra_draws = fetch_itf_tournament_draws(
+                    tid, is_multiweek=is_multiweek, driver=driver,
+                    cached_draws=merged_draws
+                ) or {}
                 if isinstance(extra_draws, dict):
                     merged_draws.update(extra_draws)
                 if set(merged_draws.keys()) == {"MDS", "QS"}:
@@ -1155,8 +1136,13 @@ def main():
             })
             if itf_consecutive_empty >= 3 and i < total_itf_draws:
                 # Back off periodically to recover from temporary ITF throttling.
-                print("  ITF backoff triggered (35s) after consecutive empty draws...")
+                print("  ITF backoff triggered (35s) after consecutive empty draws — refreshing session.")
                 time.sleep(35)
+                try:
+                    driver.quit()
+                except Exception:
+                    pass
+                driver = create_driver()
                 itf_consecutive_empty = 0
 
     # Write draw fetch errors for this run (always overwrite so stale errors are cleared).
@@ -1193,6 +1179,11 @@ def main():
             "types": list(tdata.get("draws", {}).keys()),
         }
     save_json_file(os.path.join(DATA_DIR, "draws_snapshot.json"), draws_snapshot)
+
+    try:
+        driver.quit()
+    except Exception:
+        pass
 
     # 7. Build calendar — uses cached WTA data
     full_wta = get_full_wta_calendar()
