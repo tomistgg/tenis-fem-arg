@@ -391,9 +391,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         if dob and "T" in dob:
             dob = dob.split("T")[0]
         name = format_player_name(p.get("Player", ""))
-        row_class = "arg-player-row" if (p.get("Country") or "").upper() == "ARG" else ""
         country_code = p.get("Country") or ""
-        rankings_rows += f'<tr class="{row_class}" data-country="{country_code.upper()}"><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{country_flag_html(country_code, show_code=False)} {name}</td><td>{p.get("Points", "")}</td><td>{dob}</td></tr>'
+        rankings_rows += f'<tr data-country="{country_code.upper()}"><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{country_flag_html(country_code, show_code=False)} {name}</td><td>{p.get("Points", "")}</td><td>{dob}</td></tr>'
 
     default_national_columns = ["N", "Player", "Date", "Event", "Round", "Tie", "Partner", "Opponent", "Result", "Score"]
     national_columns = list(national_team_data[0].keys()) if national_team_data else default_national_columns
@@ -1163,8 +1162,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .draw-match .draw-player {{ display: flex; align-items: center; padding: 1px 3px; font-size: 10px; border: 1px solid #e2e8f0; background: white; min-height: 18px; gap: 1px; cursor: default; }}
             .draw-match .draw-player:first-child {{ border-bottom: none; }}
             .draw-match .draw-player.winner {{ font-weight: bold; background: #f0fdf4; }}
-            .draw-match .draw-player.arg-player {{ background: #dbeafe; }}
-            .draw-match .draw-player.arg-player.winner {{ background: #bbf7d0; }}
             .draw-player .seed-entry {{ display: flex; gap: 0; width: 30px; flex-shrink: 0; justify-content: center; overflow: hidden; }}
             .draw-player .seed {{ color: #6b7280; font-size: 9px; min-width: 10px; text-align: center; }}
             .draw-player .entry {{ color: #9333ea; font-size: 9px; text-align: center; }}
@@ -1321,9 +1318,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .entry-content {{ flex: 1; display: flex; flex-direction: column; min-width: 0; }}
             #view-rankings table {{ table-layout: auto; }}
             #view-rankings td {{ font-size: 12px; padding: 6px 10px; }}
-            #view-rankings.rankings-show-all tr.arg-player-row td {{ background-color: #e0f2fe !important; }}
             .sticky-col {{ position: sticky; background: var(--c-surface) !important; z-index: 2; }}
-            .row-arg {{ background-color: var(--c-arg-tint) !important; }}
             td.col-week {{ width: 170px; font-size: 11px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
             th.sticky-col {{ z-index: 11; background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%) !important; color: white; }}
             .col-rank {{ left: 0; width: 32px; min-width: 45px; max-width: 45px; }}
@@ -1333,8 +1328,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             tr.hidden {{ display: none; }}
             table:not(.calendar-table) tbody tr:nth-child(even):not(.divider-row):not(.roadtogs-separator):not(.cal-group-first):not(.cal-group-last) td {{ background: var(--c-surface-alt); }}
             table:not(.calendar-table) tbody tr:nth-child(even):not(.divider-row):not(.roadtogs-separator):not(.cal-group-first):not(.cal-group-last) td.sticky-col {{ background: var(--c-surface-alt) !important; }}
-            table:not(.calendar-table) tr:not(.roadtogs-separator):hover td {{ background: var(--c-primary-softer) !important; }}
-            table:not(.calendar-table) tr:not(.roadtogs-separator):hover td.sticky-col {{ background: var(--c-primary-softer) !important; }}
+            table:not(.calendar-table):not(#tstrength-table) tr:not(.roadtogs-separator):hover td {{ background: var(--c-primary-softer) !important; }}
+            table:not(.calendar-table):not(#tstrength-table) tr:not(.roadtogs-separator):hover td.sticky-col {{ background: var(--c-primary-softer) !important; }}
             .dropdown-header {{ background-color: #e2e8f0 !important; font-weight: bold !important; text-align: center !important; padding: 12px 0 !important; font-size: 11px; display: block; }}
             .dropdown-item {{ padding: 8px 15px; text-align: left; background-color: #ffffff; }}
 
@@ -1488,6 +1483,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #tstrength-table td.ts-rank-num {{ font-weight: 700; color: #64748b; }}
             #tstrength-table td.ts-name {{ font-weight: 600; }}
             #tstrength-table td.ts-gm, #tstrength-table td.ts-hm {{ font-weight: 700; }}
+            [data-theme="dark"] #tstrength-table th,
+            [data-theme="dark"] #tstrength-table td {{ border-color: #334155; }}
+            [data-theme="dark"] #tstrength-table td[style*="background"] {{ color: #0f172a; }}
+            [data-theme="dark"] #tstrength-table td.ts-rank-num {{ color: #94a3b8; }}
 
             .ts-row1, .ts-row2 {{ display: contents; }}
 
@@ -2541,10 +2540,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             [data-theme="dark"] table {{ border-color: #334155; }}
             [data-theme="dark"] td {{ background: #1e293b; border-bottom-color: #334155; border-right-color: #334155; color: #e2e8f0; }}
             [data-theme="dark"] td.sticky-col {{ background: #1e293b !important; }}
-            [data-theme="dark"] table:not(.calendar-table) tr:not(.roadtogs-separator):hover td {{ background: #273548 !important; }}
-            [data-theme="dark"] table:not(.calendar-table) tr:not(.roadtogs-separator):hover td.sticky-col {{ background: #273548 !important; }}
-            [data-theme="dark"] .row-arg {{ background-color: #1e3a5c !important; }}
-            [data-theme="dark"] #view-rankings.rankings-show-all tr.arg-player-row td {{ background-color: #1e3a5c !important; }}
+            [data-theme="dark"] table:not(.calendar-table):not(#tstrength-table) tr:not(.roadtogs-separator):hover td {{ background: #273548 !important; }}
+            [data-theme="dark"] table:not(.calendar-table):not(#tstrength-table) tr:not(.roadtogs-separator):hover td.sticky-col {{ background: #273548 !important; }}
             [data-theme="dark"] .divider-row td {{ background: #1a2638; color: #94a3b8; }}
             [data-theme="dark"] .roadtogs-separator td {{ background: #1e3a5c; color: #93c5fd; }}
 
@@ -2572,11 +2569,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             [data-theme="dark"] .filter-panel {{ background: #1e293b; border-color: #334155; }}
             [data-theme="dark"] .filter-panel h3 {{ background: linear-gradient(180deg, #5a8fb8 0%, #3d6a8a 100%); }}
-            [data-theme="dark"] .filter-options {{ background: #162032; border-color: #334155; }}
+            [data-theme="dark"] .filter-options {{ background: transparent; border: none; padding: 0; }}
             [data-theme="dark"] .filter-option {{ color: #e2e8f0; }}
             [data-theme="dark"] .filter-option:hover {{ background: #273548; }}
             [data-theme="dark"] .filter-option.selected {{ background: #1e3a5c; color: #93c5fd; }}
-            [data-theme="dark"] .filter-group {{ border-color: #334155; background: #162032; }}
+            [data-theme="dark"] .filter-group {{ border: none; background: transparent; border-bottom: 1px solid #334155; padding-bottom: 10px; }}
             [data-theme="dark"] .filter-group-title {{ color: #94a3b8; }}
             [data-theme="dark"] .filter-search {{ background: #1e293b; border-color: #475569; color: #e2e8f0; }}
             [data-theme="dark"] .rank-filter-input,
@@ -2605,8 +2602,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             [data-theme="dark"] .draw-match .draw-player {{ background: #1e293b; border-color: #334155; color: #e2e8f0; }}
             [data-theme="dark"] .draw-match .draw-player:first-child {{ border-bottom-color: #334155; }}
             [data-theme="dark"] .draw-match .draw-player.winner {{ background: #0f2d1a; }}
-            [data-theme="dark"] .draw-match .draw-player.arg-player {{ background: #1a3a5c; }}
-            [data-theme="dark"] .draw-match .draw-player.arg-player.winner {{ background: #134e2e; }}
             [data-theme="dark"] .draw-round-header {{ background: #111827; color: #94a3b8; }}
             [data-theme="dark"] .draw-round-header:hover {{ color: #93c5fd; }}
             [data-theme="dark"] #draws-tournament-select optgroup {{ background: var(--c-surface-alt); color: var(--c-text-subtle); }}
@@ -2632,6 +2627,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             /* FedBCup / BJK - specific accents */
             [data-theme="dark"] .bjkc-series-header {{ background: var(--c-arg-tint); }}
+            [data-theme="dark"] .fedbcup-record-text {{ color: #cbd5e1; }}
+            [data-theme="dark"] td[style*="#166534"] {{ color: #4ade80 !important; }}
+            [data-theme="dark"] td[style*="#991b1b"] {{ color: #f87171 !important; }}
             [data-theme="dark"] .roadtogs-cutoffs {{ gap: 12px; }}
             [data-theme="dark"] .gs-cutoff-table {{
                 border-collapse: separate;
@@ -2650,13 +2648,26 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                selects white by default, so force the surface color explicitly. */
             [data-theme="dark"] .rankings-date-select {{ background-color: var(--c-surface); color: var(--c-text); }}
             [data-theme="dark"] .rankings-date-select option {{ background-color: var(--c-surface); color: var(--c-text); }}
+            [data-theme="dark"] #fedbcup-player-filter {{
+                background-color: var(--c-surface-sunk);
+                color: var(--c-text-secondary);
+                border-color: var(--c-border);
+                appearance: none;
+                -webkit-appearance: none;
+                padding-right: 26px;
+                background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 8px center;
+                background-size: 12px 12px;
+            }}
+            [data-theme="dark"] #fedbcup-player-filter option {{ background-color: var(--c-surface-sunk); color: var(--c-text); }}
 
             /* Select2 - third-party markup we don't control */
-            [data-theme="dark"] .select2-container--default .select2-selection--single {{ background-color: var(--c-surface); border-color: var(--c-border-strong); }}
+            [data-theme="dark"] .select2-container--default .select2-selection--single {{ background-color: var(--c-surface-sunk); border-color: var(--c-border); }}
             [data-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered {{ color: var(--c-text); }}
-            [data-theme="dark"] .select2-dropdown {{ background-color: var(--c-surface); border-color: var(--c-border-strong); }}
-            [data-theme="dark"] .select2-search--dropdown .select2-search__field {{ background-color: var(--c-surface-alt); border-color: var(--c-border-strong); color: var(--c-text); }}
-            [data-theme="dark"] .select2-results__option {{ color: var(--c-text); background-color: var(--c-surface); }}
+            [data-theme="dark"] .select2-dropdown {{ background-color: var(--c-surface-sunk); border-color: var(--c-border); }}
+            [data-theme="dark"] .select2-search--dropdown .select2-search__field {{ background-color: var(--c-surface); border-color: var(--c-border); color: var(--c-text); }}
+            [data-theme="dark"] .select2-results__option {{ color: var(--c-text); background-color: var(--c-surface-sunk); }}
             [data-theme="dark"] .select2-results__option--highlighted {{ background-color: var(--c-arg-tint) !important; color: var(--c-text) !important; }}
             [data-theme="dark"] .select2-container--default .select2-results__option[aria-selected=true] {{ background-color: var(--c-surface-alt); }}
             [data-theme="dark"] .dropdown-header {{ background-color: var(--c-surface-alt) !important; color: var(--c-text-subtle) !important; }}
@@ -3948,8 +3959,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 players.forEach(p => {{
                     const dob = (p.d || '').split('T')[0];
                     const name = (p.n || '').toLowerCase().replace(/(^|\\s)(\\S)/g, (_, b, c) => b + c.toUpperCase());
-                    const isArg = (p.c || '').toUpperCase() === 'ARG';
-                    html += `<tr class="${{isArg ? 'arg-player-row' : ''}}" data-country="${{(p.c||'').toUpperCase()}}"><td>${{p.r || ''}}</td><td style="text-align:left;font-weight:bold;">${{countryFlag(p.c || '', false)}} ${{name}}</td><td>${{p.pts || ''}}</td><td>${{dob}}</td></tr>`;
+                    html += `<tr data-country="${{(p.c||'').toUpperCase()}}"><td>${{p.r || ''}}</td><td style="text-align:left;font-weight:bold;">${{countryFlag(p.c || '', false)}} ${{name}}</td><td>${{p.pts || ''}}</td><td>${{dob}}</td></tr>`;
                 }});
                 tbody.innerHTML = html;
                 filterRankings();
@@ -4062,7 +4072,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const displayPos = renumber ? (i + 1) : p.pos;
                     const bold = isMain ? 'font-weight:bold;' : '';
                     const flag = (p.country && p.country !== '-') ? countryFlag(p.country, false) + ' ' : '';
-                    html += `<tr class="${{p.country==='ARG'?'row-arg':''}}"><td>${{displayPos}}</td><td style="text-align:left;${{bold}}">${{flag}}${{p.name}}</td><td>${{p.rank}}</td>${{prioCell(p)}}</tr>`;
+                    html += `<tr><td>${{displayPos}}</td><td style="text-align:left;${{bold}}">${{flag}}${{p.name}}</td><td>${{p.rank}}</td>${{prioCell(p)}}</tr>`;
                 }});
                 return html;
             }}
@@ -6080,8 +6090,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }} else if (matchConcluded && isWinner && showWalkover) {{
                     setsHtml += '<span class="set-score won wo">W.O.</span>';
                 }}
-                const isArg = player && player.country === 'ARG' && !matchConcluded;
-                const cls = 'draw-player' + (isWinner ? ' winner' : '') + (isArg ? ' arg-player' : '');
+                const cls = 'draw-player' + (isWinner ? ' winner' : '');
                 return '<div class="' + cls + '">' + flagHtml + seedEntry + nameHtml + (setsHtml ? '<span class="sets">' + setsHtml + '</span>' : '') + '</div>';
             }}
 
