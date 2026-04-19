@@ -597,7 +597,7 @@ def _load_cached_tournament_ids():
             data = json.load(f)
         if not isinstance(data, dict):
             return {}
-        return {k.lower(): str(v) for k, v in data.items() if v}
+        return {k.lower(): str(v) for k, v in data.items() if v and str(v).strip().lower() not in ("none", "null", "")}
     except Exception:
         return {}
 
@@ -711,7 +711,15 @@ if __name__ == "__main__":
                         final_df.at[idx, "tournamentId"] = float(cached_id)
                     except (ValueError, TypeError):
                         pass
-        final_df['tournamentId'] = final_df['tournamentId'].fillna(0).astype(int).astype(str).replace('0', '')
+        def _coerce_id(val):
+            s = str(val).strip() if val is not None else ''
+            if not s or s.lower() in ('none', 'nan', '0', 'null'):
+                return ''
+            try:
+                return str(int(float(s)))
+            except (ValueError, TypeError):
+                return ''
+        final_df['tournamentId'] = final_df['tournamentId'].apply(_coerce_id)
 
 
         all_matches = []

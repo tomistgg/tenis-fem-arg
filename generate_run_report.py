@@ -689,6 +689,9 @@ def compute_report(before_dir, after_dir):
             new_draws.append({"name": t_name, "types": labels})
     report["new_draws"] = new_draws
 
+    now_utc = datetime.now(timezone.utc)
+    today_str = now_utc.strftime("%Y-%m-%d")
+
     # Draw fetch failures (tournaments where ITF returned no data and no cache exists).
     # Exclude future-dated tournaments — an empty draw before the event starts is
     # expected (draws aren't published yet), not a real failure.
@@ -706,8 +709,6 @@ def compute_report(before_dir, after_dir):
     # Stale draws: active tournaments whose draw hasn't been refreshed in >24h
     draws_store = load_json(os.path.join(after_dir, "draws_store_cache.json")) or {}
     stale_draws = []
-    now_utc = datetime.now(timezone.utc)
-    today_str = now_utc.strftime("%Y-%m-%d")
     for t_key, entry in draws_store.items():
         if not isinstance(entry, dict):
             continue
