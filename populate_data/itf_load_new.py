@@ -590,28 +590,30 @@ if __name__ == "__main__":
     # Single driver kept alive through the full run (calendar → IDs → drawsheets)
     driver = create_driver()
     try:
-        raw_all = get_itf_calendar_for_range(
-            last_week_start.strftime("%Y-%m-%d"),
-            next_week_end.strftime("%Y-%m-%d"),
-            driver=driver
-        )
+        # ITF tournaments in the [last_week, next_week] window are scheduled well
+        # in advance, so the year-wide calendar that main.py refreshed on the
+        # previous cron run is authoritative here. Read it first and only fall
+        # back to a live GetCalendar fetch when the persistent cache is missing
+        # (e.g. very first run on a fresh checkout).
+        cached_items = _load_cached_calendar_tournaments(last_week_start, next_week_end)
+        if not cached_items:
+            print("[!] No cached calendar available; falling back to live GetCalendar fetch.")
+            cached_items = get_itf_calendar_for_range(
+                last_week_start.strftime("%Y-%m-%d"),
+                next_week_end.strftime("%Y-%m-%d"),
+                driver=driver
+            ) or []
 
-        # Deduplicate by tournamentKey
         seen_keys = set()
         raw_data = []
-        for t in (raw_all or []):
+        for t in cached_items:
             key = t.get("tournamentKey")
             if key and key not in seen_keys:
                 raw_data.append(t)
                 seen_keys.add(key)
-
         if not raw_data:
-            # Live calendar fetch blocked — fall back to the persisted cache so
-            # we can still pick up match results for tournaments already known.
-            print("[!] Live calendar fetch returned no results; using cached calendar as fallback.")
-            raw_data = _load_cached_calendar_tournaments(last_week_start, next_week_end)
-            if not raw_data:
-                raise SystemExit(0)
+            raise SystemExit(0)
+        print(f"  ITF calendar window: {len(raw_data)} tournaments.")
 
         tournaments_df = create_tournament_df(raw_data)
 
