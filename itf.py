@@ -16,10 +16,12 @@ ITF_BASE_URL = "https://www.itftennis.com"
 ITF_CALENDAR_PAGE_URL = f"{ITF_BASE_URL}/en/tournament-calendar/womens-world-tennis-tour-calendar/"
 
 # ITF rate limiting / anti-block pacing.
-_ITF_MIN_REQUEST_INTERVAL = float(os.getenv("ITF_API_MIN_INTERVAL_SEC", "5.0"))
-_ITF_REQUEST_JITTER_MAX = float(os.getenv("ITF_API_REQUEST_JITTER_SEC", "0.35"))
-_ITF_BLOCK_BACKOFF_BASE = float(os.getenv("ITF_API_BLOCK_BACKOFF_BASE_SEC", "3.0"))
-_ITF_BLOCK_BACKOFF_MAX = float(os.getenv("ITF_API_BLOCK_BACKOFF_MAX_SEC", "15.0"))
+# Defaults are deliberately slow — Incapsula rate-limits aggressively on
+# datacenter IPs (GHA runners). Tunable via env vars for local overrides.
+_ITF_MIN_REQUEST_INTERVAL = float(os.getenv("ITF_API_MIN_INTERVAL_SEC", "20.0"))
+_ITF_REQUEST_JITTER_MAX = float(os.getenv("ITF_API_REQUEST_JITTER_SEC", "10.0"))
+_ITF_BLOCK_BACKOFF_BASE = float(os.getenv("ITF_API_BLOCK_BACKOFF_BASE_SEC", "15.0"))
+_ITF_BLOCK_BACKOFF_MAX = float(os.getenv("ITF_API_BLOCK_BACKOFF_MAX_SEC", "60.0"))
 _itf_next_request_at = 0.0
 _itf_block_streak = 0
 

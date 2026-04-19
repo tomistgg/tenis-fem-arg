@@ -439,6 +439,9 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
 
     _now = datetime.now()
     today_str = _now.strftime("%Y-%m-%d")
+    # After noon UTC, give up re-fetching acceptance lists we already tried today
+    # without detecting a change. Pre-noon keeps retrying to catch morning updates.
+    _past_noon_utc = datetime.now(timezone.utc).hour >= 12
     current_monday_str = (_now - timedelta(days=_now.weekday())).strftime("%Y-%m-%d")
     next_monday_str = (_now + timedelta(days=7 - _now.weekday())).strftime("%Y-%m-%d")
     acceptance_state = _load_acceptance_state()
@@ -587,7 +590,12 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                 if not isinstance(cached_players, list):
                     cached_players = []
 
-                already_updated_today = acceptance_state.get(key, {}).get("last_changed_date") == today_str
+                state_entry = acceptance_state.get(key, {}) or {}
+                already_updated_today = state_entry.get("last_changed_date") == today_str
+                fetched_today_no_change = (
+                    state_entry.get("last_fetched_date") == today_str
+                    and not already_updated_today
+                )
                 start_date_str = t_info.get("startDate", "")
                 list_available = _itf_acceptance_list_available(start_date_str, _now)
 
@@ -599,6 +607,10 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                     print(f"  ITF acceptance list already updated today, skipping fetch: {t_name}")
                     tourney_players_list = list(cached_players)
                     itf_name_map = {}
+                elif fetched_today_no_change and _past_noon_utc:
+                    print(f"  ITF acceptance list unchanged through noon UTC, skipping: {t_name}")
+                    tourney_players_list = list(cached_players)
+                    itf_name_map = {}
                 elif not list_available:
                     # Entry list not published yet (before Friday 3 weeks prior)
                     tourney_players_list = list(cached_players)
@@ -606,12 +618,18 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                 else:
                     itf_entries, itf_name_map = get_itf_players(key, driver)
                     fresh_players = parse_itf_entry_list(itf_entries)
+                    # Record the fetch attempt (success or failure) so we can
+                    # stop retrying after noon UTC when nothing's changed.
+                    state_entry = acceptance_state.setdefault(key, {})
+                    if state_entry.get("last_fetched_date") != today_str:
+                        state_entry["last_fetched_date"] = today_str
+                        acceptance_state_dirty = True
                     if fresh_players:
                         cached_fp = _acceptance_fingerprint(cached_players)
                         fresh_fp = _acceptance_fingerprint(fresh_players)
                         if cached_fp != fresh_fp:
                             print(f"  ITF acceptance list updated for: {t_name}")
-                            acceptance_state[key] = {"last_changed_date": today_str}
+                            state_entry["last_changed_date"] = today_str
                             acceptance_state_dirty = True
                         else:
                             print(f"  No changes in ITF acceptance list yet for: {t_name}")
@@ -1024,8 +1042,9 @@ def main():
     for i, (week, t_key, t_info) in enumerate(itf_draw_jobs, start=1):
         print(f"Fetching ITF Draws ({i}/{total_itf_draws})")
         # Keep request cadence gentle to avoid ITF anti-bot throttling.
+        # draws._fetch_itf_drawsheet bypasses itf.py's rate limiter, so pace here.
         if i > 1:
-            time.sleep(random.uniform(0.8, 1.8))
+            time.sleep(random.uniform(5.0, 15.0))
         tid = t_info.get("tournamentId")
         is_multiweek = t_info.get("is_multiweek", False)
         store_key = _canonical_draw_store_key(t_key)
