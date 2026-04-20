@@ -312,13 +312,18 @@ def build_all_tournament_groups(driver):
     monday_map = generate_dynamic_monday_map(num_weeks=4)
     itf_monday_map = generate_dynamic_monday_map(num_weeks=3)
 
-    # Add current week's Monday if any current-week tournaments were included
+    # Add current week's Monday if any current-week tournaments were included,
+    # dropping the last future week to keep total at 4.
     today = datetime.now()
     current_monday = today - timedelta(days=today.weekday())
     current_monday_str = current_monday.strftime("%Y-%m-%d")
     current_monday_label = format_week_label(current_monday)
     if current_monday_label in tournament_groups and tournament_groups[current_monday_label]:
+        m_keys = list(monday_map.keys())
+        monday_map = {k: monday_map[k] for k in m_keys[:-1]}
         monday_map = {current_monday_str: current_monday_label, **monday_map}
+        itf_keys = list(itf_monday_map.keys())
+        itf_monday_map = {k: itf_monday_map[k] for k in itf_keys[:-1]}
         itf_monday_map = {current_monday_str: current_monday_label, **itf_monday_map}
 
     itf_items = get_dynamic_itf_calendar(driver, num_weeks=3)
