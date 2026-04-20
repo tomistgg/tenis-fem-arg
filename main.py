@@ -1072,7 +1072,7 @@ def main():
         # Keep request cadence gentle to avoid ITF anti-bot throttling.
         # draws._fetch_itf_drawsheet bypasses itf.py's rate limiter, so pace here.
         if i > 1:
-            time.sleep(random.uniform(5.0, 8.0))
+            time.sleep(random.uniform(15.0, 30.0))
         tid = t_info.get("tournamentId")
         is_multiweek = t_info.get("is_multiweek", False)
         store_key = _canonical_draw_store_key(t_key)
