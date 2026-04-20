@@ -54,7 +54,7 @@ def country_flag_html(code, show_code=True):
 def generate_html(tournament_groups, tournament_store, players_data, schedule_map,
                   cleaned_history, calendar_data, match_history_data, wta_rankings=None,
                   national_team_data=None, captains_data=None, draws_data=None,
-                  tstrength_data=None):
+                  tstrength_data=None, monday_map=None):
     """Generate the full app page (app.html) + a lightweight launcher (index.html)."""
 
     # Load points distribution
@@ -156,7 +156,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     # Build table rows
     table_rows = ""
-    week_keys = list(tournament_groups.keys())
+    week_keys = list(monday_map.values()) if monday_map else list(tournament_groups.keys())
 
     def get_sort_key(player_name):
         p = next(item for item in players_data if item["Player"] == player_name)

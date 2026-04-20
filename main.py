@@ -1228,7 +1228,8 @@ def main():
         national_team_data=national_team_data,
         captains_data=captains_data,
         draws_data=draws_store,
-        tstrength_data=tstrength_data
+        tstrength_data=tstrength_data,
+        monday_map=monday_map
     )
 
 
