@@ -5,7 +5,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20",
     "endDate": "2026-04-26",
-    "fetchedAt": "2026-04-20T08:56:50Z",
+    "fetchedAt": "2026-04-20T10:12:26Z",
     "draws": {
       "MDS": {
         "tournament_name": "Oeiras Open CETO",
@@ -419,7 +419,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-20T09:07:53Z",
+    "fetchedAt": "2026-04-20T10:22:48Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -970,7 +970,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-20T09:07:03Z",
+    "fetchedAt": "2026-04-20T10:21:57Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -1449,7 +1449,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-20T09:05:15Z",
+    "fetchedAt": "2026-04-20T10:20:05Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -1790,7 +1790,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-20T08:59:45Z",
+    "fetchedAt": "2026-04-20T10:15:11Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -2139,7 +2139,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-20T09:03:30Z",
+    "fetchedAt": "2026-04-20T10:18:04Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -2430,9 +2430,21 @@
           },
           {
             "round": 2,
+            "match_num": 0,
+            "winner_name": "L. Vladson",
+            "score": "63 62"
+          },
+          {
+            "round": 2,
             "match_num": 2,
             "winner_name": "A. Sucha",
             "score": "W/O"
+          },
+          {
+            "round": 2,
+            "match_num": 13,
+            "winner_name": "E. Plosnik",
+            "score": "60 75"
           },
           {
             "round": 2,
@@ -2486,7 +2498,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-20T08:57:53Z",
+    "fetchedAt": "2026-04-20T10:13:30Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -3000,7 +3012,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-21",
     "endDate": "2026-05-03",
-    "fetchedAt": "2026-04-20T08:56:50Z",
+    "fetchedAt": "2026-04-20T10:12:26Z",
     "draws": {
       "QS": {
         "tournament_name": "Mutua Madrid Open",
@@ -4216,7 +4228,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-20T09:00:38Z",
+    "fetchedAt": "2026-04-20T10:15:18Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -4521,6 +4533,251 @@
           "Round of 16"
         ],
         "num_rounds": 2
+      },
+      "MDS": {
+        "tournament_name": "",
+        "location": "",
+        "dates": "",
+        "prize": "",
+        "surface": "",
+        "draw_type": "",
+        "draw_size": 32,
+        "players": [
+          {
+            "pos": 1,
+            "seed": "1",
+            "entry": "",
+            "name": "WANG, Xiyu",
+            "country": "CHN"
+          },
+          {
+            "pos": 2,
+            "seed": "",
+            "entry": "WC",
+            "name": "WEI, Zhang-Qian",
+            "country": "CHN"
+          },
+          {
+            "pos": 3,
+            "seed": "",
+            "entry": "Q",
+            "name": "HUANG, Yujia",
+            "country": "CHN"
+          },
+          {
+            "pos": 4,
+            "seed": "",
+            "entry": "Q",
+            "name": "KALYAKINA, Maria",
+            "country": "RUS"
+          },
+          {
+            "pos": 5,
+            "seed": "",
+            "entry": "WC",
+            "name": "WANG, JiaYi",
+            "country": "CHN"
+          },
+          {
+            "pos": 6,
+            "seed": "",
+            "entry": "WC",
+            "name": "WANG, Yuhan",
+            "country": "CHN"
+          },
+          {
+            "pos": 7,
+            "seed": "",
+            "entry": "",
+            "name": "CHERUBINI, Diletta",
+            "country": "ITA"
+          },
+          {
+            "pos": 8,
+            "seed": "8",
+            "entry": "",
+            "name": "YANG, Yidi",
+            "country": "CHN"
+          },
+          {
+            "pos": 9,
+            "seed": "3",
+            "entry": "",
+            "name": "MIKULSKYTE, Justina",
+            "country": "LTU"
+          },
+          {
+            "pos": 10,
+            "seed": "",
+            "entry": "Q",
+            "name": "ZHU, Amy",
+            "country": "USA"
+          },
+          {
+            "pos": 11,
+            "seed": "",
+            "entry": "Q",
+            "name": "YUAN, Chengyiyi",
+            "country": "CHN"
+          },
+          {
+            "pos": 12,
+            "seed": "",
+            "entry": "Q",
+            "name": "AN, Liuyan",
+            "country": "CHN"
+          },
+          {
+            "pos": 13,
+            "seed": "",
+            "entry": "",
+            "name": "SHI, Han",
+            "country": "CHN"
+          },
+          {
+            "pos": 14,
+            "seed": "",
+            "entry": "",
+            "name": "REN, Yufei",
+            "country": "CHN"
+          },
+          {
+            "pos": 15,
+            "seed": "",
+            "entry": "",
+            "name": "KULAMBAYEVA, Zhibek",
+            "country": "KAZ"
+          },
+          {
+            "pos": 16,
+            "seed": "6",
+            "entry": "",
+            "name": "SAITO, Sara",
+            "country": "JPN"
+          },
+          {
+            "pos": 17,
+            "seed": "5",
+            "entry": "",
+            "name": "LANSERE, Sofya",
+            "country": "RUS"
+          },
+          {
+            "pos": 18,
+            "seed": "",
+            "entry": "",
+            "name": "WANG, Jiaqi",
+            "country": "CHN"
+          },
+          {
+            "pos": 19,
+            "seed": "",
+            "entry": "",
+            "name": "ZOLOTAREVA, Rada",
+            "country": "RUS"
+          },
+          {
+            "pos": 20,
+            "seed": "",
+            "entry": "",
+            "name": "JAKUPOVIC, Dalila",
+            "country": "SLO"
+          },
+          {
+            "pos": 21,
+            "seed": "",
+            "entry": "",
+            "name": "REYNGOLD, Ekaterina",
+            "country": "RUS"
+          },
+          {
+            "pos": 22,
+            "seed": "",
+            "entry": "Q",
+            "name": "LUO, Xi",
+            "country": "CHN"
+          },
+          {
+            "pos": 23,
+            "seed": "",
+            "entry": "",
+            "name": "ZHENG, Wushuang",
+            "country": "CHN"
+          },
+          {
+            "pos": 24,
+            "seed": "4",
+            "entry": "",
+            "name": "ZOLOTAREVA, Anastasia",
+            "country": "RUS"
+          },
+          {
+            "pos": 25,
+            "seed": "7",
+            "entry": "",
+            "name": "IBRAGIMOVA, Alevtina",
+            "country": "RUS"
+          },
+          {
+            "pos": 26,
+            "seed": "",
+            "entry": "",
+            "name": "YAO, Xinxin",
+            "country": "CHN"
+          },
+          {
+            "pos": 27,
+            "seed": "",
+            "entry": "WC",
+            "name": "SHAO, Yushan",
+            "country": "CHN"
+          },
+          {
+            "pos": 28,
+            "seed": "",
+            "entry": "",
+            "name": "PANSHINA, Varvara",
+            "country": "RUS"
+          },
+          {
+            "pos": 29,
+            "seed": "",
+            "entry": "",
+            "name": "GUO, Meiqi",
+            "country": "CHN"
+          },
+          {
+            "pos": 30,
+            "seed": "",
+            "entry": "Q",
+            "name": "RUOXI, Ma",
+            "country": "CHN"
+          },
+          {
+            "pos": 31,
+            "seed": "",
+            "entry": "Q",
+            "name": "CHEN, Sitong",
+            "country": "CHN"
+          },
+          {
+            "pos": 32,
+            "seed": "2",
+            "entry": "",
+            "name": "GAO, Xinyu",
+            "country": "CHN"
+          }
+        ],
+        "matches": [],
+        "byes": [],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
       }
     }
   },
@@ -4530,7 +4787,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-20T09:00:47Z",
+    "fetchedAt": "2026-04-20T10:15:26Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -5036,6 +5293,12 @@
           },
           {
             "round": 1,
+            "match_num": 30,
+            "winner_name": "N. Mitsunari",
+            "score": "76(4) 63"
+          },
+          {
+            "round": 1,
             "match_num": 31,
             "winner_name": "H. Sato",
             "score": "62 64"
@@ -5057,6 +5320,36 @@
             "match_num": 2,
             "winner_name": "A. Ichioka",
             "score": ""
+          },
+          {
+            "round": 2,
+            "match_num": 3,
+            "winner_name": "T. Deng",
+            "score": "62 57 10-6"
+          },
+          {
+            "round": 2,
+            "match_num": 4,
+            "winner_name": "S. Yoshida",
+            "score": "75 61"
+          },
+          {
+            "round": 2,
+            "match_num": 6,
+            "winner_name": "N. Hanatani",
+            "score": "64 63"
+          },
+          {
+            "round": 2,
+            "match_num": 7,
+            "winner_name": "N. Suzuki",
+            "score": "61 67 10-6"
+          },
+          {
+            "round": 2,
+            "match_num": 8,
+            "winner_name": "M. Kawamura",
+            "score": "64 64"
           }
         ],
         "byes": [
@@ -5274,7 +5567,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-20T09:04:21Z",
+    "fetchedAt": "2026-04-20T10:18:11Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -5639,9 +5932,21 @@
           },
           {
             "round": 2,
+            "match_num": 5,
+            "winner_name": "K. Nguyen",
+            "score": "61 61"
+          },
+          {
+            "round": 2,
             "match_num": 6,
             "winner_name": "S. Choi",
             "score": "63 61"
+          },
+          {
+            "round": 2,
+            "match_num": 7,
+            "winner_name": "H. Wu",
+            "score": "63 76(5)"
           }
         ],
         "byes": [],
@@ -5650,6 +5955,251 @@
           "Round of 16"
         ],
         "num_rounds": 2
+      },
+      "MDS": {
+        "tournament_name": "",
+        "location": "",
+        "dates": "",
+        "prize": "",
+        "surface": "",
+        "draw_type": "",
+        "draw_size": 32,
+        "players": [
+          {
+            "pos": 1,
+            "seed": "1",
+            "entry": "",
+            "name": "BACK, Dayeon",
+            "country": "KOR"
+          },
+          {
+            "pos": 2,
+            "seed": "",
+            "entry": "",
+            "name": "KIM, Cherry",
+            "country": "KOR"
+          },
+          {
+            "pos": 3,
+            "seed": "",
+            "entry": "Q",
+            "name": "DELAUNAY, Carolann",
+            "country": "CAL"
+          },
+          {
+            "pos": 4,
+            "seed": "",
+            "entry": "",
+            "name": "VARAKSINA, Arina",
+            "country": "RUS"
+          },
+          {
+            "pos": 5,
+            "seed": "",
+            "entry": "",
+            "name": "LIN, Fang An",
+            "country": "TPE"
+          },
+          {
+            "pos": 6,
+            "seed": "",
+            "entry": "",
+            "name": "LIU, Yuhan",
+            "country": "CHN"
+          },
+          {
+            "pos": 7,
+            "seed": "",
+            "entry": "Q",
+            "name": "OHASHI, Remika",
+            "country": "JPN"
+          },
+          {
+            "pos": 8,
+            "seed": "6",
+            "entry": "",
+            "name": "KIM, Yujin",
+            "country": "KOR"
+          },
+          {
+            "pos": 9,
+            "seed": "4",
+            "entry": "",
+            "name": "SEMA, Erika",
+            "country": "JPN"
+          },
+          {
+            "pos": 10,
+            "seed": "",
+            "entry": "Q",
+            "name": "SHIN, Jiho",
+            "country": "KOR"
+          },
+          {
+            "pos": 11,
+            "seed": "",
+            "entry": "WC",
+            "name": "KANTAM, Tanisha",
+            "country": "SGP"
+          },
+          {
+            "pos": 12,
+            "seed": "",
+            "entry": "",
+            "name": "HOU, Yanan",
+            "country": "CHN"
+          },
+          {
+            "pos": 13,
+            "seed": "",
+            "entry": "",
+            "name": "AHN, YUJIN",
+            "country": "KOR"
+          },
+          {
+            "pos": 14,
+            "seed": "",
+            "entry": "JR",
+            "name": "LEE, Ha Eum",
+            "country": "KOR"
+          },
+          {
+            "pos": 15,
+            "seed": "",
+            "entry": "Q",
+            "name": "WU, Ho Ching",
+            "country": "HKG"
+          },
+          {
+            "pos": 16,
+            "seed": "8",
+            "entry": "",
+            "name": "SUN, Yingqun",
+            "country": "CHN"
+          },
+          {
+            "pos": 17,
+            "seed": "5",
+            "entry": "",
+            "name": "ZHANG, Junhan",
+            "country": "CHN"
+          },
+          {
+            "pos": 18,
+            "seed": "",
+            "entry": "",
+            "name": "DAS, Aishi",
+            "country": "NZL"
+          },
+          {
+            "pos": 19,
+            "seed": "",
+            "entry": "Q",
+            "name": "NGUYEN, Kenzie",
+            "country": "USA"
+          },
+          {
+            "pos": 20,
+            "seed": "",
+            "entry": "Q",
+            "name": "CHOI, Seo Yun",
+            "country": "KOR"
+          },
+          {
+            "pos": 21,
+            "seed": "",
+            "entry": "",
+            "name": "DESVIGNES, Eva Marie",
+            "country": "SGP"
+          },
+          {
+            "pos": 22,
+            "seed": "",
+            "entry": "Q",
+            "name": "JANG, Soo Ha",
+            "country": "KOR"
+          },
+          {
+            "pos": 23,
+            "seed": "",
+            "entry": "JR",
+            "name": "HOO, Carrie-Anne",
+            "country": "USA"
+          },
+          {
+            "pos": 24,
+            "seed": "3",
+            "entry": "",
+            "name": "MATSUDA, Rinko",
+            "country": "JPN"
+          },
+          {
+            "pos": 25,
+            "seed": "7",
+            "entry": "",
+            "name": "IVANOV, Valentina",
+            "country": "NZL"
+          },
+          {
+            "pos": 26,
+            "seed": "",
+            "entry": "JR",
+            "name": "DE BRESSER, Fleur",
+            "country": "NED"
+          },
+          {
+            "pos": 27,
+            "seed": "",
+            "entry": "WC",
+            "name": "NG, Kai Ning Chanya",
+            "country": "SGP"
+          },
+          {
+            "pos": 28,
+            "seed": "",
+            "entry": "SR",
+            "name": "KRYWOJ, Melany Solange",
+            "country": "ARG"
+          },
+          {
+            "pos": 29,
+            "seed": "",
+            "entry": "WC",
+            "name": "CHUA, Sophie Ashley",
+            "country": "SGP"
+          },
+          {
+            "pos": 30,
+            "seed": "",
+            "entry": "Q",
+            "name": "TSAO, Chia Yi",
+            "country": "TPE"
+          },
+          {
+            "pos": 31,
+            "seed": "",
+            "entry": "WC",
+            "name": "GIAM, Hannah",
+            "country": "SGP"
+          },
+          {
+            "pos": 32,
+            "seed": "2",
+            "entry": "",
+            "name": "WECKERLE, Marie",
+            "country": "LUX"
+          }
+        ],
+        "matches": [],
+        "byes": [],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
       }
     }
   },
@@ -5659,7 +6209,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-20T08:58:51Z",
+    "fetchedAt": "2026-04-20T10:14:21Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -5895,7 +6445,14 @@
             "country": "ESP"
           }
         ],
-        "matches": [],
+        "matches": [
+          {
+            "round": 1,
+            "match_num": 12,
+            "winner_name": "A. Kucmova",
+            "score": "61 61"
+          }
+        ],
         "byes": [],
         "round_labels": [
           "Round of 32",
@@ -5911,7 +6468,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-20T09:02:38Z",
+    "fetchedAt": "2026-04-20T10:17:13Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -6150,6 +6707,18 @@
         "matches": [
           {
             "round": 1,
+            "match_num": 4,
+            "winner_name": "E. Inisan",
+            "score": "64 62"
+          },
+          {
+            "round": 1,
+            "match_num": 5,
+            "winner_name": "O. Panasa",
+            "score": "W/O"
+          },
+          {
+            "round": 1,
             "match_num": 10,
             "winner_name": "G. Maduzzi",
             "score": "W/O"
@@ -6170,7 +6739,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-20T08:57:45Z",
+    "fetchedAt": "2026-04-20T10:13:22Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -6422,7 +6991,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-20T09:01:46Z",
+    "fetchedAt": "2026-04-20T10:16:19Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -6674,7 +7243,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-20T09:06:09Z",
+    "fetchedAt": "2026-04-20T10:21:04Z",
     "draws": {
       "QS": {
         "tournament_name": "",
