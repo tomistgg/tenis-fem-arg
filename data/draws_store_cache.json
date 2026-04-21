@@ -5,7 +5,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20",
     "endDate": "2026-04-26",
-    "fetchedAt": "2026-04-21T06:27:26Z",
+    "fetchedAt": "2026-04-21T08:25:12Z",
     "draws": {
       "MDS": {
         "tournament_name": "Oeiras Open CETO",
@@ -503,7 +503,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-21T06:34:05Z",
+    "fetchedAt": "2026-04-21T08:31:55Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -1271,7 +1271,14 @@
             "country": "RUS"
           }
         ],
-        "matches": [],
+        "matches": [
+          {
+            "round": 1,
+            "match_num": 15,
+            "winner_name": "E. Yashina",
+            "score": "64 64"
+          }
+        ],
         "byes": [],
         "round_labels": [
           "Round of 32",
@@ -1290,7 +1297,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-21T06:33:43Z",
+    "fetchedAt": "2026-04-21T08:31:28Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -2047,7 +2054,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-21T06:33:04Z",
+    "fetchedAt": "2026-04-21T08:30:28Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -2388,9 +2395,21 @@
           },
           {
             "round": 2,
+            "match_num": 4,
+            "winner_name": "F. Peet",
+            "score": "62 63"
+          },
+          {
+            "round": 2,
             "match_num": 5,
             "winner_name": "A. Caby",
             "score": "W/O"
+          },
+          {
+            "round": 2,
+            "match_num": 6,
+            "winner_name": "A. Iankovskaia",
+            "score": "61 61"
           },
           {
             "round": 2,
@@ -2421,6 +2440,12 @@
             "match_num": 11,
             "winner_name": "A. Vosloo",
             "score": "61 43 RET"
+          },
+          {
+            "round": 2,
+            "match_num": 12,
+            "winner_name": "M. Jordaan",
+            "score": "63 62"
           },
           {
             "round": 2,
@@ -2667,7 +2692,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-21T06:28:50Z",
+    "fetchedAt": "2026-04-21T08:26:31Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -3309,7 +3334,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-21T06:32:04Z",
+    "fetchedAt": "2026-04-21T08:29:35Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -3740,7 +3765,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-21T06:27:54Z",
+    "fetchedAt": "2026-04-21T08:25:37Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -4111,6 +4136,12 @@
           },
           {
             "round": 2,
+            "match_num": 6,
+            "winner_name": "C. Zhao",
+            "score": "61 63"
+          },
+          {
+            "round": 2,
             "match_num": 7,
             "winner_name": "N. Kawaguchi",
             "score": "46 64 62"
@@ -4147,10 +4178,24 @@
             "country": "JPN"
           },
           {
+            "pos": 3,
+            "seed": "",
+            "entry": "Q",
+            "name": "KAWAGUCHI, Natsumi",
+            "country": "JPN"
+          },
+          {
             "pos": 4,
             "seed": "",
             "entry": "",
             "name": "YAMAGUCHI, Mei",
+            "country": "JPN"
+          },
+          {
+            "pos": 5,
+            "seed": "",
+            "entry": "Q",
+            "name": "GOTO, Reina",
             "country": "JPN"
           },
           {
@@ -4196,11 +4241,25 @@
             "country": "CZE"
           },
           {
+            "pos": 12,
+            "seed": "",
+            "entry": "Q",
+            "name": "WONG, Hong Yi Cody",
+            "country": "HKG"
+          },
+          {
             "pos": 13,
             "seed": "",
             "entry": "",
             "name": "INOUE, Hina",
             "country": "USA"
+          },
+          {
+            "pos": 14,
+            "seed": "",
+            "entry": "Q",
+            "name": "DA SILVA FICK, Gabriella",
+            "country": "AUS"
           },
           {
             "pos": 15,
@@ -4224,6 +4283,20 @@
             "country": "AUS"
           },
           {
+            "pos": 18,
+            "seed": "",
+            "entry": "Q",
+            "name": "NAITO, Yuki",
+            "country": "JPN"
+          },
+          {
+            "pos": 19,
+            "seed": "",
+            "entry": "Q",
+            "name": "ARSENEAULT, Ariana",
+            "country": "CAN"
+          },
+          {
             "pos": 20,
             "seed": "",
             "entry": "",
@@ -4245,6 +4318,13 @@
             "country": "JPN"
           },
           {
+            "pos": 23,
+            "seed": "",
+            "entry": "Q",
+            "name": "ZHAO, Carol",
+            "country": "CAN"
+          },
+          {
             "pos": 24,
             "seed": "4",
             "entry": "",
@@ -4263,6 +4343,13 @@
             "seed": "",
             "entry": "WC",
             "name": "NISHIMURA, Kayo",
+            "country": "JPN"
+          },
+          {
+            "pos": 27,
+            "seed": "",
+            "entry": "Q",
+            "name": "KAJI, Haruka",
             "country": "JPN"
           },
           {
@@ -4301,7 +4388,20 @@
             "country": "JPN"
           }
         ],
-        "matches": [],
+        "matches": [
+          {
+            "round": 1,
+            "match_num": 7,
+            "winner_name": "P. Iatcenko",
+            "score": "63 60"
+          },
+          {
+            "round": 1,
+            "match_num": 14,
+            "winner_name": "H. Dart",
+            "score": "62 75"
+          }
+        ],
         "byes": [],
         "round_labels": [
           "Round of 32",
@@ -4320,7 +4420,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-21",
     "endDate": "2026-05-03",
-    "fetchedAt": "2026-04-21T06:27:26Z",
+    "fetchedAt": "2026-04-21T08:25:12Z",
     "draws": {
       "QS": {
         "tournament_name": "Mutua Madrid Open",
@@ -5662,7 +5762,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-21T06:29:20Z",
+    "fetchedAt": "2026-04-21T08:27:03Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -6205,6 +6305,12 @@
         "matches": [
           {
             "round": 1,
+            "match_num": 1,
+            "winner_name": "M. Kalyakina",
+            "score": "63 62"
+          },
+          {
+            "round": 1,
             "match_num": 2,
             "winner_name": "J. Wang",
             "score": "64 64"
@@ -6226,6 +6332,12 @@
             "match_num": 14,
             "winner_name": "M. Guo",
             "score": "60 60"
+          },
+          {
+            "round": 1,
+            "match_num": 15,
+            "winner_name": "X. Gao",
+            "score": "61 64"
           }
         ],
         "byes": [],
@@ -6246,7 +6358,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-21T06:29:45Z",
+    "fetchedAt": "2026-04-21T08:27:27Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -6958,6 +7070,13 @@
             "country": "JPN"
           },
           {
+            "pos": 6,
+            "seed": "",
+            "entry": "Q",
+            "name": "SATO, Naho",
+            "country": "JPN"
+          },
+          {
             "pos": 7,
             "seed": "",
             "entry": "WC",
@@ -6986,6 +7105,13 @@
             "country": "KOR"
           },
           {
+            "pos": 11,
+            "seed": "",
+            "entry": "Q",
+            "name": "CHOI, Onyu",
+            "country": "KOR"
+          },
+          {
             "pos": 12,
             "seed": "",
             "entry": "SR",
@@ -6998,6 +7124,13 @@
             "entry": "",
             "name": "DEFALCO, Jenna",
             "country": "USA"
+          },
+          {
+            "pos": 14,
+            "seed": "",
+            "entry": "Q",
+            "name": "TSUJIOKA, Shiho",
+            "country": "JPN"
           },
           {
             "pos": 15,
@@ -7042,6 +7175,20 @@
             "country": "JPN"
           },
           {
+            "pos": 21,
+            "seed": "",
+            "entry": "Q",
+            "name": "MIYAMOTO, Ayumi",
+            "country": "JPN"
+          },
+          {
+            "pos": 22,
+            "seed": "",
+            "entry": "LL",
+            "name": "NEGISHI, Yuzuha",
+            "country": "JPN"
+          },
+          {
             "pos": 23,
             "seed": "",
             "entry": "WC",
@@ -7077,10 +7224,31 @@
             "country": "JPN"
           },
           {
+            "pos": 28,
+            "seed": "",
+            "entry": "Q",
+            "name": "KAWAGISHI, Nana",
+            "country": "JPN"
+          },
+          {
+            "pos": 29,
+            "seed": "",
+            "entry": "Q",
+            "name": "YOSHIDA, Sara",
+            "country": "JPN"
+          },
+          {
             "pos": 30,
             "seed": "",
             "entry": "",
             "name": "SATO, Hikaru",
+            "country": "JPN"
+          },
+          {
+            "pos": 31,
+            "seed": "",
+            "entry": "Q",
+            "name": "SUZUKI, Nagisa",
             "country": "JPN"
           },
           {
@@ -7097,6 +7265,24 @@
             "match_num": 1,
             "winner_name": "M. Uemura",
             "score": "64 62"
+          },
+          {
+            "round": 1,
+            "match_num": 4,
+            "winner_name": "V. Ryser",
+            "score": "63 64"
+          },
+          {
+            "round": 1,
+            "match_num": 7,
+            "winner_name": "J. Lu",
+            "score": "63 61"
+          },
+          {
+            "round": 1,
+            "match_num": 12,
+            "winner_name": "Y. Kitahara",
+            "score": "64 63"
           }
         ],
         "byes": [],
@@ -7117,7 +7303,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-21T06:32:34Z",
+    "fetchedAt": "2026-04-21T08:30:03Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -7761,9 +7947,33 @@
           },
           {
             "round": 1,
+            "match_num": 7,
+            "winner_name": "Y. Sun",
+            "score": "46 61 60"
+          },
+          {
+            "round": 1,
+            "match_num": 8,
+            "winner_name": "A. Das",
+            "score": "64 64"
+          },
+          {
+            "round": 1,
+            "match_num": 10,
+            "winner_name": "E. Desvignes",
+            "score": "64 64"
+          },
+          {
+            "round": 1,
             "match_num": 14,
             "winner_name": "C. Tsao",
             "score": "62 64"
+          },
+          {
+            "round": 1,
+            "match_num": 15,
+            "winner_name": "M. Weckerle",
+            "score": "60 60"
           }
         ],
         "byes": [],
@@ -7784,7 +7994,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-21T06:28:18Z",
+    "fetchedAt": "2026-04-21T08:26:00Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -8322,7 +8532,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-21T06:30:41Z",
+    "fetchedAt": "2026-04-21T08:28:21Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -8853,7 +9063,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-21T06:27:30Z",
+    "fetchedAt": "2026-04-21T08:25:16Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -9391,7 +9601,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-21T06:30:14Z",
+    "fetchedAt": "2026-04-21T08:27:53Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -9929,7 +10139,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-21T06:33:23Z",
+    "fetchedAt": "2026-04-21T08:30:54Z",
     "draws": {
       "QS": {
         "tournament_name": "",
