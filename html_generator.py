@@ -5227,14 +5227,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 function getQualPointKey(round, result, hasMainDraw, pTable) {{
                     if (hasMainDraw) return 'QLFR';
                     if (result === 'W') {{
-                        // Check if this is the final qualifying round (highest QR with non-null points)
-                        if (pTable) {{
-                            const finalQR = pTable['QR3'] != null ? 'QR3' : (pTable['QR2'] != null ? 'QR2' : 'QR1');
-                            if (round === finalQR) return 'QLFR';
-                        }}
-                        return null; // still in qualifying, result pending
+                        // Won this round — check if it's the final qualifying round
+                        const finalQR = pTable ? (pTable['QR3'] != null ? 'QR3' : (pTable['QR2'] != null ? 'QR2' : 'QR1')) : null;
+                        if (round === finalQR) return 'QLFR';
+                        // Still in qualifying: advance to next round (minimum guaranteed result)
+                        const nextQual = {{'QR1':'QR2','QR2':'QR3'}};
+                        return nextQual[round] || null;
                     }}
-                    return round; // QR1, QR2, QR3
+                    return round; // lost in this round
                 }}
 
                 // Filter matches for selected player in last 52 weeks, exclude Fed/BJK Cup
@@ -5438,9 +5438,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const isLuckyLoser = t.bestQualRound && t.bestQualResult === 'L' && !!t.bestMainRound;
 
                     // Qualifying display
-                    // Still mid-qualifying (won last match but not the final qual round, no main draw): show round + '*'
-                    const _inProgressQual = !!t.bestQualRound && t.bestQualResult === 'W' && !t.bestMainRound && !wonFinalQualRound;
-                    const qualDisplay = qualified ? 'QLFR' : (_inProgressQual ? (t.bestQualRound + '*') : t.bestQualRound);
+                    // Still in qualifying (won last match, not the final round): advance to next QR (minimum guaranteed)
+                    const _nextQualRound = {{'QR1':'QR2','QR2':'QR3'}};
+                    const _advancedQual = !!t.bestQualRound && t.bestQualResult === 'W' && !t.bestMainRound && !wonFinalQualRound;
+                    const qualDisplay = qualified ? 'QLFR' : (_advancedQual ? (_nextQualRound[t.bestQualRound] || t.bestQualRound) : t.bestQualRound);
 
                     // Main draw display: "WINNER" if won the final
                     let mainDisplay = t.bestMainRound;
