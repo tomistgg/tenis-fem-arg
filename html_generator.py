@@ -5223,8 +5223,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
 
                 // Map a qualifying round to a point key
-                function getQualPointKey(round, result, hasMainDraw) {{
-                    if (hasMainDraw || result === 'W') return 'QLFR';
+                // pTable is used to determine the final qualifying round for this tournament
+                function getQualPointKey(round, result, hasMainDraw, pTable) {{
+                    if (hasMainDraw) return 'QLFR';
+                    if (result === 'W') {{
+                        // Check if this is the final qualifying round (highest QR with non-null points)
+                        if (pTable) {{
+                            const finalQR = pTable['QR3'] != null ? 'QR3' : (pTable['QR2'] != null ? 'QR2' : 'QR1');
+                            if (round === finalQR) return 'QLFR';
+                        }}
+                        return null; // still in qualifying, result pending
+                    }}
                     return round; // QR1, QR2, QR3
                 }}
 
@@ -5388,28 +5397,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         }}
                     }} else {{
 
-                    // Determine qualifier vs lucky loser status
-                    const qualified = t.bestQualRound && t.bestQualResult === 'W';
-                    const isLuckyLoser = t.bestQualRound && t.bestQualResult === 'L' && !!t.bestMainRound;
-
-                    // Qualifying display
-                    const qualDisplay = qualified ? 'QLFR' : t.bestQualRound;
-
-                    // Main draw display: "WINNER" if won the final
-                    let mainDisplay = t.bestMainRound;
-                    if (t.bestMainRound === 'Final' && t.bestMainResult === 'W') {{
-                        mainDisplay = 'WINNER';
-                    }}
-
-                    // Build round display
-                    if (t.bestMainRound && t.bestQualRound) {{
-                        t.roundDisplay = abbrevRound(mainDisplay) + ' + ' + qualDisplay;
-                    }} else {{
-                        t.roundDisplay = abbrevRound(mainDisplay || qualDisplay || '');
-                    }}
-
-                    // Calculate points
-                    // For ITF tournaments, look up actual draw size description
+                    // Determine draw size and points table first (needed to identify final qualifying round)
                     const itfCategories = ['W100','W75','W60','W50','W35','W25','W15'];
                     let desc, drawSize;
                     if (itfCategories.includes(t.category)) {{
@@ -5438,6 +5426,35 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             drawSize = categoryDrawSize[t.category] || 32;
                         }}
                     }}
+                    const pTable = pointsLookup[desc];
+
+                    // Final qualifying round = highest QR key with non-null points (GS has QR3; WTA/ITF end at QR2 or QR1)
+                    const finalQualRound = pTable ? (pTable['QR3'] != null ? 'QR3' : (pTable['QR2'] != null ? 'QR2' : 'QR1')) : null;
+
+                    // Determine qualifier vs lucky loser status
+                    // qualified = entered main draw after qualifying, OR won the final qualifying round (before main draw starts)
+                    const wonFinalQualRound = !!t.bestQualRound && t.bestQualResult === 'W' && !t.bestMainRound && t.bestQualRound === finalQualRound;
+                    const qualified = (!!t.bestQualRound && !!t.bestMainRound && t.bestQualResult !== 'L') || wonFinalQualRound;
+                    const isLuckyLoser = t.bestQualRound && t.bestQualResult === 'L' && !!t.bestMainRound;
+
+                    // Qualifying display
+                    // Still mid-qualifying (won last match but not the final qual round, no main draw): show round + '*'
+                    const _inProgressQual = !!t.bestQualRound && t.bestQualResult === 'W' && !t.bestMainRound && !wonFinalQualRound;
+                    const qualDisplay = qualified ? 'QLFR' : (_inProgressQual ? (t.bestQualRound + '*') : t.bestQualRound);
+
+                    // Main draw display: "WINNER" if won the final
+                    let mainDisplay = t.bestMainRound;
+                    if (t.bestMainRound === 'Final' && t.bestMainResult === 'W') {{
+                        mainDisplay = 'WINNER';
+                    }}
+
+                    // Build round display
+                    if (t.bestMainRound && t.bestQualRound) {{
+                        t.roundDisplay = abbrevRound(mainDisplay) + ' + ' + qualDisplay;
+                    }} else {{
+                        t.roundDisplay = abbrevRound(mainDisplay || qualDisplay || '');
+                    }}
+
                     // If player won their last round (still active), advance roundDisplay to guaranteed next round
                     if (t.bestMainResult === 'W' && t.bestMainRound && t.bestMainRound !== 'Final') {{
                         const _rd32  = {{'1st Round':'2nd Round','2nd Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'}};
@@ -5450,7 +5467,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             t.roundDisplay = t.bestQualRound ? (_rdAbbr + ' + ' + qualDisplay) : _rdAbbr;
                         }}
                     }}
-                    const pTable = pointsLookup[desc];
                     t.points = 0;
                     if (pTable) {{
                         // Main draw points
@@ -5471,7 +5487,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                 const qKey = t.bestQualRound; // QR1, QR2, QR3
                                 if (pTable[qKey] != null) t.points += pTable[qKey];
                             }} else {{
-                                const qKey = getQualPointKey(t.bestQualRound, t.bestQualResult, !!t.bestMainRound);
+                                const qKey = getQualPointKey(t.bestQualRound, t.bestQualResult, !!t.bestMainRound, pTable);
                                 if (qKey && pTable[qKey] != null) t.points += pTable[qKey];
                             }}
                         }}
