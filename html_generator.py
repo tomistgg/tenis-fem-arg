@@ -263,6 +263,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         md_cutoff = gs["mdCutoff"]
         gs_tables_html += (
             f'<table class="gs-cutoff-table">'
+            f'<colgroup>'
+            f'<col class="gs-col-d"><col class="gs-col-cutoff"><col class="gs-col-acc"><col class="gs-col-est">'
+            f'</colgroup>'
             f'<thead>'
             f'<tr><th colspan="4" style="background:{gs_color} !important;color:white !important;">{gs_name.upper()}</th></tr>'
             f'<tr><th>D</th><th>Cut Off</th><th>Acc. Pts</th><th>Est. Need</th></tr>'
@@ -2317,8 +2320,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .roadtogs-cutoffs {{ display: grid !important; grid-template-columns: 1fr 1fr; gap: 6px; }}
                 .gs-cutoff-table {{ width: 100% !important; min-width: 0 !important; table-layout: fixed !important; font-size: 8px !important; }}
                 .gs-cutoff-table th, .gs-cutoff-table td {{ padding: 2px 3px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
-                .gs-cutoff-table th:nth-child(1), .gs-cutoff-table td:nth-child(1) {{ width: 24% !important; }}
-                .gs-cutoff-table th:nth-child(2), .gs-cutoff-table td:nth-child(2) {{ width: 26% !important; }}
+                .gs-cutoff-table col.gs-col-d {{ width: 20% !important; }}
+                .gs-cutoff-table col.gs-col-cutoff {{ width: 30% !important; }}
+                .gs-cutoff-table col.gs-col-acc, .gs-cutoff-table col.gs-col-est {{ width: 25% !important; }}
                 .roadtogs-legend {{ font-size: 9px !important; }}
             }}
 
