@@ -57,10 +57,13 @@ def _is_completed_score(score_str):
     Rejects live/in-progress scores like '44 44' or '53 31'.
     """
     parts = score_str.strip().split()
+    # Retirement/default marks the match as complete even when the last set is
+    # unfinished (e.g. "46 76(2) 41 RET").
+    if any(p in ('RET', 'DEF') for p in parts):
+        return True
+
     has_set = False
     for p in parts:
-        if p in ('RET', 'DEF'):
-            return True
         m = re.match(r'^(\d+)(?:\(\d+\))?$', p)
         if not m:
             continue
@@ -74,6 +77,12 @@ def _is_completed_score(score_str):
             return False  # set is not finished (e.g. '44', '53')
         has_set = True
     return has_set
+
+
+def _ret_def_token(text):
+    """Normalize standalone retirement/default markers."""
+    u = (text or "").strip().upper().rstrip(".")
+    return u if u in ("RET", "DEF") else ""
 
 
 def _is_winner_name(text):
@@ -342,9 +351,25 @@ def _parse_page(text):
                 name = re.sub(r'\s+\d+$', '', line).strip()
                 result_entries.append({"name": name, "score": ""})
             elif _is_score(line):
-                # Only attach score if every set is finished (guards against live/in-progress scores)
-                if result_entries and not result_entries[-1]["score"] and _is_completed_score(line):
-                    result_entries[-1]["score"] = line
+                score_line = line
+                # Some PDFs split retirement/default onto the next line:
+                #   "46 76(2) 41"
+                #   "RET"
+                if not _is_completed_score(score_line) and i < len(lines):
+                    token = _ret_def_token(lines[i].strip())
+                    if token:
+                        combined = f"{score_line} {token}"
+                        if _is_completed_score(combined):
+                            score_line = combined
+                            i += 1
+                # Only attach completed scores (guards against live/in-progress scores)
+                if result_entries and not result_entries[-1]["score"] and _is_completed_score(score_line):
+                    result_entries[-1]["score"] = score_line
+            elif result_entries and not result_entries[-1]["score"]:
+                # Handle standalone "RET"/"DEF" line.
+                token = _ret_def_token(line)
+                if token:
+                    result_entries[-1]["score"] = token
             # Skip standalone numbers (seed annotations), country codes, etc.
 
     return players, byes, qualifiers, result_entries, round_labels
