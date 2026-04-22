@@ -665,8 +665,7 @@ def get_itf_players(tournament_key, driver):
 def get_dynamic_itf_calendar(driver, num_weeks=3):
     """Get ITF calendar for the next N weeks, filtered from the full-year cache.
 
-    Also includes current-week tournaments when today is Monday or Tuesday,
-    or when the tournament is multi-week (spans into next week).
+    Also includes current-week tournaments when today is Monday or Tuesday.
     """
     today = datetime.now()
     next_monday = get_next_monday()
@@ -685,11 +684,9 @@ def get_dynamic_itf_calendar(driver, num_weeks=3):
         if date_from <= start < date_to:
             filtered.append(item)
             continue
-        # Include current-week tournaments on Mon/Tue, or if they span into next week
+        # Include current-week tournaments only on Mon/Tue.
         if current_monday_str <= start < date_from:
-            end = (item.get('endDate') or '')[:10]
-            is_multiweek = bool(end and end >= date_from)
-            if is_mon_or_tue or is_multiweek:
+            if is_mon_or_tue:
                 filtered.append(item)
     return filtered
 

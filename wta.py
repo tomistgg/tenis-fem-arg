@@ -120,11 +120,8 @@ def build_tournament_groups():
 
         is_current_week = (monday == current_monday)
         if is_current_week:
-            # Include on Mon/Tue, or always for 2-week tournaments
-            is_two_week = _is_two_week_wta(level, raw_name, city, "")
-            end_dt = datetime.strptime(end_date[:10], "%Y-%m-%d") if end_date else None
-            is_multiweek = bool(end_dt and end_dt >= next_monday)
-            if not (is_mon_or_tue or is_two_week or is_multiweek):
+            # Schedule / Entry Lists keep the current week only on Monday or Tuesday.
+            if not is_mon_or_tue:
                 continue
         elif not (next_monday <= monday < four_weeks_later):
             continue
