@@ -5662,6 +5662,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
             function galleryThumb(pid, tournament) {{ return galleryUrl(pid, 'w-400,h-300,fo-auto,q-80', tournament); }}
             function galleryFull(pid, tournament) {{ return galleryUrl(pid, 'w-1200,q-85', tournament); }}
+            function galleryOrig(pid, tournament) {{ return galleryUrl(pid, 'orig-true', tournament); }}
             function galleryDownload(pid, tournament) {{
                 if (!pid) return '';
                 return galleryUrl(pid, 'orig-true', tournament) + '&ik-attachment=true';
@@ -5868,7 +5869,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function galleryShowLb() {{
                 var ph = galleryLbList[galleryLbIndex];
                 var players = ph.players || [];
-                document.getElementById('gallery-lb-img').src = galleryFull(ph.public_id, ph.tournament);
+                document.getElementById('gallery-lb-img').src = galleryOrig(ph.public_id, ph.tournament);
                 document.getElementById('gallery-lb-img').alt = players.join(', ') || ph.tournament;
                 document.getElementById('gallery-lb-tourn').textContent = ph.tournament;
                 document.getElementById('gallery-lb-players').textContent = players.join(' \u00b7 ');
