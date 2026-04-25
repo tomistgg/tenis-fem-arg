@@ -441,7 +441,7 @@ def parse_draw_pdf(pdf_bytes):
     for page_idx, entries in enumerate(page_results):
         page_match_offset = page_idx * r1_per_page
         actual_r1 = _actual_r1_count(page_idx, r1_per_page, unique_players, all_byes)
-        matches = _group_into_rounds(entries, actual_r1, page_match_offset, unique_players)
+        matches = _group_into_rounds(entries, actual_r1, page_match_offset, unique_players, ideal_r1=r1_per_page)
         all_matches.extend(matches)
 
     num_rounds = len(round_labels) if round_labels else None
@@ -481,14 +481,20 @@ def _actual_r1_count(page_idx, r1_per_page, unique_players, all_byes):
     return count
 
 
-def _group_into_rounds(entries, r1_count, match_offset, players=None):
+def _group_into_rounds(entries, r1_count, match_offset, players=None, ideal_r1=None):
     """Group result entries into rounds.
 
-    R1 has r1_count entries, R2 has r1_count/2, R3 has r1_count/4, etc.
+    R1 has r1_count entries (actual, excluding phantom slots).
+    R2+ are sized from ideal_r1 (theoretical = r1_per_page) so a phantom R1
+    slot doesn't shrink R2 — the phantom's R2 match still appears in the PDF.
     """
+    if ideal_r1 is None:
+        ideal_r1 = r1_count
+
     matches = []
     round_num = 1
     expected = r1_count
+    ideal_expected = ideal_r1
     pos = 0
 
     while pos < len(entries) and expected >= 1:
@@ -517,7 +523,8 @@ def _group_into_rounds(entries, r1_count, match_offset, players=None):
                 "score": entry["score"],
             })
         pos += expected
-        expected = expected // 2
+        ideal_expected = ideal_expected // 2
+        expected = ideal_expected
         round_num += 1
 
     return matches
