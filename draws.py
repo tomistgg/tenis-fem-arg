@@ -440,7 +440,8 @@ def parse_draw_pdf(pdf_bytes):
     all_matches = []
     for page_idx, entries in enumerate(page_results):
         page_match_offset = page_idx * r1_per_page
-        matches = _group_into_rounds(entries, r1_per_page, page_match_offset, unique_players)
+        actual_r1 = _actual_r1_count(page_idx, r1_per_page, unique_players, all_byes)
+        matches = _group_into_rounds(entries, actual_r1, page_match_offset, unique_players)
         all_matches.extend(matches)
 
     num_rounds = len(round_labels) if round_labels else None
@@ -460,6 +461,24 @@ def parse_draw_pdf(pdf_bytes):
         "round_labels": round_labels,
         "num_rounds": num_rounds,
     }
+
+
+def _actual_r1_count(page_idx, r1_per_page, unique_players, all_byes):
+    """Return the number of R1 result entries expected on a given page.
+
+    Excludes match slots where neither position has a player — these occur when
+    a draw position is completely absent (not a player and not a bye), which
+    means no winner is listed in the PDF result section for that slot.
+    """
+    player_positions = {p["pos"] for p in unique_players}
+    page_start = page_idx * 2 * r1_per_page + 1
+    count = 0
+    for i in range(r1_per_page):
+        pos1 = page_start + i * 2
+        pos2 = page_start + i * 2 + 1
+        if pos1 in player_positions or pos2 in player_positions:
+            count += 1
+    return count
 
 
 def _group_into_rounds(entries, r1_count, match_offset, players=None):
