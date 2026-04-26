@@ -781,6 +781,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function tabFromHash() {
                 const raw = (location.hash || '').replace(/^#/, '').trim().toLowerCase();
                 if (!raw) return '';
+                if (raw.startsWith('photo/')) return 'gallery';
                 return VALID_TABS.has(raw) ? raw : '';
             }
 
@@ -1223,6 +1224,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-lb-counter {{ font-size: 12px; color: #475569; margin-top: 8px; }}
             .gallery-lb-download {{ display: inline-block; margin-top: 10px; padding: 8px 14px; background: #75AADB; color: white; border-radius: 9999px; font-size: 12px; text-decoration: none; }}
             .gallery-lb-download:hover {{ background: #5a8fb8; }}
+            .gallery-lb-share {{ display: inline-block; margin-top: 10px; padding: 8px 14px; background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 9999px; font-size: 12px; cursor: pointer; font-family: inherit; text-decoration: none; }}
+            .gallery-lb-share:hover {{ background: rgba(255,255,255,0.28); }}
             .gallery-lb-actions {{ display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 10px; }}
             .gallery-lb-nav-mob {{ display: none; }}
             .gallery-lb-savehint {{ margin-bottom: 8px; font-size: 11px; color: #94a3b8; }}
@@ -3331,6 +3334,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             <div class="gallery-lb-actions">
                                 <button class="gallery-lb-nav gallery-lb-nav-mob" onclick="galleryLbNav(-1)">&#8249;</button>
                                 <a class="gallery-lb-download" id="gallery-lb-download" href="#" target="_blank" rel="noopener">Download</a>
+                                <button class="gallery-lb-share" id="gallery-lb-share" onclick="galleryShare()">Share</button>
                                 <button class="gallery-lb-nav gallery-lb-nav-mob" onclick="galleryLbNav(1)">&#8250;</button>
                             </div>
                         </div>
@@ -5640,6 +5644,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             let galleryAlbums = [];
             let galleryLbList = [];
             let galleryCurrentList = [];
+            // Capture photo deep-link before the router strips the hash on load
+            let galleryDeepLinkId = (function() {{
+                var h = (location.hash || '').replace(/^#/, '');
+                if (!h.startsWith('photo/')) return '';
+                try {{ return decodeURIComponent(h.slice(6)); }} catch(e) {{ return h.slice(6); }}
+            }})();
 
             function galleryEncodePath(path) {{
                 return String(path || '')
@@ -5701,6 +5711,21 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         galleryBuildAlbums();
                         galleryRenderAlbums();
                         galleryApplyAlbum();
+                        if (galleryDeepLinkId) {{
+                            var pid = galleryDeepLinkId;
+                            galleryDeepLinkId = '';
+                            var pidx = -1;
+                            for (var i = 0; i < galleryPhotos.length; i++) {{
+                                if (galleryPhotos[i].public_id === pid) {{ pidx = i; break; }}
+                            }}
+                            if (pidx !== -1) {{
+                                var dph = galleryPhotos[pidx];
+                                galleryCurrentAlbum = dph.tournament;
+                                galleryApplyAlbum();
+                                var listIdx = galleryCurrentList.indexOf(dph);
+                                if (listIdx !== -1) galleryOpenLb(listIdx, galleryCurrentList);
+                            }}
+                        }}
                     }})
                     .catch(function() {{
                         galleryInited = false;
@@ -5870,6 +5895,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function galleryCloseLb() {{
                 document.getElementById('gallery-lb').classList.remove('open');
                 document.body.style.overflow = '';
+                history.replaceState(null, '', location.pathname);
             }}
 
             function galleryShowLb() {{
@@ -5881,11 +5907,30 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('gallery-lb-players').textContent = players.join(' \u00b7 ');
                 document.getElementById('gallery-lb-counter').textContent = (galleryLbIndex + 1) + ' / ' + galleryLbList.length;
                 document.getElementById('gallery-lb-download').href = galleryDownload(ph.public_id, ph.tournament);
+                history.replaceState(null, '', '#photo/' + encodeURIComponent(ph.public_id));
                 var list = galleryLbList; var n = list.length;
                 [-1, 1].forEach(function(d) {{
                     var adj = list[(galleryLbIndex + d + n) % n];
                     if (adj) {{ var img = new Image(); img.src = galleryFull(adj.public_id, adj.tournament); }}
                 }});
+            }}
+
+            function galleryShare() {{
+                var ph = galleryLbList[galleryLbIndex];
+                if (!ph) return;
+                var url = location.origin + location.pathname.replace(/\/$/, '') + '#photo/' + encodeURIComponent(ph.public_id);
+                var btn = document.getElementById('gallery-lb-share');
+                if (navigator.share) {{
+                    navigator.share({{ url: url, title: (ph.players || []).join(' \u00b7 ') || ph.tournament }}).catch(function() {{}});
+                }} else {{
+                    navigator.clipboard.writeText(url).then(function() {{
+                        var orig = btn.textContent;
+                        btn.textContent = 'Copied!';
+                        setTimeout(function() {{ btn.textContent = orig; }}, 1500);
+                    }}).catch(function() {{
+                        prompt('Copy this link:', url);
+                    }});
+                }}
             }}
 
             function galleryLbNav(dir) {{ galleryLbIndex = (galleryLbIndex + dir + galleryLbList.length) % galleryLbList.length; galleryShowLb(); }}
