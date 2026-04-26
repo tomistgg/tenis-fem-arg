@@ -5,7 +5,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20",
     "endDate": "2026-04-26",
-    "fetchedAt": "2026-04-26T09:07:28Z",
+    "fetchedAt": "2026-04-26T10:53:57Z",
     "draws": {
       "MDS": {
         "tournament_name": "Oeiras Open CETO",
@@ -1684,7 +1684,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-26T09:12:39Z",
+    "fetchedAt": "2026-04-26T10:58:59Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -2733,7 +2733,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-26T09:12:00Z",
+    "fetchedAt": "2026-04-26T10:57:59Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -3624,6 +3624,18 @@
             "match_num": 3,
             "winner_name": "A. Ceuca",
             "score": "67 64 10-5"
+          },
+          {
+            "round": 4,
+            "match_num": 0,
+            "winner_name": "F. Sziedat",
+            "score": "76(3) 36 10-3"
+          },
+          {
+            "round": 4,
+            "match_num": 1,
+            "winner_name": "K. Smirnova",
+            "score": "63 75"
           }
         ],
         "byes": [],
@@ -8895,7 +8907,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-26T09:08:27Z",
+    "fetchedAt": "2026-04-26T10:54:41Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -9718,7 +9730,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-26T09:10:36Z",
+    "fetchedAt": "2026-04-26T10:56:50Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -10541,7 +10553,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-26T09:07:31Z",
+    "fetchedAt": "2026-04-26T10:54:00Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -11364,7 +11376,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-26T09:10:04Z",
+    "fetchedAt": "2026-04-26T10:56:21Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -12187,7 +12199,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-20T00:00:00",
     "endDate": "2026-04-26T00:00:00",
-    "fetchedAt": "2026-04-26T09:12:19Z",
+    "fetchedAt": "2026-04-26T10:58:26Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -13010,10 +13022,10 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27",
     "endDate": "2026-05-03",
-    "fetchedAt": "2026-04-26T09:07:28Z",
+    "fetchedAt": "2026-04-26T10:53:57Z",
     "draws": {
       "QS": {
-        "tournament_name": "Huzhou Open Huzhou, CHN",
+        "tournament_name": "Huzhou Open",
         "location": "HUZHOU, CHN",
         "dates": "April 27-May 3 2026",
         "prize": "$ 115,000",
@@ -13134,14 +13146,287 @@
             "country": "JPN"
           }
         ],
-        "matches": [],
+        "matches": [
+          {
+            "round": 1,
+            "match_num": 0,
+            "winner_name": "A. Zhu",
+            "score": "61 60"
+          },
+          {
+            "round": 1,
+            "match_num": 1,
+            "winner_name": "C. Yuan",
+            "score": "76(4) 64"
+          },
+          {
+            "round": 1,
+            "match_num": 2,
+            "winner_name": "Z. Kulambayeva",
+            "score": "62 62"
+          },
+          {
+            "round": 1,
+            "match_num": 3,
+            "winner_name": "M. Guo",
+            "score": "63 63"
+          },
+          {
+            "round": 1,
+            "match_num": 4,
+            "winner_name": "J. Wang",
+            "score": "62 63"
+          },
+          {
+            "round": 1,
+            "match_num": 5,
+            "winner_name": "V. Panshina",
+            "score": "63 36 64"
+          },
+          {
+            "round": 1,
+            "match_num": 6,
+            "winner_name": "R. Zolotareva",
+            "score": "63 75"
+          },
+          {
+            "round": 1,
+            "match_num": 7,
+            "winner_name": "Z. Wei",
+            "score": "76(5) 62"
+          }
+        ],
         "byes": [],
         "qualifiers": [],
         "round_labels": [
           "Q1",
-          "Q2"
+          "Q2",
+          "Qualifier"
         ],
-        "num_rounds": 2
+        "num_rounds": 3
+      },
+      "MDS": {
+        "tournament_name": "Huzhou Open",
+        "location": "HUZHOU, CHN",
+        "dates": "April 27-May 3 2026",
+        "prize": "$ 115,000",
+        "surface": "Clay",
+        "draw_type": "SINGLES MAIN DRAW",
+        "draw_size": 32,
+        "players": [
+          {
+            "pos": 1,
+            "seed": "1",
+            "entry": "",
+            "name": "ERJAVEC, Veronika",
+            "country": "SLO"
+          },
+          {
+            "pos": 2,
+            "seed": "",
+            "entry": "WC",
+            "name": "WANG, Meiling",
+            "country": "CHN"
+          },
+          {
+            "pos": 3,
+            "seed": "",
+            "entry": "",
+            "name": "MIKULSKYTE, Justina",
+            "country": "LTU"
+          },
+          {
+            "pos": 4,
+            "seed": "",
+            "entry": "",
+            "name": "LANSERE, Sofya",
+            "country": ""
+          },
+          {
+            "pos": 5,
+            "seed": "",
+            "entry": "",
+            "name": "PIERI, Jessica",
+            "country": "ITA"
+          },
+          {
+            "pos": 6,
+            "seed": "",
+            "entry": "",
+            "name": "WEI, Sijia",
+            "country": "CHN"
+          },
+          {
+            "pos": 7,
+            "seed": "",
+            "entry": "",
+            "name": "ZHENG, Wushuang",
+            "country": "CHN"
+          },
+          {
+            "pos": 8,
+            "seed": "6",
+            "entry": "",
+            "name": "MA, Ye-Xin",
+            "country": "CHN"
+          },
+          {
+            "pos": 9,
+            "seed": "4",
+            "entry": "",
+            "name": "WANG, Xiyu",
+            "country": "CHN"
+          },
+          {
+            "pos": 11,
+            "seed": "",
+            "entry": "",
+            "name": "ZOLOTAREVA, Anastasia",
+            "country": ""
+          },
+          {
+            "pos": 13,
+            "seed": "",
+            "entry": "",
+            "name": "REN, Yufei",
+            "country": "CHN"
+          },
+          {
+            "pos": 14,
+            "seed": "",
+            "entry": "",
+            "name": "YANG, Yidi",
+            "country": "CHN"
+          },
+          {
+            "pos": 15,
+            "seed": "",
+            "entry": "",
+            "name": "HERCOG, Polona",
+            "country": "SLO"
+          },
+          {
+            "pos": 16,
+            "seed": "8",
+            "entry": "WC",
+            "name": "GAO, Xinyu",
+            "country": "CHN"
+          },
+          {
+            "pos": 17,
+            "seed": "7",
+            "entry": "",
+            "name": "YOU, Xiaodi",
+            "country": "CHN"
+          },
+          {
+            "pos": 18,
+            "seed": "",
+            "entry": "WC",
+            "name": "LU, Jia-Jing",
+            "country": "CHN"
+          },
+          {
+            "pos": 19,
+            "seed": "",
+            "entry": "",
+            "name": "SPITERI, Dalila",
+            "country": "ITA"
+          },
+          {
+            "pos": 21,
+            "seed": "",
+            "entry": "",
+            "name": "IBRAGIMOVA, Alevtina",
+            "country": ""
+          },
+          {
+            "pos": 22,
+            "seed": "",
+            "entry": "",
+            "name": "SHI, Han",
+            "country": "CHN"
+          },
+          {
+            "pos": 23,
+            "seed": "",
+            "entry": "",
+            "name": "ZHAO, Carol",
+            "country": "CAN"
+          },
+          {
+            "pos": 24,
+            "seed": "3",
+            "entry": "",
+            "name": "KAWA, Katarzyna",
+            "country": "POL"
+          },
+          {
+            "pos": 25,
+            "seed": "5",
+            "entry": "",
+            "name": "GUO, Hanyu",
+            "country": "CHN"
+          },
+          {
+            "pos": 26,
+            "seed": "",
+            "entry": "",
+            "name": "JAKUPOVIC, Dalila",
+            "country": "SLO"
+          },
+          {
+            "pos": 27,
+            "seed": "",
+            "entry": "",
+            "name": "CHERUBINI, Diletta",
+            "country": "ITA"
+          },
+          {
+            "pos": 28,
+            "seed": "",
+            "entry": "",
+            "name": "REYNGOLD, Ekaterina",
+            "country": ""
+          },
+          {
+            "pos": 29,
+            "seed": "",
+            "entry": "",
+            "name": "SAITO, Sara",
+            "country": "JPN"
+          },
+          {
+            "pos": 30,
+            "seed": "",
+            "entry": "",
+            "name": "YAO, Xinxin",
+            "country": "CHN"
+          },
+          {
+            "pos": 32,
+            "seed": "2",
+            "entry": "",
+            "name": "PAPAMICHAIL, Despina",
+            "country": "GRE"
+          }
+        ],
+        "matches": [],
+        "byes": [],
+        "qualifiers": [
+          10,
+          12,
+          20,
+          31
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
       }
     }
   },
@@ -13151,7 +13436,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-26T09:19:20Z",
+    "fetchedAt": "2026-04-26T11:08:25Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -13500,7 +13785,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-26T09:21:50Z",
+    "fetchedAt": "2026-04-26T11:11:06Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -13814,7 +14099,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-26T09:25:40Z",
+    "fetchedAt": "2026-04-26T11:14:52Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -14305,7 +14590,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27",
     "endDate": "2026-05-03",
-    "fetchedAt": "2026-04-26T09:07:28Z",
+    "fetchedAt": "2026-04-26T10:53:57Z",
     "draws": {
       "QS": {
         "tournament_name": "L'Open 35 de Saint Malo",
@@ -14446,7 +14731,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-02T00:00:00",
-    "fetchedAt": "2026-04-26T09:14:44Z",
+    "fetchedAt": "2026-04-26T11:03:30Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -14670,15 +14955,33 @@
           },
           {
             "round": 1,
+            "match_num": 3,
+            "winner_name": "V. Savinykh",
+            "score": "64 64"
+          },
+          {
+            "round": 1,
             "match_num": 5,
             "winner_name": "J. Khramtsova",
             "score": "61 63"
           },
           {
             "round": 1,
+            "match_num": 7,
+            "winner_name": "N. Sozaonova",
+            "score": "60 60"
+          },
+          {
+            "round": 1,
             "match_num": 8,
             "winner_name": "A. Amiraghyan",
             "score": "75 76(3)"
+          },
+          {
+            "round": 1,
+            "match_num": 9,
+            "winner_name": "A. Sedysheva",
+            "score": "64 64"
           },
           {
             "round": 1,
@@ -14895,7 +15198,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-26T09:28:08Z",
+    "fetchedAt": "2026-04-26T11:17:28Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -15332,7 +15635,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-26T09:14:18Z",
+    "fetchedAt": "2026-04-26T11:00:46Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -15568,7 +15871,20 @@
             "country": "CRO"
           }
         ],
-        "matches": [],
+        "matches": [
+          {
+            "round": 1,
+            "match_num": 12,
+            "winner_name": "E. Avanesyan",
+            "score": "62 75"
+          },
+          {
+            "round": 1,
+            "match_num": 13,
+            "winner_name": "C. Hennemann",
+            "score": "60 62"
+          }
+        ],
         "byes": [],
         "round_labels": [
           "Round of 32",
@@ -15584,7 +15900,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-26T09:20:26Z",
+    "fetchedAt": "2026-04-26T11:09:42Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -15966,7 +16282,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-26T09:26:52Z",
+    "fetchedAt": "2026-04-26T11:16:13Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -16129,7 +16445,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-21",
     "endDate": "2026-05-03",
-    "fetchedAt": "2026-04-26T09:07:28Z",
+    "fetchedAt": "2026-04-26T10:53:57Z",
     "draws": {
       "MDS": {
         "tournament_name": "Mutua Madrid Open",
@@ -18072,7 +18388,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-26T09:18:04Z",
+    "fetchedAt": "2026-04-26T11:06:59Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -18308,7 +18624,26 @@
             "country": "GBR"
           }
         ],
-        "matches": [],
+        "matches": [
+          {
+            "round": 1,
+            "match_num": 0,
+            "winner_name": "L. Poling",
+            "score": "61 61"
+          },
+          {
+            "round": 1,
+            "match_num": 4,
+            "winner_name": "L. John-Baptiste",
+            "score": "64 61"
+          },
+          {
+            "round": 1,
+            "match_num": 12,
+            "winner_name": "M. Sohns",
+            "score": "60 61"
+          }
+        ],
         "byes": [],
         "round_labels": [
           "Round of 32",
@@ -18324,7 +18659,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-26T09:23:09Z",
+    "fetchedAt": "2026-04-26T11:12:24Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -18560,7 +18895,50 @@
             "country": "POL"
           }
         ],
-        "matches": [],
+        "matches": [
+          {
+            "round": 1,
+            "match_num": 2,
+            "winner_name": "T. Manescu",
+            "score": "62 60"
+          },
+          {
+            "round": 1,
+            "match_num": 4,
+            "winner_name": "L. Claeys",
+            "score": "62 60"
+          },
+          {
+            "round": 1,
+            "match_num": 6,
+            "winner_name": "K. Coppez",
+            "score": "62 64"
+          },
+          {
+            "round": 1,
+            "match_num": 7,
+            "winner_name": "M. Schweika",
+            "score": "61 75"
+          },
+          {
+            "round": 1,
+            "match_num": 10,
+            "winner_name": "D. Havermans",
+            "score": "60 60"
+          },
+          {
+            "round": 1,
+            "match_num": 11,
+            "winner_name": "Z. Kaegi",
+            "score": "60 75"
+          },
+          {
+            "round": 1,
+            "match_num": 12,
+            "winner_name": "I. Johansson",
+            "score": "61 64"
+          }
+        ],
         "byes": [],
         "round_labels": [
           "Round of 32",
@@ -18576,7 +18954,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-26T09:24:26Z",
+    "fetchedAt": "2026-04-26T11:13:33Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -18840,7 +19218,20 @@
             "country": "BEL"
           }
         ],
-        "matches": [],
+        "matches": [
+          {
+            "round": 1,
+            "match_num": 21,
+            "winner_name": "D. Mihail",
+            "score": "62 61"
+          },
+          {
+            "round": 2,
+            "match_num": 15,
+            "winner_name": "A. Biot",
+            "score": "W/O"
+          }
+        ],
         "byes": [
           2,
           4,
@@ -18886,7 +19277,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-26T09:29:24Z",
+    "fetchedAt": "2026-04-26T11:18:46Z",
     "draws": {
       "QS": {
         "tournament_name": "",
