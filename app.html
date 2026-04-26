@@ -298,6 +298,9 @@
             .gallery-loadmore-btn { padding: 10px 32px; background: #75AADB; color: white; border: none; border-radius: 9999px; font-family: inherit; font-size: 13px; font-weight: bold; cursor: pointer; }
             .gallery-loadmore-btn:hover { background: #5a8fb8; }
             .gallery-empty { text-align: center; color: #64748b; padding: 60px 20px; font-size: 14px; }
+            .gallery-copyright { font-size: 11px; color: #94a3b8; text-align: center; margin-top: 32px; padding: 0 16px 8px; line-height: 1.6; }
+            .gallery-copyright a { color: #94a3b8; text-decoration: none; }
+            .gallery-copyright a:hover { text-decoration: underline; }
             .gallery-lb { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.93); z-index: 1000; align-items: center; justify-content: center; }
             .gallery-lb.open { display: flex; }
             .gallery-lb-inner { display: flex; flex-direction: column; align-items: center; max-width: 95vw; position: relative; }
@@ -1690,6 +1693,8 @@
             [data-theme="dark"] .gallery-album-count,
             [data-theme="dark"] .gallery-count,
             [data-theme="dark"] .gallery-empty { color: #94a3b8; }
+            [data-theme="dark"] .gallery-copyright,
+            [data-theme="dark"] .gallery-copyright a { color: #475569; }
             [data-theme="dark"] .gallery-card-players { color: #e2e8f0; }
             [data-theme="dark"] .gallery-album-cover { background: #273548; color: #94a3b8; }
             [data-theme="dark"] .gallery-back-btn { background: #1e293b; border-color: #334155; color: #e2e8f0; }
@@ -8463,6 +8468,7 @@
                     <div class="gallery-empty" id="gallery-empty" style="display:none;">
                         No photos found for the selected filters.
                     </div>
+                    <p class="gallery-copyright">© 2026 tenisfemarg. All rights reserved. Unauthorized use or reproduction of these photos without permission is prohibited. For licensing inquiries: <a href="mailto:schiter.tomas@gmail.com">schiter.tomas@gmail.com</a></p>
                 </div>
 
                 <div id="view-draws" class="single-layout" style="display: none;">
