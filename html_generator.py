@@ -4124,8 +4124,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 if (_prioFilterActive) {{
                     // JR prio1 players go at the bottom; non-prio1 JR spots filled from qual/alt
-                    const mainJRPrio1 = main.filter(p => p.entry === 'JR' && p.priority === '1');
-                    const mainRegular = main.filter(p => p.entry !== 'JR');
+                    const mainJRPrio1 = main.filter(p => (p.entry === 'JR' || p.entry === 'JA') && p.priority === '1');
+                    const mainRegular = main.filter(p => p.entry !== 'JR' && p.entry !== 'JA');
                     const regularSpots = main.length - mainJRPrio1.length;
                     const pool = [
                         ...mainRegular.filter(p => p.priority === '1'),

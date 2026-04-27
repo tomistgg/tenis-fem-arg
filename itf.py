@@ -122,7 +122,7 @@ def parse_itf_entry_list(itf_entries):
             players.append({
                 "pos": pos, "name": raw_f_name, "country": p_node.get("nationalityCode", "-"),
                 "rank": erank_str, "priority": priority, "type": section_type, "pos_num": pos_num,
-                "entry": "JR" if class_code in {"JR", "JA"} else ""
+                "entry": class_code if class_code in {"JR", "JA"} else ""
             })
 
     # Keep MAIN placeholders at the end of occupied MAIN positions so JR/MDA merges don't duplicate slots.
