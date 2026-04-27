@@ -57,10 +57,13 @@ def _is_completed_score(score_str):
     Rejects live/in-progress scores like '44 44' or '53 31'.
     """
     parts = score_str.strip().split()
+    # Retirement/default marks the match as complete even when the last set is
+    # unfinished (e.g. "46 76(2) 41 RET").
+    if any(p in ('RET', 'DEF') for p in parts):
+        return True
+
     has_set = False
     for p in parts:
-        if p in ('RET', 'DEF'):
-            return True
         m = re.match(r'^(\d+)(?:\(\d+\))?$', p)
         if not m:
             continue
@@ -74,6 +77,12 @@ def _is_completed_score(score_str):
             return False  # set is not finished (e.g. '44', '53')
         has_set = True
     return has_set
+
+
+def _ret_def_token(text):
+    """Normalize standalone retirement/default markers."""
+    u = (text or "").strip().upper().rstrip(".")
+    return u if u in ("RET", "DEF") else ""
 
 
 def _is_winner_name(text):
@@ -342,9 +351,25 @@ def _parse_page(text):
                 name = re.sub(r'\s+\d+$', '', line).strip()
                 result_entries.append({"name": name, "score": ""})
             elif _is_score(line):
-                # Only attach score if every set is finished (guards against live/in-progress scores)
-                if result_entries and not result_entries[-1]["score"] and _is_completed_score(line):
-                    result_entries[-1]["score"] = line
+                score_line = line
+                # Some PDFs split retirement/default onto the next line:
+                #   "46 76(2) 41"
+                #   "RET"
+                if not _is_completed_score(score_line) and i < len(lines):
+                    token = _ret_def_token(lines[i].strip())
+                    if token:
+                        combined = f"{score_line} {token}"
+                        if _is_completed_score(combined):
+                            score_line = combined
+                            i += 1
+                # Only attach completed scores (guards against live/in-progress scores)
+                if result_entries and not result_entries[-1]["score"] and _is_completed_score(score_line):
+                    result_entries[-1]["score"] = score_line
+            elif result_entries and not result_entries[-1]["score"]:
+                # Handle standalone "RET"/"DEF" line.
+                token = _ret_def_token(line)
+                if token:
+                    result_entries[-1]["score"] = token
             # Skip standalone numbers (seed annotations), country codes, etc.
 
     return players, byes, qualifiers, result_entries, round_labels
@@ -415,7 +440,8 @@ def parse_draw_pdf(pdf_bytes):
     all_matches = []
     for page_idx, entries in enumerate(page_results):
         page_match_offset = page_idx * r1_per_page
-        matches = _group_into_rounds(entries, r1_per_page, page_match_offset, unique_players)
+        actual_r1 = _actual_r1_count(page_idx, r1_per_page, unique_players, all_byes)
+        matches = _group_into_rounds(entries, actual_r1, page_match_offset, unique_players, ideal_r1=r1_per_page)
         all_matches.extend(matches)
 
     num_rounds = len(round_labels) if round_labels else None
@@ -437,14 +463,38 @@ def parse_draw_pdf(pdf_bytes):
     }
 
 
-def _group_into_rounds(entries, r1_count, match_offset, players=None):
+def _actual_r1_count(page_idx, r1_per_page, unique_players, all_byes):
+    """Return the number of R1 result entries expected on a given page.
+
+    Excludes match slots where neither position has a player — these occur when
+    a draw position is completely absent (not a player and not a bye), which
+    means no winner is listed in the PDF result section for that slot.
+    """
+    player_positions = {p["pos"] for p in unique_players}
+    page_start = page_idx * 2 * r1_per_page + 1
+    count = 0
+    for i in range(r1_per_page):
+        pos1 = page_start + i * 2
+        pos2 = page_start + i * 2 + 1
+        if pos1 in player_positions or pos2 in player_positions:
+            count += 1
+    return count
+
+
+def _group_into_rounds(entries, r1_count, match_offset, players=None, ideal_r1=None):
     """Group result entries into rounds.
 
-    R1 has r1_count entries, R2 has r1_count/2, R3 has r1_count/4, etc.
+    R1 has r1_count entries (actual, excluding phantom slots).
+    R2+ are sized from ideal_r1 (theoretical = r1_per_page) so a phantom R1
+    slot doesn't shrink R2 — the phantom's R2 match still appears in the PDF.
     """
+    if ideal_r1 is None:
+        ideal_r1 = r1_count
+
     matches = []
     round_num = 1
     expected = r1_count
+    ideal_expected = ideal_r1
     pos = 0
 
     while pos < len(entries) and expected >= 1:
@@ -473,7 +523,8 @@ def _group_into_rounds(entries, r1_count, match_offset, players=None):
                 "score": entry["score"],
             })
         pos += expected
-        expected = expected // 2
+        ideal_expected = ideal_expected // 2
+        expected = ideal_expected
         round_num += 1
 
     return matches

@@ -263,6 +263,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         md_cutoff = gs["mdCutoff"]
         gs_tables_html += (
             f'<table class="gs-cutoff-table">'
+            f'<colgroup>'
+            f'<col class="gs-col-d"><col class="gs-col-cutoff"><col class="gs-col-acc"><col class="gs-col-est">'
+            f'</colgroup>'
             f'<thead>'
             f'<tr><th colspan="4" style="background:{gs_color} !important;color:white !important;">{gs_name.upper()}</th></tr>'
             f'<tr><th>D</th><th>Cut Off</th><th>Acc. Pts</th><th>Est. Need</th></tr>'
@@ -778,6 +781,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function tabFromHash() {
                 const raw = (location.hash || '').replace(/^#/, '').trim().toLowerCase();
                 if (!raw) return '';
+                if (raw.startsWith('photo/')) return 'gallery';
                 return VALID_TABS.has(raw) ? raw : '';
             }
 
@@ -1202,6 +1206,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-loadmore-btn {{ padding: 10px 32px; background: #75AADB; color: white; border: none; border-radius: 9999px; font-family: inherit; font-size: 13px; font-weight: bold; cursor: pointer; }}
             .gallery-loadmore-btn:hover {{ background: #5a8fb8; }}
             .gallery-empty {{ text-align: center; color: #64748b; padding: 60px 20px; font-size: 14px; }}
+            .gallery-copyright {{ font-size: 11px; color: #94a3b8; text-align: center; margin-top: 32px; padding: 0 16px 8px; line-height: 1.6; }}
+            .gallery-copyright a {{ color: #94a3b8; text-decoration: none; }}
+            .gallery-copyright a:hover {{ text-decoration: underline; }}
             .gallery-lb {{ display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.93); z-index: 1000; align-items: center; justify-content: center; }}
             .gallery-lb.open {{ display: flex; }}
             .gallery-lb-inner {{ display: flex; flex-direction: column; align-items: center; max-width: 95vw; position: relative; }}
@@ -1217,6 +1224,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-lb-counter {{ font-size: 12px; color: #475569; margin-top: 8px; }}
             .gallery-lb-download {{ display: inline-block; margin-top: 10px; padding: 8px 14px; background: #75AADB; color: white; border-radius: 9999px; font-size: 12px; text-decoration: none; }}
             .gallery-lb-download:hover {{ background: #5a8fb8; }}
+            .gallery-lb-share {{ display: inline-block; margin-top: 10px; padding: 8px 14px; background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 9999px; font-size: 12px; cursor: pointer; font-family: inherit; text-decoration: none; }}
+            .gallery-lb-share:hover {{ background: rgba(255,255,255,0.28); }}
             .gallery-lb-actions {{ display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 10px; }}
             .gallery-lb-nav-mob {{ display: none; }}
             .gallery-lb-savehint {{ margin-bottom: 8px; font-size: 11px; color: #94a3b8; }}
@@ -2317,6 +2326,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .roadtogs-cutoffs {{ display: grid !important; grid-template-columns: 1fr 1fr; gap: 6px; }}
                 .gs-cutoff-table {{ width: 100% !important; min-width: 0 !important; table-layout: fixed !important; font-size: 8px !important; }}
                 .gs-cutoff-table th, .gs-cutoff-table td {{ padding: 2px 3px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+                .gs-cutoff-table col.gs-col-d {{ width: 20% !important; }}
+                .gs-cutoff-table col.gs-col-cutoff {{ width: 30% !important; }}
+                .gs-cutoff-table col.gs-col-acc, .gs-cutoff-table col.gs-col-est {{ width: 25% !important; }}
                 .roadtogs-legend {{ font-size: 9px !important; }}
             }}
 
@@ -2591,6 +2603,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             [data-theme="dark"] .gallery-album-count,
             [data-theme="dark"] .gallery-count,
             [data-theme="dark"] .gallery-empty {{ color: #94a3b8; }}
+            [data-theme="dark"] .gallery-copyright,
+            [data-theme="dark"] .gallery-copyright a {{ color: #475569; }}
             [data-theme="dark"] .gallery-card-players {{ color: #e2e8f0; }}
             [data-theme="dark"] .gallery-album-cover {{ background: #273548; color: #94a3b8; }}
             [data-theme="dark"] .gallery-back-btn {{ background: #1e293b; border-color: #334155; color: #e2e8f0; }}
@@ -3284,6 +3298,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     <div class="gallery-empty" id="gallery-empty" style="display:none;">
                         No photos found for the selected filters.
                     </div>
+                    <p class="gallery-copyright">© 2026 tenisfemarg. All rights reserved. Unauthorized use or reproduction of these photos without permission is prohibited. For licensing inquiries: <a href="mailto:schiter.tomas@gmail.com">schiter.tomas@gmail.com</a></p>
                 </div>
 
                 <div id="view-draws" class="single-layout" style="display: none;">
@@ -3319,6 +3334,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             <div class="gallery-lb-actions">
                                 <button class="gallery-lb-nav gallery-lb-nav-mob" onclick="galleryLbNav(-1)">&#8249;</button>
                                 <a class="gallery-lb-download" id="gallery-lb-download" href="#" target="_blank" rel="noopener">Download</a>
+                                <button class="gallery-lb-share" id="gallery-lb-share" onclick="galleryShare()">Share</button>
                                 <button class="gallery-lb-nav gallery-lb-nav-mob" onclick="galleryLbNav(1)">&#8250;</button>
                             </div>
                         </div>
@@ -5628,6 +5644,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             let galleryAlbums = [];
             let galleryLbList = [];
             let galleryCurrentList = [];
+            // Capture photo deep-link before the router strips the hash on load
+            let galleryDeepLinkId = (function() {{
+                var h = (location.hash || '').replace(/^#/, '');
+                if (!h.startsWith('photo/')) return '';
+                try {{ return decodeURIComponent(h.slice(6)); }} catch(e) {{ return h.slice(6); }}
+            }})();
 
             function galleryEncodePath(path) {{
                 return String(path || '')
@@ -5656,6 +5678,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
             function galleryThumb(pid, tournament) {{ return galleryUrl(pid, 'w-400,h-300,fo-auto,q-80', tournament); }}
             function galleryFull(pid, tournament) {{ return galleryUrl(pid, 'w-1200,q-85', tournament); }}
+            function galleryOrig(pid, tournament) {{ return galleryUrl(pid, 'orig-true', tournament); }}
             function galleryDownload(pid, tournament) {{
                 if (!pid) return '';
                 return galleryUrl(pid, 'orig-true', tournament) + '&ik-attachment=true';
@@ -5688,6 +5711,21 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         galleryBuildAlbums();
                         galleryRenderAlbums();
                         galleryApplyAlbum();
+                        if (galleryDeepLinkId) {{
+                            var pid = galleryDeepLinkId;
+                            galleryDeepLinkId = '';
+                            var pidx = -1;
+                            for (var i = 0; i < galleryPhotos.length; i++) {{
+                                if (galleryPhotos[i].public_id === pid) {{ pidx = i; break; }}
+                            }}
+                            if (pidx !== -1) {{
+                                var dph = galleryPhotos[pidx];
+                                galleryCurrentAlbum = dph.tournament;
+                                galleryApplyAlbum();
+                                var listIdx = galleryCurrentList.indexOf(dph);
+                                if (listIdx !== -1) galleryOpenLb(listIdx, galleryCurrentList);
+                            }}
+                        }}
                     }})
                     .catch(function() {{
                         galleryInited = false;
@@ -5857,22 +5895,42 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function galleryCloseLb() {{
                 document.getElementById('gallery-lb').classList.remove('open');
                 document.body.style.overflow = '';
+                history.replaceState(null, '', location.pathname);
             }}
 
             function galleryShowLb() {{
                 var ph = galleryLbList[galleryLbIndex];
                 var players = ph.players || [];
-                document.getElementById('gallery-lb-img').src = galleryFull(ph.public_id, ph.tournament);
+                document.getElementById('gallery-lb-img').src = galleryOrig(ph.public_id, ph.tournament);
                 document.getElementById('gallery-lb-img').alt = players.join(', ') || ph.tournament;
                 document.getElementById('gallery-lb-tourn').textContent = ph.tournament;
                 document.getElementById('gallery-lb-players').textContent = players.join(' \u00b7 ');
                 document.getElementById('gallery-lb-counter').textContent = (galleryLbIndex + 1) + ' / ' + galleryLbList.length;
                 document.getElementById('gallery-lb-download').href = galleryDownload(ph.public_id, ph.tournament);
+                history.replaceState(null, '', '#photo/' + encodeURIComponent(ph.public_id));
                 var list = galleryLbList; var n = list.length;
                 [-1, 1].forEach(function(d) {{
                     var adj = list[(galleryLbIndex + d + n) % n];
                     if (adj) {{ var img = new Image(); img.src = galleryFull(adj.public_id, adj.tournament); }}
                 }});
+            }}
+
+            function galleryShare() {{
+                var ph = galleryLbList[galleryLbIndex];
+                if (!ph) return;
+                var url = location.origin + location.pathname.replace(/\/$/, '') + '#photo/' + encodeURIComponent(ph.public_id);
+                var btn = document.getElementById('gallery-lb-share');
+                if (navigator.share) {{
+                    navigator.share({{ url: url, title: (ph.players || []).join(' \u00b7 ') || ph.tournament }}).catch(function() {{}});
+                }} else {{
+                    navigator.clipboard.writeText(url).then(function() {{
+                        var orig = btn.textContent;
+                        btn.textContent = 'Copied!';
+                        setTimeout(function() {{ btn.textContent = orig; }}, 1500);
+                    }}).catch(function() {{
+                        prompt('Copy this link:', url);
+                    }});
+                }}
             }}
 
             function galleryLbNav(dir) {{ galleryLbIndex = (galleryLbIndex + dir + galleryLbList.length) % galleryLbList.length; galleryShowLb(); }}
