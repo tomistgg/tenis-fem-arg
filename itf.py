@@ -66,7 +66,8 @@ def parse_itf_entry_list(itf_entries):
     players = []
     for classification in itf_entries:
         class_code = classification.get("entryClassificationCode", "")
-        if class_code in ["MDA", "JR"]:
+        # ITF may use either JR or JA for junior acceptance entries.
+        if class_code in ["MDA", "JR", "JA"]:
             section_type = "MAIN"
         elif class_code == "Q":
             section_type = "QUAL"
@@ -107,7 +108,7 @@ def parse_itf_entry_list(itf_entries):
             itf_rank = p_node.get("itfBTRank")
             wtn = p_node.get("worldRating", "")
 
-            if class_code == "JR":
+            if class_code in {"JR", "JA"}:
                 erank_str = "JE"
             else:
                 erank_str = "-"
@@ -121,7 +122,7 @@ def parse_itf_entry_list(itf_entries):
             players.append({
                 "pos": pos, "name": raw_f_name, "country": p_node.get("nationalityCode", "-"),
                 "rank": erank_str, "priority": priority, "type": section_type, "pos_num": pos_num,
-                "entry": "JR" if class_code == "JR" else ""
+                "entry": "JR" if class_code in {"JR", "JA"} else ""
             })
 
     # Keep MAIN placeholders at the end of occupied MAIN positions so JR/MDA merges don't duplicate slots.
