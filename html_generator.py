@@ -887,6 +887,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()"><svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg><svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><span id="home-dark-label">Dark Mode</span></button>
   </div>
   <script>
+    (function() {
+      var h = location.hash;
+      if (h && h.startsWith('#photo/')) { location.replace('app.html' + h); }
+    })();
     function toggleDarkMode() {
       var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       if (isDark) {
