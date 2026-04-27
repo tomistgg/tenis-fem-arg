@@ -6424,7 +6424,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     </body>
     </html>
     """
-    import sys as _sys; _sys.stderr.write("DEBUG_MARKER:" + str("MARKER_TEST" in html_template) + "\n"); idx=html_template.find("getQualPointKey"); _sys.stderr.write("DEBUG_QUAL:" + html_template[idx:idx+80] + "\n")
     with open("app.html", "w", encoding="utf-8") as f:
         f.write(html_template)
 
