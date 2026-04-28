@@ -36,11 +36,16 @@ def fetch_draw_pdf_bytes(tournament_id, year, draw_type="MDS"):
         return None
 
 
+_WO_TOKENS = {'WO', 'W/O', 'W.O.'}
+
+
 def _is_score(text):
     """Check if a line is a match score."""
     text = text.strip()
     if not text:
         return False
+    if text.upper() in _WO_TOKENS:
+        return True
     _S = r'[\d]+(?:\(\d+\))?'
     # Standard score: 2 or 3 set tokens (no RET/DEF required)
     standard = rf'^(?:{_S}\s+){{1,2}}{_S}$'
@@ -53,13 +58,12 @@ def _is_completed_score(score_str):
     """Return True only if every set token in score_str represents a finished set.
 
     A finished set has at least one player on 6+ games (or 10+ for match tiebreaks).
-    RET/DEF tokens mark the match as complete regardless of the score.
+    RET/DEF/WO tokens mark the match as complete regardless of the score.
     Rejects live/in-progress scores like '44 44' or '53 31'.
     """
     parts = score_str.strip().split()
-    # Retirement/default marks the match as complete even when the last set is
-    # unfinished (e.g. "46 76(2) 41 RET").
-    if any(p in ('RET', 'DEF') for p in parts):
+    # Walkover/retirement/default marks the match as complete.
+    if any(p.upper() in ('RET', 'DEF') or p.upper() in _WO_TOKENS for p in parts):
         return True
 
     has_set = False
