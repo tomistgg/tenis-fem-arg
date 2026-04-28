@@ -218,7 +218,8 @@ def itf_fetch_drawsheet(t_id, classification, week_number=0):
         r = requests.post(url, json=payload, headers=headers)
         r.raise_for_status()
         return r.json()
-    except:
+    except (requests.RequestException, ValueError) as e:
+        print(f"[warn] ITF drawsheet POST failed for week {week_number}: {e}")
         return None
 
 
@@ -402,7 +403,8 @@ def itf_fetch_tournament_list():
                 raw = driver.find_element("tag name", "body").text.strip()
                 data = json.loads(raw)
                 t["tournamentId"] = data.get("tournamentId")
-            except:
+            except (json.JSONDecodeError, ValueError, AttributeError) as e:
+                print(f"[warn] failed to parse WTA tournamentId for {t.get('name', '?')}: {e}")
                 t["tournamentId"] = None
             if (i + 1) % 50 == 0:
                 print(f"  {i + 1}/{len(tournaments)}")

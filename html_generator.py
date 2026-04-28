@@ -38,6 +38,11 @@ LOCAL_FLAGS = {'YUG', 'SCG', 'CIS', 'URS'}
 
 FLAG_STYLE = 'vertical-align:middle;margin-right:3px;width:16px;height:11px;outline:0.3px solid #000'
 
+# Road-to-GS thresholds — single source of truth shared between JS logic and the
+# user-facing legend text so the displayed numbers can't drift from the calculation.
+GS_THRESHOLD_Q = 330
+GS_THRESHOLD_MD = 780
+
 def country_flag_html(code, show_code=True):
     if not code or code == '-':
         return code or ''
@@ -68,15 +73,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     try:
         with open(history_data_path, 'w', encoding='utf-8') as f:
             json.dump(cleaned_history or [], f, ensure_ascii=False, separators=(',', ':'))
-    except Exception:
-        pass
+    except (OSError, TypeError, ValueError) as e:
+        print(f"[warn] could not write history_data.json: {e}")
 
     # Load tournament draw sizes (combined WTA + ITF)
     draw_sizes_path = os.path.join(os.path.dirname(__file__), 'data', 'tournament_draw_sizes.json')
     try:
         with open(draw_sizes_path, 'r', encoding='utf-8') as f:
             all_draw_sizes = json.load(f)
-    except Exception:
+    except (OSError, json.JSONDecodeError) as e:
+        print(f"[warn] could not load tournament_draw_sizes.json: {e}")
         all_draw_sizes = []
     itf_draw_sizes = [t for t in all_draw_sizes if t.get('source') == 'ITF']
     wta_draw_sizes = [t for t in all_draw_sizes if t.get('source') == 'WTA']
@@ -361,8 +367,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             if _m not in _date_index[_y]:
                 _date_index[_y][_m] = []
             _date_index[_y][_m].append(_dt.day)
-        except Exception:
-            pass
+        except ValueError:
+            pass  # malformed date string in rankings_dates_index — skip silently, common for older data
 
     _latest_year = _latest_month_int = _latest_day_int = 0
     _latest_year_str = ""
@@ -631,7 +637,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     import math
                     if mo is None or (isinstance(mo, float) and math.isnan(mo)): raise ValueError
                     return int(mo)
-                except:
+                except (ValueError, TypeError):
                     is_d = ' / ' in str(row.get('winnerName', '')) or ' / ' in str(row.get('loserName', ''))
                     return 999 if is_d else 998
             _grp_sorted = _grp.copy()
@@ -3260,7 +3266,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                     <div class="roadtogs-legend">
                         <div>ACC. PTS = Points accumulated that count towards the ranking as of the cutoff date.</div>
-                        <div>EST. NEED = Estimated points needed to qualify for the Grand Slam: 330 for Q, 780 for MD (based on the previous year).</div>
+                        <div>EST. NEED = Estimated points needed to qualify for the Grand Slam: {GS_THRESHOLD_Q} for Q, {GS_THRESHOLD_MD} for MD (based on the previous year).</div>
                     </div>
                     <div class="content-card">
                         <div class="table-wrapper">
@@ -4883,6 +4889,26 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             const _rtgs_categoryDrawSize = {{'GS':128,'WTA 1000':64,'WTA 500':32,'WTA 250':32,'WTA 125':32,'125K':32,'125K Series':32,'W100':32,'W75':32,'W50':32,'W35':32,'W15':32}};
             const _rtgs_mandatory1000Names = ['Indian Wells','Miami','Madrid','Rome','Toronto','Montreal','Cincinnati','Beijing'];
             const _rtgs_optional1000Names  = ['Doha','Dubai','Wuhan'];
+            // Drop-date and threshold constants — single source of truth for the Road-to-GS logic.
+            //   2W:      GS / genuine WTA-1000 two-week events drop after 54 weeks.
+            //   DEFAULT: every other tournament drops after 53 weeks.
+            //   W15W35_DELAY_DAYS: ITF W15/W35 points go live one Monday AFTER the tournament starts.
+            //   GS_THRESHOLD_*:    points needed to qualify (Q) / make main draw (MD) at a Grand Slam.
+            const _RTGS_DROP_WEEKS_2W = 54;
+            const _RTGS_DROP_WEEKS_DEFAULT = 53;
+            const _RTGS_W15W35_DELAY_DAYS = 7;
+            const _RTGS_GS_THRESHOLD_Q = {GS_THRESHOLD_Q};
+            const _RTGS_GS_THRESHOLD_MD = {GS_THRESHOLD_MD};
+            // ITF women's tier categories — TWO flavours, used for different decisions:
+            //   ALL:         every ITF women's tier. Used to gate "is this a 2-week WTA event?"
+            //                — an ITF tournament whose name contains e.g. "Madrid" must NOT be
+            //                classified as a 2-week WTA-1000 event.
+            //   WITH_POINTS: ITF tiers that have rows in the points-distribution / draw-size
+            //                lookup tables. Used to choose ITF vs WTA points lookup. Tiers
+            //                W40 / W10 / W80 are deliberately excluded here because no point
+            //                table exists for them — they fall through to the WTA branch fallback.
+            const _RTGS_ITF_CATS_ALL = ['W100','W75','W60','W50','W40','W35','W25','W15','W10','W80'];
+            const _RTGS_ITF_CATS_WITH_POINTS = ['W100','W75','W60','W50','W35','W25','W15'];
             let _rtgs_pointsLookup = null, _rtgs_itfDrawLookup = null, _rtgs_wtaDrawLookup = null;
 
             function _rtgs_initLookups() {{
@@ -4930,6 +4956,37 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const m = new Date(d);
                 m.setUTCDate(d.getUTCDate() + (day===0 ? -6 : 1-day));
                 return m.toISOString().slice(0,10);
+            }}
+
+            // Single source of truth for drop-date computation. Both renderRoadToGS and
+            // computeBest18 used to inline this; an out-of-sync edit on one side caused the
+            // 767-vs-797 ACC PTS regression that motivated extracting it.
+            //
+            // Caller must guarantee t.date is set (truthy YYYY-MM-DD); behaviour on a falsy
+            // t.date is undefined (Invalid Date arithmetic).
+            function _rtgs_computeDropDate(t) {{
+                const monday = new Date(t.date + 'T00:00:00Z');
+                const isW15W35 = t.category === 'W15' || t.category === 'W35';
+                const effectiveMonday = new Date(monday);
+                if (isW15W35) effectiveMonday.setUTCDate(monday.getUTCDate() + _RTGS_W15W35_DELAY_DAYS);
+                const effectiveDateStr = effectiveMonday.toISOString().slice(0, 10);
+                const is2WeekEvent = t.isGS || (!_RTGS_ITF_CATS_ALL.includes(t.category) && _rtgs_twoWeekNames.some(n => t.tournament.includes(n)));
+                const isConcurrentFreeze = !is2WeekEvent && _rtgs_twoWeekFreezeMondays.has(effectiveDateStr);
+                const dropDate = new Date(effectiveMonday);
+                if (is2WeekEvent) {{
+                    dropDate.setUTCDate(effectiveMonday.getUTCDate() + _RTGS_DROP_WEEKS_2W * 7);
+                }} else if (isConcurrentFreeze) {{
+                    // Share week1Mon of the concurrent two-week event so all concurrent
+                    // tournaments drop on the same date as that event.
+                    const prevMon = new Date(effectiveMonday);
+                    prevMon.setUTCDate(effectiveMonday.getUTCDate() - 7);
+                    const week1Mon = _rtgs_twoWeekFreezeMondays.has(prevMon.toISOString().slice(0, 10)) ? prevMon : effectiveMonday;
+                    dropDate.setTime(week1Mon.getTime());
+                    dropDate.setUTCDate(dropDate.getUTCDate() + _RTGS_DROP_WEEKS_2W * 7);
+                }} else {{
+                    dropDate.setUTCDate(effectiveMonday.getUTCDate() + _RTGS_DROP_WEEKS_DEFAULT * 7);
+                }}
+                return {{ effectiveMonday, effectiveDateStr, dropDate, is2WeekEvent, isConcurrentFreeze }};
             }}
 
             // 2-week tournaments that freeze rankings for 2 consecutive weeks
@@ -5009,34 +5066,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     else if (t.mainMonday) {{ t.date=t.mainMonday; }} // set to main-draw week for multi-week tournaments
                 }});
 
-                // Filter: only include tournaments whose points are still live at windowEnd
-                // (dropDate > windowEnd). Mirrors the drop date logic in renderRoadToGS.
-                // W15/W35: points go live 1 week after tournament (effective date = monday+7).
-                const _cb18ItfCats=['W100','W75','W60','W50','W40','W35','W25','W15','W10','W80'];
+                // Filter: only include tournaments whose points are still live at windowEnd.
+                // effectiveDateStr > windowEndStr → points not yet live at cutoff.
+                // dropDate > windowEnd → points still on the rolling 12-month ranking.
                 const ts=Array.from(tMap.values()).filter(t => {{
                     if (!t.date) return false;
-                    const isW1535=t.category==='W15'||t.category==='W35';
-                    const effMon=new Date(t.date+'T00:00:00Z');
-                    if (isW1535) effMon.setUTCDate(effMon.getUTCDate()+7);
-                    const effStr=effMon.toISOString().slice(0,10);
-                    if (effStr>windowEndStr) return false; // points not yet live at cutoff
-                    const is2w=t.isGS||(!_cb18ItfCats.includes(t.category)&&_rtgs_twoWeekNames.some(n=>t.tournament.includes(n)));
-                    const isCF=!is2w&&_rtgs_twoWeekFreezeMondays.has(effStr);
-                    let dr;
-                    if (is2w) {{
-                        dr=new Date(effMon); dr.setUTCDate(effMon.getUTCDate()+54*7);
-                    }} else if (isCF) {{
-                        const prev=new Date(effMon); prev.setUTCDate(effMon.getUTCDate()-7);
-                        const w1=_rtgs_twoWeekFreezeMondays.has(prev.toISOString().slice(0,10))?prev:effMon;
-                        dr=new Date(w1); dr.setUTCDate(w1.getUTCDate()+54*7);
-                    }} else {{
-                        dr=new Date(effMon); dr.setUTCDate(effMon.getUTCDate()+53*7);
-                    }}
-                    return dr>windowEnd;
+                    const {{ effectiveDateStr, dropDate }} = _rtgs_computeDropDate(t);
+                    if (effectiveDateStr > windowEndStr) return false;
+                    return dropDate > windowEnd;
                 }});
                 if (!ts.length) return 0;
 
-                const itfCats=['W100','W75','W60','W50','W35','W25','W15'];
                 const wtaCats=['WTA 1000','WTA 500','WTA 250','WTA 125','125K','125K Series'];
                 ts.forEach(t => {{
                     if (t.isUnitedCup) {{
@@ -5050,7 +5090,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         const qual=t.bestQualRound&&t.bestQualResult==='W';
                         const ll=t.bestQualRound&&t.bestQualResult==='L'&&!!t.bestMainRound;
                         let desc,drawSize;
-                        if (itfCats.includes(t.category)) {{
+                        if (_RTGS_ITF_CATS_WITH_POINTS.includes(t.category)) {{
                             const di=_rtgs_itfDrawLookup[t.tournament+'|'+t.date];
                             if(di){{desc=di.description;drawSize=di.mainDrawSize>32?64:32;}}
                             else{{desc=_rtgs_categoryToDesc[t.category]||'';drawSize=_rtgs_categoryDrawSize[t.category]||32;}}
@@ -5102,7 +5142,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         if (!selectedPlayer||cutoff==='N/A') {{ accEl.textContent='-'; estEl.textContent='-'; estEl.style.color=''; estEl.style.fontWeight=''; return; }}
                         const pts = computeBest18(selectedPlayer, cutoff);
                         accEl.textContent = pts;
-                        const est = pts - (type==='q' ? 330 : 780);
+                        const est = pts - (type==='q' ? _RTGS_GS_THRESHOLD_Q : _RTGS_GS_THRESHOLD_MD);
                         estEl.textContent = est;
                         estEl.style.fontWeight = 'bold';
                         estEl.style.color = est > 0 ? '#1a7a1a' : est >= -10 ? '#b8860b' : est >= -25 ? '#cc5500' : '#cc0000';
@@ -5152,9 +5192,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     return;
                 }}
                 _rtgs_initLookups();
-
-                // Round ordering for determining the "last" (deepest) round
-                const roundOrder = {{'QR1':1,'QR2':2,'QR3':3,'QR4':4,'Round Robin':4.5,'1st Round':5,'2nd Round':6,'3rd Round':7,'4th Round':8,'5th Round':9,'Quarter Finals':10,'Quarter-finals':10,'Semi-finals':11,'Final':12}};
 
                 // Get current date and 52 weeks ago
                 const now = new Date();
@@ -5295,7 +5332,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const mondayStr = getMonday(dateStr);
                     const draw = (row['DRAW'] || '').toUpperCase();
                     const round = row['ROUND'] || '';
-                    const rOrder = roundOrder[round] || 0;
+                    const rOrder = _rtgs_roundOrder[round] || 0;
 
                     // Determine if selected player won or lost this match
                     const wName = getDisplayName((row['_winnerName'] || '').toString().toUpperCase()).toUpperCase();
@@ -5381,7 +5418,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 tournamentMap.forEach((t, key) => {{
                     if (!t.date) return;
                     const effMon = new Date(t.date + 'T00:00:00Z');
-                    if (t.category === 'W15' || t.category === 'W35') effMon.setUTCDate(effMon.getUTCDate() + 7);
+                    if (t.category === 'W15' || t.category === 'W35') effMon.setUTCDate(effMon.getUTCDate() + _RTGS_W15W35_DELAY_DAYS);
                     if (effMon <= _52wAgoMon) tournamentMap.delete(key);
                 }});
 
@@ -5392,9 +5429,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     document.getElementById('roadtogs-points-total').textContent = 'Points: 0';
                     return;
                 }}
-
-                // Mandatory tournament names for WTA 1000
-                const mandatory1000Names = ['Indian Wells', 'Miami', 'Madrid', 'Rome', 'Toronto', 'Montreal', 'Cincinnati', 'Beijing'];
 
                 // Calculate points and round display for each tournament
                 tournaments.forEach(t => {{
@@ -5418,9 +5452,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     }} else {{
 
                     // Determine draw size and points table first (needed to identify final qualifying round)
-                    const itfCategories = ['W100','W75','W60','W50','W35','W25','W15'];
                     let desc, drawSize;
-                    if (itfCategories.includes(t.category)) {{
+                    if (_RTGS_ITF_CATS_WITH_POINTS.includes(t.category)) {{
                         const dsInfo = itfDrawLookup[t.tournament + '|' + t.date];
                         if (dsInfo) {{
                             desc = dsInfo.description;
@@ -5515,38 +5548,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     }}
                     }} // end else (non-United Cup)
 
-                    // Drop date rules:
-                    //   GS / genuine WTA 1000 2-week events: date + 54 weeks
-                    //   W15/W35: points go live 1 week after tournament (effective date = monday+7),
-                    //            then apply the same 53/54-week rules from the effective date
-                    //   Concurrent with a 2-week freeze: share week1Mon + 54 weeks
-                    //   All others: date + 53 weeks
-                    const _itfCats = ['W100','W75','W60','W50','W40','W35','W25','W15','W10','W80'];
-                    const monday = new Date(t.date);
-                    const isW15W35 = t.category === 'W15' || t.category === 'W35';
-                    const effectiveMonday = new Date(monday);
-                    if (isW15W35) effectiveMonday.setUTCDate(monday.getUTCDate() + 7);
-                    const effectiveDateStr = effectiveMonday.toISOString().slice(0, 10);
-                    const dropDate = new Date(effectiveMonday);
-                    const is2WeekEvent = t.isGS || (!_itfCats.includes(t.category) && _rtgs_twoWeekNames.some(n => t.tournament.includes(n)));
-                    const isConcurrentFreeze = !is2WeekEvent && _rtgs_twoWeekFreezeMondays.has(effectiveDateStr);
-                    if (is2WeekEvent) {{
-                        dropDate.setUTCDate(effectiveMonday.getUTCDate() + 54 * 7);
-                    }} else if (isConcurrentFreeze) {{
-                        // Use week1Mon of the concurrent 2-week event so all concurrent
-                        // tournaments share the same drop date as that event.
-                        const prevMon = new Date(effectiveMonday);
-                        prevMon.setUTCDate(effectiveMonday.getUTCDate() - 7);
-                        const week1Mon = _rtgs_twoWeekFreezeMondays.has(prevMon.toISOString().slice(0, 10)) ? prevMon : effectiveMonday;
-                        dropDate.setTime(week1Mon.getTime());
-                        dropDate.setUTCDate(dropDate.getUTCDate() + 54 * 7);
-                    }} else {{
-                        dropDate.setUTCDate(effectiveMonday.getUTCDate() + 53 * 7);
-                    }}
+                    const {{ dropDate }} = _rtgs_computeDropDate(t);
                     t.dropDate = dropDate.toISOString().slice(0, 10);
                 }});
-
-                const optional1000Names = ['Doha', 'Dubai', 'Wuhan'];
 
                 // Classify tournaments
                 const mandatoryGS = [];
@@ -5561,9 +5565,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     if (t.isGS && hasMD) {{
                         t.mandatory = true;
                         mandatoryGS.push(t);
-                    }} else if (t.category === 'WTA 1000' && hasMD && mandatory1000Names.some(n => tUpper.includes(n.toUpperCase()))) {{
+                    }} else if (t.category === 'WTA 1000' && hasMD && _rtgs_mandatory1000Names.some(n => tUpper.includes(n.toUpperCase()))) {{
                         mandatory1000.push(t);
-                    }} else if (t.category === 'WTA 1000' && hasMD && optional1000Names.some(n => tUpper.includes(n.toUpperCase()))) {{
+                    }} else if (t.category === 'WTA 1000' && hasMD && _rtgs_optional1000Names.some(n => tUpper.includes(n.toUpperCase()))) {{
                         optional1000.push(t);
                     }} else {{
                         rest.push(t);

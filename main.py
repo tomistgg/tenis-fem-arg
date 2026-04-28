@@ -842,7 +842,7 @@ def load_match_history():
         d = item.get('DATE') or "1900-01-01"
         try:
             return pd.to_datetime(d, dayfirst=False)
-        except:
+        except (ValueError, TypeError):
             return pd.to_datetime("1900-01-01")
 
     cleaned_history.sort(key=parse_match_date, reverse=True)
