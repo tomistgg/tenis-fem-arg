@@ -6500,10 +6500,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
   <title>WT Argentina</title>
   <meta http-equiv="refresh" content="0; url=../app.html#{tab}">
   <script>
-    (function() {
+    (function() {{
       var h = location.hash;
       location.replace('../app.html' + (h || '#{tab}'));
-    })();
+    }})();
   </script>
 </head>
 <body></body>
