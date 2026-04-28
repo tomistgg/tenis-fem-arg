@@ -6,7 +6,10 @@
   <title>WT Argentina</title>
   <meta http-equiv="refresh" content="0; url=../app.html#entrylists">
   <script>
-    location.replace('../app.html#entrylists');
+    (function() {
+      var h = location.hash;
+      location.replace('../app.html' + (h || '#entrylists'));
+    })();
   </script>
 </head>
 <body></body>

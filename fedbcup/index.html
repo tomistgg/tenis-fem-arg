@@ -6,7 +6,10 @@
   <title>WT Argentina</title>
   <meta http-equiv="refresh" content="0; url=../app.html#fedbcup">
   <script>
-    location.replace('../app.html#fedbcup');
+    (function() {
+      var h = location.hash;
+      location.replace('../app.html' + (h || '#fedbcup'));
+    })();
   </script>
 </head>
 <body></body>
