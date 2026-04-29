@@ -5,7 +5,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27",
     "endDate": "2026-05-03",
-    "fetchedAt": "2026-04-29T14:01:37Z",
+    "fetchedAt": "2026-04-29T16:19:12Z",
     "draws": {
       "QS": {
         "tournament_name": "Huzhou Open",
@@ -587,7 +587,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-29T14:04:34Z",
+    "fetchedAt": "2026-04-29T16:22:23Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -1326,7 +1326,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-29T14:05:24Z",
+    "fetchedAt": "2026-04-29T16:23:05Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -2030,7 +2030,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-29T14:06:56Z",
+    "fetchedAt": "2026-04-29T16:24:43Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -2995,7 +2995,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27",
     "endDate": "2026-05-03",
-    "fetchedAt": "2026-04-29T14:01:37Z",
+    "fetchedAt": "2026-04-29T16:19:12Z",
     "draws": {
       "QS": {
         "tournament_name": "L'Open 35 de Saint Malo",
@@ -3553,7 +3553,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-02T00:00:00",
-    "fetchedAt": "2026-04-29T14:02:53Z",
+    "fetchedAt": "2026-04-29T16:20:39Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -4305,7 +4305,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-29T14:07:45Z",
+    "fetchedAt": "2026-04-29T16:25:30Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -5270,7 +5270,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-29T14:01:40Z",
+    "fetchedAt": "2026-04-29T16:19:16Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -5920,6 +5920,12 @@
           },
           {
             "round": 1,
+            "match_num": 5,
+            "winner_name": "A. Friedsam",
+            "score": "63 46 75"
+          },
+          {
+            "round": 1,
             "match_num": 6,
             "winner_name": "E. Yaneva",
             "score": "63 75"
@@ -5997,7 +6003,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-29T14:05:03Z",
+    "fetchedAt": "2026-04-29T16:22:45Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -6903,6 +6909,12 @@
           },
           {
             "round": 1,
+            "match_num": 9,
+            "winner_name": "N. Podoroska",
+            "score": "62 62"
+          },
+          {
+            "round": 1,
             "match_num": 10,
             "winner_name": "C. Cervino Ruiz",
             "score": "61 61"
@@ -6924,6 +6936,18 @@
             "match_num": 13,
             "winner_name": "A. Maye Martinez",
             "score": "75 61"
+          },
+          {
+            "round": 1,
+            "match_num": 14,
+            "winner_name": "M. LEON JAUME",
+            "score": "75 62"
+          },
+          {
+            "round": 1,
+            "match_num": 15,
+            "winner_name": "M. Szostak",
+            "score": "62 61"
           }
         ],
         "byes": [],
@@ -6944,7 +6968,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-29T14:07:17Z",
+    "fetchedAt": "2026-04-29T16:25:09Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -7358,7 +7382,38 @@
             "country": "UKR"
           }
         ],
-        "matches": [],
+        "matches": [
+          {
+            "round": 1,
+            "match_num": 1,
+            "winner_name": "N. Ivanova",
+            "score": "63 61"
+          },
+          {
+            "round": 1,
+            "match_num": 2,
+            "winner_name": "J. Elkady",
+            "score": "63 36 63"
+          },
+          {
+            "round": 1,
+            "match_num": 3,
+            "winner_name": "S. Martianova",
+            "score": "61 64"
+          },
+          {
+            "round": 1,
+            "match_num": 4,
+            "winner_name": "A. Popovic",
+            "score": "63 57 40 RET"
+          },
+          {
+            "round": 1,
+            "match_num": 5,
+            "winner_name": "V. Veleva",
+            "score": "75 62"
+          }
+        ],
         "byes": [],
         "round_labels": [
           "Round of 32",
@@ -7377,7 +7432,7 @@
     "week": "Week of April 20",
     "startDate": "2026-04-21",
     "endDate": "2026-05-03",
-    "fetchedAt": "2026-04-29T14:01:37Z",
+    "fetchedAt": "2026-04-29T16:19:12Z",
     "draws": {
       "MDS": {
         "tournament_name": "Mutua Madrid Open",
@@ -9422,7 +9477,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-29T14:04:12Z",
+    "fetchedAt": "2026-04-29T16:21:59Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -10048,6 +10103,18 @@
         "matches": [
           {
             "round": 1,
+            "match_num": 0,
+            "winner_name": "R. Cooling",
+            "score": "63 46 63"
+          },
+          {
+            "round": 1,
+            "match_num": 1,
+            "winner_name": "S. Rutlauka",
+            "score": "64 76(1)"
+          },
+          {
+            "round": 1,
             "match_num": 2,
             "winner_name": "A. Gillan",
             "score": "75 63"
@@ -10143,7 +10210,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-29T14:05:51Z",
+    "fetchedAt": "2026-04-29T16:23:38Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -10769,6 +10836,12 @@
         "matches": [
           {
             "round": 1,
+            "match_num": 0,
+            "winner_name": "C. Diaz Adrover",
+            "score": "57 75 62"
+          },
+          {
+            "round": 1,
             "match_num": 2,
             "winner_name": "M. Podlinska",
             "score": "26 64 62"
@@ -10817,9 +10890,21 @@
           },
           {
             "round": 1,
+            "match_num": 10,
+            "winner_name": "A. Reguer",
+            "score": "75 46 76(1)"
+          },
+          {
+            "round": 1,
             "match_num": 11,
             "winner_name": "I. Van den Broek",
             "score": "06 62 63"
+          },
+          {
+            "round": 1,
+            "match_num": 12,
+            "winner_name": "I. Marinkovic",
+            "score": "64 62"
           },
           {
             "round": 1,
@@ -10858,7 +10943,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-29T14:06:24Z",
+    "fetchedAt": "2026-04-29T16:24:11Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -11566,6 +11651,12 @@
         "matches": [
           {
             "round": 1,
+            "match_num": 0,
+            "winner_name": "Y. Mansouri",
+            "score": "75 57 76(2)"
+          },
+          {
+            "round": 1,
             "match_num": 2,
             "winner_name": "M. Oliver sanchez",
             "score": "57 63 61"
@@ -11575,6 +11666,18 @@
             "match_num": 3,
             "winner_name": "M. Lazarenko",
             "score": "64 61"
+          },
+          {
+            "round": 1,
+            "match_num": 5,
+            "winner_name": "F. Dell'Edera",
+            "score": "16 63 60"
+          },
+          {
+            "round": 1,
+            "match_num": 6,
+            "winner_name": "A. Shkutova",
+            "score": "62 30 RET"
           },
           {
             "round": 1,
@@ -11590,9 +11693,21 @@
           },
           {
             "round": 1,
+            "match_num": 11,
+            "winner_name": "F. Gandolfi",
+            "score": "62 26 41 RET"
+          },
+          {
+            "round": 1,
             "match_num": 12,
             "winner_name": "L. Petretic",
             "score": "62 62"
+          },
+          {
+            "round": 1,
+            "match_num": 13,
+            "winner_name": "L. Fernandez",
+            "score": "61 76(5)"
           },
           {
             "round": 1,
@@ -11619,7 +11734,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-29T14:08:04Z",
+    "fetchedAt": "2026-04-29T16:25:56Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -12090,6 +12205,24 @@
         "matches": [
           {
             "round": 1,
+            "match_num": 1,
+            "winner_name": "L. Ipunesso",
+            "score": "75 62"
+          },
+          {
+            "round": 1,
+            "match_num": 2,
+            "winner_name": "C. Steyn",
+            "score": "67 62 62"
+          },
+          {
+            "round": 1,
+            "match_num": 4,
+            "winner_name": "D. Vaissaud",
+            "score": "64 60"
+          },
+          {
+            "round": 1,
             "match_num": 5,
             "winner_name": "V. Khrebtova",
             "score": "60 62"
@@ -12131,7 +12264,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-29T14:02:21Z",
+    "fetchedAt": "2026-04-29T16:20:10Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -12870,7 +13003,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27",
     "endDate": "2026-05-03",
-    "fetchedAt": "2026-04-29T14:01:37Z",
+    "fetchedAt": "2026-04-29T16:19:12Z",
     "draws": {
       "QS": {
         "tournament_name": "Catalonia Open Solgirones",
@@ -13323,7 +13456,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-29T14:03:21Z",
+    "fetchedAt": "2026-04-29T16:21:02Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -13821,7 +13954,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-29T14:02:02Z",
+    "fetchedAt": "2026-04-29T16:19:42Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -14500,7 +14633,7 @@
     "week": "Week of April 27",
     "startDate": "2026-04-27T00:00:00",
     "endDate": "2026-05-03T00:00:00",
-    "fetchedAt": "2026-04-29T14:03:49Z",
+    "fetchedAt": "2026-04-29T16:21:31Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -15126,6 +15259,18 @@
         "matches": [
           {
             "round": 1,
+            "match_num": 0,
+            "winner_name": "J. Riera",
+            "score": "62 64"
+          },
+          {
+            "round": 1,
+            "match_num": 1,
+            "winner_name": "C. Markus",
+            "score": "62 75"
+          },
+          {
+            "round": 1,
             "match_num": 2,
             "winner_name": "A. Candiotto",
             "score": "76(1) 46 63"
@@ -15138,9 +15283,27 @@
           },
           {
             "round": 1,
+            "match_num": 5,
+            "winner_name": "E. Jackson",
+            "score": "62 57 76(1)"
+          },
+          {
+            "round": 1,
             "match_num": 7,
             "winner_name": "J. Gonzalez Daniele",
             "score": "63 64"
+          },
+          {
+            "round": 1,
+            "match_num": 12,
+            "winner_name": "A. Vergara Rivera",
+            "score": "63 62"
+          },
+          {
+            "round": 1,
+            "match_num": 13,
+            "winner_name": "D. Bredberg Canizares",
+            "score": "63 61"
           }
         ],
         "byes": [],
