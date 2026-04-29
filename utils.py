@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import unicodedata
 
 import csv
@@ -47,6 +48,13 @@ def fix_encoding_keep_accents(text):
     if not text:
         return ""
     return _repair_mojibake(text)
+
+
+def normalize_player_name(text):
+    """Normalize a player name for matching: repair encoding, strip accents,
+    uppercase, and collapse internal whitespace. Used by tstrength and draws
+    when matching player rows across data sources."""
+    return re.sub(r"\s+", " ", fix_encoding(text or "").upper()).strip()
 
 
 def load_cache(cache_file):

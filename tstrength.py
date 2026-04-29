@@ -9,7 +9,8 @@ import requests
 import time
 from datetime import datetime, timedelta
 
-from utils import fix_encoding
+from utils import fix_encoding, normalize_player_name
+from calendar_builder import get_previous_monday
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -77,16 +78,6 @@ _REGION_MAP = {
 }
 
 
-def _normalize_name(name):
-    """Normalize a player name for matching: strip accents, uppercase, collapse spaces."""
-    return re.sub(r"\s+", " ", fix_encoding(name).upper().strip())
-
-
-def _get_monday(date_str):
-    """Get the Monday of the week for a date string (YYYY-MM-DD)."""
-    dt = datetime.strptime(date_str[:10], "%Y-%m-%d")
-    monday = dt - timedelta(days=dt.weekday())
-    return monday.strftime("%Y-%m-%d")
 
 
 def _resolve_ranking_week(start_date, draw, rankings_index, available_weeks):
@@ -99,8 +90,8 @@ def _resolve_ranking_week(start_date, draw, rankings_index, available_weeks):
     """
     try:
         dt = datetime.strptime((start_date or "")[:10], "%Y-%m-%d")
-    except Exception:
-        return _get_monday(start_date)
+    except ValueError:
+        return get_previous_monday(start_date)
 
     if draw == "Q":
         dt = dt - timedelta(days=1)
@@ -129,7 +120,7 @@ def _load_rankings_index():
             week = row["week_date"]
             if week not in index:
                 index[week] = {}
-            norm = _normalize_name(row["player"])
+            norm = normalize_player_name(row["player"])
             rank = int(row["rank"])
             index[week][norm] = rank
             # Add partial name (first + first-last) as fallback if 3+ words
@@ -415,7 +406,7 @@ def build_tstrength_data(from_year=None, full_backfill=False):
 
                 player_ranks = []
                 for p in players:
-                    norm_p = _normalize_name(p)
+                    norm_p = normalize_player_name(p)
                     rank = week_rankings.get(norm_p)
                     if rank is None and len(norm_p.split()) >= 3:
                         partial = norm_p.split()[0] + " " + norm_p.split()[1]

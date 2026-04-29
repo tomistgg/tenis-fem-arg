@@ -8,7 +8,7 @@ import random
 import requests
 import fitz
 
-from utils import fix_encoding
+from utils import fix_encoding, normalize_player_name
 from itf_drawsheet_cache import get_cached_drawsheet, save_drawsheet
 
 
@@ -97,9 +97,6 @@ def _is_winner_name(text):
     return bool(re.match(r'^[A-Z][a-z]*\.\s+\S', text))
 
 
-def _fold_name(text):
-    """Normalize names for robust matching (case/accents/spacing)."""
-    return re.sub(r"\s+", " ", fix_encoding(text or "").upper()).strip()
 
 
 def _split_player_name(player_name):
@@ -138,17 +135,17 @@ def _player_name_matches_winner(player_name, winner_name):
         return False
 
     # Exact normalized match first.
-    p_norm = _fold_name(re.sub(r"\.\.\.$", "", player_name))
+    p_norm = normalize_player_name(re.sub(r"\.\.\.$", "", player_name))
     w_raw = (winner_name or "").strip()
-    w_norm = _fold_name(re.sub(r"\.\.\.$", "", w_raw))
+    w_norm = normalize_player_name(re.sub(r"\.\.\.$", "", w_raw))
     if p_norm == w_norm:
         return True
 
     truncated = w_raw.endswith("...")
     player_last, player_first = _split_player_name(player_name)
     winner_last, winner_initials = _parse_winner_name_parts(w_raw)
-    p_last_norm = _fold_name(player_last)
-    w_last_norm = _fold_name(winner_last)
+    p_last_norm = normalize_player_name(player_last)
+    w_last_norm = normalize_player_name(winner_last)
     if not p_last_norm or not w_last_norm:
         return False
     if p_last_norm != w_last_norm:
@@ -157,7 +154,7 @@ def _player_name_matches_winner(player_name, winner_name):
 
     # If we have winner initials, enforce first-initial agreement to avoid surname collisions.
     if winner_initials and player_first:
-        first_tokens = re.findall(r"[A-Z]+", _fold_name(player_first))
+        first_tokens = re.findall(r"[A-Z]+", normalize_player_name(player_first))
         if first_tokens and first_tokens[0] and first_tokens[0][0] != winner_initials[0]:
             return False
     return True

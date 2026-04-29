@@ -26,6 +26,24 @@ def get_monday_from_date(date_str):
     return monday
 
 
+def get_previous_monday(date_str):
+    """Return the Monday of the week containing date_str (or earlier if the
+    date is already a Monday) as a YYYY-MM-DD string. Returns None for missing
+    or unparseable input. Tolerant: accepts None, leading/trailing whitespace,
+    and timestamp strings (only the leading 10 chars are inspected)."""
+    if not date_str:
+        return None
+    base = str(date_str).strip()
+    if len(base) >= 10:
+        base = base[:10]
+    try:
+        d = datetime.strptime(base, "%Y-%m-%d")
+    except ValueError:
+        return None
+    monday = d - timedelta(days=d.weekday())
+    return monday.strftime("%Y-%m-%d")
+
+
 def format_week_label(monday_date):
     months_en = {
         1: "January", 2: "February", 3: "March", 4: "April",

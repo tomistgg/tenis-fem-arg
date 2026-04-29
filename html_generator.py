@@ -1,4 +1,5 @@
 import json
+import math
 import re
 from html import escape
 import os
@@ -590,7 +591,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             ascending=[False, False, False, True]
         )
 
-        import json as _json_bjkc
         _all_bjkc_players = set()
 
         for _tid in _tie_meta['tournamentId'].tolist():
@@ -634,7 +634,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             def _sort_key(row):
                 mo = row.get('matchOrder')
                 try:
-                    import math
                     if mo is None or (isinstance(mo, float) and math.isnan(mo)): raise ValueError
                     return int(mo)
                 except (ValueError, TypeError):
@@ -652,17 +651,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 _opp_player = str(_mr['loserName'] if _arg_won else _mr['winnerName'])
 
                 if not _has_result:
-                    _score_display = '<em style="color:#64748b;">Not Played</em>'
+                    _score_display = '<em class="text-muted">Not Played</em>'
                     _res_label = '-'
-                    _res_style = 'color:#64748b;font-weight:bold;'
+                    _res_class = 'text-muted'
+                    _res_extra_style = 'font-weight:bold;'
                 else:
                     _score = _result_raw if _arg_won else _bjkc_flip_score(_result_raw)
                     _status = str(_mr.get('resultStatusDesc', '') or '')
                     _score_display = escape(_score)
                     if _status and _status.lower() != 'nan':
-                        _score_display += f' <span style="color:#64748b;font-size:0.85em;">({escape(_status)})</span>'
+                        _score_display += f' <span class="text-muted" style="font-size:0.85em;">({escape(_status)})</span>'
                     _res_label = 'W' if _arg_won else 'L'
-                    _res_style = 'color:#166534;font-weight:bold;' if _arg_won else 'color:#991b1b;font-weight:bold;'
+                    _res_class = 'res-win' if _arg_won else 'res-loss'
+                    _res_extra_style = ''
 
                 _is_doubles = ' / ' in _arg_player
                 _data_type = 'D' if _is_doubles else 'S'
@@ -680,7 +681,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 _rows_html += f"""<tr data-player="{escape(_data_player)}" data-type="{_data_type}" data-result="{_data_result}">
                         <td style="font-weight:bold;white-space:nowrap;">{_fmt_name(_arg_player)}</td>
-                        <td style="{_res_style}text-align:center;">{_res_label}</td>
+                        <td class="{_res_class}" style="{_res_extra_style}text-align:center;">{_res_label}</td>
                         <td style="white-space:nowrap;">{_score_display}</td>
                         <td style="white-space:nowrap;">{_fmt_name(_opp_player)}</td>
                     </tr>"""
@@ -702,7 +703,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                 </div>
             </div>"""
-        bjkc_players_json = _json_bjkc.dumps(sorted(_all_bjkc_players))
+        bjkc_players_json = json.dumps(sorted(_all_bjkc_players))
     except Exception as _e:
         bjkc_series_html = f'<p style="color:red;">Error loading BJK Cup data: {escape(str(_e))}</p>'
         bjkc_players_json = '[]'
@@ -711,8 +712,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     if tstrength_data is None:
         tstrength_data = []
     tstrength_json_list = [t for t in tstrength_data if t.get("gm", 0) > 0]
-    import json as _json
-    tstrength_json_str = _json.dumps(tstrength_json_list)
+    tstrength_json_str = json.dumps(tstrength_json_list)
 
     # Generate the full HTML template
     router_script = """
@@ -1290,6 +1290,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .roadtogs-separator td {{ background: var(--c-chrome-bg); color: white; text-align: center !important; font-weight: bold; font-size: 12px; letter-spacing: 1px; padding: 6px 12px !important; }}
             .roadtogs-cutoffs {{ margin-bottom: 8px; display: flex; flex-wrap: nowrap; gap: 10px; align-items: flex-start; }}
             .roadtogs-legend {{ margin-bottom: 12px; font-size: 11px; color: var(--c-text-muted); line-height: 1.5; }}
+            /* Shared utility classes — replace inline style="..." attributes that appeared
+               many times across rendered tables. Colours match the previous inline values
+               byte-for-byte to keep rendering identical; centralising them means future
+               theme tweaks can be made in one place. */
+            .text-muted {{ color: #64748b; }}
+            .cell-state-info {{ padding: 20px; color: #64748b; }}
+            .cell-state-error {{ padding: 20px; }}
+            .res-win {{ color: #166534; font-weight: bold; }}
+            .res-loss {{ color: #991b1b; font-weight: bold; }}
+            .rtgs-warn-14d {{ color: #cc0000; font-weight: bold; }}
+            .rtgs-warn-28d {{ color: #cc5500; font-weight: bold; }}
             .gs-cutoff-table {{ border-collapse: collapse; font-size: 10px; width: auto; table-layout: auto; }}
             .gs-cutoff-table th, .gs-cutoff-table td {{ border: 1px solid var(--c-border); padding: 2px 6px; text-align: center; }}
             .gs-cutoff-table thead tr:last-child th {{ background: var(--c-surface-alt) !important; font-weight: bold; color: var(--c-text-subtle) !important; }}
@@ -3001,7 +3012,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                     <table id="history-table">
                                         <thead id="history-head"></thead>
                                         <tbody id="history-body">
-                                            <tr><td colspan="100%" style="padding: 20px; color: #64748b;">Select a player to view their matches</td></tr>
+                                            <tr><td colspan="100%" class="cell-state-info">Select a player to view their matches</td></tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -3281,7 +3292,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                     </tr>
                                 </thead>
                                 <tbody id="roadtogs-body">
-                                    <tr><td colspan="5" style="padding: 20px; color: #64748b;">Select a player to view their results</td></tr>
+                                    <tr><td colspan="5" class="cell-state-info">Select a player to view their results</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -4184,7 +4195,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 thead.innerHTML = headHtml;
 
                 // Set initial placeholder message
-                tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px; color: #64748b;">Select a player to view their matches</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" class="cell-state-info">Select a player to view their matches</td></tr>`;
             }}
 
             let currentPlayerData = [];
@@ -4681,7 +4692,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 updateHistoryCounter(matches, selectedPlayer);
 
                 if (matches.length === 0) {{
-                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No matches found with the selected filters.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" class="cell-state-error">No matches found with the selected filters.</td></tr>`;
                     _updateHistoryPagination(0, 1, 1);
                     return;
                 }}
@@ -4791,18 +4802,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'ROUND', 'RANK', 'PLAYER', 'SCORE', 'OPP_RANK', 'OPPONENT'];
 
                 if (selectedPlayer === '__ALL__') {{
-                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px; color: #64748b;">Loading match history...</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" class="cell-state-info">Loading match history...</td></tr>`;
                     try {{
                         await ensureHistoryDataLoaded();
                     }} catch (err) {{
                         console.error('Failed to load match history:', err);
-                        tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">Failed to load match history. Please refresh and try again.</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" class="cell-state-error">Failed to load match history. Please refresh and try again.</td></tr>`;
                         updateHistoryCounter([], '__ALL__');
                         return;
                     }}
                     const allFiltered = historyData.filter(row => !isDoublesHistoryRow(row));
                     if (allFiltered.length === 0) {{
-                        tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No matches found.</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" class="cell-state-error">No matches found.</td></tr>`;
                         updateHistoryCounter([], '__ALL__');
                         return;
                     }}
@@ -4834,17 +4845,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         }}
                         oppSelect.innerHTML = '<option value="">All Opponents</option>';
                     }}
-                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">Select a player...</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" class="cell-state-error">Select a player...</td></tr>`;
                     updateHistoryCounter([], '');
                     return;
                 }}
 
-                tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px; color: #64748b;">Loading match history...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" class="cell-state-info">Loading match history...</td></tr>`;
                 try {{
                     await ensureHistoryDataLoaded();
                 }} catch (err) {{
                     console.error('Failed to load match history:', err);
-                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">Failed to load match history. Please refresh and try again.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" class="cell-state-error">Failed to load match history. Please refresh and try again.</td></tr>`;
                     updateHistoryCounter([], selectedPlayer);
                     return;
                 }}
@@ -4862,7 +4873,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }});
 
                 if (filtered.length === 0) {{
-                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" style="padding: 20px;">No matches found for this player.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" class="cell-state-error">No matches found for this player.</td></tr>`;
                     updateHistoryCounter([], selectedPlayer);
                     return;
                 }}
@@ -5175,18 +5186,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const tbody = document.getElementById('roadtogs-body');
 
                 if (!selectedPlayer) {{
-                    tbody.innerHTML = '<tr><td colspan="5" style="padding: 20px; color: #64748b;">Select a player to view their results</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="cell-state-info">Select a player to view their results</td></tr>';
                     document.getElementById('roadtogs-points-total').textContent = 'Points: 0';
                     updateGSCutoffTables('');
                     return;
                 }}
 
-                tbody.innerHTML = '<tr><td colspan="5" style="padding: 20px; color: #64748b;">Loading match history...</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="cell-state-info">Loading match history...</td></tr>';
                 try {{
                     await ensureHistoryDataLoaded();
                 }} catch (err) {{
                     console.error('Failed to load match history:', err);
-                    tbody.innerHTML = '<tr><td colspan="5" style="padding: 20px;">Failed to load match history. Please refresh and try again.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="cell-state-error">Failed to load match history. Please refresh and try again.</td></tr>';
                     document.getElementById('roadtogs-points-total').textContent = 'Points: 0';
                     updateGSCutoffTables('');
                     return;
@@ -5425,7 +5436,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const tournaments = Array.from(tournamentMap.values());
 
                 if (tournaments.length === 0) {{
-                    tbody.innerHTML = '<tr><td colspan="5" style="padding: 20px; color: #64748b;">No tournaments found in the last 52 weeks.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="cell-state-info">No tournaments found in the last 52 weeks.</td></tr>';
                     document.getElementById('roadtogs-points-total').textContent = 'Points: 0';
                     return;
                 }}
@@ -5616,21 +5627,21 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const _today = new Date(); _today.setUTCHours(0,0,0,0);
                 const _in14 = new Date(_today); _in14.setUTCDate(_today.getUTCDate() + 14);
                 const _in28 = new Date(_today); _in28.setUTCDate(_today.getUTCDate() + 28);
-                function _dropStyle(dropDateStr) {{
+                function _dropClass(dropDateStr) {{
                     if (!dropDateStr) return '';
                     const d = new Date(dropDateStr);
-                    if (d <= _in14) return ' style="color:#cc0000;font-weight:bold;"';
-                    if (d <= _in28) return ' style="color:#cc5500;font-weight:bold;"';
+                    if (d <= _in14) return ' class="rtgs-warn-14d"';
+                    if (d <= _in28) return ' class="rtgs-warn-28d"';
                     return '';
                 }}
                 const parts = [];
                 countable.forEach(t => {{
-                    parts.push(`<tr><td>${{t.date}}</td><td>${{t.tournament}}</td><td>${{t.roundDisplay}}</td><td>${{t.points}}</td><td${{_dropStyle(t.dropDate)}}>${{t.dropDate}}</td></tr>`);
+                    parts.push(`<tr><td>${{t.date}}</td><td>${{t.tournament}}</td><td>${{t.roundDisplay}}</td><td>${{t.points}}</td><td${{_dropClass(t.dropDate)}}>${{t.dropDate}}</td></tr>`);
                 }});
                 if (nonCountable.length > 0) {{
                     parts.push('<tr class="roadtogs-separator"><td colspan="5">NON-COUNTABLE TOURNAMENTS</td></tr>');
                     nonCountable.forEach(t => {{
-                        parts.push(`<tr><td>${{t.date}}</td><td>${{t.tournament}}</td><td>${{t.roundDisplay}}</td><td>${{t.points}}</td><td${{_dropStyle(t.dropDate)}}>${{t.dropDate}}</td></tr>`);
+                        parts.push(`<tr><td>${{t.date}}</td><td>${{t.tournament}}</td><td>${{t.roundDisplay}}</td><td>${{t.points}}</td><td${{_dropClass(t.dropDate)}}>${{t.dropDate}}</td></tr>`);
                     }});
                 }}
 

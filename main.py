@@ -19,7 +19,7 @@ from utils import (
 )
 from calendar_builder import (
     get_monday_offset, generate_dynamic_monday_map,
-    build_calendar_data, format_week_label
+    build_calendar_data, format_week_label, get_previous_monday
 )
 from wta import (
     build_tournament_groups, get_full_wta_calendar,
@@ -45,6 +45,16 @@ PLAYER_ALIASES_WTA_ITF_FILE = os.path.join(DATA_DIR, "player_aliases_wta_itf.jso
 DRAWS_STORE_CACHE_FILE = os.path.join(DATA_DIR, "draws_store_cache.json")
 DRAW_FETCH_ERRORS_FILE = os.path.join(DATA_DIR, "draw_fetch_errors.json")
 ENABLE_ITF_DRAWS_PREFETCH = False
+
+# ITF draw-fetch pacing — anti-bot recovery strategy.
+# Sleep between requests, cooldown after the first burst (Incapsula often blocks
+# right after the tournament-id resolution burst), and longer backoff if we keep
+# getting empty draws back (likely a session-level block — driver is recreated).
+ITF_INTER_DRAW_SLEEP_RANGE = (15.0, 30.0)
+ITF_FIRST_BURST_COOLDOWN_SEC = 65
+ITF_FIRST_BURST_MIN_JOBS = 6
+ITF_CONSECUTIVE_EMPTY_BACKOFF_SEC = 35
+ITF_CONSECUTIVE_EMPTY_THRESHOLD = 3
 
 
 def _canonical_draw_store_key(t_key):
@@ -117,18 +127,6 @@ def _map_to_display_name_upper(name):
     return NAME_LOOKUP.get(raw_upper) or NAME_LOOKUP.get(alt_upper) or raw_upper
 
 
-def _monday_from_date_str(date_str):
-    if not date_str:
-        return None
-    base = str(date_str).strip()
-    if len(base) >= 10:
-        base = base[:10]
-    try:
-        d = datetime.strptime(base, "%Y-%m-%d")
-    except Exception:
-        return None
-    monday = d - timedelta(days=d.weekday())
-    return monday.strftime("%Y-%m-%d")
 
 
 def enrich_history_with_wta_ranks(cleaned_history):
@@ -271,7 +269,7 @@ def enrich_history_with_wta_ranks(cleaned_history):
     for row in cleaned_history:
         row["_winnerRank"] = ""
         row["_loserRank"] = ""
-        week_date = _monday_from_date_str(row.get("DATE", ""))
+        week_date = get_previous_monday(row.get("DATE", ""))
         if not week_date or week_date not in csv_by_week:
             continue
         idx_by_name, idx_by_id = week_index(week_date)
@@ -1073,7 +1071,7 @@ def main():
         # Keep request cadence gentle to avoid ITF anti-bot throttling.
         # draws._fetch_itf_drawsheet bypasses itf.py's rate limiter, so pace here.
         if i > 1:
-            time.sleep(random.uniform(15.0, 30.0))
+            time.sleep(random.uniform(*ITF_INTER_DRAW_SLEEP_RANGE))
         tid = t_info.get("tournamentId")
         is_multiweek = t_info.get("is_multiweek", False)
         store_key = _canonical_draw_store_key(t_key)
@@ -1109,12 +1107,12 @@ def main():
             not t_draws
             and not itf_cooloff_applied
             and i == 1
-            and len(itf_draw_jobs) >= 6
+            and len(itf_draw_jobs) >= ITF_FIRST_BURST_MIN_JOBS
         ):
             # ITF often enforces a short temporary block after the tournament-id burst.
             # Wait once, then retry the same event with a fresh session.
-            print("  ITF cooldown triggered (65s) before retrying draw fetch...")
-            time.sleep(65)
+            print(f"  ITF cooldown triggered ({ITF_FIRST_BURST_COOLDOWN_SEC}s) before retrying draw fetch...")
+            time.sleep(ITF_FIRST_BURST_COOLDOWN_SEC)
             itf_cooloff_applied = True
             t_draws = fetch_itf_tournament_draws(
                 tid, is_multiweek=is_multiweek, driver=driver,
@@ -1159,10 +1157,10 @@ def main():
                 "name": t_info.get("name", t_key),
                 "startDate": (t_info.get("startDate") or "")[:10],
             })
-            if itf_consecutive_empty >= 3 and i < total_itf_draws:
+            if itf_consecutive_empty >= ITF_CONSECUTIVE_EMPTY_THRESHOLD and i < total_itf_draws:
                 # Back off periodically to recover from temporary ITF throttling.
-                print("  ITF backoff triggered (35s) after consecutive empty draws — refreshing session.")
-                time.sleep(35)
+                print(f"  ITF backoff triggered ({ITF_CONSECUTIVE_EMPTY_BACKOFF_SEC}s) after consecutive empty draws — refreshing session.")
+                time.sleep(ITF_CONSECUTIVE_EMPTY_BACKOFF_SEC)
                 try:
                     driver.quit()
                 except Exception:
