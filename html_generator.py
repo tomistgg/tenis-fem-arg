@@ -3854,7 +3854,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 _drWtaDrawLookup[normId] = t.mainDrawSize;
             }});
             const _drCategoryDrawSize = {{
-                'GS': 128, 'WTA 1000': 64,
+                'GS': 128, 'WTA 1000': 96,
                 'WTA 500': 32, 'WTA 250': 32, 'WTA 125': 32,
                 '125K': 32, '125K Series': 32,
                 'W100': 32, 'W75': 32, 'W50': 32, 'W35': 32, 'W15': 32
@@ -3879,18 +3879,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if (round === 'Semi-finals') return 'Semifinals';
                 if (round === 'Quarter-finals') return 'Quarterfinals';
                 const drawSize = _drResolveDrawSize(tournamentId, date, tournamentName, category, matchType);
-                if (drawSize >= 128) {{
-                    if (round === '1st Round') return 'Round of 128';
-                    if (round === '2nd Round') return 'Round of 64';
-                    if (round === '3rd Round') return 'Round of 32';
-                    if (round === '4th Round') return 'Round of 16';
-                }} else if (drawSize >= 64) {{
-                    if (round === '1st Round') return 'Round of 64';
-                    if (round === '2nd Round') return 'Round of 32';
-                    if (round === '3rd Round') return 'Round of 16';
-                }} else {{
-                    if (round === '1st Round') return 'Round of 32';
-                    if (round === '2nd Round') return 'Round of 16';
+                const _ordinalNum = {{'1st Round':1,'2nd Round':2,'3rd Round':3,'4th Round':4,'5th Round':5}}[round];
+                if (_ordinalNum !== undefined) {{
+                    const nextPow2 = Math.pow(2, Math.ceil(Math.log2(drawSize)));
+                    return 'Round of ' + (nextPow2 / Math.pow(2, _ordinalNum - 1));
                 }}
                 return round;
             }}
@@ -4417,7 +4409,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const roundValue = (row['ROUND'] || '').toString().trim();
                 if (!roundValue) return '';
                 if (isTeamEventRow(row)) return roundValue.startsWith('Team - ') ? roundValue : `Team - ${{roundValue}}`;
-                return roundValue;
+                return displayRound(roundValue, row['TOURNAMENT_ID'] || '', row['DATE'] || '',
+                    row['TOURNAMENT'] || '', row['CATEGORY'] || '', row['MATCH_TYPE'] || '', row['DRAW'] || '');
             }}
 
             function populateFilters(playerMatches) {{
@@ -4494,10 +4487,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 populateFilterOptions('filter-surface', Array.from(surfaces).sort());
                 const roundOrderForFilter = {{
                     'QR1': 1, 'QR2': 2, 'QR3': 3, 'QR4': 4,
-                    '1st Round': 5, '2nd Round': 6, '3rd Round': 7, '4th Round': 8, '5th Round': 9,
-                    'Quarter-finals': 10, 'Semi-finals': 11, 'Final': 12,
-                    'Team - Round Robin': 13, 'Team - Last 32': 14, 'Team - Last 16': 15,
-                    'Team - Quarter Finals': 16, 'Team - Semi Finals': 17, 'Team - Final': 18,
+                    'Round of 128': 5, 'Round of 64': 6, 'Round of 32': 7, 'Round of 16': 8,
+                    'Quarterfinals': 9, 'Semifinals': 10, 'Final': 11,
+                    'Team - Round Robin': 12, 'Team - Last 32': 13, 'Team - Last 16': 14,
+                    'Team - Quarter Finals': 15, 'Team - Semi Finals': 16, 'Team - Final': 17,
                 }};
                 const orderedRounds = Array.from(rounds).sort((a, b) => {{
                     const oa = roundOrderForFilter[a] ?? 99;
