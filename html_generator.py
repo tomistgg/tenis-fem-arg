@@ -3838,8 +3838,61 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 return '(' + parts.join('/') + ') ';
             }}
 
-            function displayRound(round, tournament) {{
-                return round || '';
+            const _drItfDrawLookup = {{}};
+            itfDrawSizes.forEach(t => {{
+                const key = (t.tournamentName || '') + '|' + (t.date || '');
+                _drItfDrawLookup[key] = t.mainDrawSize;
+                const weekMatch = (t.tournamentName || '').match(/^(.+?)\\s*\\(Week \\d+\\)$/);
+                if (weekMatch) {{
+                    _drItfDrawLookup[weekMatch[1].trim() + '|' + (t.date || '')] = t.mainDrawSize;
+                }}
+            }});
+            const _drWtaDrawLookup = {{}};
+            wtaDrawSizes.forEach(t => {{
+                if (!t.tournamentId) return;
+                const normId = String(parseInt(t.tournamentId) || t.tournamentId);
+                _drWtaDrawLookup[normId] = t.mainDrawSize;
+            }});
+            const _drCategoryDrawSize = {{
+                'GS': 128, 'WTA 1000': 64,
+                'WTA 500': 32, 'WTA 250': 32, 'WTA 125': 32,
+                '125K': 32, '125K Series': 32,
+                'W100': 32, 'W75': 32, 'W50': 32, 'W35': 32, 'W15': 32
+            }};
+            function _drResolveDrawSize(tournamentId, date, tournamentName, category, matchType) {{
+                if ((matchType === 'WTA' || matchType === 'GS') && tournamentId) {{
+                    const normId = String(parseInt(tournamentId) || tournamentId);
+                    const sz = _drWtaDrawLookup[normId];
+                    if (sz) return sz;
+                }}
+                if (matchType === 'ITF') {{
+                    const sz = _drItfDrawLookup[(tournamentName || '') + '|' + (date || '')];
+                    if (sz) return sz;
+                }}
+                return _drCategoryDrawSize[category] || 32;
+            }}
+
+            function displayRound(round, tournamentId, date, tournamentName, category, matchType, draw) {{
+                if (!round) return '';
+                if (draw !== 'M') return round;
+                if (round === 'Final') return 'Final';
+                if (round === 'Semi-finals') return 'Semifinals';
+                if (round === 'Quarter-finals') return 'Quarterfinals';
+                const drawSize = _drResolveDrawSize(tournamentId, date, tournamentName, category, matchType);
+                if (drawSize >= 128) {{
+                    if (round === '1st Round') return 'Round of 128';
+                    if (round === '2nd Round') return 'Round of 64';
+                    if (round === '3rd Round') return 'Round of 32';
+                    if (round === '4th Round') return 'Round of 16';
+                }} else if (drawSize >= 64) {{
+                    if (round === '1st Round') return 'Round of 64';
+                    if (round === '2nd Round') return 'Round of 32';
+                    if (round === '3rd Round') return 'Round of 16';
+                }} else {{
+                    if (round === '1st Round') return 'Round of 32';
+                    if (round === '2nd Round') return 'Round of 16';
+                }}
+                return round;
             }}
 
             // Format date string to yyyy-MM-dd
@@ -4740,7 +4793,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const dateA = formatDate(a['DATE'] || '1900-01-01');
                     const dateB = formatDate(b['DATE'] || '1900-01-01');
                     if (dateA !== dateB) return dateB.localeCompare(dateA);
-                    return getRoundOrder(displayRound(a['ROUND'], a['TOURNAMENT'])) - getRoundOrder(displayRound(b['ROUND'], b['TOURNAMENT']));
+                    return getRoundOrder(a['ROUND'] || '') - getRoundOrder(b['ROUND'] || '');
                 }});
 
                 _historyPagedMatches = matches;
@@ -4792,7 +4845,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     parts.push('<tr><td>', formatDate(row['DATE'] || ''),
                         '</td><td>', displayTournament,
                         '</td><td>', row['SURFACE'] || '',
-                        '</td><td>', displayRound(row['ROUND'] || '', row['TOURNAMENT'] || ''),
+                        '</td><td>', displayRound(row['ROUND'] || '', row['TOURNAMENT_ID'] || '', row['DATE'] || '', row['TOURNAMENT'] || '', row['CATEGORY'] || '', row['MATCH_TYPE'] || '', row['DRAW'] || ''),
                         '</td><td>', playerRank,
                         '</td><td>', buildPrefix(pSeed, pEntry) + playerDisplayName,
                         '</td><td>', `<span class="${{scoreClass}}">${{scoreText}}</span>`,
