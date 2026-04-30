@@ -778,7 +778,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 try {
                     let desired = tabToPath(tab);
                     const rawHash = (location.hash || '').replace(/^#/, '');
-                    if (tab === 'gallery' && rawHash.toLowerCase().startsWith('album/')) {
+                    const lowerHash = rawHash.toLowerCase();
+                    if (tab === 'gallery' && lowerHash.startsWith('photopath/')) {
+                        const rest = rawHash.slice(10);
+                        const sl = rest.indexOf('/');
+                        if (sl > 0) {
+                            let slug, fname;
+                            try { slug = decodeURIComponent(rest.slice(0, sl)); } catch(e) { slug = rest.slice(0, sl); }
+                            try { fname = decodeURIComponent(rest.slice(sl + 1)); } catch(e) { fname = rest.slice(sl + 1); }
+                            if (slug && fname) desired = (desired || '/') + 'album/' + slug + '/' + fname;
+                        }
+                    } else if (tab === 'gallery' && lowerHash.startsWith('album/')) {
                         let nm;
                         try { nm = decodeURIComponent(rawHash.slice(6)); } catch(e) { nm = rawHash.slice(6); }
                         if (nm) desired = (desired || '/') + 'album/' + nm.replace(/ /g, '-') + '/';
@@ -802,6 +812,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if (!raw) return '';
                 if (raw.startsWith('photo/')) return 'gallery';
                 if (raw.startsWith('album/')) return 'gallery';
+                if (raw.startsWith('photopath/')) return 'gallery';
                 return VALID_TABS.has(raw) ? raw : '';
             }
 
@@ -812,7 +823,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 rel = rel.replace(/index\\.html$/, '');
                 rel = rel.replace(/^\\/+|\\/+$/g, '');
                 if (!rel) return 'home';
-                if (rel === 'gallery' || rel.startsWith('gallery/album/')) return 'gallery';
+                if (rel === 'gallery' || rel === 'gallery/' || rel.indexOf('gallery/album/') === 0) return 'gallery';
                 return VALID_TABS.has(rel) ? rel : '';
             }
 
@@ -5681,18 +5692,36 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             // Capture album/photo deep-link before the router strips the hash on load
             let galleryDeepLinkId = '';
             let galleryDeepLinkAlbumSlug = '';
+            let galleryDeepLinkPhotoFile = '';
             (function() {{
                 var h = (location.hash || '').replace(/^#/, '');
                 if (h.startsWith('photo/')) {{
                     try {{ galleryDeepLinkId = decodeURIComponent(h.slice(6)); }} catch(e) {{ galleryDeepLinkId = h.slice(6); }}
                 }} else if (h.startsWith('album/')) {{
-                    try {{ galleryDeepLinkAlbumSlug = galleryNameToSlug(decodeURIComponent(h.slice(6))); }} catch(e) {{ galleryDeepLinkAlbumSlug = h.slice(6); }}
+                    try {{ galleryDeepLinkAlbumSlug = decodeURIComponent(h.slice(6)).replace(/ /g, '-'); }} catch(e) {{ galleryDeepLinkAlbumSlug = h.slice(6); }}
+                }} else if (h.startsWith('photopath/')) {{
+                    var rest = h.slice(10);
+                    var sl = rest.indexOf('/');
+                    if (sl > 0) {{
+                        try {{ galleryDeepLinkAlbumSlug = decodeURIComponent(rest.slice(0, sl)); }} catch(e) {{ galleryDeepLinkAlbumSlug = rest.slice(0, sl); }}
+                        try {{ galleryDeepLinkPhotoFile = decodeURIComponent(rest.slice(sl + 1)); }} catch(e) {{ galleryDeepLinkPhotoFile = rest.slice(sl + 1); }}
+                    }}
                 }}
-                // Path-based deep-link: /<base>gallery/album/<slug>/
+                // Path-based deep-link: /<base>gallery/album/<slug>[/<filename>]
                 var p = (location.pathname || '').replace(/\\/index\\.html$/i, '/');
-                var m = p.match(/(?:^|\\/)gallery\\/album\\/([^\\/]+)\\/?$/i);
-                if (m && m[1] && !galleryDeepLinkAlbumSlug) {{
-                    try {{ galleryDeepLinkAlbumSlug = decodeURIComponent(m[1]); }} catch(e) {{ galleryDeepLinkAlbumSlug = m[1]; }}
+                var m2 = p.match(/(?:^|\\/)gallery\\/album\\/([^\\/]+)\\/([^\\/]+)\\/?$/i);
+                if (m2) {{
+                    if (!galleryDeepLinkAlbumSlug) {{
+                        try {{ galleryDeepLinkAlbumSlug = decodeURIComponent(m2[1]); }} catch(e) {{ galleryDeepLinkAlbumSlug = m2[1]; }}
+                    }}
+                    if (!galleryDeepLinkPhotoFile) {{
+                        try {{ galleryDeepLinkPhotoFile = decodeURIComponent(m2[2]); }} catch(e) {{ galleryDeepLinkPhotoFile = m2[2]; }}
+                    }}
+                }} else {{
+                    var m1 = p.match(/(?:^|\\/)gallery\\/album\\/([^\\/]+)\\/?$/i);
+                    if (m1 && m1[1] && !galleryDeepLinkAlbumSlug) {{
+                        try {{ galleryDeepLinkAlbumSlug = decodeURIComponent(m1[1]); }} catch(e) {{ galleryDeepLinkAlbumSlug = m1[1]; }}
+                    }}
                 }}
             }})();
 
@@ -5717,6 +5746,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
             function galleryGalleryPath() {{
                 return galleryBasePath() + 'gallery/';
+            }}
+            function galleryPhotoFilename(pid) {{
+                if (!pid) return '';
+                var i = pid.lastIndexOf('/');
+                return i >= 0 ? pid.slice(i + 1) : pid;
+            }}
+            function galleryPhotoPath(ph) {{
+                if (!ph || !ph.public_id) return galleryGalleryPath();
+                var albName = galleryCurrentAlbum || ph.tournament || '';
+                if (!albName) return galleryGalleryPath();
+                return galleryAlbumPath(albName) + galleryPhotoFilename(ph.public_id);
             }}
 
             function galleryEncodePath(path) {{
@@ -5782,11 +5822,25 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         if (galleryDeepLinkAlbumSlug) {{
                             var slug = galleryDeepLinkAlbumSlug;
                             galleryDeepLinkAlbumSlug = '';
+                            var fname = galleryDeepLinkPhotoFile;
+                            galleryDeepLinkPhotoFile = '';
                             var alb = galleryFindBySlug(slug);
                             if (alb) {{
                                 galleryCurrentAlbum = alb.name;
                                 galleryApplyAlbum();
-                                try {{ history.replaceState(null, '', galleryAlbumPath(alb.name)); }} catch(e) {{}}
+                                if (fname) {{
+                                    var pidx = -1;
+                                    for (var i = 0; i < galleryCurrentList.length; i++) {{
+                                        if (galleryPhotoFilename(galleryCurrentList[i].public_id) === fname) {{ pidx = i; break; }}
+                                    }}
+                                    if (pidx !== -1) {{
+                                        galleryOpenLb(pidx, galleryCurrentList);
+                                    }} else {{
+                                        try {{ history.replaceState(null, '', galleryAlbumPath(alb.name)); }} catch(e) {{}}
+                                    }}
+                                }} else {{
+                                    try {{ history.replaceState(null, '', galleryAlbumPath(alb.name)); }} catch(e) {{}}
+                                }}
                             }}
                         }}
                         if (galleryDeepLinkId) {{
@@ -5987,7 +6041,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('gallery-lb-players').textContent = players.join(' \u00b7 ');
                 document.getElementById('gallery-lb-counter').textContent = (galleryLbIndex + 1) + ' / ' + galleryLbList.length;
                 document.getElementById('gallery-lb-download').href = galleryDownload(ph.public_id, ph.tournament);
-                history.replaceState(null, '', '#photo/' + encodeURIComponent(ph.public_id));
+                try {{ history.replaceState(null, '', galleryPhotoPath(ph)); }} catch(e) {{}}
                 var list = galleryLbList; var n = list.length;
                 [-1, 1].forEach(function(d) {{
                     var adj = list[(galleryLbIndex + d + n) % n];
@@ -5998,7 +6052,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function galleryShare() {{
                 var ph = galleryLbList[galleryLbIndex];
                 if (!ph) return;
-                var url = location.origin + location.pathname.replace(/\/$/, '') + '#photo/' + encodeURIComponent(ph.public_id);
+                var url = location.origin + galleryPhotoPath(ph);
                 var btn = document.getElementById('gallery-lb-share');
                 if (navigator.share) {{
                     navigator.share({{ url: url, title: (ph.players || []).join(' \u00b7 ') || ph.tournament }}).catch(function() {{}});
@@ -6037,14 +6091,37 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             function gallerySyncFromUrl() {{
                 if (!galleryInited) return;
-                if (document.getElementById('gallery-lb').classList.contains('open')) return;
+                var lbOpen = document.getElementById('gallery-lb').classList.contains('open');
                 var p = (location.pathname || '').replace(/\\/index\\.html$/i, '/');
+                var mp = p.match(/(?:^|\\/)gallery\\/album\\/([^\\/]+)\\/([^\\/]+)\\/?$/i);
+                if (mp) {{
+                    var slug; try {{ slug = decodeURIComponent(mp[1]); }} catch(e) {{ slug = mp[1]; }}
+                    var fname; try {{ fname = decodeURIComponent(mp[2]); }} catch(e) {{ fname = mp[2]; }}
+                    var alb = galleryFindBySlug(slug);
+                    if (alb) {{
+                        if (galleryCurrentAlbum !== alb.name) {{
+                            galleryCurrentAlbum = alb.name;
+                            galleryPlayerFilter = '';
+                            galleryApplyAlbum();
+                        }}
+                        var pidx = -1;
+                        for (var i = 0; i < galleryCurrentList.length; i++) {{
+                            if (galleryPhotoFilename(galleryCurrentList[i].public_id) === fname) {{ pidx = i; break; }}
+                        }}
+                        if (pidx !== -1) {{
+                            var samePhoto = lbOpen && galleryLbList[galleryLbIndex] && galleryLbList[galleryLbIndex].public_id === galleryCurrentList[pidx].public_id;
+                            if (!samePhoto) galleryOpenLb(pidx, galleryCurrentList);
+                        }}
+                    }}
+                    return;
+                }}
+                if (lbOpen) return;
                 var m = p.match(/(?:^|\\/)gallery\\/album\\/([^\\/]+)\\/?$/i);
                 if (m && m[1]) {{
-                    var slug; try {{ slug = decodeURIComponent(m[1]); }} catch(e) {{ slug = m[1]; }}
-                    var alb = galleryFindBySlug(slug);
-                    if (alb && galleryCurrentAlbum !== alb.name) {{
-                        galleryCurrentAlbum = alb.name;
+                    var slug2; try {{ slug2 = decodeURIComponent(m[1]); }} catch(e) {{ slug2 = m[1]; }}
+                    var alb2 = galleryFindBySlug(slug2);
+                    if (alb2 && galleryCurrentAlbum !== alb2.name) {{
+                        galleryCurrentAlbum = alb2.name;
                         galleryPlayerFilter = '';
                         galleryApplyAlbum();
                     }}
@@ -6592,6 +6669,41 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(launcher_template)
+
+    # SPA fallback: GitHub Pages serves this for any unknown path. Used to make
+    # photo URLs like /gallery/album/<slug>/<filename> work without generating
+    # a redirect file per photo.
+    not_found_template = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WT Argentina</title>
+  <script>
+    (function() {
+      var p = location.pathname || '/';
+      var mp = p.match(/^(.*?)\\/gallery\\/album\\/([^\\/]+)\\/([^\\/]+)\\/?$/i);
+      if (mp) {
+        var base = mp[1] || '';
+        var target = base + '/app.html#photopath/' + encodeURIComponent(mp[2]) + '/' + encodeURIComponent(mp[3]);
+        location.replace(target);
+        return;
+      }
+      var ma = p.match(/^(.*?)\\/gallery\\/album\\/([^\\/]+)\\/?$/i);
+      if (ma) {
+        var base2 = ma[1] || '';
+        location.replace(base2 + '/app.html#album/' + encodeURIComponent(ma[2].replace(/-/g, ' ')));
+        return;
+      }
+      location.replace('/');
+    })();
+  </script>
+</head>
+<body></body>
+</html>
+"""
+    with open("404.html", "w", encoding="utf-8") as f:
+        f.write(not_found_template)
 
     route_template = """<!DOCTYPE html>
 <html lang="en">

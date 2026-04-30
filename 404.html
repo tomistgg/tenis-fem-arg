@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WT Argentina</title>
+  <script>
+    (function() {
+      var p = location.pathname || '/';
+      var mp = p.match(/^(.*?)\/gallery\/album\/([^\/]+)\/([^\/]+)\/?$/i);
+      if (mp) {
+        var base = mp[1] || '';
+        var target = base + '/app.html#photopath/' + encodeURIComponent(mp[2]) + '/' + encodeURIComponent(mp[3]);
+        location.replace(target);
+        return;
+      }
+      var ma = p.match(/^(.*?)\/gallery\/album\/([^\/]+)\/?$/i);
+      if (ma) {
+        var base2 = ma[1] || '';
+        location.replace(base2 + '/app.html#album/' + encodeURIComponent(ma[2].replace(/-/g, ' ')));
+        return;
+      }
+      location.replace('/');
+    })();
+  </script>
+</head>
+<body></body>
+</html>
