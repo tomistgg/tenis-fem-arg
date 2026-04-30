@@ -3,6 +3,7 @@ import math
 import re
 from html import escape
 import os
+import urllib.parse
 from datetime import datetime, timedelta
 from config import PLAYER_MAPPING, CONTINENT_KEYS, CONTINENT_LABELS, NAME_LOOKUP
 from utils import format_player_name, get_tournament_sort_order, get_surface_class
@@ -753,6 +754,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }
 
             const BASE_PATH = getBasePath();
+            window.SITE_BASE_PATH = BASE_PATH;
             const baseEl = document.querySelector('base');
             if (baseEl) {
                 // Freeze to an absolute path so relative fetch/src paths keep working
@@ -774,7 +776,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const tab = (tabName || '').trim().toLowerCase();
                 if (!VALID_TABS.has(tab)) return;
                 try {
-                    const desired = tabToPath(tab);
+                    let desired = tabToPath(tab);
+                    const rawHash = (location.hash || '').replace(/^#/, '');
+                    if (tab === 'gallery' && rawHash.toLowerCase().startsWith('album/')) {
+                        let nm;
+                        try { nm = decodeURIComponent(rawHash.slice(6)); } catch(e) { nm = rawHash.slice(6); }
+                        if (nm) desired = (desired || '/') + 'album/' + nm.replace(/ /g, '-') + '/';
+                    } else if (tab === 'gallery') {
+                        const cur = normalizePath(location.pathname || '/');
+                        if (cur.indexOf((desired || '/') + 'album/') === 0) {
+                            desired = cur;
+                        }
+                    }
                     const current = normalizePath(location.pathname || '/');
                     if (desired && current !== desired) {
                         history.replaceState(null, '', desired);
@@ -788,6 +801,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const raw = (location.hash || '').replace(/^#/, '').trim().toLowerCase();
                 if (!raw) return '';
                 if (raw.startsWith('photo/')) return 'gallery';
+                if (raw.startsWith('album/')) return 'gallery';
                 return VALID_TABS.has(raw) ? raw : '';
             }
 
@@ -798,6 +812,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 rel = rel.replace(/index\\.html$/, '');
                 rel = rel.replace(/^\\/+|\\/+$/g, '');
                 if (!rel) return 'home';
+                if (rel === 'gallery' || rel.startsWith('gallery/album/')) return 'gallery';
                 return VALID_TABS.has(rel) ? rel : '';
             }
 
@@ -895,7 +910,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
   <script>
     (function() {
       var h = location.hash;
-      if (h && h.startsWith('#photo/')) { location.replace('app.html' + h); }
+      if (h && (h.startsWith('#photo/') || h.startsWith('#album/'))) { location.replace('app.html' + h); }
     })();
     function toggleDarkMode() {
       var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -5663,12 +5678,46 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             let galleryAlbums = [];
             let galleryLbList = [];
             let galleryCurrentList = [];
-            // Capture photo deep-link before the router strips the hash on load
-            let galleryDeepLinkId = (function() {{
+            // Capture album/photo deep-link before the router strips the hash on load
+            let galleryDeepLinkId = '';
+            let galleryDeepLinkAlbumSlug = '';
+            (function() {{
                 var h = (location.hash || '').replace(/^#/, '');
-                if (!h.startsWith('photo/')) return '';
-                try {{ return decodeURIComponent(h.slice(6)); }} catch(e) {{ return h.slice(6); }}
+                if (h.startsWith('photo/')) {{
+                    try {{ galleryDeepLinkId = decodeURIComponent(h.slice(6)); }} catch(e) {{ galleryDeepLinkId = h.slice(6); }}
+                }} else if (h.startsWith('album/')) {{
+                    try {{ galleryDeepLinkAlbumSlug = galleryNameToSlug(decodeURIComponent(h.slice(6))); }} catch(e) {{ galleryDeepLinkAlbumSlug = h.slice(6); }}
+                }}
+                // Path-based deep-link: /<base>gallery/album/<slug>/
+                var p = (location.pathname || '').replace(/\\/index\\.html$/i, '/');
+                var m = p.match(/(?:^|\\/)gallery\\/album\\/([^\\/]+)\\/?$/i);
+                if (m && m[1] && !galleryDeepLinkAlbumSlug) {{
+                    try {{ galleryDeepLinkAlbumSlug = decodeURIComponent(m[1]); }} catch(e) {{ galleryDeepLinkAlbumSlug = m[1]; }}
+                }}
             }})();
+
+            function galleryNameToSlug(name) {{
+                return String(name || '').replace(/ /g, '-');
+            }}
+            function galleryFindBySlug(slug) {{
+                if (!slug) return null;
+                var s = String(slug).toLowerCase();
+                for (var i = 0; i < galleryAlbums.length; i++) {{
+                    if (galleryNameToSlug(galleryAlbums[i].name).toLowerCase() === s) return galleryAlbums[i];
+                }}
+                return null;
+            }}
+            function galleryBasePath() {{
+                var bp = (typeof window !== 'undefined' && window.SITE_BASE_PATH) ? window.SITE_BASE_PATH : '/';
+                if (!bp.endsWith('/')) bp += '/';
+                return bp;
+            }}
+            function galleryAlbumPath(name) {{
+                return galleryBasePath() + 'gallery/album/' + galleryNameToSlug(name) + '/';
+            }}
+            function galleryGalleryPath() {{
+                return galleryBasePath() + 'gallery/';
+            }}
 
             function galleryEncodePath(path) {{
                 return String(path || '')
@@ -5730,6 +5779,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         galleryBuildAlbums();
                         galleryRenderAlbums();
                         galleryApplyAlbum();
+                        if (galleryDeepLinkAlbumSlug) {{
+                            var slug = galleryDeepLinkAlbumSlug;
+                            galleryDeepLinkAlbumSlug = '';
+                            var alb = galleryFindBySlug(slug);
+                            if (alb) {{
+                                galleryCurrentAlbum = alb.name;
+                                galleryApplyAlbum();
+                                try {{ history.replaceState(null, '', galleryAlbumPath(alb.name)); }} catch(e) {{}}
+                            }}
+                        }}
                         if (galleryDeepLinkId) {{
                             var pid = galleryDeepLinkId;
                             galleryDeepLinkId = '';
@@ -5805,6 +5864,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     }}
                     card.addEventListener('click', function() {{
                         galleryCurrentAlbum = alb.name;
+                        try {{ history.pushState(null, '', galleryAlbumPath(alb.name)); }} catch(e) {{}}
                         galleryApplyAlbum();
                         window.scrollTo({{ top: document.getElementById('gallery-grid').offsetTop - 60, behavior: 'smooth' }});
                     }});
@@ -5914,7 +5974,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function galleryCloseLb() {{
                 document.getElementById('gallery-lb').classList.remove('open');
                 document.body.style.overflow = '';
-                history.replaceState(null, '', location.pathname);
+                var newUrl = galleryCurrentAlbum ? galleryAlbumPath(galleryCurrentAlbum) : galleryGalleryPath();
+                try {{ history.replaceState(null, '', newUrl); }} catch(e) {{}}
             }}
 
             function galleryShowLb() {{
@@ -5970,8 +6031,33 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 document.getElementById('gallery-grid').innerHTML = '';
                 galleryRendered = 0;
                 galleryUpdateUI(0);
+                try {{ history.pushState(null, '', galleryGalleryPath()); }} catch(e) {{}}
                 window.scrollTo({{ top: document.getElementById('gallery-albums').offsetTop - 60, behavior: 'smooth' }});
             }});
+
+            function gallerySyncFromUrl() {{
+                if (!galleryInited) return;
+                if (document.getElementById('gallery-lb').classList.contains('open')) return;
+                var p = (location.pathname || '').replace(/\\/index\\.html$/i, '/');
+                var m = p.match(/(?:^|\\/)gallery\\/album\\/([^\\/]+)\\/?$/i);
+                if (m && m[1]) {{
+                    var slug; try {{ slug = decodeURIComponent(m[1]); }} catch(e) {{ slug = m[1]; }}
+                    var alb = galleryFindBySlug(slug);
+                    if (alb && galleryCurrentAlbum !== alb.name) {{
+                        galleryCurrentAlbum = alb.name;
+                        galleryPlayerFilter = '';
+                        galleryApplyAlbum();
+                    }}
+                }} else if (galleryCurrentAlbum) {{
+                    galleryCurrentAlbum = '';
+                    galleryPlayerFilter = '';
+                    document.getElementById('gallery-grid').innerHTML = '';
+                    galleryRendered = 0;
+                    galleryUpdateUI(0);
+                }}
+            }}
+            window.addEventListener('popstate', gallerySyncFromUrl);
+            window.addEventListener('hashchange', gallerySyncFromUrl);
             document.getElementById('gallery-player-filter').addEventListener('change', function(e) {{
                 galleryPlayerFilter = e.target.value;
                 galleryApplyAlbum();
@@ -6542,3 +6628,54 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         os.makedirs(folder, exist_ok=True)
         with open(os.path.join(folder, "index.html"), "w", encoding="utf-8") as f:
             f.write(route_template.format(tab=tab))
+
+    # Per-album redirect pages: /gallery/album/<slug>/index.html
+    album_redirect_template = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>WT Argentina — {name}</title>
+  <meta http-equiv="refresh" content="0; url=../../../app.html#album/{encoded}">
+  <script>
+    (function() {{
+      location.replace('../../../app.html#album/{encoded}');
+    }})();
+  </script>
+</head>
+<body></body>
+</html>
+"""
+    gallery_data_path = os.path.join(os.path.dirname(__file__), "data", "gallery.json")
+    album_names_seen = []
+    try:
+        with open(gallery_data_path, "r", encoding="utf-8") as f:
+            gallery_records = json.load(f) or []
+        for rec in gallery_records:
+            name = rec.get("tournament") or rec.get("album")
+            if not name:
+                pid = rec.get("public_id") or rec.get("path") or ""
+                if "/" in pid:
+                    name = pid.split("/")[0]
+                else:
+                    name = "Unsorted"
+            if name and name not in album_names_seen:
+                album_names_seen.append(name)
+    except (OSError, ValueError):
+        album_names_seen = []
+
+    album_root = os.path.join(os.path.dirname(__file__), "gallery", "album")
+    if album_names_seen:
+        os.makedirs(album_root, exist_ok=True)
+    for name in album_names_seen:
+        slug = name.replace(" ", "-")
+        # Skip names that don't survive a hyphen round-trip (would be ambiguous).
+        if "-" in name:
+            continue
+        folder = os.path.join(album_root, slug)
+        os.makedirs(folder, exist_ok=True)
+        with open(os.path.join(folder, "index.html"), "w", encoding="utf-8") as f:
+            f.write(album_redirect_template.format(
+                name=escape(name),
+                encoded=urllib.parse.quote(name),
+            ))

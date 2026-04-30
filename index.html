@@ -69,7 +69,7 @@
   <script>
     (function() {
       var h = location.hash;
-      if (h && h.startsWith('#photo/')) { location.replace('app.html' + h); }
+      if (h && (h.startsWith('#photo/') || h.startsWith('#album/'))) { location.replace('app.html' + h); }
     })();
     function toggleDarkMode() {
       var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
