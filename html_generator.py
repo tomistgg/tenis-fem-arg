@@ -2195,14 +2195,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     line-height: 1.15;
                 }}
 
-                #history-table th:nth-child(1), #history-table td:nth-child(1) {{ width: 12%; }}
-                #history-table th:nth-child(2), #history-table td:nth-child(2) {{ width: 18%; }}
-                #history-table th:nth-child(3), #history-table td:nth-child(3) {{ width: 7%; }}
-                #history-table th:nth-child(4), #history-table td:nth-child(4) {{ width: 4%; }}
+                #history-table th:nth-child(1), #history-table td:nth-child(1) {{ width: 10%; }}
+                #history-table th:nth-child(2), #history-table td:nth-child(2) {{ width: 17%; }}
+                #history-table th:nth-child(3), #history-table td:nth-child(3) {{ width: 8%; }}
+                #history-table th:nth-child(4), #history-table td:nth-child(4) {{ width: 5%; }}
                 #history-table th:nth-child(5), #history-table td:nth-child(5) {{ width: 6%; }}
                 #history-table th:nth-child(6), #history-table td:nth-child(6) {{ width: 15%; }}
                 #history-table th:nth-child(7), #history-table td:nth-child(7) {{ width: 12%; }}
-                #history-table th:nth-child(8), #history-table td:nth-child(8) {{ width: 8%; }}
+                #history-table th:nth-child(8), #history-table td:nth-child(8) {{ width: 9%; }}
                 #history-table th:nth-child(9), #history-table td:nth-child(9) {{ width: 18%; }}
                 #history-table th:nth-child(8) {{ white-space: nowrap !important; }}
                 #history-table th:nth-child(4) {{ font-size: 0; }}
@@ -4420,6 +4420,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }};
             }}
 
+            function _formatTournName(name, category) {{
+                if (!name) return '';
+                const sep = name.indexOf(' - ');
+                if (sep === -1) return name;
+                let city = name.slice(sep + 3);
+                const comma = city.indexOf(',');
+                if (comma !== -1) city = city.slice(0, comma).trim();
+                return category ? category + ' ' + city : city;
+            }}
+
             function getRoundFilterLabel(row) {{
                 const roundValue = (row['ROUND'] || '').toString().trim();
                 if (!roundValue) return '';
@@ -4463,7 +4473,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     if (year) years.add(year);
 
                     // Tournament
-                    if (row['TOURNAMENT']) tournaments.add(row['TOURNAMENT']);
+                    const tournDisplay = _formatTournName(row['TOURNAMENT'] || '', row['CATEGORY'] || '');
+                    if (tournDisplay) tournaments.add(tournDisplay);
 
                     // Category
                     const category = row['CATEGORY'] || '';
@@ -4696,7 +4707,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     }}
 
                     // Tournament filter
-                    if (selectedTournaments.length > 0 && !selectedTournaments.includes(row['TOURNAMENT'] || '')) return false;
+                    if (selectedTournaments.length > 0 && !selectedTournaments.includes(_formatTournName(row['TOURNAMENT'] || '', row['CATEGORY'] || ''))) return false;
 
                     // Category filter
                     const rowCategory = row['CATEGORY'] || '';
@@ -4844,11 +4855,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const scoreText = isWinner ? (row['SCORE'] || '') : reverseScore(row['SCORE'] || '');
                     const scoreClass = isWinner ? 'score-win' : 'score-loss';
 
-                    const rowMatchType = (row['MATCH_TYPE'] || '').trim();
-                    const rowCategory = (row['CATEGORY'] || '').trim();
-                    const displayTournament = rowMatchType === 'WTA' && rowCategory
-                        ? rowCategory + ' ' + (row['TOURNAMENT'] || '')
-                        : (row['TOURNAMENT'] || '');
+                    const displayTournament = _formatTournName(row['TOURNAMENT'] || '', row['CATEGORY'] || '');
 
                     parts.push('<tr><td>', formatDate(row['DATE'] || ''),
                         '</td><td>', displayTournament,
@@ -5723,12 +5730,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
                 const parts = [];
                 countable.forEach(t => {{
-                    parts.push(`<tr><td>${{t.date}}</td><td>${{t.tournament}}</td><td>${{t.roundDisplay}}</td><td>${{t.points}}</td><td${{_dropClass(t.dropDate)}}>${{t.dropDate}}</td></tr>`);
+                    parts.push(`<tr><td>${{t.date}}</td><td>${{_formatTournName(t.tournament, t.category)}}</td><td>${{t.roundDisplay}}</td><td>${{t.points}}</td><td${{_dropClass(t.dropDate)}}>${{t.dropDate}}</td></tr>`);
                 }});
                 if (nonCountable.length > 0) {{
                     parts.push('<tr class="roadtogs-separator"><td colspan="5">NON-COUNTABLE TOURNAMENTS</td></tr>');
                     nonCountable.forEach(t => {{
-                        parts.push(`<tr><td>${{t.date}}</td><td>${{t.tournament}}</td><td>${{t.roundDisplay}}</td><td>${{t.points}}</td><td${{_dropClass(t.dropDate)}}>${{t.dropDate}}</td></tr>`);
+                        parts.push(`<tr><td>${{t.date}}</td><td>${{_formatTournName(t.tournament, t.category)}}</td><td>${{t.roundDisplay}}</td><td>${{t.points}}</td><td${{_dropClass(t.dropDate)}}>${{t.dropDate}}</td></tr>`);
                     }});
                 }}
 
