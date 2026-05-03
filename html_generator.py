@@ -4421,7 +4421,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function getRoundFilterLabel(row) {{
                 const roundValue = (row['ROUND'] || '').toString().trim();
                 if (!roundValue) return '';
-                if (isTeamEventRow(row)) return roundValue.startsWith('Team - ') ? roundValue : `Team - ${{roundValue}}`;
                 return displayRound(roundValue, row['TOURNAMENT_ID'] || '', row['DATE'] || '',
                     row['TOURNAMENT'] || '', row['CATEGORY'] || '', row['MATCH_TYPE'] || '', row['DRAW'] || '');
             }}
