@@ -3879,7 +3879,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const _qMap = {{'1st Round':'Q1','2nd Round':'Q2','3rd Round':'Q3','4th Round':'Q4'}};
                     return _qMap[round] || round;
                 }}
-                if (draw !== 'M') return round;
+                // Team/non-individual draws: normalize round names
+                if (draw !== 'M') {{
+                    const _tMap = {{'Round Robin':'RR','Last 32':'R32','Last 16':'R16','Last 8':'QF','Quarter Finals':'QF','Semi Finals':'SF','Final':'F'}};
+                    return _tMap[round] || round;
+                }}
                 if (round === 'Final') return 'F';
                 if (round === 'Semi-finals' || round === 'Semi Finals') return 'SF';
                 if (round === 'Quarter-finals' || round === 'Quarter Finals') return 'QF';
@@ -4495,11 +4499,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 populateFilterOptions('filter-surface', Array.from(surfaces).sort());
                 const roundOrderForFilter = {{
-                    'QR1': 1, 'QR2': 2, 'QR3': 3, 'QR4': 4,
+                    'Q1': 1, 'Q2': 2, 'Q3': 3, 'Q4': 4,
                     'R128': 5, 'R64': 6, 'R32': 7, 'R16': 8,
                     'QF': 9, 'SF': 10, 'F': 11,
-                    'Team - Round Robin': 12, 'Team - Last 32': 13, 'Team - Last 16': 14,
-                    'Team - Quarter Finals': 15, 'Team - Semi Finals': 16, 'Team - Final': 17,
+                    'RR': 12,
                 }};
                 const orderedRounds = Array.from(rounds).sort((a, b) => {{
                     const oa = roundOrderForFilter[a] ?? 99;
