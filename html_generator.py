@@ -2195,16 +2195,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     line-height: 1.15;
                 }}
 
-                #history-table th:nth-child(1), #history-table td:nth-child(1) {{ width: 9%; }}
+                #history-table th:nth-child(1), #history-table td:nth-child(1) {{ width: 12%; }}
                 #history-table th:nth-child(2), #history-table td:nth-child(2) {{ width: 18%; }}
-                #history-table th:nth-child(3), #history-table td:nth-child(3) {{ width: 8%; }}
-                #history-table th:nth-child(4), #history-table td:nth-child(4) {{ width: 5%; }}
+                #history-table th:nth-child(3), #history-table td:nth-child(3) {{ width: 7%; }}
+                #history-table th:nth-child(4), #history-table td:nth-child(4) {{ width: 4%; }}
                 #history-table th:nth-child(5), #history-table td:nth-child(5) {{ width: 6%; }}
                 #history-table th:nth-child(6), #history-table td:nth-child(6) {{ width: 15%; }}
                 #history-table th:nth-child(7), #history-table td:nth-child(7) {{ width: 12%; }}
-                #history-table th:nth-child(8), #history-table td:nth-child(8) {{ width: 9%; }}
+                #history-table th:nth-child(8), #history-table td:nth-child(8) {{ width: 8%; }}
                 #history-table th:nth-child(9), #history-table td:nth-child(9) {{ width: 18%; }}
                 #history-table th:nth-child(8) {{ white-space: nowrap !important; }}
+                #history-table th:nth-child(4) {{ font-size: 0; }}
+                #history-table th:nth-child(4)::after {{ content: 'RND'; font-size: 5px; }}
 
                 /* Fed/BJK Cup toggle buttons mobile */
                 .fedbcup-header-controls {{ flex-direction: row; flex-wrap: wrap; gap: 6px; align-items: center; }}
