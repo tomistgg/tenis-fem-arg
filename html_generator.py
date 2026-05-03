@@ -4422,6 +4422,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             function _formatTournName(name, category) {{
                 if (!name) return '';
+                if (name.toUpperCase().includes('MALLORCA')) return 'WTA 125 Mallorca';
                 const sep = name.indexOf(' - ');
                 if (sep === -1) return name;
                 let city = name.slice(sep + 3);
