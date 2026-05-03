@@ -4421,8 +4421,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function getRoundFilterLabel(row) {{
                 const roundValue = (row['ROUND'] || '').toString().trim();
                 if (!roundValue) return '';
-                return displayRound(roundValue, row['TOURNAMENT_ID'] || '', row['DATE'] || '',
+                const abbr = displayRound(roundValue, row['TOURNAMENT_ID'] || '', row['DATE'] || '',
                     row['TOURNAMENT'] || '', row['CATEGORY'] || '', row['MATCH_TYPE'] || '', row['DRAW'] || '');
+                return isTeamEventRow(row) ? 'Team - ' + abbr : abbr;
             }}
 
             function populateFilters(playerMatches) {{
@@ -4501,7 +4502,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     'Q1': 1, 'Q2': 2, 'Q3': 3, 'Q4': 4,
                     'R128': 5, 'R64': 6, 'R32': 7, 'R16': 8,
                     'QF': 9, 'SF': 10, 'F': 11,
-                    'RR': 12,
+                    'Team - RR': 12, 'Team - R32': 13, 'Team - R16': 14,
+                    'Team - QF': 15, 'Team - SF': 16, 'Team - F': 17,
                 }};
                 const orderedRounds = Array.from(rounds).sort((a, b) => {{
                     const oa = roundOrderForFilter[a] ?? 99;
