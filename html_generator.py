@@ -13,7 +13,7 @@ IOC_TO_ISO2 = {
     'ALB':'al','ALG':'dz','AND':'ad','ANG':'ao','ARG':'ar','ARM':'am','AUS':'au','AUT':'at','AZE':'az',
     'BAH':'bs','BAR':'bb','BDI':'bi','BEL':'be','BEN':'bj','BIH':'ba','BLR':'by','BOL':'bo',
     'BOT':'bw','BRA':'br','BUL':'bg','CAL':'nc','CAM':'kh','CAN':'ca','CHI':'cl','CHN':'cn',
-    'CIV':'ci','CMR':'cm','COL':'co','CRC':'cr','CRO':'hr','CUB':'cu','CUW':'cw','CYP':'cy','CZE':'cz',
+    'CIV':'ci','CMR':'cm','COD':'cd','COL':'co','CRC':'cr','CRO':'hr','CUB':'cu','CUW':'cw','CYP':'cy','CZE':'cz',
     'DEN':'dk','DOM':'do','ECU':'ec','EGY':'eg','ESA':'sv','ESP':'es','EST':'ee',
     'FIJ':'fj','FIN':'fi','FRA':'fr','FRG':'de',
     'GAB':'ga','GBR':'gb','GEO':'ge','GER':'de','GLP':'gp','GRE':'gr','GUA':'gt',
@@ -23,7 +23,7 @@ IOC_TO_ISO2 = {
     'KAZ':'kz','KEN':'ke','KGZ':'kg','KHM':'kh','KOR':'kr','KOS':'xk','KSA':'sa',
     'LAO':'la','LAT':'lv','LIE':'li','LTU':'lt','LUX':'lu',
     'MAD':'mg','MAR':'ma','MAS':'my','MDA':'md','MEX':'mx','MKD':'mk','MLT':'mt','MNE':'me','MON':'mc',
-    'MRI':'mu','NAM':'na','NCA':'ni','NCD':'nc','NED':'nl','NEP':'np','NGA':'ng','NGR':'ng','NOR':'no','NZL':'nz',
+    'MRI':'mu','MOZ':'mz','NAM':'na','NCA':'ni','NCD':'nc','NED':'nl','NEP':'np','NGA':'ng','NGR':'ng','NOR':'no','NZL':'nz',
     'OMA':'om','OMN':'om','PAK':'pk','PAN':'pa','PAR':'py','PER':'pe','PHI':'ph','PLE':'ps','PNG':'pg',
     'POL':'pl','POR':'pt','PUR':'pr','QAT':'qa',
     'ROC':'ru','ROM':'ro','ROU':'ro','RSA':'za','RUS':'ru',
@@ -1601,7 +1601,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #history-table th:nth-child(1) {{ width: 80px; }} /* DATE */
             #history-table th:nth-child(2) {{ width: auto; }} /* TOURNAMENT */
             #history-table th:nth-child(3) {{ width: 70px; }} /* SURFACE */
-            #history-table th:nth-child(4) {{ width: 100px; }} /* ROUND */
+            #history-table th:nth-child(4) {{ width: 55px; }} /* ROUND */
             #history-table th:nth-child(5) {{ width: 44px; }} /* RANK */
             #history-table th:nth-child(6) {{ width: auto; }} /* PLAYER */
             #history-table th:nth-child(7) {{ width: 110px; }} /* SCORE */
@@ -2196,9 +2196,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
 
                 #history-table th:nth-child(1), #history-table td:nth-child(1) {{ width: 9%; }}
-                #history-table th:nth-child(2), #history-table td:nth-child(2) {{ width: 16%; }}
+                #history-table th:nth-child(2), #history-table td:nth-child(2) {{ width: 18%; }}
                 #history-table th:nth-child(3), #history-table td:nth-child(3) {{ width: 8%; }}
-                #history-table th:nth-child(4), #history-table td:nth-child(4) {{ width: 7%; }}
+                #history-table th:nth-child(4), #history-table td:nth-child(4) {{ width: 5%; }}
                 #history-table th:nth-child(5), #history-table td:nth-child(5) {{ width: 6%; }}
                 #history-table th:nth-child(6), #history-table td:nth-child(6) {{ width: 15%; }}
                 #history-table th:nth-child(7), #history-table td:nth-child(7) {{ width: 12%; }}
@@ -3420,7 +3420,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             const gsCutoffs = {gs_cutoffs_json};
             const drawsData = {json.dumps(draws_js_data)};
             const drawsTournamentInfo = {json.dumps(draws_tournament_info)};
-            const _iocToIso2 = {{ALB:'al',ALG:'dz',AND:'ad',ANG:'ao',ARG:'ar',ARM:'am',AUS:'au',AUT:'at',AZE:'az',BAH:'bs',BAR:'bb',BDI:'bi',BEL:'be',BEN:'bj',BIH:'ba',BLR:'by',BOL:'bo',BOT:'bw',BRA:'br',BUL:'bg',CAL:'nc',CAM:'kh',CAN:'ca',CHI:'cl',CHN:'cn',CIV:'ci',CMR:'cm',COL:'co',CRC:'cr',CRO:'hr',CUB:'cu',CUW:'cw',CYP:'cy',CZE:'cz',DEN:'dk',DOM:'do',ECU:'ec',EGY:'eg',ESA:'sv',ESP:'es',EST:'ee',FIJ:'fj',FIN:'fi',FRA:'fr',FRG:'de',GAB:'ga',GBR:'gb',GEO:'ge',GER:'de',GLP:'gp',GRE:'gr',GUA:'gt',HAI:'ht',HKG:'hk',HUN:'hu',INA:'id',IND:'in',IRI:'ir',IRL:'ie',IRN:'ir',ISR:'il',ITA:'it',JAM:'jm',JOR:'jo',JPN:'jp',KAZ:'kz',KEN:'ke',KGZ:'kg',KHM:'kh',KOR:'kr',KOS:'xk',KSA:'sa',LAO:'la',LAT:'lv',LIE:'li',LTU:'lt',LUX:'lu',MAD:'mg',MAR:'ma',MAS:'my',MDA:'md',MEX:'mx',MKD:'mk',MLT:'mt',MNE:'me',MON:'mc',MRI:'mu',NAM:'na',NCA:'ni',NCD:'nc',NED:'nl',NEP:'np',NGA:'ng',NGR:'ng',NOR:'no',NZL:'nz',OMA:'om',OMN:'om',PAK:'pk',PAN:'pa',PAR:'py',PER:'pe',PHI:'ph',PLE:'ps',PNG:'pg',POL:'pl',POR:'pt',PUR:'pr',QAT:'qa',ROC:'ru',ROM:'ro',ROU:'ro',RSA:'za',RUS:'ru',SAM:'ws',SEN:'sn',SGP:'sg',SIN:'sg',SLO:'si',SMR:'sm',SRB:'rs',SRI:'lk',SUI:'ch',SVK:'sk',SWE:'se',SYR:'sy',TCH:'cz',THA:'th',TKM:'tm',TPE:'tw',TRI:'tt',TTO:'tt',TUN:'tn',TUR:'tr',UAE:'ae',UKR:'ua',URU:'uy',USA:'us',UZB:'uz',VEN:'ve',VIE:'vn',XKX:'xk',ZAM:'zm',ZIM:'zw'}};
+            const _iocToIso2 = {{ALB:'al',ALG:'dz',AND:'ad',ANG:'ao',ARG:'ar',ARM:'am',AUS:'au',AUT:'at',AZE:'az',BAH:'bs',BAR:'bb',BDI:'bi',BEL:'be',BEN:'bj',BIH:'ba',BLR:'by',BOL:'bo',BOT:'bw',BRA:'br',BUL:'bg',CAL:'nc',CAM:'kh',CAN:'ca',CHI:'cl',CHN:'cn',CIV:'ci',CMR:'cm',COD:'cd',COL:'co',CRC:'cr',CRO:'hr',CUB:'cu',CUW:'cw',CYP:'cy',CZE:'cz',DEN:'dk',DOM:'do',ECU:'ec',EGY:'eg',ESA:'sv',ESP:'es',EST:'ee',FIJ:'fj',FIN:'fi',FRA:'fr',FRG:'de',GAB:'ga',GBR:'gb',GEO:'ge',GER:'de',GLP:'gp',GRE:'gr',GUA:'gt',HAI:'ht',HKG:'hk',HUN:'hu',INA:'id',IND:'in',IRI:'ir',IRL:'ie',IRN:'ir',ISR:'il',ITA:'it',JAM:'jm',JOR:'jo',JPN:'jp',KAZ:'kz',KEN:'ke',KGZ:'kg',KHM:'kh',KOR:'kr',KOS:'xk',KSA:'sa',LAO:'la',LAT:'lv',LIE:'li',LTU:'lt',LUX:'lu',MAD:'mg',MAR:'ma',MAS:'my',MDA:'md',MEX:'mx',MKD:'mk',MLT:'mt',MNE:'me',MON:'mc',MRI:'mu',MOZ:'mz',NAM:'na',NCA:'ni',NCD:'nc',NED:'nl',NEP:'np',NGA:'ng',NGR:'ng',NOR:'no',NZL:'nz',OMA:'om',OMN:'om',PAK:'pk',PAN:'pa',PAR:'py',PER:'pe',PHI:'ph',PLE:'ps',PNG:'pg',POL:'pl',POR:'pt',PUR:'pr',QAT:'qa',ROC:'ru',ROM:'ro',ROU:'ro',RSA:'za',RUS:'ru',SAM:'ws',SEN:'sn',SGP:'sg',SIN:'sg',SLO:'si',SMR:'sm',SRB:'rs',SRI:'lk',SUI:'ch',SVK:'sk',SWE:'se',SYR:'sy',TCH:'cz',THA:'th',TKM:'tm',TPE:'tw',TRI:'tt',TTO:'tt',TUN:'tn',TUR:'tr',UAE:'ae',UKR:'ua',URU:'uy',USA:'us',UZB:'uz',VEN:'ve',VIE:'vn',XKX:'xk',ZAM:'zm',ZIM:'zw'}};
             const _localFlags = new Set(['YUG','SCG','CIS','URS']);
             function countryFlag(code, showCode) {{
                 if (!code || code === '-') return code || '';
@@ -3874,15 +3874,24 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             function displayRound(round, tournamentId, date, tournamentName, category, matchType, draw) {{
                 if (!round) return '';
+                // Qualifying draw: convert ordinal names to Q1/Q2/Q3
+                if (draw === 'Q') {{
+                    const _qMap = {{'1st Round':'Q1','2nd Round':'Q2','3rd Round':'Q3','4th Round':'Q4'}};
+                    return _qMap[round] || round;
+                }}
                 if (draw !== 'M') return round;
-                if (round === 'Final') return 'Final';
-                if (round === 'Semi-finals') return 'Semifinals';
-                if (round === 'Quarter-finals') return 'Quarterfinals';
+                if (round === 'Final') return 'F';
+                if (round === 'Semi-finals' || round === 'Semi Finals') return 'SF';
+                if (round === 'Quarter-finals' || round === 'Quarter Finals') return 'QF';
                 const drawSize = _drResolveDrawSize(tournamentId, date, tournamentName, category, matchType);
                 const _ordinalNum = {{'1st Round':1,'2nd Round':2,'3rd Round':3,'4th Round':4,'5th Round':5}}[round];
                 if (_ordinalNum !== undefined) {{
                     const nextPow2 = Math.pow(2, Math.ceil(Math.log2(drawSize)));
-                    return 'Round of ' + (nextPow2 / Math.pow(2, _ordinalNum - 1));
+                    const n = nextPow2 / Math.pow(2, _ordinalNum - 1);
+                    if (n <= 2) return 'F';
+                    if (n <= 4) return 'SF';
+                    if (n <= 8) return 'QF';
+                    return 'R' + n;
                 }}
                 return round;
             }}
@@ -4487,8 +4496,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 populateFilterOptions('filter-surface', Array.from(surfaces).sort());
                 const roundOrderForFilter = {{
                     'QR1': 1, 'QR2': 2, 'QR3': 3, 'QR4': 4,
-                    'Round of 128': 5, 'Round of 64': 6, 'Round of 32': 7, 'Round of 16': 8,
-                    'Quarterfinals': 9, 'Semifinals': 10, 'Final': 11,
+                    'R128': 5, 'R64': 6, 'R32': 7, 'R16': 8,
+                    'QF': 9, 'SF': 10, 'F': 11,
                     'Team - Round Robin': 12, 'Team - Last 32': 13, 'Team - Last 16': 14,
                     'Team - Quarter Finals': 15, 'Team - Semi Finals': 16, 'Team - Final': 17,
                 }};
