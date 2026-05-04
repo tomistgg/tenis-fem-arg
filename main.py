@@ -148,10 +148,10 @@ def _parse_gs_entry_list_pdf(pdf_bytes):
                 upper = line_text.upper()
 
                 # Section header detection
-                if "MAIN DRAW ALTERNATES" in upper:
+                if "MAIN DRAW ALTERNATES" in upper or "QUALIFYING ALTERNATES" in upper:
                     section = "ALTERNATES"
                     continue
-                if upper.strip() == "MAIN DRAW":
+                if upper.strip() in ("MAIN DRAW", "QUALIFYING DRAW"):
                     section = "MAIN"
                     continue
                 if "MOVED IN" in upper:
@@ -238,12 +238,13 @@ def _fill_missing_countries(players, entry_cache):
 
 
 def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_set, schedule_map, unranked_schedule, players_data):
-    """Add MAIN draw players from PDF-sourced entry lists to schedule_map for ARG players."""
-    try:
-        with open(GS_PDF_URLS_FILE, "r", encoding="utf-8") as f:
-            pdf_urls = json.load(f)
-    except Exception:
-        return
+    """Add MAIN/QUAL draw players from PDF-sourced entry lists to schedule_map for ARG players.
+
+    Uses NAME_LOOKUP from config for alias resolution (e.g. 'Jazmin Ortenzi' -> 'Jazmín Ortenzi').
+    Qualifying players appear under the '#qual' key which is already in tournament_groups with
+    the correct week (May 18) and display name ('Roland Garros (Q)').
+    """
+    from config import NAME_LOOKUP, _lookup_keys
 
     url_to_week = {}
     for week_label, tourneys in tournament_groups.items():
@@ -252,14 +253,26 @@ def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_s
 
     existing_player_keys = {p['Player'] for p in players_data}
     added = 0
-    for cache_key in pdf_urls:
-        if cache_key not in tournament_store or cache_key not in url_to_week:
+    for cache_key, (week_label, t_name) in url_to_week.items():
+        players = tournament_store.get(cache_key)
+        if not players:
             continue
-        week_label, t_name = url_to_week[cache_key]
-        for player in tournament_store[cache_key]:
-            if player.get('type') == 'ALT':
+        # Only process PDF-sourced entries (main or #qual)
+        is_pdf_key = cache_key in _get_pdf_cache_keys()
+        if not is_pdf_key:
+            continue
+        for player in players:
+            p_type = player.get('type', 'MAIN')
+            if p_type not in ('MAIN', 'QUAL'):
                 continue
-            p_upper = player.get('name', '').upper()
+            raw_name = player.get('name', '')
+            p_upper = raw_name.upper()
+            # Resolve through alias lookup
+            for key in _lookup_keys(raw_name):
+                canonical = NAME_LOOKUP.get(key)
+                if canonical:
+                    p_upper = canonical
+                    break
             p_country = player.get('country', '')
             if p_upper in arg_names_set:
                 schedule_map.setdefault(p_upper, {}).setdefault(week_label, t_name)
@@ -274,9 +287,29 @@ def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_s
         print(f"[PDF] Added {added} schedule entries from PDF entry lists")
 
 
-def _refresh_entry_lists_from_pdfs(entry_cache, tournament_store):
-    """Fetch PDFs listed in gs_pdf_urls.json and override entry lists in-place."""
+def _get_pdf_cache_keys():
+    """Return the set of tournament_store keys that are PDF-sourced (main + #qual)."""
+    try:
+        with open(GS_PDF_URLS_FILE, "r", encoding="utf-8") as f:
+            pdf_urls = json.load(f)
+    except Exception:
+        return set()
+    keys = set()
+    for cache_key, url_config in pdf_urls.items():
+        keys.add(cache_key)
+        if isinstance(url_config, dict) and "qual" in url_config:
+            keys.add(cache_key + "#qual")
+    return keys
+
+
+def _refresh_entry_lists_from_pdfs(entry_cache, tournament_store, tournament_groups=None, monday_map=None):
+    """Fetch PDFs listed in gs_pdf_urls.json and override entry lists in-place.
+
+    Qualifying draws (qual key with start_date/display_name) are stored under
+    cache_key + '#qual' and injected into tournament_groups for the correct week.
+    """
     import requests
+    from wta import get_monday_from_date, format_week_label
 
     try:
         with open(GS_PDF_URLS_FILE, "r", encoding="utf-8") as f:
@@ -287,31 +320,72 @@ def _refresh_entry_lists_from_pdfs(entry_cache, tournament_store):
         print(f"[PDF] Failed to load {GS_PDF_URLS_FILE}: {e}")
         return
 
-    for cache_key, pdf_url in pdf_urls.items():
-        print(f"[PDF] Fetching entry list PDF for {cache_key}")
-        try:
-            resp = requests.get(pdf_url, timeout=30)
-            resp.raise_for_status()
-            pdf_bytes = resp.content
-        except Exception as e:
-            print(f"[PDF] Download failed for {pdf_url}: {e}")
-            continue
+    for cache_key, url_config in pdf_urls.items():
+        if isinstance(url_config, str):
+            url_config = {"main": url_config}
 
-        try:
-            main_players, alt_players = _parse_gs_entry_list_pdf(pdf_bytes)
-        except Exception as e:
-            print(f"[PDF] Parse failed for {pdf_url}: {e}")
-            continue
+        main_players = []
+        for draw_type, draw_config in url_config.items():
+            if isinstance(draw_config, str):
+                pdf_url = draw_config
+                qual_meta = None
+            else:
+                pdf_url = (draw_config or {}).get("url", "")
+                qual_meta = draw_config if draw_type == "qual" else None
+            if not pdf_url:
+                continue
 
-        if not main_players:
-            print(f"[PDF] No main draw players parsed from {pdf_url}, skipping override")
-            continue
+            print(f"[PDF] Fetching {draw_type} entry list PDF for {cache_key}")
+            try:
+                resp = requests.get(pdf_url, timeout=30)
+                resp.raise_for_status()
+                pdf_bytes = resp.content
+            except Exception as e:
+                print(f"[PDF] Download failed for {pdf_url}: {e}")
+                continue
 
-        players = main_players + alt_players
-        print(f"[PDF] Parsed {len(main_players)} MAIN + {len(alt_players)} ALT from {pdf_url}")
-        _fill_missing_countries(players, entry_cache)
-        entry_cache[cache_key] = players
-        tournament_store[cache_key] = players
+            try:
+                draw_main, draw_alt = _parse_gs_entry_list_pdf(pdf_bytes)
+            except Exception as e:
+                print(f"[PDF] Parse failed for {pdf_url}: {e}")
+                continue
+
+            if not draw_main:
+                print(f"[PDF] No players parsed from {pdf_url}, skipping")
+                continue
+
+            print(f"[PDF] Parsed {len(draw_main)} {draw_type.upper()} + {len(draw_alt)} ALT from {pdf_url}")
+
+            if draw_type == "qual":
+                for p in draw_main:
+                    p["type"] = "QUAL"
+                qual_key = cache_key + "#qual"
+                _fill_missing_countries(draw_main, entry_cache)
+                entry_cache[qual_key] = draw_main
+                tournament_store[qual_key] = draw_main
+                # Inject into tournament_groups for the qualifying week
+                if tournament_groups is not None and monday_map is not None and qual_meta:
+                    start_date = qual_meta.get("start_date", "")
+                    display_name = qual_meta.get("display_name", "Grand Slam (Q)")
+                    if start_date:
+                        try:
+                            qual_monday = get_monday_from_date(start_date)
+                            week_label = format_week_label(qual_monday)
+                            if week_label in monday_map.values():
+                                tournament_groups.setdefault(week_label, {})[qual_key] = {
+                                    "name": display_name,
+                                    "level": "Grand Slam",
+                                    "startDate": start_date,
+                                }
+                        except Exception:
+                            pass
+            else:
+                main_players.extend(draw_main + draw_alt)
+
+        if main_players:
+            _fill_missing_countries(main_players, entry_cache)
+            entry_cache[cache_key] = main_players
+            tournament_store[cache_key] = main_players
 
 
 def _canonical_draw_store_key(t_key):
@@ -1199,7 +1273,7 @@ def main():
         save_cache(ENTRY_LISTS_CACHE_FILE, entry_cache)
 
         # 4b. Override entry lists from authoritative PDFs (Grand Slams, etc.)
-        _refresh_entry_lists_from_pdfs(entry_cache, tournament_store)
+        _refresh_entry_lists_from_pdfs(entry_cache, tournament_store, tournament_groups, monday_map)
         save_cache(ENTRY_LISTS_CACHE_FILE, entry_cache)
 
         # 4c. Apply PDF entry lists to schedule_map for ARG players
