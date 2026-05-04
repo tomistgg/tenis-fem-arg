@@ -1,5 +1,6 @@
 import os
 import json
+import io
 import pandas as pd
 import csv
 import random
@@ -55,6 +56,225 @@ ITF_FIRST_BURST_COOLDOWN_SEC = 65
 ITF_FIRST_BURST_MIN_JOBS = 6
 ITF_CONSECUTIVE_EMPTY_BACKOFF_SEC = 35
 ITF_CONSECUTIVE_EMPTY_THRESHOLD = 3
+
+
+GS_PDF_URLS_FILE = os.path.join(DATA_DIR, "gs_pdf_urls.json")
+
+
+def _parse_gs_entry_list_pdf(pdf_bytes):
+    """Parse a Grand Slam entry list PDF into (main_players, alt_players) lists.
+
+    The PDF uses a two-column layout for the main draw (page 1) and single-column
+    for the alternates section. Each player entry is parsed from per-column word
+    tokens using positional rules (not regex on combined text).
+
+    Strikethrough detection uses thin filled rectangles (height<2, width<200) with
+    both y and x overlap checks to correctly distinguish left/right column entries.
+
+    Returns (main_players, alt_players[:10]) — first 10 alternates only.
+    """
+    import pdfplumber
+    import re
+
+    _STATUS_FLAGS = frozenset(["F", "A", "S", "None", "WC", "SE", "LL"])
+
+    def _parse_tokens(tokens):
+        """Parse word tokens for one player entry.
+        Returns (pos_num, name, country, rank_num) or None."""
+        if len(tokens) < 4:
+            return None
+        if not tokens[0].isdigit():
+            return None
+        pos_num = int(tokens[0])
+        if tokens[1] not in _STATUS_FLAGS:
+            return None
+        end = len(tokens) - 1
+        if tokens[end] != "1":  # pref is always 1
+            return None
+        end -= 1
+        if end >= 0 and tokens[end] == "SR":
+            end -= 1
+        if end < 2 or not tokens[end].isdigit():
+            return None
+        rank_num = int(tokens[end])
+        end -= 1
+        country = ""
+        if end >= 2 and re.match(r"^[A-Z]{2,3}$", tokens[end]):
+            country = tokens[end]
+            end -= 1
+        name_parts = tokens[2:end + 1]
+        if not name_parts:
+            return None
+        name = " ".join(name_parts)
+        return pos_num, name, country, rank_num
+
+    def _is_struck(col_words, struck_rects):
+        if not struck_rects or not col_words:
+            return False
+        y_mid = float(col_words[0]["top"]) + float(col_words[0].get("height", 10)) / 2
+        col_x0 = min(float(w["x0"]) for w in col_words)
+        col_x1 = max(float(w.get("x1", w["x0"])) for w in col_words)
+        return any(
+            r["top"] <= y_mid <= r["bottom"]
+            and r["x0"] < col_x1
+            and r["x0"] + r.get("width", 0) > col_x0
+            for r in struck_rects
+        )
+
+    main_players = []
+    alt_players = []
+    moved_in_players = []
+    section = None  # "MAIN", "MOVED_IN", "ALTERNATES"
+
+    with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+        for page in pdf.pages:
+            mid_x = page.width / 2
+            struck_rects = [
+                r for r in (page.rects or [])
+                if r.get("height", 99) < 2 and 8 < r.get("width", 0) < 200
+            ]
+
+            words = page.extract_words(keep_blank_chars=False, x_tolerance=3, y_tolerance=3)
+            lines = {}
+            for w in words:
+                y = round(float(w["top"]), 1)
+                lines.setdefault(y, []).append(w)
+
+            for y_top, word_list in sorted(lines.items()):
+                word_list.sort(key=lambda w: float(w["x0"]))
+                line_text = " ".join(w["text"] for w in word_list).strip()
+                if not line_text:
+                    continue
+                upper = line_text.upper()
+
+                # Section header detection
+                if "MAIN DRAW ALTERNATES" in upper:
+                    section = "ALTERNATES"
+                    continue
+                if upper.strip() == "MAIN DRAW":
+                    section = "MAIN"
+                    continue
+                if "MOVED IN" in upper:
+                    section = "MOVED_IN"
+                    continue
+                if "PLAYER NAME" in upper or "NAT RANK" in upper or upper.startswith("POS PLAYER"):
+                    continue
+
+                if section is None:
+                    continue
+
+                # Split into left and right columns by page midpoint
+                left_words = [w for w in word_list if float(w["x0"]) < mid_x]
+                right_words = [w for w in word_list if float(w["x0"]) >= mid_x]
+
+                for col_words in (left_words, right_words):
+                    if not col_words:
+                        continue
+                    entry = _parse_tokens([w["text"] for w in col_words])
+                    if not entry:
+                        continue
+                    pos_num, name, country, rank_num = entry
+
+                    if _is_struck(col_words, struck_rects):
+                        continue
+
+                    player = {
+                        "name": name.title(),
+                        "country": country,
+                        "rank_num": rank_num,
+                        "rank": str(rank_num),
+                        "pos": str(pos_num),
+                        "pos_num": pos_num,
+                    }
+                    if section == "MAIN":
+                        player["type"] = "MAIN"
+                        main_players.append(player)
+                    elif section == "MOVED_IN":
+                        player["type"] = "MAIN"
+                        moved_in_players.append(player)
+                    elif section == "ALTERNATES":
+                        player["type"] = "ALT"
+                        alt_players.append(player)
+
+    all_main = (
+        sorted(main_players, key=lambda p: p["pos_num"])
+        + sorted(moved_in_players, key=lambda p: p["pos_num"])
+    )
+    for i, p in enumerate(all_main, 1):
+        p["pos"] = str(i)
+        p["pos_num"] = i
+
+    alt_players.sort(key=lambda p: p["pos_num"])
+    alt_top10 = alt_players[:10]
+    for i, p in enumerate(alt_top10, 1):
+        p["pos"] = str(i)
+        p["pos_num"] = i
+
+    return all_main, alt_top10
+
+
+def _fill_missing_countries(players, entry_cache):
+    """For any player with no country, look them up in other entry list caches."""
+    from utils import normalize_player_name
+
+    # Build name → country map from all cached entry lists
+    country_lookup = {}
+    for cached_list in entry_cache.values():
+        for p in (cached_list or []):
+            norm = normalize_player_name(p.get("name", ""))
+            country = (p.get("country") or "").strip()
+            if norm and country and norm not in country_lookup:
+                country_lookup[norm] = country
+
+    filled = 0
+    for player in players:
+        if not (player.get("country") or "").strip():
+            norm = normalize_player_name(player.get("name", ""))
+            if norm in country_lookup:
+                player["country"] = country_lookup[norm]
+                filled += 1
+    if filled:
+        print(f"[PDF] Filled {filled} missing country codes from other entry lists")
+
+
+def _refresh_entry_lists_from_pdfs(entry_cache, tournament_store):
+    """Fetch PDFs listed in gs_pdf_urls.json and override entry lists in-place."""
+    import requests
+
+    try:
+        with open(GS_PDF_URLS_FILE, "r", encoding="utf-8") as f:
+            pdf_urls = json.load(f)
+    except FileNotFoundError:
+        return
+    except Exception as e:
+        print(f"[PDF] Failed to load {GS_PDF_URLS_FILE}: {e}")
+        return
+
+    for cache_key, pdf_url in pdf_urls.items():
+        print(f"[PDF] Fetching entry list PDF for {cache_key}")
+        try:
+            resp = requests.get(pdf_url, timeout=30)
+            resp.raise_for_status()
+            pdf_bytes = resp.content
+        except Exception as e:
+            print(f"[PDF] Download failed for {pdf_url}: {e}")
+            continue
+
+        try:
+            main_players, alt_players = _parse_gs_entry_list_pdf(pdf_bytes)
+        except Exception as e:
+            print(f"[PDF] Parse failed for {pdf_url}: {e}")
+            continue
+
+        if not main_players:
+            print(f"[PDF] No main draw players parsed from {pdf_url}, skipping override")
+            continue
+
+        players = main_players + alt_players
+        print(f"[PDF] Parsed {len(main_players)} MAIN + {len(alt_players)} ALT from {pdf_url}")
+        _fill_missing_countries(players, entry_cache)
+        entry_cache[cache_key] = players
+        tournament_store[cache_key] = players
 
 
 def _canonical_draw_store_key(t_key):
@@ -939,6 +1159,10 @@ def main():
         schedule_map, tournament_store, entry_cache, unranked_schedule = process_tournaments(
             driver, tournament_groups, monday_map, arg_names_set, entry_cache
         )
+        save_cache(ENTRY_LISTS_CACHE_FILE, entry_cache)
+
+        # 4b. Override entry lists from authoritative PDFs (Grand Slams, etc.)
+        _refresh_entry_lists_from_pdfs(entry_cache, tournament_store)
         save_cache(ENTRY_LISTS_CACHE_FILE, entry_cache)
 
         # Add unranked ARG players found in entry lists to players_data and schedule_map
