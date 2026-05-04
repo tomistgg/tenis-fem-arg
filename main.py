@@ -237,6 +237,43 @@ def _fill_missing_countries(players, entry_cache):
         print(f"[PDF] Filled {filled} missing country codes from other entry lists")
 
 
+def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_set, schedule_map, unranked_schedule, players_data):
+    """Add MAIN draw players from PDF-sourced entry lists to schedule_map for ARG players."""
+    try:
+        with open(GS_PDF_URLS_FILE, "r", encoding="utf-8") as f:
+            pdf_urls = json.load(f)
+    except Exception:
+        return
+
+    url_to_week = {}
+    for week_label, tourneys in tournament_groups.items():
+        for t_url, t_info in tourneys.items():
+            url_to_week[t_url] = (week_label, t_info["name"])
+
+    existing_player_keys = {p['Player'] for p in players_data}
+    added = 0
+    for cache_key in pdf_urls:
+        if cache_key not in tournament_store or cache_key not in url_to_week:
+            continue
+        week_label, t_name = url_to_week[cache_key]
+        for player in tournament_store[cache_key]:
+            if player.get('type') == 'ALT':
+                continue
+            p_upper = player.get('name', '').upper()
+            p_country = player.get('country', '')
+            if p_upper in arg_names_set:
+                schedule_map.setdefault(p_upper, {}).setdefault(week_label, t_name)
+                added += 1
+            elif p_country == 'ARG':
+                unranked_schedule.setdefault(p_upper, {}).setdefault(week_label, t_name)
+                if p_upper not in existing_player_keys:
+                    players_data.append({'Player': p_upper, 'Key': p_upper, 'Rank': '-'})
+                    existing_player_keys.add(p_upper)
+                added += 1
+    if added:
+        print(f"[PDF] Added {added} schedule entries from PDF entry lists")
+
+
 def _refresh_entry_lists_from_pdfs(entry_cache, tournament_store):
     """Fetch PDFs listed in gs_pdf_urls.json and override entry lists in-place."""
     import requests
@@ -1164,6 +1201,12 @@ def main():
         # 4b. Override entry lists from authoritative PDFs (Grand Slams, etc.)
         _refresh_entry_lists_from_pdfs(entry_cache, tournament_store)
         save_cache(ENTRY_LISTS_CACHE_FILE, entry_cache)
+
+        # 4c. Apply PDF entry lists to schedule_map for ARG players
+        _apply_pdf_schedule_entries(
+            tournament_store, tournament_groups, arg_names_set,
+            schedule_map, unranked_schedule, players_data
+        )
 
         # Add unranked ARG players found in entry lists to players_data and schedule_map
         existing_player_keys = {p['Player'] for p in players_data}
