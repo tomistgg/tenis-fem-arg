@@ -184,8 +184,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         for week in week_keys:
             val = schedule_map.get(p['Key'], {}).get(week, "\u2014")
             val = val.replace("Sharm ElSheikh", "Sharm ES")
-            is_main = "(Q)" not in val and val != "\u2014"
-            row += f'<td class="col-week">{"<b>" if is_main else ""}{val}{"</b>" if is_main else ""}</td>'
+            parts = val.split("<br>")
+            rendered = "<br>".join(
+                f"<b>{entry}</b>" if "(Q)" not in entry and entry != "\u2014" else entry
+                for entry in parts
+            )
+            row += f'<td class="col-week">{rendered}</td>'
         table_rows += row + "</tr>"
 
     # Build history players list

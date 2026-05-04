@@ -274,12 +274,18 @@ def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_s
                     p_upper = canonical
                     break
             p_country = player.get('country', '')
-            if p_upper in arg_names_set:
-                schedule_map.setdefault(p_upper, {}).setdefault(week_label, t_name)
-                added += 1
-            elif p_country == 'ARG':
-                unranked_schedule.setdefault(p_upper, {}).setdefault(week_label, t_name)
-                if p_upper not in existing_player_keys:
+            for target_map, condition in [
+                (schedule_map, p_upper in arg_names_set),
+                (unranked_schedule, p_country == 'ARG' and p_upper not in arg_names_set),
+            ]:
+                if not condition:
+                    continue
+                weeks = target_map.setdefault(p_upper, {})
+                if week_label not in weeks:
+                    weeks[week_label] = t_name
+                else:
+                    weeks[week_label] = t_name + "<br>" + weeks[week_label]
+                if target_map is unranked_schedule and p_upper not in existing_player_keys:
                     players_data.append({'Player': p_upper, 'Key': p_upper, 'Rank': '-'})
                     existing_player_keys.add(p_upper)
                 added += 1
