@@ -1396,6 +1396,36 @@ def main():
         _refresh_entry_lists_from_pdfs(entry_cache, tournament_store, tournament_groups, monday_map)
         save_cache(ENTRY_LISTS_CACHE_FILE, entry_cache)
 
+        # 4b-seed. Compute seeds 1-32 for GS PDF entry lists (main and qualifying separately).
+        _gs_now = datetime.now()
+        _gs_seed_date = (_gs_now - timedelta(days=_gs_now.weekday())).strftime("%Y-%m-%d")
+        _gs_rankings = get_wta_rankings_cached(_gs_seed_date, nationality=None)
+        _gs_name_to_rank = {}
+        for _sp in _gs_rankings:
+            _sname = (_sp.get("Player") or "").strip().upper()
+            _srank = _sp.get("Rank")
+            if _sname and _srank is not None:
+                _gs_name_to_rank[_sname] = int(_srank)
+        for _gs_key in _get_pdf_cache_keys():
+            _gs_players = tournament_store.get(_gs_key)
+            if not _gs_players:
+                continue
+            _ptype = "QUAL" if _gs_key.endswith("#qual") else "MAIN"
+            _candidates = []
+            for _p in _gs_players:
+                if _p.get("type") != _ptype:
+                    continue
+                _pname_up = NAME_LOOKUP.get(_p["name"].upper(), _p["name"].upper())
+                _r = _gs_name_to_rank.get(_pname_up)
+                if _r is not None:
+                    _candidates.append((_r, _p["name"]))
+            _candidates.sort()
+            _gs_seed_map = {name: i + 1 for i, (_, name) in enumerate(_candidates[:32])}
+            for _p in _gs_players:
+                if _p.get("type") == _ptype:
+                    _sv = _gs_seed_map.get(_p["name"])
+                    _p["seed"] = _sv if _sv is not None else ""
+
         # 4c. Apply PDF entry lists to schedule_map for ARG players
         _apply_pdf_schedule_entries(
             tournament_store, tournament_groups, arg_names_set,
