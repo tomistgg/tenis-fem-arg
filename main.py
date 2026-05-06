@@ -896,6 +896,35 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                 normalize_country_overrides(t_list, "name", "country")
                 entry_cache[key] = t_list
                 tournament_store[key] = t_list
+
+                # Compute seeds 1-8 for WTA 125 (all are 32-player main draws)
+                if t_info.get("level") == "WTA 125":
+                    _seed_date = (datetime.strptime(week_monday, "%Y-%m-%d") - timedelta(days=7)).strftime("%Y-%m-%d")
+                    if _seed_date > current_monday_str:
+                        _seed_date = current_monday_str
+                    if _seed_date not in ranking_cache:
+                        ranking_cache[_seed_date] = get_wta_rankings_cached(_seed_date, nationality=None)
+                    _name_to_rank = {}
+                    for _sp in ranking_cache.get(_seed_date, []):
+                        _sname = _sp.get("Player", "").strip().upper()
+                        _srank = _sp.get("Rank")
+                        if _sname and _srank is not None:
+                            _name_to_rank[_sname] = int(_srank)
+                    _main_candidates = []
+                    for _p in t_list:
+                        if _p.get("type") != "MAIN":
+                            continue
+                        _pname_up = NAME_LOOKUP.get(_p["name"].upper(), _p["name"].upper())
+                        _wta_rank = _name_to_rank.get(_pname_up)
+                        if _wta_rank is not None:
+                            _main_candidates.append((_wta_rank, _p["name"]))
+                    _main_candidates.sort()
+                    _seed_map = {name: i + 1 for i, (_, name) in enumerate(_main_candidates[:8])}
+                    for _p in t_list:
+                        if _p.get("type") == "MAIN":
+                            _sv = _seed_map.get(_p["name"])
+                            _p["seed"] = _sv if _sv is not None else ""
+
                 for p_name, suffix in status_dict.items():
                     p_key = p_name.upper()
                     if p_key not in arg_names_set:
@@ -981,6 +1010,36 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                 normalize_country_overrides(tourney_players_list, "name", "country")
                 entry_cache[key] = tourney_players_list
                 tournament_store[key] = tourney_players_list
+
+                # Compute seeds for ITF main draws using WTA ranking one week before.
+                # ≤24 MAIN entries → 32-draw (8 seeds); >24 → 64-draw (16 seeds).
+                _main_count = sum(1 for _p in tourney_players_list if _p.get("type") == "MAIN")
+                _num_seeds = 8 if _main_count <= 24 else 16
+                _seed_date = (datetime.strptime(week_monday, "%Y-%m-%d") - timedelta(days=7)).strftime("%Y-%m-%d")
+                if _seed_date > current_monday_str:
+                    _seed_date = current_monday_str
+                if _seed_date not in ranking_cache:
+                    ranking_cache[_seed_date] = get_wta_rankings_cached(_seed_date, nationality=None)
+                _name_to_rank = {}
+                for _sp in ranking_cache.get(_seed_date, []):
+                    _sname = _sp.get("Player", "").strip().upper()
+                    _srank = _sp.get("Rank")
+                    if _sname and _srank is not None:
+                        _name_to_rank[_sname] = int(_srank)
+                _main_candidates = []
+                for _p in tourney_players_list:
+                    if _p.get("type") != "MAIN":
+                        continue
+                    _pname_up = NAME_LOOKUP.get(_p["name"].upper(), _p["name"].upper())
+                    _wta_rank = _name_to_rank.get(_pname_up)
+                    if _wta_rank is not None:
+                        _main_candidates.append((_wta_rank, _p["name"]))
+                _main_candidates.sort()
+                _seed_map = {name: i + 1 for i, (_, name) in enumerate(_main_candidates[:_num_seeds])}
+                for _p in tourney_players_list:
+                    if _p.get("type") == "MAIN":
+                        _sv = _seed_map.get(_p["name"])
+                        _p["seed"] = _sv if _sv is not None else ""
 
                 itf_player_meta = {}
                 for p in tourney_players_list:

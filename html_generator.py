@@ -2852,6 +2852,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                         <tr>
                                             <th style="width:15px">#</th>
                                             <th>PLAYER</th>
+                                            <th id="entry-seed-header" style="width:35px;display:none">SEED</th>
                                             <th style="width:70px">E-Rank</th>
                                             <th id="entry-prio-header" style="width:35px;display:none">PRIO</th>
                                         </tr>
@@ -4192,14 +4193,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 updateEntryList();
             }}
 
-            function renderRows(list, isMain, isITF, renumber) {{
+            function renderRows(list, isMain, isITF, renumber, showSeed) {{
                 const prioCell = p => isITF ? `<td>${{p.priority||''}}</td>` : '';
+                const seedCell = p => showSeed ? `<td>${{Number.isInteger(p.seed) ? p.seed : '-'}}</td>` : '';
                 let html = '';
                 list.forEach((p, i) => {{
                     const displayPos = renumber ? (i + 1) : p.pos;
                     const bold = isMain ? 'font-weight:bold;' : '';
                     const flag = (p.country && p.country !== '-') ? countryFlag(p.country, false) + ' ' : '';
-                    html += `<tr><td>${{displayPos}}</td><td style="text-align:left;${{bold}}">${{flag}}${{p.name}}</td><td>${{p.rank}}</td>${{prioCell(p)}}</tr>`;
+                    html += `<tr><td>${{displayPos}}</td><td style="text-align:left;${{bold}}">${{flag}}${{p.name}}</td>${{seedCell(p)}}<td>${{p.rank}}</td>${{prioCell(p)}}</tr>`;
                 }});
                 return html;
             }}
@@ -4221,13 +4223,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 btn.style.display = isITF ? '' : 'none';
                 if (!isITF) _prioFilterActive = false;
                 btn.textContent = _prioFilterActive ? 'Show All' : 'Show Prio 1';
+                const showSeed = players.some(p => Number.isInteger(p.seed));
+                document.getElementById('entry-seed-header').style.display = showSeed ? '' : 'none';
                 let html = '';
                 const byPos = (a, b) => (Number(a.pos_num ?? 999) - Number(b.pos_num ?? 999))
                     || String(a.name || '').localeCompare(String(b.name || ''));
                 const main = players.filter(p => p.type === 'MAIN').sort(byPos);
                 const qual = players.filter(p => p.type === 'QUAL').sort(byPos);
                 const alt = players.filter(p => p.type === 'ALT').sort(byPos);
-                const cols = isITF ? 5 : 4;
+                const cols = (isITF ? 5 : 4) + (showSeed ? 1 : 0);
 
                 if (_prioFilterActive) {{
                     // JR prio1 players go at the bottom; non-prio1 JR spots filled from qual/alt
@@ -4246,24 +4250,24 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const remainingPool = pool.slice(regularSpots);
                     const displayQual = remainingPool.slice(0, qual.length);
                     const displayAlt  = remainingPool.slice(qual.length);
-                    html += renderRows(displayMain, true, isITF, true);
+                    html += renderRows(displayMain, true, isITF, true, showSeed);
                     if (displayQual.length > 0) {{
                         html += `<tr class="divider-row"><td colspan="${{cols}}">QUALIFYING</td></tr>`;
-                        html += renderRows(displayQual, false, isITF, true);
+                        html += renderRows(displayQual, false, isITF, true, showSeed);
                     }}
                     if (displayAlt.length > 0) {{
                         html += `<tr class="divider-row"><td colspan="${{cols}}">ALTERNATES</td></tr>`;
-                        html += renderRows(displayAlt, false, isITF, true);
+                        html += renderRows(displayAlt, false, isITF, true, showSeed);
                     }}
                 }} else {{
-                    html += renderRows(main, true, isITF, false);
+                    html += renderRows(main, true, isITF, false, showSeed);
                     if (qual.length > 0) {{
                         html += `<tr class="divider-row"><td colspan="${{cols}}">QUALIFYING</td></tr>`;
-                        html += renderRows(qual, false, isITF, false);
+                        html += renderRows(qual, false, isITF, false, showSeed);
                     }}
                     if (alt.length > 0) {{
                         html += `<tr class="divider-row"><td colspan="${{cols}}">ALTERNATES</td></tr>`;
-                        html += renderRows(alt, false, isITF, false);
+                        html += renderRows(alt, false, isITF, false, showSeed);
                     }}
                 }}
                 body.innerHTML = html;
