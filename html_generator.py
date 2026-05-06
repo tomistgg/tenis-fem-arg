@@ -263,6 +263,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         gs_data.append({"id": gs_id, "name": gs_name, "color": gs_color,
                          "qCutoff": q_cutoff, "mdCutoff": md_cutoff})
 
+    # Project any GS whose main draw cutoff has already passed to next year (+52 weeks)
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    for gs in gs_data:
+        if gs["mdCutoff"] not in ("N/A", "") and gs["mdCutoff"] < today_str:
+            gs["qCutoff"]  = (datetime.strptime(gs["qCutoff"],  "%Y-%m-%d") + timedelta(weeks=52)).strftime("%Y-%m-%d")
+            gs["mdCutoff"] = (datetime.strptime(gs["mdCutoff"], "%Y-%m-%d") + timedelta(weeks=52)).strftime("%Y-%m-%d")
+
     # Sort: soonest upcoming GS first (by qCutoff ascending); N/A last
     gs_data.sort(key=lambda g: g["qCutoff"] if g["qCutoff"] != "N/A" else "9999-99-99")
 

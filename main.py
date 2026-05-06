@@ -61,7 +61,7 @@ ITF_CONSECUTIVE_EMPTY_THRESHOLD = 3
 GS_PDF_URLS_FILE = os.path.join(DATA_DIR, "gs_pdf_urls.json")
 
 
-def _parse_gs_entry_list_pdf(pdf_bytes):
+def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
     """Parse a Grand Slam entry list PDF into (main_players, alt_players) lists.
 
     The PDF uses a two-column layout for the main draw (page 1) and single-column
@@ -71,7 +71,7 @@ def _parse_gs_entry_list_pdf(pdf_bytes):
     Strikethrough detection uses thin filled rectangles (height<2, width<200) with
     both y and x overlap checks to correctly distinguish left/right column entries.
 
-    Returns (main_players, alt_players[:10]) — first 10 alternates only.
+    Returns (main_players, alt_players[:alt_limit]).
     """
     import pdfplumber
     import re
@@ -205,36 +205,66 @@ def _parse_gs_entry_list_pdf(pdf_bytes):
         p["pos_num"] = i
 
     alt_players.sort(key=lambda p: p["pos_num"])
-    alt_top10 = alt_players[:10]
-    for i, p in enumerate(alt_top10, 1):
+    alt_capped = alt_players[:alt_limit]
+    for i, p in enumerate(alt_capped, 1):
         p["pos"] = str(i)
         p["pos_num"] = i
 
-    return all_main, alt_top10
+    return all_main, alt_capped
 
 
-def _fill_missing_countries(players, entry_cache):
-    """For any player with no country, look them up in other entry list caches."""
-    from utils import normalize_player_name
+_wta_country_lookup_cache = None
 
-    # Build name → country map from all cached entry lists
-    country_lookup = {}
-    for cached_list in entry_cache.values():
-        for p in (cached_list or []):
-            norm = normalize_player_name(p.get("name", ""))
-            country = (p.get("country") or "").strip()
-            if norm and country and norm not in country_lookup:
-                country_lookup[norm] = country
+
+def _build_wta_country_lookup():
+    """Build name→country from WTA ranking CSVs (most recent entry per player)."""
+    global _wta_country_lookup_cache
+    if _wta_country_lookup_cache is not None:
+        return _wta_country_lookup_cache
+    from config import WTA_RANKINGS_CSV, WTA_RANKINGS_CSV_10_19, _lookup_keys
+    player_latest = {}  # upper_name → (week_date, country)
+    for csv_path in [WTA_RANKINGS_CSV, WTA_RANKINGS_CSV_10_19]:
+        if not os.path.exists(csv_path):
+            continue
+        try:
+            with open(csv_path, newline="", encoding="utf-8-sig") as f:
+                for row in csv.DictReader(f):
+                    name = (row.get("player") or "").strip()
+                    country = (row.get("country") or "").strip()
+                    week = (row.get("week_date") or "").strip()
+                    if not name or not country:
+                        continue
+                    key = name.upper()
+                    existing = player_latest.get(key)
+                    if not existing or week > existing[0]:
+                        player_latest[key] = (week, country)
+        except Exception:
+            pass
+    lookup = {}
+    for player_key, (_, country) in player_latest.items():
+        for k in _lookup_keys(player_key):
+            lookup[k] = country
+    _wta_country_lookup_cache = lookup
+    return lookup
+
+
+def _fill_missing_countries(players, entry_cache=None):
+    """For any player with no country, look them up in WTA Rankings."""
+    country_lookup = _build_wta_country_lookup()
+    from config import _lookup_keys
 
     filled = 0
     for player in players:
         if not (player.get("country") or "").strip():
-            norm = normalize_player_name(player.get("name", ""))
-            if norm in country_lookup:
-                player["country"] = country_lookup[norm]
-                filled += 1
+            name = player.get("name", "")
+            for key in _lookup_keys(name):
+                country = country_lookup.get(key)
+                if country:
+                    player["country"] = country
+                    filled += 1
+                    break
     if filled:
-        print(f"[PDF] Filled {filled} missing country codes from other entry lists")
+        print(f"[PDF] Filled {filled} missing country codes from WTA Rankings")
 
 
 def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_set, schedule_map, unranked_schedule, players_data):
@@ -351,7 +381,9 @@ def _refresh_entry_lists_from_pdfs(entry_cache, tournament_store, tournament_gro
                 continue
 
             try:
-                draw_main, draw_alt = _parse_gs_entry_list_pdf(pdf_bytes)
+                draw_main, draw_alt = _parse_gs_entry_list_pdf(
+                    pdf_bytes, alt_limit=20 if draw_type == "qual" else 10
+                )
             except Exception as e:
                 print(f"[PDF] Parse failed for {pdf_url}: {e}")
                 continue
@@ -365,10 +397,11 @@ def _refresh_entry_lists_from_pdfs(entry_cache, tournament_store, tournament_gro
             if draw_type == "qual":
                 for p in draw_main:
                     p["type"] = "QUAL"
+                qual_players = draw_main + draw_alt
                 qual_key = cache_key + "#qual"
-                _fill_missing_countries(draw_main, entry_cache)
-                entry_cache[qual_key] = draw_main
-                tournament_store[qual_key] = draw_main
+                _fill_missing_countries(qual_players, entry_cache)
+                entry_cache[qual_key] = qual_players
+                tournament_store[qual_key] = qual_players
                 # Inject into tournament_groups for the qualifying week
                 if tournament_groups is not None and monday_map is not None and qual_meta:
                     start_date = qual_meta.get("start_date", "")
@@ -897,32 +930,54 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                 entry_cache[key] = t_list
                 tournament_store[key] = t_list
 
-                # Compute seeds 1-8 for WTA 125 (all are 32-player main draws)
-                if t_info.get("level") == "WTA 125":
-                    _seed_date = (datetime.strptime(week_monday, "%Y-%m-%d") - timedelta(days=7)).strftime("%Y-%m-%d")
-                    if _seed_date > current_monday_str:
-                        _seed_date = current_monday_str
-                    if _seed_date not in ranking_cache:
-                        ranking_cache[_seed_date] = get_wta_rankings_cached(_seed_date, nationality=None)
-                    _name_to_rank = {}
-                    for _sp in ranking_cache.get(_seed_date, []):
-                        _sname = _sp.get("Player", "").strip().upper()
-                        _srank = _sp.get("Rank")
-                        if _sname and _srank is not None:
-                            _name_to_rank[_sname] = int(_srank)
-                    _main_candidates = []
-                    for _p in t_list:
-                        if _p.get("type") != "MAIN":
-                            continue
+                # Compute seeds for WTA tournaments based on level and draw size.
+                # Grand Slams: 32 seeds for main draw and qualifying independently.
+                # Other WTA: seed count by main draw player count.
+                _level = t_info.get("level", "")
+                _is_gs = "grand slam" in _level.lower()
+                _main_players = [_p for _p in t_list if _p.get("type") == "MAIN"]
+                _qual_players  = [_p for _p in t_list if _p.get("type") == "QUAL"]
+                _main_count = len(_main_players)
+                if _is_gs:
+                    _num_seeds = 32
+                elif _main_count > 70:
+                    _num_seeds = 32
+                elif _main_count >= 40:
+                    _num_seeds = 16
+                elif _main_count >= 18:
+                    _num_seeds = 8
+                else:
+                    _num_seeds = 4
+                _seed_date = (datetime.strptime(week_monday, "%Y-%m-%d") - timedelta(days=7)).strftime("%Y-%m-%d")
+                if _seed_date > current_monday_str:
+                    _seed_date = current_monday_str
+                if _seed_date not in ranking_cache:
+                    ranking_cache[_seed_date] = get_wta_rankings_cached(_seed_date, nationality=None)
+                _name_to_rank = {}
+                for _sp in ranking_cache.get(_seed_date, []):
+                    _sname = _sp.get("Player", "").strip().upper()
+                    _srank = _sp.get("Rank")
+                    if _sname and _srank is not None:
+                        _name_to_rank[_sname] = int(_srank)
+                def _build_seed_map(player_list, n):
+                    candidates = []
+                    for _p in player_list:
                         _pname_up = NAME_LOOKUP.get(_p["name"].upper(), _p["name"].upper())
-                        _wta_rank = _name_to_rank.get(_pname_up)
-                        if _wta_rank is not None:
-                            _main_candidates.append((_wta_rank, _p["name"]))
-                    _main_candidates.sort()
-                    _seed_map = {name: i + 1 for i, (_, name) in enumerate(_main_candidates[:8])}
+                        _r = _name_to_rank.get(_pname_up)
+                        if _r is not None:
+                            candidates.append((_r, _p["name"]))
+                    candidates.sort()
+                    return {name: i + 1 for i, (_, name) in enumerate(candidates[:n])}
+                _main_seed_map = _build_seed_map(_main_players, _num_seeds)
+                for _p in t_list:
+                    if _p.get("type") == "MAIN":
+                        _sv = _main_seed_map.get(_p["name"])
+                        _p["seed"] = _sv if _sv is not None else ""
+                if _is_gs and _qual_players:
+                    _qual_seed_map = _build_seed_map(_qual_players, 32)
                     for _p in t_list:
-                        if _p.get("type") == "MAIN":
-                            _sv = _seed_map.get(_p["name"])
+                        if _p.get("type") == "QUAL":
+                            _sv = _qual_seed_map.get(_p["name"])
                             _p["seed"] = _sv if _sv is not None else ""
 
                 for p_name, suffix in status_dict.items():
