@@ -1232,8 +1232,10 @@ def load_match_history():
 
         winner_entry = m.get('winnerEntry') or m.get('winner_entry') or m.get('WinnerEntry') or ''
         loser_entry = m.get('loserEntry') or m.get('loser_entry') or m.get('LoserEntry') or ''
-        winner_entry = '' if winner_entry == 'DA' else winner_entry
-        loser_entry = '' if loser_entry == 'DA' else loser_entry
+        winner_entry = winner_entry.strip().upper()
+        loser_entry = loser_entry.strip().upper()
+        winner_entry = 'LL' if winner_entry == 'L' else ('' if winner_entry == 'DA' else winner_entry)
+        loser_entry = 'LL' if loser_entry == 'L' else ('' if loser_entry == 'DA' else loser_entry)
 
         raw_round = m.get('roundName') or m.get('round_name') or m.get('RoundName') or ''
         draw_type = m.get('draw') or m.get('Draw') or m.get('DRAW') or ''
