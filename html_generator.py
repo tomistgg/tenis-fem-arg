@@ -4233,11 +4233,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const showSeed = players.some(p => Number.isInteger(p.seed));
                 document.getElementById('entry-seed-header').style.display = showSeed ? '' : 'none';
                 let html = '';
+                const rankNum = p => {{ const m = String(p.rank || '').match(/\d+(\.\d+)?/); return m ? parseFloat(m[0]) : 9999; }};
+                const byRank = (a, b) => (rankNum(a) - rankNum(b)) || String(a.name || '').localeCompare(String(b.name || ''));
                 const byPos = (a, b) => (Number(a.pos_num ?? 999) - Number(b.pos_num ?? 999))
                     || String(a.name || '').localeCompare(String(b.name || ''));
+                const sortEL = list => list.some(p => p.pos === 'MDO') ? list.sort(byRank) : list.sort(byPos);
                 const main = players.filter(p => p.type === 'MAIN').sort(byPos);
-                const qual = players.filter(p => p.type === 'QUAL').sort(byPos);
-                const alt = players.filter(p => p.type === 'ALT').sort(byPos);
+                const qual = sortEL(players.filter(p => p.type === 'QUAL'));
+                const alt = sortEL(players.filter(p => p.type === 'ALT'));
                 const cols = (isITF ? 5 : 4) + (showSeed ? 1 : 0);
 
                 if (_prioFilterActive) {{
