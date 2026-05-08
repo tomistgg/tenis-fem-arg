@@ -4233,11 +4233,44 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const showSeed = players.some(p => Number.isInteger(p.seed));
                 document.getElementById('entry-seed-header').style.display = showSeed ? '' : 'none';
                 let html = '';
-                const rankNum = p => {{ const m = String(p.rank || '').match(/\\d+(\\.\\d+)?/); return m ? parseFloat(m[0]) : 9999; }};
-                const byRank = (a, b) => (rankNum(a) - rankNum(b)) || String(a.name || '').localeCompare(String(b.name || ''));
+                const rankScore = p => {{
+                    const r = String(p.rank || '');
+                    const m = r.match(/\\d+(\\.\\d+)?/);
+                    const n = m ? parseFloat(m[0]) : 9999;
+                    if (r.startsWith('WTN')) return [2, n];
+                    if (r.startsWith('ITF')) return [1, n];
+                    return [0, n];
+                }};
+                const byRank = (a, b) => {{
+                    const [ta, na] = rankScore(a);
+                    const [tb, nb] = rankScore(b);
+                    return (ta - tb) || (na - nb) || String(a.name || '').localeCompare(String(b.name || ''));
+                }};
                 const byPos = (a, b) => (Number(a.pos_num ?? 999) - Number(b.pos_num ?? 999))
                     || String(a.name || '').localeCompare(String(b.name || ''));
-                const sortEL = list => list.some(p => p.pos === 'MDO') ? list.sort(byRank) : list.sort(byPos);
+                const sortEL = list => {{
+                    const mdo = list.filter(p => p.pos === 'MDO').sort(byRank);
+                    const numbered = list.filter(p => p.pos !== 'MDO').sort(byPos);
+                    if (mdo.length === 0) return numbered;
+                    const used = new Set(numbered.map(p => p.pos_num));
+                    const maxPos = numbered.length > 0 ? Math.max(...numbered.map(p => p.pos_num)) : 0;
+                    const gaps = [];
+                    for (let i = 1; i <= maxPos; i++) {{ if (!used.has(i)) gaps.push(i); }}
+                    const result = [];
+                    let mi = 0, gi = 0, overflow = 1;
+                    for (const p of numbered) {{
+                        while (mi < mdo.length && byRank(mdo[mi], p) < 0) {{
+                            const pos_num = gi < gaps.length ? gaps[gi++] : maxPos + overflow++;
+                            result.push({{...mdo[mi++], pos_num}});
+                        }}
+                        result.push(p);
+                    }}
+                    while (mi < mdo.length) {{
+                        const pos_num = gi < gaps.length ? gaps[gi++] : maxPos + overflow++;
+                        result.push({{...mdo[mi++], pos_num}});
+                    }}
+                    return result;
+                }};
                 const main = players.filter(p => p.type === 'MAIN').sort(byPos);
                 const qual = sortEL(players.filter(p => p.type === 'QUAL'));
                 const alt = sortEL(players.filter(p => p.type === 'ALT'));
