@@ -119,7 +119,7 @@ def build_calendar_data(tournaments):
                 if days_in_week >= 4:
                     col = get_calendar_column(t["level"])
                     cont = t.get("continent", "europe")
-                    columns[col][cont].append({"name": t["name"], "level": t["level"], "surface": t.get("surface", "")})
+                    columns[col][cont].append({"name": t["name"], "level": t["level"], "surface": t.get("surface", ""), "country": t.get("country", "")})
 
         for col in column_keys:
             for cont in CONTINENT_KEYS:

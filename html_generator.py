@@ -357,7 +357,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         sc = get_surface_class(t.get("surface", ""))
                         fk = get_calendar_filter_key(t.get("level", ""))
                         sk = get_calendar_surface_key(t.get("surface", ""))
-                        calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-continent="{cont}" data-cal-surface="{sk}">{t["name"]}</span>'
+                        flag = country_flag_html(t.get("country", ""), show_code=False)
+                        flag_prefix = f'{flag} ' if flag else ''
+                        calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-continent="{cont}" data-cal-surface="{sk}">{flag_prefix}{t["name"]}</span>'
                 calendar_html += '</td>'
             calendar_html += '</tr>'
 
@@ -1705,6 +1707,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .cal-group-first td {{ border-top: 1px solid var(--c-text-subtle); }}
             .cal-group-last td {{ border-bottom: 1px solid var(--c-text-subtle); }}
             .calendar-tournament {{ display: block; font-size: 10px; padding: 2px 6px; border-radius: 3px; line-height: 1.3; font-weight: 600; white-space: nowrap; margin: 1px 0; }}
+            .calendar-tournament img {{ width: 12px; height: 8px; margin-right: 3px; vertical-align: middle; outline: 0.3px solid #000; }}
             .cal-clay {{ background: #e8a882; color: #5c2e0e; }}
             .cal-hard {{ background: #88b4e8; color: #1a3a5c; }}
             .cal-grass {{ background: #7cc89a; color: #1a4a2e; }}
