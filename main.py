@@ -1719,7 +1719,9 @@ def main():
 
     # 7. Build calendar — uses cached WTA data
     full_wta = get_full_wta_calendar()
-    calendar_data = build_calendar_data(full_wta + full_itf)
+    _manual_entries_file = os.path.join(DATA_DIR, "manual_calendar_entries.json")
+    _manual_entries = json.load(open(_manual_entries_file, encoding="utf-8")) if os.path.exists(_manual_entries_file) else []
+    calendar_data = build_calendar_data(full_wta + full_itf + _manual_entries)
     build_calendar_snapshot(calendar_data)
 
     # 7b. Build tournament strength data (cached)

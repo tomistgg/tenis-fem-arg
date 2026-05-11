@@ -258,7 +258,15 @@ def get_full_wta_calendar():
             display_name = f"{level} {city}{suffix}"
         display_name = fix_display_name(display_name)
         surface = t.get("surface") or t.get("surfaceType") or t.get("surfaceCode") or ""
-        country = t.get("countryCode") or t.get("country") or t.get("hostCountryCode") or ""
+        country = t.get("countryCode") or t.get("hostCountryCode") or ""
+        if not country:
+            raw_country = t.get("country") or ""
+            if len(raw_country) == 3 and raw_country.isupper():
+                country = raw_country
+            else:
+                # Extract 3-letter code from title e.g. "... - City, GBR"
+                _m = re.search(r',\s*([A-Z]{3})\s*$', t.get("title", ""))
+                country = _m.group(1) if _m else raw_country
         tournaments.append({
             "name": display_name,
             "level": level,
