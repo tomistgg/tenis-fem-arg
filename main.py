@@ -687,7 +687,7 @@ def build_all_tournament_groups(driver):
     current_monday = today - timedelta(days=today.weekday())
     current_monday_str = current_monday.strftime("%Y-%m-%d")
     current_monday_label = format_week_label(current_monday)
-    if today.weekday() <= 1 and current_monday_label in tournament_groups and tournament_groups[current_monday_label]:
+    if today.weekday() == 0 and current_monday_label in tournament_groups and tournament_groups[current_monday_label]:
         m_keys = list(monday_map.keys())
         monday_map = {k: monday_map[k] for k in m_keys[:-1]}
         monday_map = {current_monday_str: current_monday_label, **monday_map}
@@ -815,7 +815,12 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
     today_str = _now.strftime("%Y-%m-%d")
     # After noon UTC, give up re-fetching acceptance lists we already tried today
     # without detecting a change. Pre-noon keeps retrying to catch morning updates.
-    _past_noon_utc = datetime.now(timezone.utc).hour >= 12
+    _utc_now = datetime.now(timezone.utc)
+    _past_noon_utc = _utc_now.hour >= 12
+    # On Sat/Sun/Mon allow a second check after 6 pm Spain time (CEST=UTC+2 Apr-Oct, CET=UTC+1 otherwise)
+    _spain_offset = 2 if 3 < _utc_now.month < 11 else 1
+    _past_6pm_spain = (_utc_now.hour + _spain_offset) % 24 >= 18
+    _is_double_check_day = _now.weekday() in (5, 6, 0)  # Sat, Sun, Mon
     current_monday_str = (_now - timedelta(days=_now.weekday())).strftime("%Y-%m-%d")
     next_monday_str = (_now + timedelta(days=7 - _now.weekday())).strftime("%Y-%m-%d")
     acceptance_state = _load_acceptance_state()
@@ -1021,6 +1026,9 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                     state_entry.get("last_fetched_date") == today_str
                     and not already_updated_today
                 )
+                evening_already_fetched = (
+                    state_entry.get("last_fetched_evening_date") == today_str
+                )
                 start_date_str = t_info.get("startDate", "")
                 list_available = _itf_acceptance_list_available(start_date_str, _now)
 
@@ -1032,8 +1040,13 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                     print(f"  ITF acceptance list already updated today, skipping fetch: {t_name}")
                     tourney_players_list = list(cached_players)
                     itf_name_map = {}
-                elif fetched_today_no_change and _past_noon_utc:
-                    print(f"  ITF acceptance list unchanged through noon UTC, skipping: {t_name}")
+                elif fetched_today_no_change and _past_noon_utc and (
+                    not _is_double_check_day or not _past_6pm_spain or evening_already_fetched
+                ):
+                    if _is_double_check_day and not _past_6pm_spain:
+                        print(f"  ITF acceptance list unchanged this morning, will re-check after 6 pm Spain: {t_name}")
+                    else:
+                        print(f"  ITF acceptance list unchanged through noon UTC, skipping: {t_name}")
                     tourney_players_list = list(cached_players)
                     itf_name_map = {}
                 elif not list_available:
@@ -1048,6 +1061,9 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                     state_entry = acceptance_state.setdefault(key, {})
                     if state_entry.get("last_fetched_date") != today_str:
                         state_entry["last_fetched_date"] = today_str
+                        acceptance_state_dirty = True
+                    if _is_double_check_day and _past_6pm_spain and state_entry.get("last_fetched_evening_date") != today_str:
+                        state_entry["last_fetched_evening_date"] = today_str
                         acceptance_state_dirty = True
                     if fresh_players:
                         cached_fp = _acceptance_fingerprint(cached_players)
