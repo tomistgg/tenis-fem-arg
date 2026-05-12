@@ -328,7 +328,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             # Last week to add points = 1 week before the cutoff (plus 1 more if cutoff week is frozen)
             _last_dt = (_cutoff_dt - timedelta(weeks=2)) if _cutoff_str in _frozen_mondays else (_cutoff_dt - timedelta(weeks=1))
             _gs_cutoff_boxes.setdefault(_last_dt.strftime("%Y-%m-%d"), []).append(
-                (_gi * 3 + _di * 2, f"Last week for {_gslabel} {_draw_type}")
+                (_gi * 3 + _di * 2, f"Last week for {_gslabel} {_draw_type}{' in W50+' if _draw_type == 'Q' else ''}")
             )
             # W15/W35 have a 1-week processing delay, so their last week is 1 earlier — Q only
             if _draw_type == "Q":
@@ -3419,7 +3419,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         </div>
 
                         <div class="cal-gm-legend">
-                            The colored number on WTA 125/250/500 events is the GM (value used for draw strength) from the 2025 edition of the tournament. Lower/Green means a stronger field.
+                            The number on WTA events is the GM value from last year's edition of the tournament. Lower = stronger players.
                         </div>
                     </div>
 
