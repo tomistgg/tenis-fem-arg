@@ -2416,7 +2416,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 /* Calendar mobile */
                 .calendar-container .table-wrapper {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
                 .calendar-toolbar {{ gap: 8px; margin-bottom: 8px; top: 0; }}
-                .cal-gm-legend {{ font-size: 10px; padding: 3px 4px; gap: 4px; width: 100%; }}
+                .cal-gm-legend {{ font-size: 10px; padding: 3px 4px; gap: 4px; flex: none; width: 100%; }}
                 .cal-cutoff-box {{ font-size: 7px; }}
                 .cal-week-header {{ position: static; }}
                 .cal-cat-header {{ top: unset; }}
