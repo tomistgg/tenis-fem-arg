@@ -134,14 +134,15 @@ def get_continent(country_code):
 
 
 def get_calendar_column(level):
-    """Map tournament level to one of the 3 calendar columns."""
+    """Map tournament level to one of the 4 calendar columns."""
     lv = level.lower().replace(" ", "")
-    if lv in ("grandslam", "wta1000", "wta500", "wta250", "finals", "wtafinals"):
+    if lv == "grandslam":
+        return "gs"
+    if lv in ("wta1000", "wta500", "wta250", "finals", "wtafinals"):
         return "wta_tour"
-    elif lv in ("wta125",):
+    if lv in ("wta125",):
         return "wta_125"
-    else:
-        return "itf"
+    return "itf"
 
 
 def get_surface_class(surface):

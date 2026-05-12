@@ -230,7 +230,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     for gs_name, gs_color, gs_id in gs_list_raw:
         monday_date = None
         for week in calendar_data:
-            for col_key in ["wta_tour", "wta_125", "itf"]:
+            for col_key in ["gs", "wta_tour", "wta_125", "itf"]:
                 for tournaments in week.get("columns", {}).get(col_key, {}).values():
                     if any(t["name"] == gs_name for t in tournaments):
                         monday_date = week.get("monday_date")
@@ -296,6 +296,40 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             f'</table>'
         )
     gs_cutoffs_json = json.dumps(gs_data)
+
+    # Build GS "last week to get points" boxes for the calendar GS row
+    _GS_DISPLAY = {"Australian Open": "AO", "Roland Garros": "RG", "Wimbledon": "WMB", "US Open": "USO"}
+
+    # Find frozen weeks: second calendar week of 2-week main-draw tournaments (GS & WTA1000)
+    _frozen_mondays = set()
+    _tourn_weeks = {}
+    for _w in calendar_data:
+        _wmon = _w["monday_date"]
+        for _ck in ("gs", "wta_tour"):
+            for _cl in _w.get("columns", {}).get(_ck, {}).values():
+                for _t in (_cl or []):
+                    _tlv = (_t.get("level") or "").lower().replace(" ", "")
+                    if _tlv in ("grandslam", "wta1000") and "qualifying" not in _t["name"].lower():
+                        _tourn_weeks.setdefault(_t["name"], []).append(_wmon)
+    for _mons in _tourn_weeks.values():
+        if len(_mons) >= 2:
+            _frozen_mondays.add(sorted(_mons)[1])
+
+    # Map each monday_date -> list of (sort_key, label) cutoff boxes
+    _gs_cutoff_boxes = {}
+    for _gi, _gs in enumerate(gs_data):
+        if _gs["mdCutoff"] in ("N/A", ""):
+            continue
+        _gslabel = _GS_DISPLAY.get(_gs["name"], _gs["name"])
+        _start_dt = datetime.strptime(_gs["mdCutoff"], "%Y-%m-%d") + timedelta(weeks=6)
+        for _di, (_draw_type, _wks) in enumerate([("MD", 6), ("Q", 4)]):
+            _cutoff_dt = _start_dt - timedelta(weeks=_wks)
+            _cutoff_str = _cutoff_dt.strftime("%Y-%m-%d")
+            # Last week to add points = 1 week before the cutoff (plus 1 more if cutoff week is frozen)
+            _last_dt = (_cutoff_dt - timedelta(weeks=2)) if _cutoff_str in _frozen_mondays else (_cutoff_dt - timedelta(weeks=1))
+            _gs_cutoff_boxes.setdefault(_last_dt.strftime("%Y-%m-%d"), []).append(
+                (_gi * 2 + _di, f"Last week for {_gslabel} {_draw_type}")
+            )
 
     # Build calendar HTML
     def get_calendar_filter_key(level):
@@ -364,7 +398,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         city_part = t_name[len(t_level):].strip().split("#")[0].strip().upper()
         entries = _gm_lookup.get((t_level.upper(), city_part))
         if not entries:
-            return '<span class="cal-gm-badge cal-gm-na">-</span>'
+            return ''
         if len(entries) == 1:
             gm = entries[0][1]
         else:
@@ -374,6 +408,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         return f'<span class="cal-gm-badge" style="background:{color}">{gm}</span>'
 
     col_groups = [
+        {"label": "GS", "keys": ["gs"], "single_row": True},
         {"label": "WTA", "keys": ["wta_tour", "wta_125"]},
         {"label": "ITF", "keys": ["itf"]},
     ]
@@ -387,20 +422,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     calendar_html += '</tr></thead><tbody>'
 
     for group in col_groups:
-        for ci, cont in enumerate(CONTINENT_KEYS):
-            row_cls = "cal-group-first" if ci == 0 else ("cal-group-last" if ci == len(CONTINENT_KEYS) - 1 else "")
-            if row_cls:
-                calendar_html += f'<tr class="{row_cls}" data-cal-row-continent="{cont}">'
-            else:
-                calendar_html += f'<tr data-cal-row-continent="{cont}">'
-            if ci == 0:
-                calendar_html += f'<td class="cal-cat-label" rowspan="{len(CONTINENT_KEYS)}">{group["label"]}</td>'
-            calendar_html += f'<td class="cal-cont-label">{cont_labels[cont]}</td>'
+        if group.get("single_row"):
+            calendar_html += '<tr class="cal-group-first cal-group-last">'
+            calendar_html += f'<td class="cal-cat-label" rowspan="1">{group["label"]}</td>'
+            calendar_html += '<td class="cal-cont-label"></td>'
             for week in calendar_data:
                 calendar_html += '<td class="cal-cell">'
                 tournaments = []
                 for ck in group["keys"]:
-                    tournaments.extend(week.get("columns", {}).get(ck, {}).get(cont, []) or [])
+                    for cont_list in week.get("columns", {}).get(ck, {}).values():
+                        tournaments.extend(cont_list or [])
                 if tournaments:
                     tournaments.sort(key=lambda x: get_tournament_sort_order(x.get("level", "")))
                     for t in tournaments:
@@ -409,11 +440,39 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         sk = get_calendar_surface_key(t.get("surface", ""))
                         flag = country_flag_html(t.get("country", ""), show_code=False)
                         flag_prefix = f'{flag} ' if flag else ''
-                        is_wta = any(ck in _wta_keys for ck in group["keys"])
-                        gm_badge = _get_gm_badge(t["name"], t.get("level", ""), week["monday_date"]) if is_wta else ''
-                        calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-continent="{cont}" data-cal-surface="{sk}">{flag_prefix}{t["name"]}{gm_badge}</span>'
+                        calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-surface="{sk}">{flag_prefix}{t["name"]}</span>'
+                for _, _box_label in sorted(_gs_cutoff_boxes.get(week["monday_date"], [])):
+                    calendar_html += f'<span class="cal-cutoff-box">{_box_label}</span>'
                 calendar_html += '</td>'
             calendar_html += '</tr>'
+        else:
+            for ci, cont in enumerate(CONTINENT_KEYS):
+                row_cls = "cal-group-first" if ci == 0 else ("cal-group-last" if ci == len(CONTINENT_KEYS) - 1 else "")
+                if row_cls:
+                    calendar_html += f'<tr class="{row_cls}" data-cal-row-continent="{cont}">'
+                else:
+                    calendar_html += f'<tr data-cal-row-continent="{cont}">'
+                if ci == 0:
+                    calendar_html += f'<td class="cal-cat-label" rowspan="{len(CONTINENT_KEYS)}">{group["label"]}</td>'
+                calendar_html += f'<td class="cal-cont-label">{cont_labels[cont]}</td>'
+                for week in calendar_data:
+                    calendar_html += '<td class="cal-cell">'
+                    tournaments = []
+                    for ck in group["keys"]:
+                        tournaments.extend(week.get("columns", {}).get(ck, {}).get(cont, []) or [])
+                    if tournaments:
+                        tournaments.sort(key=lambda x: get_tournament_sort_order(x.get("level", "")))
+                        for t in tournaments:
+                            sc = get_surface_class(t.get("surface", ""))
+                            fk = get_calendar_filter_key(t.get("level", ""))
+                            sk = get_calendar_surface_key(t.get("surface", ""))
+                            flag = country_flag_html(t.get("country", ""), show_code=False)
+                            flag_prefix = f'{flag} ' if flag else ''
+                            is_wta = any(ck in _wta_keys for ck in group["keys"])
+                            gm_badge = _get_gm_badge(t["name"], t.get("level", ""), week["monday_date"]) if is_wta else ''
+                            calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-continent="{cont}" data-cal-surface="{sk}">{flag_prefix}{t["name"]}{gm_badge}</span>'
+                    calendar_html += '</td>'
+                calendar_html += '</tr>'
 
     calendar_html += '</tbody></table>'
 
@@ -1762,6 +1821,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .calendar-tournament img {{ width: 12px; height: 8px; margin-right: 3px; vertical-align: middle; outline: 0.3px solid #000; }}
             .cal-gm-badge {{ display: inline-block; font-size: 8px; font-weight: 700; padding: 0px 3px; border-radius: 2px; margin-left: 4px; vertical-align: middle; color: #1a1a1a; line-height: 13px; }}
             .cal-gm-na {{ background: #94a3b8; color: #fff; }}
+            .cal-cutoff-box {{ display: block; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 2px; margin: 1px 0; background: #94a3b8; color: #fff; white-space: normal; line-height: 1.3; }}
+            .cal-gm-legend {{ font-size: 11px; color: #64748b; padding: 2px 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; max-width: 280px; }}
+            .cal-gm-legend-badge {{ display: inline-block; font-size: 8px; font-weight: 700; padding: 0px 4px; border-radius: 2px; color: #1a1a1a; line-height: 15px; flex-shrink: 0; }}
             .cal-clay {{ background: #e8a882; color: #5c2e0e; }}
             .cal-hard {{ background: #88b4e8; color: #1a3a5c; }}
             .cal-grass {{ background: #7cc89a; color: #1a4a2e; }}
@@ -2348,6 +2410,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 /* Calendar mobile */
                 .calendar-container .table-wrapper {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
                 .calendar-toolbar {{ gap: 8px; margin-bottom: 8px; top: 0; }}
+                .cal-gm-legend {{ font-size: 10px; padding: 3px 4px; gap: 4px; margin-left: 0; max-width: 100%; width: 100%; }}
+                .cal-cutoff-box {{ font-size: 7px; }}
                 .cal-week-header {{ position: static; }}
                 .cal-cat-header {{ top: unset; }}
                 .cal-cont-header {{ top: unset; }}
@@ -3346,6 +3410,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                 <label class="cal-dd-item"><input type="checkbox" data-cal-surface-toggle="clay" checked><span>Clay</span></label>
                                 <label class="cal-dd-item"><input type="checkbox" data-cal-surface-toggle="grass" checked><span>Grass</span></label>
                             </div>
+                        </div>
+
+                        <div class="cal-gm-legend">
+                            <span class="cal-gm-legend-badge" style="background:rgba(0,200,0,0.65);">72</span>
+                            The colored number on WTA 125/250/500 events is the GM (value used for draw strength) from the 2025 edition of the tournament. Lower/Green means a stronger field.
                         </div>
                     </div>
 

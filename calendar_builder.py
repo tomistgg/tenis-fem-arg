@@ -103,7 +103,7 @@ def build_calendar_data(tournaments):
     end_of_year = datetime(next_monday.year, 12, 31)
     total_weeks = ((end_of_year - next_monday).days // 7) + 1
 
-    column_keys = ["wta_tour", "wta_125", "itf"]
+    column_keys = ["gs", "wta_tour", "wta_125", "itf"]
     calendar_weeks = []
     for week_offset in range(total_weeks):
         monday = next_monday + timedelta(weeks=week_offset)
