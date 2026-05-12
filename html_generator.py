@@ -324,10 +324,60 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             return "grass"
         return "hard"
 
+    # Build 2025 GM lookup for WTA 125/250/500 only: (level, city_upper) -> [(startDate, gm), ...]
+    _CAL_GM_LEVELS = {"WTA 125", "WTA 250", "WTA 500"}
+    _ts_2025 = [
+        e for e in (tstrength_data or [])
+        if str(e.get("year", "")) == "2025"
+        and e.get("draw", "MD") in ("MD", "M", "MAIN")
+        and e.get("gm", 0) > 0
+        and e.get("level", "") in _CAL_GM_LEVELS
+    ]
+    _gm_lookup = {}
+    for _e in _ts_2025:
+        _key = (_e.get("level", "").upper(), (_e.get("city") or "").upper())
+        _gm_lookup.setdefault(_key, []).append((_e.get("startDate", ""), _e["gm"]))
+    _gm_vals = [g for entries in _gm_lookup.values() for _, g in entries]
+    _gm_min, _gm_max = (min(_gm_vals), max(_gm_vals)) if _gm_vals else (0, 1)
+
+    def _gm_color(gm):
+        if _gm_max <= _gm_min:
+            return "#f1f5f9"
+        t = max(0.0, min(1.0, (gm - _gm_min) / (_gm_max - _gm_min)))
+        if t < 0.5:
+            p = t * 2
+            r, g, b = round(p * 255), round(200 + p * 20), 0
+        else:
+            p = (t - 0.5) * 2
+            r, g, b = round(255 + p * (220 - 255)), round(220 * (1 - p)), 0
+        return f"rgba({r},{g},{b},0.65)"
+
+    def _day_of_year(date_str):
+        try:
+            return datetime.strptime(date_str[:10], "%Y-%m-%d").timetuple().tm_yday
+        except Exception:
+            return 0
+
+    def _get_gm_badge(t_name, t_level, week_monday):
+        if t_level not in _CAL_GM_LEVELS:
+            return ''
+        city_part = t_name[len(t_level):].strip().split("#")[0].strip().upper()
+        entries = _gm_lookup.get((t_level.upper(), city_part))
+        if not entries:
+            return '<span class="cal-gm-badge cal-gm-na">-</span>'
+        if len(entries) == 1:
+            gm = entries[0][1]
+        else:
+            cal_doy = _day_of_year(week_monday)
+            gm = min(entries, key=lambda x: abs(_day_of_year(x[0]) - cal_doy))[1]
+        color = _gm_color(gm)
+        return f'<span class="cal-gm-badge" style="background:{color}">{gm}</span>'
+
     col_groups = [
         {"label": "WTA", "keys": ["wta_tour", "wta_125"]},
         {"label": "ITF", "keys": ["itf"]},
     ]
+    _wta_keys = {"wta_tour", "wta_125"}
     cont_labels = CONTINENT_LABELS
 
     calendar_html = '<table class="calendar-table"><thead><tr>'
@@ -359,7 +409,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         sk = get_calendar_surface_key(t.get("surface", ""))
                         flag = country_flag_html(t.get("country", ""), show_code=False)
                         flag_prefix = f'{flag} ' if flag else ''
-                        calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-continent="{cont}" data-cal-surface="{sk}">{flag_prefix}{t["name"]}</span>'
+                        is_wta = any(ck in _wta_keys for ck in group["keys"])
+                        gm_badge = _get_gm_badge(t["name"], t.get("level", ""), week["monday_date"]) if is_wta else ''
+                        calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-continent="{cont}" data-cal-surface="{sk}">{flag_prefix}{t["name"]}{gm_badge}</span>'
                 calendar_html += '</td>'
             calendar_html += '</tr>'
 
@@ -1708,6 +1760,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .cal-group-last td {{ border-bottom: 1px solid var(--c-text-subtle); }}
             .calendar-tournament {{ display: block; font-size: 10px; padding: 2px 6px; border-radius: 3px; line-height: 1.3; font-weight: 600; white-space: nowrap; margin: 1px 0; }}
             .calendar-tournament img {{ width: 12px; height: 8px; margin-right: 3px; vertical-align: middle; outline: 0.3px solid #000; }}
+            .cal-gm-badge {{ display: inline-block; font-size: 8px; font-weight: 700; padding: 0px 3px; border-radius: 2px; margin-left: 4px; vertical-align: middle; color: #1a1a1a; line-height: 13px; }}
+            .cal-gm-na {{ background: #94a3b8; color: #fff; }}
             .cal-clay {{ background: #e8a882; color: #5c2e0e; }}
             .cal-hard {{ background: #88b4e8; color: #1a3a5c; }}
             .cal-grass {{ background: #7cc89a; color: #1a4a2e; }}

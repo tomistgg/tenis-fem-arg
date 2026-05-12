@@ -297,84 +297,6 @@ def build_row_key(row, headers):
     return None
 
 
-def _check_stale_itf_matches(csv_path, cal_cache_path, now_utc):
-    """Return a warning dict if ITF matches are >36h stale and Argentine players are still alive."""
-    latest_date = None
-    matches_by_tournament = {}  # tournament name (lower) -> list of rows
-
-    if os.path.exists(csv_path):
-        try:
-            with open(csv_path, "r", encoding="utf-8-sig", newline="") as f:
-                for row in csv.DictReader(f):
-                    d = (row.get("date") or "").strip()[:10]
-                    if d and (latest_date is None or d > latest_date):
-                        latest_date = d
-                    t_name = (row.get("tournamentName") or "").strip().lower()
-                    if t_name:
-                        matches_by_tournament.setdefault(t_name, []).append(row)
-        except Exception:
-            pass
-
-    if not latest_date:
-        return None
-
-    try:
-        latest_dt = datetime.strptime(latest_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-    except Exception:
-        return None
-
-    age_hours = (now_utc - latest_dt).total_seconds() / 3600
-    if age_hours <= 36:
-        return None  # fresh enough
-
-    # Only warn for tournaments where an Argentine player is still alive in the draw
-    today_str = now_utc.strftime("%Y-%m-%d")
-    active_tournaments = []
-    cal_data = load_json(cal_cache_path) or {}
-    items = cal_data.get("items", []) if isinstance(cal_data, dict) else []
-
-    for item in items:
-        if not isinstance(item, dict):
-            continue
-        start = (item.get("startDate") or "")[:10]
-        end = (item.get("endDate") or "")[:10]
-        status = (item.get("status") or item.get("tournamentStatus") or "").lower()
-        if "cancel" in status:
-            continue
-        if not (start and end and start <= today_str <= end):
-            continue
-
-        t_name = item.get("tournamentName") or item.get("name") or "?"
-        tournament_matches = matches_by_tournament.get(t_name.strip().lower(), [])
-
-        if not tournament_matches:
-            continue  # no ARG match data for this tournament — can't confirm participation
-
-        # A player is still alive if they won at least one match and never lost
-        arg_losers = set()
-        arg_winners = set()
-        for m in tournament_matches:
-            if (m.get("loserCountry") or "").strip().upper() == "ARG":
-                loser = (m.get("loserName") or "").strip()
-                if loser and loser != "Bye":
-                    arg_losers.add(loser)
-            if (m.get("winnerCountry") or "").strip().upper() == "ARG":
-                winner = (m.get("winnerName") or "").strip()
-                if winner:
-                    arg_winners.add(winner)
-
-        if arg_winners - arg_losers:
-            active_tournaments.append(t_name)
-
-    if not active_tournaments:
-        return None
-
-    return {
-        "latest_date": latest_date,
-        "age_hours": round(age_hours, 1),
-        "active_tournaments": active_tournaments[:5],
-    }
-
 
 def compute_report(before_dir, after_dir):
     report = {
@@ -732,14 +654,6 @@ def compute_report(before_dir, after_dir):
             })
     report["stale_draws"] = stale_draws
 
-    # Stale ITF matches: active tournaments running this week but no match ingested in >36h
-    stale_itf_matches = _check_stale_itf_matches(
-        os.path.join(after_dir, "itf_matches_arg.csv"),
-        os.path.join(after_dir, "itf_calendar_cache.json"),
-        now_utc,
-    )
-    report["stale_itf_matches"] = stale_itf_matches
-
     # Bad draw scores: concluded matches whose score violates tennis rules
     bad_draw_scores = []
     for t_key, entry in draws_store.items():
@@ -826,7 +740,6 @@ def render_email_markdown(report):
             bool(report.get("failed_draw_fetches")),
             bool(report.get("blocked_itf_responses")),
             bool(report.get("stale_draws")),
-            bool(report.get("stale_itf_matches")),
             bool(report.get("bad_draw_scores")),
         ]
     )
@@ -905,14 +818,6 @@ def render_email_markdown(report):
         lines.append("## 8) Stale Draws (Not Updated in 24h)")
         for item in report["stale_draws"]:
             lines.append(f"- {item['name']} — last fetched {item['fetched_at']} ({item['age_hours']}h ago)")
-        lines.append("")
-
-    if report.get("stale_itf_matches"):
-        item = report["stale_itf_matches"]
-        tourns = ", ".join(item["active_tournaments"])
-        lines.append("## 9) ITF Match Data Stale")
-        lines.append(f"- Last ingested match date: {item['latest_date']} ({item['age_hours']}h ago)")
-        lines.append(f"- Active tournaments with no recent data: {tourns}")
         lines.append("")
 
     if report.get("bad_draw_scores"):
