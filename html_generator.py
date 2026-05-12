@@ -3419,7 +3419,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         </div>
 
                         <div class="cal-gm-legend">
-                            <span class="cal-gm-legend-badge" style="background:rgba(0,200,0,0.65);">72</span>
                             The colored number on WTA 125/250/500 events is the GM (value used for draw strength) from the 2025 edition of the tournament. Lower/Green means a stronger field.
                         </div>
                     </div>
