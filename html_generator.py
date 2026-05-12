@@ -328,8 +328,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             # Last week to add points = 1 week before the cutoff (plus 1 more if cutoff week is frozen)
             _last_dt = (_cutoff_dt - timedelta(weeks=2)) if _cutoff_str in _frozen_mondays else (_cutoff_dt - timedelta(weeks=1))
             _gs_cutoff_boxes.setdefault(_last_dt.strftime("%Y-%m-%d"), []).append(
-                (_gi * 2 + _di, f"Last week for {_gslabel} {_draw_type}")
+                (_gi * 3 + _di * 2, f"Last week for {_gslabel} {_draw_type}")
             )
+            # W15/W35 have a 1-week processing delay, so their last week is 1 earlier — Q only
+            if _draw_type == "Q":
+                _w1535_dt = _last_dt - timedelta(weeks=1)
+                _gs_cutoff_boxes.setdefault(_w1535_dt.strftime("%Y-%m-%d"), []).append(
+                    (_gi * 3 + _di * 2 + 1, f"Last week for {_gslabel} Q in W15/W35")
+                )
 
     # Build calendar HTML
     def get_calendar_filter_key(level):
@@ -1822,7 +1828,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .cal-gm-badge {{ display: inline-block; font-size: 8px; font-weight: 700; padding: 0px 3px; border-radius: 2px; margin-left: 4px; vertical-align: middle; color: #1a1a1a; line-height: 13px; }}
             .cal-gm-na {{ background: #94a3b8; color: #fff; }}
             .cal-cutoff-box {{ display: block; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 2px; margin: 1px 0; background: #94a3b8; color: #fff; white-space: normal; line-height: 1.3; }}
-            .cal-gm-legend {{ font-size: 11px; color: #64748b; padding: 2px 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; max-width: 280px; }}
+            .cal-gm-legend {{ font-size: 11px; color: #64748b; padding: 2px 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex: 1; }}
             .cal-gm-legend-badge {{ display: inline-block; font-size: 8px; font-weight: 700; padding: 0px 4px; border-radius: 2px; color: #1a1a1a; line-height: 15px; flex-shrink: 0; }}
             .cal-clay {{ background: #e8a882; color: #5c2e0e; }}
             .cal-hard {{ background: #88b4e8; color: #1a3a5c; }}
@@ -2410,7 +2416,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 /* Calendar mobile */
                 .calendar-container .table-wrapper {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
                 .calendar-toolbar {{ gap: 8px; margin-bottom: 8px; top: 0; }}
-                .cal-gm-legend {{ font-size: 10px; padding: 3px 4px; gap: 4px; margin-left: 0; max-width: 100%; width: 100%; }}
+                .cal-gm-legend {{ font-size: 10px; padding: 3px 4px; gap: 4px; width: 100%; }}
                 .cal-cutoff-box {{ font-size: 7px; }}
                 .cal-week-header {{ position: static; }}
                 .cal-cat-header {{ top: unset; }}
