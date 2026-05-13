@@ -89,6 +89,28 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     itf_draw_sizes = [t for t in all_draw_sizes if t.get('source') == 'ITF']
     wta_draw_sizes = [t for t in all_draw_sizes if t.get('source') == 'WTA']
 
+    # Build tournament name → surface lookup (used by Schedule and Entry Lists)
+    _SCHED_SURFACE_COLORS = {"clay": "#f97316", "hard": "#3b82f6", "grass": "#22c55e"}
+    _name_to_surface = {}
+    for _cw in (calendar_data or []):
+        for _ck in ["gs", "wta_tour", "wta_125", "itf"]:
+            for _ct in _cw.get("columns", {}).get(_ck, {}).values():
+                for _t in _ct:
+                    _n = _t.get("name", "").strip()
+                    _s = _t.get("surface", "")
+                    if _n and _s:
+                        _name_to_surface[_n.lower()] = _s
+                        _base_n = re.sub(r'\s+\d+$', '', _n).strip()
+                        if _base_n != _n:
+                            _name_to_surface.setdefault(_base_n.lower(), _s)
+
+    def _sched_dot(entry):
+        base = re.sub(r'\s*\((Q|ALT(?:\s+\d+)?)\)\s*$', '', entry).strip()
+        color = _SCHED_SURFACE_COLORS.get(_name_to_surface.get(base.lower(), "").lower(), "")
+        if not color:
+            return ""
+        return f'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:{color};margin-right:4px;vertical-align:middle;flex-shrink:0;"></span>'
+
     # Build tournament side menu HTML for Entry Lists
     entry_menu_html = ""
     first_key = None
@@ -108,7 +130,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 t_name = t_info["name"]
                 active = " active" if first_key is None else ""
                 if first_key is None: first_key = t_key
-                entry_menu_html += f'<div class="entry-menu-item{active}" data-key="{t_key}" onclick="selectEntryTournament(this)">{t_name}</div>'
+                entry_menu_html += f'<div class="entry-menu-item{active}" data-key="{t_key}" onclick="selectEntryTournament(this)">{_sched_dot(t_name)}{t_name}</div>'
 
     # Build draws dropdown and data
     if draws_data is None:
@@ -186,8 +208,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             val = val.replace("Sharm ElSheikh", "Sharm ES")
             parts = val.split("<br>")
             rendered = "<br>".join(
-                f"<b>{entry}</b>" if "(Q)" not in entry and entry != "\u2014" else entry
-                for entry in parts
+                (_sched_dot(e) + (f"<b>{e}</b>" if "(Q)" not in e and e != "\u2014" else e))
+                for e in parts
             )
             row += f'<td class="col-week">{rendered}</td>'
         table_rows += row + "</tr>"
@@ -214,9 +236,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     history_players_sorted = sorted(list(history_arg_players))
 
-    # Build roadtogs player list: only players present in the WTA rankings
-    wta_ranking_names = {format_player_name(p.get("Player", "")).upper() for p in (wta_rankings or [])}
-    roadtogs_players_sorted = [name for name in history_players_sorted if name.upper() in wta_ranking_names]
+    # Build roadtogs player list: only players present in the WTA rankings, sorted by rank
+    wta_rank_lookup = {format_player_name(p.get("Player", "")).upper(): int(p.get("Rank") or 9999) for p in (wta_rankings or [])}
+    roadtogs_players_sorted = sorted(
+        [name for name in history_arg_players if name.upper() in wta_rank_lookup],
+        key=lambda name: wta_rank_lookup.get(name.upper(), 9999)
+    )
 
     # Compute GS cutoff dates
     current_year = str(datetime.now().year)
