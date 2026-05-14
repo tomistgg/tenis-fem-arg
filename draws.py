@@ -19,6 +19,13 @@ _DRAW_TYPES = [
 
 _PDF_BASE = "https://wtafiles.wtatennis.com/pdf/draws/{year}/{tid}/{dtype}.pdf"
 
+_WTA_API_MATCHES_URL = "https://api.wtatennis.com/tennis/tournaments/{tid}/{year}/matches?states=C"
+_WTA_API_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "Referer": "https://www.wtatennis.com/",
+    "account": "wta",
+}
+
 
 def _extract_tournament_id(url):
     m = re.search(r'/tournaments/(\d+)/', url)
@@ -531,6 +538,183 @@ def _group_into_rounds(entries, r1_count, match_offset, players=None, ideal_r1=N
     return matches
 
 
+def _wta_api_mid(match_id):
+    """Extract numeric ID from MatchID string, e.g. 'LS016' -> 16."""
+    try:
+        return int(str(match_id)[2:])
+    except (ValueError, TypeError):
+        return None
+
+
+def _wta_api_tree_depth(n):
+    """Return the depth of node n in a complete binary tree (root=1 is depth 0)."""
+    d = 0
+    while n > 1:
+        n >>= 1
+        d += 1
+    return d
+
+
+def _wta_api_winner(m):
+    """Return (first_name, last_name) of the match winner, or (None, None)."""
+    w = m.get("Winner", "")
+    if w == "2":
+        return m.get("PlayerNameFirstA", ""), m.get("PlayerNameLastA", "")
+    if w == "3":
+        return m.get("PlayerNameFirstB", ""), m.get("PlayerNameLastB", "")
+    if w == "4":
+        # Retirement — Message field contains "{11|F. Lastname}"
+        msg = m.get("Message", "") or ""
+        try:
+            inner = msg.split("{11|")[1].split("}")[0]
+            last = inner.strip().split()[-1].lower()
+            if last == (m.get("PlayerNameLastA") or "").lower():
+                return m.get("PlayerNameFirstA", ""), m.get("PlayerNameLastA", "")
+            if last == (m.get("PlayerNameLastB") or "").lower():
+                return m.get("PlayerNameFirstB", ""), m.get("PlayerNameLastB", "")
+        except (IndexError, AttributeError):
+            pass
+    return None, None
+
+
+def _wta_api_score_compact(score_str):
+    """Convert WTA API score '7-5,6-4(2)' to compact '75 64(2)' format."""
+    if not score_str:
+        return ""
+    s = score_str.strip()
+    ret_suffix = ""
+    if re.search(r"ret'?d", s, re.IGNORECASE):
+        s = re.sub(r"\s*ret'?d.*", "", s, flags=re.IGNORECASE).strip().rstrip(",")
+        ret_suffix = " RET"
+    parts = []
+    for set_str in s.split(","):
+        set_str = set_str.strip()
+        tb = re.match(r'^(\d+)-(\d+)\((\d+)\)$', set_str)
+        if tb:
+            parts.append(f"{tb.group(1)}{tb.group(2)}({tb.group(3)})")
+            continue
+        plain = re.match(r'^(\d+)-(\d+)$', set_str)
+        if plain:
+            w, l = plain.group(1), plain.group(2)
+            if int(w) >= 10 or int(l) >= 10:
+                parts.append(f"{w}-{l}")  # super-tiebreak: keep hyphen
+            else:
+                parts.append(f"{w}{l}")
+    return " ".join(parts) + ret_suffix
+
+
+def _fetch_draw_from_wta_api(tournament_id, year):
+    """Build a main-draw singles structure from the WTA matches API.
+
+    Uses the binary-tree property of MatchIDs: match N's children are 2N and
+    2N+1, which gives exact bracket positions without needing a position field.
+    Returns a dict matching the parse_draw_pdf output format, or None on failure.
+    """
+    url = _WTA_API_MATCHES_URL.format(tid=tournament_id, year=year)
+    try:
+        resp = requests.get(url, headers=_WTA_API_HEADERS, timeout=15)
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+    except Exception:
+        return None
+
+    raw_matches = data.get("matches") if isinstance(data, dict) else data
+    if not raw_matches:
+        return None
+
+    # Index main-draw singles by numeric MatchID
+    md = {}
+    for m in raw_matches:
+        if m.get("DrawLevelType") != "M" or m.get("DrawMatchType") != "S":
+            continue
+        n = _wta_api_mid(m.get("MatchID", ""))
+        if n:
+            md[n] = m
+
+    if not md:
+        return None
+
+    ids = sorted(md)
+    max_depth = max(_wta_api_tree_depth(n) for n in ids)
+    r1_ids = [n for n in ids if _wta_api_tree_depth(n) == max_depth]
+
+    if not r1_ids:
+        return None
+
+    draw_size = len(r1_ids) * 2
+    num_rounds = draw_size.bit_length() - 1  # log2(draw_size)
+
+    # Build player list from R1 matches
+    players = []
+    for n in sorted(r1_ids):
+        pos_base = (n - 2 ** max_depth) * 2 + 1
+        for side, pos in (("A", pos_base), ("B", pos_base + 1)):
+            first = md[n].get(f"PlayerNameFirst{side}", "")
+            last = md[n].get(f"PlayerNameLast{side}", "")
+            if not last:
+                continue
+            seed = str(md[n].get(f"Seed{side}") or "")
+            entry = md[n].get(f"EntryType{side}") or ""
+            if entry.lower() == "wc":
+                entry = "WC"
+            country = md[n].get(f"PlayerCountry{side}") or ""
+            name = f"{last.upper()}, {first}" if first else last.upper()
+            players.append({"pos": pos, "seed": seed, "entry": entry,
+                            "name": name, "country": country})
+
+    # Build match results from all completed matches
+    matches_out = []
+    for n in sorted(md):
+        m = md[n]
+        depth = _wta_api_tree_depth(n)
+        round_num = max_depth - depth + 1   # R1=1, R2=2, QF=3, …
+        match_num = n - 2 ** depth           # 0-indexed within the round
+
+        w_first, w_last = _wta_api_winner(m)
+        if not w_last:
+            continue
+        abbrev = f"{w_first[0]}." if w_first else ""
+        winner_name = f"{abbrev} {w_last}".strip() if abbrev else w_last
+        score = _wta_api_score_compact(m.get("ScoreString", ""))
+
+        matches_out.append({"round": round_num, "match_num": match_num,
+                             "winner_name": winner_name, "score": score})
+
+    if not players:
+        return None
+
+    # Build round labels
+    round_labels = []
+    for r in range(1, num_rounds + 1):
+        remaining = draw_size // (2 ** (r - 1))
+        if remaining == 2:
+            round_labels.append("Final")
+        elif remaining == 4:
+            round_labels.append("Semifinals")
+        elif remaining == 8:
+            round_labels.append("Quarterfinals")
+        else:
+            round_labels.append(f"Round of {remaining}")
+
+    tournament_meta = data.get("tournament", {}) if isinstance(data, dict) else {}
+    return {
+        "tournament_name": tournament_meta.get("name", ""),
+        "location": "",
+        "dates": "",
+        "prize": "",
+        "surface": tournament_meta.get("surface", ""),
+        "draw_type": "SINGLES MAIN DRAW",
+        "draw_size": draw_size,
+        "players": players,
+        "matches": matches_out,
+        "byes": [],
+        "qualifiers": [],
+        "round_labels": round_labels,
+        "num_rounds": num_rounds,
+    }
+
+
 def fetch_tournament_draws(tournament_url, year):
     tid = _extract_tournament_id(tournament_url)
     if not tid:
@@ -545,6 +729,13 @@ def fetch_tournament_draws(tournament_url, year):
                 draws[dtype_code] = draw_data
             except Exception as e:
                 print(f"Error parsing {dtype_label} draw for {tid}: {e}")
+
+    # If no main draw players from PDF, try the WTA matches API as fallback
+    if not draws.get("MDS", {}).get("players"):
+        api_draw = _fetch_draw_from_wta_api(tid, year)
+        if api_draw and api_draw.get("players"):
+            print(f"  [WTA API] Built main draw for {tid} from matches API ({api_draw['draw_size']}-draw, {len(api_draw['matches'])} results)")
+            draws["MDS"] = api_draw
 
     return draws
 

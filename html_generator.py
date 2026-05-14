@@ -4367,7 +4367,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const displayPos = renumber ? (i + 1) : p.pos;
                     const bold = isMain ? 'font-weight:bold;' : '';
                     const flag = (p.country && p.country !== '-') ? countryFlag(p.country, false) + ' ' : '';
-                    html += `<tr><td>${{displayPos}}</td><td style="text-align:left;${{bold}}">${{flag}}${{getDisplayName(p.name.toUpperCase())}}</td>${{seedCell(p)}}<td>${{p.rank}}</td>${{prioCell(p)}}</tr>`;
+                    const nameDisplay = p.name.startsWith('(') ? p.name : getDisplayName(p.name.toUpperCase());
+                    html += `<tr><td>${{displayPos}}</td><td style="text-align:left;${{bold}}">${{flag}}${{nameDisplay}}</td>${{seedCell(p)}}<td>${{p.rank}}</td>${{prioCell(p)}}</tr>`;
                 }});
                 return html;
             }}
