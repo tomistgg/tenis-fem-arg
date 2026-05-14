@@ -175,7 +175,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     draws_tournament_info = {}
     for t_key, tdata in draws_data.items():
-        draw_types = list(tdata.get("draws", {}).keys())
+        draw_types = [
+            dt for dt, di in tdata.get("draws", {}).items()
+            if isinstance(di, dict) and di.get("players")
+        ]
         draws_tournament_info[t_key] = {"name": tdata["name"], "types": draw_types}
 
     draws_js_data = {}

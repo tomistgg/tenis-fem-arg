@@ -459,7 +459,12 @@ def _merge_draw_store_entry(existing, incoming):
     if existing_draws or incoming_draws:
         merged_draws = {}
         merged_draws.update(existing_draws)
-        merged_draws.update(incoming_draws)
+        for dtype_code, new_draw in incoming_draws.items():
+            old_draw = merged_draws.get(dtype_code)
+            if (isinstance(old_draw, dict) and old_draw.get("players")
+                    and isinstance(new_draw, dict) and not new_draw.get("players")):
+                continue
+            merged_draws[dtype_code] = new_draw
         merged["draws"] = merged_draws
 
     return merged
@@ -1524,7 +1529,14 @@ def main():
         if isinstance(prev_draws, dict):
             merged_draws.update(prev_draws)
         if isinstance(t_draws, dict):
-            merged_draws.update(t_draws)
+            for dtype_code, new_draw in t_draws.items():
+                old_draw = merged_draws.get(dtype_code)
+                # Don't overwrite a non-empty cached draw with an empty new fetch
+                if (isinstance(old_draw, dict) and old_draw.get("players")
+                        and isinstance(new_draw, dict) and not new_draw.get("players")):
+                    print(f"  Keeping cached {dtype_code} for {t_info.get('name','')} (new fetch returned empty)")
+                    continue
+                merged_draws[dtype_code] = new_draw
         if merged_draws:
             fetched_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ") if t_draws else (prev or {}).get("fetchedAt")
             if not t_draws and prev_draws:
