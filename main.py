@@ -77,6 +77,31 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
     import re
 
     _STATUS_FLAGS = frozenset(["F", "A", "S", "None", "WC", "SE", "LL"])
+    _PDF_COUNTRY_NORMALIZE = {
+        "FR": "FRA",
+    }
+
+    def _normalize_pdf_country(code):
+        c = (code or "").strip().upper()
+        if not c or c == "---":
+            return ""
+        return _PDF_COUNTRY_NORMALIZE.get(c, c)
+
+    def _format_player_name(raw_name):
+        """Normalize player name to display format (GivenName Surname)."""
+        parts = [p for p in str(raw_name or "").strip().split() if p]
+        if not parts:
+            return ""
+        # FFT compact PDFs often render names as UPPERCASE surname + mixed-case given.
+        # Reorder when the first mixed/lowercase token appears after index 0.
+        first_mixed_idx = None
+        for idx, part in enumerate(parts):
+            if any(ch.islower() for ch in part):
+                first_mixed_idx = idx
+                break
+        if first_mixed_idx is not None and first_mixed_idx > 0:
+            parts = parts[first_mixed_idx:] + parts[:first_mixed_idx]
+        return " ".join(parts).title()
 
     def _parse_tokens(tokens):
         """Parse word tokens for one player entry.
@@ -100,13 +125,116 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
         end -= 1
         country = ""
         if end >= 2 and re.match(r"^[A-Z]{2,3}$", tokens[end]):
-            country = tokens[end]
+            country = _normalize_pdf_country(tokens[end])
             end -= 1
         name_parts = tokens[2:end + 1]
         if not name_parts:
             return None
         name = " ".join(name_parts)
         return pos_num, name, country, rank_num
+
+    def _parse_compact_entry_list_line(line_text):
+        """Parse 1-2 compact entries from a single line.
+
+        Newer GS PDFs sometimes render one line as:
+        '1 SURNAME Name (USA) 12 65 OTHER Player (FRA) 90'
+        """
+        tokens = (line_text or "").strip().split()
+        if not tokens or not tokens[0].isdigit():
+            return []
+
+        entries = []
+        i = 0
+        while i < len(tokens):
+            if not tokens[i].isdigit():
+                break
+            pos_num = int(tokens[i])
+            i += 1
+
+            name_parts = []
+            country = ""
+            rank_token_from_country = ""
+            saw_country_marker = False
+
+            while i < len(tokens):
+                tok = tokens[i]
+                if re.match(r"^\([A-Z-]{3}\)$", tok):
+                    country = _normalize_pdf_country(tok[1:-1])
+                    saw_country_marker = True
+                    i += 1
+                    break
+                # Some FFT rows are malformed like "(FR135" (missing ')' and merged with rank).
+                mc = re.match(r"^\(([A-Z-]{2,3})(\d+\*?)$", tok)
+                if mc:
+                    country = _normalize_pdf_country(mc.group(1))
+                    rank_token_from_country = mc.group(2)
+                    saw_country_marker = True
+                    i += 1
+                    break
+                if re.match(r"^\d+\*?$", tok):
+                    break
+                name_parts.append(tok)
+                i += 1
+
+            if i < len(tokens) and re.match(r"^\d+\*?$", tokens[i]):
+                rank_num = int(re.sub(r"\D", "", tokens[i]))
+                i += 1
+            elif rank_token_from_country:
+                rank_num = int(re.sub(r"\D", "", rank_token_from_country))
+            else:
+                break
+
+            # Ignore non-player lines that accidentally look numeric (e.g. "24 mai - 07 juin").
+            # Some valid rows have no country marker, so allow them with extra validation.
+            if name_parts:
+                if not saw_country_marker:
+                    lowered_parts = [p.lower() for p in name_parts]
+                    month_tokens = {
+                        "janvier", "fevrier", "février", "mars", "avril", "mai", "juin",
+                        "juillet", "aout", "août", "septembre", "octobre", "novembre", "decembre", "décembre"
+                    }
+                    if "-" in name_parts:
+                        continue
+                    if any(p in month_tokens for p in lowered_parts):
+                        continue
+                entries.append((pos_num, " ".join(name_parts), country, rank_num))
+
+        return entries
+
+    def _parse_compact_layout(pdf_obj):
+        """Fallback parser for single-line compact PDFs without section headers."""
+        compact_main = []
+        with_country_missing = 0
+        for page in pdf_obj.pages:
+            words = page.extract_words(keep_blank_chars=False, x_tolerance=3, y_tolerance=3)
+            lines = {}
+            for w in words:
+                y = round(float(w["top"]), 1)
+                lines.setdefault(y, []).append(w)
+
+            for _, word_list in sorted(lines.items()):
+                word_list.sort(key=lambda w: float(w["x0"]))
+                line_text = " ".join(w["text"] for w in word_list).strip()
+                if not line_text or not re.match(r"^\d+\s", line_text):
+                    continue
+                for pos_num, name, country, rank_num in _parse_compact_entry_list_line(line_text):
+                    if not country:
+                        with_country_missing += 1
+                    compact_main.append({
+                        "name": _format_player_name(name),
+                        "country": country,
+                        "rank_num": rank_num,
+                        "rank": str(rank_num),
+                        "pos": str(pos_num),
+                        "pos_num": pos_num,
+                        "type": "MAIN",
+                    })
+
+        compact_main.sort(key=lambda p: p["pos_num"])
+        for i, p in enumerate(compact_main, 1):
+            p["pos"] = str(i)
+            p["pos_num"] = i
+        return compact_main
 
     def _is_struck(col_words, struck_rects):
         if not struck_rects or not col_words:
@@ -179,7 +307,7 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
                         continue
 
                     player = {
-                        "name": name.title(),
+                        "name": _format_player_name(name),
                         "country": country,
                         "rank_num": rank_num,
                         "rank": str(rank_num),
@@ -210,7 +338,14 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
         p["pos"] = str(i)
         p["pos_num"] = i
 
-    return all_main, alt_capped
+    if all_main:
+        return all_main, alt_capped
+
+    # Fallback for newer compact-list PDFs that have no MAIN/ALTERNATES headers
+    # and no status/pref columns.
+    with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+        compact_main = _parse_compact_layout(pdf)
+    return compact_main, []
 
 
 _wta_country_lookup_cache = None
