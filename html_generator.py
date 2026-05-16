@@ -5566,10 +5566,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
                 _rtgs_initLookups();
 
-                // Get current date and 52 weeks ago
+                // Get current date and a wide prefilter window start.
+                // We keep this wider than 52 weeks so W15/W35 tournaments (effective +7d)
+                // can still be evaluated by the exact week-based cutoff and drop-date logic below.
                 const now = new Date();
-                const fiftyTwoWeeksAgo = new Date(now);
-                fiftyTwoWeeksAgo.setDate(fiftyTwoWeeksAgo.getDate() - 364);
+                const prefilterStart = new Date(now);
+                prefilterStart.setDate(prefilterStart.getDate() - 385); // 55 weeks
 
                 // Category to points distribution description mapping (use lower M draw size)
                 const categoryToDesc = {{
@@ -5667,7 +5669,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     return round; // lost in this round
                 }}
 
-                // Filter matches for selected player in last 52 weeks, exclude Fed/BJK Cup
+                // Prefilter matches for selected player, exclude Fed/BJK Cup.
+                // Final "what is in the 52-week table" is decided later from tournament effective week.
                 const playerMatches = historyData.filter(row => {{
                     const matchType = (row['MATCH_TYPE'] || '').trim();
                     if (matchType === 'Fed/BJK Cup') return false;
@@ -5679,7 +5682,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const dateStr = row['DATE'] || '';
                     if (!dateStr) return false;
                     const matchDate = new Date(dateStr);
-                    return matchDate >= fiftyTwoWeeksAgo && matchDate <= now;
+                    return matchDate >= prefilterStart && matchDate <= now;
                 }});
 
                 // Helper: compute Monday of a date's week
