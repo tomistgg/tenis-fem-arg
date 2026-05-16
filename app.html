@@ -370,6 +370,7 @@
             #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) { width: 40px; white-space: nowrap; text-align: center; }
             #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) { width: 95px; white-space: nowrap; text-align: center; }
             .roadtogs-separator td { background: var(--c-chrome-bg); color: white; text-align: center !important; font-weight: bold; font-size: 12px; letter-spacing: 1px; padding: 6px 12px !important; }
+            .rtgs-lock { margin-left: 4px; font-size: 11px; vertical-align: baseline; }
             .roadtogs-cutoffs { margin-bottom: 8px; display: flex; flex-wrap: nowrap; gap: 10px; align-items: flex-start; }
             .roadtogs-legend { margin-bottom: 12px; font-size: 11px; color: var(--c-text-muted); line-height: 1.5; }
             /* Shared utility classes — replace inline style="..." attributes that appeared
@@ -10929,15 +10930,56 @@
                     if (d <= _in28) return ' class="rtgs-warn-28d"';
                     return '';
                 }
+                function _rtgsCategoryKey(t) {
+                    if (t.isGS || t.category === 'GS') return 'GS';
+                    if (t.category === 'WTA 1000') return 'WTA 1000';
+                    if (t.category === 'WTA 500') return 'WTA 500';
+                    if (t.category === 'WTA 250') return 'WTA 250';
+                    if (t.category === 'WTA 125' || t.category === '125K' || t.category === '125K Series') return 'WTA 125';
+                    if (_RTGS_ITF_CATS_ALL.includes(t.category)) return 'ITF';
+                    return 'OTHER';
+                }
+                function _rtgsCategoryLabel(key) {
+                    if (key === 'GS') return '--- Grand Slams ---';
+                    if (key === 'WTA 1000') return '--- WTA 1000 ---';
+                    if (key === 'WTA 500') return '--- WTA 500 ---';
+                    if (key === 'WTA 250') return '--- WTA 250 ---';
+                    if (key === 'WTA 125') return '--- WTA 125 ---';
+                    if (key === 'ITF') return '--- ITF ---';
+                    return '--- Other ---';
+                }
+                function _rtgsIsLocked(t) {
+                    const hasMainDraw = !!t.bestMainRound;
+                    return (t.isGS && hasMainDraw) || (t.category === 'WTA 1000' && hasMainDraw);
+                }
+                function _rtgsTournamentLabel(t) {
+                    const name = _formatTournName(t.tournament, t.category);
+                    if (!name) return '';
+                    if (!_rtgsIsLocked(t)) return name;
+                    return `${name} <span class="rtgs-lock" title="Locked tournament" aria-label="Locked tournament">&#128274;</span>`;
+                }
+                function _appendRoadToGSCategories(parts, list) {
+                    const order = ['GS', 'WTA 1000', 'WTA 500', 'WTA 250', 'WTA 125', 'ITF', 'OTHER'];
+                    const groups = new Map();
+                    list.forEach(t => {
+                        const key = _rtgsCategoryKey(t);
+                        if (!groups.has(key)) groups.set(key, []);
+                        groups.get(key).push(t);
+                    });
+                    order.forEach(key => {
+                        const rows = groups.get(key) || [];
+                        if (!rows.length) return;
+                        parts.push(`<tr class="roadtogs-separator"><td colspan="5">${_rtgsCategoryLabel(key)}</td></tr>`);
+                        rows.forEach(t => {
+                            parts.push(`<tr><td>${t.date}</td><td>${_rtgsTournamentLabel(t)}</td><td>${t.roundDisplay}</td><td>${t.points}</td><td${_dropClass(t.dropDate)}>${t.dropDate}</td></tr>`);
+                        });
+                    });
+                }
                 const parts = [];
-                countable.forEach(t => {
-                    parts.push(`<tr><td>${t.date}</td><td>${_formatTournName(t.tournament, t.category)}</td><td>${t.roundDisplay}</td><td>${t.points}</td><td${_dropClass(t.dropDate)}>${t.dropDate}</td></tr>`);
-                });
+                _appendRoadToGSCategories(parts, countable);
                 if (nonCountable.length > 0) {
                     parts.push('<tr class="roadtogs-separator"><td colspan="5">NON-COUNTABLE TOURNAMENTS</td></tr>');
-                    nonCountable.forEach(t => {
-                        parts.push(`<tr><td>${t.date}</td><td>${_formatTournName(t.tournament, t.category)}</td><td>${t.roundDisplay}</td><td>${t.points}</td><td${_dropClass(t.dropDate)}>${t.dropDate}</td></tr>`);
-                    });
+                    _appendRoadToGSCategories(parts, nonCountable);
                 }
 
                 tbody.innerHTML = parts.join('');
