@@ -1473,37 +1473,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) {{ width: 95px; white-space: nowrap; text-align: center; }}
             .roadtogs-separator td {{ background: var(--c-chrome-bg); color: white; text-align: center !important; font-weight: bold; font-size: inherit; line-height: 1.2; letter-spacing: 0.5px; padding: 8px 12px !important; }}
             .roadtogs-category-separator td {{ background: #6b7280; color: white; text-align: center !important; font-weight: bold; font-size: inherit; line-height: 1.2; letter-spacing: 0.3px; padding: 8px 12px !important; }}
-            .rtgs-lock {{
-                margin-left: 4px;
-                display: inline-block;
-                width: 10px;
-                height: 10px;
-                position: relative;
-                vertical-align: middle;
-                color: #475569;
-            }}
-            .rtgs-lock::before {{
-                content: '';
-                position: absolute;
-                left: 1px;
-                top: 0;
-                width: 8px;
-                height: 5px;
-                border: 1.5px solid currentColor;
-                border-bottom: 0;
-                border-radius: 4px 4px 0 0;
-                box-sizing: border-box;
-            }}
-            .rtgs-lock::after {{
-                content: '';
-                position: absolute;
-                left: 0;
-                top: 4px;
-                width: 10px;
-                height: 6px;
-                background: currentColor;
-                border-radius: 1px;
-            }}
+            .rtgs-lock {{ margin-left: 4px; font-size: 11px; line-height: 1; vertical-align: baseline; }}
             .roadtogs-cutoffs {{ margin-bottom: 8px; display: flex; flex-wrap: nowrap; gap: 10px; align-items: flex-start; }}
             .roadtogs-legend {{ margin-bottom: 12px; font-size: 11px; color: var(--c-text-muted); line-height: 1.5; }}
             /* Shared utility classes — replace inline style="..." attributes that appeared
@@ -2570,9 +2540,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #roadtogs-table th:nth-child(3), #roadtogs-table td:nth-child(3) {{ width: 18% !important; }}
                 #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) {{ width: 9% !important; }}
                 #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) {{ width: 18% !important; }}
-                .rtgs-lock {{ width: 8px; height: 8px; }}
-                .rtgs-lock::before {{ left: 1px; width: 6px; height: 4px; border-width: 1.25px; }}
-                .rtgs-lock::after {{ top: 3px; width: 8px; height: 5px; }}
+                .roadtogs-separator td, .roadtogs-category-separator td {{ font-size: 8px !important; padding: 3px 3px !important; line-height: 1.2 !important; }}
+                .rtgs-lock {{ font-size: 9px !important; }}
                 .roadtogs-cutoffs {{ display: grid !important; grid-template-columns: 1fr 1fr; gap: 6px; }}
                 .gs-cutoff-table {{ width: 100% !important; min-width: 0 !important; table-layout: fixed !important; font-size: 8px !important; }}
                 .gs-cutoff-table th, .gs-cutoff-table td {{ padding: 2px 3px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
@@ -6013,7 +5982,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const name = _formatTournName(t.tournament, t.category);
                     if (!name) return '';
                     if (!_rtgsIsLocked(t)) return name;
-                    return `${{name}} <span class="rtgs-lock" title="Locked tournament" aria-label="Locked tournament"></span>`;
+                    return `${{name}} <span class="rtgs-lock" title="Locked tournament" aria-label="Locked tournament">&#128274;&#65038;</span>`;
                 }}
                 function _appendRoadToGSCategories(parts, list) {{
                     const order = ['GS', 'WTA 1000', 'WTA 500', 'WTA 250', 'WTA 125', 'ITF', 'OTHER'];
