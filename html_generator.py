@@ -1492,6 +1492,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gs-cutoff-table th, .gs-cutoff-table td {{ border: 1px solid var(--c-border); padding: 2px 6px; text-align: center; }}
             .gs-cutoff-table thead tr:last-child th {{ background: var(--c-surface-alt) !important; font-weight: bold; color: var(--c-text-subtle) !important; }}
             .header-row {{ width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; gap: 10px; }}
+            #view-roadtogs .header-row {{ margin-bottom: 8px; }}
             h1 {{ margin: 0; font-size: 22px; color: #1e293b; }}
             .search-container {{ position: absolute; left: 0; top: 50%; transform: translateY(-50%); }}
             .rankings-filter-container {{ position: absolute; right: 0; top: 50%; transform: translateY(-50%); }}
@@ -3520,7 +3521,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                     <div class="roadtogs-legend">
                         <div>ACC. PTS = Points accumulated that count towards the ranking as of the cutoff date.</div>
-                        <div>EST. NEED = Estimated points needed to qualify for the Grand Slam: {GS_THRESHOLD_Q} for Q, {GS_THRESHOLD_MD} for MD.<br>Cutoffs 2025 (Q/MD) = AO 316/756 - RG 326/742 - WB 323/730 - US 323/730<br>Cutoffs 2026 (Q/MD) = AO 308/754 - RG 283/786</div>
+                        <div>EST. NEED = Estimated points needed to qualify for the Grand Slam: {GS_THRESHOLD_Q} for Q, {GS_THRESHOLD_MD} for MD.<br>Cutoffs 2025 (Q/MD) = AO 316/756 - RG 326/742 - WB 315/727 - US 323/730<br>Cutoffs 2026 (Q/MD) = AO 308/754 - RG 283/786</div>
                     </div>
                     <div class="content-card">
                         <div class="table-wrapper">
