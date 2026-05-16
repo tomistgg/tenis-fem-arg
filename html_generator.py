@@ -2546,9 +2546,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     font-size: 0 !important;
                     position: relative;
                     display: inline-block;
-                    width: 6px;
-                    height: 6px;
-                    margin-left: 3px;
+                    width: 5px;
+                    height: 5px;
+                    margin-left: 2px;
                     vertical-align: middle;
                 }}
                 .rtgs-lock::before {{
@@ -2556,7 +2556,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     position: absolute;
                     left: 1px;
                     top: 0;
-                    width: 4px;
+                    width: 3px;
                     height: 2px;
                     border: 1px solid #111;
                     border-bottom: 0;
@@ -2568,8 +2568,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     position: absolute;
                     left: 0;
                     top: 2px;
-                    width: 6px;
-                    height: 4px;
+                    width: 5px;
+                    height: 3px;
                     background: #111;
                     border-radius: 1px;
                 }}
@@ -2709,6 +2709,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #roadtogs-table td {{
                     font-size: 7px;
                     padding: 2px 2px;
+                }}
+                .roadtogs-separator td,
+                .roadtogs-category-separator td {{
+                    font-size: 7px !important;
+                    padding: 2px 2px !important;
+                    line-height: normal !important;
+                    letter-spacing: 0 !important;
                 }}
                 #roadtogs-points-total {{
                     font-size: 11px !important;
