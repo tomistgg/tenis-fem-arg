@@ -3520,7 +3520,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                     <div class="roadtogs-legend">
                         <div>ACC. PTS = Points accumulated that count towards the ranking as of the cutoff date.</div>
-                        <div>EST. NEED = Estimated points needed to qualify for the Grand Slam: {GS_THRESHOLD_Q} for Q, {GS_THRESHOLD_MD} for MD. Cutoffs 2025 = AO 316/756 - RG 326/742 - WB 323/730 - US 323/730<br>Cutoffs 2026 = AO 308/754 - RG 283/786</div>
+                        <div>EST. NEED = Estimated points needed to qualify for the Grand Slam: {GS_THRESHOLD_Q} for Q, {GS_THRESHOLD_MD} for MD.<br>Cutoffs 2025 (Q/MD) = AO 316/756 - RG 326/742 - WB 323/730 - US 323/730<br>Cutoffs 2026 (Q/MD) = AO 308/754 - RG 283/786</div>
                     </div>
                     <div class="content-card">
                         <div class="table-wrapper">
