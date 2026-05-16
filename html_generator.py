@@ -1471,9 +1471,39 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #roadtogs-table th:nth-child(3), #roadtogs-table td:nth-child(3) {{ width: 85px; white-space: nowrap; text-align: center; }}
             #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) {{ width: 40px; white-space: nowrap; text-align: center; }}
             #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) {{ width: 95px; white-space: nowrap; text-align: center; }}
-            .roadtogs-separator td {{ background: var(--c-chrome-bg); color: white; text-align: center !important; font-weight: bold; font-size: 12px; letter-spacing: 1px; padding: 6px 12px !important; }}
-            .roadtogs-category-separator td {{ background: #6b7280; color: white; text-align: center !important; font-weight: bold; font-size: 12px; letter-spacing: 0.5px; padding: 6px 12px !important; }}
-            .rtgs-lock {{ margin-left: 4px; font-size: 11px; line-height: 1; vertical-align: baseline; }}
+            .roadtogs-separator td {{ background: var(--c-chrome-bg); color: white; text-align: center !important; font-weight: bold; font-size: inherit; line-height: 1.2; letter-spacing: 0.5px; padding: 8px 12px !important; }}
+            .roadtogs-category-separator td {{ background: #6b7280; color: white; text-align: center !important; font-weight: bold; font-size: inherit; line-height: 1.2; letter-spacing: 0.3px; padding: 8px 12px !important; }}
+            .rtgs-lock {{
+                margin-left: 4px;
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                position: relative;
+                vertical-align: middle;
+                color: #475569;
+            }}
+            .rtgs-lock::before {{
+                content: '';
+                position: absolute;
+                left: 1px;
+                top: 0;
+                width: 8px;
+                height: 5px;
+                border: 1.5px solid currentColor;
+                border-bottom: 0;
+                border-radius: 4px 4px 0 0;
+                box-sizing: border-box;
+            }}
+            .rtgs-lock::after {{
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 4px;
+                width: 10px;
+                height: 6px;
+                background: currentColor;
+                border-radius: 1px;
+            }}
             .roadtogs-cutoffs {{ margin-bottom: 8px; display: flex; flex-wrap: nowrap; gap: 10px; align-items: flex-start; }}
             .roadtogs-legend {{ margin-bottom: 12px; font-size: 11px; color: var(--c-text-muted); line-height: 1.5; }}
             /* Shared utility classes — replace inline style="..." attributes that appeared
@@ -1542,10 +1572,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .col-week {{ width: 150px; font-size: 11px; font-weight: bold; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }}
             .divider-row td {{ background: var(--c-surface-sunk); font-weight: bold; text-align: center; padding: 5px 15px; font-size: 11px; border-right: none; }}
             tr.hidden {{ display: none; }}
-            table:not(.calendar-table) tbody tr:nth-child(even):not(.divider-row):not(.roadtogs-separator):not(.cal-group-first):not(.cal-group-last) td {{ background: var(--c-surface-alt); }}
-            table:not(.calendar-table) tbody tr:nth-child(even):not(.divider-row):not(.roadtogs-separator):not(.cal-group-first):not(.cal-group-last) td.sticky-col {{ background: var(--c-surface-alt) !important; }}
-            table:not(.calendar-table):not(#tstrength-table) tr:not(.roadtogs-separator):hover td {{ background: var(--c-primary-softer) !important; }}
-            table:not(.calendar-table):not(#tstrength-table) tr:not(.roadtogs-separator):hover td.sticky-col {{ background: var(--c-primary-softer) !important; }}
+            table:not(.calendar-table) tbody tr:nth-child(even):not(.divider-row):not(.roadtogs-separator):not(.roadtogs-category-separator):not(.cal-group-first):not(.cal-group-last) td {{ background: var(--c-surface-alt); }}
+            table:not(.calendar-table) tbody tr:nth-child(even):not(.divider-row):not(.roadtogs-separator):not(.roadtogs-category-separator):not(.cal-group-first):not(.cal-group-last) td.sticky-col {{ background: var(--c-surface-alt) !important; }}
+            table:not(.calendar-table):not(#tstrength-table) tr:not(.roadtogs-separator):not(.roadtogs-category-separator):hover td {{ background: var(--c-primary-softer) !important; }}
+            table:not(.calendar-table):not(#tstrength-table) tr:not(.roadtogs-separator):not(.roadtogs-category-separator):hover td.sticky-col {{ background: var(--c-primary-softer) !important; }}
             .dropdown-header {{ background-color: #e2e8f0 !important; font-weight: bold !important; text-align: center !important; padding: 12px 0 !important; font-size: 11px; display: block; }}
             .dropdown-item {{ padding: 8px 15px; text-align: left; background-color: #ffffff; }}
 
@@ -2540,7 +2570,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #roadtogs-table th:nth-child(3), #roadtogs-table td:nth-child(3) {{ width: 18% !important; }}
                 #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) {{ width: 9% !important; }}
                 #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) {{ width: 18% !important; }}
-                .rtgs-lock {{ font-size: 9px !important; }}
+                .rtgs-lock {{ width: 8px; height: 8px; }}
+                .rtgs-lock::before {{ left: 1px; width: 6px; height: 4px; border-width: 1.25px; }}
+                .rtgs-lock::after {{ top: 3px; width: 8px; height: 5px; }}
                 .roadtogs-cutoffs {{ display: grid !important; grid-template-columns: 1fr 1fr; gap: 6px; }}
                 .gs-cutoff-table {{ width: 100% !important; min-width: 0 !important; table-layout: fixed !important; font-size: 8px !important; }}
                 .gs-cutoff-table th, .gs-cutoff-table td {{ padding: 2px 3px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
@@ -2770,10 +2802,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             [data-theme="dark"] table {{ border-color: #334155; }}
             [data-theme="dark"] td {{ background: #1e293b; border-bottom-color: #334155; border-right-color: #334155; color: #e2e8f0; }}
             [data-theme="dark"] td.sticky-col {{ background: #1e293b !important; }}
-            [data-theme="dark"] table:not(.calendar-table):not(#tstrength-table) tr:not(.roadtogs-separator):hover td {{ background: #273548 !important; }}
-            [data-theme="dark"] table:not(.calendar-table):not(#tstrength-table) tr:not(.roadtogs-separator):hover td.sticky-col {{ background: #273548 !important; }}
+            [data-theme="dark"] table:not(.calendar-table):not(#tstrength-table) tr:not(.roadtogs-separator):not(.roadtogs-category-separator):hover td {{ background: #273548 !important; }}
+            [data-theme="dark"] table:not(.calendar-table):not(#tstrength-table) tr:not(.roadtogs-separator):not(.roadtogs-category-separator):hover td.sticky-col {{ background: #273548 !important; }}
             [data-theme="dark"] .divider-row td {{ background: #1a2638; color: #94a3b8; }}
             [data-theme="dark"] .roadtogs-separator td {{ background: #1e3a5c; color: #93c5fd; }}
+            [data-theme="dark"] .roadtogs-category-separator td {{ background: #6b7280; color: #f8fafc; }}
 
             [data-theme="dark"] input,
             [data-theme="dark"] select {{ background: #1e293b; background-color: #1e293b; color: #e2e8f0; border-color: #475569; }}
@@ -5980,7 +6013,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     const name = _formatTournName(t.tournament, t.category);
                     if (!name) return '';
                     if (!_rtgsIsLocked(t)) return name;
-                    return `${{name}} <span class="rtgs-lock" title="Locked tournament" aria-label="Locked tournament">&#128274;&#65038;</span>`;
+                    return `${{name}} <span class="rtgs-lock" title="Locked tournament" aria-label="Locked tournament"></span>`;
                 }}
                 function _appendRoadToGSCategories(parts, list) {{
                     const order = ['GS', 'WTA 1000', 'WTA 500', 'WTA 250', 'WTA 125', 'ITF', 'OTHER'];
