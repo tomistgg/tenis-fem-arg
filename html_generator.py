@@ -1471,8 +1471,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #roadtogs-table th:nth-child(3), #roadtogs-table td:nth-child(3) {{ width: 85px; white-space: nowrap; text-align: center; }}
             #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) {{ width: 40px; white-space: nowrap; text-align: center; }}
             #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) {{ width: 95px; white-space: nowrap; text-align: center; }}
-            .roadtogs-separator td {{ background: var(--c-chrome-bg); color: white; text-align: center !important; font-weight: bold; font-size: inherit; line-height: 1.2; letter-spacing: 0.5px; padding: 8px 12px !important; }}
-            .roadtogs-category-separator td {{ background: #6b7280 !important; color: white; text-align: center !important; font-weight: bold; font-size: inherit; line-height: 1.2; letter-spacing: 0.3px; padding: 8px 12px !important; }}
+            .roadtogs-separator td {{ background: var(--c-chrome-bg); color: white; text-align: center !important; font-weight: bold; font-size: 13px; line-height: normal; letter-spacing: 0; padding: 8px 12px !important; }}
+            .roadtogs-category-separator td {{ background: #6b7280 !important; color: white; text-align: center !important; font-weight: bold; font-size: 13px; line-height: normal; letter-spacing: 0; padding: 8px 12px !important; }}
             tr.roadtogs-category-separator:hover td {{ background: #6b7280 !important; }}
             .rtgs-lock {{ margin-left: 4px; font-size: 11px; line-height: 1; vertical-align: baseline; }}
             .roadtogs-cutoffs {{ margin-bottom: 8px; display: flex; flex-wrap: nowrap; gap: 10px; align-items: flex-start; }}
@@ -2546,8 +2546,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     font-size: 0 !important;
                     position: relative;
                     display: inline-block;
-                    width: 7px;
-                    height: 7px;
+                    width: 6px;
+                    height: 6px;
                     margin-left: 3px;
                     vertical-align: middle;
                 }}
@@ -2556,19 +2556,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     position: absolute;
                     left: 1px;
                     top: 0;
-                    width: 5px;
-                    height: 3px;
+                    width: 4px;
+                    height: 2px;
                     border: 1px solid #111;
                     border-bottom: 0;
-                    border-radius: 3px 3px 0 0;
+                    border-radius: 2px 2px 0 0;
                     box-sizing: border-box;
                 }}
                 .rtgs-lock::after {{
                     content: '';
                     position: absolute;
                     left: 0;
-                    top: 3px;
-                    width: 7px;
+                    top: 2px;
+                    width: 6px;
                     height: 4px;
                     background: #111;
                     border-radius: 1px;
