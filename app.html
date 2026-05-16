@@ -370,7 +370,8 @@
             #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) { width: 40px; white-space: nowrap; text-align: center; }
             #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) { width: 95px; white-space: nowrap; text-align: center; }
             .roadtogs-separator td { background: var(--c-chrome-bg); color: white; text-align: center !important; font-weight: bold; font-size: 12px; letter-spacing: 1px; padding: 6px 12px !important; }
-            .rtgs-lock { margin-left: 4px; font-size: 11px; vertical-align: baseline; }
+            .roadtogs-category-separator td { background: #6b7280; color: white; text-align: center !important; font-weight: bold; font-size: 12px; letter-spacing: 0.5px; padding: 6px 12px !important; }
+            .rtgs-lock { margin-left: 4px; font-size: 11px; line-height: 1; vertical-align: baseline; }
             .roadtogs-cutoffs { margin-bottom: 8px; display: flex; flex-wrap: nowrap; gap: 10px; align-items: flex-start; }
             .roadtogs-legend { margin-bottom: 12px; font-size: 11px; color: var(--c-text-muted); line-height: 1.5; }
             /* Shared utility classes — replace inline style="..." attributes that appeared
@@ -1437,6 +1438,7 @@
                 #roadtogs-table th:nth-child(3), #roadtogs-table td:nth-child(3) { width: 18% !important; }
                 #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) { width: 9% !important; }
                 #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) { width: 18% !important; }
+                .rtgs-lock { font-size: 9px !important; }
                 .roadtogs-cutoffs { display: grid !important; grid-template-columns: 1fr 1fr; gap: 6px; }
                 .gs-cutoff-table { width: 100% !important; min-width: 0 !important; table-layout: fixed !important; font-size: 8px !important; }
                 .gs-cutoff-table th, .gs-cutoff-table td { padding: 2px 3px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -10940,13 +10942,13 @@
                     return 'OTHER';
                 }
                 function _rtgsCategoryLabel(key) {
-                    if (key === 'GS') return '--- Grand Slams ---';
-                    if (key === 'WTA 1000') return '--- WTA 1000 ---';
-                    if (key === 'WTA 500') return '--- WTA 500 ---';
-                    if (key === 'WTA 250') return '--- WTA 250 ---';
-                    if (key === 'WTA 125') return '--- WTA 125 ---';
-                    if (key === 'ITF') return '--- ITF ---';
-                    return '--- Other ---';
+                    if (key === 'GS') return 'Grand Slams';
+                    if (key === 'WTA 1000') return 'WTA 1000';
+                    if (key === 'WTA 500') return 'WTA 500';
+                    if (key === 'WTA 250') return 'WTA 250';
+                    if (key === 'WTA 125') return 'WTA 125';
+                    if (key === 'ITF') return 'ITF';
+                    return 'Other';
                 }
                 function _rtgsIsLocked(t) {
                     const hasMainDraw = !!t.bestMainRound;
@@ -10956,7 +10958,7 @@
                     const name = _formatTournName(t.tournament, t.category);
                     if (!name) return '';
                     if (!_rtgsIsLocked(t)) return name;
-                    return `${name} <span class="rtgs-lock" title="Locked tournament" aria-label="Locked tournament">&#128274;</span>`;
+                    return `${name} <span class="rtgs-lock" title="Locked tournament" aria-label="Locked tournament">&#128274;&#65038;</span>`;
                 }
                 function _appendRoadToGSCategories(parts, list) {
                     const order = ['GS', 'WTA 1000', 'WTA 500', 'WTA 250', 'WTA 125', 'ITF', 'OTHER'];
@@ -10969,7 +10971,7 @@
                     order.forEach(key => {
                         const rows = groups.get(key) || [];
                         if (!rows.length) return;
-                        parts.push(`<tr class="roadtogs-separator"><td colspan="5">${_rtgsCategoryLabel(key)}</td></tr>`);
+                        parts.push(`<tr class="roadtogs-category-separator"><td colspan="5">${_rtgsCategoryLabel(key)}</td></tr>`);
                         rows.forEach(t => {
                             parts.push(`<tr><td>${t.date}</td><td>${_rtgsTournamentLabel(t)}</td><td>${t.roundDisplay}</td><td>${t.points}</td><td${_dropClass(t.dropDate)}>${t.dropDate}</td></tr>`);
                         });
@@ -10979,7 +10981,9 @@
                 _appendRoadToGSCategories(parts, countable);
                 if (nonCountable.length > 0) {
                     parts.push('<tr class="roadtogs-separator"><td colspan="5">NON-COUNTABLE TOURNAMENTS</td></tr>');
-                    _appendRoadToGSCategories(parts, nonCountable);
+                    nonCountable.forEach(t => {
+                        parts.push(`<tr><td>${t.date}</td><td>${_rtgsTournamentLabel(t)}</td><td>${t.roundDisplay}</td><td>${t.points}</td><td${_dropClass(t.dropDate)}>${t.dropDate}</td></tr>`);
+                    });
                 }
 
                 tbody.innerHTML = parts.join('');
