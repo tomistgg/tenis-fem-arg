@@ -4359,9 +4359,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 updateEntryList();
             }}
 
-            function renderRows(list, isMain, isITF, renumber, showSeed) {{
+            function renderRows(list, isMain, isITF, renumber, showSeed, seedMap = null) {{
                 const prioCell = p => isITF ? `<td>${{p.priority||''}}</td>` : '';
-                const seedCell = p => showSeed ? `<td>${{Number.isInteger(p.seed) ? p.seed : '-'}}</td>` : '';
+                const seedCell = p => {{
+                    if (!showSeed) return '';
+                    if (seedMap && seedMap.has(p)) return `<td>${{seedMap.get(p)}}</td>`;
+                    return `<td>${{Number.isInteger(p.seed) ? p.seed : '-'}}</td>`;
+                }};
                 let html = '';
                 list.forEach((p, i) => {{
                     const displayPos = renumber ? (i + 1) : p.pos;
@@ -4450,10 +4454,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         ...pool.slice(0, regularSpots),
                         ...mainJRPrio1,
                     ];
+                    const seedSlots = Math.max(0, ...main
+                        .map(p => Number.isInteger(p.seed) ? p.seed : 0));
+                    const prioSeedCandidates = displayMain
+                        .filter(p => !(String(p.name || '').startsWith('(')))
+                        .sort(byRank)
+                        .slice(0, seedSlots);
+                    const prioSeedMap = new Map(prioSeedCandidates.map((p, i) => [p, i + 1]));
                     const remainingPool = pool.slice(regularSpots);
                     const displayQual = remainingPool.slice(0, qual.length);
                     const displayAlt  = remainingPool.slice(qual.length);
-                    html += renderRows(displayMain, true, isITF, true, showSeed);
+                    html += renderRows(displayMain, true, isITF, true, showSeed, prioSeedMap);
                     if (displayQual.length > 0) {{
                         html += `<tr class="divider-row"><td colspan="${{cols}}">QUALIFYING</td></tr>`;
                         html += renderRows(displayQual, false, isITF, true, showSeed);
