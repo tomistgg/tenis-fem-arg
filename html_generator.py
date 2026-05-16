@@ -2579,7 +2579,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .gs-cutoff-table col.gs-col-d {{ width: 20% !important; }}
                 .gs-cutoff-table col.gs-col-cutoff {{ width: 30% !important; }}
                 .gs-cutoff-table col.gs-col-acc, .gs-cutoff-table col.gs-col-est {{ width: 25% !important; }}
-                .roadtogs-legend {{ font-size: 9px !important; }}
+                .roadtogs-legend {{ font-size: 8px !important; }}
             }}
 
             @media (max-width: 480px) {{
@@ -3520,7 +3520,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                     <div class="roadtogs-legend">
                         <div>ACC. PTS = Points accumulated that count towards the ranking as of the cutoff date.</div>
-                        <div>EST. NEED = Estimated points needed to qualify for the Grand Slam: {GS_THRESHOLD_Q} for Q, {GS_THRESHOLD_MD} for MD (based on the previous year).</div>
+                        <div>EST. NEED = Estimated points needed to qualify for the Grand Slam: {GS_THRESHOLD_Q} for Q, {GS_THRESHOLD_MD} for MD. Cutoffs 2025 = AO 316/756 - RG 326/742 - WB 323/730 - US 323/730<br>Cutoffs 2026 = AO 308/754 - RG 283/786</div>
                     </div>
                     <div class="content-card">
                         <div class="table-wrapper">
