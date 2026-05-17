@@ -5,7 +5,7 @@
     "week": "Week of May 4",
     "startDate": "2026-05-05",
     "endDate": "2026-05-17",
-    "fetchedAt": "2026-05-17T15:06:21Z",
+    "fetchedAt": "2026-05-17T17:07:04Z",
     "draws": {
       "QS": {
         "tournament_name": "Internazionali BNL d'Italia",
@@ -5603,7 +5603,7 @@
     "week": "Week of May 11",
     "startDate": "2026-05-11T00:00:00",
     "endDate": "2026-05-17T00:00:00",
-    "fetchedAt": "2026-05-17T15:10:11Z",
+    "fetchedAt": "2026-05-17T17:11:28Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -10011,7 +10011,7 @@
     "week": "Week of May 11",
     "startDate": "2026-05-11T00:00:00",
     "endDate": "2026-05-17T00:00:00",
-    "fetchedAt": "2026-05-17T15:07:19Z",
+    "fetchedAt": "2026-05-17T17:08:23Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -10677,6 +10677,12 @@
             "match_num": 1,
             "winner_name": "E. Maklakova",
             "score": "57 61 75"
+          },
+          {
+            "round": 5,
+            "match_num": 0,
+            "winner_name": "C. Zanolini",
+            "score": "26 62 63"
           }
         ],
         "byes": [],
@@ -13715,7 +13721,7 @@
     "week": "Week of May 11",
     "startDate": "2026-05-11",
     "endDate": "2026-05-17",
-    "fetchedAt": "2026-05-17T15:06:21Z",
+    "fetchedAt": "2026-05-17T17:07:04Z",
     "draws": {
       "QS": {
         "tournament_name": "Trophee Clarins",
@@ -14252,7 +14258,7 @@
     "week": "Week of May 11",
     "startDate": "2026-05-11",
     "endDate": "2026-05-16",
-    "fetchedAt": "2026-05-17T15:06:21Z",
+    "fetchedAt": "2026-05-17T17:07:04Z",
     "draws": {
       "QS": {
         "tournament_name": "Parma Ladies Open presented by",
@@ -15539,7 +15545,7 @@
     "week": "Week of May 11",
     "startDate": "2026-05-11T00:00:00",
     "endDate": "2026-05-17T00:00:00",
-    "fetchedAt": "2026-05-17T15:08:22Z",
+    "fetchedAt": "2026-05-17T17:09:24Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -16277,6 +16283,12 @@
             "match_num": 1,
             "winner_name": "E. Cayetano",
             "score": "63 36 75"
+          },
+          {
+            "round": 5,
+            "match_num": 0,
+            "winner_name": "E. Cayetano",
+            "score": "75 61"
           }
         ],
         "byes": [],
@@ -16297,11 +16309,11 @@
     "week": "Week of May 18",
     "startDate": "2026-05-17",
     "endDate": "2026-05-23",
-    "fetchedAt": "2026-05-17T15:06:21Z",
+    "fetchedAt": "2026-05-17T17:07:04Z",
     "draws": {
       "QS": {
-        "tournament_name": "NTERNATIONAUX DE STRASBOURG",
-        "location": "Presented by MAMMOTION",
+        "tournament_name": "INTERNATIONAUX DE STRASBOURG Presented by",
+        "location": "MAMMOTION",
         "dates": "STRASBOURG, FRA",
         "prize": "",
         "surface": "",
@@ -16421,14 +16433,88 @@
             "country": "AUS"
           }
         ],
-        "matches": [],
+        "matches": [
+          {
+            "round": 1,
+            "match_num": 0,
+            "winner_name": "M. Kessler",
+            "score": "75 62"
+          },
+          {
+            "round": 1,
+            "match_num": 1,
+            "winner_name": "O. Selekhmeteva",
+            "score": "16 64 61"
+          },
+          {
+            "round": 1,
+            "match_num": 2,
+            "winner_name": "Y. Putintseva",
+            "score": "64 63"
+          },
+          {
+            "round": 1,
+            "match_num": 3,
+            "winner_name": "O. Oliynykova",
+            "score": "61 62"
+          },
+          {
+            "round": 1,
+            "match_num": 4,
+            "winner_name": "T. Gibson",
+            "score": "62 36 60"
+          },
+          {
+            "round": 1,
+            "match_num": 5,
+            "winner_name": "S. Zhang",
+            "score": "64 62"
+          },
+          {
+            "round": 1,
+            "match_num": 6,
+            "winner_name": "A. Zakharova",
+            "score": "46 63 63"
+          },
+          {
+            "round": 1,
+            "match_num": 7,
+            "winner_name": "D. Kasatkina",
+            "score": "63 61"
+          },
+          {
+            "round": 2,
+            "match_num": 0,
+            "winner_name": "M. Kessler",
+            "score": "64 64"
+          },
+          {
+            "round": 2,
+            "match_num": 1,
+            "winner_name": "O. Oliynykova",
+            "score": "64 64"
+          },
+          {
+            "round": 2,
+            "match_num": 2,
+            "winner_name": "T. Gibson",
+            "score": "61 64"
+          },
+          {
+            "round": 2,
+            "match_num": 3,
+            "winner_name": "D. Kasatkina",
+            "score": "64 62"
+          }
+        ],
         "byes": [],
         "qualifiers": [],
         "round_labels": [
           "Q1",
-          "Q2"
+          "Q2",
+          "Qualifier"
         ],
-        "num_rounds": 2
+        "num_rounds": 3
       },
       "MDS": {
         "tournament_name": "INTERNATIONAUX DE STRASBOURG Presented by",
@@ -16645,6 +16731,18 @@
           },
           {
             "round": 1,
+            "match_num": 1,
+            "winner_name": "L. Boisson",
+            "score": "63 76(4)"
+          },
+          {
+            "round": 1,
+            "match_num": 3,
+            "winner_name": "L. Fernandez",
+            "score": "61 75"
+          },
+          {
+            "round": 1,
             "match_num": 4,
             "winner_name": "C. Tauson",
             "score": ""
@@ -16654,6 +16752,12 @@
             "match_num": 6,
             "winner_name": "P. Stearns",
             "score": "63 61"
+          },
+          {
+            "round": 1,
+            "match_num": 10,
+            "winner_name": "E. Navarro",
+            "score": "61 64"
           },
           {
             "round": 1,
@@ -16698,7 +16802,7 @@
     "week": "Week of May 18",
     "startDate": "2026-05-18",
     "endDate": "2026-05-23",
-    "fetchedAt": "2026-05-17T15:06:21Z",
+    "fetchedAt": "2026-05-17T17:07:04Z",
     "draws": {
       "QS": {
         "tournament_name": "Grand Prix SAR La Princesse Lalla Meryem",
@@ -16870,6 +16974,30 @@
             "match_num": 7,
             "winner_name": "A. Smith",
             "score": "61 63"
+          },
+          {
+            "round": 2,
+            "match_num": 0,
+            "winner_name": "F. Ferro",
+            "score": "67(1) 60 63"
+          },
+          {
+            "round": 2,
+            "match_num": 1,
+            "winner_name": "V. Zvonareva",
+            "score": "64 64"
+          },
+          {
+            "round": 2,
+            "match_num": 2,
+            "winner_name": "C. Hennemann",
+            "score": "64 26 62"
+          },
+          {
+            "round": 2,
+            "match_num": 3,
+            "winner_name": "L. Zaar",
+            "score": "62 64"
           }
         ],
         "byes": [],
@@ -16896,6 +17024,13 @@
             "entry": "",
             "name": "TJEN, Janice",
             "country": "INA"
+          },
+          {
+            "pos": 2,
+            "seed": "",
+            "entry": "Q",
+            "name": "HENNEMANN, Caijsa",
+            "country": "SWE"
           },
           {
             "pos": 3,
@@ -17059,6 +17194,13 @@
             "country": "CRO"
           },
           {
+            "pos": 26,
+            "seed": "",
+            "entry": "Q",
+            "name": "ZVONAREVA, Vera",
+            "country": ""
+          },
+          {
             "pos": 27,
             "seed": "",
             "entry": "",
@@ -17073,11 +17215,25 @@
             "country": "UKR"
           },
           {
+            "pos": 29,
+            "seed": "",
+            "entry": "Q",
+            "name": "FERRO, Fiona",
+            "country": "FRA"
+          },
+          {
             "pos": 30,
             "seed": "",
             "entry": "",
             "name": "KOVINIC, Danka",
             "country": "MNE"
+          },
+          {
+            "pos": 31,
+            "seed": "",
+            "entry": "Q",
+            "name": "ZAAR, Lisa",
+            "country": "SWE"
           },
           {
             "pos": 32,
@@ -17089,12 +17245,7 @@
         ],
         "matches": [],
         "byes": [],
-        "qualifiers": [
-          2,
-          26,
-          29,
-          31
-        ],
+        "qualifiers": [],
         "round_labels": [
           "Round of 32",
           "Round of 16",
@@ -17112,7 +17263,7 @@
     "week": "Week of May 18",
     "startDate": "2026-05-18T00:00:00",
     "endDate": "2026-05-24T00:00:00",
-    "fetchedAt": "2026-05-17T15:17:21Z",
+    "fetchedAt": "2026-05-17T17:20:31Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -17507,7 +17658,7 @@
     "week": "Week of May 18",
     "startDate": "2026-05-18T00:00:00",
     "endDate": "2026-05-24T00:00:00",
-    "fetchedAt": "2026-05-17T15:18:30Z",
+    "fetchedAt": "2026-05-17T17:21:54Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -17950,7 +18101,7 @@
     "week": "Week of May 18",
     "startDate": "2026-05-18T00:00:00",
     "endDate": "2026-05-24T00:00:00",
-    "fetchedAt": "2026-05-17T15:25:20Z",
+    "fetchedAt": "2026-05-17T17:28:28Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -18216,7 +18367,7 @@
     "week": "Week of May 18",
     "startDate": "2026-05-18T00:00:00",
     "endDate": "2026-05-24T00:00:00",
-    "fetchedAt": "2026-05-17T15:13:07Z",
+    "fetchedAt": "2026-05-17T17:14:48Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -18430,6 +18581,18 @@
             "match_num": 1,
             "winner_name": "K. Kajabova",
             "score": "75 63"
+          },
+          {
+            "round": 1,
+            "match_num": 3,
+            "winner_name": "D. Pirohova",
+            "score": "64 36 62"
+          },
+          {
+            "round": 1,
+            "match_num": 5,
+            "winner_name": "K. Mrazikova",
+            "score": "16 64 62"
           },
           {
             "round": 1,
@@ -18695,7 +18858,7 @@
     "week": "Week of May 18",
     "startDate": "2026-05-18T00:00:00",
     "endDate": "2026-05-24T00:00:00",
-    "fetchedAt": "2026-05-17T15:16:10Z",
+    "fetchedAt": "2026-05-17T17:19:13Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -19132,6 +19295,12 @@
           },
           {
             "round": 1,
+            "match_num": 7,
+            "winner_name": "K. Mandelikova",
+            "score": "61 62"
+          },
+          {
+            "round": 1,
             "match_num": 9,
             "winner_name": "a. lupo",
             "score": "W/O"
@@ -19168,15 +19337,51 @@
           },
           {
             "round": 1,
+            "match_num": 17,
+            "winner_name": "A. Hercegovac-Sadikovic",
+            "score": "61 62"
+          },
+          {
+            "round": 1,
+            "match_num": 18,
+            "winner_name": "N. Barbir",
+            "score": "60 60"
+          },
+          {
+            "round": 1,
             "match_num": 19,
             "winner_name": "I. Cherny",
             "score": "61 60"
           },
           {
             "round": 1,
+            "match_num": 21,
+            "winner_name": "V. Borodulina",
+            "score": "61 61"
+          },
+          {
+            "round": 1,
+            "match_num": 25,
+            "winner_name": "V. Mrazova",
+            "score": "60 60"
+          },
+          {
+            "round": 1,
+            "match_num": 26,
+            "winner_name": "S. Knez",
+            "score": "62 62"
+          },
+          {
+            "round": 1,
             "match_num": 29,
             "winner_name": "M. Dobric",
             "score": "W/O"
+          },
+          {
+            "round": 1,
+            "match_num": 30,
+            "winner_name": "C. Jerolimov",
+            "score": "60 64"
           },
           {
             "round": 1,
@@ -19210,7 +19415,7 @@
     "week": "Week of May 18",
     "startDate": "2026-05-18T00:00:00",
     "endDate": "2026-05-24T00:00:00",
-    "fetchedAt": "2026-05-17T15:22:40Z",
+    "fetchedAt": "2026-05-17T17:26:00Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -19364,7 +19569,7 @@
     "week": "Week of May 18",
     "startDate": "2026-05-18T00:00:00",
     "endDate": "2026-05-24T00:00:00",
-    "fetchedAt": "2026-05-17T15:26:30Z",
+    "fetchedAt": "2026-05-17T17:29:48Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -19606,7 +19811,7 @@
     "week": "Week of May 18",
     "startDate": "2026-05-18T00:00:00",
     "endDate": "2026-05-24T00:00:00",
-    "fetchedAt": "2026-05-17T15:27:54Z",
+    "fetchedAt": "2026-05-17T17:31:04Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -19856,7 +20061,7 @@
     "week": "Week of May 18",
     "startDate": "2026-05-18T00:00:00",
     "endDate": "2026-05-23T00:00:00",
-    "fetchedAt": "2026-05-17T15:13:29Z",
+    "fetchedAt": "2026-05-17T17:16:33Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -20182,6 +20387,12 @@
             "match_num": 14,
             "winner_name": "S. Horacek",
             "score": "63 63"
+          },
+          {
+            "round": 1,
+            "match_num": 15,
+            "winner_name": "I. Faltinger",
+            "score": "75 63"
           }
         ],
         "byes": [],
@@ -20388,7 +20599,7 @@
     "week": "Week of May 18",
     "startDate": "2026-05-18T00:00:00",
     "endDate": "2026-05-24T00:00:00",
-    "fetchedAt": "2026-05-17T15:14:45Z",
+    "fetchedAt": "2026-05-17T17:17:51Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -20774,6 +20985,12 @@
             "match_num": 29,
             "winner_name": "R. Caballero Chica",
             "score": "60 60"
+          },
+          {
+            "round": 1,
+            "match_num": 30,
+            "winner_name": "B. Ivanova",
+            "score": "75 76(6)"
           }
         ],
         "byes": [
@@ -20813,7 +21030,7 @@
     "week": "Week of May 18",
     "startDate": "2026-05-18T00:00:00",
     "endDate": "2026-05-24T00:00:00",
-    "fetchedAt": "2026-05-17T15:21:21Z",
+    "fetchedAt": "2026-05-17T17:24:36Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -21162,7 +21379,7 @@
     "week": "Week of May 18",
     "startDate": "2026-05-18T00:00:00",
     "endDate": "2026-05-24T00:00:00",
-    "fetchedAt": "2026-05-17T15:23:56Z",
+    "fetchedAt": "2026-05-17T17:27:08Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -21373,6 +21590,12 @@
         "matches": [
           {
             "round": 1,
+            "match_num": 1,
+            "winner_name": "G. Mais",
+            "score": "62 60"
+          },
+          {
+            "round": 1,
             "match_num": 3,
             "winner_name": "A. Zholbolat",
             "score": "W/O"
@@ -21397,6 +21620,12 @@
           },
           {
             "round": 1,
+            "match_num": 9,
+            "winner_name": "M. Favier",
+            "score": "60 60"
+          },
+          {
+            "round": 1,
             "match_num": 10,
             "winner_name": "L. Thomas Iglesias",
             "score": "61 60"
@@ -21409,9 +21638,27 @@
           },
           {
             "round": 1,
+            "match_num": 12,
+            "winner_name": "G. Kawano Cho",
+            "score": "61 64"
+          },
+          {
+            "round": 1,
+            "match_num": 13,
+            "winner_name": "E. Lopez",
+            "score": "60 62"
+          },
+          {
+            "round": 1,
             "match_num": 14,
             "winner_name": "M. Tahiri",
             "score": "60 60"
+          },
+          {
+            "round": 1,
+            "match_num": 15,
+            "winner_name": "Y. Chainykova",
+            "score": "63 61"
           }
         ],
         "byes": [
@@ -21434,7 +21681,7 @@
     "week": "Week of May 18",
     "startDate": "2026-05-18T00:00:00",
     "endDate": "2026-05-24T00:00:00",
-    "fetchedAt": "2026-05-17T15:12:36Z",
+    "fetchedAt": "2026-05-17T17:14:22Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -21686,7 +21933,7 @@
     "week": "Week of May 18",
     "startDate": "2026-05-18T00:00:00",
     "endDate": "2026-05-24T00:00:00",
-    "fetchedAt": "2026-05-17T15:19:46Z",
+    "fetchedAt": "2026-05-17T17:23:16Z",
     "draws": {
       "QS": {
         "tournament_name": "",
@@ -21924,6 +22171,235 @@
         ],
         "matches": [],
         "byes": [],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16"
+        ],
+        "num_rounds": 2
+      }
+    }
+  },
+  "w-itf-slo-2026-004": {
+    "name": "W50 Portorož",
+    "level": "W50",
+    "week": "Week of May 18",
+    "startDate": "2026-05-18T00:00:00",
+    "endDate": "2026-05-24T00:00:00",
+    "fetchedAt": "2026-05-17T17:16:01Z",
+    "draws": {
+      "QS": {
+        "tournament_name": "",
+        "location": "",
+        "dates": "",
+        "prize": "",
+        "surface": "",
+        "draw_type": "",
+        "draw_size": 32,
+        "players": [
+          {
+            "pos": 1,
+            "seed": "1",
+            "entry": "",
+            "name": "STEUR, Joelle Lilly Sophie",
+            "country": "GER"
+          },
+          {
+            "pos": 3,
+            "seed": "",
+            "entry": "",
+            "name": "FUSIL, Luisa",
+            "country": "SLO"
+          },
+          {
+            "pos": 4,
+            "seed": "16",
+            "entry": "",
+            "name": "SORO, Claudia",
+            "country": "ITA"
+          },
+          {
+            "pos": 5,
+            "seed": "2",
+            "entry": "",
+            "name": "TSYGOUROVA, Katerina",
+            "country": "SUI"
+          },
+          {
+            "pos": 7,
+            "seed": "",
+            "entry": "",
+            "name": "YANEVA, Veritsa",
+            "country": "SLO"
+          },
+          {
+            "pos": 8,
+            "seed": "12",
+            "entry": "WC",
+            "name": "PLOSNIK, Ela",
+            "country": "SLO"
+          },
+          {
+            "pos": 9,
+            "seed": "3",
+            "entry": "",
+            "name": "ZELTINA, Beatrise",
+            "country": "LAT"
+          },
+          {
+            "pos": 11,
+            "seed": "",
+            "entry": "WC",
+            "name": "PETELINSEK, Pia",
+            "country": "SLO"
+          },
+          {
+            "pos": 12,
+            "seed": "13",
+            "entry": "",
+            "name": "KRZNARIC UYGUNGUL, Noa",
+            "country": "CRO"
+          },
+          {
+            "pos": 13,
+            "seed": "4",
+            "entry": "",
+            "name": "MADUZZI, Gaia",
+            "country": "ITA"
+          },
+          {
+            "pos": 15,
+            "seed": "",
+            "entry": "",
+            "name": "MATUELLA, Finja",
+            "country": "ITA"
+          },
+          {
+            "pos": 16,
+            "seed": "11",
+            "entry": "",
+            "name": "WEBLEY-SMITH, Emily",
+            "country": "GBR"
+          },
+          {
+            "pos": 17,
+            "seed": "5",
+            "entry": "",
+            "name": "SZABO, Briana",
+            "country": "ROU"
+          },
+          {
+            "pos": 18,
+            "seed": "",
+            "entry": "WC",
+            "name": "RIBNIKAR, Mia Sara",
+            "country": "SLO"
+          },
+          {
+            "pos": 19,
+            "seed": "",
+            "entry": "",
+            "name": "ZOPPAS, Giulia",
+            "country": "ITA"
+          },
+          {
+            "pos": 20,
+            "seed": "10",
+            "entry": "",
+            "name": "VOZNIAK, Khrystyna",
+            "country": "UKR"
+          },
+          {
+            "pos": 21,
+            "seed": "6",
+            "entry": "",
+            "name": "MARIC, Dunja",
+            "country": "SRB"
+          },
+          {
+            "pos": 22,
+            "seed": "",
+            "entry": "",
+            "name": "MORATELLI, Angelica",
+            "country": "ITA"
+          },
+          {
+            "pos": 23,
+            "seed": "",
+            "entry": "",
+            "name": "MARENK, Meta",
+            "country": "SLO"
+          },
+          {
+            "pos": 24,
+            "seed": "15",
+            "entry": "",
+            "name": "BUTINA JAZBEC, Beti",
+            "country": "SLO"
+          },
+          {
+            "pos": 25,
+            "seed": "7",
+            "entry": "",
+            "name": "DI GIROLAMI, Tilwith",
+            "country": "BEL"
+          },
+          {
+            "pos": 26,
+            "seed": "",
+            "entry": "",
+            "name": "ZNUDERL, Anamari",
+            "country": "SLO"
+          },
+          {
+            "pos": 27,
+            "seed": "",
+            "entry": "",
+            "name": "PRUTEAN, Sofia",
+            "country": "ROU"
+          },
+          {
+            "pos": 28,
+            "seed": "14",
+            "entry": "WC",
+            "name": "PEER, Lisa",
+            "country": "ITA"
+          },
+          {
+            "pos": 29,
+            "seed": "8",
+            "entry": "",
+            "name": "TOMASE, Elza",
+            "country": "LAT"
+          },
+          {
+            "pos": 30,
+            "seed": "",
+            "entry": "",
+            "name": "CAKARUN, Nika",
+            "country": "CRO"
+          },
+          {
+            "pos": 31,
+            "seed": "",
+            "entry": "WC",
+            "name": "PETERNEL, Zoja",
+            "country": "SLO"
+          },
+          {
+            "pos": 32,
+            "seed": "9",
+            "entry": "",
+            "name": "HEJTMANEK, Amelie Justine",
+            "country": "CZE"
+          }
+        ],
+        "matches": [],
+        "byes": [
+          2,
+          6,
+          10,
+          14
+        ],
         "round_labels": [
           "Round of 32",
           "Round of 16"
