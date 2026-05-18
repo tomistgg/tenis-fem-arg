@@ -852,6 +852,7 @@ def build_all_tournament_groups(driver):
             tournament_groups[week_label][item['tournamentKey'].lower()] = {
                 "name": t_name,
                 "level": get_itf_level(t_name),
+                "surface": item.get('surfaceDesc') or item.get('surface') or "",
                 "startDate": item['startDate'],
                 "endDate": item.get('endDate', None)
             }
@@ -864,6 +865,7 @@ def build_all_tournament_groups(driver):
             tournament_snapshot[key] = {
                 "name": info.get("name", key),
                 "level": info.get("level", ""),
+                "surface": info.get("surface", ""),
                 "startDate": info.get("startDate"),
                 "endDate": info.get("endDate"),
                 "week": week,

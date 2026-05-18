@@ -134,6 +134,7 @@ def build_tournament_groups():
         else:
             display_name = f"{level} {city}{suffix}"
         display_name = fix_display_name(display_name)
+        surface = tournament.get("surface") or tournament.get("surfaceType") or tournament.get("surfaceCode") or ""
 
         if week_label not in tournament_groups:
             tournament_groups[week_label] = {}
@@ -141,6 +142,7 @@ def build_tournament_groups():
         tournament_groups[week_label][t_url] = {
             "name": display_name,
             "level": level,
+            "surface": surface,
             "startDate": start_date,
             "endDate": end_date
         }

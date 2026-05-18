@@ -90,23 +90,50 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     wta_draw_sizes = [t for t in all_draw_sizes if t.get('source') == 'WTA']
 
     # Build tournament name → surface lookup (used by Schedule and Entry Lists)
-    _SCHED_SURFACE_COLORS = {"clay": "#f97316", "hard": "#3b82f6", "grass": "#22c55e"}
+    _SCHED_SURFACE_COLORS = {
+        "clay": "#f97316",
+        "hard": "#3b82f6",
+        "grass": "#22c55e",
+        "carpet": "#a855f7",
+    }
     _name_to_surface = {}
+
+    def _normalize_surface_key(surface_value):
+        s = (surface_value or "").strip().lower()
+        if "clay" in s:
+            return "clay"
+        if "grass" in s:
+            return "grass"
+        if "carpet" in s:
+            return "carpet"
+        if "hard" in s:
+            return "hard"
+        return ""
+
+    def _register_surface(name_value, surface_value):
+        _n = (name_value or "").strip()
+        _s = (surface_value or "").strip()
+        if not _n or not _s:
+            return
+        _name_to_surface[_n.lower()] = _s
+        _base_n = re.sub(r'\s+\d+$', '', _n).strip()
+        if _base_n != _n:
+            _name_to_surface.setdefault(_base_n.lower(), _s)
+
     for _cw in (calendar_data or []):
         for _ck in ["gs", "wta_tour", "wta_125", "itf"]:
             for _ct in _cw.get("columns", {}).get(_ck, {}).values():
                 for _t in _ct:
-                    _n = _t.get("name", "").strip()
-                    _s = _t.get("surface", "")
-                    if _n and _s:
-                        _name_to_surface[_n.lower()] = _s
-                        _base_n = re.sub(r'\s+\d+$', '', _n).strip()
-                        if _base_n != _n:
-                            _name_to_surface.setdefault(_base_n.lower(), _s)
+                    _register_surface(_t.get("name", ""), _t.get("surface", ""))
+
+    for _week_tourneys in (tournament_groups or {}).values():
+        for _t_info in _week_tourneys.values():
+            _register_surface(_t_info.get("name", ""), _t_info.get("surface", ""))
 
     def _sched_dot(entry):
-        base = re.sub(r'\s*\((Q|ALT(?:\s+\d+)?)\)\s*$', '', entry).strip()
-        color = _SCHED_SURFACE_COLORS.get(_name_to_surface.get(base.lower(), "").lower(), "")
+        plain = re.sub(r'<[^>]+>', '', entry or '').strip()
+        base = re.sub(r'\s*\((Q|ALT(?:\s+\d+)?)\)\s*$', '', plain, flags=re.IGNORECASE).strip()
+        color = _SCHED_SURFACE_COLORS.get(_normalize_surface_key(_name_to_surface.get(base.lower(), "")), "")
         if not color:
             return ""
         return f'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:{color};margin-right:4px;vertical-align:middle;flex-shrink:0;"></span>'
@@ -209,9 +236,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         for week in week_keys:
             val = schedule_map.get(p['Key'], {}).get(week, "\u2014")
             val = val.replace("Sharm ElSheikh", "Sharm ES")
-            parts = val.split("<br>")
+            val = re.sub(r'</div>\s*<div[^>]*>', '<br>', val, flags=re.IGNORECASE)
+            val = re.sub(r'^<div[^>]*>\s*', '', val, flags=re.IGNORECASE)
+            val = re.sub(r'\s*</div>$', '', val, flags=re.IGNORECASE)
+            parts = [part for part in val.split("<br>") if part]
             rendered = "<br>".join(
-                (_sched_dot(e) + (f"<b>{e}</b>" if "(Q)" not in e and e != "\u2014" else e))
+                (_sched_dot(e) + (f"<b>{e}</b>" if "(Q)" not in re.sub(r'<[^>]+>', '', e) and re.sub(r'<[^>]+>', '', e).strip() != "\u2014" else e))
                 for e in parts
             )
             row += f'<td class="col-week">{rendered}</td>'
