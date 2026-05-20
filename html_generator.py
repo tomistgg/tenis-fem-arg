@@ -3593,7 +3593,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     <div class="gallery-empty" id="gallery-empty" style="display:none;">
                         No photos found for the selected filters.
                     </div>
-                    <p class="gallery-copyright">© 2026 Tomás Schiter | WTARG. All rights reserved. Unauthorized use or reproduction of these photos without permission is prohibited. For licensing inquiries: <a href="mailto:schiter.tomas@gmail.com">schiter.tomas@gmail.com</a></p>
+                    <p class="gallery-copyright">© 2026 Tomás Schiter | WTARG. All rights reserved. Unauthorized use or reproduction of these images is prohibited. Note: Sports imagery displayed here represents personal portfolio/speculative work and does not imply official tournament accreditation or commercial endorsement.</p>
                 </div>
 
                 <div id="view-draws" class="single-layout" style="display: none;">
