@@ -3,10 +3,6 @@ import time
 import pandas as pd
 import os
 import requests
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime, timedelta
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -39,36 +35,36 @@ def fetch_itf_ids_to_json(keys_list):
     if not keys_list:
         return "[]"
 
-    chrome_options = Options()
-    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-    
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-
     results = []
-    try:
-        driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
-        time.sleep(5)
+    session = requests.Session()
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Referer": "https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/"
+    }
 
-        for key in keys_list:
-            api_url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
-            
-            print(f"Fetching ID for {key}...")
-            driver.get(api_url)
-            time.sleep(1) 
-            
+    for key in keys_list:
+        api_url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
+        print(f"Fetching ID for {key}...")
+
+        data = None
+        for attempt in range(3):
             try:
-                raw_content = driver.find_element("tag name", "body").text.strip()
-                data = json.loads(raw_content)
-                
-                if data and "tournamentId" in data:
-                    results.append({
-                        "tournamentKey": key,
-                        "tournamentId": data["tournamentId"]
-                    })
+                response = session.get(api_url, headers=headers, timeout=30)
+                response.raise_for_status()
+                data = response.json()
+                break
             except Exception as e:
-                print(f"Failed for {key}: {e}")
-    finally:
-        driver.quit()
+                if attempt == 2:
+                    print(f"Failed for {key}: {e}")
+                else:
+                    time.sleep(1.0 + attempt)
+
+        if isinstance(data, dict) and data.get("tournamentId"):
+            results.append({
+                "tournamentKey": key,
+                "tournamentId": data["tournamentId"]
+            })
 
     return json.dumps(results)
 
@@ -313,9 +309,13 @@ if __name__ == "__main__":
         if os.path.exists(file_path):
             existing_df = pd.read_csv(file_path, dtype=str, keep_default_na=False)
             combined_df = pd.concat([existing_df, final_matches_df], ignore_index=True)
+            dedupe_keys = ["matchId", "draw", "roundName", "winnerId", "loserId"]
+            for key in dedupe_keys:
+                if key in combined_df.columns:
+                    combined_df[key] = combined_df[key].fillna("").astype(str).str.strip()
             # Keep latest fetched row per match to avoid duplicates on reruns.
             combined_df = combined_df.drop_duplicates(
-                subset=["matchId", "draw", "roundName", "winnerId", "loserId"],
+                subset=dedupe_keys,
                 keep="last"
             )
             combined_df.to_csv(file_path, index=False, encoding='utf-8-sig')
