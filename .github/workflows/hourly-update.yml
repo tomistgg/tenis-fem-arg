@@ -48,6 +48,10 @@ jobs:
         id: itf_weekly
         run: python populate_data/itf_load_new.py
 
+      - name: Run current GS ITF loader
+        id: itf_gs_current
+        run: python populate_data/itf_load_gs.py
+
       - name: Run weekly WTA loader
         id: wta_weekly
         run: python populate_data/wta_load_new.py

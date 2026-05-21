@@ -252,7 +252,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     return rows
 
 if __name__ == "__main__":
-    gs_files = ['australian_open.json', 'roland_garros.json', 'wimbledon.json', 'us_open.json']
+    gs_files = ['current_gs.json']
     all_matches = []
 
     for file_name in gs_files:
@@ -308,10 +308,20 @@ if __name__ == "__main__":
 
     if all_matches:
         final_matches_df = pd.DataFrame(all_matches)
-
         file_path = os.path.join(DATA_DIR, "gs_matches_arg.csv")
 
-        final_matches_df.to_csv(file_path, index=False, encoding='utf-8-sig')
-        print(f"\nSUCCESS! Saved {len(final_matches_df)} ARG matches to:\n{file_path}")
+        if os.path.exists(file_path):
+            existing_df = pd.read_csv(file_path, dtype=str, keep_default_na=False)
+            combined_df = pd.concat([existing_df, final_matches_df], ignore_index=True)
+            # Keep latest fetched row per match to avoid duplicates on reruns.
+            combined_df = combined_df.drop_duplicates(
+                subset=["matchId", "draw", "roundName", "winnerId", "loserId"],
+                keep="last"
+            )
+            combined_df.to_csv(file_path, index=False, encoding='utf-8-sig')
+            print(f"\nSUCCESS! Appended current GS data. Total rows now: {len(combined_df)}\n{file_path}")
+        else:
+            final_matches_df.to_csv(file_path, index=False, encoding='utf-8-sig')
+            print(f"\nSUCCESS! Saved {len(final_matches_df)} ARG matches to:\n{file_path}")
     else:
         print(f"\nFinished processing files, but no ARG matches were found.")
