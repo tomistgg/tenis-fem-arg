@@ -1,9 +1,11 @@
 import os
 import json
 import io
+import html
 import pandas as pd
 import csv
 import random
+import re
 import time
 from datetime import datetime, timedelta, timezone
 from selenium import webdriver
@@ -402,6 +404,51 @@ def _fill_missing_countries(players, entry_cache=None):
         print(f"[PDF] Filled {filled} missing country codes from WTA Rankings")
 
 
+def _normalize_schedule_text(text):
+    """Normalize a schedule label/cell for robust duplicate detection."""
+    raw = str(text or "")
+    raw = re.sub(r"(?i)<br\\s*/?>", "\n", raw)
+    raw = raw.replace("</div>", "\n")
+    raw = re.sub(r"<[^>]+>", "", raw)
+    raw = html.unescape(raw)
+    return re.sub(r"\s+", " ", raw).strip().lower()
+
+
+def _schedule_cell_contains_label(cell_html, label):
+    """Return True when a rendered schedule cell already contains a label."""
+    normalized_label = _normalize_schedule_text(label)
+    if not normalized_label:
+        return False
+    raw = str(cell_html or "")
+    raw = re.sub(r"(?i)<br\\s*/?>", "\n", raw)
+    raw = raw.replace("</div>", "\n")
+    raw = re.sub(r"<[^>]+>", "", raw)
+    raw = html.unescape(raw)
+    for line in raw.splitlines():
+        if _normalize_schedule_text(line) == normalized_label:
+            return True
+    return False
+
+
+def _append_schedule_label(target_map, player_key, week_label, label, style="append_div"):
+    """Append one schedule label with style, skipping duplicates per player/week."""
+    if not player_key or not week_label or not label:
+        return False
+    weeks = target_map.setdefault(player_key, {})
+    existing = weeks.get(week_label, "")
+    if _schedule_cell_contains_label(existing, label):
+        return False
+    if not existing:
+        weeks[week_label] = label
+    elif style == "prepend_br":
+        weeks[week_label] = f"{label}<br>{existing}"
+    elif style == "append_br":
+        weeks[week_label] = f"{existing}<br>{label}"
+    else:
+        weeks[week_label] = f'{existing}<div style="margin-top: 3px;">{label}</div>'
+    return True
+
+
 def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_set, schedule_map, unranked_schedule, players_data):
     """Add MAIN/QUAL draw players from PDF-sourced entry lists to schedule_map for ARG players.
 
@@ -445,15 +492,14 @@ def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_s
             ]:
                 if not condition:
                     continue
-                weeks = target_map.setdefault(p_upper, {})
-                if week_label not in weeks:
-                    weeks[week_label] = t_name
-                else:
-                    weeks[week_label] = t_name + "<br>" + weeks[week_label]
+                inserted = _append_schedule_label(
+                    target_map, p_upper, week_label, t_name, style="prepend_br"
+                )
                 if target_map is unranked_schedule and p_upper not in existing_player_keys:
                     players_data.append({'Player': p_upper, 'Key': p_upper, 'Rank': '-'})
                     existing_player_keys.add(p_upper)
-                added += 1
+                if inserted:
+                    added += 1
     if added:
         print(f"[PDF] Added {added} schedule entries from PDF entry lists")
 
@@ -1131,12 +1177,9 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                     p_key = p_name.upper()
                     if p_key not in arg_names_set:
                         continue
-                    if p_key not in schedule_map:
-                        schedule_map[p_key] = {}
-                    if week in schedule_map[p_key]:
-                        schedule_map[p_key][week] += f'<div style="margin-top: 3px;">{t_name}{suffix}</div>'
-                    else:
-                        schedule_map[p_key][week] = f"{t_name}{suffix}"
+                    _append_schedule_label(
+                        schedule_map, p_key, week, f"{t_name}{suffix}", style="append_div"
+                    )
                 for p in t_list:
                     p_upper = p['name'].upper()
                     if p_upper in arg_names_set:
@@ -1144,13 +1187,9 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                     if p.get('country', '') != 'ARG':
                         continue
                     suffix = '' if p.get('type') == 'MAIN' else ' (Q)'
-                    if p_upper not in unranked_schedule:
-                        unranked_schedule[p_upper] = {}
-                    if week in unranked_schedule[p_upper]:
-                        if t_name not in unranked_schedule[p_upper][week]:
-                            unranked_schedule[p_upper][week] += f'<div style="margin-top: 3px;">{t_name}{suffix}</div>'
-                    else:
-                        unranked_schedule[p_upper][week] = f"{t_name}{suffix}"
+                    _append_schedule_label(
+                        unranked_schedule, p_upper, week, f"{t_name}{suffix}", style="append_div"
+                    )
 
         # ITF tournaments
         for key, t_info in tourneys.items():
