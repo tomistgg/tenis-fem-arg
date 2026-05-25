@@ -87,7 +87,7 @@ def build_tournament_groups():
     next_monday = get_next_monday()
     current_monday = today - timedelta(days=today.weekday())
     current_monday = current_monday.replace(hour=0, minute=0, second=0, microsecond=0)
-    four_weeks_later = next_monday + timedelta(weeks=4)
+    five_weeks_later = next_monday + timedelta(weeks=5)
     is_mon_or_tue = today.weekday() == 0
 
     raw_tournaments = _fetch_wta_tournaments_raw()
@@ -123,7 +123,7 @@ def build_tournament_groups():
             # Schedule / Entry Lists keep the current week only on Monday.
             if not is_mon_or_tue:
                 continue
-        elif not (next_monday <= monday < four_weeks_later):
+        elif not (next_monday <= monday < five_weeks_later):
             continue
 
         week_label = format_week_label(monday)

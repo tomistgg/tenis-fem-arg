@@ -4531,9 +4531,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     ];
                     const seedSlots = Math.max(0, ...main
                         .map(p => Number.isInteger(p.seed) ? p.seed : 0));
+                    const bySeedRank = (a, b) => {{
+                        const sa = Number.isInteger(a.seed) ? a.seed : 9999;
+                        const sb = Number.isInteger(b.seed) ? b.seed : 9999;
+                        return (sa - sb) || byRank(a, b);
+                    }};
                     const prioSeedCandidates = displayMain
                         .filter(p => !(String(p.name || '').startsWith('(')))
-                        .sort(byRank)
+                        .sort(bySeedRank)
                         .slice(0, seedSlots);
                     const prioSeedMap = new Map(prioSeedCandidates.map((p, i) => [p, i + 1]));
                     const remainingPool = pool.slice(regularSpots);

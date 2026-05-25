@@ -61,6 +61,30 @@ ITF_CONSECUTIVE_EMPTY_THRESHOLD = 3
 
 
 GS_PDF_URLS_FILE = os.path.join(DATA_DIR, "gs_pdf_urls.json")
+EXCLUDED_ENTRY_LIST_TOURNAMENT_IDS = {"903"}  # Roland Garros
+EXCLUDED_DRAWS_TOURNAMENT_IDS = {"903"}  # Roland Garros
+
+
+def _is_excluded_entry_list_tournament(t_key, t_info=None):
+    """Return True when a tournament should be hidden from Schedule/Entry Lists."""
+    key_text = str(t_key or "").lower()
+    name_text = str((t_info or {}).get("name") or "").lower()
+    if any(f"/tournaments/{tid}/" in key_text for tid in EXCLUDED_ENTRY_LIST_TOURNAMENT_IDS):
+        return True
+    if "roland garros" in name_text:
+        return True
+    return False
+
+
+def _is_excluded_draw_tournament(t_key, t_info=None):
+    """Return True when a tournament should be hidden from Draws."""
+    key_text = str(t_key or "").lower()
+    name_text = str((t_info or {}).get("name") or "").lower()
+    if any(f"/tournaments/{tid}/" in key_text for tid in EXCLUDED_DRAWS_TOURNAMENT_IDS):
+        return True
+    if "roland garros" in name_text:
+        return True
+    return False
 
 
 def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
@@ -91,7 +115,11 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
 
     def _format_player_name(raw_name):
         """Normalize player name to display format (GivenName Surname)."""
-        parts = [p for p in str(raw_name or "").strip().split() if p]
+        raw = str(raw_name or "").strip()
+        if "," in raw:
+            surname, given = raw.split(",", 1)
+            raw = f"{given.strip()} {surname.strip()}"
+        parts = [p for p in raw.split() if p]
         if not parts:
             return ""
         # FFT compact PDFs often render names as UPPERCASE surname + mixed-case given.
@@ -104,6 +132,177 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
         if first_mixed_idx is not None and first_mixed_idx > 0:
             parts = parts[first_mixed_idx:] + parts[:first_mixed_idx]
         return " ".join(parts).title()
+
+    def _parse_rank_table_entry_tokens(seg_tokens):
+        """Parse one Wimbledon entry from tokenized text."""
+        if not seg_tokens or not seg_tokens[0].isdigit():
+            return None
+
+        pos_num = int(seg_tokens[0])
+        tokens = seg_tokens[1:]
+        if not tokens:
+            return None
+
+        # Rank is the last numeric token; optional SR immediately before it.
+        rank_idx = None
+        for i in range(len(tokens) - 1, -1, -1):
+            if re.match(r"^\d{1,4}$", tokens[i]):
+                rank_idx = i
+                break
+        if rank_idx is None:
+            return None
+        rank_num = int(tokens[rank_idx])
+        has_sr = rank_idx > 0 and tokens[rank_idx - 1].upper() == "SR"
+        name_tokens = tokens[:rank_idx - 1] if has_sr else tokens[:rank_idx]
+        raw_name = " ".join(name_tokens).strip()
+        if not raw_name:
+            return None
+
+        country = ""
+        m_country = re.search(r"\(([A-Z]{2,3})\)\s*$", raw_name)
+        if m_country:
+            country = _normalize_pdf_country(m_country.group(1))
+            raw_name = raw_name[:m_country.start()].strip()
+        else:
+            # Tolerate occasional truncated country tokens from PDF text extraction, e.g. "(E"
+            raw_name = re.sub(r"\s+\([A-Z]{1,3}\s*$", "", raw_name).strip()
+
+        rank_text = f"{rank_num} SR" if has_sr else str(rank_num)
+        return pos_num, raw_name, country, rank_num, rank_text
+
+    def _parse_rank_table_line_entries(line_text):
+        """Parse Wimbledon rank-table line text into one or more entries."""
+        text = " ".join(str(line_text or "").strip().split())
+        if not text:
+            return []
+        if not re.match(r"^\d+\s", text):
+            return []
+
+        # Primary parser: consume repeated "{pos} {name} [(CC)] [SR] {rank}" chunks.
+        # The lookahead ensures we stop before the next entry start or end-of-line.
+        entry_pat = re.compile(
+            r"""
+            (?P<pos>\d{1,3})\s+
+            (?P<name>.+?)
+            (?:\s+\((?P<country>[A-Z]{2,3})\))?
+            \s+(?:(?P<sr>SR)\s+)?
+            (?P<rank>\d{1,4})
+            (?=\s+\d{1,3}\s+[A-Z]|$)
+            """,
+            re.VERBOSE,
+        )
+        parsed_entries = []
+        for m in entry_pat.finditer(text):
+            try:
+                pos_num = int(m.group("pos"))
+                raw_name = (m.group("name") or "").strip()
+                country = _normalize_pdf_country(m.group("country") or "")
+                rank_num = int(m.group("rank"))
+            except Exception:
+                continue
+            if not raw_name:
+                continue
+            raw_name = re.sub(r"\s+\([A-Z]{1,3}\s*$", "", raw_name).strip()
+            rank_text = f"{rank_num} SR" if (m.group("sr") or "").upper() == "SR" else str(rank_num)
+            parsed_entries.append((pos_num, raw_name, country, rank_num, rank_text))
+        if parsed_entries:
+            return parsed_entries
+
+        # Fallback parser: token slicing for odd line-breaks/truncated country markers.
+        tokens = text.split()
+        starts = [0]
+        for i in range(1, len(tokens)):
+            if not tokens[i].isdigit():
+                continue
+            # A new entry start is usually followed by an uppercase surname token.
+            if i + 1 < len(tokens) and re.match(r"^[A-Z][A-Z'`.-]*$", tokens[i + 1]):
+                starts.append(i)
+        starts = sorted(set(starts))
+        for idx, start in enumerate(starts):
+            end = starts[idx + 1] if idx + 1 < len(starts) else len(tokens)
+            entry = _parse_rank_table_entry_tokens(tokens[start:end])
+            if entry:
+                parsed_entries.append(entry)
+        return parsed_entries
+
+    def _parse_rank_table_layout(pdf_obj, alt_limit):
+        """Parse Wimbledon-style pages using per-column word coordinates."""
+        parsed_main = []
+        parsed_alt = []
+
+        for page in pdf_obj.pages:
+            page_text = page.extract_text(layout=True) or page.extract_text() or ""
+            page_upper = page_text.upper()
+            page_type = "ALT" if "ALTERNATES" in page_upper else "MAIN"
+            words = page.extract_words(keep_blank_chars=False, x_tolerance=2, y_tolerance=2)
+            if not words:
+                continue
+
+            # Wimbledon lists are two-column pages; parse each column independently.
+            mid_x = page.width / 2.0
+            columns = [
+                [w for w in words if float(w["x0"]) < mid_x],
+                [w for w in words if float(w["x0"]) >= mid_x],
+            ]
+
+            for col_words in columns:
+                lines = {}
+                for w in col_words:
+                    y = round(float(w["top"]), 1)
+                    lines.setdefault(y, []).append(w)
+
+                for _, word_list in sorted(lines.items()):
+                    word_list.sort(key=lambda w: float(w["x0"]))
+                    line_text = " ".join(w["text"] for w in word_list).strip()
+                    if not line_text:
+                        continue
+                    upper = line_text.upper()
+                    if (
+                        "PLAYER NAME" in upper
+                        or "NAT" in upper and "RANK" in upper
+                        or upper.startswith("POS")
+                        or "THE CHAMPIONSHIPS" in upper
+                        or "ENTRY LIST" in upper
+                        or "LONDON" in upper
+                        or "WIMBLEDON" in upper
+                        or "ALTERNATES" in upper
+                    ):
+                        continue
+
+                    entries = _parse_rank_table_line_entries(line_text)
+                    for pos_num, raw_name, country, rank_num, rank_text in entries:
+                        player = {
+                            "name": _format_player_name(raw_name),
+                            "country": country,
+                            "rank_num": rank_num,
+                            "rank": rank_text,
+                            "pos": str(pos_num),
+                            "pos_num": pos_num,
+                            "type": page_type,
+                        }
+                        if page_type == "ALT":
+                            parsed_alt.append(player)
+                        else:
+                            parsed_main.append(player)
+
+        if not parsed_main:
+            return [], []
+
+        # Deduplicate by list position; keep first occurrence from left-to-right, top-to-bottom scan.
+        main_by_pos = {}
+        for p in sorted(parsed_main, key=lambda x: x["pos_num"]):
+            main_by_pos.setdefault(p["pos_num"], p)
+        alt_by_pos = {}
+        for p in sorted(parsed_alt, key=lambda x: x["pos_num"]):
+            alt_by_pos.setdefault(p["pos_num"], p)
+
+        parsed_main = [main_by_pos[k] for k in sorted(main_by_pos)]
+        parsed_alt = [alt_by_pos[k] for k in sorted(alt_by_pos)]
+        alt_capped = parsed_alt[:alt_limit]
+        for i, p in enumerate(alt_capped, 1):
+            p["pos"] = str(i)
+            p["pos_num"] = i
+        return parsed_main, alt_capped
 
     def _parse_tokens(tokens):
         """Parse word tokens for one player entry.
@@ -341,11 +540,18 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
         p["pos_num"] = i
 
     if all_main:
+        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+            rank_table_main, rank_table_alt = _parse_rank_table_layout(pdf, alt_limit)
+        if len(rank_table_main) > len(all_main) or (rank_table_alt and not alt_capped):
+            return rank_table_main, rank_table_alt
         return all_main, alt_capped
 
     # Fallback for newer compact-list PDFs that have no MAIN/ALTERNATES headers
     # and no status/pref columns.
     with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+        rank_table_main, rank_table_alt = _parse_rank_table_layout(pdf, alt_limit)
+        if rank_table_main:
+            return rank_table_main, rank_table_alt
         compact_main = _parse_compact_layout(pdf)
     return compact_main, []
 
@@ -461,6 +667,8 @@ def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_s
     url_to_week = {}
     for week_label, tourneys in tournament_groups.items():
         for t_url, t_info in tourneys.items():
+            if _is_excluded_entry_list_tournament(t_url, t_info):
+                continue
             url_to_week[t_url] = (week_label, t_info["name"])
 
     existing_player_keys = {p['Player'] for p in players_data}
@@ -513,6 +721,8 @@ def _get_pdf_cache_keys():
         return set()
     keys = set()
     for cache_key, url_config in pdf_urls.items():
+        if _is_excluded_entry_list_tournament(cache_key, {}):
+            continue
         keys.add(cache_key)
         if isinstance(url_config, dict) and "qual" in url_config:
             keys.add(cache_key + "#qual")
@@ -538,6 +748,8 @@ def _refresh_entry_lists_from_pdfs(entry_cache, tournament_store, tournament_gro
         return
 
     for cache_key, url_config in pdf_urls.items():
+        if _is_excluded_entry_list_tournament(cache_key, {}):
+            continue
         if isinstance(url_config, str):
             url_config = {"main": url_config}
 
@@ -1117,6 +1329,8 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
         for key, t_info in tourneys.items():
             t_name = t_info["name"]
             if key.startswith("http"):
+                if _is_excluded_entry_list_tournament(key, t_info):
+                    continue
                 t_list, status_dict = scrape_tournament_players(key, ranking_cache[md_date], ranking_cache[q_date], entry_cache.get(key, []))
                 t_list = merge_entry_list(entry_cache.get(key, []), t_list)
                 normalize_country_overrides(t_list, "name", "country")
@@ -1384,7 +1598,9 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
     active_keys = set()
     active_itf_keys = set()
     for tourneys in tournament_groups.values():
-        for t_key in tourneys.keys():
+        for t_key, t_info in tourneys.items():
+            if _is_excluded_entry_list_tournament(t_key, t_info):
+                continue
             active_keys.add(t_key)
             if not str(t_key).startswith("http"):
                 active_itf_keys.add(t_key)
@@ -1672,6 +1888,8 @@ def main():
     wta_draw_jobs = []
     for week, tourneys in (draws_tournaments or {}).items():
         for t_key, t_info in (tourneys or {}).items():
+            if _is_excluded_draw_tournament(t_key, t_info):
+                continue
             active_draw_keys.add(_canonical_draw_store_key(t_key))
             wta_draw_jobs.append((week, t_key, t_info))
 
@@ -1735,6 +1953,8 @@ def main():
     itf_draw_jobs = []
     for week, tourneys in (itf_draws_tournaments or {}).items():
         for t_key, t_info in (tourneys or {}).items():
+            if _is_excluded_draw_tournament(t_key, t_info):
+                continue
             store_key = _canonical_draw_store_key(t_key)
             active_draw_keys.add(store_key)
             tid = (t_info or {}).get("tournamentId")
@@ -1886,6 +2106,14 @@ def main():
         if end_date < today:
             keys_to_delete.append(t_key)
     for t_key in keys_to_delete:
+        draws_store.pop(t_key, None)
+
+    # Always remove explicitly excluded draws (e.g., Roland Garros) from cache/output.
+    excluded_draw_keys = [
+        k for k, v in (draws_store or {}).items()
+        if _is_excluded_draw_tournament(k, v if isinstance(v, dict) else None)
+    ]
+    for t_key in excluded_draw_keys:
         draws_store.pop(t_key, None)
 
     # Persist draws cache so a successful draw doesn't disappear on a later failed run.
