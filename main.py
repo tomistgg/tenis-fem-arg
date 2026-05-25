@@ -226,7 +226,7 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
         return parsed_entries
 
     def _parse_rank_table_layout(pdf_obj, alt_limit):
-        """Parse Wimbledon-style pages using per-column word coordinates."""
+        """Parse Wimbledon-style pages using layout-preserving text extraction."""
         parsed_main = []
         parsed_alt = []
 
@@ -234,70 +234,28 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
             page_text = page.extract_text(layout=True) or page.extract_text() or ""
             page_upper = page_text.upper()
             page_type = "ALT" if "ALTERNATES" in page_upper else "MAIN"
-            words = page.extract_words(keep_blank_chars=False, x_tolerance=2, y_tolerance=2)
-            if not words:
-                continue
-
-            # Wimbledon lists are two-column pages; parse each column independently.
-            mid_x = page.width / 2.0
-            columns = [
-                [w for w in words if float(w["x0"]) < mid_x],
-                [w for w in words if float(w["x0"]) >= mid_x],
-            ]
-
-            for col_words in columns:
-                lines = {}
-                for w in col_words:
-                    y = round(float(w["top"]), 1)
-                    lines.setdefault(y, []).append(w)
-
-                for _, word_list in sorted(lines.items()):
-                    word_list.sort(key=lambda w: float(w["x0"]))
-                    line_text = " ".join(w["text"] for w in word_list).strip()
-                    if not line_text:
-                        continue
-                    upper = line_text.upper()
-                    if (
-                        "PLAYER NAME" in upper
-                        or "NAT" in upper and "RANK" in upper
-                        or upper.startswith("POS")
-                        or "THE CHAMPIONSHIPS" in upper
-                        or "ENTRY LIST" in upper
-                        or "LONDON" in upper
-                        or "WIMBLEDON" in upper
-                        or "ALTERNATES" in upper
-                    ):
-                        continue
-
-                    entries = _parse_rank_table_line_entries(line_text)
-                    for pos_num, raw_name, country, rank_num, rank_text in entries:
-                        player = {
-                            "name": _format_player_name(raw_name),
-                            "country": country,
-                            "rank_num": rank_num,
-                            "rank": rank_text,
-                            "pos": str(pos_num),
-                            "pos_num": pos_num,
-                            "type": page_type,
-                        }
-                        if page_type == "ALT":
-                            parsed_alt.append(player)
-                        else:
-                            parsed_main.append(player)
+            for line in page_text.splitlines():
+                entries = _parse_rank_table_line_entries(line)
+                for pos_num, raw_name, country, rank_num, rank_text in entries:
+                    player = {
+                        "name": _format_player_name(raw_name),
+                        "country": country,
+                        "rank_num": rank_num,
+                        "rank": rank_text,
+                        "pos": str(pos_num),
+                        "pos_num": pos_num,
+                        "type": page_type,
+                    }
+                    if page_type == "ALT":
+                        parsed_alt.append(player)
+                    else:
+                        parsed_main.append(player)
 
         if not parsed_main:
             return [], []
 
-        # Deduplicate by list position; keep first occurrence from left-to-right, top-to-bottom scan.
-        main_by_pos = {}
-        for p in sorted(parsed_main, key=lambda x: x["pos_num"]):
-            main_by_pos.setdefault(p["pos_num"], p)
-        alt_by_pos = {}
-        for p in sorted(parsed_alt, key=lambda x: x["pos_num"]):
-            alt_by_pos.setdefault(p["pos_num"], p)
-
-        parsed_main = [main_by_pos[k] for k in sorted(main_by_pos)]
-        parsed_alt = [alt_by_pos[k] for k in sorted(alt_by_pos)]
+        parsed_main.sort(key=lambda p: p["pos_num"])
+        parsed_alt.sort(key=lambda p: p["pos_num"])
         alt_capped = parsed_alt[:alt_limit]
         for i, p in enumerate(alt_capped, 1):
             p["pos"] = str(i)
