@@ -10304,7 +10304,16 @@
                         const mt = (r['MATCH_TYPE'] || '').trim();
                         const isGenuine2Week = mt === 'GS' || cat === 'WTA 1000' || cat === 'Premier Mandatory' || cat === 'Premier 5';
                         if (draw === 'M' && isGenuine2Week && _rtgs_twoWeekNames.some(n => tName.includes(n))) {
-                            const mon = _rtgs_monday(r['DATE'] || '');
+                            const ds = r['DATE'] || '';
+                            let mon = _rtgs_monday(ds);
+                            // For freeze detection only: if a 2-week event's first main-draw match is
+                            // on Sunday, treat it as part of the upcoming Monday week.
+                            const d0 = new Date(ds);
+                            if (mon && d0.getUTCDay() === 0) {
+                                const m2 = new Date(mon);
+                                m2.setUTCDate(m2.getUTCDate() + 7);
+                                mon = m2.toISOString().slice(0, 10);
+                            }
                             if (mon) {
                                 s.add(mon);
                                 const w2 = new Date(mon);
@@ -10785,9 +10794,19 @@
                 });
 
                 // Remove entries whose tournament monday is in the same week as (or before) 52 weeks ago.
-                // "Last 52 weeks counting this one": anything in the same calendar week as today-52w is excluded.
+                // Default: live/current-week window (normal weekly updates).
+                // Exception: if CURRENT week is week 1 of a 2-week freeze event, shift cutoff by +1 week
+                // so we also remove next week's old results (no ranking update next Monday).
                 const _cwMon = (() => { const d = new Date(now); const wd = d.getUTCDay(); d.setUTCDate(d.getUTCDate() - (wd===0?6:wd-1)); d.setUTCHours(0,0,0,0); return d; })();
-                const _52wAgoMon = new Date(_cwMon); _52wAgoMon.setUTCDate(_cwMon.getUTCDate() - 364);
+                const _nextUpdateMon = new Date(_cwMon);
+                const _cwMonStr = _cwMon.toISOString().slice(0, 10);
+                const _w2Mon = new Date(_cwMon);
+                _w2Mon.setUTCDate(_w2Mon.getUTCDate() + 7);
+                const _w2MonStr = _w2Mon.toISOString().slice(0, 10);
+                const _isFreezeWeek1 = _rtgs_twoWeekFreezeMondays.has(_cwMonStr) && _rtgs_twoWeekFreezeMondays.has(_w2MonStr);
+                if (_isFreezeWeek1) _nextUpdateMon.setUTCDate(_nextUpdateMon.getUTCDate() + 7);
+                const _52wAgoMon = new Date(_nextUpdateMon);
+                _52wAgoMon.setUTCDate(_nextUpdateMon.getUTCDate() - 364);
                 tournamentMap.forEach((t, key) => {
                     if (!t.date) return;
                     const effMon = new Date(t.date + 'T00:00:00Z');
