@@ -4531,10 +4531,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     ];
                     const seedSlots = Math.max(0, ...main
                         .map(p => Number.isInteger(p.seed) ? p.seed : 0));
+                    const seedRankValue = p => {{
+                        const n = Number(p.seed_rank);
+                        return Number.isFinite(n) && n > 0 ? n : null;
+                    }};
                     const bySeedRank = (a, b) => {{
                         const sa = Number.isInteger(a.seed) ? a.seed : 9999;
                         const sb = Number.isInteger(b.seed) ? b.seed : 9999;
-                        return (sa - sb) || byRank(a, b);
+                        if (sa !== sb) return sa - sb;
+                        const ra = seedRankValue(a);
+                        const rb = seedRankValue(b);
+                        if (ra !== null || rb !== null) {{
+                            return ((ra ?? 9999) - (rb ?? 9999)) || byRank(a, b);
+                        }}
+                        return byRank(a, b);
                     }};
                     const prioSeedCandidates = displayMain
                         .filter(p => !(String(p.name || '').startsWith('(')))

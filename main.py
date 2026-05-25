@@ -1323,13 +1323,17 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                     _sname = _sp.get("Player", "").strip().upper()
                     _srank = _sp.get("Rank")
                     if _sname and _srank is not None:
-                        _name_to_rank[_sname] = int(_srank)
+                        _canon = NAME_LOOKUP.get(_sname, _sname)
+                        _name_to_rank[_canon] = int(_srank)
+                for _p in t_list:
+                    _pname_up = NAME_LOOKUP.get(_p["name"].upper(), _p["name"].upper())
+                    _r = _name_to_rank.get(_pname_up)
+                    _p["seed_rank"] = _r if _r is not None else ""
                 def _build_seed_map(player_list, n):
                     candidates = []
                     for _p in player_list:
-                        _pname_up = NAME_LOOKUP.get(_p["name"].upper(), _p["name"].upper())
-                        _r = _name_to_rank.get(_pname_up)
-                        if _r is not None:
+                        _r = _p.get("seed_rank")
+                        if isinstance(_r, int):
                             candidates.append((_r, _p["name"]))
                     candidates.sort()
                     return {name: i + 1 for i, (_, name) in enumerate(candidates[:n])}
@@ -1449,14 +1453,18 @@ def process_tournaments(driver, tournament_groups, monday_map, arg_names_set, en
                     _sname = _sp.get("Player", "").strip().upper()
                     _srank = _sp.get("Rank")
                     if _sname and _srank is not None:
-                        _name_to_rank[_sname] = int(_srank)
+                        _canon = NAME_LOOKUP.get(_sname, _sname)
+                        _name_to_rank[_canon] = int(_srank)
+                for _p in tourney_players_list:
+                    _pname_up = NAME_LOOKUP.get(_p["name"].upper(), _p["name"].upper())
+                    _wta_rank = _name_to_rank.get(_pname_up)
+                    _p["seed_rank"] = _wta_rank if _wta_rank is not None else ""
                 _main_candidates = []
                 for _p in tourney_players_list:
                     if _p.get("type") != "MAIN":
                         continue
-                    _pname_up = NAME_LOOKUP.get(_p["name"].upper(), _p["name"].upper())
-                    _wta_rank = _name_to_rank.get(_pname_up)
-                    if _wta_rank is not None:
+                    _wta_rank = _p.get("seed_rank")
+                    if isinstance(_wta_rank, int):
                         _main_candidates.append((_wta_rank, _p["name"]))
                 _main_candidates.sort()
                 _seed_map = {name: i + 1 for i, (_, name) in enumerate(_main_candidates[:_num_seeds])}
