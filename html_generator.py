@@ -287,6 +287,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     gs_data = []
     for gs_name, gs_color, gs_id in gs_list_raw:
         monday_date = None
+        gs_year = None
         for week in calendar_data:
             for col_key in ["gs", "wta_tour", "wta_125", "itf"]:
                 for tournaments in week.get("columns", {}).get(col_key, {}).values():
@@ -299,6 +300,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 break
         if monday_date:
             gs_dt = datetime.strptime(monday_date, "%Y-%m-%d")
+            gs_year = gs_dt.year
             md_cutoff = (gs_dt - timedelta(weeks=6)).strftime("%Y-%m-%d")
             q_cutoff  = (gs_dt - timedelta(weeks=4)).strftime("%Y-%m-%d")
         else:
@@ -313,13 +315,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 gs_dt = datetime.strptime(earliest, "%Y-%m-%d")
                 gs_dt -= timedelta(days=gs_dt.weekday())
                 gs_dt += timedelta(weeks=52)
+                gs_year = gs_dt.year
                 md_cutoff = (gs_dt - timedelta(weeks=6)).strftime("%Y-%m-%d")
                 q_cutoff  = (gs_dt - timedelta(weeks=4)).strftime("%Y-%m-%d")
             else:
                 md_cutoff = "N/A"
                 q_cutoff  = "N/A"
         gs_data.append({"id": gs_id, "name": gs_name, "color": gs_color,
-                         "qCutoff": q_cutoff, "mdCutoff": md_cutoff})
+                         "qCutoff": q_cutoff, "mdCutoff": md_cutoff, "year": gs_year})
 
     # Project any GS whose main draw cutoff has already passed to next year (+52 weeks)
     today_str = datetime.now().strftime("%Y-%m-%d")
@@ -327,9 +330,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         if gs["mdCutoff"] not in ("N/A", "") and gs["mdCutoff"] < today_str:
             gs["qCutoff"]  = (datetime.strptime(gs["qCutoff"],  "%Y-%m-%d") + timedelta(weeks=52)).strftime("%Y-%m-%d")
             gs["mdCutoff"] = (datetime.strptime(gs["mdCutoff"], "%Y-%m-%d") + timedelta(weeks=52)).strftime("%Y-%m-%d")
+            if isinstance(gs.get("year"), int):
+                gs["year"] += 1
 
     # Sort: soonest upcoming GS first (by qCutoff ascending); N/A last
     gs_data.sort(key=lambda g: g["qCutoff"] if g["qCutoff"] != "N/A" else "9999-99-99")
+
+    def _format_cutoff_display(cutoff_value):
+        if cutoff_value in ("N/A", ""):
+            return cutoff_value or "N/A"
+        try:
+            cutoff_dt = datetime.strptime(cutoff_value, "%Y-%m-%d")
+        except ValueError:
+            return cutoff_value
+        return f"{cutoff_dt.strftime('%b')} {cutoff_dt.day}"
 
     gs_tables_html = ""
     for gs in gs_data:
@@ -338,18 +352,22 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         gs_color = gs["color"]
         q_cutoff = gs["qCutoff"]
         md_cutoff = gs["mdCutoff"]
+        gs_year = gs.get("year")
+        table_title = f"{gs_name.upper()} {gs_year}" if gs_year else gs_name.upper()
+        q_cutoff_display = _format_cutoff_display(q_cutoff)
+        md_cutoff_display = _format_cutoff_display(md_cutoff)
         gs_tables_html += (
             f'<table class="gs-cutoff-table">'
             f'<colgroup>'
             f'<col class="gs-col-d"><col class="gs-col-cutoff"><col class="gs-col-acc"><col class="gs-col-est">'
             f'</colgroup>'
             f'<thead>'
-            f'<tr><th colspan="4" style="background:{gs_color} !important;color:white !important;">{gs_name.upper()}</th></tr>'
+            f'<tr><th colspan="4" style="background:{gs_color} !important;color:white !important;">{table_title}</th></tr>'
             f'<tr><th>D</th><th>Cut Off</th><th>Acc. Pts</th><th>Est. Need</th></tr>'
             f'</thead>'
             f'<tbody>'
-            f'<tr><td>Q</td><td>{q_cutoff}</td><td id="gs-acc-q-{gs_id}">-</td><td id="gs-est-q-{gs_id}">-</td></tr>'
-            f'<tr><td>MD</td><td>{md_cutoff}</td><td id="gs-acc-md-{gs_id}">-</td><td id="gs-est-md-{gs_id}">-</td></tr>'
+            f'<tr><td>Q</td><td>{q_cutoff_display}</td><td id="gs-acc-q-{gs_id}">-</td><td id="gs-est-q-{gs_id}">-</td></tr>'
+            f'<tr><td>MD</td><td>{md_cutoff_display}</td><td id="gs-acc-md-{gs_id}">-</td><td id="gs-est-md-{gs_id}">-</td></tr>'
             f'</tbody>'
             f'</table>'
         )
