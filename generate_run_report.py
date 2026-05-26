@@ -739,7 +739,6 @@ def render_email_markdown(report):
             bool(report.get("added_calendar_tournaments")),
             bool(report.get("failed_draw_fetches")),
             bool(report.get("blocked_itf_responses")),
-            bool(report.get("stale_draws")),
             bool(report.get("bad_draw_scores")),
         ]
     )
@@ -813,15 +812,8 @@ def render_email_markdown(report):
             context = " | ".join(context_parts) if context_parts else "general ITF request"
             lines.append(f"- Block page detected on {endpoint}: {context}")
         lines.append("")
-
-    if report.get("stale_draws"):
-        lines.append("## 8) Stale Draws (Not Updated in 24h)")
-        for item in report["stale_draws"]:
-            lines.append(f"- {item['name']} — last fetched {item['fetched_at']} ({item['age_hours']}h ago)")
-        lines.append("")
-
     if report.get("bad_draw_scores"):
-        lines.append("## 10) Draw Matches with Invalid Scores")
+        lines.append("## 8) Draw Matches with Invalid Scores")
         for item in report["bad_draw_scores"]:
             lines.append(
                 f"- {item['tournament_name']} ({item['draw_label']}) "
