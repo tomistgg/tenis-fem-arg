@@ -1380,7 +1380,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             #view-rankings {{ max-width: 700px; margin: 0 auto; }}
             #view-fedbcup {{ max-width: 1400px; margin: 0 auto; }}
             #view-tstrength {{ width: 100%; margin: 0 auto; }}
-            #view-roadtogs {{ max-width: 800px; margin: 0 auto; }}
+            #view-roadtogs {{ max-width: 1100px; margin: 0 auto; }}
             #view-gallery {{ max-width: 1400px; margin: 0 auto; }}
             #view-draws {{ width: 100%; max-width: 100%; margin: 0; }}
             .draws-layout {{ display: flex; flex-direction: column; width: 100%; }}
@@ -1523,8 +1523,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .roadtogs-category-separator td {{ background: #6b7280 !important; color: white; text-align: center !important; font-weight: bold; font-size: 13px; line-height: normal; letter-spacing: 0; padding: 8px 12px !important; }}
             tr.roadtogs-category-separator:hover td {{ background: #6b7280 !important; }}
             .rtgs-lock {{ margin-left: 4px; font-size: 11px; line-height: 1; vertical-align: baseline; }}
-            .roadtogs-cutoffs {{ margin-bottom: 8px; display: flex; flex-wrap: nowrap; gap: 10px; align-items: flex-start; }}
-            .roadtogs-legend {{ margin-bottom: 12px; font-size: 11px; color: var(--c-text-muted); line-height: 1.5; }}
+            .roadtogs-cutoffs {{ margin-bottom: 8px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: flex-start; width: 100%; }}
+            .roadtogs-legend-grid {{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px 12px; margin-bottom: 12px; width: 100%; }}
+            .roadtogs-legend-item {{ text-align: center; font-size: 11px; color: var(--c-text-muted); line-height: 1.45; }}
+            .roadtogs-legend-item.left {{ grid-column: 1 / span 2; }}
+            .roadtogs-legend-item.right {{ grid-column: 3 / span 2; }}
+            .roadtogs-legend-line {{ white-space: nowrap; }}
             /* Shared utility classes — replace inline style="..." attributes that appeared
                many times across rendered tables. Colours match the previous inline values
                byte-for-byte to keep rendering identical; centralising them means future
@@ -1536,8 +1540,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .res-loss {{ color: #991b1b; font-weight: bold; }}
             .rtgs-warn-14d {{ color: #cc0000; font-weight: bold; }}
             .rtgs-warn-28d {{ color: #cc5500; font-weight: bold; }}
-            .gs-cutoff-table {{ border-collapse: collapse; font-size: 10px; width: auto; table-layout: auto; }}
-            .gs-cutoff-table th, .gs-cutoff-table td {{ border: 1px solid var(--c-border); padding: 2px 6px; text-align: center; }}
+            .gs-cutoff-table {{ border-collapse: collapse; font-size: 10px; width: 100%; min-width: 0; table-layout: fixed; }}
+            .gs-cutoff-table th, .gs-cutoff-table td {{ border: 1px solid var(--c-border); padding: 2px 6px; text-align: center; white-space: nowrap; }}
+            .gs-cutoff-table col.gs-col-d {{ width: 14%; }}
+            .gs-cutoff-table col.gs-col-cutoff {{ width: 30%; }}
+            .gs-cutoff-table col.gs-col-acc, .gs-cutoff-table col.gs-col-est {{ width: 28%; }}
             .gs-cutoff-table thead tr:last-child th {{ background: var(--c-surface-alt) !important; font-weight: bold; color: var(--c-text-subtle) !important; }}
             .header-row {{ width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; gap: 10px; }}
             #view-roadtogs .header-row {{ margin-bottom: 8px; }}
@@ -2628,7 +2635,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .gs-cutoff-table col.gs-col-d {{ width: 20% !important; }}
                 .gs-cutoff-table col.gs-col-cutoff {{ width: 30% !important; }}
                 .gs-cutoff-table col.gs-col-acc, .gs-cutoff-table col.gs-col-est {{ width: 25% !important; }}
-                .roadtogs-legend {{ font-size: 8px !important; }}
+                .roadtogs-legend-grid {{ grid-template-columns: 1fr; gap: 6px; }}
+                .roadtogs-legend-item {{ grid-column: auto; font-size: 9px !important; line-height: 1.4; }}
+                .roadtogs-legend-line {{ white-space: normal; }}
             }}
 
             @media (max-width: 480px) {{
@@ -3567,9 +3576,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     <div class="roadtogs-cutoffs">
                         {gs_tables_html}
                     </div>
-                    <div class="roadtogs-legend">
-                        <div>ACC. PTS = Points accumulated that count towards the ranking as of the cutoff date.</div>
-                        <div>EST. NEED = Estimated points needed to qualify for the Grand Slam: {GS_THRESHOLD_Q} for Q, {GS_THRESHOLD_MD} for MD.<br>Cutoffs 2025 (Q/MD) = <span style="color:#0066B3;font-weight:700;">AO 316/756</span> - <span style="color:#C8602A;font-weight:700;">RG 326/742</span> - <span style="color:#3D7A3D;font-weight:700;">WB 315/727</span> - <span style="color:#003087;font-weight:700;">US 323/730</span><br>Cutoffs 2026 (Q/MD) = <span style="color:#0066B3;font-weight:700;">AO 308/754</span> - <span style="color:#C8602A;font-weight:700;">RG 283/786</span></div>
+                    <div class="roadtogs-legend-grid">
+                        <div class="roadtogs-legend-item left">
+                            <div class="roadtogs-legend-line">ACC. PTS = Points accumulated that count towards the ranking as of the cutoff date.</div>
+                        </div>
+                        <div class="roadtogs-legend-item right">
+                            <div class="roadtogs-legend-line">EST. NEED = Estimated points needed to qualify for the Grand Slam: {GS_THRESHOLD_Q} for Q, {GS_THRESHOLD_MD} for MD.</div>
+                        </div>
+                        <div class="roadtogs-legend-item left">
+                            <div class="roadtogs-legend-line">Cutoffs 2025 (Q/MD) = <span style="color:#0066B3;font-weight:700;">AO 316/756</span> - <span style="color:#C8602A;font-weight:700;">RG 326/742</span> - <span style="color:#3D7A3D;font-weight:700;">WB 315/727</span> - <span style="color:#003087;font-weight:700;">US 323/730</span></div>
+                        </div>
+                        <div class="roadtogs-legend-item right">
+                            <div class="roadtogs-legend-line">Cutoffs 2026 (Q/MD) = <span style="color:#0066B3;font-weight:700;">AO 308/754</span> - <span style="color:#C8602A;font-weight:700;">RG 283/786</span></div>
+                        </div>
                     </div>
                     <div class="content-card">
                         <div class="table-wrapper">
