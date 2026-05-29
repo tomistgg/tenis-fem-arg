@@ -2637,9 +2637,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .gs-cutoff-table col.gs-col-d {{ width: 20% !important; }}
                 .gs-cutoff-table col.gs-col-cutoff {{ width: 30% !important; }}
                 .gs-cutoff-table col.gs-col-acc, .gs-cutoff-table col.gs-col-est {{ width: 25% !important; }}
-                .roadtogs-legend-grid {{ grid-template-columns: 1fr; gap: 6px; }}
-                .roadtogs-legend-item {{ grid-column: auto; font-size: 9px !important; line-height: 1.4; }}
-                .roadtogs-legend-line {{ white-space: normal; }}
+                .roadtogs-legend {{ font-size: 8px !important; }}
             }}
 
             @media (max-width: 480px) {{
