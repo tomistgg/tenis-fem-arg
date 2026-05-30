@@ -1526,7 +1526,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             tr.roadtogs-category-separator:hover td {{ background: #6b7280 !important; }}
             .rtgs-lock {{ margin-left: 4px; font-size: 11px; line-height: 1; vertical-align: baseline; }}
             .roadtogs-cutoffs {{ margin-bottom: 8px; display: flex; flex-wrap: nowrap; gap: 10px; align-items: flex-start; }}
-            .roadtogs-legend {{ margin-bottom: 12px; font-size: 11px; color: var(--c-text-muted); line-height: 1.5; }}
+            .roadtogs-meta {{ margin-bottom: 12px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; width: 100%; }}
+            .roadtogs-meta-col {{ font-size: 11px; color: var(--c-text-muted); line-height: 1.5; }}
+            .roadtogs-meta-line + .roadtogs-meta-line {{ margin-top: 4px; }}
             /* Shared utility classes — replace inline style="..." attributes that appeared
                many times across rendered tables. Colours match the previous inline values
                byte-for-byte to keep rendering identical; centralising them means future
@@ -2633,7 +2635,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .gs-cutoff-table col.gs-col-d {{ width: 20% !important; }}
                 .gs-cutoff-table col.gs-col-cutoff {{ width: 30% !important; }}
                 .gs-cutoff-table col.gs-col-acc, .gs-cutoff-table col.gs-col-est {{ width: 25% !important; }}
-                .roadtogs-legend {{ font-size: 8px !important; }}
+                .roadtogs-meta {{ display: block; }}
+                .roadtogs-meta-col {{ font-size: 8px !important; line-height: 1.45; }}
+                .roadtogs-meta-cutoffs {{ margin-top: 6px; }}
+                .roadtogs-meta-line {{ white-space: normal; }}
             }}
 
             @media (max-width: 480px) {{
@@ -3572,18 +3577,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     <div class="roadtogs-cutoffs">
                         {gs_tables_html}
                     </div>
-                    <div class="roadtogs-legend-grid">
-                        <div class="roadtogs-legend-item left">
-                            <div class="roadtogs-legend-line">ACC. PTS = Points accumulated that count towards the ranking as of the cutoff date.</div>
+                    <div class="roadtogs-meta">
+                        <div class="roadtogs-meta-col roadtogs-meta-legend">
+                            <div class="roadtogs-meta-line">ACC. PTS = Points accumulated that count towards the ranking as of the cutoff date.</div>
+                            <div class="roadtogs-meta-line">EST. NEED = Estimated points needed to qualify for the Grand Slam: {GS_THRESHOLD_Q} for Q, {GS_THRESHOLD_MD} for MD.</div>
                         </div>
-                        <div class="roadtogs-legend-item right">
-                            <div class="roadtogs-legend-line">EST. NEED = Estimated points needed to qualify for the Grand Slam: {GS_THRESHOLD_Q} for Q, {GS_THRESHOLD_MD} for MD.</div>
-                        </div>
-                        <div class="roadtogs-legend-item left">
-                            <div class="roadtogs-legend-line">Cutoffs 2025 (Q/MD) = <span style="color:#0066B3;font-weight:700;">AO 316/756</span> - <span style="color:#C8602A;font-weight:700;">RG 326/742</span> - <span style="color:#3D7A3D;font-weight:700;">WB 315/727</span> - <span style="color:#003087;font-weight:700;">US 323/730</span></div>
-                        </div>
-                        <div class="roadtogs-legend-item right">
-                            <div class="roadtogs-legend-line">Cutoffs 2026 (Q/MD) = <span style="color:#0066B3;font-weight:700;">AO 308/754</span> - <span style="color:#C8602A;font-weight:700;">RG 283/786</span></div>
+                        <div class="roadtogs-meta-col roadtogs-meta-cutoffs">
+                            <div class="roadtogs-meta-line">Cutoffs 2025 (Q/MD) = <span style="color:#0066B3;font-weight:700;">AO 316/756</span> - <span style="color:#C8602A;font-weight:700;">RG 326/742</span> - <span style="color:#3D7A3D;font-weight:700;">WB 315/727</span> - <span style="color:#003087;font-weight:700;">US 323/730</span></div>
+                            <div class="roadtogs-meta-line">Cutoffs 2026 (Q/MD) = <span style="color:#0066B3;font-weight:700;">AO 308/754</span> - <span style="color:#C8602A;font-weight:700;">RG 283/786</span></div>
                         </div>
                     </div>
                     <div class="content-card">
