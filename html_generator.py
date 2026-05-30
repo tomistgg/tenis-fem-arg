@@ -1525,12 +1525,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .roadtogs-category-separator td {{ background: #6b7280 !important; color: white; text-align: center !important; font-weight: bold; font-size: 13px; line-height: normal; letter-spacing: 0; padding: 8px 12px !important; }}
             tr.roadtogs-category-separator:hover td {{ background: #6b7280 !important; }}
             .rtgs-lock {{ margin-left: 4px; font-size: 11px; line-height: 1; vertical-align: baseline; }}
-            .roadtogs-cutoffs {{ margin-bottom: 8px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: flex-start; width: 100%; }}
-            .roadtogs-legend-grid {{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px 12px; margin-bottom: 12px; width: 100%; }}
-            .roadtogs-legend-item {{ text-align: center; font-size: 11px; color: var(--c-text-muted); line-height: 1.45; }}
-            .roadtogs-legend-item.left {{ grid-column: 1 / span 2; }}
-            .roadtogs-legend-item.right {{ grid-column: 3 / span 2; }}
-            .roadtogs-legend-line {{ white-space: nowrap; }}
+            .roadtogs-cutoffs {{ margin-bottom: 8px; display: flex; flex-wrap: nowrap; gap: 10px; align-items: flex-start; }}
+            .roadtogs-legend {{ margin-bottom: 12px; font-size: 11px; color: var(--c-text-muted); line-height: 1.5; }}
             /* Shared utility classes — replace inline style="..." attributes that appeared
                many times across rendered tables. Colours match the previous inline values
                byte-for-byte to keep rendering identical; centralising them means future
