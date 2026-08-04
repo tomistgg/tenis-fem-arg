@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wtarg.example/schemas/cache_state.schema.json",
+  "title": "Cache freshness metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["files", "entries"],
+  "properties": {
+    "files": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/fileMetadata"}
+    },
+    "entries": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {"$ref": "#/$defs/metadata"}
+      }
+    }
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "anyOf": [
+        {"required": ["fetchedAt"]},
+        {"required": ["completedAt"]}
+      ],
+      "properties": {
+        "fetchedAt": {"type": "string", "format": "date-time"},
+        "completedAt": {"type": "string", "format": "date-time"}
+      },
+      "additionalProperties": true
+    },
+    "fileMetadata": {
+      "allOf": [
+        {"$ref": "#/$defs/metadata"},
+        {"required": ["fetchedAt"]}
+      ]
+    }
+  }
+}

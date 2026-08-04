@@ -1,0 +1,49 @@
+{
+  "drawsheet": {
+    "koGroups": [
+      {
+        "rounds": [
+          {
+            "roundDesc": "First Round",
+            "roundNumber": 1,
+            "matches": [
+              {
+                "matchId": "1100209999",
+                "playStatusCode": "PC",
+                "resultStatusCode": "",
+                "resultStatusDesc": "Completed",
+                "teams": [
+                  {
+                    "isWinner": true,
+                    "entryStatus": "DA",
+                    "seeding": 2,
+                    "scores": [{"score": 6}, {"score": 7, "losingScore": 4}],
+                    "players": [
+                      {"playerId": "800500001", "givenName": "Julia", "familyName": "Riera", "nationality": "ARG"}
+                    ]
+                  },
+                  {
+                    "isWinner": false,
+                    "entryStatus": "Q",
+                    "scores": [{"score": 3}, {"score": 6}],
+                    "players": [
+                      {"playerId": "800500002", "givenName": "Ana", "familyName": "Silva", "nationality": "BRA"}
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "tournament": {
+    "tournamentId": "1100204000",
+    "tournamentName": "W75 Buenos Aires",
+    "category": "W75",
+    "surfaceDesc": "Clay",
+    "indoorOrOutDoor": "Outdoor",
+    "hostNation": "Argentina"
+  }
+}

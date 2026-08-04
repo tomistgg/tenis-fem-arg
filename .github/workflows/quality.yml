@@ -1,0 +1,85 @@
+name: Quality
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version-file: .python-version
+          cache: pip
+          cache-dependency-path: requirements.lock
+
+      - name: Install locked dependencies
+        run: |
+          python -m pip install --require-hashes -r requirements.lock
+          python -m pip install --no-deps --no-build-isolation --editable .
+
+      - name: Verify dependency consistency
+        run: python -m pip check
+
+      - name: Install Google Chrome and matching driver
+        id: chrome
+        uses: browser-actions/setup-chrome@2e1d749697dd1612b833dba4a722266286fbefcd # v2.1.2
+        with:
+          chrome-version: stable
+          install-chromedriver: true
+
+      - name: Configure browser smoke tests
+        run: |
+          echo "CHROME_BINARY=${{ steps.chrome.outputs.chrome-path }}" >> "$GITHUB_ENV"
+          echo "CHROMEDRIVER=${{ steps.chrome.outputs.chromedriver-path }}" >> "$GITHUB_ENV"
+          echo "WTARG_REQUIRE_BROWSER_TESTS=1" >> "$GITHUB_ENV"
+
+      - name: Prepare comparison baseline
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          mkdir -p .quality-baseline
+          if [ -n "$PR_BASE_SHA" ]; then
+            git archive "$PR_BASE_SHA" data | tar -x -C .quality-baseline
+          elif git rev-parse HEAD^ >/dev/null 2>&1; then
+            git archive HEAD^ data | tar -x -C .quality-baseline
+          else
+            cp -a data .quality-baseline/data
+          fi
+
+      - name: Blocking data-quality gate
+        run: >-
+          python data_quality.py validate
+          --data-dir data
+          --baseline-dir .quality-baseline/data
+          --site-root .
+          --report .quality-report.json
+
+      - name: Ruff
+        run: python -m ruff check .
+
+      - name: Type checking
+        run: python -m mypy
+
+      - name: Tests
+        run: python -m pytest
+
+      - name: Pre-commit
+        run: python -m pre_commit run --all-files
+
+      - name: Dependency vulnerability scan
+        run: python -m pip_audit --require-hashes -r requirements.lock

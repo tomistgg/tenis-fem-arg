@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wtarg.example/schemas/player_aliases.schema.json",
+  "title": "Canonical player aliases",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "player_key", "display_name", "country", "dob", "wta_id", "wta_name",
+      "itf_id", "itf_name", "bjkc_id", "bjkc_name", "aliases",
+      "additional_wta_ids", "additional_itf_ids", "additional_bjkc_ids"
+    ],
+    "properties": {
+      "player_key": {"type": "string", "minLength": 1},
+      "display_name": {"type": "string", "minLength": 1},
+      "country": {"type": "string", "pattern": "^(|[A-Z]{3})$"},
+      "dob": {"type": "string", "pattern": "^(|[0-9]{4}-[0-9]{2}-[0-9]{2})$"},
+      "wta_id": {"type": "string", "pattern": "^(|[0-9]+)$"},
+      "wta_name": {"type": "string"},
+      "itf_id": {"type": "string", "pattern": "^(|[0-9]+)$"},
+      "itf_name": {"type": "string"},
+      "bjkc_id": {"type": "string"},
+      "bjkc_name": {"type": "string"},
+      "aliases": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+      "additional_wta_ids": {"type": "array", "items": {"type": "string", "pattern": "^[0-9]+$"}, "uniqueItems": true},
+      "additional_itf_ids": {"type": "array", "items": {"type": "string", "pattern": "^[0-9]+$"}, "uniqueItems": true},
+      "additional_bjkc_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+    }
+  }
+}

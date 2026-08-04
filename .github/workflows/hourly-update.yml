@@ -1,0 +1,319 @@
+name: Refresh and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 */2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: refresh-and-deploy-pages
+  cancel-in-progress: false
+
+jobs:
+  refresh-build-upload:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    outputs:
+      transaction_status: ${{ steps.transaction_status.outputs.status }}
+      notification_needed: ${{ steps.notification_decision.outputs.needed }}
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout exact source revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 1
+
+      - name: Restore latest validated data state
+        run: |
+          state_ref=$(git ls-remote --heads origin refs/heads/data-state)
+          if [ -n "$state_ref" ]; then
+            git fetch --no-tags --depth=1 origin "refs/heads/data-state:refs/remotes/origin/data-state"
+            rm -rf "$GITHUB_WORKSPACE/data"
+            git archive refs/remotes/origin/data-state data | tar -x -C "$GITHUB_WORKSPACE"
+            test -d "$GITHUB_WORKSPACE/data"
+          else
+            echo "data-state branch does not exist yet; bootstrapping from main"
+          fi
+
+      - name: Preserve pushed data files
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          # The validated data-state branch is the baseline for scheduled
+          # refreshes, but a push must not discard data files changed by that
+          # push.
+
+          if [ "$EVENT_NAME" != "push" ] || [ -z "$BEFORE_SHA" ] || [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
+            echo "No push-specific data overlay to apply"
+            exit 0
+          fi
+
+          if ! git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null; then
+            if ! git fetch --no-tags --depth=1 origin "$BEFORE_SHA"; then
+              echo "Previous push revision is unavailable; current data files are already present"
+              exit 0
+            fi
+          fi
+
+          while IFS= read -r -d '' relative; do
+            case "$relative" in
+              data/*)
+                if git cat-file -e "$GITHUB_SHA:$relative" 2>/dev/null; then
+                  mkdir -p "$GITHUB_WORKSPACE/$(dirname "$relative")"
+                  git show "$GITHUB_SHA:$relative" > "$GITHUB_WORKSPACE/$relative"
+                else
+                  rm -f "$GITHUB_WORKSPACE/$relative"
+                fi
+                ;;
+            esac
+          done < <(git diff --name-only -z "$BEFORE_SHA" "$GITHUB_SHA" -- data)
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version-file: .python-version
+          cache: pip
+          cache-dependency-path: requirements.lock
+
+      - name: Install locked dependencies
+        run: |
+          python -m pip install --require-hashes -r requirements.lock
+          python -m pip install --no-deps --no-build-isolation --editable .
+
+      - name: Verify dependency consistency
+        run: python -m pip check
+
+      - name: Install Google Chrome and matching driver
+        id: chrome
+        uses: browser-actions/setup-chrome@2e1d749697dd1612b833dba4a722266286fbefcd # v2.1.2
+        with:
+          chrome-version: stable
+          install-chromedriver: true
+
+      - name: Configure browser smoke tests
+        run: |
+          echo "CHROME_BINARY=${{ steps.chrome.outputs.chrome-path }}" >> "$GITHUB_ENV"
+          echo "CHROMEDRIVER=${{ steps.chrome.outputs.chromedriver-path }}" >> "$GITHUB_ENV"
+          echo "WTARG_REQUIRE_BROWSER_TESTS=1" >> "$GITHUB_ENV"
+
+      - name: Run blocking tests
+        run: python -m pytest
+
+      - name: Validate source data before refresh
+        run: python data_quality.py validate --data-dir data --site-root .
+
+      - name: Snapshot previous data state
+        run: |
+          mkdir -p .run_snapshot/data
+          cp -a data/. .run_snapshot/data/
+
+      - name: Extract, transform, validate, and build once
+        id: main_update
+        run: python main.py
+
+      - name: Display transactional run status
+        if: always()
+        run: |
+          if [ -f .run_state/latest.json ]; then
+            cat .run_state/latest.json
+          else
+            mkdir -p .run_state
+            printf '%s\n' '{"status":"failed","error":{"message":"run status was not created"}}' | tee .run_state/latest.json
+          fi
+
+      - name: Classify transactional run status
+        if: always()
+        id: transaction_status
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          state = json.loads(Path(".run_state/latest.json").read_text(encoding="utf-8"))
+          status = str(state.get("status") or "failed").lower()
+          if status in {"success", "degraded", "partial", "failed"} and not state.get("finished_at"):
+              status = "failed"
+          promotion = state.get("promotion")
+          promotable = (
+              status in {"success", "degraded"}
+              and isinstance(promotion, dict)
+              and promotion.get("deploy_site_promoted") is True
+          )
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"status={status}\n")
+              output.write(f"alert={'true' if status in {'failed', 'partial', 'degraded'} else 'false'}\n")
+              output.write(f"promotable={'true' if promotable else 'false'}\n")
+          PY
+
+      - name: Require a promotable transaction
+        run: test "${{ steps.transaction_status.outputs.promotable }}" = "true"
+
+      - name: Gate the exact refreshed data and deploy artifact
+        run: >-
+          python data_quality.py validate
+          --data-dir data
+          --baseline-dir .run_snapshot/data
+          --site-root .
+          --deploy-root .site
+          --report .run_snapshot/data_quality_report.json
+
+      - name: Build run report
+        if: always()
+        run: |
+          if ! python generate_run_report.py --before .run_snapshot/data --after data --run-status .run_state/latest.json --output .run_snapshot/run_report.md --email-output .run_snapshot/email_report.md; then
+            python execution_analysis.py render-status-email --run-status .run_state/latest.json --output .run_snapshot/email_report.md
+          fi
+
+      - name: Validate report-side identity updates
+        if: always()
+        run: python canonical_data.py validate --data-dir data
+
+      - name: Check if report exists
+        if: always()
+        id: check_report
+        run: |
+          if [ -f .run_snapshot/email_report.md ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check if report has meaningful content
+        if: always()
+        id: check_content
+        run: |
+          if grep -qP "^- (?!None detected\.)" .run_snapshot/email_report.md 2>/dev/null; then
+            echo "has_content=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_content=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Detect data changes
+        if: always()
+        id: detect_changes
+        run: |
+          if diff -rq .run_snapshot/data data --exclude="*.pyc" > /dev/null 2>&1; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Decide whether a notification is needed
+        if: always()
+        id: notification_decision
+        env:
+          REPORT_EXISTS: ${{ steps.check_report.outputs.exists }}
+          HAS_CONTENT: ${{ steps.check_content.outputs.has_content }}
+          DATA_CHANGED: ${{ steps.detect_changes.outputs.changed }}
+          STATUS_ALERT: ${{ steps.transaction_status.outputs.alert }}
+        run: |
+          if [ "$REPORT_EXISTS" = "true" ] && [ "$HAS_CONTENT" = "true" ] && { [ "$DATA_CHANGED" = "true" ] || [ "$STATUS_ALERT" = "true" ]; }; then
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Preserve report for the final deployment notification
+        if: always() && steps.notification_decision.outputs.needed == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: website-update-report-${{ github.run_id }}
+          path: .run_snapshot/email_report.md
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 1
+
+      - name: Upload immutable Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
+        with:
+          path: .site
+
+      - name: Save validated data on the dedicated state branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          state_index="$RUNNER_TEMP/data-state.index"
+          rm -f "$state_index"
+          GIT_INDEX_FILE="$state_index" git read-tree --empty
+          GIT_INDEX_FILE="$state_index" git add -f data
+          state_tree=$(GIT_INDEX_FILE="$state_index" git write-tree)
+          parent=$(git rev-parse --verify refs/remotes/origin/data-state 2>/dev/null || true)
+
+          if [ -n "$parent" ] && [ "$state_tree" = "$(git rev-parse "$parent^{tree}")" ]; then
+            echo "Validated data state is unchanged"
+            exit 0
+          fi
+
+          if [ -n "$parent" ]; then
+            state_commit=$(git commit-tree "$state_tree" -p "$parent" -m "Refresh validated data" -m "Source revision: $GITHUB_SHA")
+          else
+            state_commit=$(git commit-tree "$state_tree" -m "Initialize validated data" -m "Source revision: $GITHUB_SHA")
+          fi
+          git push origin "$state_commit:refs/heads/data-state"
+
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    needs: refresh-build-upload
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy the uploaded revision
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
+
+  notify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    needs:
+      - refresh-build-upload
+      - deploy
+    if: always() && needs.refresh-build-upload.outputs.notification_needed == 'true'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact source revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Download the prepared update report
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: website-update-report-${{ github.run_id }}
+          path: .run_snapshot
+
+      - name: Add the final website publishing result
+        env:
+          TRANSACTION_STATUS: ${{ needs.refresh-build-upload.outputs.transaction_status }}
+          DEPLOYMENT_STATUS: ${{ needs.deploy.result }}
+        run: >-
+          python execution_analysis.py finalize-email
+          --input .run_snapshot/email_report.md
+          --output .run_snapshot/final_email_report.md
+          --status "$TRANSACTION_STATUS"
+          --deployment-status "$DEPLOYMENT_STATUS"
+
+      - name: Send final website update report
+        uses: dawidd6/action-send-mail@4226df7daafa6fc901a43789c49bf7ab309066e7 # v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "WTA Website Update Report - ${{ github.repository }} - Run #${{ github.run_number }}"
+          to: ${{ secrets.RECEIVE_ALERT }}
+          from: WTA Tracker
+          body: file://.run_snapshot/final_email_report.md

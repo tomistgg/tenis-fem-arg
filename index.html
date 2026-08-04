@@ -1,0 +1,142 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#093366">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#x27;self&#x27;; script-src &#x27;self&#x27; &#x27;unsafe-hashes&#x27; &#x27;sha256-pAlgQ4EycuIXi8+JgDqJLM0xeXc/MPOG21NhEIT9U3E=&#x27; &#x27;sha256-pbt7LVK5YwFR4Deko2lKSKEat+FLTVzfA+8NzmIV2sk=&#x27; &#x27;sha256-x7LWDa9pRCACt+EfU1IDQ8bhATAy7HwkM7nrk31w7js=&#x27;; style-src &#x27;self&#x27; &#x27;unsafe-inline&#x27;; img-src &#x27;self&#x27; data: blob: https://purecatamphetamine.github.io; font-src &#x27;self&#x27; data:; connect-src &#x27;self&#x27; https://script.google.com https://script.googleusercontent.com https://api.country.is; object-src &#x27;none&#x27;; base-uri &#x27;self&#x27;; form-action &#x27;self&#x27;; manifest-src &#x27;self&#x27;;">
+  <title>WTARG</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=20260709">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+  <script>(function(){ var t=localStorage.getItem('theme'); if(t==='dark') document.documentElement.setAttribute('data-theme','dark'); })();</script>
+  <style>
+    @font-face { font-family: 'Montserrat'; src: url('assets/Montserrat-SemiBold.ttf'); font-weight: 600; }
+    @font-face { font-family: 'Montserrat'; src: url('assets/Montserrat-ExtraBold.ttf'); font-weight: 800 900; }
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: hidden; max-width: 100vw; }
+    body { font-family: 'Montserrat', sans-serif; background: #093366; margin: 0; transition: background 0.2s; }
+
+    .home-hero { width: 100%; min-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 8px 12px; box-sizing: border-box; }
+    .home-title { margin: 0; text-align: center; line-height: 0; }
+    .home-logo { display: block; width: min(240px, 58vw); height: auto; }
+    .home-note { margin: -2px 0 4px; font-size: 14px; color: #334155; text-align: center; }
+    .home-note strong { color: #75AADB; }
+    .home-grid { width: 100%; max-width: 1200px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 0 auto; justify-items: center; }
+    .home-btn { padding: 18px 12px; border: 2px solid #75AADB; border-radius: 12px; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; min-height: 92px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; overflow: hidden; width: 100%; text-decoration: none; box-sizing: border-box; transition: background 0.15s, transform 0.15s, box-shadow 0.15s; }
+    .home-icon-img { width: 30px; height: 30px; object-fit: contain; margin-left: 6px; flex-shrink: 0; }
+    .home-label { flex: 1; text-align: center; padding-right: 28px; word-break: break-word; }
+    .home-btn:hover { background: #d9ecf8; transform: none; box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
+    .home-btn:active { background: #b8d9f0; transform: scale(0.97); box-shadow: none; }
+    .home-dark-btn { margin-top: 10px; padding: 10px 24px; border-radius: 20px; border: 2px solid #75AADB; background: #eaf3fb; font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.15s; }
+    .home-dark-btn:hover { background: #d9ecf8; }
+    .dm-icon { width: 18px; height: 18px; display: inline-block; vertical-align: middle; flex-shrink: 0; }
+    .dm-icon-sun { display: none; }
+    [data-theme="dark"] .dm-icon-moon { display: none; }
+    [data-theme="dark"] .dm-icon-sun { display: inline-block; }
+    *:focus-visible { outline: 2px solid rgba(117,170,219,0.55); outline-offset: 2px; }
+    [data-theme="dark"] *:focus-visible { outline-color: rgba(125,197,255,0.6); }
+
+    [data-theme="dark"] body { background: #093366; }
+    [data-theme="dark"] .home-note { color: #94a3b8; }
+    [data-theme="dark"] .home-btn { background: #1a3350; border-color: #3b7ec4; color: #e2e8f0; }
+    [data-theme="dark"] .home-btn:hover { background: #1e3a5c; box-shadow: 0 6px 16px rgba(0,0,0,0.4); }
+    [data-theme="dark"] .home-dark-btn { background: #1a3350; border-color: #3b7ec4; color: #e2e8f0; }
+    [data-theme="dark"] .home-dark-btn:hover { background: #1e3a5c; }
+    [data-theme="dark"] .home-icon-img:not(.no-invert) { filter: brightness(0) invert(1); }
+
+    @media (max-width: 900px) {
+      .home-hero { min-height: 0; padding: 12px 10px; gap: 10px; }
+      .home-title { margin: 4px 0 2px; }
+      .home-logo { width: min(190px, 52vw); }
+      .home-note { margin: 0 0 2px; font-size: 13px; }
+      .home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: calc(100vw - 20px); max-width: 420px; padding: 0; }
+      .home-btn { min-height: 78px; font-size: 13px; padding: 10px 8px; width: 100%; }
+      .home-label { padding-right: 0; }
+      .home-btn.last { grid-column: auto; }
+    }
+    body {
+      min-height: 100vh;
+      color: #fff;
+      background: #093366;
+    }
+    .home-hero { position: relative; z-index: 1; min-height: 100vh; padding: 28px 18px; }
+    .home-logo { width: min(210px, 52vw); filter: none; }
+    .home-grid { max-width: 1050px; gap: 12px; }
+    .home-btn {
+      min-height: 88px;
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 16px;
+      background: rgba(255,255,255,.93);
+      box-shadow: 0 12px 30px rgba(0,0,0,.14);
+      backdrop-filter: blur(8px);
+    }
+    html:not([data-theme="dark"]) .home-btn:hover {
+      border-color: #4d89c3;
+      background: #b9ddf4;
+      background-image: none;
+      transform: none;
+      box-shadow: 0 8px 20px rgba(0,0,0,.14);
+    }
+    .home-dark-btn {
+      min-height: 38px;
+      margin-top: 8px;
+      border: 1px solid rgba(255,255,255,.34);
+      background: rgba(255,255,255,.10);
+      color: #fff;
+      backdrop-filter: blur(8px);
+    }
+    .home-dark-btn:hover { background: rgba(255,255,255,.18); }
+    [data-theme="dark"] body { background: #093366; }
+    [data-theme="dark"] .home-dark-btn { background: rgba(255,255,255,.10); color: #fff; }
+    @media (max-width: 900px) {
+      .home-hero { min-height: 100dvh; padding: calc(18px + env(safe-area-inset-top)) 10px calc(18px + env(safe-area-inset-bottom)); }
+      .home-logo { width: min(165px, 44vw); }
+      .home-grid { gap: 8px; }
+      .home-btn { min-height: 70px; padding: 8px; border-radius: 13px; font-size: 10px; }
+      .home-icon-img { width: 24px; height: 24px; margin-left: 2px; }
+      .home-dark-btn { padding: 8px 16px; font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="home-hero">
+    <h1 class="home-title"><img class="home-logo" src="assets/wtarg-app-icon.png" alt="Women's Tennis Argentina"></h1>
+    <div class="home-grid">
+      <a class="home-btn" href="app.html#entrylists"><img class="home-icon-img" src="assets/files.png" alt="Files icon"><span class="home-label">Entry Lists</span></a>
+      <a class="home-btn" href="app.html#roadtogs"><img class="home-icon-img" src="assets/data.png" alt="Data icon"><span class="home-label">Points Breakdown</span></a>
+      <a class="home-btn" href="app.html#calendar"><img class="home-icon-img" src="assets/calendar.png" alt="Calendar icon"><span class="home-label">Calendar</span></a>
+      <a class="home-btn" href="app.html#upcoming"><img class="home-icon-img" src="assets/trophy.png" alt="Trophy icon"><span class="home-label">Schedule</span></a>
+      <a class="home-btn" href="app.html#history"><img class="home-icon-img" src="assets/tennis-player.png" alt="Tennis player icon"><span class="home-label">Match History</span></a>
+      <a class="home-btn" href="app.html#draws"><img class="home-icon-img" src="assets/tournament.png" alt="Tournament icon"><span class="home-label">Draws</span></a>
+      <a class="home-btn" href="app.html#rankings"><img class="home-icon-img" src="assets/list.png" alt="List icon"><span class="home-label">WTA Rankings</span></a>
+      <a class="home-btn" href="app.html#gallery"><img class="home-icon-img" src="assets/camera.png" alt="Camera icon"><span class="home-label">Photos</span></a>
+      <a class="home-btn" href="app.html#tstrength"><img class="home-icon-img" src="assets/score-board.png" alt="Analytics icon"><span class="home-label">WTA Tournament Strength</span></a>
+      <a class="home-btn" href="app.html#fedbcup"><img class="home-icon-img no-invert" src="assets/argentina.png" alt="Argentina flag icon"><span class="home-label">Fed/BJK Cup</span></a>
+    </div>
+    <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()"><svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg><svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><span id="home-dark-label">Dark Mode</span></button>
+  </div>
+  <script>
+    (function() {
+      var h = location.hash;
+      if (h && h.startsWith('#photo/')) { location.replace('app.html' + h); }
+    })();
+    function toggleDarkMode() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+      }
+      document.getElementById('home-dark-label').textContent = isDark ? 'Dark Mode' : 'Light Mode';
+    }
+    if (document.documentElement.getAttribute('data-theme') === 'dark') {
+      document.getElementById('home-dark-label').textContent = 'Light Mode';
+    }
+  </script>
+  <script src="assets/anonymous-analytics.js"></script>
+</body>
+</html>

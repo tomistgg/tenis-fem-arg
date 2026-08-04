@@ -1,0 +1,50 @@
+{
+  "tie_id": "fixture-tie-2026",
+  "tie": {
+    "_name": "W-FC-2026-WG-M-ARG-ESP-01",
+    "startDate": "2026-04-10T12:00:00Z",
+    "endDate": "2026-04-11T17:00:00Z",
+    "surfaceFriendlyName": "Clay",
+    "venue": {"country": {"name": "Argentina"}},
+    "matches": [
+      {
+        "id": "fixture-match-1",
+        "winnerSideId": "side-arg",
+        "orderInRound": 1,
+        "resultStatusDesc": "Completed",
+        "sides": [
+          {
+            "id": "side-arg",
+            "sideSets": [
+              {"setNumber": 1, "setScore": 7, "setTieBreakScore": 0},
+              {"setNumber": 2, "setScore": 6, "setTieBreakScore": 0}
+            ],
+            "sidePlayer": [
+              {
+                "player": {
+                  "_admin_name": "Solana Sierra",
+                  "person": {"country": {"ISOcode": "ARG"}}
+                }
+              }
+            ]
+          },
+          {
+            "id": "side-esp",
+            "sideSets": [
+              {"setNumber": 1, "setScore": 6, "setTieBreakScore": 5},
+              {"setNumber": 2, "setScore": 2, "setTieBreakScore": 0}
+            ],
+            "sidePlayer": [
+              {
+                "player": {
+                  "_admin_name": "Sara Sorribes Tormo",
+                  "person": {"country": {"ISOcode": "ESP"}}
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
