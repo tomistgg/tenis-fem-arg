@@ -20,6 +20,7 @@ from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR, SITE_ROOT as RUNTIME_SIT
 from time_utils import madrid_today
 from pipeline_errors import DataValidationError
 from run_state import report_run_issue
+from runtime_logging import get_logger
 from utils import (
     dumps_readable, format_player_name, get_tournament_sort_order,
     get_surface_class, fix_encoding_keep_accents,
@@ -30,6 +31,9 @@ from utils import (
     write_text_if_changed,
 )
 from wta import _load_wta_csv
+
+
+logger = get_logger("html-generator")
 
 _CSP_PLACEHOLDER = "__WTARG_CSP_META__"
 _CSP_META_RE = re.compile(
@@ -508,7 +512,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             ]
         _write_js_bundle_file(player_aliases_bundle_path, '__WTA_PLAYER_MAPPING__', player_mapping_bundle)
     except (OSError, TypeError, ValueError) as e:
-        print(f"[warn] could not write player_aliases_wta_itf_bundle.js: {e}")
+        logger.warning(f"[warn] could not write player_aliases_wta_itf_bundle.js: {e}")
 
     # Load tournament draw sizes (combined WTA + ITF)
     draw_sizes_path = os.path.join(RUNTIME_DATA_DIR, 'tournament_draw_sizes.json')
@@ -516,7 +520,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         with open(draw_sizes_path, 'r', encoding='utf-8') as f:
             all_draw_sizes = expand_tournament_draw_sizes(json.load(f))
     except (OSError, json.JSONDecodeError) as e:
-        print(f"[warn] could not load tournament_draw_sizes.json: {e}")
+        logger.warning(f"[warn] could not load tournament_draw_sizes.json: {e}")
         all_draw_sizes = []
     itf_draw_sizes = [t for t in all_draw_sizes if t.get('source') == 'ITF']
     wta_draw_sizes = [t for t in all_draw_sizes if t.get('source') == 'WTA']
@@ -9754,7 +9758,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             desc = dsInfo.description;
                             drawSize = dsInfo.mainDrawSize > 32 ? 64 : 32;
                         }} else {{
-                            console.warn(`[Road to GS] ITF draw size fallback: "${{t.tournament}}" (${{t.date}}) not found in itfDrawSizes, using default`);
+                            console.debug(`[Road to GS] ITF draw size fallback: "${{t.tournament}}" (${{t.date}}) not found in itfDrawSizes, using default`);
                             desc = categoryToDesc[t.category] || '';
                             drawSize = categoryDrawSize[t.category] || 32;
                         }}
@@ -9768,7 +9772,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             drawSize = wtaInfo.mainDrawSize > 64 ? 128 : (wtaInfo.mainDrawSize > 32 ? 64 : 32);
                         }} else {{
                             if (wtaCategories.includes(t.category)) {{
-                                console.warn(`[Road to GS] WTA draw size fallback: "${{t.tournament}}" (${{t.date}}) not found in wtaDrawSizes, using default`);
+                                console.debug(`[Road to GS] WTA draw size fallback: "${{t.tournament}}" (${{t.date}}) not found in wtaDrawSizes, using default`);
                             }}
                             desc = categoryToDesc[t.category] || '';
                             drawSize = categoryDrawSize[t.category] || 32;

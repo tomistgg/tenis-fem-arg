@@ -99,6 +99,17 @@ Run the complete live refresh:
 python main.py
 ```
 
+Normal runs show phase summaries and warnings. Add `--verbose` to include
+per-tournament, cache, and retry diagnostics:
+
+```text
+python main.py --verbose
+```
+
+Logs are written to stderr so machine-readable command output can remain on
+stdout. `WTARG_VERBOSE=1` provides the same verbose logging for maintenance
+scripts that are run directly.
+
 `main.py` automatically restarts with `.venv` when the default `python`
 command points at an unsupported or incomplete interpreter. Confirm the
 automatic selection without starting a refresh:

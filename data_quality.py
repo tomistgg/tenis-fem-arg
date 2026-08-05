@@ -7,6 +7,7 @@ import csv
 import json
 import math
 import os
+import sys
 import tempfile
 from collections.abc import Mapping, Sequence
 from datetime import date, datetime, timezone
@@ -629,7 +630,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             deploy_root=args.deploy_root,
         )
     except DataValidationError as exc:
-        print(json.dumps({"status": "failed", "error": exc.as_dict()}, ensure_ascii=False, indent=2))
+        print(
+            json.dumps({"status": "failed", "error": exc.as_dict()}, ensure_ascii=False, indent=2),
+            file=sys.stderr,
+        )
         return 1
     if args.report:
         _atomic_write_report(Path(args.report), report)

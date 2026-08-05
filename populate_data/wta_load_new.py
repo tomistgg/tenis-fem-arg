@@ -23,6 +23,10 @@ from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
 from transactional_io import atomic_write_csv
 from pipeline_errors import PipelineError
 from run_state import report_run_issue
+from runtime_logging import get_logger
+
+
+logger = get_logger("wta-loader")
 
 MATCHES_URL = "https://api.wtatennis.com/tennis/tournaments/{tournament_id}/{year}/matches?states=L%2C+C"
 CALENDAR_URL = "https://api.wtatennis.com/tennis/tournaments/?page={page}&pageSize=100&excludeLevels=ITF%2C+Grand%20Slam&from={from_date}&to={to_date}"
@@ -339,7 +343,7 @@ if __name__ == "__main__":
     if tournaments is None:
         tournaments = _load_from_full_calendar_cache(from_date_str, to_date_str)
     if tournaments is not None:
-        print(f"  Using WTA calendar cache ({len(tournaments)} tournaments in window).")
+        logger.debug(f"  Using WTA calendar cache ({len(tournaments)} tournaments in window).")
     else:
         tournaments = fetch_tournaments_for_range(from_date_str, to_date_str)
 
@@ -381,7 +385,7 @@ if __name__ == "__main__":
         try:
             raw_matches = fetch_matches(t_id, t_year)
         except PipelineError as e:
-            print(f"  [!] Failed to fetch matches for {t_name} ({t_id}): {e}")
+            logger.warning(f"  [!] Failed to fetch matches for {t_name} ({t_id}): {e}")
             continue
 
         arg_matches = [
@@ -408,5 +412,5 @@ if __name__ == "__main__":
         added_players = sync_itf_players(player_table, new_rows)
         added_players += sync_wta_match_players(player_table, new_rows)
         if added_players:
-            print(f"Added {added_players} new ITF identities to the canonical player table.")
+            logger.info(f"Added {added_players} new ITF identities to the canonical player table.")
         append_to_csv(new_rows, OUTPUT_FILE)

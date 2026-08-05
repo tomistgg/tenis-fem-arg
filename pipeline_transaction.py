@@ -23,8 +23,10 @@ from run_state import (
     load_run_state,
 )
 from time_utils import utc_now
+from runtime_logging import get_logger
 
 
+logger = get_logger("transaction")
 PROJECT_ROOT = Path(__file__).resolve().parent
 PRODUCTION_DATA_DIR = PROJECT_ROOT / "data"
 STAGING_PARENT = PROJECT_ROOT / ".run_staging"
@@ -184,7 +186,7 @@ def _build_staged_deploy_site(
         "--quality",
         "88",
     ]
-    print(f"Building validated deploy site at {deploy_root}...")
+    logger.debug(f"Building validated deploy site at {deploy_root}...")
     try:
         completed = subprocess.run(
             command,
@@ -349,7 +351,7 @@ def _finish(
 ) -> int:
     state = finalize_run_state(run_state_path, status, **details)
     copy_run_state(run_state_path, LATEST_STATE_PATH)
-    print(
+    logger.info(
         f"Run {state.get('run_id', 'unknown')} finished with status={status}; "
         f"details={run_state_path}"
     )
@@ -377,7 +379,7 @@ def run_refresh_transaction(
     staging_root.mkdir(parents=True, exist_ok=False)
     initialize_run_state(run_state_path, run_id, staging_root)
     copy_run_state(run_state_path, LATEST_STATE_PATH)
-    print(f"Run {run_id} staging at {staging_root}")
+    logger.info(f"Run {run_id} staging at {staging_root}")
 
     try:
         shutil.copytree(PRODUCTION_DATA_DIR, staging_data)

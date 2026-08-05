@@ -28,6 +28,7 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from time_utils import MADRID, madrid_now, madrid_today, utc_now, utc_timestamp
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
+from runtime_logging import configure_logging, get_logger
 from pipeline_errors import DataValidationError
 from run_state import report_run_issue
 
@@ -79,6 +80,7 @@ from html_generator import generate_html
 from draws import fetch_tournament_draws, fetch_itf_tournament_draws, _draw_is_complete
 from tstrength import build_tstrength_data
 
+logger = get_logger("main")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = str(RUNTIME_DATA_DIR)
 TOURNAMENT_SNAPSHOT_FILE = os.path.join(DATA_DIR, "tournament_snapshot.json")
@@ -200,7 +202,7 @@ def _run_hourly_preflight():
     """Run the same data-refresh scripts the hourly workflow used to call separately."""
     timeout_seconds = int(os.getenv("WTARG_PREFLIGHT_TIMEOUT_SECONDS", "1500"))
     for label, script_path in HOURLY_PREFLIGHT_SCRIPTS:
-        print(f"Running {label} preflight...")
+        logger.info(f"Running {label} preflight...")
         subprocess.run(
             [sys.executable, script_path],
             check=True,
@@ -924,7 +926,7 @@ def _fill_missing_countries(players, entry_cache=None):
                     filled += 1
                     break
     if filled:
-        print(f"[PDF] Filled {filled} missing country codes from WTA Rankings")
+        logger.info(f"[PDF] Filled {filled} missing country codes from WTA Rankings")
 
 
 def _canonicalize_player_names(players, source="", names_only=False):
@@ -956,7 +958,7 @@ def _canonicalize_player_names(players, source="", names_only=False):
             player["name"] = mapped_name
             changed += 1
     if changed:
-        print(f"[Alias] Canonicalized {changed} player names")
+        logger.info(f"[Alias] Canonicalized {changed} player names")
     return players
 
 
@@ -1059,7 +1061,7 @@ def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_s
                 if inserted:
                     added += 1
     if added:
-        print(f"[PDF] Added {added} schedule entries from PDF entry lists")
+        logger.info(f"[PDF] Added {added} schedule entries from PDF entry lists")
 
 
 def _get_pdf_cache_keys():
@@ -1096,7 +1098,7 @@ def _refresh_entry_lists_from_pdfs(
     except FileNotFoundError:
         return
     except Exception as e:
-        print(f"[PDF] Failed to load {GS_PDF_URLS_FILE}: {e}")
+        logger.warning(f"[PDF] Failed to load {GS_PDF_URLS_FILE}: {e}")
         return
 
     pdf_session = requests.Session()
@@ -1182,7 +1184,7 @@ def _refresh_entry_lists_from_pdfs(
             if not _is_active(target_key):
                 continue
 
-            print(f"[PDF] Fetching {draw_type} entry list PDF for {cache_key}")
+            logger.debug(f"[PDF] Fetching {draw_type} entry list PDF for {cache_key}")
             try:
                 response = pdf_session.get(pdf_url, timeout=30)
                 response.raise_for_status()
@@ -1191,7 +1193,7 @@ def _refresh_entry_lists_from_pdfs(
                     raise ValueError(f"Unexpected non-PDF response for {pdf_url}")
             except Exception as e:
                 _restore_cached_list(target_key)
-                print(f"[PDF] Download failed for {pdf_url}: {e}")
+                logger.warning(f"[PDF] Download failed for {pdf_url}: {e}")
                 continue
 
             try:
@@ -1206,15 +1208,15 @@ def _refresh_entry_lists_from_pdfs(
                 )
             except Exception as e:
                 _restore_cached_list(target_key)
-                print(f"[PDF] Parse failed for {pdf_url}: {e}")
+                logger.warning(f"[PDF] Parse failed for {pdf_url}: {e}")
                 continue
 
             if not draw_main:
                 _restore_cached_list(target_key)
-                print(f"[PDF] No players parsed from {pdf_url}, skipping")
+                logger.warning(f"[PDF] No players parsed from {pdf_url}, skipping")
                 continue
 
-            print(f"[PDF] Parsed {len(draw_main)} {draw_type.upper()} + {len(draw_alt)} ALT from {pdf_url}")
+            logger.debug(f"[PDF] Parsed {len(draw_main)} {draw_type.upper()} + {len(draw_alt)} ALT from {pdf_url}")
 
             if draw_type == "qual":
                 _canonicalize_player_names(draw_main, source="wta")
@@ -1663,9 +1665,9 @@ def create_driver():
             if chrome_exe:
                 kwargs["browser_executable_path"] = chrome_exe
             driver = uc.Chrome(**kwargs)
-            print("Using undetected Chrome driver.")
+            logger.debug("Using undetected Chrome driver.")
         except Exception as e:
-            print(f"Warning creating undetected Chrome driver, falling back to Selenium: {e}")
+            logger.warning(f"Warning creating undetected Chrome driver, falling back to Selenium: {e}")
             driver = None
     else:
         driver = None
@@ -1819,12 +1821,12 @@ def log_data_status_warnings(data_status):
         requested = source_status.get("requestedDate")
         effective = source_status.get("effectiveDate")
         if status == "error":
-            print(f"Data status warning: {source} unavailable for {requested or 'requested date'}.")
+            logger.warning(f"Data status warning: {source} unavailable for {requested or 'requested date'}.")
         elif source_status.get("stale"):
             if requested and effective and requested != effective:
-                print(f"Data status warning: {source} using {effective} instead of {requested}.")
+                logger.warning(f"Data status warning: {source} using {effective} instead of {requested}.")
             else:
-                print(f"Data status warning: {source} using cached data.")
+                logger.warning(f"Data status warning: {source} using cached data.")
 
 
 def build_photos_by_player_manifest(manifest_path, photos_root_dir):
@@ -1900,7 +1902,7 @@ def _save_acceptance_state(state):
     try:
         save_json_file(ITF_ACCEPTANCE_STATE_FILE, state)
     except Exception as e:
-        print(f"Warning: could not save ITF acceptance state: {e}")
+        logger.warning(f"Warning: could not save ITF acceptance state: {e}")
 
 
 def process_tournaments(
@@ -1934,7 +1936,7 @@ def process_tournaments(
     acceptance_state = _load_acceptance_state()
     acceptance_state_dirty = False
     if force_itf_acceptance:
-        print("Forcing refresh of all currently available ITF acceptance lists.")
+        logger.info("Forcing refresh of all currently available ITF acceptance lists.")
 
     def _priority_num(value):
         text = str(value or "").strip()
@@ -2009,7 +2011,7 @@ def process_tournaments(
     total_weeks = len(mondays) or 4
 
     for i, week_monday in enumerate(mondays, start=1):
-        print(f"Processing Tournaments ({i}/{total_weeks})")
+        logger.debug(f"Processing Tournaments ({i}/{total_weeks})")
         week = monday_map.get(week_monday)
         if not week:
             continue
@@ -2204,16 +2206,16 @@ def process_tournaments(
                     tourney_players_list = list(cached_players)
                     itf_name_map = {}
                 elif already_updated_today and not force_itf_acceptance:
-                    print(f"  ITF acceptance list already updated today, skipping fetch: {t_name}")
+                    logger.debug(f"  ITF acceptance list already updated today, skipping fetch: {t_name}")
                     tourney_players_list = list(cached_players)
                     itf_name_map = {}
                 elif not force_itf_acceptance and fetched_today_no_change and _past_noon_utc and (
                     not _is_double_check_day or not _past_6pm_spain or evening_already_fetched
                 ):
                     if _is_double_check_day and not _past_6pm_spain:
-                        print(f"  ITF acceptance list unchanged this morning, will re-check after 6 pm Spain: {t_name}")
+                        logger.debug(f"  ITF acceptance list unchanged this morning, will re-check after 6 pm Spain: {t_name}")
                     else:
-                        print(f"  ITF acceptance list unchanged through noon UTC, skipping: {t_name}")
+                        logger.debug(f"  ITF acceptance list unchanged through noon UTC, skipping: {t_name}")
                     tourney_players_list = list(cached_players)
                     itf_name_map = {}
                 elif not list_available:
@@ -2236,13 +2238,13 @@ def process_tournaments(
                         cached_fp = _acceptance_fingerprint(cached_players)
                         fresh_fp = _acceptance_fingerprint(fresh_players)
                         if cached_fp != fresh_fp:
-                            print(f"  ITF acceptance list updated for: {t_name}")
+                            logger.info(f"  ITF acceptance list updated for: {t_name}")
                             state_entry["last_changed_date"] = today_str
                             acceptance_state_dirty = True
                         else:
-                            print(f"  No changes in ITF acceptance list yet for: {t_name}")
+                            logger.debug(f"  No changes in ITF acceptance list yet for: {t_name}")
                     else:
-                        print(f"  Using cached ITF acceptance list (fetch failed): {t_name}")
+                        logger.warning(f"  Using cached ITF acceptance list (fetch failed): {t_name}")
 
                 # Preserve the saved cache when ITF returns nothing. We still
                 # use a working copy for ranking/seeding/schedule generation,
@@ -2424,7 +2426,7 @@ def load_match_history():
                 for row in reader:
                     match_history_data.append(row)
         except Exception as e:
-            print(f"Error reading matches data from {file_path}: {e}")
+            logger.error(f"Error reading matches data from {file_path}: {e}")
 
     def _history_identity_source(match_type):
         value = str(match_type or "").strip().upper()
@@ -2580,11 +2582,20 @@ def main():
         help="Skip the hourly preflight refresh scripts and only run the main update flow.",
     )
     parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Show per-tournament and cache-level diagnostic progress.",
+    )
+    parser.add_argument(
         "--force-itf-acceptance",
         action="store_true",
         help="Fetch every currently available ITF acceptance list, ignoring same-day and current-week skips.",
     )
     args = parser.parse_args()
+
+    if args.verbose:
+        os.environ["WTARG_VERBOSE"] = "1"
+    configure_logging(verbose=True if args.verbose else None)
 
     if not args.fast:
         _run_hourly_preflight()
@@ -2608,10 +2619,10 @@ def main():
         # 2b. Fetch ITF draws tournament list and prefetch draw payloads before
         # heavier ITF traffic later in the run.
         if skip_draws_fetch:
-            print("Skipping ITF draws tournament list fetch (SKIP_DRAWS_FETCH=1).")
+            logger.info("Skipping ITF draws tournament list fetch (SKIP_DRAWS_FETCH=1).")
             itf_draws_tournaments = {}
         else:
-            print("Fetching ITF draws tournament list...")
+            logger.info("Fetching ITF draws tournament list...")
             itf_draws_tournaments = get_draws_itf_tournament_list(driver)
         if ENABLE_ITF_DRAWS_PREFETCH and not skip_draws_fetch:
             itf_prefetch_jobs = []
@@ -2626,7 +2637,7 @@ def main():
 
             total_itf_prefetch = len(itf_prefetch_jobs) or 1
             for i, (week, t_key, t_info) in enumerate(itf_prefetch_jobs, start=1):
-                print(f"Prefetching ITF Draws ({i}/{total_itf_prefetch})")
+                logger.debug(f"Prefetching ITF Draws ({i}/{total_itf_prefetch})")
                 tid = t_info.get("tournamentId")
                 is_multiweek = t_info.get("is_multiweek", False)
                 dvr = create_driver()
@@ -2731,7 +2742,7 @@ def main():
         if entry_end and entry_end <= today_date and _draw_is_complete((entry.get("draws") or {}).get("MDS")):
             mark_draw_completed(store_key)
     if skip_draws_fetch:
-        print("Skipping draws fetch (SKIP_DRAWS_FETCH=1). Using cached draws store.")
+        logger.info("Skipping draws fetch (SKIP_DRAWS_FETCH=1). Using cached draws store.")
         draws_tournaments = {}
         itf_draws_tournaments = {}
     else:
@@ -2746,13 +2757,13 @@ def main():
                 continue
             store_key = _canonical_draw_store_key(t_key)
             if is_draw_completed(store_key):
-                print(f"  Skipping completed WTA draw: {t_info.get('name', '')}")
+                logger.debug(f"  Skipping completed WTA draw: {t_info.get('name', '')}")
                 continue
             active_draw_keys.add(store_key)
             wta_draw_jobs.append((week, t_key, t_info))
 
     total_wta_draws = len(wta_draw_jobs) or 1
-    print(f"Fetching WTA Draws (0/{total_wta_draws}) — parallel")
+    logger.info(f"Fetching WTA Draws (0/{total_wta_draws}) — parallel")
 
     def _fetch_wta_draw_job(job):
         week, t_key, t_info = job
@@ -2770,9 +2781,9 @@ def main():
             except Exception as e:
                 week, t_key, t_info = futures[fut]
                 t_draws = {}
-                print(f"  [!] WTA draw fetch failed for {t_info.get('name','')}: {e}")
+                logger.warning(f"  [!] WTA draw fetch failed for {t_info.get('name','')}: {e}")
             wta_draw_results[_canonical_draw_store_key(t_key)] = (week, t_key, t_info, t_draws)
-            print(f"  WTA draw fetched ({done}/{total_wta_draws}): {t_info.get('name','')}")
+            logger.debug(f"  WTA draw fetched ({done}/{total_wta_draws}): {t_info.get('name','')}")
 
     for store_key, (week, t_key, t_info, t_draws) in wta_draw_results.items():
         prev = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
@@ -2786,7 +2797,7 @@ def main():
                 # Don't overwrite a non-empty cached draw with an empty new fetch
                 if (isinstance(old_draw, dict) and old_draw.get("players")
                         and isinstance(new_draw, dict) and not new_draw.get("players")):
-                    print(f"  Keeping cached {dtype_code} for {t_info.get('name','')} (new fetch returned empty)")
+                    logger.warning(f"  Keeping cached {dtype_code} for {t_info.get('name','')} (new fetch returned empty)")
                     continue
                 merged_draws[dtype_code] = new_draw
         if merged_draws:
@@ -2795,7 +2806,7 @@ def main():
                 if t_draws else get_cache_timestamp(DRAWS_STORE_CACHE_FILE, store_key, prev)
             )
             if not t_draws and prev_draws:
-                print(f"  Using cached WTA draws for: {t_info.get('name','')}")
+                logger.warning(f"  Using cached WTA draws for: {t_info.get('name','')}")
             arg_visibility = _itf_cached_draw_arg_visibility({"draws": merged_draws})
             draws_store[store_key] = {
                 "name": t_info["name"],
@@ -2832,9 +2843,9 @@ def main():
             cached_entry = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
             skip_reason = _itf_draw_skip_reason(store_key, t_info, acceptance_players, cached_entry, today)
             if skip_reason is not None:
-                print(f"  Skipping ITF draw for: {t_info.get('name', '')} ({skip_reason})")
+                logger.debug(f"  Skipping ITF draw for: {t_info.get('name', '')} ({skip_reason})")
                 if cached_entry and _itf_cached_draw_arg_visibility(cached_entry).get("has_arg_any"):
-                    print(f"  Keeping cached ARG ITF draws for: {t_info.get('name', '')}")
+                    logger.debug(f"  Keeping cached ARG ITF draws for: {t_info.get('name', '')}")
                 continue
             active_draw_keys.add(store_key)
             tid = (t_info or {}).get("tournamentId")
@@ -2847,7 +2858,7 @@ def main():
                 existing = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
                 existing_draws = existing.get("draws") if isinstance(existing.get("draws"), dict) else {}
                 if existing_draws:
-                    print(f"  Keeping cached ITF draws for: {t_info.get('name', '')} (missing tournamentId)")
+                    logger.warning(f"  Keeping cached ITF draws for: {t_info.get('name', '')} (missing tournamentId)")
                     arg_visibility = _itf_cached_draw_arg_visibility({"draws": existing_draws})
                     draws_store[store_key] = _merge_draw_store_entry(existing, {
                         "name": t_info.get("name", ""),
@@ -2908,7 +2919,7 @@ def main():
         return draws_result, meta
 
     for i, (week, t_key, t_info, count_empty_for_backoff, requested_draw_types) in enumerate(itf_draw_jobs, start=1):
-        print(f"Fetching ITF Draws ({i}/{total_itf_draws})")
+        logger.debug(f"Fetching ITF Draws ({i}/{total_itf_draws})")
         # Keep request cadence gentle to avoid ITF anti-bot throttling.
         # draws._fetch_itf_drawsheet bypasses itf.py's rate limiter, so pace here.
         if i > 1:
@@ -2923,7 +2934,7 @@ def main():
         qs_complete = _draw_is_complete(prev_draws.get("QS"), is_qualifying=True)
         mds_complete = _draw_is_complete(prev_draws.get("MDS"))
         if mds_complete and (qs_complete or "QS" not in prev_draws):
-            print(f"  Draws complete, using cache: {t_info.get('name','')}")
+            logger.debug(f"  Draws complete, using cache: {t_info.get('name','')}")
             arg_visibility = _itf_cached_draw_arg_visibility({"draws": prev_draws})
             draws_store[store_key] = _merge_draw_store_entry(prev, {
                 "name": t_info["name"],
@@ -2955,7 +2966,7 @@ def main():
         ):
             # ITF often enforces a short temporary block after the tournament-id burst.
             # Wait once, then retry the same event with a fresh session.
-            print(f"  ITF cooldown triggered ({ITF_FIRST_BURST_COOLDOWN_SEC}s) before retrying draw fetch...")
+            logger.warning(f"  ITF cooldown triggered ({ITF_FIRST_BURST_COOLDOWN_SEC}s) before retrying draw fetch...")
             time.sleep(ITF_FIRST_BURST_COOLDOWN_SEC)
             itf_cooloff_applied = True
             t_draws, meta = _fetch_itf_draws_with_meta(
@@ -2989,7 +3000,7 @@ def main():
                 if t_draws else get_cache_timestamp(DRAWS_STORE_CACHE_FILE, store_key, prev)
             )
             if not t_draws and prev_draws:
-                print(f"  Using cached ITF draws for: {t_info.get('name','')}")
+                logger.warning(f"  Using cached ITF draws for: {t_info.get('name','')}")
             arg_visibility = _itf_cached_draw_arg_visibility({"draws": merged_draws})
             draws_store[store_key] = {
                 "name": t_info["name"],
@@ -3008,7 +3019,7 @@ def main():
                 itf_consecutive_blocked += 1
                 itf_consecutive_empty = 0
                 if itf_consecutive_blocked >= ITF_CONSECUTIVE_BLOCKED_THRESHOLD and i < total_itf_draws:
-                    print(f"  ITF backoff triggered ({ITF_CONSECUTIVE_BLOCKED_BACKOFF_SEC}s) after consecutive 403 blocks.")
+                    logger.warning(f"  ITF backoff triggered ({ITF_CONSECUTIVE_BLOCKED_BACKOFF_SEC}s) after consecutive 403 blocks.")
                     time.sleep(ITF_CONSECUTIVE_BLOCKED_BACKOFF_SEC)
                     itf_consecutive_blocked = 0
                     itf_consecutive_empty = 0
@@ -3027,7 +3038,7 @@ def main():
                     # legitimately return nothing and should not look like a block.
                     draw_label = _itf_draw_types_label(requested_draw_types)
                     draw_noun = f"{draw_label} draw" if draw_label in {"main", "qualifying"} else f"{draw_label} draws"
-                    print(f"  ITF backoff triggered ({ITF_CONSECUTIVE_EMPTY_BACKOFF_SEC}s) after consecutive ARG-relevant empty {draw_noun} - refreshing session.")
+                    logger.warning(f"  ITF backoff triggered ({ITF_CONSECUTIVE_EMPTY_BACKOFF_SEC}s) after consecutive ARG-relevant empty {draw_noun} - refreshing session.")
                     time.sleep(ITF_CONSECUTIVE_EMPTY_BACKOFF_SEC)
                     _quit_driver(driver, "recycle empty ITF browser")
                     driver = create_driver()
@@ -3096,7 +3107,7 @@ def main():
     build_calendar_snapshot(calendar_data)
 
     # 7b. Build tournament strength data (cached)
-    print("Processing WTA Tournament Strength")
+    logger.info("Processing WTA Tournament Strength")
     tstrength_data = build_tstrength_data()
 
     # 8. Generate HTML

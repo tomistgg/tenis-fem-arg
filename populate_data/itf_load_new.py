@@ -23,6 +23,7 @@ from transactional_io import atomic_write_dataframe
 from pipeline_errors import DataValidationError, PipelineError
 from run_state import record_run_issue, report_run_issue
 from http_client import get_with_retry
+from runtime_logging import get_logger
 
 # `uc.Chrome.__del__` can raise WinError 6 on Windows after we already call
 # `quit()` explicitly. We manage shutdown ourselves, so disable the destructor
@@ -32,6 +33,7 @@ uc.Chrome.__del__ = lambda self: None
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
 
+logger = get_logger("itf-loader")
 DATA_DIR = str(RUNTIME_DATA_DIR)
 TOURNAMENT_LINK_PREFIX = "/en/tournament/"
 ITF_EVENT_FILTERS_CACHE_FILE = os.path.join(DATA_DIR, "itf_event_filters_cache.json")
@@ -212,7 +214,7 @@ def _warn_unresolved_tournament_ids(tournaments_df):
     """Log missing source IDs as expected skips, without affecting run status."""
     unresolved_ids = int((tournaments_df["tournamentId"] == "").sum())
     if unresolved_ids:
-        print(
+        logger.debug(
             f"  [i] Skipping {unresolved_ids} ITF tournament(s) with no source ID."
         )
     return unresolved_ids
@@ -265,7 +267,7 @@ def _get_chrome_major_version():
                             return int(info.dwFileVersionMS >> 16)
             except (OSError, ValueError, AttributeError):
                 # Fall through to executable-based Chrome version detection.
-                print("  [i] Native Chrome version probe failed; trying executable probes.")
+                logger.debug("  [i] Native Chrome version probe failed; trying executable probes.")
     for cmd in (
         ["google-chrome", "--version"],
         ["google-chrome-stable", "--version"],
@@ -302,7 +304,7 @@ def _get_chrome_executable_path():
             except OSError:
                 continue
     except (ImportError, OSError) as exc:
-        print(f"  [!] Windows Chrome registry lookup unavailable: {exc}")
+        logger.warning(f"  [!] Windows Chrome registry lookup unavailable: {exc}")
 
     for env_name in ("PROGRAMFILES", "PROGRAMFILES(X86)", "LOCALAPPDATA"):
         base = os.environ.get(env_name) or ""
@@ -439,7 +441,7 @@ def fetch_itf_ids_to_json(keys_list, driver=None):
             missing_keys.append(key)
 
     if missing_keys:
-        print(f"  Fetching {len(missing_keys)} IDs not in cache (cached {len(results)}/{len(keys_list)}).")
+        logger.info(f"  Fetching {len(missing_keys)} IDs not in cache (cached {len(results)}/{len(keys_list)}).")
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
             "Accept": "application/json, text/plain, */*",
@@ -482,7 +484,7 @@ def fetch_itf_ids_to_json(keys_list, driver=None):
             existing.update(newly_fetched)
             save_json_file(ITF_EVENT_FILTERS_CACHE_FILE, existing)
     else:
-        print(f"  All {len(keys_list)} tournament IDs resolved from cache.")
+        logger.debug(f"  All {len(keys_list)} tournament IDs resolved from cache.")
 
     return json.dumps(results)
 
@@ -541,7 +543,7 @@ def fetch_api_data(tId, classification, week_number=0, driver=None, tournament_n
             )
             if blocked_response:
                 if attempt == 0:
-                    print(
+                    logger.warning(
                         f"  [i] ITF draw rate-limited for {tournament_name} "
                         f"(id={tId}, code={classification}); retrying after "
                         f"{ITF_DRAWSHEET_BLOCK_COOLDOWN_SECONDS:.0f}s"
@@ -556,7 +558,7 @@ def fetch_api_data(tId, classification, week_number=0, driver=None, tournament_n
                     save_drawsheet(tId, classification, week_number, data)
                     return data
                 if stale_cached is not None:
-                    print(
+                    logger.warning(
                         f"  [i] Using stale cached ITF draw for {tournament_name} "
                         f"(id={tId}, code={classification}) after empty live payload"
                     )
@@ -580,7 +582,7 @@ def fetch_api_data(tId, classification, week_number=0, driver=None, tournament_n
     if blocked_response:
         _record_itf_block(tId, classification, week_number, tournament_name)
         if stale_cached is not None:
-            print(
+            logger.warning(
                 f"  [i] Using stale cached ITF draw for {tournament_name} "
                 f"(id={tId}, code={classification}) after throttled retry was blocked"
             )
@@ -602,7 +604,7 @@ def fetch_api_data(tId, classification, week_number=0, driver=None, tournament_n
         )
 
     if stale_cached is not None:
-        print(
+        logger.warning(
             f"  [i] Using stale cached ITF draw for {tournament_name} "
             f"(id={tId}, code={classification}) after live fetch failed"
         )
@@ -658,13 +660,13 @@ def fetch_tournament_draw_data(tournament_id, tournament_name, codes, week_numbe
             # block and made the immediate retry ineffective.
             results, blocked_codes = _fetch_codes(external_driver, codes)
             if blocked_codes:
-                print(
+                logger.error(
                     f"  [!] ITF draw still blocked for {tournament_name} "
                     f"after throttled retry: {', '.join(blocked_codes)}"
                 )
             return results
         except Exception as e:
-            print(f"  [!] Draw fetch failed for {tournament_name} (shared session): {e}")
+            logger.warning(f"  [!] Draw fetch failed for {tournament_name} (shared session): {e}")
         return {}
 
     # Fallback for callers without a shared driver. The HTTP helper already
@@ -680,11 +682,11 @@ def fetch_tournament_draw_data(tournament_id, tournament_name, codes, week_numbe
             if any(best_results.values()) and not blocked_codes:
                 return best_results
         except Exception as e:
-            print(f"  [!] Draw fetch failed for {tournament_name} (attempt {attempt}): {e}")
+            logger.warning(f"  [!] Draw fetch failed for {tournament_name} (attempt {attempt}): {e}")
 
         if blocked_codes and attempt == 1:
             cooldown = random.uniform(6.0, 10.0)
-            print(
+            logger.warning(
                 f"  [!] Blocked draw response for {tournament_name}; "
                 f"retrying with a fresh session after {cooldown:.1f}s"
             )
@@ -697,7 +699,7 @@ def fetch_tournament_draw_data(tournament_id, tournament_name, codes, week_numbe
 
         if attempt < max_attempts:
             cooldown = random.uniform(10.0, 16.0)
-            print(
+            logger.warning(
                 f"  [!] Empty/blocked draw response for {tournament_name}; "
                 f"retrying with a fresh session after {cooldown:.1f}s"
             )
@@ -917,7 +919,7 @@ def update_csv_smart(filename, new_data_df, reset_if_not_current_week=False, cur
                     context={"path": file_path, "cause": str(e)},
                 ) from e
         else:
-            print(f"[!] No date column found in {filename}. Resetting file.")
+            logger.error(f"[!] No date column found in {filename}. Resetting file.")
             existing_df = pd.DataFrame()
 
     # Logic 2: Deduplication (Add only what doesn't exist)
@@ -1063,10 +1065,10 @@ if __name__ == "__main__":
         # authoritative here. Read it first and only fall back to a live
         # GetCalendar fetch when the persistent cache is missing (e.g. very
         # first run on a fresh checkout).
-        print(f"  ITF calendar window ({window_label}): {window_start} -> {window_end}")
+        logger.info(f"  ITF calendar window ({window_label}): {window_start} -> {window_end}")
         cached_items = _load_cached_calendar_tournaments(window_start, window_end)
         if not cached_items:
-            print("[!] No cached calendar available; falling back to live GetCalendar fetch.")
+            logger.warning("[!] No cached calendar available; falling back to live GetCalendar fetch.")
             live_items = get_itf_calendar_for_range(
                 window_start.strftime("%Y-%m-%d"),
                 window_end.strftime("%Y-%m-%d"),
@@ -1089,24 +1091,24 @@ if __name__ == "__main__":
                 raw_data.append(t)
                 seen_keys.add(key)
         if not raw_data:
-            print("  No ITF tournaments are scheduled in this window.")
+            logger.info("  No ITF tournaments are scheduled in this window.")
             raise SystemExit(0)
-        print(f"  ITF calendar window: {len(raw_data)} tournaments.")
+        logger.info(f"  ITF calendar window: {len(raw_data)} tournaments.")
 
         tournaments_df = create_tournament_df(raw_data)
 
         if tournaments_df is None or tournaments_df.empty:
-            print("  No eligible ITF tournaments remain after calendar normalization.")
+            logger.info("  No eligible ITF tournaments remain after calendar normalization.")
             raise SystemExit(0)
         completed_mask = tournaments_df["tournamentKey"].map(
             lambda key: bool(key and is_draw_completed(_canonical_draw_store_key(key)))
         )
         if completed_mask.any():
             skipped_completed = int(completed_mask.sum())
-            print(f"  Skipping {skipped_completed} completed tournament(s) already marked finished.")
+            logger.debug(f"  Skipping {skipped_completed} completed tournament(s) already marked finished.")
             tournaments_df = tournaments_df.loc[~completed_mask].copy()
         if tournaments_df.empty:
-            print("  All ITF tournaments in this window were already completed.")
+            logger.info("  All ITF tournaments in this window were already completed.")
             raise SystemExit(0)
 
         # On Friday, next-week tournaments are included in the calendar window
@@ -1118,19 +1120,19 @@ if __name__ == "__main__":
             today=madrid_today(),
         )
         if skipped_future_week:
-            print(f"  Skipping {skipped_future_week} next-week tournament(s) until the weekend before they start.")
+            logger.debug(f"  Skipping {skipped_future_week} next-week tournament(s) until the weekend before they start.")
         if tournaments_df.empty:
-            print("  No ITF tournaments are eligible for draw polling today.")
+            logger.info("  No ITF tournaments are eligible for draw polling today.")
             raise SystemExit(0)
 
         keys_list = tournaments_df["tournamentKey"].dropna().unique().tolist()
 
         # Warm up browser on ITF BEFORE any API calls so Incapsula session is valid
-        print("  Warming up browser session...")
+        logger.debug("  Warming up browser session...")
         try:
             driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
             time.sleep(4)
-            print("  Browser session ready.")
+            logger.debug("  Browser session ready.")
         except Exception as e:
             report_run_issue("itf-loader", "warm browser", e, severity="degraded")
 
@@ -1144,7 +1146,7 @@ if __name__ == "__main__":
         cached_ids = _load_cached_tournament_ids()
         missing_id_mask = final_df["tournamentId"].isna()
         if missing_id_mask.any() and cached_ids:
-            print(f"[!] {missing_id_mask.sum()} tournament(s) missing IDs from live fetch; filling from cache.")
+            logger.warning(f"[!] {missing_id_mask.sum()} tournament(s) missing IDs from live fetch; filling from cache.")
             for idx in final_df.index[missing_id_mask]:
                 key = str(final_df.at[idx, "tournamentKey"] or "").strip().lower()
                 cached_id = cached_ids.get(key)
@@ -1185,7 +1187,7 @@ if __name__ == "__main__":
         week_groups = [list(g) for _, g in groupby(tournaments_list, key=_week_key)]
         for group_idx, week_group in enumerate(week_groups):
             if group_idx > 0:
-                print(f"  Sleeping 35s before next week's tournaments...")
+                logger.debug(f"  Sleeping 35s before next week's tournaments...")
                 time.sleep(35)
             random.shuffle(week_group)
             for tourney in week_group:
@@ -1197,7 +1199,7 @@ if __name__ == "__main__":
                     continue
 
                 if not tId or pd.isna(tId) or str(tId) == "":
-                    print(f"  Skipping {tName} — no tournament ID")
+                    logger.debug(f"  Skipping {tName} — no tournament ID")
                     continue
 
                 active_count += 1
@@ -1228,7 +1230,7 @@ if __name__ == "__main__":
                                     all_matches.extend(parsed)
                                     has_data_this_week = True
                             else:
-                                print(f"  [!] No data returned for {tName} (id={tId}, code={code}, week={week})")
+                                logger.debug(f"  [!] No data returned for {tName} (id={tId}, code={code}, week={week})")
 
                         if not has_data_this_week:
                             break
@@ -1253,10 +1255,10 @@ if __name__ == "__main__":
                             parsed = parse_drawsheet(json_data, tourney, code, week_offset=0)
                             all_matches.extend(parsed)
                         else:
-                            print(f"  [!] No data returned for {tName} (id={tId}, code={code})")
+                            logger.debug(f"  [!] No data returned for {tName} (id={tId}, code={code})")
 
                 added = len(all_matches) - tourney_matches_before
-                print(f"  {tName} (id={tId}): {added} ARG matches found")
+                logger.debug(f"  {tName} (id={tId}): {added} ARG matches found")
 
                 got_any_draw = any(v for v in draw_payloads.values() if v)
                 if got_any_draw:
@@ -1264,7 +1266,7 @@ if __name__ == "__main__":
                 else:
                     consecutive_empty += 1
                     if consecutive_empty >= _MAX_CONSECUTIVE_EMPTY:
-                        print(f"  [!] {consecutive_empty} consecutive empty results — refreshing browser session.")
+                        logger.warning(f"  [!] {consecutive_empty} consecutive empty results — refreshing browser session.")
                         _quit_driver(driver, "recycle empty-results browser")
                         driver = create_driver()
                         try:
@@ -1279,7 +1281,7 @@ if __name__ == "__main__":
 
                 time.sleep(random.uniform(5.0, 10.0))
 
-        print(f"Tournaments processed: {active_count}, total ARG matches found: {len(all_matches)}")
+        logger.info(f"Tournaments processed: {active_count}, total ARG matches found: {len(all_matches)}")
 
     finally:
         _quit_driver(driver)
@@ -1291,13 +1293,13 @@ if __name__ == "__main__":
             Path(DATA_DIR) / "player_aliases_wta_itf.json", all_matches
         )
         if added_players:
-            print(f"Added {added_players} new ITF identities to the canonical player table.")
+            logger.info(f"Added {added_players} new ITF identities to the canonical player table.")
         new_matches_df = pd.DataFrame(all_matches)
         update_csv_smart(
             "itf_matches_arg.csv",
             new_matches_df,
             reset_if_not_current_week=False
         )
-        print(f"CSV update complete.")
+        logger.info(f"CSV update complete.")
     else:
-        print("No new ARG matches found — CSV not updated.")
+        logger.info("No new ARG matches found — CSV not updated.")

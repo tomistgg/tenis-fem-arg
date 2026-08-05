@@ -18,17 +18,19 @@ from http_client import get_with_retry, request_with_retry
 from transactional_io import atomic_write_dataframe
 from pipeline_errors import DataValidationError, PipelineError
 from run_state import report_run_issue
+from runtime_logging import get_logger
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
 
+logger = get_logger("grand-slam-loader")
 DATA_DIR = str(RUNTIME_DATA_DIR)
 TOURNAMENT_LINK_PREFIX = "/en/tournament/"
 
 def create_tournament_df(tournament_list):
     tournament_list = expand_gs_calendar_cache(tournament_list)
     if not tournament_list:
-        print("No data provided.")
+        logger.warning("No data provided.")
         return None
 
     rows = []
@@ -62,7 +64,7 @@ def fetch_itf_ids_to_json(keys_list):
 
     for key in keys_list:
         api_url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
-        print(f"Fetching ID for {key}...")
+        logger.debug(f"Fetching ID for {key}...")
 
         try:
             response = request_with_retry(
@@ -320,18 +322,18 @@ if __name__ == "__main__":
         tournaments_df = create_tournament_df(raw_data)
 
         if tournaments_df is None or tournaments_df.empty:
-            print(f"DataFrame creation failed for {file_name}.")
+            logger.error(f"DataFrame creation failed for {file_name}.")
             continue
 
-        print("Step 2: Fetching Tournament IDs...")
+        logger.info("Step 2: Fetching Tournament IDs...")
         keys_list = tournaments_df["tournamentKey"].dropna().unique().tolist()
         json_ids_string = fetch_itf_ids_to_json(keys_list)
 
-        print("Step 3: Merging Data...")
+        logger.debug("Step 3: Merging Data...")
         final_df = merge_ids_with_pandas(tournaments_df, json_ids_string)
         final_df['tournamentId'] = final_df['tournamentId'].fillna(0).astype(int).astype(str).replace('0', '')
 
-        print(f"Step 4: Fetching Match Details for {len(final_df)} tournaments...")
+        logger.info(f"Step 4: Fetching Match Details for {len(final_df)} tournaments...")
 
         tournaments_list = final_df.to_dict('records')
 
@@ -341,14 +343,14 @@ if __name__ == "__main__":
             tCategory = tourney.get("category", "")
 
             if tCategory and str(tCategory).strip().startswith("Tier"):
-                print(f"Skipping {tName} (Excluded Category: {tCategory})")
+                logger.debug(f"Skipping {tName} (Excluded Category: {tCategory})")
                 continue
 
             if not tId or pd.isna(tId):
-                print(f"Skipping {tName} (No ID found)")
+                logger.debug(f"Skipping {tName} (No ID found)")
                 continue
 
-            print(f"Processing: {tName} (ID: {int(tId)})")
+            logger.debug(f"Processing: {tName} (ID: {int(tId)})")
 
             for code in ["Q", "M"]:
                 json_data = fetch_api_data(int(tId), code, week_number=0)
@@ -357,7 +359,7 @@ if __name__ == "__main__":
                     offset = -1 if code == "Q" else 0
                     parsed = parse_drawsheet(json_data, tourney, code, week_offset=offset)
                     all_matches.extend(parsed)
-                    print(f"   -> {code}: Found {len(parsed)} ARG matches")
+                    logger.debug(f"   -> {code}: Found {len(parsed)} ARG matches")
 
                 time.sleep(0.2)
 
@@ -368,7 +370,7 @@ if __name__ == "__main__":
             Path(DATA_DIR) / "player_aliases_wta_itf.json", all_matches
         )
         if added_players:
-            print(f"Added {added_players} new ITF identities to the canonical player table.")
+            logger.info(f"Added {added_players} new ITF identities to the canonical player table.")
         final_matches_df = pd.DataFrame(all_matches)
         file_path = os.path.join(DATA_DIR, "gs_matches_arg.csv")
 
@@ -381,7 +383,7 @@ if __name__ == "__main__":
             combined_df = combined_df.drop_duplicates(subset=['_canonical_key'], keep='last')
             combined_df = combined_df.drop(columns=['_canonical_key'])
             atomic_write_dataframe(combined_df, file_path, index=False, encoding='utf-8-sig')
-            print(f"\nSUCCESS! Appended current GS data. Total rows now: {len(combined_df)}\n{file_path}")
+            logger.info(f"Appended current GS data; total rows: {len(combined_df)}; file: {file_path}")
         else:
             final_matches_df['_canonical_key'] = final_matches_df.apply(
                 lambda row: source_match_key(row.to_dict(), "grand_slam"), axis=1
@@ -390,6 +392,6 @@ if __name__ == "__main__":
                 subset=['_canonical_key'], keep='last'
             ).drop(columns=['_canonical_key'])
             atomic_write_dataframe(final_matches_df, file_path, index=False, encoding='utf-8-sig')
-            print(f"\nSUCCESS! Saved {len(final_matches_df)} ARG matches to:\n{file_path}")
+            logger.info(f"Saved {len(final_matches_df)} ARG matches to {file_path}")
     else:
-        print(f"\nFinished processing files, but no ARG matches were found.")
+        logger.info("Finished processing files, but no ARG matches were found.")

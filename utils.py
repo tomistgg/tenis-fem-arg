@@ -11,8 +11,10 @@ from config import (
     COUNTRY_TO_CONTINENT, COUNTRY_OVERRIDES
 )
 from time_utils import utc_timestamp
+from runtime_logging import get_logger
 from runtime_paths import DATA_DIR
 
+logger = get_logger("utils")
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 _CACHE_STATE_FILE = os.path.join(DATA_DIR, "cache_state.json")
 _DRAWS_STORE_CACHE_FILE = os.path.join(DATA_DIR, "draws_store_cache.json")
@@ -325,7 +327,7 @@ def load_cache(cache_file, *, strict=False):
     except Exception as e:
         if strict:
             raise
-        print(f"Warning: ignoring unreadable cache {cache_file}: {e}")
+        logger.warning(f"Warning: ignoring unreadable cache {cache_file}: {e}")
         return {}
 
 
@@ -2106,5 +2108,5 @@ def load_csv_rows(file_path, delimiter=','):
             for row in reader:
                 rows.append(row)
     except Exception as e:
-        print(f"Error reading {file_path}: {e}")
+        logger.error(f"Error reading {file_path}: {e}")
     return rows

@@ -24,6 +24,7 @@ from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
 from http_client import get_with_retry
 from time_utils import madrid_today, parse_utc_timestamp, utc_now
 from itf_drawsheet_cache import get_cached_drawsheet, save_drawsheet
+from runtime_logging import get_logger
 
 DATA_DIR = str(RUNTIME_DATA_DIR)
 from utils import (
@@ -33,6 +34,8 @@ from utils import (
     get_cache_timestamp,
     save_json_array_one_line_per_item,
 )
+
+logger = get_logger("draw-sizes")
 POINTS_DIST_PATH = os.path.join(DATA_DIR, "points_distribution.json")
 OUTPUT_PATH = os.path.join(DATA_DIR, "tournament_draw_sizes.json")
 
@@ -99,7 +102,7 @@ def wta_fetch_tournaments(from_date, to_date):
                 break
             page += 1
         except Exception as e:
-            print(f"  Error fetching WTA page {page}: {e}")
+            logger.warning(f"  Error fetching WTA page {page}: {e}")
             break
     return all_tournaments
 
@@ -114,7 +117,7 @@ def wta_count_qualifying_players(tournament_id, year):
         )
         matches = r.json().get("matches", [])
     except Exception as e:
-        print(f"  Error fetching WTA matches for {tournament_id}/{year}: {e}")
+        logger.warning(f"  Error fetching WTA matches for {tournament_id}/{year}: {e}")
         return 0
 
     players = set()
@@ -175,14 +178,14 @@ def _load_wta_calendar_cache(from_date, to_date):
 
 
 def fetch_wta_updates(from_date, to_date, desc_set):
-    print("Fetching WTA tournaments...")
+    logger.info("Fetching WTA tournaments...")
     cached = _load_wta_calendar_cache(from_date, to_date)
     if cached is not None:
         tournaments = cached
-        print(f"  Using WTA calendar cache ({len(tournaments)} tournaments).")
+        logger.debug(f"  Using WTA calendar cache ({len(tournaments)} tournaments).")
     else:
         tournaments = wta_fetch_tournaments(from_date, to_date)
-    print(f"  Found {len(tournaments)} WTA tournaments in range")
+    logger.info(f"  Found {len(tournaments)} WTA tournaments in range")
 
     today = madrid_today()
     results = []
@@ -217,7 +220,7 @@ def fetch_wta_updates(from_date, to_date, desc_set):
         })
 
         q_info = f", {qual_size}Q" if qual_size else ""
-        print(f"  {name}: {level}, {main_draw_size}M{q_info} -> {desc or 'NO MATCH'}")
+        logger.debug(f"  {name}: {level}, {main_draw_size}M{q_info} -> {desc or 'NO MATCH'}")
 
     return results
 
@@ -432,7 +435,7 @@ def _fill_ids_via_selenium(tournaments):
             except Exception:
                 t["tournamentId"] = None
     except Exception as e:
-        print(f"  [!] Selenium ID fetch error: {e}")
+        logger.warning(f"  [!] Selenium ID fetch error: {e}")
     finally:
         driver.quit()
 
@@ -453,7 +456,7 @@ def _fetch_itf_via_selenium(from_date, to_date):
         time.sleep(2)
         raw = driver.find_element("tag name", "body").text.strip()
         items = json.loads(raw).get("items", [])
-        print(f"  Found {len(items)} ITF tournaments in range")
+        logger.info(f"  Found {len(items)} ITF tournaments in range")
 
         seen_keys = set()
         tournaments = []
@@ -489,7 +492,7 @@ def _fetch_itf_via_selenium(from_date, to_date):
 
         return tournaments
     except Exception as e:
-        print(f"  Error in Selenium ITF fetch: {e}")
+        logger.warning(f"  Error in Selenium ITF fetch: {e}")
         return None
     finally:
         driver.quit()
@@ -497,7 +500,7 @@ def _fetch_itf_via_selenium(from_date, to_date):
 
 def fetch_itf_updates(from_date, to_date, itf_descs):
     """Fetch ITF tournaments for the given date range, preferring persistent caches."""
-    print("Fetching ITF tournaments...")
+    logger.info("Fetching ITF tournaments...")
 
     # Try calendar cache first — year-wide cache written by main.py is authoritative.
     cached_items = _load_itf_calendar_cache(from_date, to_date)
@@ -506,7 +509,7 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
     results = []
 
     if cached_items is not None:
-        print(f"  Using calendar cache ({len(cached_items)} items in range).")
+        logger.debug(f"  Using calendar cache ({len(cached_items)} items in range).")
         seen_keys = set()
         tournaments = []
         for item in cached_items:
@@ -532,10 +535,10 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
             })
         missing_ids = [t for t in tournaments if not t["tournamentId"]]
         if missing_ids:
-            print(f"  {len(missing_ids)} tournament(s) missing IDs from cache; fetching via Selenium.")
+            logger.warning(f"  {len(missing_ids)} tournament(s) missing IDs from cache; fetching via Selenium.")
             _fill_ids_via_selenium(missing_ids)
     else:
-        print("  No calendar cache found; falling back to live Selenium fetch.")
+        logger.warning("  No calendar cache found; falling back to live Selenium fetch.")
         tournaments = _fetch_itf_via_selenium(from_date, to_date)
         if tournaments is None:
             return results
@@ -544,7 +547,7 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
     for t in tournaments:
         t_id = t.get("tournamentId")
         if not t_id:
-            print(f"  Skipping {t['tournamentName']} (no ID)")
+            logger.debug(f"  Skipping {t['tournamentName']} (no ID)")
             continue
 
         name = t["tournamentName"]
@@ -586,7 +589,7 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
                     "qualifyingSize": qual_size,
                     "description": desc,
                 })
-                print(f"  {week_name}: {main_size}M, {qual_size}Q -> {desc or 'NO MATCH'}")
+                logger.debug(f"  {week_name}: {main_size}M, {qual_size}Q -> {desc or 'NO MATCH'}")
 
                 week += 1
                 if week > 10:
@@ -612,7 +615,7 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
                 "qualifyingSize": qual_size,
                 "description": desc,
             })
-            print(f"  {name}: {main_size}M, {qual_size}Q -> {desc or 'NO MATCH'}")
+            logger.debug(f"  {name}: {main_size}M, {qual_size}Q -> {desc or 'NO MATCH'}")
 
     return results
 
@@ -633,27 +636,27 @@ def main():
 
     # Load existing data
     existing = load_existing()
-    print(f"Existing entries: {len(existing)}")
+    logger.debug(f"Existing entries: {len(existing)}")
 
     # Prune old entries
     before_prune = len(existing)
     existing = [t for t in existing if (t.get("date") or "") >= cutoff]
     pruned = before_prune - len(existing)
     if pruned:
-        print(f"Pruned {pruned} entries older than {cutoff}")
+        logger.info(f"Pruned {pruned} entries older than {cutoff}")
         save_results(existing)
 
     # Check if next week's tournaments are already present
     next_week_entries = [t for t in existing if t.get("date") == next_monday]
     if next_week_entries:
-        print(f"Next week ({next_monday}) already has {len(next_week_entries)} entries, skipping fetch.")
-        print(f"Total: {len(existing)} entries")
+        logger.info(f"Next week ({next_monday}) already has {len(next_week_entries)} entries, skipping fetch.")
+        logger.info(f"Total: {len(existing)} entries")
         return
 
     # Fetch range: prev week through next week
     from_date = (week_start - timedelta(days=7)).strftime("%Y-%m-%d")
     to_date = (week_start + timedelta(days=13)).strftime("%Y-%m-%d")
-    print(f"Fetching tournaments from {from_date} to {to_date}")
+    logger.info(f"Fetching tournaments from {from_date} to {to_date}")
 
     # Build dedup keys for existing entries
     existing_keys = set()
@@ -685,8 +688,8 @@ def main():
     # Save
     save_results(existing)
 
-    print(f"\nAdded {added} new entries")
-    print(f"Total: {len(existing)} entries saved")
+    logger.info(f"Added {added} new entries")
+    logger.info(f"Total: {len(existing)} entries saved")
 
 
 if __name__ == "__main__":

@@ -16,7 +16,9 @@ from time_utils import madrid_today
 from transactional_io import atomic_write_dataframe
 from pipeline_errors import PipelineError
 from run_state import report_run_issue
+from runtime_logging import get_logger
 
+logger = get_logger("bjkc-loader")
 DATA_DIR = str(RUNTIME_DATA_DIR)
 
 # --- CONFIGURATION ---
@@ -144,10 +146,10 @@ def parse_tie_matches(tie_data, tie_id, current_year=None):
 
 def main():
     all_ties = []
-    print(f"--- Phase 1: Fetching Draws {START_YEAR} to {END_YEAR} (Argentina Filter) ---")
+    logger.info(f"--- Phase 1: Fetching Draws {START_YEAR} to {END_YEAR} (Argentina Filter) ---")
     
     for year in range(START_YEAR, END_YEAR + 1):
-        print(f"Processing Year: {year}...", end="\r")
+        logger.debug(f"Processing year: {year}")
         try:
             response = get_with_retry(
                 f"{SERIES_BASE_URL}{year}",
@@ -184,25 +186,25 @@ def main():
                                     if check_nation(tie.get('homeNation')) or check_nation(tie.get('awayNation')):
                                         all_ties.append({**draw_info, "tieId": tie.get('id'), "roundName": tie.get('round')})
         except PipelineError as e:
-            print(f"\nError fetching {year}: {e}")
+            logger.error(f"Error fetching {year}: {e}")
         except Exception as e:
             report_run_issue(
                 "bjkc-series", "parse series", e, severity="partial",
                 context={"year": year},
             )
-            print(f"\nError parsing {year}: {e}")
+            logger.debug(f"Error parsing {year}: {e}")
 
     if not all_ties:
-        print("\nNo ties found for Argentina.")
+        logger.info("No ties found for Argentina.")
         return
 
     df_ties = pd.DataFrame(all_ties).drop_duplicates(subset=['tieId'])
     unique_ids = df_ties['tieId'].dropna().unique().tolist()
     
-    print(f"\n--- Phase 2: Fetching Matches for {len(unique_ids)} Argentina Ties ---")
+    logger.info(f"Phase 2: fetching matches for {len(unique_ids)} Argentina ties")
     match_results = []
     for i, tid in enumerate(unique_ids):
-        print(f"Ties: {i+1}/{len(unique_ids)}", end="\r")
+        logger.debug(f"Ties: {i+1}/{len(unique_ids)}")
         try:
             r = get_with_retry(
                 f"{TIE_BASE_URL}{tid}",
@@ -224,7 +226,7 @@ def main():
 
     # Phase 3: Final Merge and Column Order
     if not match_results:
-        print("\nNo match results found.")
+        logger.info("No match results found.")
         return
 
     final_df = pd.merge(df_ties, pd.DataFrame(match_results), on="tieId", how="inner")
@@ -278,7 +280,7 @@ def main():
             lineterminator="\r\n",
         )
 
-        print(f"\nDone! Upserted {len(final_df)} matches ({inserted_count} inserted, {updated_count} refreshed) into '{csv_filename}'.")
+        logger.info(f"Upserted {len(final_df)} matches ({inserted_count} inserted, {updated_count} refreshed) into '{csv_filename}'.")
     else:
         # File doesn't exist, create it and write headers
         atomic_write_dataframe(
@@ -288,7 +290,7 @@ def main():
             quoting=csv.QUOTE_ALL,
             lineterminator="\r\n",
         )
-        print(f"\nDone! Saved {len(final_df)} rows to a new file '{csv_filename}'.")
+        logger.info(f"Saved {len(final_df)} rows to a new file '{csv_filename}'.")
 
 if __name__ == "__main__":
     from pipeline_transaction import run_current_script_transaction, transaction_is_active

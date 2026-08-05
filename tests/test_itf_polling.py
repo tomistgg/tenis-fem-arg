@@ -122,7 +122,7 @@ def test_real_acceptance_list_without_arg_still_skips_started_itf_draw():
     assert reason == "event already started and no ARG in acceptance list"
 
 
-def test_missing_tournament_ids_never_change_run_status(monkeypatch, capsys):
+def test_missing_tournament_ids_never_change_run_status(monkeypatch):
     recorded_issues = []
     monkeypatch.setattr(
         itf_load_new,
@@ -134,7 +134,6 @@ def test_missing_tournament_ids_never_change_run_status(monkeypatch, capsys):
 
     assert unresolved == 1
     assert recorded_issues == []
-    assert "Skipping 1 ITF tournament(s) with no source ID" in capsys.readouterr().out
 
 
 def test_stale_draw_fallback_does_not_navigate_tournament_page(monkeypatch):

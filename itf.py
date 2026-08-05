@@ -25,6 +25,10 @@ from calendar_builder import get_next_monday
 from time_utils import madrid_today, parse_utc_timestamp, utc_now
 from pipeline_errors import DataValidationError, SourceRequestError
 from run_state import report_run_issue
+from runtime_logging import get_logger
+
+
+logger = get_logger("itf")
 
 ITF_BASE_URL = "https://www.itftennis.com"
 ITF_CALENDAR_PAGE_URL = f"{ITF_BASE_URL}/en/tournament-calendar/womens-world-tennis-tour-calendar/"
@@ -356,7 +360,7 @@ def _itf_note_browser_unavailable(exc):
     global _itf_browser_unavailable
     if not _itf_browser_unavailable:
         message = str(exc).splitlines()[0] or type(exc).__name__
-        print(f"Warning: ITF browser session unavailable; using cache/HTTP fallback: {message}")
+        logger.warning(f"Warning: ITF browser session unavailable; using cache/HTTP fallback: {message}")
     _itf_browser_unavailable = True
 
 
@@ -374,7 +378,7 @@ def _ensure_itf_session(driver, force_navigation=False):
         if _is_invalid_browser_session(e):
             _itf_note_browser_unavailable(e)
         else:
-            print(f"Warning warming ITF session: {e}")
+            logger.warning(f"Warning warming ITF session: {e}")
     _itf_session_warmed = True
 
 
@@ -805,7 +809,7 @@ def _fetch_itf_calendar_raw(driver):
     # almost always redundant on the same cron run.
     fresh_items = _load_itf_calendar_disk_cache(target_year=current_year, max_age_seconds=_ITF_CALENDAR_CACHE_TTL)
     if fresh_items:
-        print(f"  Using fresh ITF calendar disk cache ({len(fresh_items)} items).")
+        logger.debug(f"  Using fresh ITF calendar disk cache ({len(fresh_items)} items).")
         live_items, _, _ = _fetch_itf_calendar_range(
             driver,
             today.strftime("%Y-%m-%d"),
@@ -843,7 +847,7 @@ def _fetch_itf_calendar_raw(driver):
         return _itf_calendar_raw
 
     if all_items:
-        print(f"Partial ITF calendar fetch ({len(all_items)}/{expected_total}) — using disk cache to avoid false-positive new-tournament alerts.")
+        logger.warning(f"Partial ITF calendar fetch ({len(all_items)}/{expected_total}) — using disk cache to avoid false-positive new-tournament alerts.")
 
     # When the year-wide paginated fetch is blocked or partial, supplement it
     # with a reverse-ordered future-only fetch. This makes late-season
@@ -858,7 +862,7 @@ def _fetch_itf_calendar_raw(driver):
         max_pages=4,
     )
     if future_items and not future_complete and future_total:
-        print(
+        logger.warning(
             f"Partial ITF future supplement ({len(future_items)}/{future_total}) "
             "â€” merging with cache where possible."
         )
@@ -866,7 +870,7 @@ def _fetch_itf_calendar_raw(driver):
     merged_items = _merge_itf_calendar_items(cached_items, all_items, future_items)
     if merged_items:
         if cached_items:
-            print(f"Using merged ITF calendar fallback ({len(merged_items)} items).")
+            logger.warning(f"Using merged ITF calendar fallback ({len(merged_items)} items).")
         _itf_calendar_raw = merged_items
         _save_itf_calendar_disk_cache(merged_items, current_year)
         return _itf_calendar_raw
@@ -947,7 +951,7 @@ def get_itf_players(tournament_key, driver):
         name_map = _build_name_map(root_data)
         return root_data, name_map
     except Exception as e:
-        print(f"Error en {tournament_key}: {e}")
+        logger.error(f"Error en {tournament_key}: {e}")
         return [], {}
 
 
@@ -1195,7 +1199,7 @@ def _load_itf_rankings_cache(*, strict=False):
     except Exception as e:
         if strict:
             raise
-        print(f"Warning: ignoring unreadable ITF rankings cache {ITF_CACHE_FILE}: {e}")
+        logger.warning(f"Warning: ignoring unreadable ITF rankings cache {ITF_CACHE_FILE}: {e}")
         return {}
 
 
@@ -1203,7 +1207,7 @@ def _save_itf_rankings_cache(cache_obj):
     try:
         save_json_file(ITF_CACHE_FILE, compress_itf_rankings_cache(cache_obj or {}))
     except Exception as e:
-        print(f"Warning: could not save ITF rankings cache {ITF_CACHE_FILE}: {e}")
+        logger.warning(f"Warning: could not save ITF rankings cache {ITF_CACHE_FILE}: {e}")
 
 
 def get_itf_rankings_cached(date_str, nationality="ARG", *, with_status=False):
@@ -1229,7 +1233,7 @@ def get_itf_rankings_cached(date_str, nationality="ARG", *, with_status=False):
         new_data = get_itf_rankings(nationality=nationality)
     except (ItfApiFetchError, ItfApiPartialData) as e:
         fetch_error = e
-        print(f"Warning: ITF rankings refresh failed for {date_str}: {e}")
+        logger.warning(f"Warning: ITF rankings refresh failed for {date_str}: {e}")
     if new_data:
         cache[date_str] = new_data
         _save_itf_rankings_cache(cache)

@@ -21,6 +21,7 @@ from config import repair_name_text
 from execution_analysis import analyze_execution, effective_run_status
 from time_utils import parse_utc_timestamp, utc_now
 from html_generator import country_flag_html
+from runtime_logging import get_logger
 from utils import (
     fix_encoding,
     expand_calendar_snapshot,
@@ -32,6 +33,7 @@ from utils import (
     write_text_if_changed,
 )
 
+logger = get_logger("run-report")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MAX_MATCH_LINES_PER_FILE = 50
 RANKINGS_CSV_FILES = ["wta_rankings_83_99.csv", "wta_rankings_00_09.csv", "wta_rankings_10_19.csv", "wta_rankings_20_29.csv"]
@@ -998,7 +1000,7 @@ def main():
             os.makedirs(email_dir, exist_ok=True)
         write_text_if_changed(args.email_output, email_markdown, encoding="utf-8")
 
-    print(markdown)
+    logger.info("Run report written to %s", args.output)
 
 
 if __name__ == "__main__":

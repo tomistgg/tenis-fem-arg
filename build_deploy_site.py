@@ -5,9 +5,11 @@ import uuid
 from pathlib import Path
 
 from PIL import Image, ImageOps
+from runtime_logging import get_logger
 from runtime_paths import DATA_DIR, SITE_ROOT
 
 
+logger = get_logger("build")
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_OUTPUT_DIR = BASE_DIR / ".site"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
@@ -218,7 +220,7 @@ def build_site(output_dir, max_edge=DEFAULT_MAX_EDGE, quality=DEFAULT_QUALITY):
             try:
                 shutil.rmtree(backup)
             except OSError as exc:
-                print(f"Warning: deploy backup cleanup failed: {backup}: {exc}")
+                logger.warning(f"Warning: deploy backup cleanup failed: {backup}: {exc}")
         print(f"Built deploy site at {destination} with {data_copied} data files; photos excluded.")
     finally:
         if staged.exists():

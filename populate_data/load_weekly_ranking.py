@@ -16,7 +16,9 @@ from transactional_io import atomic_write_csv
 from utils import save_json_file
 from pipeline_errors import PipelineError
 from run_state import report_run_issue
+from runtime_logging import get_logger
 
+logger = get_logger("weekly-ranking")
 RANKINGS_CSV = WTA_RANKINGS_CSV
 CSV_FIELDNAMES = ["week_date", "id", "rank", "points", "player", "country", "dob"]
 MIN_CURRENT_WEEK_ROWS = 1000
@@ -127,7 +129,7 @@ def rewrite_csv(by_date):
 
 def fetch_from_api(date_str):
     """Fetch rankings from API and return as CSV-format row dicts."""
-    print(f"  Fetching from API for {date_str}...")
+    logger.debug(f"  Fetching from API for {date_str}...")
     try:
         data = get_rankings(date_str)
     except Exception as e:
@@ -135,7 +137,7 @@ def fetch_from_api(date_str):
             "wta-rankings", "fetch weekly ranking", e, severity="degraded",
             context={"week_date": date_str, "fallback": "existing ranking"},
         )
-        print(f"  Error fetching rankings for {date_str}: {e}")
+        logger.debug(f"  Error fetching rankings for {date_str}: {e}")
         return []
     if not data:
         report_run_issue(
@@ -149,9 +151,9 @@ def fetch_from_api(date_str):
             ),
             severity="degraded",
         )
-        print(f"  Could not fetch rankings for {date_str}.")
+        logger.warning(f"  Could not fetch rankings for {date_str}.")
         return []
-    print(f"  Fetched {len(data)} players.")
+    logger.debug(f"  Fetched {len(data)} players.")
     return [{
         "week_date": date_str,
         "id":        p.get("Id", ""),
@@ -175,12 +177,12 @@ def main():
     for date_str in sorted(by_date.keys()):
         if csv_date_is_complete(by_date[date_str]):
             continue
-        print(f"CSV for {date_str} is incomplete. Re-fetching...")
+        logger.warning(f"CSV for {date_str} is incomplete. Re-fetching...")
         rows = fetch_from_api(date_str)
         if rows and ranking_is_valid(rows):
             added = sync_wta_players(Path(PLAYER_ALIASES_WTA_ITF_FILE), rows)
             if added:
-                print(f"  Added {added} new WTA identities to the canonical player table.")
+                logger.info(f"  Added {added} new WTA identities to the canonical player table.")
             by_date[date_str] = rows
             needs_rewrite = True
 
@@ -192,20 +194,20 @@ def main():
         and status_before.get("status") in accepted_status
     )
     if not status_is_accepted:
-        print(f"Fetching rankings for this week ({this_monday})...")
+        logger.info(f"Fetching rankings for this week ({this_monday})...")
         rows = fetch_from_api(this_monday)
         current_rows = by_date.get(this_monday) or []
         previous_rows = by_date.get(previous_monday) or []
         cutoff_passed = eastern_now.timetz().replace(tzinfo=None) >= PUBLICATION_CUTOFF
 
         if rows and not ranking_is_valid(rows):
-            print(f"Rejected incomplete/invalid ranking response for {this_monday}.")
+            logger.warning(f"Rejected incomplete/invalid ranking response for {this_monday}.")
             rows = []
 
         if rows:
             added = sync_wta_players(Path(PLAYER_ALIASES_WTA_ITF_FILE), rows)
             if added:
-                print(f"Added {added} new WTA identities to the canonical player table.")
+                logger.info(f"Added {added} new WTA identities to the canonical player table.")
             same_as_previous = bool(previous_rows) and ranking_signature(rows) == ranking_signature(previous_rows)
             if same_as_previous and not cutoff_passed:
                 # Remove a stale copy that may have been written by an older run.
@@ -220,7 +222,7 @@ def main():
                     "cutoff": "10:00 America/New_York",
                     "message": "The WTA response still matches last week; waiting until after the publication cutoff.",
                 }
-                print(status["message"])
+                logger.info(status["message"])
             else:
                 new_status = "confirmed_frozen" if same_as_previous else "confirmed_changed"
                 if by_date.get(this_monday) != rows:
@@ -238,7 +240,7 @@ def main():
                         "New WTA ranking accepted."
                     ),
                 }
-                print(status["message"])
+                logger.info(status["message"])
         else:
             # If an old run left an exact copy of last week's ranking under the
             # current date, do not present it as current while waiting.
@@ -258,24 +260,24 @@ def main():
                 "cutoff": "10:00 America/New_York",
                 "message": "No valid current-week WTA ranking was returned; retaining last week's ranking.",
             }
-            print(status["message"])
+            logger.info(status["message"])
         save_status(status)
     else:
         status = status_before
-        print(f"This week's ranking already accepted as {status.get('status')}.")
+        logger.debug(f"This week's ranking already accepted as {status.get('status')}.")
 
     # --- Step 3: check CSV is sorted ---
     if not needs_rewrite and not csv_is_sorted(by_date):
-        print("CSV is out of order. Rewriting to sort.")
+        logger.warning("CSV is out of order. Rewriting to sort.")
         needs_rewrite = True
 
     # --- Step 4: rewrite CSV if anything changed ---
     if needs_rewrite:
-        print("Rewriting CSV...")
+        logger.debug("Rewriting CSV...")
         rewrite_csv(by_date)
-        print("Done. CSV rewritten sorted by date and rank.")
+        logger.info("Done. CSV rewritten sorted by date and rank.")
     else:
-        print("CSV is up to date.")
+        logger.info("CSV is up to date.")
 
 
 if __name__ == "__main__":

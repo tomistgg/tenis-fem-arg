@@ -28,8 +28,10 @@ from transactional_io import atomic_write_csv
 from run_state import report_run_issue
 from pipeline_errors import PipelineError
 from http_client import get_with_retry
+from runtime_logging import get_logger
 
 
+logger = get_logger("wta")
 _wta_tournaments_raw = None  # module-level cache for raw WTA tournament API data
 _WTA_FULL_CALENDAR_CACHE_FILE = _os.path.join(DATA_DIR, "wta_full_calendar_cache.json")
 _WTA_FULL_CALENDAR_TTL = 3 * 60 * 60  # 3 hours
@@ -125,7 +127,7 @@ def _fetch_wta_tournaments_raw():
         if not items:
             cached_items = _load_cached_wta_tournaments_raw()
             if cached_items:
-                print("Using cached WTA tournaments (live API returned no items)")
+                logger.info("Using cached WTA tournaments (live API returned no items)")
                 _wta_tournaments_raw = cached_items
                 return _wta_tournaments_raw
         _wta_tournaments_raw = items
@@ -141,7 +143,7 @@ def _fetch_wta_tournaments_raw():
                 **{"from": from_date, "to": to_date},
             )
     except Exception as e:
-        print(f"Error fetching WTA tournaments: {e}")
+        logger.debug(f"Error fetching WTA tournaments: {e}")
         cached_items = _load_cached_wta_tournaments_raw()
         if cached_items:
             if not isinstance(e, PipelineError):
@@ -149,7 +151,7 @@ def _fetch_wta_tournaments_raw():
                     "wta", "fetch calendar", e, severity="degraded",
                     context={"fallback": "cached calendar"},
                 )
-            print("Using cached WTA tournaments after live fetch failure")
+            logger.warning("Using cached WTA tournaments after live fetch failure")
             _wta_tournaments_raw = cached_items
         else:
             report_run_issue(
@@ -720,7 +722,7 @@ def get_wta_rankings_cached(date_str, nationality=None, *, with_status=False):
         new_data = get_rankings(date_str, nationality=nationality)
     except (WtaApiRateLimited, WtaApiFetchError, WtaApiPartialData) as e:
         fetch_error = e
-        print(f"Warning: WTA rankings refresh failed for {date_str}: {e}")
+        logger.warning(f"Warning: WTA rankings refresh failed for {date_str}: {e}")
     if new_data:
         csv_data[date_str] = new_data
         _save_wta_csv_date(date_str, new_data)
@@ -815,14 +817,14 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
         )
         soup = BeautifulSoup(r.text, 'html.parser')
     except PipelineError as e:
-        print(f"Error scraping {url}: {e}")
+        logger.error(f"Error scraping {url}: {e}")
         return [], {}
     except Exception as e:
         report_run_issue(
             "wta", "parse tournament player list", e, severity="degraded",
             context={"url": str(url)},
         )
-        print(f"Error scraping {url}: {e}")
+        logger.debug(f"Error scraping {url}: {e}")
         return [], {}
 
     def _suffix_map_from_players(players):
@@ -898,7 +900,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
         # of overwriting the cache with an empty or doubles-only result.
         if (singles_count == 0 and (qual_count in (0, None)) and (doubles_count or 0) > 0):
             if cached_entries:
-                print(f"Using cached WTA entry list for {url} (live page shows doubles only)")
+                logger.warning(f"Using cached WTA entry list for {url} (live page shows doubles only)")
                 return list(cached_entries), _suffix_map_from_players(cached_entries)
             return [], {}
 

@@ -9,8 +9,10 @@ import fitz
 
 from utils import normalize_player_name
 from itf_drawsheet_cache import get_cached_drawsheet, save_drawsheet
+from runtime_logging import get_logger
 
 
+logger = get_logger("draws")
 _DRAW_TYPES = [
     ("MDS", "Main Draw"),
     ("QS", "Qualifying"),
@@ -727,13 +729,13 @@ def fetch_tournament_draws(tournament_url, year):
                 draw_data = parse_draw_pdf(pdf_bytes)
                 draws[dtype_code] = draw_data
             except Exception as e:
-                print(f"Error parsing {dtype_label} draw for {tid}: {e}")
+                logger.error(f"Error parsing {dtype_label} draw for {tid}: {e}")
 
     # If no main draw players from PDF, try the WTA matches API as fallback
     if not draws.get("MDS", {}).get("players"):
         api_draw = _fetch_draw_from_wta_api(tid, year)
         if api_draw and api_draw.get("players"):
-            print(f"  [WTA API] Built main draw for {tid} from matches API ({api_draw['draw_size']}-draw, {len(api_draw['matches'])} results)")
+            logger.debug(f"  [WTA API] Built main draw for {tid} from matches API ({api_draw['draw_size']}-draw, {len(api_draw['matches'])} results)")
             draws["MDS"] = api_draw
 
     return draws
@@ -1147,7 +1149,7 @@ def fetch_itf_tournament_draws(
                     draws[dtype_code] = parsed
                     break
             except Exception as e:
-                print(f"Error parsing ITF {dtype_label} for {tournament_id}: {e}")
+                logger.error(f"Error parsing ITF {dtype_label} for {tournament_id}: {e}")
     if return_meta:
         return draws, {"blocked_responses": blocked_responses}
     return draws

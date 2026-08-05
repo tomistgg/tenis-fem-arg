@@ -20,7 +20,9 @@ from pipeline_errors import DataValidationError
 from pipeline_errors import PipelineError
 from run_state import report_run_issue
 from http_client import get_with_retry
+from runtime_logging import get_logger
 
+logger = get_logger("tstrength")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = str(RUNTIME_DATA_DIR)
 RANKINGS_CSV = os.path.join(DATA_DIR, "wta_rankings_20_29.csv")
@@ -193,7 +195,7 @@ def _fetch_tournaments_range(year, from_date, to_date):
                 })
             page += 1
         except PipelineError as e:
-            print(f"Error fetching tournaments ({from_date} to {to_date}, page {page}): {e}")
+            logger.error(f"Error fetching tournaments ({from_date} to {to_date}, page {page}): {e}")
             return []
         except Exception as e:
             report_run_issue(
@@ -220,7 +222,7 @@ def _fetch_tournament_matches(tournament_id, year="2025"):
         data = r.json()
         return data.get("matches", []) or []
     except PipelineError as e:
-        print(f"  Error fetching matches for {tournament_id}: {e}")
+        logger.error(f"  Error fetching matches for {tournament_id}: {e}")
         return None
     except Exception as e:
         report_run_issue(
@@ -337,18 +339,18 @@ def build_tstrength_data(from_year=None, full_backfill=False):
     if full_backfill:
         start_year = int(from_year) if from_year is not None else int(current_year)
         end_year = int(current_year)
-        print(f"Full backfill: scanning {start_year}..{end_year} (through {today_str})")
+        logger.info(f"Full backfill: scanning {start_year}..{end_year} (through {today_str})")
         for y in range(start_year, end_year + 1):
             ys = str(y)
             if ys == current_year:
-                print(f"Fetching {ys} tournaments (YTD)...")
+                logger.debug(f"Fetching {ys} tournaments (YTD)...")
                 tournaments_to_consider.extend(_fetch_tournaments_range(ys, f"{ys}-01-01", today_str))
             else:
-                print(f"Fetching {ys} tournaments (full year)...")
+                logger.debug(f"Fetching {ys} tournaments (full year)...")
                 tournaments_to_consider.extend(
                     _fetch_tournaments_range(ys, f"{ys}-01-01", f"{ys}-12-31")
                 )
-        print(f"  Found {len(tournaments_to_consider)} tournaments in range")
+        logger.info(f"  Found {len(tournaments_to_consider)} tournaments in range")
     else:
         # Auto-backfill: if a run was missed for >3 weeks, widen the window so we still pick up
         # tournaments that finished while the script wasn't running.
@@ -375,9 +377,9 @@ def build_tstrength_data(from_year=None, full_backfill=False):
             from_dt = max(jan1, last_dt - timedelta(days=21))
             from_date = from_dt.strftime("%Y-%m-%d")
 
-        print(f"Fetching recent WTA tournaments ({from_date} to {today_str})...")
+        logger.info(f"Fetching recent WTA tournaments ({from_date} to {today_str})...")
         tournaments_to_consider = _fetch_tournaments_range(current_year, from_date, today_str)
-        print(f"  Found {len(tournaments_to_consider)} recent tournaments")
+        logger.info(f"  Found {len(tournaments_to_consider)} recent tournaments")
 
     # Filter to only uncached tournaments, plus cached placeholders that need a retry (per draw)
     tournament_needs = {}
@@ -400,12 +402,12 @@ def build_tstrength_data(from_year=None, full_backfill=False):
     new_tournaments = [t for t in tournaments_to_consider if f"{t['year']}_{t['id']}" in tournament_needs]
 
     if not new_tournaments:
-        print("  No new tournaments to process")
+        logger.info("  No new tournaments to process")
     else:
-        print(f"  {len(new_tournaments)} new tournaments to process")
+        logger.info(f"  {len(new_tournaments)} new tournaments to process")
 
         # Load rankings only if we have new tournaments
-        print("Loading rankings for T-Strength...")
+        logger.debug("Loading rankings for T-Strength...")
         rankings_index = _load_rankings_index()
         available_weeks = sorted(rankings_index.keys())
         unranked_players = {}
@@ -415,7 +417,7 @@ def build_tstrength_data(from_year=None, full_backfill=False):
             yr = t.get("year", current_year)
             needs = tournament_needs.get(f"{yr}_{tid}", set())
 
-            print(f"  Fetching players for {t['name']} ({t['startDate']})...")
+            logger.debug(f"  Fetching players for {t['name']} ({t['startDate']})...")
             matches = _fetch_tournament_matches(tid, yr)
             time.sleep(0.3)
             if matches is None:
@@ -495,10 +497,10 @@ def build_tstrength_data(from_year=None, full_backfill=False):
         save_json_file(TSTRENGTH_CACHE, compress_tstrength_cache(filtered_cache_values))
 
         if unranked_players:
-            print(f"\n=== UNRANKED PLAYERS (defaulted to {DEFAULT_RANK}) ===")
+            logger.debug(f"Unranked players (defaulted to {DEFAULT_RANK}):")
             for player, tourneys in sorted(unranked_players.items()):
-                print(f"  {player}: {', '.join(tourneys)}")
-            print(f"Total: {len(unranked_players)} unranked players\n")
+                logger.debug(f"  {player}: {', '.join(tourneys)}")
+            logger.warning(f"Total: {len(unranked_players)} unranked players")
 
     # Return all cached entries with actual players
     results = [

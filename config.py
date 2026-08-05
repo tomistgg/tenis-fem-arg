@@ -5,8 +5,10 @@ import subprocess
 import unicodedata
 
 from canonical_data import PlayerIdentityIndex, normalized_identifier
+from runtime_logging import get_logger
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
 
+logger = get_logger("config")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = str(RUNTIME_DATA_DIR)
 PLAYER_ALIASES_WTA_ITF_FILE = os.path.join(DATA_DIR, "player_aliases_wta_itf.json")
@@ -184,9 +186,9 @@ def load_player_mapping(filename=PLAYER_ALIASES_WTA_ITF_FILE):
 
     if read_error is not None:
         if isinstance(read_error, FileNotFoundError):
-            print(f"Alerta: No se encontro {filename}.")
+            logger.warning(f"Alerta: No se encontro {filename}.")
         else:
-            print(f"Alerta: error leyendo {filename}: {read_error}")
+            logger.warning(f"Alerta: error leyendo {filename}: {read_error}")
 
     return mapping
 
