@@ -1,5 +1,22 @@
 window.__WTA_HISTORY_DATA__ = [
   {
+    "TOURNAMENT_ID": "1100204783",
+    "DRAW": "M",
+    "TOURNAMENT": "W35 Chacabuco",
+    "CATEGORY": "W35",
+    "SURFACE": "Clay",
+    "MATCH_TYPE": "ITF",
+    "ROUND": "1st Round",
+    "_winnerEntry": "",
+    "_loserSeed": "",
+    "_resultStatusDesc": "",
+    "rows": [
+      {"DATE":"2026-08-05","SCORE":"6-4 6-2","_winnerId":"800577682","_loserId":"800603939","_winnerName":"Lourdes Ayala","_loserName":"Valentina Mediorreal Arias","_winnerCountry":"ARG","_loserCountry":"COL","_loserEntry":"","_winnerSeed":"","_winnerRank":"1009","_loserRank":"908"},
+      {"DATE":"2026-08-04","SCORE":"6-1 6-0","_winnerId":"800533853","_loserId":"800518949","_winnerName":"Lucciana Perez Alarcon","_loserName":"Melina Maruca","_winnerCountry":"PER","_loserCountry":"ARG","_loserEntry":"WC","_winnerSeed":"3","_winnerRank":"341","_loserRank":"1469"},
+      {"DATE":"2026-08-04","SCORE":"6-2 6-0","_winnerId":"800503473","_loserId":"800547910","_winnerName":"Florencia Urrutia","_loserName":"Luciana Moyano","_winnerCountry":"ARG","_loserCountry":"ARG","_loserEntry":"","_winnerSeed":"8","_winnerRank":"464","_loserRank":"558"}
+    ]
+  },
+  {
     "TOURNAMENT_ID": "1100204782",
     "DRAW": "M",
     "TOURNAMENT": "W35 Pergamino",
@@ -104,24 +121,6 @@ window.__WTA_HISTORY_DATA__ = [
     "_loserRank": "",
     "rows": [
       {}
-    ]
-  },
-  {
-    "TOURNAMENT_ID": "1100204783",
-    "DRAW": "M",
-    "TOURNAMENT": "W35 Chacabuco",
-    "CATEGORY": "W35",
-    "SURFACE": "Clay",
-    "MATCH_TYPE": "ITF",
-    "DATE": "2026-08-04",
-    "ROUND": "1st Round",
-    "_loserCountry": "ARG",
-    "_winnerEntry": "",
-    "_loserSeed": "",
-    "_resultStatusDesc": "",
-    "rows": [
-      {"SCORE":"6-1 6-0","_winnerId":"800533853","_loserId":"800518949","_winnerName":"Lucciana Perez Alarcon","_loserName":"Melina Maruca","_winnerCountry":"PER","_loserEntry":"WC","_winnerSeed":"3","_winnerRank":"341","_loserRank":"1469"},
-      {"SCORE":"6-2 6-0","_winnerId":"800503473","_loserId":"800547910","_winnerName":"Florencia Urrutia","_loserName":"Luciana Moyano","_winnerCountry":"ARG","_loserEntry":"","_winnerSeed":"8","_winnerRank":"464","_loserRank":"558"}
     ]
   },
   {

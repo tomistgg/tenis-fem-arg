@@ -21,7 +21,7 @@ if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
-from http_client import get_with_retry, post_with_retry
+from http_client import get_with_retry
 from time_utils import madrid_today, parse_utc_timestamp, utc_now
 from itf_drawsheet_cache import get_cached_drawsheet, save_drawsheet
 
@@ -250,10 +250,9 @@ def itf_fetch_drawsheet(t_id, classification, week_number=0):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
         "Referer": f"https://www.itftennis.com/en/tournament/draws-and-results/print/?tournamentId={t_id}&circuitCode=WT",
         "Origin": "https://www.itftennis.com",
-        "Content-Type": "application/json"
+        "Accept": "application/json, text/plain, */*",
     }
-    payload = {
-        "circuitCode": "WT",
+    params = {
         "eventClassificationCode": classification,
         "matchTypeCode": "S",
         "tourType": "N",
@@ -261,11 +260,11 @@ def itf_fetch_drawsheet(t_id, classification, week_number=0):
         "weekNumber": week_number
     }
     try:
-        r = post_with_retry(
+        r = get_with_retry(
             url,
             component="draw-sizes-itf",
             failure_status="degraded",
-            json=payload,
+            params=params,
             headers=headers,
         )
         data = r.json()

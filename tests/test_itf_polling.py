@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 import pandas as pd
 
+import draws
 import itf
 import main
 from populate_data import itf_load_new, tournament_sizes_update
@@ -197,7 +198,7 @@ def test_draw_size_fetch_uses_stale_cache_when_optional_api_is_blocked(monkeypat
     )
     monkeypatch.setattr(
         tournament_sizes_update,
-        "post_with_retry",
+        "get_with_retry",
         blocked_request,
     )
 
@@ -206,6 +207,14 @@ def test_draw_size_fetch_uses_stale_cache_when_optional_api_is_blocked(monkeypat
     assert result == stale_draw
     assert cache_calls == [False, True]
     assert request_kwargs["failure_status"] == "degraded"
+    assert request_kwargs["params"] == {
+        "eventClassificationCode": "M",
+        "matchTypeCode": "S",
+        "tourType": "N",
+        "tournamentId": "123",
+        "weekNumber": 0,
+    }
+    assert "json" not in request_kwargs
 
 
 def test_invalid_itf_browser_session_fast_fails_to_http_fallback(monkeypatch):
@@ -334,6 +343,80 @@ def test_drawsheet_block_recovers_after_quiet_period_without_browser_cookies(mon
     assert sleeps == [itf_load_new.ITF_DRAWSHEET_BLOCK_COOLDOWN_SECONDS]
     assert saved == [(1100203744, "M", 0, payload)]
     assert recorded_issues == []
+
+
+def test_website_draw_fetch_uses_direct_get_without_touching_browser(monkeypatch):
+    payloads = {
+        "M": {"koGroups": [{"rounds": []}], "draw": "main"},
+        "Q": {"koGroups": [{"rounds": []}], "draw": "qualifying"},
+    }
+    direct_calls = []
+
+    class BlockedBrowser:
+        def get(self, url):
+            raise AssertionError(f"Drawsheet must not prime the protected print page: {url}")
+
+        def execute_async_script(self, *args):
+            raise AssertionError("Drawsheet must not use the browser's blocked session")
+
+    def direct_fetch(tournament_id, classification, week_number=0):
+        direct_calls.append((tournament_id, classification, week_number))
+        return payloads[classification]
+
+    monkeypatch.setattr(draws, "get_cached_drawsheet", lambda *args, **kwargs: None)
+    monkeypatch.setattr(draws, "_fetch_itf_drawsheet", direct_fetch)
+    monkeypatch.setattr(draws, "save_drawsheet", lambda *args: None)
+    monkeypatch.setattr(
+        draws,
+        "_parse_itf_draw",
+        lambda data: {"players": [data["draw"]], "matches": []},
+    )
+
+    result, meta = draws.fetch_itf_tournament_draws(
+        1100204032,
+        driver=BlockedBrowser(),
+        tournament_name="W100 Landisville, PA",
+        return_meta=True,
+    )
+
+    assert result == {
+        "MDS": {"players": ["main"], "matches": []},
+        "QS": {"players": ["qualifying"], "matches": []},
+    }
+    assert direct_calls == [
+        (1100204032, "M", 0),
+        (1100204032, "Q", 0),
+    ]
+    assert meta == {"blocked_responses": []}
+
+
+def test_website_drawsheet_direct_get_uses_query_parameters(monkeypatch):
+    payload = {"koGroups": [{"rounds": []}]}
+    captured = {}
+
+    def direct_get(url, **kwargs):
+        captured.update(url=url, kwargs=kwargs)
+        return SimpleNamespace(
+            status_code=200,
+            text='{"koGroups":[{"rounds":[]}]}',
+            json=lambda: payload,
+        )
+
+    monkeypatch.setattr(draws, "_wait_for_itf_drawsheet_request_slot", lambda: None)
+    monkeypatch.setattr(draws.requests, "get", direct_get)
+
+    result = draws._fetch_itf_drawsheet(1100204032, "M", 0)
+
+    assert result == payload
+    assert captured["url"] == draws._ITF_DRAWSHEET_URL
+    assert captured["kwargs"]["params"] == {
+        "eventClassificationCode": "M",
+        "matchTypeCode": "S",
+        "tourType": "N",
+        "tournamentId": "1100204032",
+        "weekNumber": 0,
+    }
+    assert "json" not in captured["kwargs"]
 
 
 def test_driver_uses_bounded_eager_page_loading(monkeypatch):

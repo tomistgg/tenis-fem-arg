@@ -2965,9 +2965,10 @@ def main():
             merged_draws.update(prev_draws)
         if isinstance(t_draws, dict):
             merged_draws.update(t_draws)
-        # Extra gap-fill pass: if one ITF draw type is missing, try a couple of
-        # fresh sessions to recover the other type before falling back to cache.
-        if set(merged_draws.keys()) != {"MDS", "QS"}:
+        # Extra gap-fill pass for ordinary empty responses. A blocked request
+        # has already had its quiet-period retry; an immediate gap-fill burst
+        # only extends Imperva's block.
+        if set(merged_draws.keys()) != {"MDS", "QS"} and not fetch_had_block:
             for _ in range(2):
                 extra_draws, meta = _fetch_itf_draws_with_meta(
                     tid, is_multiweek, merged_draws, t_info.get("name", "")
@@ -3004,10 +3005,8 @@ def main():
                 itf_consecutive_blocked += 1
                 itf_consecutive_empty = 0
                 if itf_consecutive_blocked >= ITF_CONSECUTIVE_BLOCKED_THRESHOLD and i < total_itf_draws:
-                    print(f"  ITF backoff triggered ({ITF_CONSECUTIVE_BLOCKED_BACKOFF_SEC}s) after consecutive 403 blocks - refreshing session.")
+                    print(f"  ITF backoff triggered ({ITF_CONSECUTIVE_BLOCKED_BACKOFF_SEC}s) after consecutive 403 blocks.")
                     time.sleep(ITF_CONSECUTIVE_BLOCKED_BACKOFF_SEC)
-                    _quit_driver(driver, "recycle blocked ITF browser")
-                    driver = create_driver()
                     itf_consecutive_blocked = 0
                     itf_consecutive_empty = 0
             elif count_empty_for_backoff:

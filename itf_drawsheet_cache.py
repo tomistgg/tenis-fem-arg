@@ -1,7 +1,7 @@
 """Per-run cache for ITF Drawsheet API responses.
 
 Both populate_data/itf_load_new.py (match-history extraction) and main.py via
-draws.py (website bracket view) hit POST /tennis/api/TournamentApi/GetDrawsheet
+draws.py (website bracket view) hit GET /tennis/api/TournamentApi/GetDrawsheet
 with the same payload shape. This module lets the first caller populate a
 short-lived on-disk cache so the second caller can skip the redundant API hit.
 

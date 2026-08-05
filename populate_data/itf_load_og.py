@@ -18,7 +18,7 @@ if _REPO_ROOT not in sys.path:
 
 from utils import expand_gs_calendar_cache
 from canonical_data import source_match_key, sync_itf_players
-from http_client import post_with_retry
+from http_client import get_with_retry
 from transactional_io import atomic_write_dataframe
 from pipeline_errors import DataValidationError, PipelineError
 from run_state import report_run_issue
@@ -120,7 +120,7 @@ def fetch_api_data(tId, classification, week_number=0):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
         "Referer": f"https://www.itftennis.com/en/tournament/draws-and-results/print/?tournamentId={tId}&circuitCode=WT",
         "Origin": "https://www.itftennis.com",
-        "Content-Type": "application/json"
+        "Accept": "application/json, text/plain, */*",
     }
     
     payload = {
@@ -133,10 +133,10 @@ def fetch_api_data(tId, classification, week_number=0):
     }
     
     try:
-        response = post_with_retry(
+        response = get_with_retry(
             url,
             component="olympics-loader",
-            json=payload,
+            params=payload,
             headers=headers,
         )
         return response.json()

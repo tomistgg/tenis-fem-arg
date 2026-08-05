@@ -4,13 +4,11 @@ import json
 import re
 import time
 import random
-import urllib.parse
 import requests
 import fitz
 
 from utils import normalize_player_name
 from itf_drawsheet_cache import get_cached_drawsheet, save_drawsheet
-from run_state import report_run_issue
 
 
 _DRAW_TYPES = [
@@ -749,6 +747,9 @@ _ITF_DRAW_TYPES = [
 ]
 
 _ITF_DRAWSHEET_URL = "https://www.itftennis.com/tennis/api/TournamentApi/GetDrawsheet"
+_ITF_DRAWSHEET_REQUEST_INTERVAL_SECONDS = 13.0
+_ITF_DRAWSHEET_BLOCK_COOLDOWN_SECONDS = 30.0
+_LAST_ITF_DRAWSHEET_REQUEST_AT = 0.0
 
 _ITF_ENTRY_MAP = {
     "DA": "",
@@ -761,23 +762,6 @@ _ITF_ENTRY_MAP = {
 }
 
 
-def _prime_itf_draw_session(driver, tournament_id):
-    """Warm browser session on the tournament print page to reduce ITF API blocking."""
-    if driver is None:
-        return
-    try:
-        driver.get(
-            "https://www.itftennis.com/en/tournament/draws-and-results/print/"
-            f"?tournamentId={tournament_id}&circuitCode=WT"
-        )
-        time.sleep(random.uniform(1.8, 3.2))
-    except Exception as exc:
-        report_run_issue(
-            "itf_draws", "prime browser session", exc, severity="degraded",
-            context={"tournament_id": str(tournament_id)},
-        )
-
-
 _ITF_DRAW_BLOCKED = object()
 
 
@@ -787,8 +771,20 @@ def _is_itf_block_text(text):
     return raw.startswith("<") and "NOINDEX" in upper and "NOFOLLOW" in upper
 
 
+def _wait_for_itf_drawsheet_request_slot():
+    """Keep direct drawsheet requests below ITF/Imperva's burst limit."""
+    global _LAST_ITF_DRAWSHEET_REQUEST_AT
+    now = time.monotonic()
+    wait_seconds = _ITF_DRAWSHEET_REQUEST_INTERVAL_SECONDS - (
+        now - _LAST_ITF_DRAWSHEET_REQUEST_AT
+    )
+    if wait_seconds > 0:
+        time.sleep(wait_seconds)
+    _LAST_ITF_DRAWSHEET_REQUEST_AT = time.monotonic()
+
+
 def _fetch_itf_drawsheet(tournament_id, classification, week_number=0):
-    """Fetch an ITF drawsheet via GET API (no Selenium needed)."""
+    """Fetch an ITF drawsheet with the canonical direct GET request."""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
         "Referer": f"https://www.itftennis.com/en/tournament/draws-and-results/print/?tournamentId={tournament_id}&circuitCode=WT",
@@ -803,82 +799,16 @@ def _fetch_itf_drawsheet(tournament_id, classification, week_number=0):
         "weekNumber": week_number,
     }
     try:
+        _wait_for_itf_drawsheet_request_slot()
         resp = requests.get(_ITF_DRAWSHEET_URL, params=params, headers=headers, timeout=15)
         text = resp.text.strip()
-        if _is_itf_block_text(text):
+        if resp.status_code in {403, 429} or _is_itf_block_text(text):
             return _ITF_DRAW_BLOCKED
-        if not text.startswith("{"):
+        if resp.status_code != 200 or not text.startswith("{"):
             return None
         return resp.json()
     except Exception:
         return None
-
-
-def _fetch_itf_drawsheet_via_driver(tournament_id, classification, week_number, driver, timeout_ms=15000):
-    """Fetch an ITF drawsheet via browser fetch() in Selenium context."""
-    if driver is None:
-        return None
-
-    params = {
-        "eventClassificationCode": classification,
-        "matchTypeCode": "S",
-        "tourType": "N",
-        "tournamentId": str(tournament_id),
-        "weekNumber": int(week_number),
-    }
-    full_url = f"{_ITF_DRAWSHEET_URL}?{urllib.parse.urlencode(params)}"
-
-    script = """
-const url = arguments[0];
-const timeoutMs = arguments[1];
-const done = arguments[arguments.length - 1];
-
-let sent = false;
-const finish = (obj) => {
-  if (sent) return;
-  sent = true;
-  done(obj);
-};
-
-const controller = new AbortController();
-const timer = setTimeout(() => {
-  controller.abort();
-  finish({ ok: false, error: "timeout" });
-}, timeoutMs);
-
-fetch(url, {
-  method: "GET",
-  credentials: "include",
-  cache: "no-store",
-  headers: {
-    "Accept": "application/json, text/plain, */*"
-  },
-  signal: controller.signal,
-})
-  .then(async (resp) => {
-    const text = await resp.text();
-    finish({ ok: true, status: resp.status, text });
-  })
-  .catch((err) => finish({ ok: false, error: String(err) }))
-  .finally(() => clearTimeout(timer));
-"""
-    try:
-        result = driver.execute_async_script(script, full_url, int(timeout_ms))
-    except Exception:
-        return None
-    if not isinstance(result, dict) or not result.get("ok") or int(result.get("status", 0)) != 200:
-        return None
-
-    text = str(result.get("text") or "").strip()
-    if _is_itf_block_text(text):
-        return _ITF_DRAW_BLOCKED
-    if not text.startswith("{"):
-        return None
-    try:
-        data = json.loads(text)
-    except Exception:
-        return None
-    return data if isinstance(data, dict) else None
 
 
 def _parse_itf_score(teams, winner_idx):
@@ -1143,6 +1073,10 @@ def fetch_itf_tournament_draws(
 
     When return_meta=True, returns (draws, meta) where meta includes any
     blocked-response records observed during the fetch.
+
+    ``driver`` remains in the public signature for existing callers but is
+    deliberately not used for Drawsheet. ITF's protected print page can poison
+    the browser session while the canonical direct API GET remains available.
     """
     draws = {}
     blocked_responses = []
@@ -1153,9 +1087,6 @@ def fetch_itf_tournament_draws(
     # use week=1 and, if needed, week=2. We do not jump from week=0 straight to
     # week=2 because that creates extra blocked requests with very little payoff.
     week_candidates = [1, 2] if is_multiweek else [0]
-
-    if driver is not None:
-        _prime_itf_draw_session(driver, tournament_id)
 
     for classification, dtype_code, dtype_label in _ITF_DRAW_TYPES:
         # Skip fetching if the cached draw for this type is already complete.
@@ -1169,20 +1100,15 @@ def fetch_itf_tournament_draws(
             # GetDrawsheet endpoint.
             raw = get_cached_drawsheet(tournament_id, classification, week_number)
             if not (raw and raw.get("koGroups")):
-                # ITF API is highly sensitive to bot-rate patterns. Try once,
-                # and if we detect a block page, re-prime the session and retry
-                # exactly once before moving on.
+                # ITF API is highly sensitive to bot-rate patterns. Use only the
+                # paced direct GET; loading the protected print page in Selenium
+                # makes the API request inherit an Incapsula-blocked context.
                 raw = None
                 blocked = False
                 for attempt in range(2):
-                    if attempt == 1 and blocked and driver is not None:
-                        _prime_itf_draw_session(driver, tournament_id)
-                    if driver is not None:
-                        candidate = _fetch_itf_drawsheet_via_driver(
-                            tournament_id, classification, week_number, driver
-                        )
-                    else:
-                        candidate = _fetch_itf_drawsheet(tournament_id, classification, week_number)
+                    candidate = _fetch_itf_drawsheet(
+                        tournament_id, classification, week_number
+                    )
                     if candidate is _ITF_DRAW_BLOCKED:
                         blocked = True
                         raw = None
@@ -1203,7 +1129,7 @@ def fetch_itf_tournament_draws(
                         break
                     if not blocked:
                         break
-                    time.sleep(random.uniform(0.5, 1.4))
+                    time.sleep(_ITF_DRAWSHEET_BLOCK_COOLDOWN_SECONDS)
                 if not (raw and raw.get("koGroups")):
                     raw = get_cached_drawsheet(
                         tournament_id,
