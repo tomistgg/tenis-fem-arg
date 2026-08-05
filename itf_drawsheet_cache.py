@@ -109,6 +109,108 @@ def get_cached_drawsheet(tournament_id, classification, week_number, allow_stale
     return data
 
 
+def _drawsheet_nationality_status(data, nationality):
+    """Return ``(published, present)`` for a nationality in round one.
+
+    Once a draw's opening round is published, every direct acceptance,
+    qualifier, lucky loser, and wildcard has a position in that round.  The
+    opening round is therefore the authoritative roster for that draw.
+    """
+    if not isinstance(data, dict):
+        return False, False
+
+    target = str(nationality or "").strip().upper()
+    published = False
+    present = False
+    for group in data.get("koGroups") or []:
+        if not isinstance(group, dict):
+            continue
+        rounds = group.get("rounds") or []
+        if not rounds or not isinstance(rounds[0], dict):
+            continue
+        matches = rounds[0].get("matches") or []
+        if not matches:
+            continue
+        published = True
+        for match in matches:
+            if not isinstance(match, dict):
+                continue
+            for team in match.get("teams") or []:
+                if not isinstance(team, dict):
+                    continue
+                for player in team.get("players") or []:
+                    if (
+                        isinstance(player, dict)
+                        and str(player.get("nationality") or "").strip().upper() == target
+                    ):
+                        present = True
+    return published, present
+
+
+def tournament_draw_codes_with_definitive_no_nationality(
+    tournament_ids,
+    nationality="ARG",
+    *,
+    week_number=0,
+):
+    """Return draw codes that can no longer add a player from ``nationality``.
+
+    A published qualifying opening round is final for qualifying.  A published
+    main draw without the nationality becomes final only when qualifying is
+    also published without that nationality; otherwise an unresolved qualifier
+    could still enter the main draw.  Stale cache entries are intentional here
+    because a published opening round remains authoritative after the short
+    same-run request cache expires.
+    """
+    wanted_ids = {
+        str(tournament_id).strip()
+        for tournament_id in tournament_ids or []
+        if str(tournament_id or "").strip()
+    }
+    if not wanted_ids:
+        return set()
+
+    cache = _load_raw_cache()
+    result = {}
+    for tournament_id in wanted_ids:
+        statuses = {}
+        for classification in ("Q", "M"):
+            cache_key = _cache_key(tournament_id, classification, week_number)
+            entry = cache.get(cache_key)
+            data = entry.get("data") if isinstance(entry, dict) else None
+            statuses[classification] = _drawsheet_nationality_status(data, nationality)
+
+        q_published, q_present = statuses["Q"]
+        m_published, m_present = statuses["M"]
+        excluded_codes = set()
+        if q_published and not q_present:
+            excluded_codes.add("Q")
+            if m_published and not m_present:
+                excluded_codes.add("M")
+        if excluded_codes:
+            result[tournament_id] = excluded_codes
+    return result
+
+
+def tournament_ids_with_definitive_no_nationality(
+    tournament_ids,
+    nationality="ARG",
+    *,
+    week_number=0,
+):
+    """Return regular-event IDs whose published Q and M draws exclude a nation."""
+    draw_codes = tournament_draw_codes_with_definitive_no_nationality(
+        tournament_ids,
+        nationality,
+        week_number=week_number,
+    )
+    return {
+        tournament_id
+        for tournament_id, excluded_codes in draw_codes.items()
+        if excluded_codes == {"Q", "M"}
+    }
+
+
 def save_drawsheet(tournament_id, classification, week_number, data):
     """Persist a successful drawsheet response for same-run reuse.
 

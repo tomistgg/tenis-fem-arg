@@ -16,7 +16,12 @@ if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
 from time_utils import madrid_today
-from itf_drawsheet_cache import get_cached_drawsheet, save_drawsheet
+from itf_drawsheet_cache import (
+    get_cached_drawsheet,
+    save_drawsheet,
+    tournament_draw_codes_with_definitive_no_nationality,
+    tournament_ids_with_definitive_no_nationality,
+)
 from utils import save_json_file, expand_itf_calendar_cache, is_draw_completed
 from canonical_data import source_match_key, sync_itf_players
 from transactional_io import atomic_write_dataframe
@@ -208,6 +213,40 @@ def _filter_tournaments_for_polling(tournaments_df, today=None):
         lambda start_date: _itf_draw_polling_open(start_date, today=today)
     )
     return tournaments_df.loc[polling_mask].copy(), int((~polling_mask).sum())
+
+
+def _filter_tournaments_with_possible_arg_draws(tournaments_df, cached_ids):
+    """Drop regular events whose published qualifying and main draws have no ARG."""
+    if tournaments_df is None or tournaments_df.empty:
+        return tournaments_df, 0
+
+    key_to_id = {
+        str(key or "").strip().lower(): str(tournament_id or "").strip()
+        for key, tournament_id in (cached_ids or {}).items()
+        if str(tournament_id or "").strip()
+    }
+    candidate_ids = {
+        key_to_id.get(str(row.get("tournamentKey") or "").strip().lower(), "")
+        for _, row in tournaments_df.iterrows()
+        if row.get("category") != "ITF Womens Multi-Week Circuit"
+    }
+    definitive_no_arg_ids = tournament_ids_with_definitive_no_nationality(
+        candidate_ids,
+        "ARG",
+    )
+    if not definitive_no_arg_ids:
+        return tournaments_df, 0
+
+    skip_mask = tournaments_df.apply(
+        lambda row: (
+            row.get("category") != "ITF Womens Multi-Week Circuit"
+            and key_to_id.get(
+                str(row.get("tournamentKey") or "").strip().lower(), ""
+            ) in definitive_no_arg_ids
+        ),
+        axis=1,
+    )
+    return tournaments_df.loc[~skip_mask].copy(), int(skip_mask.sum())
 
 
 def _warn_unresolved_tournament_ids(tournaments_df):
@@ -1126,6 +1165,20 @@ if __name__ == "__main__":
             logger.info("  No ITF tournaments are eligible for draw polling today.")
             raise SystemExit(0)
 
+        cached_ids = _load_cached_tournament_ids()
+        tournaments_df, skipped_no_arg = _filter_tournaments_with_possible_arg_draws(
+            tournaments_df,
+            cached_ids,
+        )
+        if skipped_no_arg:
+            logger.debug(
+                f"  Skipping {skipped_no_arg} tournament(s): published qualifying "
+                "and main draws contain no ARG players."
+            )
+        if tournaments_df.empty:
+            logger.info("  No ITF tournaments can still produce ARG match history.")
+            raise SystemExit(0)
+
         keys_list = tournaments_df["tournamentKey"].dropna().unique().tolist()
 
         # Warm up browser on ITF BEFORE any API calls so Incapsula session is valid
@@ -1167,6 +1220,17 @@ if __name__ == "__main__":
         final_df['tournamentId'] = final_df['tournamentId'].apply(_coerce_id)
         _warn_unresolved_tournament_ids(final_df)
 
+        regular_ids = {
+            str(row.get("tournamentId") or "").strip()
+            for _, row in final_df.iterrows()
+            if row.get("category") != "ITF Womens Multi-Week Circuit"
+            and str(row.get("tournamentId") or "").strip()
+        }
+        no_arg_draw_codes = tournament_draw_codes_with_definitive_no_nationality(
+            regular_ids,
+            "ARG",
+        )
+
 
         all_matches = []
         active_count = 0
@@ -1203,10 +1267,22 @@ if __name__ == "__main__":
                     logger.debug(f"  Skipping {tName} — no tournament ID")
                     continue
 
+                is_multiweek = tCategory == "ITF Womens Multi-Week Circuit"
+
+                requested_codes = ["Q", "M"]
+                if not is_multiweek:
+                    excluded_codes = no_arg_draw_codes.get(str(tId), set())
+                    requested_codes = [
+                        code for code in requested_codes if code not in excluded_codes
+                    ]
+                if not requested_codes:
+                    logger.debug(
+                        f"  Skipping {tName} — its published draws contain no ARG players"
+                    )
+                    continue
+
                 active_count += 1
                 tourney_matches_before = len(all_matches)
-
-                is_multiweek = tCategory == "ITF Womens Multi-Week Circuit"
 
                 if is_multiweek:
                     week = 1
@@ -1216,13 +1292,13 @@ if __name__ == "__main__":
                         draw_payloads = fetch_tournament_draw_data(
                             tId,
                             tName,
-                            ["Q", "M"],
+                            requested_codes,
                             week_number=week,
                             max_attempts=1,
                             external_driver=driver,
                         )
 
-                        for code in ["Q", "M"]:
+                        for code in requested_codes:
                             json_data = draw_payloads.get(code)
 
                             if json_data:
@@ -1243,13 +1319,13 @@ if __name__ == "__main__":
                     draw_payloads = fetch_tournament_draw_data(
                         tId,
                         tName,
-                        ["Q", "M"],
+                        requested_codes,
                         week_number=0,
                         max_attempts=1,
                         external_driver=driver,
                     )
 
-                    for code in ["Q", "M"]:
+                    for code in requested_codes:
                         json_data = draw_payloads.get(code)
 
                         if json_data:

@@ -1067,6 +1067,7 @@ def fetch_itf_tournament_draws(
     cached_draws=None,
     tournament_name="",
     return_meta=False,
+    draw_types=None,
 ):
     """Fetch and parse ITF draws for a tournament. Returns dict like WTA draws.
 
@@ -1090,7 +1091,10 @@ def fetch_itf_tournament_draws(
     # week=2 because that creates extra blocked requests with very little payoff.
     week_candidates = [1, 2] if is_multiweek else [0]
 
+    requested_types = set(draw_types or ("MDS", "QS"))
     for classification, dtype_code, dtype_label in _ITF_DRAW_TYPES:
+        if dtype_code not in requested_types:
+            continue
         # Skip fetching if the cached draw for this type is already complete.
         if _draw_is_complete(cached_draws.get(dtype_code), is_qualifying=(dtype_code == "QS")):
             draws[dtype_code] = cached_draws[dtype_code]

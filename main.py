@@ -78,6 +78,7 @@ from itf import (
 )
 from html_generator import generate_html
 from draws import fetch_tournament_draws, fetch_itf_tournament_draws, _draw_is_complete
+from itf_drawsheet_cache import tournament_draw_codes_with_definitive_no_nationality
 from tstrength import build_tstrength_data
 
 logger = get_logger("main")
@@ -1333,7 +1334,14 @@ def _itf_cached_draw_arg_visibility(draw_entry):
     }
 
 
-def _itf_draw_skip_reason(store_key, t_info, acceptance_players, cached_draw_entry, today):
+def _itf_draw_skip_reason(
+    store_key,
+    t_info,
+    acceptance_players,
+    cached_draw_entry,
+    today,
+    definitive_no_arg_draw=False,
+):
     """Return the reason an ITF draw should be skipped, or None if it should be fetched."""
     start_date = str((t_info or {}).get("startDate") or "")[:10]
     end_date = str((t_info or {}).get("endDate") or "")[:10]
@@ -1368,6 +1376,9 @@ def _itf_draw_skip_reason(store_key, t_info, acceptance_players, cached_draw_ent
         if mds_complete and (qs_complete or "QS" not in prev_draws):
             return "cached ARG draws already complete"
         return None
+
+    if definitive_no_arg_draw:
+        return "published qualifying and main draws contain no ARG players"
 
     if _itf_entry_has_arg(acceptance_players):
         return None
@@ -2826,6 +2837,25 @@ def main():
     # via get_itf_players → itf_event_filters_cache.json. Use that cache to fill
     # any IDs that were missing when get_draws_itf_tournament_list ran earlier.
     _event_filters_cache = _load_itf_event_filters_cache()
+    _regular_itf_draw_ids = set()
+    for _tourneys in (itf_draws_tournaments or {}).values():
+        for _t_key, _t_info in (_tourneys or {}).items():
+            if (_t_info or {}).get("is_multiweek"):
+                continue
+            _tid = (_t_info or {}).get("tournamentId")
+            if not _tid and isinstance(_t_key, str) and _t_key.lower().startswith("w-itf-"):
+                _tid = _event_filters_cache.get(_t_key.lower())
+            if _tid:
+                _regular_itf_draw_ids.add(str(_tid).strip())
+    _no_arg_draw_codes_by_id = tournament_draw_codes_with_definitive_no_nationality(
+        _regular_itf_draw_ids,
+        "ARG",
+    )
+    _definitive_no_arg_draw_ids = {
+        tournament_id
+        for tournament_id, excluded_codes in _no_arg_draw_codes_by_id.items()
+        if excluded_codes == {"Q", "M"}
+    }
     itf_draw_jobs = []
     today = madrid_now()
     for week, tourneys in (itf_draws_tournaments or {}).items():
@@ -2833,6 +2863,12 @@ def main():
             if _is_excluded_draw_tournament(t_key, t_info):
                 continue
             store_key = _canonical_draw_store_key(t_key)
+            tid = (t_info or {}).get("tournamentId")
+            if not tid and isinstance(t_key, str) and t_key.lower().startswith("w-itf-"):
+                cached_tid = _event_filters_cache.get(t_key.lower())
+                if isinstance(cached_tid, int) and cached_tid > 0:
+                    tid = cached_tid
+                    t_info["tournamentId"] = cached_tid
             acceptance_players = (
                 tournament_store.get(t_key)
                 or entry_cache.get(t_key)
@@ -2841,19 +2877,21 @@ def main():
                 or []
             )
             cached_entry = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
-            skip_reason = _itf_draw_skip_reason(store_key, t_info, acceptance_players, cached_entry, today)
+            tid_text = str(tid or "").strip()
+            skip_reason = _itf_draw_skip_reason(
+                store_key,
+                t_info,
+                acceptance_players,
+                cached_entry,
+                today,
+                definitive_no_arg_draw=tid_text in _definitive_no_arg_draw_ids,
+            )
             if skip_reason is not None:
                 logger.debug(f"  Skipping ITF draw for: {t_info.get('name', '')} ({skip_reason})")
                 if cached_entry and _itf_cached_draw_arg_visibility(cached_entry).get("has_arg_any"):
                     logger.debug(f"  Keeping cached ARG ITF draws for: {t_info.get('name', '')}")
                 continue
             active_draw_keys.add(store_key)
-            tid = (t_info or {}).get("tournamentId")
-            if not tid and isinstance(t_key, str) and t_key.lower().startswith("w-itf-"):
-                cached_tid = _event_filters_cache.get(t_key.lower())
-                if isinstance(cached_tid, int) and cached_tid > 0:
-                    tid = cached_tid
-                    t_info["tournamentId"] = cached_tid
             if not tid:
                 existing = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
                 existing_draws = existing.get("draws") if isinstance(existing.get("draws"), dict) else {}
@@ -2873,6 +2911,21 @@ def main():
             count_empty_for_backoff = _itf_empty_draw_counts_toward_backoff(acceptance_players, cached_entry)
             cached_draws = (cached_entry or {}).get("draws") or {}
             requested_draw_types = _itf_requested_draw_types(cached_draws)
+            excluded_codes = _no_arg_draw_codes_by_id.get(tid_text, set())
+            requested_draw_types = [
+                dtype_code
+                for dtype_code in requested_draw_types
+                if not (
+                    (dtype_code == "QS" and "Q" in excluded_codes)
+                    or (dtype_code == "MDS" and "M" in excluded_codes)
+                )
+            ]
+            if not requested_draw_types:
+                logger.debug(
+                    f"  Skipping ITF draw for: {t_info.get('name', '')} "
+                    "(no ARG-relevant draw types remain)"
+                )
+                continue
             itf_draw_jobs.append((week, t_key, t_info, count_empty_for_backoff, requested_draw_types))
 
     total_itf_draws = len(itf_draw_jobs) or 1
@@ -2906,7 +2959,13 @@ def main():
             itf_blocked_response_keys.add(record_key)
             itf_blocked_responses.append(record)
 
-    def _fetch_itf_draws_with_meta(tid, is_multiweek, cached_draws, tournament_name):
+    def _fetch_itf_draws_with_meta(
+        tid,
+        is_multiweek,
+        cached_draws,
+        tournament_name,
+        requested_draw_types,
+    ):
         draws_result, meta = fetch_itf_tournament_draws(
             tid,
             is_multiweek=is_multiweek,
@@ -2914,6 +2973,7 @@ def main():
             cached_draws=cached_draws,
             tournament_name=tournament_name,
             return_meta=True,
+            draw_types=requested_draw_types,
         )
         _record_itf_blocked_responses(meta)
         return draws_result, meta
@@ -2955,7 +3015,11 @@ def main():
         fetch_had_block = False
         if not t_draws:
             t_draws, meta = _fetch_itf_draws_with_meta(
-                tid, is_multiweek, prev_draws, t_info.get("name", "")
+                tid,
+                is_multiweek,
+                prev_draws,
+                t_info.get("name", ""),
+                requested_draw_types,
             )
             fetch_had_block = bool((meta or {}).get("blocked_responses"))
         if (
@@ -2970,7 +3034,11 @@ def main():
             time.sleep(ITF_FIRST_BURST_COOLDOWN_SEC)
             itf_cooloff_applied = True
             t_draws, meta = _fetch_itf_draws_with_meta(
-                tid, is_multiweek, prev_draws, t_info.get("name", "")
+                tid,
+                is_multiweek,
+                prev_draws,
+                t_info.get("name", ""),
+                requested_draw_types,
             )
             fetch_had_block = fetch_had_block or bool((meta or {}).get("blocked_responses"))
 
@@ -2982,15 +3050,20 @@ def main():
         # Extra gap-fill pass for ordinary empty responses. A blocked request
         # has already had its quiet-period retry; an immediate gap-fill burst
         # only extends Imperva's block.
-        if set(merged_draws.keys()) != {"MDS", "QS"} and not fetch_had_block:
+        expected_draw_types = set(requested_draw_types)
+        if not expected_draw_types.issubset(merged_draws.keys()) and not fetch_had_block:
             for _ in range(2):
                 extra_draws, meta = _fetch_itf_draws_with_meta(
-                    tid, is_multiweek, merged_draws, t_info.get("name", "")
+                    tid,
+                    is_multiweek,
+                    merged_draws,
+                    t_info.get("name", ""),
+                    requested_draw_types,
                 )
                 fetch_had_block = fetch_had_block or bool((meta or {}).get("blocked_responses"))
                 if isinstance(extra_draws, dict):
                     merged_draws.update(extra_draws)
-                if set(merged_draws.keys()) == {"MDS", "QS"}:
+                if expected_draw_types.issubset(merged_draws.keys()):
                     break
         if merged_draws:
             itf_consecutive_empty = 0

@@ -6,6 +6,7 @@ import pandas as pd
 
 import draws
 import itf
+import itf_drawsheet_cache
 import main
 from populate_data import itf_load_new, tournament_sizes_update
 
@@ -120,6 +121,113 @@ def test_real_acceptance_list_without_arg_still_skips_started_itf_draw():
     )
 
     assert reason == "event already started and no ARG in acceptance list"
+
+
+def _published_draw(nationalities):
+    return {
+        "koGroups": [{
+            "rounds": [{
+                "matches": [{
+                    "teams": [
+                        {"players": [{"nationality": nationality}]}
+                        for nationality in nationalities
+                    ]
+                }]
+            }]
+        }]
+    }
+
+
+def test_published_qualifying_and_main_draws_can_prove_no_arg(monkeypatch):
+    cache = {
+        "123_Q_0": {"data": _published_draw(["ESP", "BRA"])},
+        "123_M_0": {"data": _published_draw(["USA", "FRA"])},
+        "456_Q_0": {"data": _published_draw(["ESP", "ARG"])},
+        "456_M_0": {"data": _published_draw(["USA", "FRA"])},
+        "789_Q_0": {"data": _published_draw(["ESP", "BRA"])},
+    }
+    monkeypatch.setattr(itf_drawsheet_cache, "_load_raw_cache", lambda: cache)
+
+    result = itf_drawsheet_cache.tournament_ids_with_definitive_no_nationality(
+        [123, 456, 789],
+        "ARG",
+    )
+
+    assert result == {"123"}
+
+    draw_codes = (
+        itf_drawsheet_cache.tournament_draw_codes_with_definitive_no_nationality(
+            [123, 456, 789],
+            "ARG",
+        )
+    )
+    assert draw_codes == {
+        "123": {"Q", "M"},
+        "789": {"Q"},
+    }
+
+
+def test_website_fetch_can_request_only_arg_relevant_draw_type(monkeypatch):
+    payload = _published_draw(["ARG", "ESP"])
+
+    monkeypatch.setattr(draws, "get_cached_drawsheet", lambda *args, **kwargs: payload)
+    monkeypatch.setattr(
+        draws,
+        "_parse_itf_draw",
+        lambda data: {"players": ["ARG"], "matches": []},
+    )
+
+    result = draws.fetch_itf_tournament_draws(
+        123,
+        draw_types=["MDS"],
+    )
+
+    assert result == {"MDS": {"players": ["ARG"], "matches": []}}
+
+
+def test_definitive_no_arg_draw_skips_website_polling():
+    reason = main._itf_draw_skip_reason(
+        "w-itf-test-2026-003",
+        {
+            "startDate": "2026-08-03T00:00:00",
+            "endDate": "2026-08-09T00:00:00",
+        },
+        acceptance_players=[],
+        cached_draw_entry={},
+        today=datetime(2026, 8, 5, 12, 0),
+        definitive_no_arg_draw=True,
+    )
+
+    assert reason == "published qualifying and main draws contain no ARG players"
+
+
+def test_match_history_filter_skips_definitive_no_arg_regular_event(monkeypatch):
+    tournaments = pd.DataFrame([
+        {
+            "tournamentKey": "w-itf-test-2026-001",
+            "category": "W35",
+        },
+        {
+            "tournamentKey": "w-itf-test-2026-002",
+            "category": "W75",
+        },
+    ])
+    monkeypatch.setattr(
+        itf_load_new,
+        "tournament_ids_with_definitive_no_nationality",
+        lambda tournament_ids, nationality: {"101"},
+    )
+
+    eligible, skipped = itf_load_new._filter_tournaments_with_possible_arg_draws(
+        tournaments,
+        {
+            "w-itf-test-2026-001": "101",
+            "w-itf-test-2026-002": "202",
+        },
+    )
+
+    assert eligible["tournamentKey"].tolist() == ["w-itf-test-2026-002"]
+    assert skipped == 1
 
 
 def test_missing_tournament_ids_never_change_run_status(monkeypatch):
