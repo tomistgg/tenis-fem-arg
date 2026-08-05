@@ -287,24 +287,25 @@ def _get_chrome_executable_path():
     """Return the local Chrome executable path when it can be found."""
     candidates = []
 
-    try:
-        import winreg
+    if os.name == "nt":
+        try:
+            import winreg
 
-        for root, subkey in (
-            (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe"),
-            (winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe"),
-            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe"),
-            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe"),
-        ):
-            try:
-                with winreg.OpenKey(root, subkey) as key:
-                    value, _ = winreg.QueryValueEx(key, None)
-                    if value:
-                        candidates.append(value)
-            except OSError:
-                continue
-    except (ImportError, OSError) as exc:
-        logger.warning(f"  [!] Windows Chrome registry lookup unavailable: {exc}")
+            for root, subkey in (
+                (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe"),
+                (winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe"),
+                (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe"),
+                (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe"),
+            ):
+                try:
+                    with winreg.OpenKey(root, subkey) as key:
+                        value, _ = winreg.QueryValueEx(key, None)
+                        if value:
+                            candidates.append(value)
+                except OSError:
+                    continue
+        except (ImportError, OSError) as exc:
+            logger.warning(f"Windows Chrome registry lookup unavailable: {exc}")
 
     for env_name in ("PROGRAMFILES", "PROGRAMFILES(X86)", "LOCALAPPDATA"):
         base = os.environ.get(env_name) or ""
