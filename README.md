@@ -67,7 +67,7 @@ scopes can be tightened incrementally without hiding existing failures.
 Build the deployable static site from the committed data:
 
 ```text
-python build_deploy_site.py --output .site --max-edge 2400 --quality 100
+python build_deploy_site.py --output .site --max-edge 2400 --quality 88
 ```
 
 Historical WTA ranking CSVs are indexed lazily by week. Python keeps a small

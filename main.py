@@ -1843,7 +1843,10 @@ def build_photos_by_player_manifest(manifest_path, photos_root_dir):
             ]
             if not folder_files:
                 continue
-            slots = [f"photos/{entry_name}/{name}".replace("\\", "/") for name in folder_files[:PHOTO_SLOTS_PER_PLAYER]]
+            slots = [
+                f"photos/{entry_name}/{os.path.splitext(name)[0]}.webp".replace("\\", "/")
+                for name in folder_files[:PHOTO_SLOTS_PER_PLAYER]
+            ]
             slots += [""] * (PHOTO_SLOTS_PER_PLAYER - len(slots))
             manifest[entry_name] = slots
 

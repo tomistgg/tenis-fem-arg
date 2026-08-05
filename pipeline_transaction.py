@@ -182,7 +182,7 @@ def _build_staged_deploy_site(
         "--max-edge",
         "2400",
         "--quality",
-        "100",
+        "88",
     ]
     print(f"Building validated deploy site at {deploy_root}...")
     try:

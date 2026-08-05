@@ -10,7 +10,7 @@ from runtime_paths import DATA_DIR, SITE_ROOT
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_OUTPUT_DIR = BASE_DIR / ".site"
-IMAGE_EXTS = {".jpg", ".jpeg"}
+IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
 COPY_ROOT_FILES = ("app.html", "index.html", "404.html", "CNAME", "site.webmanifest")
 APPLE_TOUCH_ICON_FALLBACKS = (
     "apple-touch-icon.png",
@@ -41,7 +41,7 @@ COPY_DATA_GLOBS = (
 COPY_DATA_DIRS = ("flags",)
 COPY_ROUTE_FILES = ("photos/index.html",)
 DEFAULT_MAX_EDGE = 2400
-DEFAULT_QUALITY = 100
+DEFAULT_QUALITY = 88
 
 
 def _ensure_within_base(path):
@@ -107,9 +107,10 @@ def _copy_deploy_data(output_dir):
     return copied
 
 
-def _save_jpeg_web_copy(src, dst, max_edge, quality):
+def _save_webp_copy(src, dst, max_edge, quality):
     dst.parent.mkdir(parents=True, exist_ok=True)
     with Image.open(src) as img:
+        icc_profile = img.info.get("icc_profile")
         img = ImageOps.exif_transpose(img)
         if img.mode not in ("RGB", "L"):
             if "A" in img.getbands():
@@ -125,14 +126,12 @@ def _save_jpeg_web_copy(src, dst, max_edge, quality):
             img = img.convert("RGB")
 
         save_kwargs = {
-            "format": "JPEG",
+            "format": "WEBP",
             "quality": quality,
-            "optimize": True,
-            "progressive": True,
+            "method": 6,
         }
         # EXIF can contain GPS, device, and editing metadata. Orientation has
         # already been baked in by exif_transpose(), so deploy copies drop EXIF.
-        icc_profile = img.info.get("icc_profile")
         if icc_profile:
             save_kwargs["icc_profile"] = icc_profile
         img.save(dst, **save_kwargs)
@@ -149,9 +148,18 @@ def _copy_optimized_photos(src_root, dst_root, max_edge, quality):
         if src.suffix.lower() not in IMAGE_EXTS:
             continue
         rel = src.relative_to(src_root)
-        dst = dst_root / rel
+        dst = (dst_root / rel).with_suffix(".webp")
         dst.parent.mkdir(parents=True, exist_ok=True)
-        _save_jpeg_web_copy(src, dst, max_edge, quality)
+        with Image.open(src) as img:
+            can_copy = (
+                src.suffix.lower() == ".webp"
+                and max(img.size) <= max_edge
+                and not img.info.get("exif")
+            )
+        if can_copy:
+            _copy_file(src, dst)
+        else:
+            _save_webp_copy(src, dst, max_edge, quality)
         copied += 1
     return copied
 
@@ -223,7 +231,7 @@ def main():
     parser = argparse.ArgumentParser(description="Build a deployable site directory with optimized photos.")
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT_DIR), help="Output directory for the deploy site.")
     parser.add_argument("--max-edge", type=int, default=DEFAULT_MAX_EDGE, help="Maximum width/height for web images.")
-    parser.add_argument("--quality", type=int, default=DEFAULT_QUALITY, help="JPEG quality for optimized photos.")
+    parser.add_argument("--quality", type=int, default=DEFAULT_QUALITY, help="WebP quality for optimized photos.")
     args = parser.parse_args()
 
     build_site(Path(args.output), max_edge=args.max_edge, quality=args.quality)
