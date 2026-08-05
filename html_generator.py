@@ -3409,10 +3409,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #history-table th:nth-child(1), #history-table td:nth-child(1) {{ width: 11%; }}
                 #history-table th:nth-child(2), #history-table td:nth-child(2) {{ width: 17%; }}
                 #history-table th:nth-child(3), #history-table td:nth-child(3) {{ width: 8%; }}
-                #history-table th:nth-child(4), #history-table td:nth-child(4) {{ width: 5%; }}
+                #history-table th:nth-child(4), #history-table td:nth-child(4) {{ width: 6%; }}
                 #history-table th:nth-child(5), #history-table td:nth-child(5) {{ width: 22%; }}
                 #history-table th:nth-child(6), #history-table td:nth-child(6) {{ width: 14%; }}
-                #history-table th:nth-child(7), #history-table td:nth-child(7) {{ width: 23%; }}
+                #history-table th:nth-child(7), #history-table td:nth-child(7) {{ width: 22%; }}
                 #history-table td:nth-child(5), #history-table td:nth-child(7) {{ padding-left: 1px; padding-right: 1px; }}
                 #history-table .history-player-rank {{ flex-basis: 18px; width: 18px; }}
                 #history-table td:nth-child(6) {{ padding-left: 0; padding-right: 0; }}
