@@ -190,12 +190,11 @@ def _build_site_contents(output_dir, max_edge, quality):
     data_copied = _copy_deploy_data(output_dir)
     # The Photos section currently displays a retirement notice. Keep source
     # images out of the deploy artifact while that notice remains active.
-    photos_copied = 0
     for rel_path in COPY_ROUTE_FILES:
         src = _site_source(rel_path)
         if src.exists():
             _copy_file(src, output_dir / rel_path)
-    return photos_copied, data_copied
+    return data_copied
 
 
 def build_site(output_dir, max_edge=DEFAULT_MAX_EDGE, quality=DEFAULT_QUALITY):
@@ -206,7 +205,7 @@ def build_site(output_dir, max_edge=DEFAULT_MAX_EDGE, quality=DEFAULT_QUALITY):
     staged = destination.with_name(f".{destination.name}.{transaction_id}.tmp")
     backup = destination.with_name(f".{destination.name}.{transaction_id}.backup")
     try:
-        photos_copied, data_copied = _build_site_contents(staged, max_edge, quality)
+        data_copied = _build_site_contents(staged, max_edge, quality)
         if destination.exists():
             os.replace(destination, backup)
         try:
@@ -220,10 +219,7 @@ def build_site(output_dir, max_edge=DEFAULT_MAX_EDGE, quality=DEFAULT_QUALITY):
                 shutil.rmtree(backup)
             except OSError as exc:
                 print(f"Warning: deploy backup cleanup failed: {backup}: {exc}")
-        print(
-            f"Built deploy site at {destination} with {photos_copied} optimized photos "
-            f"and {data_copied} data files."
-        )
+        print(f"Built deploy site at {destination} with {data_copied} data files; photos excluded.")
     finally:
         if staged.exists():
             shutil.rmtree(staged)

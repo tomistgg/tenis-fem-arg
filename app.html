@@ -297,7 +297,7 @@
             #view-fedbcup { max-width: 1400px; margin: 0 auto; }
             #view-tstrength { width: 100%; margin: 0 auto; }
             #view-roadtogs { max-width: 1100px; margin: 0 auto; }
-            #view-gallery { max-width: 1400px; margin: 0 auto; }
+            #view-gallery { max-width: 1400px; margin: 0 auto; align-items: center; }
             #view-draws { width: 100%; max-width: 100%; margin: 0; }
             .draws-layout { display: flex; flex-direction: column; width: 100%; }
             .draws-toolbar { display: flex; align-items: center; gap: 10px; padding: 6px 12px; flex-wrap: wrap; position: relative; }
@@ -360,9 +360,9 @@
             .gallery-loadmore-wrap { text-align: center; margin-top: 24px; }
             .gallery-loadmore-btn { min-height: var(--btn-h-lg); padding: 0 var(--sp-8); border-radius: var(--radius-pill); }
             .gallery-empty { text-align: center; color: #64748b; padding: 60px 20px; font-size: 14px; }
-            .photos-removal-notice { width: min(100%, 760px); margin: 36px auto 0; padding: 28px 30px; border: 1px solid #cbd5e1; border-radius: 14px; background: white; color: #334155; font-size: 16px; line-height: 1.7; text-align: left; }
+            .photos-removal-notice { width: min(100%, 720px); margin: clamp(36px, 9vh, 88px) auto 0; padding: clamp(26px, 5vw, 42px); box-sizing: border-box; border: 1px solid var(--c-border); border-top: 4px solid var(--c-primary); border-radius: var(--radius-xl); background: var(--c-surface); box-shadow: var(--shadow-md); color: var(--c-text-secondary); font-size: var(--fs-2xl); line-height: 1.75; text-align: center; }
             .photos-removal-notice p { margin: 0; }
-            .photos-removal-notice p + p { margin-top: 18px; font-weight: 600; }
+            .photos-removal-notice p + p { margin-top: var(--sp-6); padding-top: var(--sp-5); border-top: 1px solid var(--c-border-soft); color: var(--c-text-primary); font-weight: 800; }
             .gallery-copyright { font-size: 11px; color: #94a3b8; text-align: center; margin-top: 32px; padding: 0 16px 8px; line-height: 1.6; }
             .gallery-copyright a { color: #94a3b8; text-decoration: none; }
             .gallery-copyright a:hover { text-decoration: underline; }
@@ -2197,7 +2197,7 @@
             [data-theme="dark"] #gallery-album-title { color: #94a3b8; }
             [data-theme="dark"] .gallery-card img,
             [data-theme="dark"] .gallery-album-card img { background: #273548; }
-            [data-theme="dark"] .photos-removal-notice { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+            [data-theme="dark"] .photos-removal-notice { background: var(--c-surface); border-color: var(--c-border); border-top-color: var(--c-primary); color: var(--c-text-secondary); }
 
             [data-theme="dark"] .draw-match .draw-player { background: #1e293b; border-color: #334155; color: #e2e8f0; }
             [data-theme="dark"] .draw-match .draw-player:first-child { border-bottom-color: #334155; }
