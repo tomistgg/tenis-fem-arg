@@ -188,7 +188,9 @@ def _build_site_contents(output_dir, max_edge, quality):
             _copy_tree(src, output_dir / dirname)
 
     data_copied = _copy_deploy_data(output_dir)
-    photos_copied = _copy_optimized_photos(BASE_DIR / "photos", output_dir / "photos", max_edge, quality)
+    # The Photos section currently displays a retirement notice. Keep source
+    # images out of the deploy artifact while that notice remains active.
+    photos_copied = 0
     for rel_path in COPY_ROUTE_FILES:
         src = _site_source(rel_path)
         if src.exists():

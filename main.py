@@ -2591,9 +2591,9 @@ def main():
 
     skip_draws_fetch = os.getenv("SKIP_DRAWS_FETCH", "").strip().lower() in {"1", "true", "yes", "on"}
 
-    # Rebuild the Photos manifest first so it stays fresh even if later
-    # network-heavy steps slow down or hang.
-    build_photos_by_player_manifest(PHOTOS_BY_PLAYER_FILE, PHOTOS_ROOT_DIR)
+    # The Photos section currently displays a retirement notice. Do not expose
+    # local source images through either the fetched or inline manifest.
+    save_json_file(PHOTOS_BY_PLAYER_FILE, {})
 
     driver = create_driver()
     itf_draws_tournaments = {}

@@ -2079,6 +2079,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .gallery-loadmore-wrap {{ text-align: center; margin-top: 24px; }}
             .gallery-loadmore-btn {{ min-height: var(--btn-h-lg); padding: 0 var(--sp-8); border-radius: var(--radius-pill); }}
             .gallery-empty {{ text-align: center; color: #64748b; padding: 60px 20px; font-size: 14px; }}
+            .photos-removal-notice {{ width: min(100%, 760px); margin: 36px auto 0; padding: 28px 30px; border: 1px solid #cbd5e1; border-radius: 14px; background: white; color: #334155; font-size: 16px; line-height: 1.7; text-align: left; }}
+            .photos-removal-notice p {{ margin: 0; }}
+            .photos-removal-notice p + p {{ margin-top: 18px; font-weight: 600; }}
             .gallery-copyright {{ font-size: 11px; color: #94a3b8; text-align: center; margin-top: 32px; padding: 0 16px 8px; line-height: 1.6; }}
             .gallery-copyright a {{ color: #94a3b8; text-decoration: none; }}
             .gallery-copyright a:hover {{ text-decoration: underline; }}
@@ -3913,6 +3916,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             [data-theme="dark"] #gallery-album-title {{ color: #94a3b8; }}
             [data-theme="dark"] .gallery-card img,
             [data-theme="dark"] .gallery-album-card img {{ background: #273548; }}
+            [data-theme="dark"] .photos-removal-notice {{ background: #1e293b; border-color: #334155; color: #e2e8f0; }}
 
             [data-theme="dark"] .draw-match .draw-player {{ background: #1e293b; border-color: #334155; color: #e2e8f0; }}
             [data-theme="dark"] .draw-match .draw-player:first-child {{ border-bottom-color: #334155; }}
@@ -5939,25 +5943,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     <div class="header-row">
                         <h1>Photos</h1>
                     </div>
-                    <div class="gallery-controls">
-                        <select id="gallery-player-filter">
-                            <option value="">Select a player</option>
-                        </select>
-                    </div>
-                    <div class="gallery-empty" id="gallery-placeholder">
-                        Select a player to show photos
-                    </div>
-                    <div class="gallery-wall">
-                        <div class="gallery-grid" id="gallery-grid" style="display:none;"></div>
-                    </div>
-                    <p class="gallery-copyright">Unauthorized use or reproduction of these images is prohibited.<br>The images displayed here represent personal portfolio/speculative work and does not imply official tournament accreditation or commercial endorsement.</p>
-                    <div class="gallery-lb" id="gallery-lightbox" role="dialog" aria-modal="true" aria-label="Photo preview" aria-hidden="true" tabindex="-1" onclick="closeGalleryLightbox(event)">
-                        <div class="gallery-lb-inner" role="document" onclick="event.stopPropagation()">
-                            <button type="button" class="gallery-lb-close" onclick="closeGalleryLightbox()" aria-label="Close photo">&times;</button>
-                            <div class="gallery-lb-img-wrap">
-                                <img class="gallery-lb-img" id="gallery-lb-img" alt="">
-                            </div>
-                        </div>
+                    <div class="photos-removal-notice">
+                        <p>Saqué las fotos porque era un quilombo mantenerla, cuando necesiten alguna foto en particular pueden sacarla de mi instagram @tomistx o pedirme por mensaje privado ahí mismo.</p>
+                        <p>Voy a sacar esta parte del sitio en una semana.</p>
                     </div>
                 </div>
 
