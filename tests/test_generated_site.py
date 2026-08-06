@@ -85,15 +85,16 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertIn("Grand Slams information", source)
         self.assertNotIn('<details class="roadtogs-info" open', source)
 
-    def test_fed_bjk_series_is_an_exclusive_accordion_with_latest_tie_open(self):
+    def test_fed_bjk_series_allows_multiple_open_ties_with_latest_tie_open(self):
         source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
         tie_tags = re.findall(
-            r'<details class="bjkc-series-block" name="bjkc-series"(?: open)?>',
+            r'<details class="bjkc-series-block"(?: open)?>',
             source,
         )
         self.assertGreater(len(tie_tags), 1)
         self.assertTrue(tie_tags[0].endswith(" open>"))
         self.assertEqual(sum(" open" in tag for tag in tie_tags), 1)
+        self.assertNotIn('name="bjkc-series"', source)
         self.assertEqual(
             source.count('<summary class="bjkc-series-header">'),
             len(tie_tags),
@@ -101,6 +102,21 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertIn('class="bjkc-header-arrow" aria-hidden="true"', source)
         self.assertIn(
             "visibleBlocks.forEach(function(block, index) { block.open = index === 0; });",
+            source,
+        )
+
+    def test_match_history_filters_use_a_mobile_bottom_sheet_with_active_count(self):
+        source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        self.assertIn('id="history-mobile-filter-btn"', source)
+        self.assertIn('aria-controls="history-filter-panel"', source)
+        self.assertIn('id="history-filter-panel"', source)
+        self.assertIn("body.history-filters-open #history-filter-panel", source)
+        self.assertIn("label.textContent = count ? `Filters · ${count}` : 'Filters';", source)
+        self.assertIn("if (state.asRankVal !== null) count += 1;", source)
+        self.assertIn("if (state.vsRankVal !== null) count += 1;", source)
+        self.assertIn("if (window.innerWidth > 768", source)
+        self.assertIn(
+            ".filter-panel { width: 250px; padding: 15px;",
             source,
         )
 

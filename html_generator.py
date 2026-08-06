@@ -1424,7 +1424,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </tr>"""
 
             _open_attr = ' open' if _tie_index == 0 else ''
-            bjkc_series_html += f"""<details class="bjkc-series-block" name="bjkc-series"{_open_attr}>
+            bjkc_series_html += f"""<details class="bjkc-series-block"{_open_attr}>
                 <summary class="bjkc-series-header">
                     <span class="bjkc-header-date">{escape(_tie_date)}</span>
                     <span class="bjkc-header-title">{escape(_header_text)} {_opp_flag}</span>
@@ -2667,6 +2667,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             /* Filter Panel Styles */
             .history-layout {{ display: flex; gap: 20px; width: 100%; align-items: flex-start; }}
             .filter-panel {{ width: 250px; padding: 15px; flex-shrink: 0; border: 2px solid #cbd5e1; background: white; align-self: flex-start; }}
+            .history-filter-sheet-header {{ display: contents; }}
+            .history-filter-sheet-close,
+            .history-filter-backdrop,
+            .history-mobile-filter-bar {{ display: none; }}
             .filter-panel h3 {{ margin: -15px -15px 15px -15px; font-size: 16px; color: white; text-align: center; font-weight: 400; background: var(--c-chrome-bg); border: none; padding: 12px; border-radius: 0; }}
             .filter-group {{ margin-bottom: 20px; text-align: left; }}
             .filter-group-title {{ width: 100%; padding: 0; font-family: inherit; font-size: 13px; font-weight: bold; color: #475569; background: transparent; border: 0; margin-bottom: 8px; cursor: pointer; user-select: none; display: flex; justify-content: center; align-items: center; text-align: center; position: relative; }}
@@ -3168,10 +3172,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     gap: 12px;
                 }}
 
-                /* Mobile-only history flow:
-                   1) title + player search
-                   2) filters in wrapped rows
-                   3) full-width table */
+                /* Mobile-only history flow: compact trigger + bottom sheet. */
                 #view-history {{
                     width: 100%;
                     max-width: 100%;
@@ -3184,27 +3185,136 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     gap: 12px;
                 }}
 
-                .filter-panel {{
+                .history-mobile-filter-bar {{
+                    display: flex;
                     width: min(100%, 420px);
-                    max-width: 420px;
-                    margin-left: auto;
-                    margin-right: auto;
-                    padding: 4px;
-                    margin-bottom: 0;
-                    border: 2px solid #cbd5e1;
+                    margin: 0 auto;
+                    box-sizing: border-box;
+                }}
+
+                .history-mobile-filter-btn {{
+                    width: 100%;
+                    min-height: 36px;
+                    padding: 7px 14px;
+                    border: 2px solid var(--c-border-strong);
+                    border-radius: var(--radius-md);
+                    background: var(--c-surface);
+                    color: var(--c-text-primary);
+                    font-family: inherit;
+                    font-size: 11px;
+                    font-weight: 800;
+                    cursor: pointer;
+                }}
+
+                .history-mobile-filter-btn.has-active-filters {{
+                    border-color: var(--c-primary);
+                    background: var(--c-primary-softer);
+                    color: var(--c-primary-deep);
+                }}
+
+                .history-filter-backdrop {{
+                    display: block;
+                    position: fixed;
+                    inset: 0;
+                    z-index: 1199;
+                    width: 100%;
+                    height: 100%;
+                    padding: 0;
+                    border: 0;
+                    border-radius: 0;
+                    background: rgba(15, 23, 42, 0.52);
+                    opacity: 0;
+                    visibility: hidden;
+                    pointer-events: none;
+                    transition: opacity 0.18s ease, visibility 0.18s ease;
+                }}
+
+                #history-filter-panel {{
+                    position: fixed;
+                    left: 50%;
+                    right: auto;
+                    bottom: 0;
+                    z-index: 1200;
+                    width: 100%;
+                    max-width: 520px;
+                    max-height: min(82dvh, 700px);
+                    margin: 0;
+                    padding: 0 8px calc(10px + env(safe-area-inset-bottom));
+                    border: 1px solid var(--c-border-strong);
+                    border-bottom: 0;
+                    border-radius: 18px 18px 0 0;
                     display: flex;
                     flex-wrap: wrap;
                     gap: 4px;
                     align-items: flex-start;
                     box-sizing: border-box;
+                    overflow-y: auto;
+                    overscroll-behavior: contain;
+                    -webkit-overflow-scrolling: touch;
+                    box-shadow: 0 -12px 36px rgba(15, 23, 42, 0.24);
+                    transform: translate(-50%, calc(100% + 24px));
+                    visibility: hidden;
+                    pointer-events: none;
+                    transition: transform 0.22s ease, visibility 0.22s ease;
                 }}
 
-                .filter-panel h3 {{
-                    font-size: 9px;
-                    padding: 5px;
-                    width: 100%;
-                    margin: -4px -4px 4px -4px;
+                body.history-filters-open {{ overflow: hidden; }}
+                body.history-filters-open .history-filter-backdrop {{
+                    opacity: 1;
+                    visibility: visible;
+                    pointer-events: auto;
                 }}
+                body.history-filters-open #history-filter-panel {{
+                    transform: translate(-50%, 0);
+                    visibility: visible;
+                    pointer-events: auto;
+                }}
+
+                .history-filter-sheet-header {{
+                    position: sticky;
+                    top: 0;
+                    z-index: 3;
+                    order: -100;
+                    display: flex;
+                    align-items: center;
+                    width: calc(100% + 16px);
+                    margin: 0 -8px 6px;
+                    background: var(--c-chrome-bg);
+                    border-radius: 17px 17px 0 0;
+                }}
+
+                #history-filter-panel h3 {{
+                    flex: 1;
+                    width: auto;
+                    margin: 0;
+                    padding: 12px 48px;
+                    border-radius: 17px 17px 0 0;
+                    font-size: 14px;
+                    line-height: 1.2;
+                }}
+
+                .history-filter-sheet-close {{
+                    position: absolute;
+                    top: 50%;
+                    right: 10px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 30px;
+                    height: 30px;
+                    padding: 0;
+                    transform: translateY(-50%);
+                    border: 1px solid rgba(255, 255, 255, 0.48);
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.12);
+                    color: #fff;
+                    font-family: inherit;
+                    font-size: 21px;
+                    line-height: 1;
+                    cursor: pointer;
+                }}
+
+                body.history-filters-open .select2-container--open {{ z-index: 1300; }}
 
                 .filter-group {{
                     margin-bottom: 0;
@@ -5547,8 +5657,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 <div id="view-history" class="single-layout" style="display: none;">
                     <div class="history-layout">
-                        <div class="filter-panel">
-                            <h3>Filters</h3>
+                        <button type="button" class="history-filter-backdrop" aria-label="Close filters" tabindex="-1" onclick="closeHistoryFilters()"></button>
+                        <div class="filter-panel" id="history-filter-panel">
+                            <div class="history-filter-sheet-header">
+                                <h3 id="history-filter-sheet-title">Filters</h3>
+                                <button type="button" class="history-filter-sheet-close" aria-label="Close filters" onclick="closeHistoryFilters()">&times;</button>
+                            </div>
 
                             <div class="filter-group collapsed">
                                 <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-surface" onclick="toggleFilterGroup(this)">
@@ -5690,6 +5804,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                                         </div>
                                         <button class="history-nav-btn" onclick="setHistorySubpage('milestones')">Milestones</button>
                                     </div>
+                                </div>
+
+                                <div class="history-mobile-filter-bar">
+                                    <button type="button" class="history-mobile-filter-btn" id="history-mobile-filter-btn" aria-controls="history-filter-panel" aria-expanded="false" onclick="openHistoryFilters()">
+                                        <span id="history-mobile-filter-label">Filters</span>
+                                    </button>
                                 </div>
 
                                 <div class="content-card">
@@ -7032,6 +7152,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
             function switchTab(tabName) {{
                 if (tabName === 'home' && homeLocked) return;
+                if (tabName !== 'history') closeHistoryFilters(false);
                 _currentTabName = (tabName || 'home').toString().trim().toLowerCase() || 'home';
                 _urlStateSwitching = true;
                 document.querySelectorAll('.menu-item').forEach(el => {{
@@ -7177,7 +7298,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
 
             function applyMobileHistoryLayout() {{
-                if (historySubpage !== HISTORY_SUBPAGE_MATCH) return;
                 const historyLayout = document.querySelector('#view-history .history-layout');
                 if (!historyLayout) return;
 
@@ -7185,23 +7305,85 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const historyContent = historyLayout.querySelector('.history-content');
                 if (!filterPanel || !historyContent) return;
 
-                const headerSection = historyContent.querySelector('.table-header-section');
-                if (!headerSection) return;
+                // The panel stays in the desktop rail in the DOM; mobile CSS presents it as a sheet.
+                if (historyContent.contains(filterPanel)) {{
+                    historyLayout.insertBefore(filterPanel, historyContent);
+                }}
+                syncHistoryFilterSheetMode();
+            }}
 
-                if (window.innerWidth <= 768) {{
-                    // Mobile order: header/search -> filters -> table
-                    if (!historyContent.contains(filterPanel)) {{
-                        headerSection.insertAdjacentElement('afterend', filterPanel);
-                    }} else if (headerSection.nextElementSibling !== filterPanel) {{
-                        headerSection.insertAdjacentElement('afterend', filterPanel);
-                    }}
+            let _historyFilterReturnFocus = null;
+
+            function getHistoryActiveFilterCount(filterState) {{
+                const state = filterState || getHistoryFilterSelectionState();
+                const multiValueKeys = [
+                    'surfaces', 'rounds', 'results', 'years', 'categories',
+                    'opponentCountries', 'playerEntries', 'seeds', 'matchTypes'
+                ];
+                let count = multiValueKeys.reduce((total, key) => total + state[key].length, 0);
+                if (state.tournament) count += 1;
+                if (state.opponent) count += 1;
+                if (state.asRankVal !== null) count += 1;
+                if (state.vsRankVal !== null) count += 1;
+                return count;
+            }}
+
+            function updateHistoryMobileFilterButton(filterState) {{
+                const button = document.getElementById('history-mobile-filter-btn');
+                const label = document.getElementById('history-mobile-filter-label');
+                if (!button || !label) return;
+                const count = getHistoryActiveFilterCount(filterState);
+                label.textContent = count ? `Filters · ${{count}}` : 'Filters';
+                button.classList.toggle('has-active-filters', count > 0);
+                button.setAttribute('aria-label', count ? `Filters, ${{count}} active` : 'Filters, no active filters');
+            }}
+
+            function syncHistoryFilterSheetMode() {{
+                const panel = document.getElementById('history-filter-panel');
+                const button = document.getElementById('history-mobile-filter-btn');
+                if (!panel || !button) return;
+                const mobile = window.innerWidth <= 768;
+                const available = mobile && historySubpage === HISTORY_SUBPAGE_MATCH;
+                if (!available) document.body.classList.remove('history-filters-open');
+                const isOpen = available && document.body.classList.contains('history-filters-open');
+                button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                if (mobile) {{
+                    panel.setAttribute('role', 'dialog');
+                    panel.setAttribute('aria-modal', 'true');
+                    panel.setAttribute('aria-labelledby', 'history-filter-sheet-title');
+                    panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
                 }} else {{
-                    // Desktop order: filters left -> content right
-                    if (historyContent.contains(filterPanel)) {{
-                        historyLayout.insertBefore(filterPanel, historyContent);
-                    }}
+                    panel.removeAttribute('role');
+                    panel.removeAttribute('aria-modal');
+                    panel.removeAttribute('aria-labelledby');
+                    panel.removeAttribute('aria-hidden');
                 }}
             }}
+
+            function openHistoryFilters() {{
+                if (window.innerWidth > 768 || historySubpage !== HISTORY_SUBPAGE_MATCH) return;
+                _historyFilterReturnFocus = document.activeElement;
+                document.body.classList.add('history-filters-open');
+                syncHistoryFilterSheetMode();
+                const closeButton = document.querySelector('.history-filter-sheet-close');
+                if (closeButton) requestAnimationFrame(() => closeButton.focus({{ preventScroll: true }}));
+            }}
+
+            function closeHistoryFilters(restoreFocus = true) {{
+                const wasOpen = document.body.classList.contains('history-filters-open');
+                document.body.classList.remove('history-filters-open');
+                syncHistoryFilterSheetMode();
+                if (restoreFocus && wasOpen && _historyFilterReturnFocus && document.contains(_historyFilterReturnFocus)) {{
+                    _historyFilterReturnFocus.focus({{ preventScroll: true }});
+                }}
+                _historyFilterReturnFocus = null;
+            }}
+
+            document.addEventListener('keydown', function(event) {{
+                if (event.key === 'Escape' && document.body.classList.contains('history-filters-open')) {{
+                    closeHistoryFilters();
+                }}
+            }});
 
             function reverseScore(score) {{
                 if (!score) return '';
@@ -7515,6 +7697,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 renderMilestonesTable();
                 setHistorySubpage(historySubpage);
                 applyMobileHistoryLayout();
+                updateHistoryMobileFilterButton();
 
                 // Handle window resize
                 window.addEventListener('resize', function() {{
@@ -8469,6 +8652,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             function setHistorySubpage(page) {{
                 historySubpage = page === HISTORY_SUBPAGE_MILESTONES ? HISTORY_SUBPAGE_MILESTONES : HISTORY_SUBPAGE_MATCH;
+                if (historySubpage !== HISTORY_SUBPAGE_MATCH) closeHistoryFilters(false);
                 syncHistorySubpageVisibility();
                 if (historySubpage === HISTORY_SUBPAGE_MILESTONES) {{
                     renderMilestonesPage();
@@ -9003,12 +9187,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
             function applyHistoryFilters() {{
                 const selectedPlayer = getNormalizedPlayerSelection('playerHistorySelect');
+                const filterState = getHistoryFilterSelectionState();
+                updateHistoryMobileFilterButton(filterState);
                 if (!selectedPlayer) {{
                     syncUrlStateForTab('history');
                     return;
                 }}
-
-                const filterState = getHistoryFilterSelectionState();
 
                 // Filter the data (if nothing selected in a category, show all)
                 const filtered = currentPlayerData.filter(row => rowMatchesHistoryFilters(row, filterState, selectedPlayer));
@@ -9205,6 +9389,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     }}
                     tbody.innerHTML = `<tr><td colspan="${{displayColumns.length}}" class="cell-state-error">Select a player...</td></tr>`;
                     updateHistoryCounter([], '');
+                    updateHistoryMobileFilterButton();
                     syncUrlStateForTab('history');
                     return;
                 }}
