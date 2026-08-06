@@ -3648,9 +3648,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 /* Fed/BJK Cup toggle buttons mobile */
                 .fedbcup-header-controls {{ flex-direction: row; flex-wrap: wrap; gap: 6px; align-items: center; }}
-                .fedbcup-filter-left {{ flex: 1; min-width: 0; order: 1; visibility: visible !important; }}
+                .fedbcup-filter-left {{ flex: 1; min-width: 0; order: 1; }}
                 .fedbcup-filter-left select {{ font-size: 11px; padding: 4px 4px; max-width: 120px; }}
-                .fedbcup-record-right {{ flex: 1; min-width: 0; order: 1; justify-content: flex-end; visibility: visible !important; }}
+                .fedbcup-record-right {{ flex: 1; min-width: 0; order: 1; justify-content: flex-end; }}
+                #view-fedbcup:not(.fedbcup-series-active) .fedbcup-filter-left,
+                #view-fedbcup:not(.fedbcup-series-active) .fedbcup-record-right {{ display: none; }}
                 .fedbcup-toggle-row {{ flex: 0 0 100%; order: 2; }}
                 .fedbcup-btn {{ flex: 1; font-size: 12px; padding: 8px 0; }}
 
@@ -5860,7 +5862,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     </div>
                 </div>
 
-                <div id="view-fedbcup" class="single-layout" style="display: none;">
+                <div id="view-fedbcup" class="single-layout fedbcup-series-active" style="display: none;">
                     <div class="header-row">
                         <h1>Fed/BJK Cup</h1>
                     </div>
@@ -7239,6 +7241,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }})();
 
             function switchFedBjkTab(subTab) {{
+                document.getElementById('view-fedbcup').classList.toggle('fedbcup-series-active', subTab === 'series');
                 document.getElementById('fedbcup-view-players').style.display = (subTab === 'players') ? '' : 'none';
                 document.getElementById('fedbcup-view-captains').style.display = (subTab === 'captains') ? '' : 'none';
                 document.getElementById('fedbcup-view-series').style.display = (subTab === 'series') ? '' : 'none';

@@ -105,6 +105,33 @@ class GeneratedSiteTests(unittest.TestCase):
             source,
         )
 
+    def test_fed_bjk_series_only_controls_are_hidden_on_other_mobile_views(self):
+        source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        self.assertIn(
+            'id="view-fedbcup" class="single-layout fedbcup-series-active"',
+            source,
+        )
+        self.assertIn(
+            "#view-fedbcup:not(.fedbcup-series-active) .fedbcup-filter-left,",
+            source,
+        )
+        self.assertIn(
+            "#view-fedbcup:not(.fedbcup-series-active) .fedbcup-record-right { display: none; }",
+            source,
+        )
+        self.assertIn(
+            "classList.toggle('fedbcup-series-active', subTab === 'series')",
+            source,
+        )
+        self.assertNotIn(
+            ".fedbcup-filter-left { flex: 1; min-width: 0; order: 1; visibility:",
+            source,
+        )
+        self.assertNotIn(
+            ".fedbcup-record-right { flex: 1; min-width: 0; order: 1; justify-content: flex-end; visibility:",
+            source,
+        )
+
     def test_match_history_filters_use_a_mobile_bottom_sheet_with_active_count(self):
         source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
         self.assertIn('id="history-mobile-filter-btn"', source)
