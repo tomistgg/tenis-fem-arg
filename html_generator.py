@@ -1330,7 +1330,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
         _all_bjkc_players = set()
 
-        for _tid in _tie_meta['tournamentId'].tolist():
+        for _tie_index, _tid in enumerate(_tie_meta['tournamentId'].tolist()):
             _grp = _bjkc_df[_bjkc_df['tournamentId'] == _tid].copy()
             _first = _grp.iloc[0]
 
@@ -1423,12 +1423,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         <td style="white-space:nowrap;">{_fmt_name(_opp_player)}</td>
                     </tr>"""
 
-            bjkc_series_html += f"""<div class="bjkc-series-block">
-                <div class="bjkc-series-header">
+            _open_attr = ' open' if _tie_index == 0 else ''
+            bjkc_series_html += f"""<details class="bjkc-series-block" name="bjkc-series"{_open_attr}>
+                <summary class="bjkc-series-header">
                     <span class="bjkc-header-date">{escape(_tie_date)}</span>
                     <span class="bjkc-header-title">{escape(_header_text)} {_opp_flag}</span>
                     <span class="bjkc-header-side"><span class="bjkc-tie-score" style="background:{_badge_bg};color:{_badge_color};">{_tie_res_label}</span></span>
-                </div>
+                    <span class="bjkc-header-arrow" aria-hidden="true"></span>
+                </summary>
                 <div class="content-card">
                     <div class="table-wrapper">
                         <table class="bjkc-series-table">
@@ -1439,7 +1441,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         </table>
                     </div>
                 </div>
-            </div>"""
+            </details>"""
         bjkc_players_json = _script_safe_json(sorted(_all_bjkc_players))
     except Exception as _e:
         report_run_issue(
@@ -2556,20 +2558,47 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .fedbcup-series-toolbar {{ display: flex; align-items: center; gap: 10px; }}
             #fedbcup-player-filter {{ padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 12px; background: white; min-width: 180px; }}
             .fedbcup-record-text {{ font-size: 13px; font-weight: bold; color: #475569; white-space: nowrap; }}
-            .bjkc-series-block {{ margin-bottom: 20px; }}
+            .bjkc-series-block {{ margin-bottom: 13px; }}
             .bjkc-series-header {{
-                display: flex;
+                min-height: 39px;
+                display: grid;
+                grid-template-columns: minmax(92px, auto) minmax(0, 1fr) auto 18px;
                 align-items: center;
+                gap: 10px;
                 background: #334155;
                 color: #fff;
                 font-weight: 700;
                 font-size: 12px;
                 padding: 7px 10px;
+                border-radius: 8px;
+                cursor: pointer;
+                list-style: none;
+                user-select: none;
             }}
-            .bjkc-header-title {{ flex: 1; text-align: center; }}
-            .bjkc-header-date {{ flex: 0 0 auto; text-align: left; white-space: nowrap; font-size: 11px; opacity: 0.85; padding-right: 8px; }}
-            .bjkc-header-side {{ flex: 0 0 60px; text-align: right; }}
-            .bjkc-tie-score {{ display: inline-block; font-size: 15px; font-weight: 900; padding: 2px 10px; border-radius: 4px; letter-spacing: 1px; }}
+            .bjkc-series-header::-webkit-details-marker {{ display: none; }}
+            .bjkc-series-header:focus-visible {{ outline: 2px solid var(--c-primary); outline-offset: 2px; }}
+            .bjkc-series-block[open] .bjkc-series-header {{ border-radius: 8px 8px 0 0; }}
+            .bjkc-series-block > .content-card {{ margin: 0; border-top: 0; border-radius: 0 0 12px 12px; }}
+            .bjkc-header-title {{ min-width: 0; overflow: hidden; text-overflow: ellipsis; text-align: center; white-space: nowrap; }}
+            .bjkc-header-date {{ text-align: left; white-space: nowrap; font-size: 11px; opacity: 0.85; }}
+            .bjkc-header-side {{ text-align: right; }}
+            .bjkc-tie-score {{ display: inline-block; min-width: 47px; font-size: 15px; font-weight: 900; padding: 2px 10px; border-radius: 4px; letter-spacing: 1px; text-align: center; }}
+            .bjkc-header-arrow {{ position: relative; width: 18px; height: 18px; }}
+            .bjkc-header-arrow::after {{
+                content: '';
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 7px;
+                height: 7px;
+                box-sizing: border-box;
+                border-right: 2px solid currentColor;
+                border-bottom: 2px solid currentColor;
+                transform: translate(-50%, -70%) rotate(45deg);
+                transform-origin: center;
+                transition: transform 0.15s ease;
+            }}
+            .bjkc-series-block[open] .bjkc-header-arrow::after {{ transform: translate(-50%, -30%) rotate(225deg); }}
             .bjkc-series-table {{ table-layout: auto !important; width: max-content !important; min-width: 100%; }}
             .bjkc-series-table th:nth-child(2), .bjkc-series-table td:nth-child(2) {{ width: 44px; text-align: center; }}
             .doubles-br {{ display: none; }}
@@ -3566,8 +3595,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #captains-table th:nth-child(3), #captains-table td:nth-child(3) {{ width: 30%; }}
 
                 /* Series mobile */
-                .bjkc-series-header {{ font-size: 10px; padding: 5px 6px; }}
-                .bjkc-header-date {{ font-size: 9px; }}
+                .bjkc-series-block {{ margin-bottom: 9px; }}
+                .bjkc-series-header {{
+                    min-height: 36px;
+                    grid-template-columns: 72px minmax(0, 1fr) auto 16px;
+                    gap: 5px;
+                    padding: 6px 7px;
+                    border-radius: 6px;
+                    font-size: 8px;
+                }}
+                .bjkc-series-block[open] .bjkc-series-header {{ border-radius: 6px 6px 0 0; }}
+                .bjkc-series-block > .content-card {{ border-radius: 0 0 8px 8px; }}
+                .bjkc-header-date {{ font-size: 8px; }}
+                .bjkc-tie-score {{ min-width: 40px; padding: 3px 6px; font-size: 12px; }}
+                .bjkc-header-arrow {{ width: 16px; height: 16px; }}
                 .bjkc-series-table {{ width: 100% !important; min-width: unset !important; }}
                 .bjkc-series-table th {{ font-size: 8px !important; padding: 3px 4px !important; }}
                 .bjkc-series-table td {{ font-size: 9px !important; padding: 3px 4px !important; white-space: normal !important; }}
@@ -7094,17 +7135,24 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             function filterFedBjkPlayer() {{
                 const sel = document.getElementById('fedbcup-player-filter');
                 const player = sel ? sel.value : '';
+                const visibleBlocks = [];
                 document.querySelectorAll('.bjkc-series-table tbody tr').forEach(function(tr) {{
                     if (!player) {{ tr.style.display = ''; return; }}
                     const players = (tr.getAttribute('data-player') || '').split('|');
                     tr.style.display = players.includes(player) ? '' : 'none';
                 }});
                 document.querySelectorAll('.bjkc-series-block').forEach(function(block) {{
-                    if (!player) {{ block.style.display = ''; return; }}
+                    if (!player) {{
+                        block.style.display = '';
+                        visibleBlocks.push(block);
+                        return;
+                    }}
                     const rows = block.querySelectorAll('.bjkc-series-table tbody tr');
                     const visible = Array.from(rows).some(function(r) {{ return r.style.display !== 'none'; }});
                     block.style.display = visible ? '' : 'none';
+                    if (visible) visibleBlocks.push(block);
                 }});
+                visibleBlocks.forEach(function(block, index) {{ block.open = index === 0; }});
                 updateFedBjkRecord(player);
                 syncUrlStateForTab('fedbcup');
             }}

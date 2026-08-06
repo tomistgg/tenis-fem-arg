@@ -85,6 +85,25 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertIn("Grand Slams information", source)
         self.assertNotIn('<details class="roadtogs-info" open', source)
 
+    def test_fed_bjk_series_is_an_exclusive_accordion_with_latest_tie_open(self):
+        source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        tie_tags = re.findall(
+            r'<details class="bjkc-series-block" name="bjkc-series"(?: open)?>',
+            source,
+        )
+        self.assertGreater(len(tie_tags), 1)
+        self.assertTrue(tie_tags[0].endswith(" open>"))
+        self.assertEqual(sum(" open" in tag for tag in tie_tags), 1)
+        self.assertEqual(
+            source.count('<summary class="bjkc-series-header">'),
+            len(tie_tags),
+        )
+        self.assertIn('class="bjkc-header-arrow" aria-hidden="true"', source)
+        self.assertIn(
+            "visibleBlocks.forEach(function(block, index) { block.open = index === 0; });",
+            source,
+        )
+
     def test_photos_view_shows_retirement_notice_without_gallery(self):
         source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
         self.assertIn(
