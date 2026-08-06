@@ -391,7 +391,7 @@ window.__WTA_RANKINGS_2005__ = (function() {
         ["MARTINA NAVRATILOVA","USA","1956-10-18"],
         ["AHSHA ROLLE","USA","1985-03-21"],
         ["MILANGELA MORALES","USA","1981-12-09"],
-        ["EKATERINA MAKAROVA (1988)","RUS","1988-06-07"],
+        ["EKATERINA MAKAROVA","RUS","1988-06-07"],
         ["PASCALE LEROY","FRA","1984-04-04"],
         ["AURELIE VEDY","FRA","1981-02-08"],
         ["RYOKO TAKEMURA","JPN","1976-06-02"],

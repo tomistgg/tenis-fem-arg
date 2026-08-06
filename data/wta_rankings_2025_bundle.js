@@ -51,7 +51,7 @@ window.__WTA_RANKINGS_2025__ = (function() {
         ["ANHELINA KALININA","UKR","1997-02-07"],
         ["REBECCA SRAMKOVA","SVK","1996-10-19"],
         ["NAOMI OSAKA","JPN","1997-10-16"],
-        ["YUE YUAN (1998)","CHN","1998-09-25"],
+        ["YUE YUAN","CHN","1998-09-25"],
         ["JESSICA BOUZAS MANEIRO","ESP","2002-09-24"],
         ["OLGA DANILOVIC","SRB","2001-01-23"],
         ["ASHLYN KRUEGER","USA","2004-05-07"],

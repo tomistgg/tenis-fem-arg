@@ -251,7 +251,7 @@ window.__WTA_RANKINGS_1986__ = (function() {
         ["JANE HOLDEN","USA","1966-12-22"],
         ["BETH NORTON","USA","1957-06-13"],
         ["KATHLEEN CUMMINGS","USA","1961-09-05"],
-        ["KATERINA BOHMOVA (1958)","CZE","1958-01-22"],
+        ["KATERINA BOHMOVA","CZE","1958-01-22"],
         ["ANDREA TIEZZI","ARG","1964-11-26"],
         ["PAULA SMITH","USA","1957-01-10"],
         ["MARIAAN DE SWARDT","RSA","1971-03-18"],

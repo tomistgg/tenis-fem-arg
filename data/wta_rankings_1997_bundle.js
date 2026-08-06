@@ -209,7 +209,7 @@ window.__WTA_RANKINGS_1997__ = (function() {
         ["LIEZEL HUBER","USA","1976-08-21"],
         ["ELENA SAVOLDI","ITA","1972-11-11"],
         ["VENUS WILLIAMS","USA","1980-06-17"],
-        ["FRANCESCA ROMANO (1971)","ITA","1971-02-07"],
+        ["FRANCESCA ROMANO","ITA","1971-02-07"],
         ["ANA ALCAZAR","ESP","1979-06-08"],
         ["ANGELICA GAVALDON","MEX","1973-10-03"],
         ["PAM SHRIVER","USA","1962-07-04"],

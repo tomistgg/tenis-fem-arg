@@ -310,7 +310,7 @@ window.__WTA_RANKINGS_1995__ = (function() {
         ["JESSICA FERNANDEZ","MEX","1979-07-19"],
         ["JO DURIE","GBR","1960-07-27"],
         ["REKA VIDATS","HUN","1979-07-19"],
-        ["FRANCESCA ROMANO (1971)","ITA","1971-02-07"],
+        ["FRANCESCA ROMANO","ITA","1971-02-07"],
         ["EMMANUELLE GAGLIARDI","SUI","1976-07-09"],
         ["KARIN PALME","MEX","1977-12-27"],
         ["MIRELA VLADULESCU","GER","1977-03-11"],

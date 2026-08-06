@@ -109,7 +109,7 @@ window.__WTA_RANKINGS_1990__ = (function() {
         ["ELENA WAGNER","GER","1972-05-17"],
         ["SARA GOMER","GBR","1964-05-13"],
         ["EVA KRAPL","SUI","1966-01-16"],
-        ["FRANCESCA ROMANO (1971)","ITA","1971-02-07"],
+        ["FRANCESCA ROMANO","ITA","1971-02-07"],
         ["MICHELLE JAGGARD-LAI","AUS","1969-05-06"],
         ["LOUISE ALLEN","USA","1962-01-07"],
         ["SOPHIE AMIACH","FRA","1963-11-10"],

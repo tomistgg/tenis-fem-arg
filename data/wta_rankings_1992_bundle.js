@@ -190,7 +190,7 @@ window.__WTA_RANKINGS_1992__ = (function() {
         ["MAUREEN DRAKE","CAN","1971-03-21"],
         ["RENATA BARANSKI","USA","1965-02-24"],
         ["JO-ANNE FAULL","AUS","1971-01-13"],
-        ["FRANCESCA ROMANO (1971)","ITA","1971-02-07"],
+        ["FRANCESCA ROMANO","ITA","1971-02-07"],
         ["EVA BES","ESP","1973-01-14"],
         ["LEONA LASKOVA","CZE","1970-04-07"],
         ["MARÍA LUCIANA REYNARES","ARG","1976-02-09"],

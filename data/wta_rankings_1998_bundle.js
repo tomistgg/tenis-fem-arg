@@ -840,7 +840,7 @@ window.__WTA_RANKINGS_1998__ = (function() {
         ["DORA KRSTULOVIC","CRO","1981-06-19"],
         ["ANNA EUGENIA NEFEDOVA","RUS","1982-10-26"],
         ["KYLENE WONG SIMUNYOLA","USA","1979-07-29"],
-        ["FRANCESCA ROMANO (1971)","ITA","1971-02-07"],
+        ["FRANCESCA ROMANO","ITA","1971-02-07"],
         ["MARILYN BAKER","USA","1974-01-14"],
         ["LARA VAN ROOYEN","RSA","1979-12-04"],
         ["ANNA FLORIS","ITA","1982-05-15"],

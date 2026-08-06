@@ -135,7 +135,7 @@ window.__WTA_RANKINGS_2026__ = (function() {
         ["ARANTXA RUS","NED","1990-12-13"],
         ["LINDA KLIMOVICOVA","POL","2004-06-18"],
         ["KATARZYNA KAWA","POL","1992-11-17"],
-        ["YUE YUAN (1998)","CHN","1998-09-25"],
+        ["YUE YUAN","CHN","1998-09-25"],
         ["LUCREZIA STEFANINI","ITA","1998-05-15"],
         ["LOLA RADIVOJEVIC","SRB","2005-01-02"],
         ["MARIA TIMOFEEVA","UZB","2003-11-18"],
