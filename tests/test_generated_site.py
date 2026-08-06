@@ -79,6 +79,12 @@ class GeneratedSiteTests(unittest.TestCase):
         allowed = set(re.findall(r"'sha256-[^']+'", unescape(match.group(0))))
         self.assertEqual(allowed, set(_script_hash_sources(source)))
 
+    def test_grand_slam_information_is_collapsed_by_default(self):
+        source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        self.assertIn('<details class="roadtogs-info">', source)
+        self.assertIn("Grand Slams information", source)
+        self.assertNotIn('<details class="roadtogs-info" open', source)
+
     def test_photos_view_shows_retirement_notice_without_gallery(self):
         source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
         self.assertIn(
