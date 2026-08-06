@@ -1201,7 +1201,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         for col in national_columns:
             value = str(row.get(col, "") or "")
             if col == "Event":
-                value = " ".join(part for part in (value, str(row.get("Round", "") or "")) if part)
+                value = "G1 Am" if value == "G1 Americas" else value
             cell_style = ""
             cell_class = ""
 
@@ -3997,7 +3997,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #national-table th,
                 #national-table td {{
                     font-size: 6px;
-                    padding: 1px 1px;
+                    padding: 1px 0;
                     white-space: nowrap;
                     word-break: normal;
                     line-height: 1.05;
@@ -5547,6 +5547,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #view-fedbcup #national-table td:nth-child(2),
                 #view-fedbcup #captains-table td:nth-child(2) {{
                     font-weight: 400 !important;
+                }}
+            }}
+
+            @media (max-width: 480px) {{
+                #view-fedbcup #national-table th,
+                #view-fedbcup #national-table td {{
+                    padding-left: 0 !important;
+                    padding-right: 0 !important;
                 }}
             }}
 

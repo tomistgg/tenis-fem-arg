@@ -174,7 +174,16 @@ class GeneratedSiteTests(unittest.TestCase):
             self.assertNotIn("<br>", cells[6])
 
         first_cells = re.findall(r"<td\b.*?</td>", rows[0], re.DOTALL)
-        self.assertEqual(unescape(re.sub(r"<[^>]+>", "", first_cells[3])).strip(), "WG R16")
+        self.assertEqual(unescape(re.sub(r"<[^>]+>", "", first_cells[3])).strip(), "WG")
+        event_values = [
+            unescape(re.sub(r"<[^>]+>", "", re.findall(r"<td\b.*?</td>", row, re.DOTALL)[3])).strip()
+            for row in rows
+        ]
+        self.assertIn("WG II", event_values)
+        self.assertIn("G1 Am", event_values)
+        self.assertIn("Qualifiers", event_values)
+        self.assertNotIn("G1 Americas", event_values)
+        self.assertFalse(any(re.search(r"\s(?:R16|R32|QF|RR)$", event) for event in event_values))
         longest_player_row = next(row for row in rows if "Viviana González Locicero" in row)
         self.assertIn(
             '<span class="mobile-only">Viviana González Locicero</span>',
@@ -217,6 +226,9 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertIn("min-width: max-content;", source)
         self.assertIn("#national-table td:not(:nth-child(6)) { width: 1%; }", source)
         self.assertIn("#national-table td:nth-child(6) { width: 100%; }", source)
+        self.assertIn("font-size: 6px;\n                    padding: 1px 0;", source)
+        self.assertIn("#view-fedbcup #national-table th,", source)
+        self.assertIn("padding-left: 0 !important;\n                    padding-right: 0 !important;", source)
         self.assertNotIn(
             "#national-table th:nth-child(7), #national-table td:nth-child(7) { width: 42px !important;",
             source,
