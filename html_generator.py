@@ -15,6 +15,7 @@ from config import (
     load_player_mapping,
     player_name_only,
     resolve_player_display_name,
+    resolve_player_presentation_name,
 )
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR, SITE_ROOT as RUNTIME_SITE_ROOT
 from time_utils import madrid_today
@@ -260,20 +261,19 @@ _LEGACY_WTA_RANKING_BUNDLES = {
     'wta_rankings_83_99_bundle.js',
 }
 _YEAR_WTA_RANKING_BUNDLE_RE = re.compile(r'^wta_rankings_\d{4}_bundle\.js$')
-_RANKING_IDENTITY_SUFFIX_RE = re.compile(
-    r'\s+\((?:\d{4}|[A-Z]{3}|(?:ITF|WTA)\s+\d+)\)$',
-    re.IGNORECASE,
-)
-
-
 def _ranking_display_name(player):
-    """Hide internal same-name disambiguators in ranking presentation.
+    """Resolve a ranking identity to its explicitly configured public name.
 
-    ``Player`` remains canonical and differentiated for ID-safe matching (for
-    example, ``YUE YUAN (1998)``), while the WTA Rankings page displays the
-    clean canonical name. Parenthetical former names are intentionally kept.
+    The canonical ``Player`` value remains differentiated for matching, while
+    ``presentation_name`` metadata controls display without parsing suffixes.
     """
-    return _RANKING_IDENTITY_SUFFIX_RE.sub("", str(player.get("Player", "") or "")).strip()
+    raw_name = str(player.get("Player", "") or "")
+    resolved = resolve_player_presentation_name(
+        "wta",
+        player_id=player.get("Id", ""),
+        name=raw_name,
+    )
+    return resolved.upper() if raw_name.isupper() else resolved
 
 
 def _ranking_bundle_rows(players):
@@ -518,7 +518,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             player_mapping_bundle = [
                 {
                     **identity,
-                    "display_name": player_name_only(identity.get("display_name")),
+                    "display_name": (
+                        identity.get("presentation_name")
+                        or player_name_only(identity.get("display_name"))
+                    ),
                 }
                 if isinstance(identity, dict)
                 else identity
@@ -7258,7 +7261,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 if (Array.isArray(playerMapping)) {{
                     for (const item of playerMapping) {{
                         if (!item || typeof item !== 'object') continue;
-                        const canonical = item.display_name || item.wta_name || item.itf_name || item.bjkc_name || '';
+                        const canonical = item.presentation_name || item.display_name || item.wta_name || item.itf_name || item.bjkc_name || '';
                         if (!canonical) continue;
                         registerSourceId('wta', item.wta_id, canonical);
                         registerSourceId('itf', item.itf_id, canonical);

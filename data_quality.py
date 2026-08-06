@@ -48,6 +48,7 @@ GENERATED_SITE_FILES = (
 _PLAYER_TEXT_FIELDS = (
     "player_key",
     "display_name",
+    "presentation_name",
     "country",
     "dob",
     "wta_id",
@@ -66,6 +67,7 @@ class PlayerAliasModel(BaseModel):
 
     player_key: str
     display_name: str
+    presentation_name: str = ""
     country: str
     dob: str
     wta_id: str

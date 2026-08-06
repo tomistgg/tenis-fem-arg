@@ -70,6 +70,7 @@ class PlayerIdentityIndexTests(unittest.TestCase):
             self.assertEqual(added, 1)
             index = PlayerIdentityIndex(json.loads(path.read_text(encoding="utf-8")))
             self.assertEqual(index.by_wta_id["123"].display_name, "Same Name (WTA 123)")
+            self.assertEqual(index.by_wta_id["123"].presentation_name, "Same Name")
             self.assertIsNone(index.resolve("wta", name="Same Name"))
 
     def test_new_itf_identity_is_synced_from_match_participants(self):
@@ -89,6 +90,7 @@ class PlayerIdentityIndexTests(unittest.TestCase):
                 index.by_itf_id["800000001"].display_name,
                 "Same Name (ITF 800000001)",
             )
+            self.assertEqual(index.by_itf_id["800000001"].presentation_name, "Same Name")
             self.assertIsNone(index.resolve("itf", name="Same Name"))
 
     def test_new_wta_identity_is_synced_from_match_participants(self):

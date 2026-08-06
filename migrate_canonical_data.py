@@ -26,40 +26,52 @@ from canonical_data import (
 )
 
 
-BAD_WTA_COPIES = {
-    ("1020033008", "1987-04-13", "Suntory Japan Open - Tokyo"),
-    ("1020033071", "1987-04-13", "Suntory Japan Open - Tokyo"),
-    ("1020033087", "1987-04-13", "Suntory Japan Open - Tokyo"),
-    ("1020033095", "1987-04-13", "Suntory Japan Open - Tokyo"),
-    ("1020057093", "1987-04-13", "Suntory Japan Open - Tokyo"),
-    ("1100271782", "2002-07-21", "Idea Prokom Open - Sopot"),
+# Evidence-backed corrections for identities that cannot be resolved
+# mechanically from a shared source name. Every override stores both the
+# unique canonical identity label and the public presentation name, even when
+# they are identical, so a future exception cannot silently leak an internal
+# qualifier into the UI.
+NAME_OVERRIDE_BY_ITF_ID = {
+    "800462974": ("Ana Luiza Cruz", "Ana Luiza Cruz"),
+    "800201426": ("Carolina García (ARG)", "Carolina García"),
+    "800534700": ("Carolina García (BRA)", "Carolina García"),
+    "800343636": ("Barbora Matusova (CZE)", "Barbora Matusova"),
+    "800169266": ("Elizabeth Smylie", "Elizabeth Smylie"),
+    "800180377": ("Francesca Romano", "Francesca Romano"),
+    "800279440": ("Francesca Romano (1971)", "Francesca Romano"),
+    "800199860": ("Laura Rossi", "Laura Rossi"),
+    "800570615": ("María Josefina Andrade Benedetti", "María Josefina Andrade Benedetti"),
+    "800636229": ("Maria Lazarenko", "Maria Lazarenko"),
+    "800176664": ("Patricia Gómez (ARG)", "Patricia Gómez"),
+    "800209139": ("Patricia Gómez (ECU)", "Patricia Gómez"),
+    "800439517": ("Sofia Camila Rojas", "Sofia Camila Rojas"),
+    "800375333": ("Sofia Rojas", "Sofia Rojas"),
+    "800417244": ("Yue Yuan (1998)", "Yue Yuan"),
 }
 
-# These are evidence-backed corrections for identities that cannot be resolved
-# mechanically from a shared source name.
-DISPLAY_BY_ITF_ID = {
-    "800462974": "Ana Luiza Cruz",
-    "800201426": "Carolina García (ARG)",
-    "800534700": "Carolina García (BRA)",
-    "800343636": "Barbora Matusova (CZE)",
-    "800169266": "Elizabeth Smylie",
-    "800180377": "Francesca Romano",
-    "800279440": "Francesca Romano (1971)",
-    "800199860": "Laura Rossi",
-    "800570615": "María Josefina Andrade Benedetti",
-    "800636229": "Maria Lazarenko",
-    "800176664": "Patricia Gómez (ARG)",
-    "800209139": "Patricia Gómez (ECU)",
-    "800439517": "Sofia Camila Rojas",
-    "800375333": "Sofia Rojas",
-    "800417244": "Yue Yuan (1998)",
+NAME_OVERRIDE_BY_WTA_ID = {
+    "325609": ("Barbora Matusova (SVK)", "Barbora Matusova"),
+    "319854": ("Montserrat González (PAR)", "Montserrat González"),
+    "311072": ("Montserrat González (MEX)", "Montserrat González"),
+    "314483": ("Yue Yuan (1991)", "Yue Yuan"),
 }
 
-DISPLAY_BY_WTA_ID = {
-    "325609": "Barbora Matusova (SVK)",
-    "319854": "Montserrat González (PAR)",
-    "311072": "Montserrat González (MEX)",
-    "314483": "Yue Yuan (1991)",
+# Public names for every identity whose unique canonical label contains an
+# internal qualifier.  This metadata is persisted on the player record, so
+# runtime presentation never has to infer meaning from parentheses.  Newly
+# discovered name collisions receive the same metadata automatically below.
+PRESENTATION_BY_PLAYER_KEY = {
+    "itf:800587892": "Daphnee Mpetshi Perricard",
+    "wta:206952": "Ekaterina Kuznetsova",
+    "wta:311604": "Ekaterina Makarova",
+    "wta:315172": "Fernanda Sandoval",
+    "wta:20054": "Katerina Bohmova",
+    "itf:800436364": "Kateryna Diatlova",
+    "itf:800506455": "Kim Chiarello",
+    "itf:800700710": "Lorena Schaedel",
+    "itf:800561777": "Polina Kaibekova",
+    "itf:800673210": "Rachael Smith",
+    "wta:337674": "Sloane Stephens",
 }
 
 PRIMARY_ITF_BY_WTA_ID = {
@@ -246,14 +258,24 @@ def _merge_legacy_players(data_dir: Path) -> tuple[list[dict], dict[str, int]]:
         if primary_itf and primary_itf not in itf_ids:
             raise ValueError(f"configured primary ITF ID {primary_itf} is absent")
         additional_itf_ids = [value for value in itf_ids if value != primary_itf]
+        player_key = f"wta:{wta_id}" if wta_id else f"itf:{primary_itf}"
 
         names = _ordered_values(
             component, "display_name", "wta_name", "itf_name", "bjkc_name"
         )
-        explicit_display = DISPLAY_BY_ITF_ID.get(primary_itf, "") or DISPLAY_BY_WTA_ID.get(wta_id, "")
-        display_name = explicit_display or (names[0] if names else "")
+        name_override = (
+            NAME_OVERRIDE_BY_ITF_ID.get(primary_itf)
+            or NAME_OVERRIDE_BY_WTA_ID.get(wta_id)
+        )
+        display_name = name_override[0] if name_override else (names[0] if names else "")
         if not display_name:
             raise ValueError(f"identity {wta_id or primary_itf} has no display name")
+        presentation_name = (
+            (name_override[1] if name_override else "")
+            or PRESENTATION_BY_PLAYER_KEY.get(player_key, "")
+            or _most_common(_ordered_values(component, "presentation_name"))
+            or display_name
+        )
         aliases: list[str] = []
         for row in component:
             raw_aliases = row.get("aliases")
@@ -274,8 +296,9 @@ def _merge_legacy_players(data_dir: Path) -> tuple[list[dict], dict[str, int]]:
         itf_names = _ordered_values(component, "itf_name")
         bjkc_names = _ordered_values(component, "bjkc_name")
         canonical.append({
-            "player_key": f"wta:{wta_id}" if wta_id else f"itf:{primary_itf}",
+            "player_key": player_key,
             "display_name": display_name,
+            "presentation_name": presentation_name,
             "country": country,
             "dob": dob,
             "wta_id": wta_id,
@@ -292,23 +315,24 @@ def _merge_legacy_players(data_dir: Path) -> tuple[list[dict], dict[str, int]]:
 
     display_keys = {normalized_name(row["display_name"]) for row in canonical}
 
-    def unique_display(display_name: str, source: str, player_id: str) -> str:
+    def unique_display(display_name: str, source: str, player_id: str) -> tuple[str, str]:
         if normalized_name(display_name) not in display_keys:
             display_keys.add(normalized_name(display_name))
-            return display_name
+            return display_name, ""
         qualified = f"{display_name} ({source.upper()} {player_id})"
         display_keys.add(normalized_name(qualified))
-        return qualified
+        return qualified, display_name
 
     known_wta = {value for row in canonical for value in [row["wta_id"], *row["additional_wta_ids"]] if value}
     for player_id, metadata in ranking_identity.items():
         if player_id in known_wta:
             continue
         display_name = metadata["display_name"] or f"WTA player {player_id}"
-        display_name = unique_display(display_name, "wta", player_id)
+        display_name, presentation_name = unique_display(display_name, "wta", player_id)
         canonical.append({
             "player_key": f"wta:{player_id}",
             "display_name": display_name,
+            "presentation_name": presentation_name,
             "country": metadata["country"],
             "dob": metadata["dob"],
             "wta_id": player_id,
@@ -328,10 +352,11 @@ def _merge_legacy_players(data_dir: Path) -> tuple[list[dict], dict[str, int]]:
         if not player_id.isdigit() or player_id.startswith("800") or player_id in known_wta:
             continue
         source_name = metadata["display_name"] or f"WTA player {player_id}"
-        display_name = unique_display(source_name, "wta", player_id)
+        display_name, presentation_name = unique_display(source_name, "wta", player_id)
         canonical.append({
             "player_key": f"wta:{player_id}",
             "display_name": display_name,
+            "presentation_name": presentation_name,
             "country": metadata["country"],
             "dob": "",
             "wta_id": player_id,
@@ -352,10 +377,11 @@ def _merge_legacy_players(data_dir: Path) -> tuple[list[dict], dict[str, int]]:
         if not player_id.startswith("800") or player_id in known_itf:
             continue
         source_name = metadata["display_name"] or f"ITF player {player_id}"
-        display_name = unique_display(source_name, "itf", player_id)
+        display_name, presentation_name = unique_display(source_name, "itf", player_id)
         canonical.append({
             "player_key": f"itf:{player_id}",
             "display_name": display_name,
+            "presentation_name": presentation_name,
             "country": metadata["country"],
             "dob": "",
             "wta_id": "",
@@ -410,31 +436,6 @@ def _deduplicate_rankings(path: Path) -> int:
                     removed += 1
                     continue
                 seen.add(key)
-                writer.writerow(row)
-
-    _atomic_replace(path, write)
-    return removed
-
-
-def _clean_wta_matches(path: Path) -> int:
-    removed = 0
-
-    def write(temp_path: Path) -> None:
-        nonlocal removed
-        with path.open("r", encoding="utf-8-sig", newline="") as source, temp_path.open(
-            "w", encoding="utf-8-sig", newline=""
-        ) as target:
-            reader = csv.DictReader(source)
-            fieldnames = reader.fieldnames
-            if fieldnames is None:
-                raise ValueError(f"WTA match file has no header: {path}")
-            writer = csv.DictWriter(target, fieldnames=fieldnames, lineterminator="\n")
-            writer.writeheader()
-            for row in reader:
-                key = (row.get("matchId", ""), row.get("date", ""), row.get("tournamentName", ""))
-                if key in BAD_WTA_COPIES:
-                    removed += 1
-                    continue
                 writer.writerow(row)
 
     _atomic_replace(path, write)
@@ -503,7 +504,6 @@ def migrate(data_dir: Path) -> dict[str, int]:
         _deduplicate_rankings(data_dir / filename)
         for filename in ("wta_rankings_00_09.csv", "wta_rankings_10_19.csv")
     )
-    stats["bad_wta_matches_removed"] = _clean_wta_matches(data_dir / "wta_matches_arg.csv")
     losers, results = _clean_itf_matches(data_dir / "itf_matches_arg.csv")
     stats["itf_walkover_losers_completed"] = losers
     stats["itf_walkover_results_completed"] = results

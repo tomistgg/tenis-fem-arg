@@ -8,6 +8,14 @@ from config import (
     _build_player_mapping,
     player_name_only,
     resolve_player_display_name,
+    resolve_player_presentation_name,
+)
+from migrate_canonical_data import (
+    NAME_OVERRIDE_BY_ITF_ID,
+    NAME_OVERRIDE_BY_WTA_ID,
+    PRIMARY_ITF_BY_WTA_ID,
+    PRESENTATION_BY_PLAYER_KEY,
+    WTA_BY_ITF_ID,
 )
 
 
@@ -41,6 +49,41 @@ class ProjectDataConstraintTests(unittest.TestCase):
         for name in ("Ana Cruz", "Carolina Garcia", "Patricia Gomez", "Sofia Rojas"):
             self.assertIsNone(self.index.resolve("wta", name=name), name)
             self.assertNotIn(name.upper(), NAME_LOOKUP)
+
+    def test_homonyms_have_plain_presentation_names(self):
+        for player_id in ("314483", "324325"):
+            self.assertEqual(self.index.by_wta_id[player_id].presentation_name, "Yue Yuan")
+            self.assertEqual(
+                resolve_player_presentation_name("wta", player_id=player_id, name="Yue Yuan"),
+                "Yue Yuan",
+            )
+
+    def test_all_migration_name_exceptions_declare_public_names(self):
+        for player_id, (identity_name, presentation_name) in NAME_OVERRIDE_BY_ITF_ID.items():
+            record = self.index.by_itf_id[player_id]
+            self.assertEqual(record.display_name, identity_name)
+            self.assertEqual(record.presentation_name, presentation_name)
+        for player_id, (identity_name, presentation_name) in NAME_OVERRIDE_BY_WTA_ID.items():
+            record = self.index.by_wta_id[player_id]
+            self.assertEqual(record.display_name, identity_name)
+            self.assertEqual(record.presentation_name, presentation_name)
+        for player_key, presentation_name in PRESENTATION_BY_PLAYER_KEY.items():
+            self.assertEqual(self.index.by_key[player_key].presentation_name, presentation_name)
+
+    def test_all_migration_crosswalks_and_primary_profiles_are_persisted(self):
+        for itf_id, wta_id in WTA_BY_ITF_ID.items():
+            self.assertEqual(self.index.by_itf_id[itf_id].wta_id, wta_id)
+        for wta_id, primary_itf_id in PRIMARY_ITF_BY_WTA_ID.items():
+            self.assertEqual(self.index.by_wta_id[wta_id].itf_id, primary_itf_id)
+
+    def test_united_cup_duplicate_player_id_is_absent(self):
+        with (DATA_DIR / "united_cup_matches_arg.csv").open(
+            "r", encoding="utf-8-sig", newline=""
+        ) as handle:
+            self.assertFalse(any(
+                row.get("winnerId") == "319112319112" or row.get("loserId") == "319112319112"
+                for row in csv.DictReader(handle)
+            ))
 
     def test_camila_romero_resolves_by_source_id(self):
         self.assertEqual(

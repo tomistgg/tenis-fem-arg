@@ -261,6 +261,20 @@ def resolve_player_display_name(source, *, player_id="", name=""):
             return mapped
     return raw_name
 
+
+def resolve_player_presentation_name(source, *, player_id="", name=""):
+    """Resolve the public name without changing canonical matching semantics."""
+    source_key = str(source or "").strip().casefold()
+    identifier = normalized_identifier(player_id)
+    record = None
+    if identifier and source_key in {"wta", "itf", "bjkc"}:
+        record = PLAYER_IDENTITY_INDEX.resolve(source_key, player_id=identifier)
+    if record is None and identifier:
+        record = PLAYER_IDENTITY_INDEX.resolve_any_id(identifier)
+    if record is not None:
+        return record.presentation_name
+    return resolve_player_display_name(source, player_id=player_id, name=name)
+
 WTA_RANKINGS_CSV = os.path.join(DATA_DIR, "wta_rankings_20_29.csv")
 WTA_RANKINGS_CSV_10_19 = os.path.join(DATA_DIR, "wta_rankings_10_19.csv")
 WTA_RANKINGS_CSV_00_09 = os.path.join(DATA_DIR, "wta_rankings_00_09.csv")

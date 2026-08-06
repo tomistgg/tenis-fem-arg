@@ -238,8 +238,10 @@ def _promote_site_files(
     staging_site: Path,
     backup_root: Path,
     run_id: str,
+    promoted: list[tuple[Path, Path | None]] | None = None,
 ) -> list[tuple[Path, Path | None]]:
-    promoted: list[tuple[Path, Path | None]] = []
+    if promoted is None:
+        promoted = []
     for source in sorted(path for path in staging_site.rglob("*") if path.is_file()):
         relative = source.relative_to(staging_site)
         destination = PROJECT_ROOT / relative
@@ -249,9 +251,75 @@ def _promote_site_files(
         if backup is not None:
             backup.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(destination, backup)
-        _atomic_copy(source, destination, run_id)
+        # Journal before replacing so a failed replacement is also rolled back.
         promoted.append((destination, backup))
+        _atomic_copy(source, destination, run_id)
     return promoted
+
+
+def _promote_tree_files(
+    staging_tree: Path,
+    production_tree: Path,
+    backup_root: Path,
+    run_id: str,
+    promoted: list[tuple[Path, Path | None]] | None = None,
+) -> list[tuple[Path, Path | None]]:
+    """Promote a staged tree without renaming the live directory.
+
+    Windows can reject a directory rename while an indexer, antivirus scanner,
+    editor, or web server holds a directory handle. Individual atomic file
+    replacements avoid that broad lock while the promotion journal preserves
+    the same rollback behavior used for generated site files.
+    """
+
+    if promoted is None:
+        promoted = []
+
+    staged_relatives: set[Path] = set()
+    for source in sorted(path for path in staging_tree.rglob("*") if path.is_file()):
+        relative = source.relative_to(staging_tree)
+        staged_relatives.add(relative)
+        destination = production_tree / relative
+        if destination.exists() and _sha256(source) == _sha256(destination):
+            continue
+        backup = backup_root / relative if destination.exists() else None
+        if backup is not None:
+            backup.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(destination, backup)
+        promoted.append((destination, backup))
+        _atomic_copy(source, destination, run_id)
+
+    # A directory swap also removes files deleted by the staged run. Mirror
+    # that behavior in the fallback and retain a backup for rollback.
+    for destination in sorted(
+        (path for path in production_tree.rglob("*") if path.is_file()),
+        reverse=True,
+    ):
+        relative = destination.relative_to(production_tree)
+        if relative in staged_relatives:
+            continue
+        backup = backup_root / relative
+        backup.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(destination, backup)
+        promoted.append((destination, backup))
+        destination.unlink()
+
+    return promoted
+
+
+def _promote_data_files(
+    staging_data: Path,
+    backup_root: Path,
+    run_id: str,
+    promoted: list[tuple[Path, Path | None]] | None = None,
+) -> list[tuple[Path, Path | None]]:
+    return _promote_tree_files(
+        staging_data,
+        PRODUCTION_DATA_DIR,
+        backup_root,
+        run_id,
+        promoted,
+    )
 
 
 def _rollback_site_files(promoted: list[tuple[Path, Path | None]], run_id: str) -> None:
@@ -274,44 +342,132 @@ def _promote_all(
     site_backup = staging_root / "previous-generated-site"
     failed_data = staging_root / "failed-promoted-data"
     promoted_site: list[tuple[Path, Path | None]] = []
+    promoted_data: list[tuple[Path, Path | None]] = []
+    promoted_deploy: list[tuple[Path, Path | None]] = []
     data_swapped = False
+    data_promotion_mode = "directory-swap"
     deploy_swapped = False
+    deploy_promoted = False
+    deploy_promotion_mode = "not-requested"
     deploy_target = PROJECT_ROOT / ".site"
 
     try:
-        os.replace(PRODUCTION_DATA_DIR, previous_data)
         try:
-            os.replace(staging_data, PRODUCTION_DATA_DIR)
-        except BaseException:
-            os.replace(previous_data, PRODUCTION_DATA_DIR)
-            raise
-        data_swapped = True
+            os.replace(PRODUCTION_DATA_DIR, previous_data)
+        except PermissionError as exc:
+            data_promotion_mode = "atomic-file-fallback"
+            logger.warning(
+                "Live data directory could not be renamed; using atomic file "
+                f"promotion instead: {exc}"
+            )
+            _promote_data_files(
+                staging_data,
+                previous_data,
+                run_id,
+                promoted_data,
+            )
+        else:
+            try:
+                os.replace(staging_data, PRODUCTION_DATA_DIR)
+            except PermissionError as exc:
+                os.replace(previous_data, PRODUCTION_DATA_DIR)
+                data_promotion_mode = "atomic-file-fallback"
+                logger.warning(
+                    "Staged data directory could not be renamed; using atomic file "
+                    f"promotion instead: {exc}"
+                )
+                _promote_data_files(
+                    staging_data,
+                    previous_data,
+                    run_id,
+                    promoted_data,
+                )
+            except BaseException:
+                os.replace(previous_data, PRODUCTION_DATA_DIR)
+                raise
+            else:
+                data_swapped = True
 
-        promoted_site = _promote_site_files(staging_site, site_backup, run_id)
+        _promote_site_files(staging_site, site_backup, run_id, promoted_site)
 
         if staging_deploy.exists():
+            deploy_promotion_mode = "directory-swap"
             if deploy_target.exists():
-                os.replace(deploy_target, previous_deploy)
-            try:
-                os.replace(staging_deploy, deploy_target)
-            except BaseException:
-                if previous_deploy.exists():
-                    os.replace(previous_deploy, deploy_target)
-                raise
-            deploy_swapped = True
+                try:
+                    os.replace(deploy_target, previous_deploy)
+                except PermissionError as exc:
+                    deploy_promotion_mode = "atomic-file-fallback"
+                    logger.warning(
+                        "Live deploy directory could not be renamed; using atomic file "
+                        f"promotion instead: {exc}"
+                    )
+                    _promote_tree_files(
+                        staging_deploy,
+                        deploy_target,
+                        previous_deploy,
+                        f"{run_id}.deploy",
+                        promoted_deploy,
+                    )
+                    deploy_promoted = True
+                else:
+                    try:
+                        os.replace(staging_deploy, deploy_target)
+                    except PermissionError as exc:
+                        os.replace(previous_deploy, deploy_target)
+                        deploy_promotion_mode = "atomic-file-fallback"
+                        logger.warning(
+                            "Staged deploy directory could not be renamed; using atomic "
+                            f"file promotion instead: {exc}"
+                        )
+                        _promote_tree_files(
+                            staging_deploy,
+                            deploy_target,
+                            previous_deploy,
+                            f"{run_id}.deploy",
+                            promoted_deploy,
+                        )
+                        deploy_promoted = True
+                    except BaseException:
+                        os.replace(previous_deploy, deploy_target)
+                        raise
+                    else:
+                        deploy_swapped = True
+                        deploy_promoted = True
+            else:
+                try:
+                    os.replace(staging_deploy, deploy_target)
+                except PermissionError as exc:
+                    deploy_promotion_mode = "atomic-file-fallback"
+                    logger.warning(
+                        "Deploy directory could not be installed by rename; using atomic "
+                        f"file promotion instead: {exc}"
+                    )
+                    _promote_tree_files(
+                        staging_deploy,
+                        deploy_target,
+                        previous_deploy,
+                        f"{run_id}.deploy",
+                        promoted_deploy,
+                    )
+                deploy_promoted = True
 
         return {
             "dataset_files": sum(1 for path in PRODUCTION_DATA_DIR.rglob("*") if path.is_file()),
+            "dataset_promotion_mode": data_promotion_mode,
             "generated_site_files": len(promoted_site),
-            "deploy_site_promoted": deploy_swapped,
+            "deploy_site_promoted": deploy_promoted,
+            "deploy_promotion_mode": deploy_promotion_mode,
         }
     except BaseException as exc:
         rollback_errors = []
         try:
-            if deploy_swapped and deploy_target.exists():
-                os.replace(deploy_target, staging_root / "failed-deploy-site")
-            if not deploy_target.exists() and previous_deploy.exists():
-                os.replace(previous_deploy, deploy_target)
+            if deploy_swapped:
+                if deploy_target.exists():
+                    os.replace(deploy_target, staging_root / "failed-deploy-site")
+                if not deploy_target.exists() and previous_deploy.exists():
+                    os.replace(previous_deploy, deploy_target)
+            else:
+                _rollback_site_files(promoted_deploy, f"{run_id}.deploy-rollback")
         except BaseException as rollback_exc:
             rollback_errors.append(f"deploy rollback: {rollback_exc}")
         try:
@@ -319,10 +475,13 @@ def _promote_all(
         except BaseException as rollback_exc:
             rollback_errors.append(f"generated-site rollback: {rollback_exc}")
         try:
-            if data_swapped and PRODUCTION_DATA_DIR.exists():
-                os.replace(PRODUCTION_DATA_DIR, failed_data)
-            if not PRODUCTION_DATA_DIR.exists() and previous_data.exists():
-                os.replace(previous_data, PRODUCTION_DATA_DIR)
+            if data_swapped:
+                if PRODUCTION_DATA_DIR.exists():
+                    os.replace(PRODUCTION_DATA_DIR, failed_data)
+                if not PRODUCTION_DATA_DIR.exists() and previous_data.exists():
+                    os.replace(previous_data, PRODUCTION_DATA_DIR)
+            else:
+                _rollback_site_files(promoted_data, f"{run_id}.data-rollback")
         except BaseException as rollback_exc:
             rollback_errors.append(f"dataset rollback: {rollback_exc}")
         rollback_complete = PRODUCTION_DATA_DIR.exists() and not rollback_errors

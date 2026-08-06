@@ -112,6 +112,7 @@ def make_player_key(row: Mapping[str, object]) -> str:
 class PlayerRecord:
     player_key: str
     display_name: str
+    presentation_name: str = ""
     country: str = ""
     dob: str = ""
     wta_id: str = ""
@@ -142,6 +143,7 @@ class PlayerRecord:
         return cls(
             player_key=make_player_key(row),
             display_name=display_name,
+            presentation_name=compact_text(row.get("presentation_name")) or display_name,
             country=compact_text(row.get("country")).upper(),
             dob=compact_text(row.get("dob"))[:10],
             wta_id=normalized_identifier(row.get("wta_id")),
@@ -170,6 +172,7 @@ class PlayerRecord:
     def names(self) -> tuple[str, ...]:
         values = (
             self.display_name,
+            self.presentation_name,
             self.wta_name,
             self.itf_name,
             self.bjkc_name,
@@ -549,16 +552,28 @@ def load_player_rows(path: Path) -> list[dict]:
 
 def write_player_rows(path: Path, rows: Iterable[Mapping[str, object]]) -> None:
     """Atomically persist the canonical player schema in stable order."""
-    normalized_rows = [
-        {
+    normalized_rows = []
+    for row in rows:
+        normalized = {
             field: row.get(
                 field,
                 [] if field.startswith("additional_") or field == "aliases" else "",
             )
             for field in PLAYER_FIELDS
         }
-        for row in rows
-    ]
+        presentation_name = compact_text(row.get("presentation_name"))
+        if presentation_name and presentation_name != compact_text(normalized["display_name"]):
+            normalized = {
+                "player_key": normalized["player_key"],
+                "display_name": normalized["display_name"],
+                "presentation_name": presentation_name,
+                **{
+                    field: value
+                    for field, value in normalized.items()
+                    if field not in {"player_key", "display_name"}
+                },
+            }
+        normalized_rows.append(normalized)
     normalized_rows.sort(
         key=lambda row: (
             compact_text(row.get("display_name")).casefold(),
@@ -591,11 +606,14 @@ def sync_wta_players(path: Path, ranking_rows: Iterable[Mapping[str, object]]) -
             ranking.get("player") or ranking.get("OfficialPlayer") or ranking.get("Player")
         ) or f"WTA player {player_id}"
         canonical_display = display_name
+        presentation_name = ""
         if normalized_name(canonical_display) in index.by_display_name:
             canonical_display = f"{display_name} (WTA {player_id})"
+            presentation_name = display_name
         new_row = {
             "player_key": f"wta:{player_id}",
             "display_name": canonical_display,
+            "presentation_name": presentation_name,
             "country": compact_text(ranking.get("country") or ranking.get("Country")).upper(),
             "dob": compact_text(ranking.get("dob") or ranking.get("DOB"))[:10],
             "wta_id": player_id,
@@ -638,11 +656,14 @@ def sync_itf_players(path: Path, match_rows: Iterable[Mapping[str, object]]) -> 
             ):
                 continue
             canonical_display = source_name
+            presentation_name = ""
             if normalized_name(canonical_display) in index.by_display_name:
                 canonical_display = f"{source_name} (ITF {player_id})"
+                presentation_name = source_name
             new_row = {
                 "player_key": f"itf:{player_id}",
                 "display_name": canonical_display,
+                "presentation_name": presentation_name,
                 "country": compact_text(match.get(f"{side}Country")).upper(),
                 "dob": "",
                 "wta_id": "",

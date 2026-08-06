@@ -11,11 +11,13 @@ python canonical_data.py validate --data-dir data
 
 ## Tables and constraints
 
-- `players(player_key, display_name, wta_id, itf_id, bjkc_id, ...)`
+- `players(player_key, display_name, presentation_name, wta_id, itf_id, bjkc_id, ...)`
   - `player_key` is stable and required.
   - Every source ID maps to exactly one player.
   - WTA and ITF IDs must use their numeric source formats.
-  - Canonical display names are unique after case/accent normalization.
+  - Canonical display names are unique identity labels after case/accent normalization.
+  - Optional `presentation_name` stores the public name whenever the unique
+    identity label needs a country, birth year, or source-ID qualifier.
   - A name shared by multiple players is marked ambiguous and is never used to
     select one by input order.
   - Additional source IDs are retained explicitly for merged source profiles.

@@ -266,6 +266,167 @@ def test_dataset_swap_rolls_back_when_later_promotion_fails(monkeypatch):
         assert (production / "value.txt").read_text(encoding="utf-8") == "old"
 
 
+def test_dataset_promotion_falls_back_when_live_directory_is_locked(monkeypatch, tmp_path):
+    project = tmp_path / "project"
+    production = project / "data"
+    staging_root = project / ".run_staging" / "test-run"
+    staging_data = staging_root / "data"
+    staging_site = staging_root / "generated-site"
+    staging_deploy = staging_root / "deploy-site"
+    production.mkdir(parents=True)
+    staging_data.mkdir(parents=True)
+    staging_site.mkdir(parents=True)
+    (production / "changed.txt").write_text("old", encoding="utf-8")
+    (production / "removed.txt").write_text("remove me", encoding="utf-8")
+    (staging_data / "changed.txt").write_text("new", encoding="utf-8")
+    (staging_data / "added.txt").write_text("added", encoding="utf-8")
+
+    monkeypatch.setattr(pipeline_transaction, "PROJECT_ROOT", project)
+    monkeypatch.setattr(pipeline_transaction, "PRODUCTION_DATA_DIR", production)
+    real_replace = os.replace
+
+    def reject_live_directory_rename(source, destination):
+        if Path(source) == production and Path(destination) == staging_root / "previous-data":
+            raise PermissionError("directory is in use")
+        return real_replace(source, destination)
+
+    monkeypatch.setattr(pipeline_transaction.os, "replace", reject_live_directory_rename)
+
+    result = pipeline_transaction._promote_all(
+        staging_root,
+        staging_data,
+        staging_site,
+        staging_deploy,
+        "test-run",
+    )
+
+    assert result["dataset_promotion_mode"] == "atomic-file-fallback"
+    assert (production / "changed.txt").read_text(encoding="utf-8") == "new"
+    assert (production / "added.txt").read_text(encoding="utf-8") == "added"
+    assert not (production / "removed.txt").exists()
+
+
+def test_dataset_promotion_falls_back_when_staged_directory_is_locked(monkeypatch, tmp_path):
+    project = tmp_path / "project"
+    production = project / "data"
+    staging_root = project / ".run_staging" / "test-run"
+    staging_data = staging_root / "data"
+    staging_site = staging_root / "generated-site"
+    staging_deploy = staging_root / "deploy-site"
+    production.mkdir(parents=True)
+    staging_data.mkdir(parents=True)
+    staging_site.mkdir(parents=True)
+    (production / "value.txt").write_text("old", encoding="utf-8")
+    (staging_data / "value.txt").write_text("new", encoding="utf-8")
+    real_replace = os.replace
+
+    monkeypatch.setattr(pipeline_transaction, "PROJECT_ROOT", project)
+    monkeypatch.setattr(pipeline_transaction, "PRODUCTION_DATA_DIR", production)
+
+    def reject_staged_directory_rename(source, destination):
+        if Path(source) == staging_data and Path(destination) == production:
+            raise PermissionError("staging directory is in use")
+        return real_replace(source, destination)
+
+    monkeypatch.setattr(pipeline_transaction.os, "replace", reject_staged_directory_rename)
+
+    result = pipeline_transaction._promote_all(
+        staging_root,
+        staging_data,
+        staging_site,
+        staging_deploy,
+        "test-run",
+    )
+
+    assert result["dataset_promotion_mode"] == "atomic-file-fallback"
+    assert (production / "value.txt").read_text(encoding="utf-8") == "new"
+
+
+def test_dataset_file_fallback_rolls_back_when_site_promotion_fails(monkeypatch, tmp_path):
+    project = tmp_path / "project"
+    production = project / "data"
+    staging_root = project / ".run_staging" / "test-run"
+    staging_data = staging_root / "data"
+    staging_site = staging_root / "generated-site"
+    staging_deploy = staging_root / "deploy-site"
+    production.mkdir(parents=True)
+    staging_data.mkdir(parents=True)
+    staging_site.mkdir(parents=True)
+    (production / "value.txt").write_text("old", encoding="utf-8")
+    (staging_data / "value.txt").write_text("new", encoding="utf-8")
+
+    monkeypatch.setattr(pipeline_transaction, "PROJECT_ROOT", project)
+    monkeypatch.setattr(pipeline_transaction, "PRODUCTION_DATA_DIR", production)
+    real_replace = os.replace
+
+    def reject_live_directory_rename(source, destination):
+        if Path(source) == production and Path(destination) == staging_root / "previous-data":
+            raise PermissionError("directory is in use")
+        return real_replace(source, destination)
+
+    monkeypatch.setattr(pipeline_transaction.os, "replace", reject_live_directory_rename)
+    monkeypatch.setattr(
+        pipeline_transaction,
+        "_promote_site_files",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("site failed")),
+    )
+
+    with pytest.raises(DataPromotionError):
+        pipeline_transaction._promote_all(
+            staging_root,
+            staging_data,
+            staging_site,
+            staging_deploy,
+            "test-run",
+        )
+
+    assert (production / "value.txt").read_text(encoding="utf-8") == "old"
+
+
+def test_deploy_promotion_falls_back_when_live_directory_is_locked(monkeypatch, tmp_path):
+    project = tmp_path / "project"
+    production = project / "data"
+    deploy_target = project / ".site"
+    staging_root = project / ".run_staging" / "test-run"
+    staging_data = staging_root / "data"
+    staging_site = staging_root / "generated-site"
+    staging_deploy = staging_root / "deploy-site"
+    production.mkdir(parents=True)
+    deploy_target.mkdir(parents=True)
+    staging_data.mkdir(parents=True)
+    staging_site.mkdir(parents=True)
+    staging_deploy.mkdir(parents=True)
+    (production / "value.txt").write_text("new", encoding="utf-8")
+    (staging_data / "value.txt").write_text("new", encoding="utf-8")
+    (deploy_target / "index.html").write_text("old", encoding="utf-8")
+    (deploy_target / "obsolete.html").write_text("old", encoding="utf-8")
+    (staging_deploy / "index.html").write_text("new", encoding="utf-8")
+
+    monkeypatch.setattr(pipeline_transaction, "PROJECT_ROOT", project)
+    monkeypatch.setattr(pipeline_transaction, "PRODUCTION_DATA_DIR", production)
+    real_replace = os.replace
+
+    def reject_deploy_directory_rename(source, destination):
+        if Path(source) == deploy_target and Path(destination) == staging_root / "previous-deploy-site":
+            raise PermissionError("directory is in use")
+        return real_replace(source, destination)
+
+    monkeypatch.setattr(pipeline_transaction.os, "replace", reject_deploy_directory_rename)
+
+    result = pipeline_transaction._promote_all(
+        staging_root,
+        staging_data,
+        staging_site,
+        staging_deploy,
+        "test-run",
+    )
+
+    assert result["deploy_site_promoted"] is True
+    assert result["deploy_promotion_mode"] == "atomic-file-fallback"
+    assert (deploy_target / "index.html").read_text(encoding="utf-8") == "new"
+    assert not (deploy_target / "obsolete.html").exists()
+
+
 def test_degraded_refresh_validates_builds_and_promotes(tmp_path, monkeypatch):
     project = tmp_path / "project"
     production = project / "data"

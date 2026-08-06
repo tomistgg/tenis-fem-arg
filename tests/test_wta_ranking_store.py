@@ -72,6 +72,7 @@ def test_ranking_bundles_present_names_without_identity_suffixes(tmp_path):
             "Rank": 40,
             "Points": 1200,
             "Player": "YUE YUAN (1998)",
+            "Id": "324325",
             "OfficialPlayer": "YUAN YUE",
             "Country": "CHN",
             "DOB": "1998-09-25",
@@ -87,9 +88,9 @@ def test_ranking_bundles_present_names_without_identity_suffixes(tmp_path):
 
 
 def test_ranking_display_name_removes_only_identity_disambiguators():
-    assert _ranking_display_name({"Player": "CAROLINA GARCÍA (ARG)"}) == "CAROLINA GARCÍA"
-    assert _ranking_display_name({"Player": "SLOANE STEPHENS (WTA 337674)"}) == "SLOANE STEPHENS"
-    assert _ranking_display_name({"Player": "DIANNE FROMHOLTZ (BALESTRAT)"}) == "DIANNE FROMHOLTZ (BALESTRAT)"
+    assert _ranking_display_name({"Id": "70300", "Player": "CAROLINA GARCÍA (ARG)"}) == "CAROLINA GARCÍA"
+    assert _ranking_display_name({"Id": "337674", "Player": "SLOANE STEPHENS (WTA 337674)"}) == "SLOANE STEPHENS"
+    assert _ranking_display_name({"Id": "20006", "Player": "DIANNE FROMHOLTZ (BALESTRAT)"}) == "DIANNE FROMHOLTZ (BALESTRAT)"
 
 
 def test_new_ranking_week_is_streamed_into_atomic_csv(tmp_path, monkeypatch):
