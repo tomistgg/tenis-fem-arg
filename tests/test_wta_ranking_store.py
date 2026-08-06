@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from html_generator import _write_wta_ranking_bundles
+from html_generator import _ranking_display_name, _write_wta_ranking_bundles
 import wta
 from wta import WtaRankingsCsvStore
 
@@ -64,6 +64,32 @@ def test_ranking_bundles_are_latest_plus_lazy_year_files(tmp_path):
     assert (tmp_path / "wta_rankings_latest_bundle.js").stat().st_size < (
         tmp_path / "wta_rankings_2026_bundle.js"
     ).stat().st_size
+
+
+def test_ranking_bundles_present_names_without_identity_suffixes(tmp_path):
+    rankings = {
+        "2026-07-20": [{
+            "Rank": 40,
+            "Points": 1200,
+            "Player": "YUE YUAN (1998)",
+            "OfficialPlayer": "YUAN YUE",
+            "Country": "CHN",
+            "DOB": "1998-09-25",
+        }],
+    }
+
+    _write_wta_ranking_bundles(rankings, tmp_path)
+
+    latest = (tmp_path / "wta_rankings_latest_bundle.js").read_text(encoding="utf-8")
+    assert "YUE YUAN" in latest
+    assert "YUAN YUE" not in latest
+    assert "YUE YUAN (1998)" not in latest
+
+
+def test_ranking_display_name_removes_only_identity_disambiguators():
+    assert _ranking_display_name({"Player": "CAROLINA GARCÍA (ARG)"}) == "CAROLINA GARCÍA"
+    assert _ranking_display_name({"Player": "SLOANE STEPHENS (WTA 337674)"}) == "SLOANE STEPHENS"
+    assert _ranking_display_name({"Player": "DIANNE FROMHOLTZ (BALESTRAT)"}) == "DIANNE FROMHOLTZ (BALESTRAT)"
 
 
 def test_new_ranking_week_is_streamed_into_atomic_csv(tmp_path, monkeypatch):

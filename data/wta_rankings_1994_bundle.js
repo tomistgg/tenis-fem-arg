@@ -161,7 +161,7 @@ window.__WTA_RANKINGS_1994__ = (function() {
         ["KRISTIN GODRIDGE","AUS","1973-02-07"],
         ["MAJA ZIVEC-SKULJ","GER","1973-09-25"],
         ["SARAH PITKOWSKI-MALCOR","FRA","1975-11-13"],
-        ["FRANCESCA ROMANO (1971)","ITA","1971-02-07"],
+        ["FRANCESCA ROMANO","ITA","1971-02-07"],
         ["LAURA GARRONE","ITA","1967-11-15"],
         ["LEONA LASKOVA","CZE","1970-04-07"],
         ["MAUREEN DRAKE","CAN","1971-03-21"],

@@ -690,7 +690,7 @@ window.__WTA_RANKINGS_1999__ = (function() {
         ["CHARLOTTE SMITH","GBR","1980-07-04"],
         ["MARTINE VOSSEBERG","NED","1974-06-26"],
         ["VALENTINA MORTELLO","ITA","1980-12-09"],
-        ["FRANCESCA ROMANO (1971)","ITA","1971-02-07"],
+        ["FRANCESCA ROMANO","ITA","1971-02-07"],
         ["MARTINA MÜLLER","GER","1982-10-11"],
         ["ELIZABETH CAMERON","USA","1963-11-12"],
         ["AGATA KUROWSKA","POL","1980-04-26"],

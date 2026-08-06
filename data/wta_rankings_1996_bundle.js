@@ -557,7 +557,7 @@ window.__WTA_RANKINGS_1996__ = (function() {
         ["CAROLINE TOYRE","FRA","1976-04-14"],
         ["RITA KUTI-KIS","HUN","1978-02-13"],
         ["IRINA KORNIENKO","RUS","1978-01-16"],
-        ["FRANCESCA ROMANO (1971)","ITA","1971-02-07"],
+        ["FRANCESCA ROMANO","ITA","1971-02-07"],
         ["ELENA PIOPPO","ITA","1979-05-21"],
         ["LAURA FODOREAN","ITA","1978-01-08"],
         ["CLARA UDOFA","NGR","1978-01-31"],

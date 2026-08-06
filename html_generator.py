@@ -260,6 +260,20 @@ _LEGACY_WTA_RANKING_BUNDLES = {
     'wta_rankings_83_99_bundle.js',
 }
 _YEAR_WTA_RANKING_BUNDLE_RE = re.compile(r'^wta_rankings_\d{4}_bundle\.js$')
+_RANKING_IDENTITY_SUFFIX_RE = re.compile(
+    r'\s+\((?:\d{4}|[A-Z]{3}|(?:ITF|WTA)\s+\d+)\)$',
+    re.IGNORECASE,
+)
+
+
+def _ranking_display_name(player):
+    """Hide internal same-name disambiguators in ranking presentation.
+
+    ``Player`` remains canonical and differentiated for ID-safe matching (for
+    example, ``YUE YUAN (1998)``), while the WTA Rankings page displays the
+    clean canonical name. Parenthetical former names are intentionally kept.
+    """
+    return _RANKING_IDENTITY_SUFFIX_RE.sub("", str(player.get("Player", "") or "")).strip()
 
 
 def _ranking_bundle_rows(players):
@@ -267,7 +281,7 @@ def _ranking_bundle_rows(players):
         {
             "r": player.get("Rank") if player.get("Rank") is not None else None,
             "pts": player.get("Points", 0),
-            "n": player.get("Player", ""),
+            "n": _ranking_display_name(player),
             "c": player.get("Country", ""),
             "d": str(player.get("DOB", "") or "").replace('\r', '').strip(),
         }
@@ -1126,7 +1140,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         dob = p.get("DOB", "")
         if dob and "T" in dob:
             dob = dob.split("T")[0]
-        name = format_player_name(p.get("Player", ""))
+        name = format_player_name(_ranking_display_name(p))
         country_code = p.get("Country") or ""
         rankings_rows += f'<tr data-country="{country_code.upper()}"><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{country_flag_html(country_code, show_code=False)} {name}</td><td>{p.get("Points", "")}</td><td>{dob}</td></tr>'
 

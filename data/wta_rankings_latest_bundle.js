@@ -128,7 +128,7 @@ window.__WTA_RANKINGS_LATEST__ = (function() {
         ["QINWEN ZHENG","CHN","2002-10-08"],
         ["KRISTINA LIUTOVA","RUS","2010-02-02"],
         ["MARY STOIANA","USA","2003-05-06"],
-        ["YUE YUAN (1998)","CHN","1998-09-25"],
+        ["YUE YUAN","CHN","1998-09-25"],
         ["VERONIKA KUDERMETOVA","RUS","1997-04-24"],
         ["MADDISON INGLIS","AUS","1998-01-14"],
         ["KAYLA DAY","USA","1999-09-28"],

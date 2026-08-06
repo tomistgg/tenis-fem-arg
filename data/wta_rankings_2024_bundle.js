@@ -77,7 +77,7 @@ window.__WTA_RANKINGS_2024__ = (function() {
         ["ELINA AVANESYAN","ARM","2002-09-17"],
         ["VIKTORIYA TOMOVA","BUL","1995-02-25"],
         ["DIANE PARRY","FRA","2002-09-01"],
-        ["YUE YUAN (1998)","CHN","1998-09-25"],
+        ["YUE YUAN","CHN","1998-09-25"],
         ["ASHLYN KRUEGER","USA","2004-05-07"],
         ["IRINA-CAMELIA BEGU","ROU","1990-08-26"],
         ["ANNA KALINSKAYA","RUS","1998-12-02"],

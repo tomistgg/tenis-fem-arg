@@ -122,7 +122,7 @@ window.__WTA_RANKINGS_1993__ = (function() {
         ["LAURA GOLARSA","ITA","1967-11-27"],
         ["SILKE FRANKL","GER","1970-05-29"],
         ["PATRICIA TARABINI","ARG","1968-08-06"],
-        ["FRANCESCA ROMANO (1971)","ITA","1971-02-07"],
+        ["FRANCESCA ROMANO","ITA","1971-02-07"],
         ["HELEN KELESI","CAN","1969-11-15"],
         ["ANNA FOLDENYI","HUN","1974-08-22"],
         ["ISABELLE DEMONGEOT","FRA","1966-09-18"],

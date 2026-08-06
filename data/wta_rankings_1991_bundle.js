@@ -110,7 +110,7 @@ window.__WTA_RANKINGS_1991__ = (function() {
         ["BARBARA RITTNER","GER","1973-04-25"],
         ["ANN HENRICKSSON","USA","1959-10-31"],
         ["HALLE CARROLL","USA","1969-08-05"],
-        ["FRANCESCA ROMANO (1971)","ITA","1971-02-07"],
+        ["FRANCESCA ROMANO","ITA","1971-02-07"],
         ["STACEY MARTIN","USA","1970-11-13"],
         ["ANDREA TEMESVARI","HUN","1966-04-26"],
         ["KIMIKO DATE","JPN","1970-09-28"],
