@@ -132,6 +132,99 @@ class GeneratedSiteTests(unittest.TestCase):
             source,
         )
 
+    def test_fed_bjk_player_debuts_moves_tie_flag_into_opponent_column(self):
+        source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        table_match = re.search(
+            r'<table id="national-table">(.*?)</table>',
+            source,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(table_match)
+        table = table_match.group(1)
+        headers = [
+            unescape(re.sub(r"<[^>]+>", "", header)).strip()
+            for header in re.findall(r"<th\b.*?</th>", table, re.DOTALL)
+        ]
+        self.assertEqual(
+            headers,
+            ["#", "PLAYER", "DATE", "EVENT", "PARTNER", "OPPONENT", "SCORE"],
+        )
+        self.assertTrue(
+            all("width:" not in header for header in re.findall(r"<th\b.*?</th>", table, re.DOTALL))
+        )
+
+        body_match = re.search(
+            r'<tbody id="national-body">(.*?)</tbody>',
+            table,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(body_match)
+        rows = re.findall(r"<tr>(.*?)</tr>", body_match.group(1), re.DOTALL)
+        self.assertGreater(len(rows), 1)
+        for row in rows:
+            cells = re.findall(r"<td\b.*?</td>", row, re.DOTALL)
+            self.assertEqual(len(cells), 7)
+            self.assertNotIn("<br>", cells[1])
+            self.assertIn('class="national-opponent-cell"', cells[5])
+            self.assertIn("country-flag-icons/3x2/", cells[5])
+            self.assertEqual(cells[5].count('class="national-opponent-content"'), 2)
+            self.assertEqual(cells[5].count('class="national-opponent-flag"'), 2)
+            self.assertRegex(cells[6], r'class="score-(?:win|loss)"')
+            self.assertIn('class="score-badge"', cells[6])
+            self.assertNotIn("<br>", cells[6])
+
+        first_cells = re.findall(r"<td\b.*?</td>", rows[0], re.DOTALL)
+        self.assertEqual(unescape(re.sub(r"<[^>]+>", "", first_cells[3])).strip(), "WG R16")
+        longest_player_row = next(row for row in rows if "Viviana González Locicero" in row)
+        self.assertIn(
+            '<span class="mobile-only">Viviana González Locicero</span>',
+            longest_player_row,
+        )
+        first_opponent = first_cells[5]
+        self.assertLess(first_opponent.index('alt="BEL"'), first_opponent.index("Christiane Mercelis"))
+        self.assertIn(
+            '<span class="national-opponent-player">Christiane Mercelis</span>',
+            first_opponent,
+        )
+        doubles_opponent = next(row for row in rows if "Edda Buding / Helga Hosl" in row)
+        self.assertIn(
+            '<span class="national-opponent-player">Edda Buding</span>'
+            '<span class="national-opponent-player">Helga Hosl</span>',
+            doubles_opponent,
+        )
+        self.assertNotIn("national-opponent-divider", doubles_opponent)
+        self.assertNotIn("Edda<br>Buding", doubles_opponent)
+        self.assertIn(
+            "#national-table .national-opponent-player + .national-opponent-player { padding-top: 2px; }",
+            source,
+        )
+        self.assertIn("#national-table .national-opponent-content {", source)
+        self.assertIn("padding-left: 1px;", source)
+        self.assertIn(
+            "#national-table .national-opponent-flag img { margin-right: 0 !important; }",
+            source,
+        )
+        self.assertIn("#national-table td.score-win { background: #166534; }", source)
+        self.assertIn("#national-table td.score-loss { background: #b91c1c; }", source)
+        self.assertIn(
+            "#fedbcup-view-players { width: fit-content; max-width: 100%; margin: 0 auto; }",
+            source,
+        )
+        self.assertIn(
+            "#national-table { table-layout: auto; width: max-content; min-width: 0; margin: 0; }",
+            source,
+        )
+        self.assertIn("min-width: max-content;", source)
+        self.assertIn("#national-table td:not(:nth-child(6)) { width: 1%; }", source)
+        self.assertIn("#national-table td:nth-child(6) { width: 100%; }", source)
+        self.assertNotIn(
+            "#national-table th:nth-child(7), #national-table td:nth-child(7) { width: 42px !important;",
+            source,
+        )
+        self.assertNotIn("#national-table th:nth-child(8)", source)
+        self.assertNotIn("#national-table th:nth-child(9)", source)
+        self.assertNotIn("#national-table th:nth-child(10)", source)
+
     def test_match_history_filters_use_a_mobile_bottom_sheet_with_active_count(self):
         source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
         self.assertIn('id="history-mobile-filter-btn"', source)

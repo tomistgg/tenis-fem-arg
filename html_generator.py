@@ -211,6 +211,23 @@ IOC_TO_ISO2 = {
     'XKX':'xk','ZAM':'zm','ZIM':'zw',
 }
 
+# ``national_team_order.csv`` stores the opposing nation as a display name in
+# its legacy Tie column. Keep that source value available for the flag even
+# though the column itself is no longer rendered in Player Debuts.
+_BJKC_TIE_COUNTRY_CODES = {
+    name.casefold(): code for name, code in {
+        'Australia': 'AUS', 'Austria': 'AUT', 'Belgium': 'BEL', 'Bolivia': 'BOL',
+        'Bulgaria': 'BUL', 'Chile': 'CHI', 'Colombia': 'COL', 'Croatia': 'CRO',
+        'Cuba': 'CUB', 'Denmark': 'DEN', 'Dominican Republic': 'DOM', 'Ecuador': 'ECU',
+        'Estonia': 'EST', 'Finland': 'FIN', 'France': 'FRA', 'Germany F.R.': 'FRG',
+        'Greece': 'GRE', 'Guatemala': 'GUA', 'Hungary': 'HUN', 'Japan': 'JPN',
+        'Korea, Rep.': 'KOR', 'Netherlands': 'NED', 'New Zealand': 'NZL',
+        'Paraguay': 'PAR', 'Peru': 'PER', 'Philippines': 'PHI', 'Poland': 'POL',
+        'Russia': 'RUS', 'Slovenia': 'SLO', 'Sweden': 'SWE', 'Switzerland': 'SUI',
+        'Ukraine': 'UKR', 'USA': 'USA', 'Venezuela': 'VEN',
+    }.items()
+}
+
 # Dissolved countries with local SVG flags
 LOCAL_FLAGS = {'YUG', 'SCG', 'CIS', 'URS'}
 
@@ -236,6 +253,16 @@ def country_flag_html(code, show_code=True):
         return code
     img = f'<img src="https://purecatamphetamine.github.io/country-flag-icons/3x2/{iso.upper()}.svg" alt="{code}" title="{code}" style="{FLAG_STYLE}">'
     return f'{img}{code}' if show_code else img
+
+
+def _bjkc_tie_country_code(value):
+    raw = str(value or '').strip()
+    if not raw:
+        return ''
+    upper = raw.upper()
+    if upper in IOC_TO_ISO2:
+        return upper
+    return _BJKC_TIE_COUNTRY_CODES.get(raw.casefold(), '')
 
 
 def _player_display_name(raw_name):
@@ -1147,58 +1174,78 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         country_code = p.get("Country") or ""
         rankings_rows += f'<tr data-country="{country_code.upper()}"><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{country_flag_html(country_code, show_code=False)} {name}</td><td>{p.get("Points", "")}</td><td>{dob}</td></tr>'
 
-    default_national_columns = ["N", "Player", "Date", "Event", "Round", "Tie", "Partner", "Opponent", "Result", "Score"]
-    national_columns = list(national_team_data[0].keys()) if national_team_data else default_national_columns
+    default_national_columns = ["N", "Player", "Date", "Event", "Partner", "Opponent", "Score"]
+    source_national_columns = list(national_team_data[0].keys()) if national_team_data else default_national_columns
+    national_columns = [col for col in source_national_columns if col not in ("Tie", "Result", "Round")]
 
-    header_label_map = {"N": "#", "Result": "RES.", "Round": "RND"}
+    header_label_map = {"N": "#"}
     header_style_map = {
         "N": ' style="width:30px"',
         "Player": ' style="width:140px"',
         "Date": ' style="width:90px"',
-        "Event": ' style="width:110px"',
-        "Round": ' style="width:80px"',
-        "Tie": ' style="width:110px"',
+        "Event": ' style="width:190px"',
         "Partner": ' style="width:160px"',
         "Opponent": "",
-        "Result": ' style="width:50px"',
         "Score": ' style="width:110px"'
     }
     national_header_html = "".join(
-        f'<th{header_style_map.get(col, "")}>{escape(header_label_map.get(col, col.upper()))}</th>'
+        f'<th>{escape(header_label_map.get(col, col.upper()))}</th>'
         for col in national_columns
     )
 
     national_rows = ""
     for row in (national_team_data or []):
         national_rows += '<tr>'
+        opponent_country = _bjkc_tie_country_code(row.get("Tie", ""))
+        opponent_flag = country_flag_html(opponent_country, show_code=False)
         for col in national_columns:
             value = str(row.get(col, "") or "")
+            if col == "Event":
+                value = " ".join(part for part in (value, str(row.get("Round", "") or "")) if part)
             cell_style = ""
+            cell_class = ""
 
             if col == "Player":
                 value = format_player_name(value)
                 cell_style = ' style="font-weight:bold;"'
-            elif col == "Result":
-                if value.upper() == "W":
-                    cell_style = ' style="color: #166534; font-weight: bold;"'
-                elif value.upper() == "L":
-                    cell_style = ' style="color: #991b1b; font-weight: bold;"'
-
-            if col in ("Player", "Partner", "Score"):
+            if col == "Score":
+                result = str(row.get("Result", "") or "").upper()
+                if result == "W":
+                    cell_class = ' class="score-win"'
+                elif result == "L":
+                    cell_class = ' class="score-loss"'
+                display_value = f'<span class="score-badge">{escape(value)}</span>'
+            elif col == "Player":
+                desktop_value = escape(value)
+                mobile_value = escape(value)
+                display_value = f'<span class="desktop-only">{desktop_value}</span><span class="mobile-only">{mobile_value}</span>'
+            elif col == "Partner":
                 desktop_value = escape(value)
                 mobile_value = "<br>".join(escape(value).split())
                 display_value = f'<span class="desktop-only">{desktop_value}</span><span class="mobile-only">{mobile_value}</span>'
             elif col == "Opponent":
-                desktop_value = escape(value)
+                cell_class = ' class="national-opponent-cell"'
+                opponent_flag_cell = f'<span class="national-opponent-flag">{opponent_flag}</span>'
+                desktop_value = (
+                    '<span class="national-opponent-content">'
+                    f'{opponent_flag_cell}<span class="national-opponent-name">{escape(value)}</span>'
+                    '</span>'
+                )
                 parts = value.split("/")
-                display_parts = []
-                for part in parts:
-                    display_parts.append("<br>".join(escape(part.strip()).split()))
-                mobile_value = "<br>/<br>".join(display_parts) if len(parts) > 1 else display_parts[0]
+                mobile_players = [
+                    f'<span class="national-opponent-player">{escape(part.strip())}</span>'
+                    for part in parts
+                ]
+                opponent_mobile_name = "".join(mobile_players)
+                mobile_value = (
+                    '<span class="national-opponent-content">'
+                    f'{opponent_flag_cell}<span class="national-opponent-name">{opponent_mobile_name}</span>'
+                    '</span>'
+                )
                 display_value = f'<span class="desktop-only">{desktop_value}</span><span class="mobile-only">{mobile_value}</span>'
             else:
                 display_value = escape(value)
-            national_rows += f'<td{cell_style}>{display_value}</td>'
+            national_rows += f'<td{cell_class}{cell_style}>{display_value}</td>'
         national_rows += '</tr>'
 
     default_captains_columns = ["N", "Captain", "Year"]
@@ -2451,43 +2498,57 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .fedbcup-btn.active {{ background: #75AADB; color: #fff; }}
             .fedbcup-btn:hover:not(.active) {{ background: #cbd5e1; }}
 
-            /* Player Debuts table: allow horizontal expansion */
-            #fedbcup-view-players .table-wrapper {{ overflow-x: auto; }}
-            #national-table {{ table-layout: auto; width: max-content; min-width: 100%; }}
+            /* Player Debuts table: size every column from its longest rendered value. */
+            #fedbcup-view-players {{ width: fit-content; max-width: 100%; margin: 0 auto; }}
+            #fedbcup-view-players .table-wrapper {{ width: fit-content; max-width: 100%; overflow-x: auto; }}
+            #national-table {{ table-layout: auto; width: max-content; min-width: 0; margin: 0; }}
             #national-table th, #national-table td {{
                 font-size: 11px;
                 padding: 5px 6px;
-                white-space: normal;
-                overflow-wrap: anywhere;
+                white-space: nowrap;
+                overflow-wrap: normal;
                 line-height: 1.2;
             }}
             #national-table th:nth-child(2), #national-table td:nth-child(2) {{
                 text-align: center;
-                min-width: 185px;
             }}
-            #national-table th:nth-child(7), #national-table td:nth-child(7) {{
-                min-width: 160px;
+            #national-table th:nth-child(4), #national-table td:nth-child(4) {{
                 white-space: nowrap;
             }}
-            #national-table th:nth-child(8), #national-table td:nth-child(8) {{
-                text-align: center;
-                width: 270px;
-                min-width: 270px;
+            #national-table th:nth-child(5), #national-table td:nth-child(5) {{
                 white-space: nowrap;
-            }}
-            #national-table th:nth-child(9), #national-table td:nth-child(9) {{
-                min-width: 55px;
-                white-space: nowrap;
-                text-align: center;
             }}
             #national-table th:nth-child(6), #national-table td:nth-child(6) {{
-                min-width: 110px;
+                text-align: center;
                 white-space: nowrap;
             }}
-            #national-table th:nth-child(10), #national-table td:nth-child(10) {{
-                min-width: 110px;
+            #national-table th:nth-child(7), #national-table td:nth-child(7) {{
                 white-space: nowrap;
             }}
+            #national-table .national-opponent-content {{
+                display: flex;
+                align-items: center;
+                gap: 3px;
+                width: 100%;
+            }}
+            #national-table .national-opponent-flag {{
+                flex: 0 0 auto;
+                display: flex;
+                align-items: center;
+                padding-left: 1px;
+            }}
+            #national-table .national-opponent-flag img {{ margin-right: 0 !important; }}
+            #national-table .national-opponent-name {{
+                flex: 1 1 auto;
+                min-width: 0;
+                text-align: center;
+                white-space: nowrap;
+            }}
+            #national-table .national-opponent-player {{
+                display: block;
+                white-space: nowrap;
+            }}
+            #national-table .national-opponent-player + .national-opponent-player {{ padding-top: 2px; }}
 
             /* Captain Debuts table: compact width */
             #fedbcup-view-captains {{ width: fit-content; max-width: 100%; margin: 0 auto; }}
@@ -2646,15 +2707,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 overflow-wrap: anywhere;
             }}
             #history-table td.score-win,
-            #history-table td.score-loss {{
+            #history-table td.score-loss,
+            #national-table td.score-win,
+            #national-table td.score-loss {{
                 text-align: center;
                 font-weight: 800;
                 padding-left: 4px;
                 padding-right: 4px;
             }}
-            #history-table td.score-win {{ background: #166534; }}
-            #history-table td.score-loss {{ background: #b91c1c; }}
-            #history-table .score-badge {{
+            #history-table td.score-win,
+            #national-table td.score-win {{ background: #166534; }}
+            #history-table td.score-loss,
+            #national-table td.score-loss {{ background: #b91c1c; }}
+            #history-table .score-badge,
+            #national-table .score-badge {{
                 display: inline-block;
                 color: #fff;
                 padding: 0 4px;
@@ -3657,33 +3723,33 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .fedbcup-btn {{ flex: 1; font-size: 12px; padding: 8px 0; }}
 
                 /* Player Debuts table mobile */
+                #fedbcup-view-players {{ width: 100%; max-width: 100%; }}
                 #fedbcup-view-players .table-wrapper {{
+                    width: 100%;
+                    max-width: 100%;
                     overflow-x: auto;
                     -webkit-overflow-scrolling: touch;
                 }}
                 #national-table {{
                     width: 100%;
-                    table-layout: fixed;
+                    min-width: max-content;
+                    table-layout: auto;
                 }}
                 #national-table th,
                 #national-table td {{
                     font-size: 7px;
                     padding: 1px 1px;
-                    white-space: normal;
-                    word-break: break-word;
+                    white-space: nowrap;
+                    word-break: normal;
                     line-height: 1.1;
-                    overflow: hidden;
+                    overflow: visible;
                 }}
-                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 12px !important; }}
-                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 48px !important; }}
-                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 34px !important; }}
-                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 28px !important; }}
-                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 16px !important; }}
-                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 38px !important; }}
-                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 38px !important; }}
-                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 50px !important; }}
-                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 14px !important; text-align: center; }}
-                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 28px !important; }}
+                #national-table th:not(:nth-child(6)),
+                #national-table td:not(:nth-child(6)) {{ width: 1%; }}
+                #national-table th:nth-child(6),
+                #national-table td:nth-child(6) {{ width: 100%; }}
+                #national-table .national-opponent-cell img {{ width: 12px !important; height: 8px !important; }}
+                #national-table .score-badge {{ padding: 0 1px; white-space: nowrap; }}
 
                 /* Captain Debuts table mobile */
                 #fedbcup-view-captains {{ max-width: 100%; }}
@@ -3925,27 +3991,22 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 }}
                 #national-table {{
                     width: 100%;
-                    table-layout: fixed;
+                    min-width: max-content;
+                    table-layout: auto;
                 }}
                 #national-table th,
                 #national-table td {{
                     font-size: 6px;
                     padding: 1px 1px;
-                    white-space: normal;
-                    word-break: break-word;
+                    white-space: nowrap;
+                    word-break: normal;
                     line-height: 1.05;
-                    overflow: hidden;
+                    overflow: visible;
                 }}
-                #national-table th:nth-child(1), #national-table td:nth-child(1) {{ width: 10px !important; }}
-                #national-table th:nth-child(2), #national-table td:nth-child(2) {{ width: 40px !important; }}
-                #national-table th:nth-child(3), #national-table td:nth-child(3) {{ width: 28px !important; }}
-                #national-table th:nth-child(4), #national-table td:nth-child(4) {{ width: 24px !important; }}
-                #national-table th:nth-child(5), #national-table td:nth-child(5) {{ width: 14px !important; }}
-                #national-table th:nth-child(6), #national-table td:nth-child(6) {{ width: 32px !important; }}
-                #national-table th:nth-child(7), #national-table td:nth-child(7) {{ width: 32px !important; }}
-                #national-table th:nth-child(8), #national-table td:nth-child(8) {{ width: 42px !important; }}
-                #national-table th:nth-child(9), #national-table td:nth-child(9) {{ width: 12px !important; text-align: center; }}
-                #national-table th:nth-child(10), #national-table td:nth-child(10) {{ width: 24px !important; }}
+                #national-table th:not(:nth-child(6)),
+                #national-table td:not(:nth-child(6)) {{ width: 1%; }}
+                #national-table th:nth-child(6),
+                #national-table td:nth-child(6) {{ width: 100%; }}
 
                 #view-captains .table-wrapper {{
                     overflow-x: hidden;
@@ -5310,8 +5371,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #view-fedbcup .bjkc-series-table th:nth-child(2),
                 #view-fedbcup .bjkc-series-table td:nth-child(2),
                 #view-fedbcup #national-table td:nth-child(2),
-                #view-fedbcup #national-table th:nth-child(9),
-                #view-fedbcup #national-table td:nth-child(9),
                 #view-fedbcup #captains-table td:nth-child(2) {{
                     font-weight: 400 !important;
                 }}
@@ -5486,8 +5545,6 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 #view-fedbcup .bjkc-series-table th:nth-child(2),
                 #view-fedbcup .bjkc-series-table td:nth-child(2),
                 #view-fedbcup #national-table td:nth-child(2),
-                #view-fedbcup #national-table th:nth-child(9),
-                #view-fedbcup #national-table td:nth-child(9),
                 #view-fedbcup #captains-table td:nth-child(2) {{
                     font-weight: 400 !important;
                 }}
