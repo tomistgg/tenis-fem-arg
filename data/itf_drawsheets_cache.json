@@ -18594,20 +18594,20 @@
                             ]
                           },
                           {
-                            "matchId": 1183642330, "playStatusCode": "IP",
+                            "matchId": 1183642330, "playStatusCode": "PC",
                             "teams": [
                                 {
                                   "player": {"playerId":800577682,"nationality":"ARG","givenName":"Lourdes","familyName":"Ayala"},
-                                  "scores": [], "isWinner": false, "entryStatus": "DA"
+                                  "scores": [0,3], "isWinner": false, "entryStatus": "DA"
                                 },
                                 {
                                   "player": {"playerId":800553043,"nationality":"RUS","givenName":"Daria","familyName":"Egorova"},
-                                  "scores": [], "isWinner": false, "seeding": 4, "entryStatus": "DA"
+                                  "scores": [6,6], "isWinner": true, "seeding": 4, "entryStatus": "DA"
                                 }
                             ]
                           },
                           {
-                            "matchId": 1183642331, "playStatusCode": "TP",
+                            "matchId": 1183642331, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "player": {"playerId":800503473,"nationality":"ARG","givenName":"Maria Florencia","familyName":"Urrutia"},
@@ -18672,7 +18672,8 @@
                                   "scores": [], "isWinner": false, "seeding": 5, "entryStatus": "DA"
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "player": {"playerId":800553043,"nationality":"RUS","givenName":"Daria","familyName":"Egorova"},
+                                  "scores": [], "isWinner": false, "seeding": 4, "entryStatus": "DA"
                                 }
                             ]
                           },
