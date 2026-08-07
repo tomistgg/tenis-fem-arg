@@ -6,6 +6,7 @@ from pathlib import Path
 
 from html_generator import (
     _CSP_META_RE,
+    _display_calendar_tournament_name,
     _display_tournament_name,
     _schedule_tournament_base_name,
     _script_hash_sources,
@@ -54,6 +55,27 @@ class GeneratedSiteTests(unittest.TestCase):
             source,
         )
 
+    def test_mobile_calendar_uses_compact_region_labels_and_column(self):
+        expected_labels = {
+            "south_america": "SA",
+            "north_central_america": "NA",
+            "europe": "EUR",
+            "africa": "AFR",
+            "asia": "ASIA",
+            "oceania": "OCE",
+        }
+        config_source = (PROJECT_DIR / "config.py").read_text(encoding="utf-8")
+        generator_source = (PROJECT_DIR / "html_generator.py").read_text(encoding="utf-8")
+        app_source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+
+        for key, label in expected_labels.items():
+            self.assertIn(f'"{key}": "{label}"', config_source)
+            self.assertIn(f'class="cal-cont-label-mobile">{label}</span>', app_source)
+        self.assertIn(".cal-cont-label-mobile {{ display: none; }}", generator_source)
+        self.assertIn("min-width: 36px;", generator_source)
+        self.assertIn(".cal-cont-label-mobile { display: none; }", app_source)
+        self.assertIn("min-width: 36px;", app_source)
+
     def test_moved_from_annotation_is_hidden_in_tournament_display_names(self):
         self.assertEqual(
             _display_tournament_name("W15 Pilar (moved from San Salvador de Jujuy)"),
@@ -63,6 +85,52 @@ class GeneratedSiteTests(unittest.TestCase):
             _display_tournament_name("W25 Ibague (MOVED from 10 Oct)"),
             "W25 Ibague",
         )
+
+    def test_calendar_uses_compact_names_without_edition_numbers(self):
+        expected_names = {
+            "W15 Alcala de Henares 2": "W15 Alcala de H.",
+            "W15 Campos do Jordao": "W15 Campos do J.",
+            "W15 Campos do Jordão": "W15 Campos do J.",
+            "W50 Cherbourg-en-Cotentin": "W50 Cherbourg",
+            "W15 Grodzisk Mazowiecki": "W15 Grodzisk M.",
+            "W75 Kursumlijska Banja  2": "W75 K. Banja",
+            "W50 Saint-Palais-sur-Mer": "W50 Saint-Palais",
+            "W35 Santa Margherita di Pula 12": "W35 St. Marg. di Pula",
+            "W15 Sharm ElSheikh 22": "W15 Sharm ES.",
+            "WTA 125 Caldas Da Rainha": "WTA 125 Caldas Da R.",
+            "W35 Verbier 1": "W35 Verbier",
+            "WTA 1000 Cincinnati": "WTA 1000 Cincinnati",
+        }
+        for source_name, display_name in expected_names.items():
+            with self.subTest(source_name=source_name):
+                self.assertEqual(_display_calendar_tournament_name(source_name), display_name)
+
+        app_source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        tournament_names = re.findall(
+            r'<span class="calendar-tournament[^>]*>(?:<img[^>]*>\s*)?([^<]+)',
+            app_source,
+        )
+        self.assertTrue(tournament_names)
+        self.assertFalse(any(re.search(r"\s\d+\s*$", name) for name in tournament_names))
+        self.assertTrue(any("K. Banja" in name for name in tournament_names))
+        self.assertTrue(any("St. Marg. di Pula" in name for name in tournament_names))
+        self.assertTrue(any("Sharm ES." in name for name in tournament_names))
+
+    def test_calendar_gm_toggle_is_visible_by_default_and_persists_state(self):
+        for relative_path in ("html_generator.py", "app.html"):
+            source = (PROJECT_DIR / relative_path).read_text(encoding="utf-8-sig")
+            with self.subTest(path=relative_path):
+                self.assertIn(
+                    'class="calendar-gm-toggle active" id="calendar-gm-toggle"',
+                    source,
+                )
+                self.assertIn("Hide Quality", source)
+                self.assertIn("Show Quality", source)
+                self.assertIn("gmToggle.textContent = gmAction", source)
+                self.assertIn("state.gm = '0'", source)
+                self.assertIn("params.has('gm')", source)
+                self.assertIn("badge.style.display = showGm ? '' : 'none'", source)
+                self.assertIn("gmLegend.style.display = showGm ? '' : 'none'", source)
 
     def test_local_file_url_sync_stays_on_app_html(self):
         for relative_path in ("html_generator.py", "app.html"):

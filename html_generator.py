@@ -11,6 +11,7 @@ from config import (
     PLAYER_MAPPING,
     CONTINENT_KEYS,
     CONTINENT_LABELS,
+    MOBILE_CONTINENT_LABELS,
     NAME_LOOKUP,
     load_player_mapping,
     player_name_only,
@@ -84,6 +85,28 @@ def _display_tournament_name(name):
         str(name or ""),
         flags=re.IGNORECASE,
     ).strip()
+
+
+_CALENDAR_TOURNAMENT_NAME_REPLACEMENTS = {
+    "Alcala de Henares": "Alcala de H.",
+    "Campos do Jordao": "Campos do J.",
+    "Campos do Jordão": "Campos do J.",
+    "Cherbourg-en-Cotentin": "Cherbourg",
+    "Grodzisk Mazowiecki": "Grodzisk M.",
+    "Kursumlijska Banja": "K. Banja",
+    "Saint-Palais-sur-Mer": "Saint-Palais",
+    "Santa Margherita di Pula": "St. Marg. di Pula",
+    "Sharm ElSheikh": "Sharm ES.",
+    "Caldas Da Rainha": "Caldas Da R.",
+}
+
+
+def _display_calendar_tournament_name(name):
+    """Return the compact Calendar-only label without edition numbers."""
+    display_name = re.sub(r"\s+\d+\s*$", "", _display_tournament_name(name))
+    for full_name, short_name in _CALENDAR_TOURNAMENT_NAME_REPLACEMENTS.items():
+        display_name = display_name.replace(full_name, short_name)
+    return display_name.strip()
 
 
 _INLINE_SCRIPT_RE = re.compile(
@@ -1041,6 +1064,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     ]
     _wta_keys = {"wta_tour", "wta_125"}
     cont_labels = CONTINENT_LABELS
+    mobile_cont_labels = MOBILE_CONTINENT_LABELS
 
     calendar_html = '<table class="calendar-table"><thead><tr>'
     calendar_html += '<th class="cal-cat-header"></th><th class="cal-cont-header"></th>'
@@ -1067,7 +1091,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         sk = get_calendar_surface_key(t.get("surface", ""))
                         flag = country_flag_html(t.get("country", ""), show_code=False)
                         flag_prefix = f'{flag} ' if flag else ''
-                        display_name = escape(_display_tournament_name(t["name"]))
+                        display_name = escape(_display_calendar_tournament_name(t["name"]))
                         calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-surface="{sk}">{flag_prefix}{display_name}</span>'
                 for _, _box_label in sorted(_gs_cutoff_boxes.get(week["monday_date"], [])):
                     calendar_html += f'<span class="cal-cutoff-box">{_box_label}</span>'
@@ -1082,7 +1106,12 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     calendar_html += f'<tr data-cal-row-continent="{cont}">'
                 if ci == 0:
                     calendar_html += f'<td class="cal-cat-label" rowspan="{len(CONTINENT_KEYS)}">{group["label"]}</td>'
-                calendar_html += f'<td class="cal-cont-label">{cont_labels[cont]}</td>'
+                calendar_html += (
+                    '<td class="cal-cont-label">'
+                    f'<span class="cal-cont-label-desktop">{cont_labels[cont]}</span>'
+                    f'<span class="cal-cont-label-mobile">{mobile_cont_labels[cont]}</span>'
+                    '</td>'
+                )
                 for week in calendar_data:
                     calendar_html += '<td class="cal-cell">'
                     tournaments = []
@@ -1098,7 +1127,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             flag_prefix = f'{flag} ' if flag else ''
                             is_wta = any(ck in _wta_keys for ck in group["keys"])
                             gm_badge = _get_gm_badge(t["name"], t.get("level", ""), week["monday_date"]) if is_wta else ''
-                            display_name = escape(_display_tournament_name(t["name"]))
+                            display_name = escape(_display_calendar_tournament_name(t["name"]))
                             calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-continent="{cont}" data-cal-surface="{sk}">{flag_prefix}{display_name}{gm_badge}</span>'
                     calendar_html += '</td>'
                 calendar_html += '</tr>'
@@ -1984,7 +2013,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .entry-menu-toggle-btn,
             .history-nav-btn,
             .gallery-back-btn,
-            .cal-dd-btn {{
+            .cal-dd-btn,
+            .calendar-gm-toggle {{
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
@@ -2008,6 +2038,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .history-nav-btn:not(:disabled):hover,
             .gallery-back-btn:hover,
             .cal-dd-btn:hover,
+            .calendar-gm-toggle:hover,
             .cal-dd.open .cal-dd-btn {{ background: var(--c-surface-alt); }}
             .rankings-toggle-btn:disabled,
             .history-nav-btn:disabled {{ opacity: 0.35; cursor: default; }}
@@ -2854,6 +2885,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .calendar-toolbar {{ display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; align-items: center; margin: 0 0 10px; position: sticky; top: 0; z-index: 50; background: var(--c-bg); border-bottom: 1px solid var(--c-border); padding: 10px 8px; box-sizing: border-box; }}
             .cal-dd {{ position: relative; }}
             .cal-dd-btn {{ justify-content: flex-start; padding: 0 32px 0 var(--sp-3); font-size: var(--fs-lg); user-select: none; background-color: var(--c-surface); background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }}
+            .calendar-gm-toggle {{ min-width: 96px; padding: 0 12px; }}
+            .calendar-gm-toggle.active {{ background: var(--c-chrome-bg); border-color: var(--c-chrome-bg); color: #fff; }}
             .cal-dd-panel {{ position: absolute; top: calc(100% + 6px); left: 0; width: max-content; min-width: 170px; max-width: min(320px, calc(100vw - 20px)); max-height: 280px; overflow: auto; background: var(--c-surface); border: 2px solid var(--c-border-strong); border-radius: 8px; padding: 6px; box-shadow: var(--shadow-lg); display: none; z-index: 60; }}
             .cal-dd.open .cal-dd-panel {{ display: block; }}
             .cal-dd-item {{ display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; user-select: none; }}
@@ -2870,6 +2903,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .cal-cont-header {{ background: var(--c-chrome-bg); color: white; position: sticky; top: 0; left: 24px; z-index: 15; min-width: 58px; }}
             .cal-cat-label {{ background: var(--c-chrome-bg); color: white; font-size: 11px; font-weight: bold; text-align: center; vertical-align: middle !important; text-transform: uppercase; writing-mode: vertical-lr; text-orientation: mixed; transform: rotate(180deg); padding: 0; width: 24px; min-width: 24px; max-width: 24px; position: sticky; left: 0; z-index: 14; border-top: 1px solid var(--c-text-subtle); border-bottom: 1px solid var(--c-text-subtle); border-right: 1px solid var(--c-border); box-shadow: inset 0 0 0 50px var(--c-chrome-bg); box-sizing: border-box; flex: 0 0 24px; }}
             .cal-cont-label {{ background: var(--c-surface-alt); font-size: 10px; font-weight: 600; color: var(--c-text-subtle); text-align: center; vertical-align: middle !important; white-space: nowrap; position: sticky; left: 24px; z-index: 14; min-width: 58px; border-left: 1px solid var(--c-border); }}
+            .cal-cont-label-mobile {{ display: none; }}
             .cal-cell {{ font-size: 10px; min-height: 24px; vertical-align: middle !important; }}
             .cal-group-first td {{ border-top: 1px solid var(--c-text-subtle); }}
             .cal-group-last td {{ border-bottom: 1px solid var(--c-text-subtle); }}
@@ -3797,13 +3831,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                 /* Calendar mobile */
                 .calendar-container .table-wrapper {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
-                .calendar-toolbar {{ gap: 8px; margin-bottom: 8px; top: 0; }}
+                .calendar-toolbar {{ gap: 6px; margin-bottom: 8px; top: 0; }}
                 .cal-gm-legend {{ font-size: 10px; padding: 3px 4px; gap: 4px; flex: none; width: 100%; }}
                 .cal-cutoff-box {{ font-size: 7px; }}
                 .cal-week-header {{ position: static; }}
                 .cal-cat-header {{ top: unset; }}
                 .cal-cont-header {{ top: unset; }}
-                .cal-dd-btn {{ padding: 6px 28px 6px 10px; font-size: 11px; background-position: right 8px center; }}
+                .cal-dd-btn {{ padding: 6px 24px 6px 8px; font-size: 11px; background-position: right 7px center; }}
+                .calendar-gm-toggle {{ min-width: 82px; padding: 6px 7px; font-size: 10px; }}
                 .cal-week-header {{ font-size: 7px; padding: 3px 3px; min-width: 80px; }}
                 .cal-cat-header, .cal-cont-header {{ font-size: 7px; }}
                 .calendar-tournament {{ font-size: 8px; padding: 2px 4px; }}
@@ -3815,7 +3850,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .cal-cat-header {{ position: sticky !important; position: -webkit-sticky !important; left: 0; z-index: 14; background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%); }}
                 .cal-cont-header {{ position: sticky !important; position: -webkit-sticky !important; left: 24px; z-index: 14; background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%); }}
                 .cal-cat-label {{ position: sticky !important; position: -webkit-sticky !important; left: 0; z-index: 14; }}
-                .cal-cont-label {{ position: sticky !important; position: -webkit-sticky !important; left: 24px; z-index: 14; background: #f1f5f9; }}
+                .cal-cont-header,
+                .cal-cont-label {{
+                    width: 36px;
+                    min-width: 36px;
+                    max-width: 36px;
+                    box-sizing: border-box;
+                }}
+                .cal-cont-label {{ position: sticky !important; position: -webkit-sticky !important; left: 24px; z-index: 14; background: #f1f5f9; padding-left: 2px; padding-right: 2px; }}
+                .cal-cont-label-desktop {{ display: none; }}
+                .cal-cont-label-mobile {{ display: inline; }}
                 .calendar-container .table-wrapper {{ position: relative; }}
 
                 /* Points Breakdown mobile */
@@ -4518,7 +4562,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .btn,
             .rankings-toggle-btn,
             .history-nav-btn,
-            .cal-dd-btn {{
+            .cal-dd-btn,
+            .calendar-gm-toggle {{
                 max-width: 100%;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -4526,6 +4571,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
             .rankings-toggle-btn.active,
             .history-nav-btn.active,
+            .calendar-gm-toggle.active,
             .draw-type-btn.active {{
                 background: var(--c-chrome-bg);
                 border-color: var(--c-chrome-bg);
@@ -6190,6 +6236,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             </div>
                         </div>
 
+                        <button type="button" class="calendar-gm-toggle active" id="calendar-gm-toggle"
+                                aria-pressed="true" aria-label="Hide draw quality" title="Hide draw quality">
+                            Hide Quality
+                        </button>
+
                         <div class="cal-gm-legend">
                             <span class="cal-gm-legend-badge">99.9</span> Draw quality from last year's edition of the tournament.
                         </div>
@@ -6571,9 +6622,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const levels = collectCheckboxGroupState('[data-cal-filter-toggle]', 'data-cal-filter-toggle');
                 const continents = collectCheckboxGroupState('[data-cal-continent-toggle]', 'data-cal-continent-toggle');
                 const surfaces = collectCheckboxGroupState('[data-cal-surface-toggle]', 'data-cal-surface-toggle');
+                const gmToggle = document.getElementById('calendar-gm-toggle');
                 if (levels !== null) state.level = levels;
                 if (continents !== null) state.continent = continents;
                 if (surfaces !== null) state.surface = surfaces;
+                if (gmToggle && gmToggle.getAttribute('aria-pressed') === 'false') state.gm = '0';
                 return state;
             }}
 
@@ -6581,6 +6634,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 restoreCheckboxGroupState(params, 'level', '[data-cal-filter-toggle]', 'data-cal-filter-toggle');
                 restoreCheckboxGroupState(params, 'continent', '[data-cal-continent-toggle]', 'data-cal-continent-toggle');
                 restoreCheckboxGroupState(params, 'surface', '[data-cal-surface-toggle]', 'data-cal-surface-toggle');
+                const gmToggle = document.getElementById('calendar-gm-toggle');
+                if (gmToggle && params.has('gm')) {{
+                    const showGm = !['0', 'false', 'no', 'off'].includes((params.get('gm') || '').toLowerCase());
+                    gmToggle.setAttribute('aria-pressed', showGm ? 'true' : 'false');
+                }}
                 applyCalendarFilters();
             }}
 
@@ -7171,7 +7229,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 const levelToggles = document.querySelectorAll('[data-cal-filter-toggle]');
                 const continentToggles = document.querySelectorAll('[data-cal-continent-toggle]');
                 const surfaceToggles = document.querySelectorAll('[data-cal-surface-toggle]');
-                if (!levelToggles.length && !continentToggles.length && !surfaceToggles.length) return;
+                const gmToggle = document.getElementById('calendar-gm-toggle');
+                if (!levelToggles.length && !continentToggles.length && !surfaceToggles.length && !gmToggle) return;
 
                 const activeLevels = new Set();
                 levelToggles.forEach(cb => {{ if (cb.checked) activeLevels.add(cb.dataset.calFilterToggle); }});
@@ -7202,6 +7261,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
                     el.style.display = visible ? '' : 'none';
                 }});
+
+                const showGm = !gmToggle || gmToggle.getAttribute('aria-pressed') !== 'false';
+                if (gmToggle) {{
+                    const gmAction = showGm ? 'Hide Quality' : 'Show Quality';
+                    gmToggle.classList.toggle('active', showGm);
+                    gmToggle.textContent = gmAction;
+                    gmToggle.setAttribute('aria-label', gmAction + ' values');
+                    gmToggle.title = gmAction + ' values';
+                }}
+                document.querySelectorAll('#view-calendar .cal-gm-badge').forEach(badge => {{
+                    badge.style.display = showGm ? '' : 'none';
+                }});
+                const gmLegend = document.querySelector('#view-calendar .cal-gm-legend');
+                if (gmLegend) gmLegend.style.display = showGm ? '' : 'none';
                 syncUrlStateForTab('calendar');
             }}
             function initCalendarFilters() {{
@@ -7212,8 +7285,16 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 initCalendarDropdowns();
                 initCalendarHorizontalScroll();
                 const toggles = document.querySelectorAll('[data-cal-filter-toggle], [data-cal-continent-toggle], [data-cal-surface-toggle]');
-                if (!toggles.length) return;
+                const gmToggle = document.getElementById('calendar-gm-toggle');
+                if (!toggles.length && !gmToggle) return;
                 toggles.forEach(cb => cb.addEventListener('change', applyCalendarFilters));
+                if (gmToggle) {{
+                    gmToggle.addEventListener('click', function() {{
+                        const showGm = gmToggle.getAttribute('aria-pressed') !== 'true';
+                        gmToggle.setAttribute('aria-pressed', showGm ? 'true' : 'false');
+                        applyCalendarFilters();
+                    }});
+                }}
                 calendarFiltersInitialized = true;
                 applyCalendarFilters();
             }}

@@ -345,6 +345,15 @@ CONTINENT_LABELS = {
     "oceania": "Oceania"
 }
 
+MOBILE_CONTINENT_LABELS = {
+    "south_america": "SA",
+    "north_central_america": "NA",
+    "europe": "EUR",
+    "africa": "AFR",
+    "asia": "ASIA",
+    "oceania": "OCE",
+}
+
 CONTINENT_KEYS = ["south_america", "north_central_america", "europe", "africa", "asia", "oceania"]
 
 COUNTRY_OVERRIDES = {
