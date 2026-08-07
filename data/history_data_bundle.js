@@ -8,6 +8,7 @@ window.__WTA_HISTORY_DATA__ = [
     "MATCH_TYPE": "ITF",
     "_resultStatusDesc": "",
     "rows": [
+      {"DATE":"2026-08-08","ROUND":"2nd Round","SCORE":"6-2 6-2","_winnerId":"800503473","_loserId":"800639340","_winnerName":"Florencia Urrutia","_loserName":"Camila Rodero Contreras","_winnerCountry":"ARG","_loserCountry":"CHI","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"8","_loserSeed":"","_winnerRank":"464","_loserRank":"1411"},
       {"DATE":"2026-08-07","ROUND":"2nd Round","SCORE":"6-1 6-0","_winnerId":"800533853","_loserId":"800364268","_winnerName":"Lucciana Perez Alarcon","_loserName":"Victoria Gobbi","_winnerCountry":"PER","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"3","_loserSeed":"","_winnerRank":"341","_loserRank":"1311"},
       {"DATE":"2026-08-07","ROUND":"2nd Round","SCORE":"6-3 6-1","_winnerId":"800304299","_loserId":"800644753","_winnerName":"Ana Sofía Sánchez","_loserName":"Luna Cinalli","_winnerCountry":"MEX","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"","_winnerSeed":"5","_loserSeed":"","_winnerRank":"416","_loserRank":"806"},
       {"DATE":"2026-08-07","ROUND":"2nd Round","SCORE":"7-5 7-5","_winnerId":"800486611","_loserId":"800595363","_winnerName":"Giorgia Pedone","_loserName":"Sofía Meabe","_winnerCountry":"ITA","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"WC","_winnerSeed":"1","_loserSeed":"","_winnerRank":"338","_loserRank":"1406"},
