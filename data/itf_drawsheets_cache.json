@@ -14403,20 +14403,20 @@
                       "roundDesc": "Quarter-finals", "roundNumber": 3,
                       "matches": [
                           {
-                            "matchId": 1183643851, "playStatusCode": "IP",
+                            "matchId": 1183643851, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "seeding": 1, "entryStatus": "DA",
                                   "player": {"playerId":800458772,"nationality":"FIN","givenName":"Laura","familyName":"Hietaranta"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 7, "entryStatus": "DA",
+                                  "scores": [1,2], "isWinner": false, "seeding": 7, "entryStatus": "DA",
                                   "player": {"playerId":800590961,"nationality":"NED","givenName":"Klara","familyName":"Veldman"}
                                 }
                             ]
                           },
                           {
-                            "matchId": 1183643852, "playStatusCode": "TP",
+                            "matchId": 1183643852, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "Q",
@@ -14464,7 +14464,8 @@
                             "matchId": 1183643849, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
+                                  "player": {"playerId":800458772,"nationality":"FIN","givenName":"Laura","familyName":"Hietaranta"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": null
@@ -18527,7 +18528,7 @@
                       "roundDesc": "2nd Round", "roundNumber": 2,
                       "matches": [
                           {
-                            "matchId": 1183642325, "playStatusCode": "TP",
+                            "matchId": 1183642325, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "player": {"playerId":800486611,"nationality":"ITA","givenName":"Giorgia","familyName":"Pedone"},
@@ -18540,7 +18541,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183642326, "playStatusCode": "TP",
+                            "matchId": 1183642326, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "player": {"playerId":800602639,"nationality":"ARG","givenName":"Josefina","familyName":"Estevez"},
@@ -18553,7 +18554,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183642327, "playStatusCode": "TP",
+                            "matchId": 1183642327, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "player": {"playerId":800533853,"nationality":"PER","givenName":"Lucciana","familyName":"Perez Alarcon"},
@@ -18566,7 +18567,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183642328, "playStatusCode": "TP",
+                            "matchId": 1183642328, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "player": {"playerId":800659876,"nationality":"ARG","givenName":"Sol Ailin","familyName":"Larraya Guidi"},
@@ -18579,7 +18580,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183642329, "playStatusCode": "TP",
+                            "matchId": 1183642329, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "player": {"playerId":800304299,"nationality":"MEX","givenName":"Ana Sofia","familyName":"Sanchez"},
