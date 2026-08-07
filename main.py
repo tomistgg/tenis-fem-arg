@@ -1011,6 +1011,14 @@ def _append_schedule_label(target_map, player_key, week_label, label, style="app
     return True
 
 
+def _schedule_tournament_name(cache_key, tournament_name):
+    """Return the Schedule label without a redundant qualifying descriptor."""
+    name = str(tournament_name or "").strip()
+    if str(cache_key or "").endswith("#qual"):
+        name = re.sub(r"\s+Qualifying\s*$", "", name, flags=re.IGNORECASE)
+    return name
+
+
 def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_set, schedule_map, unranked_schedule, players_data):
     """Add MAIN/QUAL draw players from PDF-sourced entry lists to schedule_map for ARG players.
 
@@ -1037,6 +1045,7 @@ def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_s
         is_pdf_key = cache_key in _get_pdf_cache_keys()
         if not is_pdf_key:
             continue
+        schedule_name = _schedule_tournament_name(cache_key, t_name)
         for player in players:
             p_type = player.get('type', 'MAIN')
             if p_type not in ('MAIN', 'QUAL'):
@@ -1057,7 +1066,7 @@ def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_s
                 if not condition:
                     continue
                 inserted = _append_schedule_label(
-                    target_map, p_upper, week_label, t_name, style="prepend_br"
+                    target_map, p_upper, week_label, schedule_name, style="prepend_br"
                 )
                 if target_map is unranked_schedule and p_upper not in existing_player_keys:
                     players_data.append({'Player': p_upper, 'Key': p_upper, 'Rank': '-'})
@@ -2056,6 +2065,7 @@ def process_tournaments(
         # WTA tournaments
         for key, t_info in list(tourneys.items()):
             t_name = t_info["name"]
+            schedule_name = _schedule_tournament_name(key, t_name)
             if key.startswith("http"):
                 if _is_excluded_entry_list_tournament(key, t_info):
                     continue
@@ -2186,7 +2196,7 @@ def process_tournaments(
                     if p_key not in arg_names_set:
                         continue
                     _append_schedule_label(
-                        schedule_map, p_key, week, f"{t_name}{suffix}", style="append_div"
+                        schedule_map, p_key, week, f"{schedule_name}{suffix}", style="append_div"
                     )
                 for p in t_list:
                     p_upper = p['name'].upper()
@@ -2196,7 +2206,7 @@ def process_tournaments(
                         continue
                     suffix = '' if p.get('type') == 'MAIN' else ' (Q)'
                     _append_schedule_label(
-                        unranked_schedule, p_upper, week, f"{t_name}{suffix}", style="append_div"
+                        unranked_schedule, p_upper, week, f"{schedule_name}{suffix}", style="append_div"
                     )
 
         # ITF tournaments

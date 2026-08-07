@@ -190,7 +190,7 @@ class GeneratedSiteTests(unittest.TestCase):
 
         self.assertNotIn(qualifying_key + "#qual", updated_cache)
         self.assertNotIn(qualifying_key + "#qual", tournament_groups["Week of August 24"])
-        self.assertEqual(schedule["NADIA PODOROSKA"]["Week of August 24"], "US Open Qualifying (Q)")
+        self.assertEqual(schedule["NADIA PODOROSKA"]["Week of August 24"], "US Open (Q)")
 
     def test_week_labels_sort_chronologically(self):
         labels = ["Week of August 24", "Week of September 7", "Week of August 17"]
