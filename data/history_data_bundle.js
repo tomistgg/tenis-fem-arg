@@ -1,5 +1,30 @@
 window.__WTA_HISTORY_DATA__ = [
   {
+    "TOURNAMENT_ID": "1100204783",
+    "DRAW": "M",
+    "TOURNAMENT": "W35 Chacabuco",
+    "CATEGORY": "W35",
+    "SURFACE": "Clay",
+    "MATCH_TYPE": "ITF",
+    "_loserSeed": "",
+    "_resultStatusDesc": "",
+    "rows": [
+      {"DATE":"2026-08-07","ROUND":"2nd Round","SCORE":"6-1 6-0","_winnerId":"800533853","_loserId":"800364268","_winnerName":"Lucciana Perez Alarcon","_loserName":"Victoria Gobbi","_winnerCountry":"PER","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"3","_winnerRank":"341","_loserRank":"1311"},
+      {"DATE":"2026-08-07","ROUND":"2nd Round","SCORE":"6-3 6-1","_winnerId":"800304299","_loserId":"800644753","_winnerName":"Ana Sofía Sánchez","_loserName":"Luna Cinalli","_winnerCountry":"MEX","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"","_winnerSeed":"5","_winnerRank":"416","_loserRank":"806"},
+      {"DATE":"2026-08-05","ROUND":"1st Round","SCORE":"6-2 6-1","_winnerId":"800644753","_loserId":"800552717","_winnerName":"Luna Cinalli","_loserName":"Fernanda Rain Contreras","_winnerCountry":"ARG","_loserCountry":"CHI","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"","_winnerRank":"806","_loserRank":""},
+      {"DATE":"2026-08-05","ROUND":"1st Round","SCORE":"6-4 7-5","_winnerId":"800639340","_loserId":"800778119","_winnerName":"Camila Rodero Contreras","_loserName":"Emily Zornada","_winnerCountry":"CHI","_loserCountry":"ARG","_winnerEntry":"Q","_loserEntry":"WC","_winnerSeed":"","_winnerRank":"1411","_loserRank":"1411"},
+      {"DATE":"2026-08-05","ROUND":"1st Round","SCORE":"6-3 6-2","_winnerId":"800462980","_loserId":"800796000","_winnerName":"Julia Konishi Camargo Silva","_loserName":"Mía Brayotta","_winnerCountry":"BRA","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"WC","_winnerSeed":"","_winnerRank":"662","_loserRank":""},
+      {"DATE":"2026-08-05","ROUND":"1st Round","SCORE":"6-2 6-1","_winnerId":"800595363","_loserId":"800492867","_winnerName":"Sofía Meabe","_loserName":"Romina Ccuno","_winnerCountry":"ARG","_loserCountry":"PER","_winnerEntry":"WC","_loserEntry":"Q","_winnerSeed":"","_winnerRank":"1406","_loserRank":"1046"},
+      {"DATE":"2026-08-05","ROUND":"1st Round","SCORE":"6-3 6-0","_winnerId":"800602639","_loserId":"800580593","_winnerName":"Josefina Estévez","_loserName":"Florencia Morón","_winnerCountry":"ARG","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"","_winnerRank":"1032","_loserRank":""},
+      {"DATE":"2026-08-05","ROUND":"1st Round","SCORE":"6-1 6-2","_winnerId":"800364268","_loserId":"800580798","_winnerName":"Victoria Gobbi","_loserName":"Marina Bulbarella","_winnerCountry":"ARG","_loserCountry":"ARG","_winnerEntry":"Q","_loserEntry":"Q","_winnerSeed":"","_winnerRank":"1311","_loserRank":"1154"},
+      {"DATE":"2026-08-05","ROUND":"1st Round","SCORE":"6-3 7-5","_winnerId":"800659876","_loserId":"800721404","_winnerName":"Sol Larraya Guidi","_loserName":"Mora Carrocera","_winnerCountry":"ARG","_loserCountry":"ARG","_winnerEntry":"Q","_loserEntry":"Q","_winnerSeed":"","_winnerRank":"1469","_loserRank":""},
+      {"DATE":"2026-08-05","ROUND":"1st Round","SCORE":"7-5 6-3","_winnerId":"800158403","_loserId":"800357966","_winnerName":"Victoria Bosio","_loserName":"Berta Bonardi","_winnerCountry":"ARG","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"","_winnerSeed":"2","_winnerRank":"339","_loserRank":"650"},
+      {"DATE":"2026-08-04","ROUND":"1st Round","SCORE":"6-1 6-0","_winnerId":"800533853","_loserId":"800518949","_winnerName":"Lucciana Perez Alarcon","_loserName":"Melina Maruca","_winnerCountry":"PER","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"WC","_winnerSeed":"3","_winnerRank":"341","_loserRank":"1469"},
+      {"DATE":"2026-08-04","ROUND":"1st Round","SCORE":"6-2 6-0","_winnerId":"800503473","_loserId":"800547910","_winnerName":"Florencia Urrutia","_loserName":"Luciana Moyano","_winnerCountry":"ARG","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"","_winnerSeed":"8","_winnerRank":"464","_loserRank":"558"},
+      {"DATE":"2026-08-04","ROUND":"1st Round","SCORE":"6-4 6-2","_winnerId":"800577682","_loserId":"800603939","_winnerName":"Lourdes Ayala","_loserName":"Valentina Mediorreal Arias","_winnerCountry":"ARG","_loserCountry":"COL","_winnerEntry":"","_loserEntry":"","_winnerSeed":"","_winnerRank":"1009","_loserRank":"908"}
+    ]
+  },
+  {
     "TOURNAMENT_ID": "1100203864",
     "DRAW": "M",
     "TOURNAMENT": "W15 Hameenlinna",
@@ -11,30 +36,6 @@ window.__WTA_HISTORY_DATA__ = [
     "rows": [
       {"DATE":"2026-08-06","ROUND":"2nd Round","SCORE":"6-0 1-0 ret.","_winnerId":"800415377","_loserId":"800402403","_winnerName":"Madelief Hageman","_loserName":"Agustina Chlpac","_winnerCountry":"NED","_loserCountry":"ARG","_loserEntry":"","_winnerSeed":"4","_resultStatusDesc":"Retired","_winnerRank":"762","_loserRank":"853"},
       {"DATE":"2026-08-04","ROUND":"1st Round","SCORE":"6-2 6-2","_winnerId":"800402403","_loserId":"800597956","_winnerName":"Agustina Chlpac","_loserName":"Nuppu Palm","_winnerCountry":"ARG","_loserCountry":"FIN","_loserEntry":"WC","_winnerSeed":"","_resultStatusDesc":"","_winnerRank":"853","_loserRank":""}
-    ]
-  },
-  {
-    "TOURNAMENT_ID": "1100204783",
-    "DRAW": "M",
-    "TOURNAMENT": "W35 Chacabuco",
-    "CATEGORY": "W35",
-    "SURFACE": "Clay",
-    "MATCH_TYPE": "ITF",
-    "ROUND": "1st Round",
-    "_loserSeed": "",
-    "_resultStatusDesc": "",
-    "rows": [
-      {"DATE":"2026-08-05","SCORE":"6-2 6-1","_winnerId":"800644753","_loserId":"800552717","_winnerName":"Luna Cinalli","_loserName":"Fernanda Rain Contreras","_winnerCountry":"ARG","_loserCountry":"CHI","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"","_winnerRank":"806","_loserRank":""},
-      {"DATE":"2026-08-05","SCORE":"6-4 7-5","_winnerId":"800639340","_loserId":"800778119","_winnerName":"Camila Rodero Contreras","_loserName":"Emily Zornada","_winnerCountry":"CHI","_loserCountry":"ARG","_winnerEntry":"Q","_loserEntry":"WC","_winnerSeed":"","_winnerRank":"1411","_loserRank":"1411"},
-      {"DATE":"2026-08-05","SCORE":"6-3 6-2","_winnerId":"800462980","_loserId":"800796000","_winnerName":"Julia Konishi Camargo Silva","_loserName":"Mía Brayotta","_winnerCountry":"BRA","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"WC","_winnerSeed":"","_winnerRank":"662","_loserRank":""},
-      {"DATE":"2026-08-05","SCORE":"6-2 6-1","_winnerId":"800595363","_loserId":"800492867","_winnerName":"Sofía Meabe","_loserName":"Romina Ccuno","_winnerCountry":"ARG","_loserCountry":"PER","_winnerEntry":"WC","_loserEntry":"Q","_winnerSeed":"","_winnerRank":"1406","_loserRank":"1046"},
-      {"DATE":"2026-08-05","SCORE":"6-3 6-0","_winnerId":"800602639","_loserId":"800580593","_winnerName":"Josefina Estévez","_loserName":"Florencia Morón","_winnerCountry":"ARG","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"","_winnerRank":"1032","_loserRank":""},
-      {"DATE":"2026-08-05","SCORE":"6-1 6-2","_winnerId":"800364268","_loserId":"800580798","_winnerName":"Victoria Gobbi","_loserName":"Marina Bulbarella","_winnerCountry":"ARG","_loserCountry":"ARG","_winnerEntry":"Q","_loserEntry":"Q","_winnerSeed":"","_winnerRank":"1311","_loserRank":"1154"},
-      {"DATE":"2026-08-05","SCORE":"6-3 7-5","_winnerId":"800659876","_loserId":"800721404","_winnerName":"Sol Larraya Guidi","_loserName":"Mora Carrocera","_winnerCountry":"ARG","_loserCountry":"ARG","_winnerEntry":"Q","_loserEntry":"Q","_winnerSeed":"","_winnerRank":"1469","_loserRank":""},
-      {"DATE":"2026-08-05","SCORE":"7-5 6-3","_winnerId":"800158403","_loserId":"800357966","_winnerName":"Victoria Bosio","_loserName":"Berta Bonardi","_winnerCountry":"ARG","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"","_winnerSeed":"2","_winnerRank":"339","_loserRank":"650"},
-      {"DATE":"2026-08-04","SCORE":"6-1 6-0","_winnerId":"800533853","_loserId":"800518949","_winnerName":"Lucciana Perez Alarcon","_loserName":"Melina Maruca","_winnerCountry":"PER","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"WC","_winnerSeed":"3","_winnerRank":"341","_loserRank":"1469"},
-      {"DATE":"2026-08-04","SCORE":"6-2 6-0","_winnerId":"800503473","_loserId":"800547910","_winnerName":"Florencia Urrutia","_loserName":"Luciana Moyano","_winnerCountry":"ARG","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"","_winnerSeed":"8","_winnerRank":"464","_loserRank":"558"},
-      {"DATE":"2026-08-04","SCORE":"6-4 6-2","_winnerId":"800577682","_loserId":"800603939","_winnerName":"Lourdes Ayala","_loserName":"Valentina Mediorreal Arias","_winnerCountry":"ARG","_loserCountry":"COL","_winnerEntry":"","_loserEntry":"","_winnerSeed":"","_winnerRank":"1009","_loserRank":"908"}
     ]
   },
   {
