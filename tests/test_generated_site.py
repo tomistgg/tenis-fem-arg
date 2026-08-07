@@ -60,6 +60,60 @@ class GeneratedSiteTests(unittest.TestCase):
             format_week_label(get_monday_from_date(us_open["start_date"])),
             "Week of August 31",
         )
+        self.assertEqual(us_open["withdrawals"], ["Emma Raducanu"])
+
+    def test_manual_entry_list_withdrawal_promotes_and_renumbers_alternates(self):
+        main_players = [
+            {"name": "Player One", "type": "MAIN", "pos": "1", "pos_num": 1},
+            {"name": "Emma Raducanu", "type": "MAIN", "pos": "2", "pos_num": 2},
+            {"name": "Player Three", "type": "MAIN", "pos": "3", "pos_num": 3},
+        ]
+        alt_players = [
+            {"name": "First Alternate", "type": "ALT", "pos": "1", "pos_num": 1},
+            {"name": "Second Alternate", "type": "ALT", "pos": "2", "pos_num": 2},
+        ]
+
+        updated_main, updated_alt = main_module._apply_manual_entry_list_withdrawals(
+            main_players,
+            alt_players,
+            ["EMMA RADUCANU"],
+        )
+
+        self.assertEqual(
+            [player["name"] for player in updated_main],
+            ["Player One", "Player Three", "First Alternate"],
+        )
+        self.assertEqual([player["pos"] for player in updated_main], ["1", "2", "3"])
+        self.assertEqual([player["name"] for player in updated_alt], ["Second Alternate"])
+        self.assertEqual(updated_alt[0]["pos"], "1")
+
+        qualifying, _ = main_module._apply_manual_entry_list_withdrawals(
+            [{"name": "Qualifier", "type": "MAIN", "pos": "4", "pos_num": 4}],
+            [],
+            None,
+            main_type="QUAL",
+        )
+        self.assertEqual(qualifying[0]["type"], "QUAL")
+        self.assertEqual(qualifying[0]["pos"], "1")
+
+    def test_us_open_manual_withdrawal_is_applied_to_current_entry_list(self):
+        tournament_key = "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list"
+        compact_cache = json.loads(
+            (PROJECT_DIR / "data" / "entry_lists_cache.json").read_text(encoding="utf-8")
+        )
+        players = expand_entry_lists_cache(compact_cache)[tournament_key]
+        accepted = [player for player in players if player["type"] == "MAIN"]
+        alternates = [player for player in players if player["type"] == "ALT"]
+
+        self.assertNotIn("EMMA RADUCANU", [player["name"] for player in accepted])
+        self.assertEqual([player["pos"] for player in accepted], [str(i) for i in range(1, 105)])
+        self.assertEqual(accepted[34]["name"], "JANICE TJEN")
+        self.assertEqual(accepted[-1]["name"], "ANNA BLINKOVA")
+        self.assertEqual([player["pos"] for player in alternates], [str(i) for i in range(1, 10)])
+        self.assertEqual(alternates[0]["name"], "DARJA VIDMANOVA")
+
+        app_source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        self.assertNotIn('"name": "EMMA RADUCANU"', app_source)
 
     def test_us_open_qualifying_entry_list_is_assigned_to_august_24(self):
         tournament_key = "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list"

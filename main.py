@@ -1094,6 +1094,35 @@ def _get_pdf_cache_keys():
     return keys
 
 
+def _apply_manual_entry_list_withdrawals(main_players, alt_players, withdrawals, main_type="MAIN"):
+    """Remove configured withdrawals, promote alternates, and renumber both lists."""
+    withdrawal_names = {
+        str(name or "").strip().casefold()
+        for name in (withdrawals or [])
+        if str(name or "").strip()
+    }
+    remaining_main = [
+        player
+        for player in main_players
+        if str(player.get("name") or "").strip().casefold() not in withdrawal_names
+    ]
+    removed_count = len(main_players) - len(remaining_main)
+    promoted = alt_players[:removed_count]
+    remaining_alt = alt_players[removed_count:]
+    updated_main = remaining_main + promoted
+
+    for pos_num, player in enumerate(updated_main, 1):
+        player["type"] = main_type
+        player["pos"] = str(pos_num)
+        player["pos_num"] = pos_num
+    for pos_num, player in enumerate(remaining_alt, 1):
+        player["type"] = "ALT"
+        player["pos"] = str(pos_num)
+        player["pos_num"] = pos_num
+
+    return updated_main, remaining_alt
+
+
 def _refresh_entry_lists_from_pdfs(
     entry_cache,
     tournament_store,
@@ -1236,8 +1265,12 @@ def _refresh_entry_lists_from_pdfs(
             if draw_type == "qual":
                 _canonicalize_player_names(draw_main, source="wta")
                 _canonicalize_player_names(draw_alt, source="wta")
-                for p in draw_main:
-                    p["type"] = "QUAL"
+                draw_main, draw_alt = _apply_manual_entry_list_withdrawals(
+                    draw_main,
+                    draw_alt,
+                    draw_meta.get("withdrawals"),
+                    main_type="QUAL",
+                )
                 qual_players = draw_main + draw_alt
                 qual_key = cache_key + "#qual"
                 _fill_missing_countries(qual_players, entry_cache)
@@ -1246,6 +1279,11 @@ def _refresh_entry_lists_from_pdfs(
             else:
                 _canonicalize_player_names(draw_main, source="wta")
                 _canonicalize_player_names(draw_alt, source="wta")
+                draw_main, draw_alt = _apply_manual_entry_list_withdrawals(
+                    draw_main,
+                    draw_alt,
+                    draw_meta.get("withdrawals"),
+                )
                 main_players.extend(draw_main + draw_alt)
 
         if main_players:
