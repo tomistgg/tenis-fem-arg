@@ -42,9 +42,9 @@ from config import (
     ENTRY_LISTS_CACHE_FILE,
     ITF_ACCEPTANCE_STATE_FILE,
     NAME_LOOKUP,
-    player_name_only,
     repair_name_text,
     resolve_player_display_name,
+    resolve_player_presentation_name,
 )
 from utils import (
     fix_encoding, fix_encoding_keep_accents,
@@ -933,8 +933,8 @@ def _fill_missing_countries(players, entry_cache=None):
 def _canonicalize_player_names(players, source="", names_only=False):
     """Map player rows to canonical names, preferring their source ID.
 
-    Entry Lists use ``names_only`` because source IDs already live in the
-    player_id field and are internal identity metadata, not part of a name.
+    Entry Lists use ``names_only`` to retain canonical ID matching while
+    presenting the explicitly configured public name without disambiguators.
     """
     changed = 0
     for player in players or []:
@@ -950,11 +950,14 @@ def _canonicalize_player_names(players, source="", names_only=False):
             or player.get("playerId")
             or ""
         ).strip()
-        mapped_name = resolve_player_display_name(
+        resolver = (
+            resolve_player_presentation_name
+            if names_only
+            else resolve_player_display_name
+        )
+        mapped_name = resolver(
             source, player_id=player_id, name=raw_name
         )
-        if names_only:
-            mapped_name = player_name_only(mapped_name)
         if mapped_name != raw_name:
             player["name"] = mapped_name
             changed += 1
@@ -1177,11 +1180,13 @@ def _refresh_entry_lists_from_pdfs(
             else:
                 pdf_url = (draw_config or {}).get("url", "")
                 draw_meta = draw_config or {}
-            if not pdf_url:
-                continue
 
             target_key = cache_key if draw_type != "qual" else cache_key + "#qual"
             _inject_group(cache_key, draw_type, draw_meta)
+            # Metadata-only entries register manually maintained cached lists in
+            # the correct week without attempting an external PDF download.
+            if not pdf_url:
+                continue
             if not _is_active(target_key):
                 continue
 
@@ -2085,7 +2090,7 @@ def process_tournaments(
                 normalize_country_overrides(t_list, "name", "country")
                 entry_cache[key] = t_list
                 tournament_store[key] = t_list
-                if is_pdf_entry:
+                if is_pdf_entry and not str(key).endswith("#qual"):
                     qual_key = key + "#qual"
                     qual_players = copy.deepcopy(entry_cache.get(qual_key, []))
                     if not qual_players:
@@ -2095,14 +2100,19 @@ def process_tournaments(
                         normalize_country_overrides(qual_players, "name", "country")
                         entry_cache[qual_key] = qual_players
                         tournament_store[qual_key] = qual_players
-                        tournament_groups.setdefault(week, {})[qual_key] = {
-                            "name": f"{t_name.replace('Grand Slam ', '').strip()} Qualifying",
-                            "level": t_info.get("level", ""),
-                            "surface": t_info.get("surface", ""),
-                            "country": t_info.get("country", ""),
-                            "startDate": t_info.get("startDate"),
-                            "endDate": t_info.get("endDate", None),
-                        }
+                        qual_already_grouped = any(
+                            qual_key in week_tourneys
+                            for week_tourneys in tournament_groups.values()
+                        )
+                        if not qual_already_grouped:
+                            tournament_groups.setdefault(week, {})[qual_key] = {
+                                "name": f"{t_name.replace('Grand Slam ', '').strip()} Qualifying",
+                                "level": t_info.get("level", ""),
+                                "surface": t_info.get("surface", ""),
+                                "country": t_info.get("country", ""),
+                                "startDate": t_info.get("startDate"),
+                                "endDate": t_info.get("endDate", None),
+                            }
                 # If the live WTA page disappears or only partially loads, rebuild
                 # the schedule labels from the merged cached list so players saved
                 # in Entry Lists still appear in Schedule.

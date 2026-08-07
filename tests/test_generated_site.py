@@ -1,9 +1,12 @@
 import re
 import json
+import tempfile
 import unittest
 from html import unescape
 from pathlib import Path
+from unittest.mock import patch
 
+import main as main_module
 from html_generator import (
     _CSP_META_RE,
     _display_calendar_tournament_name,
@@ -13,12 +16,39 @@ from html_generator import (
     _week_label_sort_key,
 )
 from calendar_builder import format_week_label, get_monday_from_date
+from utils import expand_entry_lists_cache
 
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 
 
 class GeneratedSiteTests(unittest.TestCase):
+    def test_entry_lists_use_public_name_for_id_disambiguated_players(self):
+        players = [{"name": "Yue Yuan (1998)", "player_id": "324325"}]
+
+        main_module._canonicalize_player_names(players, source="wta", names_only=True)
+
+        self.assertEqual(players[0]["name"], "Yue Yuan")
+
+        entry_lists = expand_entry_lists_cache(
+            json.loads(
+                (PROJECT_DIR / "data" / "entry_lists_cache.json").read_text(
+                    encoding="utf-8-sig"
+                )
+            )
+        )
+        cincinnati = entry_lists[
+            "https://www.wtatennis.com/tournaments/1017/cincinnati/2026/player-list"
+        ]
+        yue_yuan = [
+            player for player in cincinnati if player.get("player_id") == "324325"
+        ]
+        self.assertEqual([player["name"] for player in yue_yuan], ["Yue Yuan"])
+        self.assertNotIn(
+            "Yue Yuan (1998)",
+            (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig"),
+        )
+
     def test_us_open_pdf_entry_list_is_assigned_to_august_31(self):
         config = json.loads(
             (PROJECT_DIR / "data" / "gs_pdf_urls.json").read_text(encoding="utf-8")
@@ -30,6 +60,137 @@ class GeneratedSiteTests(unittest.TestCase):
             format_week_label(get_monday_from_date(us_open["start_date"])),
             "Week of August 31",
         )
+
+    def test_us_open_qualifying_entry_list_is_assigned_to_august_24(self):
+        tournament_key = "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list"
+        config = json.loads(
+            (PROJECT_DIR / "data" / "gs_pdf_urls.json").read_text(encoding="utf-8")
+        )
+        qualifying = config[tournament_key]["qual"]
+        self.assertTrue(qualifying["manual"])
+        self.assertEqual(
+            format_week_label(get_monday_from_date(qualifying["start_date"])),
+            "Week of August 24",
+        )
+        self.assertEqual(qualifying["alt_limit"], 20)
+
+        compact_cache = json.loads(
+            (PROJECT_DIR / "data" / "entry_lists_cache.json").read_text(encoding="utf-8")
+        )
+        players = expand_entry_lists_cache(compact_cache)[tournament_key + "#qual"]
+        accepted = [player for player in players if player["type"] == "QUAL"]
+        alternates = [player for player in players if player["type"] == "ALT"]
+        self.assertEqual(len(accepted), 119)
+        self.assertEqual(len(alternates), 20)
+        self.assertEqual(
+            [player["pos"] for player in accepted if player["country"] == "ARG"],
+            ["4", "46", "55", "60", "112"],
+        )
+        self.assertEqual(
+            [player["pos"] for player in alternates if player["country"] == "ARG"],
+            ["17"],
+        )
+
+        app_source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        self.assertNotIn(tournament_key + "#qual#qual", app_source)
+        self.assertNotIn("US Open Qualifying Qualifying", app_source)
+
+    def test_metadata_only_qualifying_list_is_injected_into_its_configured_week(self):
+        tournament_key = "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list"
+        qualifying_key = tournament_key + "#qual"
+        config = {
+            tournament_key: {
+                "qual": {
+                    "manual": True,
+                    "start_date": "2026-08-24",
+                    "display_name": "US Open Qualifying",
+                    "level": "Grand Slam",
+                    "surface": "Hard",
+                    "country": "USA",
+                }
+            }
+        }
+        tournament_groups = {
+            "Week of August 31": {
+                tournament_key: {
+                    "name": "US Open",
+                    "level": "Grand Slam",
+                    "surface": "Hard",
+                    "country": "USA",
+                }
+            }
+        }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = Path(temp_dir) / "gs_pdf_urls.json"
+            config_path.write_text(json.dumps(config), encoding="utf-8")
+            with patch.object(main_module, "GS_PDF_URLS_FILE", str(config_path)):
+                main_module._refresh_entry_lists_from_pdfs(
+                    {qualifying_key: [{"name": "Nadia Podoroska", "type": "QUAL"}]},
+                    {},
+                    tournament_groups,
+                    {"2026-08-24": "Week of August 24"},
+                )
+
+        self.assertIn(qualifying_key, tournament_groups["Week of August 24"])
+        self.assertEqual(
+            tournament_groups["Week of August 24"][qualifying_key]["name"],
+            "US Open Qualifying",
+        )
+
+    def test_separate_qualifying_list_does_not_create_a_nested_qualifying_list(self):
+        tournament_key = "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list"
+        qualifying_key = tournament_key + "#qual"
+        tournament_groups = {
+            "Week of August 24": {
+                qualifying_key: {
+                    "name": "US Open Qualifying",
+                    "level": "Grand Slam",
+                    "surface": "Hard",
+                    "country": "USA",
+                    "startDate": "2026-08-24",
+                }
+            },
+            "Week of August 31": {
+                tournament_key: {
+                    "name": "US Open",
+                    "level": "Grand Slam",
+                    "surface": "Hard",
+                    "country": "USA",
+                    "startDate": "2026-08-30",
+                }
+            },
+        }
+        entry_cache = {
+            tournament_key: [
+                {"name": "SOLANA SIERRA", "country": "ARG", "type": "MAIN", "pos": "1", "pos_num": 1}
+            ],
+            qualifying_key: [
+                {"name": "NADIA PODOROSKA", "country": "ARG", "type": "QUAL", "pos": "1", "pos_num": 1},
+                {"name": "NAO HIBINO", "country": "JPN", "type": "ALT", "pos": "1", "pos_num": 1},
+            ],
+        }
+        rankings = [
+            {"Player": "SOLANA SIERRA", "Country": "ARG", "Rank": 86},
+            {"Player": "NADIA PODOROSKA", "Country": "ARG", "Rank": 514},
+            {"Player": "NAO HIBINO", "Country": "JPN", "Rank": 224},
+        ]
+
+        with (
+            patch.object(main_module, "get_wta_rankings_cached", return_value=rankings),
+            patch.object(main_module, "_load_acceptance_state", return_value={}),
+        ):
+            schedule, _, updated_cache, _ = main_module.process_tournaments(
+                None,
+                tournament_groups,
+                {"2026-08-24": "Week of August 24", "2026-08-31": "Week of August 31"},
+                {"SOLANA SIERRA", "NADIA PODOROSKA"},
+                entry_cache,
+            )
+
+        self.assertNotIn(qualifying_key + "#qual", updated_cache)
+        self.assertNotIn(qualifying_key + "#qual", tournament_groups["Week of August 24"])
+        self.assertEqual(schedule["NADIA PODOROSKA"]["Week of August 24"], "US Open Qualifying (Q)")
 
     def test_week_labels_sort_chronologically(self):
         labels = ["Week of August 24", "Week of September 7", "Week of August 17"]
