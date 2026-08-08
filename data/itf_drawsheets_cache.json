@@ -18699,14 +18699,14 @@
                       "roundDesc": "Semi-finals", "roundNumber": 4,
                       "matches": [
                           {
-                            "matchId": 1183642319, "playStatusCode": "IP",
+                            "matchId": 1183642319, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
+                                  "scores": [7,4,6], "isWinner": true, "seeding": 1, "entryStatus": "DA",
                                   "player": {"playerId":800486611,"nationality":"ITA","givenName":"Giorgia","familyName":"Pedone"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 3, "entryStatus": "DA",
+                                  "scores": ["6(2)",6,3], "isWinner": false, "seeding": 3, "entryStatus": "DA",
                                   "player": {"playerId":800533853,"nationality":"PER","givenName":"Lucciana","familyName":"Perez Alarcon"}
                                 }
                             ]
@@ -18734,7 +18734,8 @@
                             "matchId": 1183642318, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
+                                  "player": {"playerId":800486611,"nationality":"ITA","givenName":"Giorgia","familyName":"Pedone"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "seeding": 5, "entryStatus": "DA",
