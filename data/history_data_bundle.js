@@ -163236,7 +163236,7 @@ window.__WTA_HISTORY_DATA__ = [
     "_loserSeed": "",
     "_resultStatusDesc": "",
     "rows": [
-      {"SCORE":"6-1 6-2","_winnerId":"389a82fb-f275-4640-903e-86f5094d2fc4","_loserId":"ad1dd302-afa3-4499-800b-cacb7ae23573","_winnerName":"Mercedes Paz","_loserName":"Karin Ptaszek","_winnerCountry":"ARG","_loserCountry":"DEN","_winnerRank":"44","_loserRank":""},
+      {"SCORE":"6-1 6-2","_winnerId":"389a82fb-f275-4640-903e-86f5094d2fc4","_loserId":"ad1dd302-afa3-4499-800b-cacb7ae23573","_winnerName":"Mercedes Paz","_loserName":"Karin Ptaszek","_winnerCountry":"ARG","_loserCountry":"DEN","_winnerRank":"44","_loserRank":"476"},
       {"SCORE":"6-3 6-2","_winnerId":"651e9955-3032-49f6-91ef-9537b25e2ab1","_loserId":"e87706c2-160e-4dd2-ab71-b3a7376a878f","_winnerName":"Tine Scheuer-Larsen","_loserName":"Bettina Fulco","_winnerCountry":"DEN","_loserCountry":"ARG","_winnerRank":"120","_loserRank":"24"},
       {"SCORE":"4-6 7-6(6) 6-4","_winnerId":"b9be8141-d181-430d-a228-0fcee49f389a","_loserId":"f4131e14-9aad-4095-ae1b-16077287b741","_winnerName":"Henriette Kjaer Nielsen / Tine Scheuer-Larsen","_loserName":"Bettina Fulco / Mercedes Paz","_winnerCountry":"DEN","_loserCountry":"ARG","_winnerRank":"","_loserRank":""}
     ]
