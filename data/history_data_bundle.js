@@ -157451,7 +157451,7 @@ window.__WTA_HISTORY_DATA__ = [
     "_resultStatusDesc": "",
     "rows": [
       {"SCORE":"6-4 6-2","_winnerId":"063f9904-4ebf-4040-b2a7-d546f8e3344f","_loserId":"8e511a3e-b4dc-427d-afc9-e1705372daed","_winnerName":"Patricia Tarabini","_loserName":"Yoannis Montesino","_winnerRank":"108","_loserRank":"683"},
-      {"SCORE":"6-1 6-0","_winnerId":"8cded85d-8041-4293-93ed-c737c72fe52b","_loserId":"0a4262e4-4fa5-4ead-b720-ce02de87d39b","_winnerName":"Florencia Labat","_loserName":"Belkis Rodriguez","_winnerRank":"28","_loserRank":""},
+      {"SCORE":"6-1 6-0","_winnerId":"8cded85d-8041-4293-93ed-c737c72fe52b","_loserId":"0a4262e4-4fa5-4ead-b720-ce02de87d39b","_winnerName":"Florencia Labat","_loserName":"Belkis Rodriguez","_winnerRank":"28","_loserRank":"605"},
       {"SCORE":"6-1 6-4","_winnerId":"cb134317-777c-4aa7-a185-9fefeacd9a32","_loserId":"5f22e925-0b69-461e-b1c1-a25517d644b1","_winnerName":"Florencia Labat / Bettina Fulco","_loserName":"Yamile Cordova / Yoannis Montesino","_winnerRank":"","_loserRank":""}
     ]
   },
@@ -160726,7 +160726,7 @@ window.__WTA_HISTORY_DATA__ = [
     "_loserSeed": "",
     "_resultStatusDesc": "",
     "rows": [
-      {"SCORE":"6-0 6-1","_winnerId":"07cc6f34-f430-4eac-8f02-5562cee57e3f","_loserId":"4ba369a8-ec3a-4614-944d-219509607b0a","_winnerName":"Mercedes Paz","_loserName":"Sabrina Giusto","_winnerCountry":"ARG","_loserCountry":"BRA","_winnerRank":"80","_loserRank":""},
+      {"SCORE":"6-0 6-1","_winnerId":"07cc6f34-f430-4eac-8f02-5562cee57e3f","_loserId":"4ba369a8-ec3a-4614-944d-219509607b0a","_winnerName":"Mercedes Paz","_loserName":"Sabrina Giusto","_winnerCountry":"ARG","_loserCountry":"BRA","_winnerRank":"80","_loserRank":"208"},
       {"SCORE":"6-1 1-6 8-6","_winnerId":"1d33c47a-df7d-4df3-a04f-fa6dbbe9c3d5","_loserId":"eba3db2d-b1f0-49c0-86fb-0642359b81fc","_winnerName":"Luciana Corsato-Owsianka","_loserName":"Patricia Tarabini","_winnerCountry":"BRA","_loserCountry":"ARG","_winnerRank":"147","_loserRank":"77"},
       {"SCORE":"6-1 6-4","_winnerId":"2d317f04-6d7d-4141-9f2e-ca4d3d843ddf","_loserId":"c57e9794-2869-412a-aec3-bed7edef8983","_winnerName":"Mercedes Paz / Patricia Tarabini","_loserName":"Luciana Corsato-Owsianka / Claudia Chabalgoity","_winnerCountry":"ARG","_loserCountry":"BRA","_winnerRank":"","_loserRank":""}
     ]
@@ -161838,7 +161838,7 @@ window.__WTA_HISTORY_DATA__ = [
     "_resultStatusDesc": "",
     "rows": [
       {"SCORE":"6-2 7-5","_winnerId":"f16e537e-c52c-4d0f-a3d8-b2f12c997ce1","_loserId":"7ae715da-0782-4e5b-865a-cedfb653b263","_winnerName":"Bettina Fulco","_loserName":"Petra Thoren","_loserCountry":"FIN","_winnerRank":"116","_loserRank":"184"},
-      {"SCORE":"4-6 6-1 6-4","_winnerId":"f3dc6aa4-5737-4592-9e6b-e5a49a648904","_loserId":"8f6115fe-052a-41bd-9874-02ae5602d925","_winnerName":"Florencia Labat","_loserName":"Anne Aallonen","_loserCountry":"HKG","_winnerRank":"102","_loserRank":""},
+      {"SCORE":"4-6 6-1 6-4","_winnerId":"f3dc6aa4-5737-4592-9e6b-e5a49a648904","_loserId":"8f6115fe-052a-41bd-9874-02ae5602d925","_winnerName":"Florencia Labat","_loserName":"Anne Aallonen","_loserCountry":"HKG","_winnerRank":"102","_loserRank":"276"},
       {"SCORE":"7-5 6-4","_winnerId":"be505fc5-9963-4d4b-8577-5ba8955c96f0","_loserId":"7d131233-f427-46d9-9ddd-547b561d681a","_winnerName":"Florencia Labat / Inés Gorrochategui","_loserName":"Katja Kokko / Nanne Dahlman","_loserCountry":"FIN","_winnerRank":"","_loserRank":""}
     ]
   },
@@ -161857,7 +161857,7 @@ window.__WTA_HISTORY_DATA__ = [
     "_loserSeed": "",
     "_resultStatusDesc": "",
     "rows": [
-      {"SCORE":"6-4 7-5","_winnerId":"69916d7c-9099-4e47-8c99-488a9898919b","_loserId":"b12763d6-ca22-4a16-8ce0-7f944b7d00ac","_winnerName":"Bettina Fulco","_loserName":"Reeka Szikszay","_winnerCountry":"ARG","_loserCountry":"HUN","_winnerRank":"116","_loserRank":""},
+      {"SCORE":"6-4 7-5","_winnerId":"69916d7c-9099-4e47-8c99-488a9898919b","_loserId":"b12763d6-ca22-4a16-8ce0-7f944b7d00ac","_winnerName":"Bettina Fulco","_loserName":"Reeka Szikszay","_winnerCountry":"ARG","_loserCountry":"HUN","_winnerRank":"116","_loserRank":"209"},
       {"SCORE":"6-7(6) 6-2 6-3","_winnerId":"b4bc075f-0a2a-432b-8ea0-7f4e7ca5fc99","_loserId":"98d97c72-78ec-4334-8b2b-2a303a4b866c","_winnerName":"Andrea Temesvari","_loserName":"Florencia Labat","_winnerCountry":"HUN","_loserCountry":"ARG","_winnerRank":"61","_loserRank":"102"},
       {"SCORE":"6-4 6-1","_winnerId":"f55cd780-e025-48d2-9675-69ae863bcc5d","_loserId":"e419c6f8-d350-4b46-bf71-951943bcb7be","_winnerName":"Reeka Szikszay / Andrea Temesvari","_loserName":"Bettina Fulco / Inés Gorrochategui","_winnerCountry":"HUN","_loserCountry":"ARG","_winnerRank":"","_loserRank":""}
     ]
