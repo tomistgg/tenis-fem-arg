@@ -1,3 +1,5 @@
+import json
+import re
 from pathlib import Path
 
 from html_generator import _ranking_display_name, _write_wta_ranking_bundles
@@ -85,6 +87,38 @@ def test_ranking_bundles_present_names_without_identity_suffixes(tmp_path):
     assert "YUE YUAN" in latest
     assert "YUAN YUE" not in latest
     assert "YUE YUAN (1998)" not in latest
+
+
+def test_ranking_bundles_deduplicate_presented_player_identity(tmp_path):
+    rankings = {
+        "2026-07-27": [
+            {
+                "Rank": 320,
+                "Points": 213,
+                "Player": "SLOANE STEPHENS",
+                "Id": "315683",
+                "Country": "USA",
+                "DOB": "1993-03-20",
+            },
+            {
+                "Rank": 1171,
+                "Points": 12,
+                "Player": "SLOANE STEPHENS (WTA 337674)",
+                "Id": "337674",
+                "Country": "USA",
+                "DOB": "1993-03-20",
+            },
+        ],
+    }
+
+    _write_wta_ranking_bundles(rankings, tmp_path)
+
+    bundle = (tmp_path / "wta_rankings_2026_bundle.js").read_text(encoding="utf-8")
+    match = re.search(r"const b = (\{.*?\n  \});", bundle, re.DOTALL)
+    assert match is not None
+    payload = json.loads(match.group(1))
+    assert payload["p"] == [["SLOANE STEPHENS", "USA", "1993-03-20"]]
+    assert payload["d"]["2026-07-27"] == [[320, 213, 0]]
 
 
 def test_ranking_display_name_removes_only_identity_disambiguators():

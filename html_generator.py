@@ -327,16 +327,35 @@ def _ranking_display_name(player):
 
 
 def _ranking_bundle_rows(players):
-    return [
-        {
+    rows = []
+    identity_indexes = {}
+    for player in players or []:
+        row = {
             "r": player.get("Rank") if player.get("Rank") is not None else None,
             "pts": player.get("Points", 0),
             "n": _ranking_display_name(player),
             "c": player.get("Country", ""),
             "d": str(player.get("DOB", "") or "").replace('\r', '').strip(),
         }
-        for player in (players or [])
-    ]
+        identity = (
+            row["n"].casefold(),
+            row["d"] or row["c"].casefold(),
+        )
+        existing_index = identity_indexes.get(identity)
+        if existing_index is None:
+            identity_indexes[identity] = len(rows)
+            rows.append(row)
+            continue
+
+        existing = rows[existing_index]
+        existing_rank = existing["r"] if isinstance(existing["r"], int) else math.inf
+        candidate_rank = row["r"] if isinstance(row["r"], int) else math.inf
+        if (candidate_rank, -int(row["pts"] or 0)) < (
+            existing_rank,
+            -int(existing["pts"] or 0),
+        ):
+            rows[existing_index] = row
+    return rows
 
 
 def _write_wta_ranking_bundles(rankings_by_date, data_dir, dates=None):
