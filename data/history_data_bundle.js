@@ -33,6 +33,33 @@ window.__WTA_HISTORY_DATA__ = [
     ]
   },
   {
+    "TOURNAMENT_ID": "1100204696",
+    "DRAW": "Q",
+    "TOURNAMENT": "W15 Bucharest",
+    "CATEGORY": "W15",
+    "SURFACE": "Clay",
+    "MATCH_TYPE": "ITF",
+    "DATE": "2026-08-09",
+    "ROUND": "QR1",
+    "SCORE": "6-1 6-0",
+    "_winnerId": "800659656",
+    "_loserId": "800650045",
+    "_winnerName": "Valentina Bruno",
+    "_loserName": "Mariya Ankudinova",
+    "_winnerCountry": "ARG",
+    "_loserCountry": "KAZ",
+    "_winnerEntry": "",
+    "_loserEntry": "",
+    "_winnerSeed": "13",
+    "_loserSeed": "",
+    "_resultStatusDesc": "",
+    "_winnerRank": "1303",
+    "_loserRank": "",
+    "rows": [
+      {}
+    ]
+  },
+  {
     "TOURNAMENT_ID": "1100203864",
     "DRAW": "M",
     "TOURNAMENT": "W15 Hameenlinna",
