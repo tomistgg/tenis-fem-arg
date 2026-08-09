@@ -163381,7 +163381,7 @@ window.__WTA_HISTORY_DATA__ = [
       {"ROUND":"2nd Round","SCORE":"7-5 6-4","_winnerId":"800178275","_loserId":"800178646","_winnerName":"Mercedes Paz","_loserName":"Anna Ivan","_winnerCountry":"ARG","_loserCountry":"USA","_winnerSeed":"3","_loserSeed":"","_winnerRank":"52","_loserRank":"111"},
       {"ROUND":"Quarter-finals","SCORE":"6-3 6-0","_winnerId":"800178275","_loserId":"800177794","_winnerName":"Mercedes Paz","_loserName":"Camille Benjamin-Schermerhorn","_winnerCountry":"ARG","_loserCountry":"USA","_winnerSeed":"3","_loserSeed":"","_winnerRank":"52","_loserRank":"77"},
       {"ROUND":"Semi-finals","SCORE":"6-2 2-6 6-4","_winnerId":"800178275","_loserId":"800177478","_winnerName":"Mercedes Paz","_loserName":"Niege Dias","_winnerCountry":"ARG","_loserCountry":"BRA","_winnerSeed":"3","_loserSeed":"5","_winnerRank":"52","_loserRank":"35"},
-      {"ROUND":"Final","SCORE":"2-6 6-4 6-3","_winnerId":"800169265","_loserId":"800178275","_winnerName":"Anne Minter","_loserName":"Mercedes Paz","_winnerCountry":"AUS","_loserCountry":"ARG","_winnerSeed":"4","_loserSeed":"3","_winnerRank":"","_loserRank":"52"}
+      {"ROUND":"Final","SCORE":"2-6 6-4 6-3","_winnerId":"800169265","_loserId":"800178275","_winnerName":"Anne Minter","_loserName":"Mercedes Paz","_winnerCountry":"AUS","_loserCountry":"ARG","_winnerSeed":"4","_loserSeed":"3","_winnerRank":"27","_loserRank":"52"}
     ]
   },
   {
@@ -165401,7 +165401,7 @@ window.__WTA_HISTORY_DATA__ = [
       {"ROUND":"1st Round","SCORE":"7-5 6-3","_winnerId":"800178168","_loserId":"800176405","_winnerName":"Janine Thompson","_loserName":"Adriana Villagrán","_winnerCountry":"AUS","_loserCountry":"ARG","_winnerSeed":"","_loserSeed":"","_resultStatusDesc":"","_winnerRank":"54","_loserRank":""},
       {"ROUND":"1st Round","SCORE":"6-3 7-5","_winnerId":"800178275","_loserId":"800178136","_winnerName":"Mercedes Paz","_loserName":"Beverly Bowes-Hackney","_winnerCountry":"ARG","_loserCountry":"USA","_winnerSeed":"","_loserSeed":"11","_resultStatusDesc":"","_winnerRank":"56","_loserRank":"131"},
       {"ROUND":"2nd Round","SCORE":"2-6 6-3 7-6","_winnerId":"800178604","_loserId":"800177622","_winnerName":"Gabriela Sabatini","_loserName":"Patty Fendick","_winnerCountry":"ARG","_loserCountry":"USA","_winnerSeed":"3","_loserSeed":"","_resultStatusDesc":"","_winnerRank":"11","_loserRank":"110"},
-      {"ROUND":"2nd Round","SCORE":"6-4 6-3","_winnerId":"800169265","_loserId":"800178275","_winnerName":"Anne Minter","_loserName":"Mercedes Paz","_winnerCountry":"AUS","_loserCountry":"ARG","_winnerSeed":"","_loserSeed":"","_resultStatusDesc":"","_winnerRank":"","_loserRank":"56"},
+      {"ROUND":"2nd Round","SCORE":"6-4 6-3","_winnerId":"800169265","_loserId":"800178275","_winnerName":"Anne Minter","_loserName":"Mercedes Paz","_winnerCountry":"AUS","_loserCountry":"ARG","_winnerSeed":"","_loserSeed":"","_resultStatusDesc":"","_winnerRank":"88","_loserRank":"56"},
       {"ROUND":"3rd Round","SCORE":"3-6 6-4 6-3","_winnerId":"800176678","_loserId":"800178604","_winnerName":"Rosalyn Fairbank-Nideffer","_loserName":"Gabriela Sabatini","_winnerCountry":"RSA","_loserCountry":"ARG","_winnerSeed":"","_loserSeed":"3","_resultStatusDesc":"","_winnerRank":"47","_loserRank":"11"},
       {"ROUND":"1st Round","SCORE":"-","_winnerId":"800178604","_loserId":"Unknown","_winnerName":"Gabriela Sabatini","_loserName":"Bye","_winnerCountry":"ARG","_loserCountry":"-","_winnerSeed":"3","_loserSeed":"","_resultStatusDesc":"Bye","_winnerRank":"11","_loserRank":""}
     ]
@@ -165594,7 +165594,7 @@ window.__WTA_HISTORY_DATA__ = [
     "_resultStatusDesc": "",
     "rows": [
       {"ROUND":"1st Round","SCORE":"6-2 7-6","_winnerId":"800176408","_loserId":"800177668","_winnerName":"Ivanna Madruga","_loserName":"Sandra Cecchini","_winnerCountry":"ARG","_loserCountry":"ITA","_winnerEntry":"","_loserEntry":"","_winnerSeed":"","_loserSeed":"4","_winnerRank":"","_loserRank":"64"},
-      {"ROUND":"1st Round","SCORE":"6-4 6-0","_winnerId":"800178824","_loserId":"800169265","_winnerName":"Bettina Fulco","_loserName":"Anne Minter","_winnerCountry":"ARG","_loserCountry":"AUS","_winnerEntry":"Q","_loserEntry":"","_winnerSeed":"","_loserSeed":"5","_winnerRank":"250","_loserRank":""},
+      {"ROUND":"1st Round","SCORE":"6-4 6-0","_winnerId":"800178824","_loserId":"800169265","_winnerName":"Bettina Fulco","_loserName":"Anne Minter","_winnerCountry":"ARG","_loserCountry":"AUS","_winnerEntry":"Q","_loserEntry":"","_winnerSeed":"","_loserSeed":"5","_winnerRank":"250","_loserRank":"78"},
       {"ROUND":"2nd Round","SCORE":"6-3 6-4","_winnerId":"800176408","_loserId":"800700132","_winnerName":"Ivanna Madruga","_loserName":"Nanette Schutte","_winnerCountry":"ARG","_loserCountry":"NED","_winnerEntry":"","_loserEntry":"LL","_winnerSeed":"","_loserSeed":"","_winnerRank":"","_loserRank":""},
       {"ROUND":"2nd Round","SCORE":"6-3 6-1","_winnerId":"800178824","_loserId":"800178224","_winnerName":"Bettina Fulco","_loserName":"Pascale Etchemendy","_winnerCountry":"ARG","_loserCountry":"FRA","_winnerEntry":"Q","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"250","_loserRank":"177"},
       {"ROUND":"Quarter-finals","SCORE":"6-3 6-4","_winnerId":"800178012","_loserId":"800176408","_winnerName":"Nathalie Herreman","_loserName":"Ivanna Madruga","_winnerCountry":"FRA","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"","_winnerSeed":"6","_loserSeed":"","_winnerRank":"87","_loserRank":""},
@@ -166960,7 +166960,7 @@ window.__WTA_HISTORY_DATA__ = [
     "_resultStatusDesc": "",
     "_loserRank": "",
     "rows": [
-      {"SCORE":"6-1 6-3","_winnerId":"800169265","_loserId":"800176405","_winnerName":"Anne Minter","_loserName":"Adriana Villagrán","_winnerCountry":"AUS","_winnerSeed":"4","_winnerRank":""},
+      {"SCORE":"6-1 6-3","_winnerId":"800169265","_loserId":"800176405","_winnerName":"Anne Minter","_loserName":"Adriana Villagrán","_winnerCountry":"AUS","_winnerSeed":"4","_winnerRank":"61"},
       {"SCORE":"4-6 6-4 7-5","_winnerId":"800176231","_loserId":"800176683","_winnerName":"Peanut Harper","_loserName":"Emilse Rapponi","_winnerCountry":"USA","_winnerSeed":"7","_winnerRank":"66"}
     ]
   },
