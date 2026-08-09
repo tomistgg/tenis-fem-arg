@@ -29459,7 +29459,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183654146, "playStatusCode": "TP",
+                            "matchId": 1183654146, "playStatusCode": "NP", "resultStatusDesc": "Walkover", "resultStatusCode": "WO",
                             "teams": [
                                 {
                                   "player": {"playerId":800561776,"nationality":"GRE","givenName":"Eleni","familyName":"Karantali"},
@@ -29467,7 +29467,7 @@
                                 },
                                 {
                                   "player": {"playerId":800491564,"nationality":"UKR","givenName":"Anastasiya","familyName":"ZAPARYNIUK"},
-                                  "scores": [], "isWinner": false, "seeding": 16, "entryStatus": "DA"
+                                  "scores": [], "isWinner": true, "seeding": 16, "entryStatus": "DA"
                                 }
                             ]
                           },
@@ -29709,7 +29709,8 @@
                                   "scores": [], "isWinner": false, "entryStatus": null
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "player": {"playerId":800491564,"nationality":"UKR","givenName":"Anastasiya","familyName":"ZAPARYNIUK"},
+                                  "scores": [], "isWinner": false, "seeding": 16, "entryStatus": "DA"
                                 }
                             ]
                           },
