@@ -261,6 +261,35 @@ jobs:
           fi
           git push origin "$state_commit:refs/heads/data-state"
 
+      - name: Publish validated data to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch --no-tags origin "refs/heads/main:refs/remotes/origin/main"
+          main_parent=$(git rev-parse refs/remotes/origin/main)
+
+          # Do not attach data produced from an older source revision to newer
+          # application code. The queued run for the newer revision will
+          # publish its own validated data instead.
+          if [ "$main_parent" != "$GITHUB_SHA" ]; then
+            echo "main advanced during this run; deferring its data update to the newer workflow run"
+            exit 0
+          fi
+
+          main_index="$RUNNER_TEMP/main-data.index"
+          rm -f "$main_index"
+          GIT_INDEX_FILE="$main_index" git read-tree "$main_parent"
+          GIT_INDEX_FILE="$main_index" git add -f -A -- data
+          main_tree=$(GIT_INDEX_FILE="$main_index" git write-tree)
+
+          if [ "$main_tree" = "$(git rev-parse "$main_parent^{tree}")" ]; then
+            echo "main already contains the validated data"
+            exit 0
+          fi
+
+          main_commit=$(git commit-tree "$main_tree" -p "$main_parent" -m "Refresh validated data" -m "Source revision: $GITHUB_SHA")
+          git push origin "$main_commit:refs/heads/main"
+
   deploy:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

@@ -180,17 +180,19 @@ changes and the audit result before merging.
   source revision and never rebases it. It restores the last validated snapshot
   from the dedicated `data-state` branch, overlays data files changed by a
   source push, then runs extract, transform, data validation, one `.site` build,
-  exact-artifact validation, artifact upload, and Pages deployment in that order.
-  This keeps the validated snapshot as refresh state without discarding pushed
-  match, entry-list, or tracker data.
+  exact-artifact validation, artifact upload, data publication, and Pages
+  deployment in that order. This keeps the validated snapshot as refresh state
+  without discarding pushed match, entry-list, or tracker data.
 - The uploaded Pages artifact is the same immutable `.site` directory validated
   by the refresh transaction; Pages does not rebuild it. A successful run saves
-  only `data/` to `data-state`, so generated updates are never committed to
-  `main`.
+  only `data/` to `data-state` and mirrors that validated `data/` tree in a new
+  commit on `main`, so a normal `git pull` receives generated data updates.
 
 The workflow uses GitHub's short-lived `GITHUB_TOKEN`: `contents: write` is
-limited to the refresh job for updating `data-state`, while the deploy job gets
-only `pages: write` and `id-token: write`. No PAT or ImageKit secrets are needed.
+limited to the refresh job for updating `data-state` and `main`, while the deploy
+job gets only `pages: write` and `id-token: write`. Pushes made with that token do
+not recursively start another workflow run. No PAT or ImageKit secrets are
+needed.
 
 Parser tests use saved WTA, ITF, BJKC, and PDF-text fixtures and never call the
 network. Browser tests skip locally when Chrome or `chromedriver` is absent; CI

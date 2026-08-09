@@ -69,6 +69,17 @@ def test_pages_is_built_uploaded_and_deployed_by_one_workflow():
     assert "python build_deploy_site.py" not in publisher
 
 
+def test_refresh_publishes_only_validated_data_to_main():
+    workflow = (WORKFLOW_DIR / "hourly-update.yml").read_text(encoding="utf-8")
+
+    assert "Publish validated data to main" in workflow
+    assert 'GIT_INDEX_FILE="$main_index" git read-tree "$main_parent"' in workflow
+    assert 'GIT_INDEX_FILE="$main_index" git add -f -A -- data' in workflow
+    assert 'git push origin "$main_commit:refs/heads/main"' in workflow
+    assert 'if [ "$main_parent" != "$GITHUB_SHA" ]; then' in workflow
+    assert workflow.index("Require a promotable transaction") < workflow.index("Publish validated data to main")
+
+
 def test_update_notification_is_finalized_after_pages_deployment():
     workflow = (WORKFLOW_DIR / "hourly-update.yml").read_text(encoding="utf-8")
 

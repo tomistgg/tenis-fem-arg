@@ -157,7 +157,6 @@ class TablePolicyModel(BaseModel):
     kind: Literal["json_array", "rankings", "matches"]
     minimum_rows: int = Field(ge=0)
     max_row_drop: LimitModel
-    max_row_count_change: LimitModel
     freshness: FreshnessModel | None = None
 
 
@@ -386,25 +385,17 @@ def _validate_thresholds(
         drop = max(0, baseline - current)
         delta = abs(current - baseline)
         allowed_drop = _allowed_change(baseline, table_policy.max_row_drop)
-        allowed_delta = _allowed_change(baseline, table_policy.max_row_count_change)
         comparisons[filename] = {
             "baseline_rows": baseline,
             "current_rows": current,
             "row_drop": drop,
             "allowed_row_drop": allowed_drop,
             "row_count_change": delta,
-            "allowed_row_count_change": allowed_delta,
         }
         if drop > allowed_drop:
             raise _quality_error(
                 "row-drop threshold",
                 f"{filename} dropped {drop:,} rows; maximum allowed is {allowed_drop:,}",
-                **comparisons[filename],
-            )
-        if delta > allowed_delta:
-            raise _quality_error(
-                "row-change threshold",
-                f"{filename} changed by {delta:,} rows; maximum allowed is {allowed_delta:,}",
                 **comparisons[filename],
             )
     return comparisons

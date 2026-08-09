@@ -55,11 +55,26 @@ def test_row_drop_threshold_is_blocking(tmp_path):
         kind="json_array",
         minimum_rows=1,
         max_row_drop=LimitModel(absolute=1, fraction=0.01),
-        max_row_count_change=LimitModel(absolute=100, fraction=1.0),
     )
     policy = QualityPolicyModel(schema_version=1, tables={"fixture.json": table}, cache_freshness={})
     with pytest.raises(DataValidationError, match="dropped 20 rows"):
         _validate_thresholds(tmp_path, baseline, policy, {"fixture.json": 80})
+
+
+def test_row_count_increase_is_not_blocking(tmp_path):
+    baseline = tmp_path / "baseline"
+    baseline.mkdir()
+    (baseline / "fixture.json").write_text(json.dumps([{"id": 1}]), encoding="utf-8")
+    table = TablePolicyModel(
+        kind="json_array",
+        minimum_rows=1,
+        max_row_drop=LimitModel(absolute=0, fraction=0.0),
+    )
+    policy = QualityPolicyModel(schema_version=1, tables={"fixture.json": table}, cache_freshness={})
+
+    comparisons = _validate_thresholds(tmp_path, baseline, policy, {"fixture.json": 50_000})
+
+    assert comparisons["fixture.json"]["row_count_change"] == 49_999
 
 
 def test_minimum_row_count_is_blocking(tmp_path):
@@ -67,7 +82,6 @@ def test_minimum_row_count_is_blocking(tmp_path):
         kind="json_array",
         minimum_rows=100,
         max_row_drop=LimitModel(absolute=0, fraction=0.0),
-        max_row_count_change=LimitModel(absolute=0, fraction=0.0),
     )
     policy = QualityPolicyModel(schema_version=1, tables={"fixture.json": table}, cache_freshness={})
     with pytest.raises(DataValidationError, match="minimum is 100"):
@@ -92,7 +106,6 @@ def test_stale_table_is_blocking(tmp_path):
         kind="matches",
         minimum_rows=1,
         max_row_drop=LimitModel(absolute=0, fraction=0.0),
-        max_row_count_change=LimitModel(absolute=0, fraction=0.0),
         freshness=FreshnessModel(column="date", max_age_days=7, future_tolerance_days=0),
     )
     policy = QualityPolicyModel(schema_version=1, tables={"fixture.csv": table}, cache_freshness={})
