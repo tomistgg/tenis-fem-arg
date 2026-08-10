@@ -895,7 +895,7 @@ window.__WTA_RANKINGS_LATEST__ = (function() {
         ["NADIIA KOLB","UKR","1993-01-19"],
         ["MARIA TORRES MURCIA","COL","2002-11-10"],
         ["VICTORIA POHLE","GER","2007-06-29"],
-        ["FRANCESCA MATTIOLI","ITA","2006-07-04"],
+        ["FRANCESCA MATTIOLI","ARG","2006-07-04"],
         ["CHUKWUMELIJE CLARKE","USA","2009-08-14"],
         ["AMY SUCHA","CZE","2007-11-29"],
         ["EMMA SI YU DONG","CAN","2007-02-19"],
