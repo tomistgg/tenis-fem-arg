@@ -212,21 +212,21 @@ IOC_TO_ISO2 = {
     'ALB':'al','ALG':'dz','AND':'ad','ANG':'ao','ARG':'ar','ARM':'am','ASA':'as','AUS':'au','AUT':'at','AZE':'az',
     'BAH':'bs','BAR':'bb','BDI':'bi','BEL':'be','BEN':'bj','BIH':'ba','BLR':'by','BOL':'bo',
     'BOT':'bw','BRA':'br','BUL':'bg','CAL':'nc','CAM':'kh','CAN':'ca','CHI':'cl','CHL':'cl','CHN':'cn',
-    'CIV':'ci','CMR':'cm','COD':'cd','COL':'co','CRC':'cr','CRO':'hr','CUB':'cu','CUW':'cw','CYP':'cy','CZE':'cz',
+    'CIV':'ci','CMR':'cm','COD':'cd','COL':'co','CRC':'cr','CRO':'hr','CUB':'cu','CUW':'cw','CYP':'cy','CZE':'cz','CZS':'cz',
     'DEN':'dk','DOM':'do','DZA':'dz','ECU':'ec','EGY':'eg','ESA':'sv','ESP':'es','EST':'ee',
     'FIJ':'fj','FIN':'fi','FRA':'fr','FRG':'de',
-    'GAB':'ga','GBR':'gb','GEO':'ge','GER':'de','GHA':'gh','GLP':'gp','GRE':'gr','GRC':'gr','GUA':'gt',
+    'GAB':'ga','GBR':'gb','GEO':'ge','GER':'de','GHA':'gh','GLP':'gp','GRB':'gb','GRE':'gr','GRC':'gr','GUA':'gt',
     'HAI':'ht','HKG':'hk','HRV':'hr','HUN':'hu',
     'INA':'id','IND':'in','IRI':'ir','IRL':'ie','IRN':'ir','ISR':'il','ITA':'it',
     'JAM':'jm','JOR':'jo','JPN':'jp',
     'KAZ':'kz','KEN':'ke','KGZ':'kg','KHM':'kh','KOR':'kr','KOS':'xk','KSA':'sa',
     'LAO':'la','LAT':'lv','LIE':'li','LTU':'lt','LUX':'lu',
     'MAD':'mg','MAR':'ma','MAS':'my','MDA':'md','MEX':'mx','MKD':'mk','MLI':'ml','MLT':'mt','MNE':'me','MON':'mc',
-    'MRI':'mu','MOZ':'mz','NAM':'na','NCA':'ni','NCD':'nc','NED':'nl','NEP':'np','NGA':'ng','NGR':'ng','NOR':'no','NZL':'nz',
+    'MRI':'mu','MOZ':'mz','NAM':'na','NCA':'ni','NCD':'nc','NED':'nl','NEP':'np','NET':'nl','NGA':'ng','NGR':'ng','NOR':'no','NZL':'nz',
     'OMA':'om','OMN':'om','PAK':'pk','PAN':'pa','PAR':'py','PER':'pe','PHI':'ph','PLE':'ps','PNG':'pg',
     'POL':'pl','POR':'pt','PUR':'pr','QAT':'qa',
     'ROC':'ru','ROM':'ro','ROU':'ro','RSA':'za','RUS':'ru',
-    'SAM':'ws','SEN':'sn','SGP':'sg','SIN':'sg','SLO':'si','SMR':'sm',
+    'SAF':'za','SAM':'ws','SEN':'sn','SGP':'sg','SIN':'sg','SLO':'si','SMR':'sm',
     'SRB':'rs','SRI':'lk','SUI':'ch','SVK':'sk','SWE':'se','SYR':'sy',
     'TCH':'cz',
     'THA':'th','TKM':'tm','TOG':'tg','TPE':'tw','TRI':'tt','TTO':'tt','TUN':'tn','TUR':'tr',
@@ -6903,7 +6903,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             const gsCutoffs = {gs_cutoffs_json};
             const drawsData = {_script_safe_json(draws_js_data)};
             const drawsTournamentInfo = {_script_safe_json(draws_tournament_info)};
-            const _iocToIso2 = {{ALB:'al',ALG:'dz',AND:'ad',ANG:'ao',ARG:'ar',ARM:'am',ASA:'as',AUS:'au',AUT:'at',AZE:'az',BAH:'bs',BAR:'bb',BDI:'bi',BEL:'be',BEN:'bj',BIH:'ba',BLR:'by',BOL:'bo',BOT:'bw',BRA:'br',BUL:'bg',CAL:'nc',CAM:'kh',CAN:'ca',CHI:'cl',CHL:'cl',CHN:'cn',CIV:'ci',CMR:'cm',COD:'cd',COL:'co',CRC:'cr',CRO:'hr',CUB:'cu',CUW:'cw',CYP:'cy',CZE:'cz',DEN:'dk',DOM:'do',DZA:'dz',ECU:'ec',EGY:'eg',ESA:'sv',ESP:'es',EST:'ee',FIJ:'fj',FIN:'fi',FRA:'fr',FRG:'de',GAB:'ga',GBR:'gb',GEO:'ge',GER:'de',GHA:'gh',GLP:'gp',GRE:'gr',GRC:'gr',GUA:'gt',HAI:'ht',HKG:'hk',HRV:'hr',HUN:'hu',INA:'id',IND:'in',IRI:'ir',IRL:'ie',IRN:'ir',ISR:'il',ITA:'it',JAM:'jm',JOR:'jo',JPN:'jp',KAZ:'kz',KEN:'ke',KGZ:'kg',KHM:'kh',KOR:'kr',KOS:'xk',KSA:'sa',LAO:'la',LAT:'lv',LIE:'li',LTU:'lt',LUX:'lu',MAD:'mg',MAR:'ma',MAS:'my',MDA:'md',MEX:'mx',MKD:'mk',MLI:'ml',MLT:'mt',MNE:'me',MON:'mc',MRI:'mu',MOZ:'mz',NAM:'na',NCA:'ni',NCD:'nc',NED:'nl',NEP:'np',NGA:'ng',NGR:'ng',NOR:'no',NZL:'nz',OMA:'om',OMN:'om',PAK:'pk',PAN:'pa',PAR:'py',PER:'pe',PHI:'ph',PLE:'ps',PNG:'pg',POL:'pl',POR:'pt',PUR:'pr',QAT:'qa',ROC:'ru',ROM:'ro',ROU:'ro',RSA:'za',RUS:'ru',SAM:'ws',SEN:'sn',SGP:'sg',SIN:'sg',SLO:'si',SMR:'sm',SRB:'rs',SRI:'lk',SUI:'ch',SVK:'sk',SWE:'se',SYR:'sy',TCH:'cz',THA:'th',TKM:'tm',TOG:'tg',TPE:'tw',TRI:'tt',TTO:'tt',TUN:'tn',TUR:'tr',UAE:'ae',UKR:'ua',URU:'uy',USA:'us',UZB:'uz',VEN:'ve',VIE:'vn',XKX:'xk',ZAM:'zm',ZIM:'zw'}};
+            const _iocToIso2 = {{ALB:'al',ALG:'dz',AND:'ad',ANG:'ao',ARG:'ar',ARM:'am',ASA:'as',AUS:'au',AUT:'at',AZE:'az',BAH:'bs',BAR:'bb',BDI:'bi',BEL:'be',BEN:'bj',BIH:'ba',BLR:'by',BOL:'bo',BOT:'bw',BRA:'br',BUL:'bg',CAL:'nc',CAM:'kh',CAN:'ca',CHI:'cl',CHL:'cl',CHN:'cn',CIV:'ci',CMR:'cm',COD:'cd',COL:'co',CRC:'cr',CRO:'hr',CUB:'cu',CUW:'cw',CYP:'cy',CZE:'cz',CZS:'cz',DEN:'dk',DOM:'do',DZA:'dz',ECU:'ec',EGY:'eg',ESA:'sv',ESP:'es',EST:'ee',FIJ:'fj',FIN:'fi',FRA:'fr',FRG:'de',GAB:'ga',GBR:'gb',GEO:'ge',GER:'de',GHA:'gh',GLP:'gp',GRB:'gb',GRE:'gr',GRC:'gr',GUA:'gt',HAI:'ht',HKG:'hk',HRV:'hr',HUN:'hu',INA:'id',IND:'in',IRI:'ir',IRL:'ie',IRN:'ir',ISR:'il',ITA:'it',JAM:'jm',JOR:'jo',JPN:'jp',KAZ:'kz',KEN:'ke',KGZ:'kg',KHM:'kh',KOR:'kr',KOS:'xk',KSA:'sa',LAO:'la',LAT:'lv',LIE:'li',LTU:'lt',LUX:'lu',MAD:'mg',MAR:'ma',MAS:'my',MDA:'md',MEX:'mx',MKD:'mk',MLI:'ml',MLT:'mt',MNE:'me',MON:'mc',MRI:'mu',MOZ:'mz',NAM:'na',NCA:'ni',NCD:'nc',NED:'nl',NEP:'np',NET:'nl',NGA:'ng',NGR:'ng',NOR:'no',NZL:'nz',OMA:'om',OMN:'om',PAK:'pk',PAN:'pa',PAR:'py',PER:'pe',PHI:'ph',PLE:'ps',PNG:'pg',POL:'pl',POR:'pt',PUR:'pr',QAT:'qa',ROC:'ru',ROM:'ro',ROU:'ro',RSA:'za',RUS:'ru',SAF:'za',SAM:'ws',SEN:'sn',SGP:'sg',SIN:'sg',SLO:'si',SMR:'sm',SRB:'rs',SRI:'lk',SUI:'ch',SVK:'sk',SWE:'se',SYR:'sy',TCH:'cz',THA:'th',TKM:'tm',TOG:'tg',TPE:'tw',TRI:'tt',TTO:'tt',TUN:'tn',TUR:'tr',UAE:'ae',UKR:'ua',URU:'uy',USA:'us',UZB:'uz',VEN:'ve',VIE:'vn',XKX:'xk',ZAM:'zm',ZIM:'zw'}};
             const _localFlags = new Set(['AHO','YUG','SCG','CIS','URS']);
             function countryFlag(code, showCode) {{
                 if (!code || code === '-') return code || '';

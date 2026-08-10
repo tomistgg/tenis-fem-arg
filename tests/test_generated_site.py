@@ -24,6 +24,28 @@ PROJECT_DIR = Path(__file__).resolve().parents[1]
 
 
 class GeneratedSiteTests(unittest.TestCase):
+    def test_legacy_wta_country_codes_render_flags(self):
+        players = json.loads(
+            (PROJECT_DIR / "data" / "player_aliases_wta_itf.json").read_text(
+                encoding="utf-8-sig"
+            )
+        )
+        players_by_name = {player["display_name"]: player for player in players}
+        expected = {
+            "Irina Petru": ("CZS", "CZ"),
+            "Jones Elizabeth": ("GRB", "GB"),
+            "Yvette Flu": ("NET", "NL"),
+            "Seddon Kim": ("SAF", "ZA"),
+        }
+
+        for player_name, (country_code, iso_code) in expected.items():
+            with self.subTest(player=player_name):
+                self.assertEqual(players_by_name[player_name]["country"], country_code)
+                self.assertIn(
+                    f"country-flag-icons/3x2/{iso_code}.svg",
+                    country_flag_html(country_code, show_code=False),
+                )
+
     def test_lorna_simmons_aho_country_uses_local_netherlands_antilles_flag(self):
         players = json.loads(
             (PROJECT_DIR / "data" / "player_aliases_wta_itf.json").read_text(
