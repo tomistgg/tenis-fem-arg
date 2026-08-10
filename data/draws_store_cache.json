@@ -544,5 +544,85 @@
         "num_rounds": 5
       }
     }
+  },
+  "https://www.wtatennis.com/tournaments/1017/cincinnati/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 1000 Cincinnati",
+      "level": "WTA 1000",
+      "week": "Week of August 10",
+      "startDate": "2026-08-13",
+      "endDate": "2026-08-23",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "Cincinnati Open",
+        "location": "CINCINNATI, USA",
+        "dates": "August 13-23 2026",
+        "prize": "$ 7,433,076",
+        "surface": "Hard",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 48,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "TAGGER, Lilli", "country": "AUT"},
+          {"pos": 2, "name": "ZHU, Lin", "country": "CHN"},
+          {"pos": 3, "entry": "WC", "name": "MONTGOMERY, Robin", "country": "USA"},
+          {"pos": 4, "seed": "21", "name": "GRABHER, Julia", "country": "AUT"},
+          {"pos": 5, "seed": "2", "name": "ZARAZUA, Renata", "country": "MEX"},
+          {"pos": 6, "name": "YUAN, Yue", "country": "CHN"},
+          {"pos": 7, "name": "DAY, Kayla", "country": "USA"},
+          {"pos": 8, "seed": "17", "name": "PRESTON, Taylah", "country": "AUS"},
+          {"pos": 9, "seed": "3", "name": "TARARUDEE, Lanlana", "country": "THA"},
+          {"pos": 10, "name": "JONES, Emerson", "country": "AUS"},
+          {"pos": 11, "name": "JIMENEZ KASINTSEVA, Victoria", "country": "AND"},
+          {"pos": 12, "seed": "19", "name": "SAWANGKAEW, Mananchaya", "country": "THA"},
+          {"pos": 13, "seed": "4", "name": "KRAUS, Sinja", "country": "AUT"},
+          {"pos": 14, "name": "BASSOLS RIBERA, Marina", "country": "ESP"},
+          {"pos": 15, "name": "IATCENKO, Polina"},
+          {"pos": 16, "seed": "23", "name": "LIU, Claire", "country": "USA"},
+          {"pos": 17, "seed": "5", "name": "LYS, Eva", "country": "GER"},
+          {"pos": 18, "name": "KAWA, Katarzyna", "country": "POL"},
+          {"pos": 19, "name": "SALKOVA, Dominika", "country": "CZE"},
+          {"pos": 20, "seed": "18", "name": "BLINKOVA, Anna"},
+          {"pos": 21, "seed": "6", "name": "SIERRA, Solana", "country": "ARG"},
+          {"pos": 22, "name": "ITO, Aoi", "country": "JPN"},
+          {"pos": 23, "name": "DART, Harriet", "country": "GBR"},
+          {"pos": 24, "seed": "20", "name": "UCHIJIMA, Moyuka", "country": "JPN"},
+          {"pos": 25, "seed": "7", "name": "KORNEEVA, Alina"},
+          {"pos": 26, "entry": "WC", "name": "LEPCHENKO, Varvara", "country": "USA"},
+          {"pos": 27, "name": "MARINO, Rebecca", "country": "CAN"},
+          {"pos": 28, "seed": "22", "name": "CHARAEVA, Alina", "country": "ARM"},
+          {"pos": 29, "seed": "8", "name": "VANDEWINKEL, Hanne", "country": "BEL"},
+          {"pos": 30, "entry": "WC", "name": "URHOBO, Akasha", "country": "USA"},
+          {"pos": 31, "name": "SRAMKOVA, Rebecca", "country": "SVK"},
+          {"pos": 32, "seed": "13", "name": "JACQUEMOT, Elsa", "country": "FRA"},
+          {"pos": 33, "seed": "9", "name": "WANG, Xiyu", "country": "CHN"},
+          {"pos": 34, "entry": "WC", "name": "ANDREESCU, Bianca", "country": "CAN"},
+          {"pos": 35, "entry": "WC", "name": "LEE, Carol Young Suh", "country": "USA"},
+          {"pos": 36, "seed": "14", "name": "KUDERMETOVA, Polina", "country": "UZB"},
+          {"pos": 37, "seed": "10", "name": "ARANGO, Emiliana", "country": "COL"},
+          {"pos": 38, "name": "SASNOVICH, Aliaksandra"},
+          {"pos": 39, "name": "PODOROSKA, Nadia", "country": "ARG"},
+          {"pos": 40, "seed": "16", "name": "SEIDEL, Ella", "country": "GER"},
+          {"pos": 41, "seed": "11", "name": "ZAKHAROVA, Anastasia"},
+          {"pos": 42, "name": "STEFANINI, Lucrezia", "country": "ITA"},
+          {"pos": 43, "name": "SAKATSUME, Himeno", "country": "JPN"},
+          {"pos": 44, "seed": "24", "name": "JEANJEAN, Leolia", "country": "FRA"},
+          {"pos": 45, "seed": "12", "name": "SELEKHMETEVA, Oksana", "country": "ESP"},
+          {"pos": 46, "entry": "WC", "name": "MANDLIK, Elizabeth", "country": "USA"},
+          {"pos": 47, "name": "STOIANA, Mary", "country": "USA"},
+          {"pos": 48, "seed": "15", "name": "ERJAVEC, Veronika", "country": "SLO"}
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
+      }
+    }
   }
 }
