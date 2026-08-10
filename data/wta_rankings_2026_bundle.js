@@ -1769,7 +1769,8 @@ window.__WTA_RANKINGS_2026__ = (function() {
         ["DIANA ILIE","USA","2006-09-14"],
         ["YLENIA ZOCCO","ITA","2008-10-03"],
         ["ALLISON NICOLE ISAACS","USA","2002-12-20"],
-        ["CAITLIN BAKER","AUS","2005-05-22"]
+        ["CAITLIN BAKER","AUS","2005-05-22"],
+        ["FRANCESCA MATTIOLI","ARG","2006-07-04"]
     ],
     "d": {
         "2026-01-05": [
@@ -50351,7 +50352,7 @@ window.__WTA_RANKINGS_2026__ = (function() {
           [892,33,750],
           [893,33,836],
           [894,33,942],
-          [895,33,962],
+          [895,33,1769],
           [896,33,1087],
           [897,33,854],
           [898,32,1758],
