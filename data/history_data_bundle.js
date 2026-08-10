@@ -6,15 +6,9 @@ window.__WTA_HISTORY_DATA__ = [
     "CATEGORY": "W15",
     "SURFACE": "Clay",
     "MATCH_TYPE": "ITF",
-    "DATE": "2026-08-09",
-    "ROUND": "QR1",
-    "SCORE": "6-1 6-0",
     "_winnerId": "800659656",
-    "_loserId": "800650045",
     "_winnerName": "Valentina Bruno",
-    "_loserName": "Mariya Ankudinova",
     "_winnerCountry": "ARG",
-    "_loserCountry": "KAZ",
     "_winnerEntry": "",
     "_loserEntry": "",
     "_winnerSeed": "13",
@@ -23,7 +17,8 @@ window.__WTA_HISTORY_DATA__ = [
     "_winnerRank": "1303",
     "_loserRank": "",
     "rows": [
-      {}
+      {"DATE":"2026-08-10","ROUND":"QR2","SCORE":"5-7 6-1 10-2","_loserId":"800571495","_loserName":"Zala Bizjak","_loserCountry":"SLO"},
+      {"DATE":"2026-08-09","ROUND":"QR1","SCORE":"6-1 6-0","_loserId":"800650045","_loserName":"Mariya Ankudinova","_loserCountry":"KAZ"}
     ]
   },
   {
