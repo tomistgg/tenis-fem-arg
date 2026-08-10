@@ -551,18 +551,5 @@ class GeneratedSiteTests(unittest.TestCase):
             source,
         )
 
-    def test_photos_view_shows_retirement_notice_without_gallery(self):
-        source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
-        self.assertIn(
-            "Saqué las fotos porque era un quilombo mantenerla, cuando necesiten alguna foto en particular "
-            "pueden sacarla de mi instagram @tomistx o pedirme por mensaje privado ahí mismo.",
-            source,
-        )
-        self.assertIn("Voy a sacar esta parte del sitio en una semana.", source)
-        self.assertNotIn('id="gallery-player-filter"', source)
-        self.assertNotIn('id="gallery-grid"', source)
-        self.assertNotIn('id="gallery-lightbox"', source)
-
-
 if __name__ == "__main__":
     unittest.main()

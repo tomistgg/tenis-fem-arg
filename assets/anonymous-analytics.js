@@ -5,7 +5,7 @@
     var COUNTRY_ENDPOINT = 'https://api.country.is/';
     var ANALYTICS_PAGES = new Set([
         'home', 'upcoming', 'entrylists', 'draws', 'calendar', 'rankings',
-        'roadtogs', 'history', 'fedbcup', 'tstrength', 'gallery'
+        'roadtogs', 'history', 'fedbcup', 'tstrength'
     ]);
     var ANALYTICS_FILTER_PARAMS = {
         home: [],
@@ -21,8 +21,7 @@
             'type', 'asrank', 'asmode', 'vsrank', 'vsmode'
         ],
         fedbcup: ['view', 'player'],
-        tstrength: ['year', 'level', 'surface', 'region', 'draw', 'sort'],
-        gallery: ['player']
+        tstrength: ['year', 'level', 'surface', 'region', 'draw', 'sort']
     };
     var SAFE_FILTER_VALUE_RE = /^[a-z0-9][a-z0-9,.-]*$/;
     var MAX_FILTER_VALUE_LENGTH = 160;
@@ -70,7 +69,6 @@
         var segments = url.pathname.split('/').filter(Boolean);
         var pageType = segments.length ? segments[segments.length - 1].toLowerCase() : 'home';
         if (pageType === 'app.html' || pageType === 'index.html') pageType = '';
-        if (pageType === 'photos') pageType = 'gallery';
         var hashTab = (url.hash || '').replace(/^#/, '').split(/[?&/]/)[0].toLowerCase();
         if (!ANALYTICS_PAGES.has(pageType) && ANALYTICS_PAGES.has(hashTab)) pageType = hashTab;
         if (!ANALYTICS_PAGES.has(pageType)) pageType = 'home';

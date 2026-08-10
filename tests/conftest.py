@@ -25,7 +25,6 @@ def offline_generated_site(tmp_path_factory):
     data_dir.mkdir()
     site_dir.mkdir()
     (data_dir / "points_distribution.json").write_text("[]\n", encoding="utf-8")
-    (data_dir / "photos_by_player.json").write_text("{}\n", encoding="utf-8")
     (data_dir / "tournament_draw_sizes.json").write_text("[]\n", encoding="utf-8")
     (data_dir / "wta_rankings_20_29.csv").write_text(
         "week_date,id,rank,points,player,country,dob\n"

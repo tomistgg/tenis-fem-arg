@@ -33,7 +33,6 @@ GENERATED_SITE_FILES = (
     "app.html",
     "index.html",
     "404.html",
-    "photos/index.html",
     "upcoming/index.html",
     "entrylists/index.html",
     "draws/index.html",

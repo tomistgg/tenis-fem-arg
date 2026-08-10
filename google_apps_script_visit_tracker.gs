@@ -57,8 +57,7 @@ const ALLOWED_ANALYTICS_PAGES_ = new Set([
   'roadtogs',
   'history',
   'fedbcup',
-  'tstrength',
-  'gallery'
+  'tstrength'
 ]);
 
 const ANALYTICS_FILTER_PARAMS_ = {
@@ -75,8 +74,7 @@ const ANALYTICS_FILTER_PARAMS_ = {
     'type', 'asrank', 'asmode', 'vsrank', 'vsmode'
   ],
   fedbcup: ['view', 'player'],
-  tstrength: ['year', 'level', 'surface', 'region', 'draw', 'sort'],
-  gallery: ['player']
+  tstrength: ['year', 'level', 'surface', 'region', 'draw', 'sort']
 };
 
 const SAFE_CONTENT_PART_RE_ = /^([a-z][a-z0-9]*)=([a-z0-9][a-z0-9,.-]{0,159})$/;

@@ -181,10 +181,6 @@ def _build_staged_deploy_site(
         str(PROJECT_ROOT / "build_deploy_site.py"),
         "--output",
         str(deploy_root),
-        "--max-edge",
-        "2400",
-        "--quality",
-        "88",
     ]
     logger.debug(f"Building validated deploy site at {deploy_root}...")
     try:

@@ -4,7 +4,7 @@
     'use strict';
 
     var PRIMARY_TABS = ['entrylists', 'roadtogs', 'calendar', 'upcoming'];
-    var SECONDARY_TABS = ['history', 'draws', 'rankings', 'gallery', 'tstrength', 'fedbcup'];
+    var SECONDARY_TABS = ['history', 'draws', 'rankings', 'tstrength', 'fedbcup'];
     var TAB_LABELS = {
         home: 'Home',
         entrylists: 'Entry Lists',
@@ -14,7 +14,6 @@
         history: 'Match History',
         draws: 'Draws',
         rankings: 'WTA Rankings',
-        gallery: 'Photos',
         tstrength: 'WTA Tournament Strength',
         fedbcup: 'Fed / BJK Cup'
     };
@@ -26,7 +25,6 @@
         history: 'assets/tennis-player.png',
         draws: 'assets/tournament.png',
         rankings: 'assets/list.png',
-        gallery: 'assets/camera.png',
         tstrength: 'assets/score-board.png',
         fedbcup: 'assets/argentina.png'
     };

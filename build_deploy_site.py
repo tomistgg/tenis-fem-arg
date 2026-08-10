@@ -4,7 +4,6 @@ import shutil
 import uuid
 from pathlib import Path
 
-from PIL import Image, ImageOps
 from runtime_logging import get_logger
 from runtime_paths import DATA_DIR, SITE_ROOT
 
@@ -12,7 +11,6 @@ from runtime_paths import DATA_DIR, SITE_ROOT
 logger = get_logger("build")
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_OUTPUT_DIR = BASE_DIR / ".site"
-IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
 COPY_ROOT_FILES = ("app.html", "index.html", "404.html", "CNAME", "site.webmanifest")
 APPLE_TOUCH_ICON_FALLBACKS = (
     "apple-touch-icon.png",
@@ -34,16 +32,12 @@ COPY_ROOT_DIRS = (
 COPY_DATA_FILES = (
     "history_data_bundle.js",
     "player_aliases_wta_itf_bundle.js",
-    "photos_by_player.json",
 )
 COPY_DATA_GLOBS = (
     "wta_rankings_latest_bundle.js",
     "wta_rankings_[0-9][0-9][0-9][0-9]_bundle.js",
 )
 COPY_DATA_DIRS = ("flags",)
-COPY_ROUTE_FILES = ("photos/index.html",)
-DEFAULT_MAX_EDGE = 2400
-DEFAULT_QUALITY = 88
 
 
 def _ensure_within_base(path):
@@ -109,69 +103,12 @@ def _copy_deploy_data(output_dir):
     return copied
 
 
-def _save_webp_copy(src, dst, max_edge, quality):
-    dst.parent.mkdir(parents=True, exist_ok=True)
-    with Image.open(src) as img:
-        icc_profile = img.info.get("icc_profile")
-        img = ImageOps.exif_transpose(img)
-        if img.mode not in ("RGB", "L"):
-            if "A" in img.getbands():
-                bg = Image.new("RGB", img.size, (255, 255, 255))
-                alpha = img.getchannel("A")
-                bg.paste(img.convert("RGBA"), mask=alpha)
-                img = bg
-            else:
-                img = img.convert("RGB")
-        if max(img.size) > max_edge:
-            img.thumbnail((max_edge, max_edge), Image.Resampling.LANCZOS)
-        elif img.mode != "RGB":
-            img = img.convert("RGB")
-
-        save_kwargs = {
-            "format": "WEBP",
-            "quality": quality,
-            "method": 6,
-        }
-        # EXIF can contain GPS, device, and editing metadata. Orientation has
-        # already been baked in by exif_transpose(), so deploy copies drop EXIF.
-        if icc_profile:
-            save_kwargs["icc_profile"] = icc_profile
-        img.save(dst, **save_kwargs)
-
-
-def _copy_optimized_photos(src_root, dst_root, max_edge, quality):
-    if not src_root.exists():
-        return 0
-
-    copied = 0
-    for src in src_root.rglob("*"):
-        if src.is_dir():
-            continue
-        if src.suffix.lower() not in IMAGE_EXTS:
-            continue
-        rel = src.relative_to(src_root)
-        dst = (dst_root / rel).with_suffix(".webp")
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        with Image.open(src) as img:
-            can_copy = (
-                src.suffix.lower() == ".webp"
-                and max(img.size) <= max_edge
-                and not img.info.get("exif")
-            )
-        if can_copy:
-            _copy_file(src, dst)
-        else:
-            _save_webp_copy(src, dst, max_edge, quality)
-        copied += 1
-    return copied
-
-
 def _site_source(relative_path):
     staged = SITE_ROOT / relative_path
     return staged if staged.exists() else BASE_DIR / relative_path
 
 
-def _build_site_contents(output_dir, max_edge, quality):
+def _build_site_contents(output_dir):
     output_dir = _prepare_output_dir(output_dir)
 
     for filename in COPY_ROOT_FILES:
@@ -189,17 +126,10 @@ def _build_site_contents(output_dir, max_edge, quality):
         if src.exists():
             _copy_tree(src, output_dir / dirname)
 
-    data_copied = _copy_deploy_data(output_dir)
-    # The Photos section currently displays a retirement notice. Keep source
-    # images out of the deploy artifact while that notice remains active.
-    for rel_path in COPY_ROUTE_FILES:
-        src = _site_source(rel_path)
-        if src.exists():
-            _copy_file(src, output_dir / rel_path)
-    return data_copied
+    return _copy_deploy_data(output_dir)
 
 
-def build_site(output_dir, max_edge=DEFAULT_MAX_EDGE, quality=DEFAULT_QUALITY):
+def build_site(output_dir):
     """Build completely off-path, then replace the deploy directory."""
 
     destination = _ensure_within_base(Path(output_dir))
@@ -207,7 +137,7 @@ def build_site(output_dir, max_edge=DEFAULT_MAX_EDGE, quality=DEFAULT_QUALITY):
     staged = destination.with_name(f".{destination.name}.{transaction_id}.tmp")
     backup = destination.with_name(f".{destination.name}.{transaction_id}.backup")
     try:
-        data_copied = _build_site_contents(staged, max_edge, quality)
+        data_copied = _build_site_contents(staged)
         if destination.exists():
             os.replace(destination, backup)
         try:
@@ -221,20 +151,18 @@ def build_site(output_dir, max_edge=DEFAULT_MAX_EDGE, quality=DEFAULT_QUALITY):
                 shutil.rmtree(backup)
             except OSError as exc:
                 logger.warning(f"Warning: deploy backup cleanup failed: {backup}: {exc}")
-        print(f"Built deploy site at {destination} with {data_copied} data files; photos excluded.")
+        print(f"Built deploy site at {destination} with {data_copied} data files.")
     finally:
         if staged.exists():
             shutil.rmtree(staged)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Build a deployable site directory with optimized photos.")
+    parser = argparse.ArgumentParser(description="Build a deployable site directory.")
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT_DIR), help="Output directory for the deploy site.")
-    parser.add_argument("--max-edge", type=int, default=DEFAULT_MAX_EDGE, help="Maximum width/height for web images.")
-    parser.add_argument("--quality", type=int, default=DEFAULT_QUALITY, help="WebP quality for optimized photos.")
     args = parser.parse_args()
 
-    build_site(Path(args.output), max_edge=args.max_edge, quality=args.quality)
+    build_site(Path(args.output))
 
 
 if __name__ == "__main__":

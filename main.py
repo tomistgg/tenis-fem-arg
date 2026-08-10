@@ -54,7 +54,6 @@ from utils import (
     expand_draws_store_cache,
     compress_tournament_snapshot, compress_draws_snapshot,
     compress_calendar_snapshot, dumps_calendar_snapshot,
-    compress_photos_by_player_manifest,
     normalize_country_overrides, load_csv_rows,
     format_player_name, dumps_draws_store_cache, dumps_entry_lists_cache,
     get_cache_timestamp, set_cache_entry_meta, get_cache_entry_meta,
@@ -92,9 +91,6 @@ CALENDAR_SNAPSHOT_FILE = os.path.join(DATA_DIR, "calendar_snapshot.json")
 PLAYER_ALIASES_WTA_ITF_FILE = os.path.join(DATA_DIR, "player_aliases_wta_itf.json")
 DRAWS_STORE_CACHE_FILE = os.path.join(DATA_DIR, "draws_store_cache.json")
 DRAW_FETCH_ERRORS_FILE = os.path.join(DATA_DIR, "draw_fetch_errors.json")
-PHOTOS_BY_PLAYER_FILE = os.path.join(DATA_DIR, "photos_by_player.json")
-PHOTOS_ROOT_DIR = os.path.join(BASE_DIR, "photos")
-PHOTO_SLOTS_PER_PLAYER = 12
 ENABLE_ITF_DRAWS_PREFETCH = False
 HOURLY_PREFLIGHT_SCRIPTS = (
     ("weekly ranking", os.path.join(BASE_DIR, "populate_data", "load_weekly_ranking.py")),
@@ -1935,34 +1931,6 @@ def log_data_status_warnings(data_status):
                 logger.warning(f"Data status warning: {source} using cached data.")
 
 
-def build_photos_by_player_manifest(manifest_path, photos_root_dir):
-    """Build the editable photos manifest from local player folders only."""
-    image_exts = {".jpg", ".jpeg", ".png", ".webp"}
-    manifest = {}
-
-    if os.path.isdir(photos_root_dir):
-        for entry_name in sorted(os.listdir(photos_root_dir), key=_natural_sort_key):
-            folder_path = os.path.join(photos_root_dir, entry_name)
-            if not os.path.isdir(folder_path):
-                continue
-            folder_files = [
-                name for name in sorted(os.listdir(folder_path), key=_natural_sort_key)
-                if os.path.splitext(name)[1].lower() in image_exts
-            ]
-            if not folder_files:
-                continue
-            slots = [
-                f"photos/{entry_name}/{os.path.splitext(name)[0]}.webp".replace("\\", "/")
-                for name in folder_files[:PHOTO_SLOTS_PER_PLAYER]
-            ]
-            slots += [""] * (PHOTO_SLOTS_PER_PLAYER - len(slots))
-            manifest[entry_name] = slots
-
-    os.makedirs(os.path.dirname(manifest_path), exist_ok=True)
-    save_json_file(manifest_path, compress_photos_by_player_manifest(manifest))
-    return manifest
-
-
 def _itf_acceptance_list_available(start_date_str, today):
     """Return True if the ITF acceptance list should be available yet.
 
@@ -2726,10 +2694,6 @@ def main():
         _run_hourly_preflight()
 
     skip_draws_fetch = os.getenv("SKIP_DRAWS_FETCH", "").strip().lower() in {"1", "true", "yes", "on"}
-
-    # The Photos section currently displays a retirement notice. Do not expose
-    # local source images through either the fetched or inline manifest.
-    save_json_file(PHOTOS_BY_PLAYER_FILE, {})
 
     driver = create_driver()
     itf_draws_tournaments = {}

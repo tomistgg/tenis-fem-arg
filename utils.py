@@ -2043,28 +2043,6 @@ def expand_itf_rankings_cache(payload):
     return expand_row_mapping_cache(payload, _ITF_RANKING_FIELDS)
 
 
-def compress_photos_by_player_manifest(payload):
-    """Drop trailing empty photo slots from the manifest."""
-    if not isinstance(payload, dict):
-        return payload
-    compressed = {}
-    for player_name, slots in payload.items():
-        if isinstance(slots, list):
-            prefix = f"photos/{player_name}/"
-            compact_slots = []
-            for slot in slots:
-                text = str(slot or "").strip()
-                if not text:
-                    continue
-                if text.startswith(prefix):
-                    text = text[len(prefix):]
-                compact_slots.append(text)
-            compressed[player_name] = compact_slots
-        else:
-            compressed[player_name] = slots
-    return compressed
-
-
 def save_json_file(path, payload, formatter=None):
     dump_func = formatter or dumps_readable
     text = dump_func(payload, ensure_ascii=False) + "\n"

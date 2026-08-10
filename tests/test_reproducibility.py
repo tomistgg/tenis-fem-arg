@@ -98,7 +98,6 @@ def test_deployment_does_not_rebase_main_or_require_removed_secrets():
 
     assert "PAGES_PUSH_TOKEN" not in workflows
     assert "IMAGEKIT_PRIVATE_KEY" not in workflows
-    assert "IMAGEKIT_GALLERY_ROOT" not in workflows
     assert "IMAGEKIT_API_URL" not in workflows
     assert "git rebase" not in workflows
     assert "HEAD:main" not in workflows
