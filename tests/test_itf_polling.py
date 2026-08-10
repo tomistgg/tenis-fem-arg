@@ -151,6 +151,102 @@ def test_current_week_acceptance_is_refetched_and_withdrawal_removed(monkeypatch
     assert {player["name"].upper() for player in updated_cache[tournament_key]} == {"LAN MI"}
 
 
+def test_published_main_draw_permanently_closes_acceptance_refresh(monkeypatch):
+    tournament_key = "w-itf-bra-2026-010"
+    week = "Week of August 10"
+    acceptance_state = {}
+    cached_players = [
+        {
+            "pos": "1",
+            "name": "Carla Markus",
+            "country": "ARG",
+            "type": "MAIN",
+            "pos_num": 1,
+        }
+    ]
+    tournament_groups = {
+        week: {
+            tournament_key: {
+                "name": "W15 Campos do Jordao",
+                "level": "W15",
+                "surface": "Hard",
+                "country": "BRA",
+                "startDate": "2026-08-10T00:00:00",
+                "endDate": "2026-08-16T00:00:00",
+            }
+        }
+    }
+
+    current_time = [datetime(2026, 8, 10, 10, 0, tzinfo=timezone.utc)]
+    monkeypatch.setattr(main, "utc_now", lambda: current_time[0])
+    monkeypatch.setattr(main, "_load_acceptance_state", lambda: acceptance_state)
+    monkeypatch.setattr(main, "_save_acceptance_state", lambda state: None)
+    monkeypatch.setattr(main, "get_wta_rankings_cached", lambda *args, **kwargs: [])
+    monkeypatch.setattr(
+        main,
+        "get_itf_players",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("closed acceptance list was fetched")
+        ),
+    )
+
+    process_args = {
+        "driver": None,
+        "tournament_groups": tournament_groups,
+        "monday_map": {"2026-08-10": week},
+        "arg_names_set": {"CARLA MARKUS"},
+        "entry_cache": {tournament_key: cached_players},
+        "force_itf_acceptance": True,
+    }
+    main.process_tournaments(
+        **process_args,
+        itf_main_draw_available_keys={tournament_key},
+    )
+
+    assert acceptance_state[tournament_key]["main_draw_available_date"] == "2026-08-10"
+
+    current_time[0] = datetime(2026, 8, 11, 10, 0, tzinfo=timezone.utc)
+    main.process_tournaments(
+        **process_args,
+        itf_main_draw_available_keys=set(),
+    )
+
+
+def test_published_main_draw_sources_map_to_canonical_itf_keys(monkeypatch):
+    monkeypatch.setattr(
+        main,
+        "tournament_ids_with_published_main_draw",
+        lambda tournament_ids: {"101"},
+    )
+
+    result = main._itf_keys_with_published_main_draw(
+        {
+            "Week of August 10": {
+                "W-ITF-BRA-2026-010": {"tournamentId": 101},
+            }
+        },
+        {
+            "W-ITF-USA-2026-020": {
+                "draws": {"MDS": {"players": ["cached player"], "matches": []}},
+            }
+        },
+        {
+            "W-ITF-ESP-2026-030": {
+                "MDS": {"players": ["prefetched player"], "matches": []},
+            },
+            "W-ITF-EMPTY-2026-040": {
+                "MDS": {"players": [], "matches": ["empty bracket slot"]},
+            }
+        },
+    )
+
+    assert result == {
+        "w-itf-bra-2026-010",
+        "w-itf-usa-2026-020",
+        "w-itf-esp-2026-030",
+    }
+
+
 def test_missing_acceptance_data_does_not_suppress_started_itf_draw():
     tournament = {
         "startDate": "2026-08-03T00:00:00",
@@ -201,13 +297,42 @@ def _published_draw(nationalities):
     }
 
 
+def _published_draw_with_singular_players(nationalities):
+    return {
+        "koGroups": [{
+            "rounds": [{
+                "matches": [{
+                    "teams": [
+                        {"player": {"nationality": nationality}}
+                        for nationality in nationalities
+                    ]
+                }]
+            }]
+        }]
+    }
+
+
+def _empty_draw_slots(match_count=16):
+    return {
+        "koGroups": [{
+            "rounds": [{
+                "matches": [
+                    {"teams": [{"entryStatus": None}, {"entryStatus": None}]}
+                    for _ in range(match_count)
+                ]
+            }]
+        }]
+    }
+
+
 def test_published_qualifying_and_main_draws_can_prove_no_arg(monkeypatch):
     cache = {
         "123_Q_0": {"data": _published_draw(["ESP", "BRA"])},
         "123_M_0": {"data": _published_draw(["USA", "FRA"])},
         "456_Q_0": {"data": _published_draw(["ESP", "ARG"])},
-        "456_M_0": {"data": _published_draw(["USA", "FRA"])},
+        "456_M_0": {"data": _published_draw_with_singular_players(["USA", "FRA"])},
         "789_Q_0": {"data": _published_draw(["ESP", "BRA"])},
+        "999_M_0": {"data": _empty_draw_slots()},
     }
     monkeypatch.setattr(itf_drawsheet_cache, "_load_raw_cache", lambda: cache)
 
@@ -215,8 +340,12 @@ def test_published_qualifying_and_main_draws_can_prove_no_arg(monkeypatch):
         [123, 456, 789],
         "ARG",
     )
+    published_main_draws = itf_drawsheet_cache.tournament_ids_with_published_main_draw(
+        [123, 456, 789, 999],
+    )
 
     assert result == {"123"}
+    assert published_main_draws == {"123", "456"}
 
     draw_codes = (
         itf_drawsheet_cache.tournament_draw_codes_with_definitive_no_nationality(

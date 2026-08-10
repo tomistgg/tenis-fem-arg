@@ -128,20 +128,24 @@ def _drawsheet_nationality_status(data, nationality):
         rounds = group.get("rounds") or []
         if not rounds or not isinstance(rounds[0], dict):
             continue
-        matches = rounds[0].get("matches") or []
-        if not matches:
-            continue
-        published = True
-        for match in matches:
+        for match in rounds[0].get("matches") or []:
             if not isinstance(match, dict):
                 continue
             for team in match.get("teams") or []:
                 if not isinstance(team, dict):
                     continue
-                for player in team.get("players") or []:
+                players = team.get("players") or []
+                singular_player = team.get("player")
+                if isinstance(singular_player, dict):
+                    players = [*players, singular_player]
+                for player in players:
+                    if not isinstance(player, dict):
+                        continue
+                    # ITF may publish empty match/team placeholders before the
+                    # draw itself. Actual player data is the publication boundary.
+                    published = True
                     if (
-                        isinstance(player, dict)
-                        and str(player.get("nationality") or "").strip().upper() == target
+                        str(player.get("nationality") or "").strip().upper() == target
                     ):
                         present = True
     return published, present
@@ -190,6 +194,31 @@ def tournament_draw_codes_with_definitive_no_nationality(
         if excluded_codes:
             result[tournament_id] = excluded_codes
     return result
+
+
+def tournament_ids_with_published_main_draw(tournament_ids):
+    """Return tournament IDs whose main-draw opening round is published."""
+    wanted_ids = {
+        str(tournament_id).strip()
+        for tournament_id in tournament_ids or []
+        if str(tournament_id or "").strip()
+    }
+    if not wanted_ids:
+        return set()
+
+    cache = _load_raw_cache()
+    published_ids = set()
+    for tournament_id in wanted_ids:
+        key_prefix = f"{tournament_id}_M_"
+        for cache_key, entry in cache.items():
+            if not str(cache_key).startswith(key_prefix):
+                continue
+            data = entry.get("data") if isinstance(entry, dict) else None
+            published, _ = _drawsheet_nationality_status(data, "")
+            if published:
+                published_ids.add(tournament_id)
+                break
+    return published_ids
 
 
 def tournament_ids_with_definitive_no_nationality(

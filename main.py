@@ -78,7 +78,10 @@ from itf import (
 )
 from html_generator import generate_html
 from draws import fetch_tournament_draws, fetch_itf_tournament_draws, _draw_is_complete
-from itf_drawsheet_cache import tournament_draw_codes_with_definitive_no_nationality
+from itf_drawsheet_cache import (
+    tournament_draw_codes_with_definitive_no_nationality,
+    tournament_ids_with_published_main_draw,
+)
 from tstrength import build_tstrength_data
 
 logger = get_logger("main")
@@ -1310,6 +1313,46 @@ def _itf_entry_has_arg(players):
     return False
 
 
+def _itf_main_draw_has_content(draw_data):
+    """Return True once a parsed ITF main draw contains published players."""
+    if not isinstance(draw_data, dict):
+        return False
+    return bool(draw_data.get("players"))
+
+
+def _itf_keys_with_published_main_draw(
+    itf_draws_tournaments,
+    cached_draws_store,
+    prefetched_itf_draws,
+):
+    """Map published main draws from raw and parsed caches back to tournament keys."""
+    keys_by_id = {}
+    for tourneys in (itf_draws_tournaments or {}).values():
+        for tournament_key, tournament_info in (tourneys or {}).items():
+            tournament_id = str((tournament_info or {}).get("tournamentId") or "").strip()
+            if not tournament_id:
+                continue
+            keys_by_id.setdefault(tournament_id, set()).add(
+                _canonical_draw_store_key(tournament_key)
+            )
+
+    published_ids = tournament_ids_with_published_main_draw(keys_by_id)
+    published_keys = {
+        tournament_key
+        for tournament_id in published_ids
+        for tournament_key in keys_by_id.get(tournament_id, ())
+    }
+
+    for source in (cached_draws_store, prefetched_itf_draws):
+        for tournament_key, entry in (source or {}).items():
+            draws = entry.get("draws") if isinstance(entry, dict) else None
+            if not isinstance(draws, dict):
+                draws = entry if isinstance(entry, dict) else {}
+            if _itf_main_draw_has_content(draws.get("MDS")):
+                published_keys.add(_canonical_draw_store_key(tournament_key))
+    return published_keys
+
+
 def _itf_empty_draw_counts_toward_backoff(acceptance_players, cached_draw_entry):
     """Return True when an empty ITF draw is suspicious enough to count."""
     if _itf_entry_has_arg(acceptance_players):
@@ -1949,7 +1992,7 @@ def _acceptance_fingerprint(players):
 
 
 def _load_acceptance_state():
-    """Load per-tournament acceptance-check state (last_changed_date) from disk."""
+    """Load per-tournament acceptance polling and lifecycle state from disk."""
     if not os.path.exists(ITF_ACCEPTANCE_STATE_FILE):
         return {}
     try:
@@ -1975,6 +2018,7 @@ def process_tournaments(
     arg_names_set,
     entry_cache,
     force_itf_acceptance=False,
+    itf_main_draw_available_keys=None,
 ):
     """Process WTA & ITF tournaments: scrape entry lists, build schedule map."""
     schedule_map = {}
@@ -1997,8 +2041,12 @@ def process_tournaments(
     current_monday_str = (_now - timedelta(days=_now.weekday())).strftime("%Y-%m-%d")
     acceptance_state = _load_acceptance_state()
     acceptance_state_dirty = False
+    itf_main_draw_available_keys = {
+        _canonical_draw_store_key(key)
+        for key in (itf_main_draw_available_keys or set())
+    }
     if force_itf_acceptance:
-        logger.info("Forcing refresh of all currently available ITF acceptance lists.")
+        logger.info("Forcing refresh of all open ITF acceptance lists.")
 
     def _priority_num(value):
         text = str(value or "").strip()
@@ -2255,6 +2303,15 @@ def process_tournaments(
                     cached_players = []
 
                 state_entry = acceptance_state.get(key, {}) or {}
+                main_draw_available = bool(state_entry.get("main_draw_available_date"))
+                if (
+                    not main_draw_available
+                    and _canonical_draw_store_key(key) in itf_main_draw_available_keys
+                ):
+                    state_entry = acceptance_state.setdefault(key, {})
+                    state_entry["main_draw_available_date"] = today_str
+                    acceptance_state_dirty = True
+                    main_draw_available = True
                 already_updated_today = state_entry.get("last_changed_date") == today_str
                 fetched_today_no_change = (
                     state_entry.get("last_fetched_date") == today_str
@@ -2267,9 +2324,13 @@ def process_tournaments(
                 list_available = _itf_acceptance_list_available(start_date_str, _now)
                 fresh_players = []
 
-                # Acceptance lists can still change during tournament week as
-                # late withdrawals and promotions are published by the ITF.
-                if already_updated_today and not force_itf_acceptance:
+                if main_draw_available:
+                    # The published main draw is the final roster boundary.
+                    # Never fetch this tournament's acceptance list again.
+                    logger.debug(f"  ITF main draw published, acceptance list closed: {t_name}")
+                    tourney_players_list = list(cached_players)
+                    itf_name_map = {}
+                elif already_updated_today and not force_itf_acceptance:
                     logger.debug(f"  ITF acceptance list already updated today, skipping fetch: {t_name}")
                     tourney_players_list = list(cached_players)
                     itf_name_map = {}
@@ -2653,7 +2714,7 @@ def main():
     parser.add_argument(
         "--force-itf-acceptance",
         action="store_true",
-        help="Fetch every currently available ITF acceptance list, ignoring same-day and current-week skips.",
+        help="Fetch available ITF acceptance lists except tournaments whose main draw is already published.",
     )
     args = parser.parse_args()
 
@@ -2728,6 +2789,14 @@ def main():
             monday_map,
             original_entry_cache=entry_cache_before_pdf_override,
         )
+        cached_draws_for_acceptance = expand_draws_store_cache(
+            load_cache(DRAWS_STORE_CACHE_FILE)
+        ) or {}
+        main_draw_available_keys = _itf_keys_with_published_main_draw(
+            itf_draws_tournaments,
+            _normalize_draws_store_keys(cached_draws_for_acceptance),
+            prefetched_itf_draws,
+        )
         schedule_map, tournament_store, entry_cache, unranked_schedule = process_tournaments(
             driver,
             tournament_groups,
@@ -2735,6 +2804,7 @@ def main():
             arg_names_set,
             entry_cache,
             force_itf_acceptance=args.force_itf_acceptance,
+            itf_main_draw_available_keys=main_draw_available_keys,
         )
 
         # Persist the refreshed entry lists after the tournament pass.
