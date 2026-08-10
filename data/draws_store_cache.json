@@ -491,5 +491,58 @@
         "num_rounds": 3
       }
     }
+  },
+  "w-itf-bra-2026-010":
+  {
+    "meta":
+    {
+      "name": "W15 Campos do Jordao",
+      "level": "W15",
+      "week": "Week of August 10",
+      "startDate": "2026-08-10T00:00:00",
+      "endDate": "2026-08-16T00:00:00",
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":false,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "MDS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "MI, Lan", "country": "CHN"},
+          {"pos": 2, "name": "BERNARDES, Bianca", "country": "BRA"},
+          {"pos": 3, "name": "MARKUS, Camila", "country": "ARG"},
+          {"pos": 4, "name": "BADIA, Laura", "country": "BRA"},
+          {"pos": 6, "entry": "WC", "name": "KAWANO CHO, Gabriela", "country": "BRA"},
+          {"pos": 7, "name": "PLAZA, Luana", "country": "BRA"},
+          {"pos": 8, "seed": "8", "name": "AYALA, Lourdes", "country": "ARG"},
+          {"pos": 9, "seed": "4", "name": "SOUZA, Marjorie", "country": "BRA"},
+          {"pos": 11, "name": "MELLEIRO, Catarina", "country": "BRA"},
+          {"pos": 12, "entry": "WC", "name": "LOPES, Maria Fernanda", "country": "BRA"},
+          {"pos": 13, "name": "CCUNO, Romina", "country": "PER"},
+          {"pos": 16, "seed": "7", "name": "BARROS, Victoria Luiza", "country": "BRA"},
+          {"pos": 17, "seed": "6", "name": "SOUSA SALAZAR, Natalia", "country": "MEX"},
+          {"pos": 20, "name": "GARCIA VIDAL, Leticia", "country": "BRA"},
+          {"pos": 22, "name": "SOARES, Mariana", "country": "BRA"},
+          {"pos": 24, "seed": "3", "name": "BOHRER MARTINS, Carolina", "country": "BRA"},
+          {"pos": 25, "seed": "5", "name": "LARON, Maayan", "country": "ISR"},
+          {"pos": 26, "name": "SCHINCARIOL DELATORRE BARBOSA, Giovana", "country": "BRA"},
+          {"pos": 27, "name": "SANCHEZ URIBE, Maria Jose", "country": "COL"},
+          {"pos": 28, "name": "BULBARELLA, Marina", "country": "ARG"},
+          {"pos": 29, "entry": "WC", "name": "MARIA SILVA FERREIRA, Luana", "country": "BRA"},
+          {"pos": 30, "entry": "WC", "name": "REICHEL, Alicia", "country": "BRA"},
+          {"pos": 31, "name": "SOTO NEIRA, Agustina", "country": "CHI"},
+          {"pos": 32, "seed": "2", "name": "FULLANA, Luiza", "country": "BRA"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
+      }
+    }
   }
 }
