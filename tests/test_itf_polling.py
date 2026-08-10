@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 import subprocess
 from types import SimpleNamespace
 
@@ -86,6 +86,69 @@ def test_current_week_itf_tournaments_remain_grouped_on_tuesday(monkeypatch):
 
     assert "2026-08-03" in monday_map
     assert "w-itf-arg-2026-006" in grouped[current_week]
+
+
+def test_current_week_acceptance_is_refetched_and_withdrawal_removed(monkeypatch):
+    tournament_key = "w-itf-bra-2026-010"
+    week = "Week of August 10"
+    cached_players = [
+        {
+            "pos": "1",
+            "name": "Carla Markus",
+            "country": "ARG",
+            "type": "MAIN",
+            "pos_num": 1,
+        }
+    ]
+    fresh_players = [
+        {
+            "pos": "1",
+            "name": "Lan Mi",
+            "country": "CHN",
+            "type": "MAIN",
+            "pos_num": 1,
+        }
+    ]
+    fetches = []
+
+    monkeypatch.setattr(
+        main,
+        "utc_now",
+        lambda: datetime(2026, 8, 10, 10, 0, tzinfo=timezone.utc),
+    )
+    monkeypatch.setattr(main, "_load_acceptance_state", lambda: {})
+    monkeypatch.setattr(main, "_save_acceptance_state", lambda state: None)
+    monkeypatch.setattr(main, "get_wta_rankings_cached", lambda *args, **kwargs: [])
+    monkeypatch.setattr(main, "parse_itf_entry_list", lambda entries: fresh_players)
+
+    def fetch_players(key, driver):
+        fetches.append(key)
+        return ["fresh acceptance response"], {"LAN MI": ""}
+
+    monkeypatch.setattr(main, "get_itf_players", fetch_players)
+
+    _, tournament_store, updated_cache, _ = main.process_tournaments(
+        driver=None,
+        tournament_groups={
+            week: {
+                tournament_key: {
+                    "name": "W15 Campos do Jordao",
+                    "level": "W15",
+                    "surface": "Hard",
+                    "country": "BRA",
+                    "startDate": "2026-08-10T00:00:00",
+                    "endDate": "2026-08-16T00:00:00",
+                }
+            }
+        },
+        monday_map={"2026-08-10": week},
+        arg_names_set={"CARLA MARKUS"},
+        entry_cache={tournament_key: cached_players},
+    )
+
+    assert fetches == [tournament_key]
+    assert {player["name"].upper() for player in tournament_store[tournament_key]} == {"LAN MI"}
+    assert {player["name"].upper() for player in updated_cache[tournament_key]} == {"LAN MI"}
 
 
 def test_missing_acceptance_data_does_not_suppress_started_itf_draw():

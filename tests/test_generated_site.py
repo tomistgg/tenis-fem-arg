@@ -14,6 +14,7 @@ from html_generator import (
     _schedule_tournament_base_name,
     _script_hash_sources,
     _week_label_sort_key,
+    country_flag_html,
 )
 from calendar_builder import format_week_label, get_monday_from_date
 from utils import expand_entry_lists_cache
@@ -23,6 +24,21 @@ PROJECT_DIR = Path(__file__).resolve().parents[1]
 
 
 class GeneratedSiteTests(unittest.TestCase):
+    def test_lorna_simmons_aho_country_uses_local_netherlands_antilles_flag(self):
+        players = json.loads(
+            (PROJECT_DIR / "data" / "player_aliases_wta_itf.json").read_text(
+                encoding="utf-8-sig"
+            )
+        )
+        lorna_simmons = next(
+            player for player in players if player["display_name"] == "Lorna Simmons"
+        )
+        flag_html = country_flag_html(lorna_simmons["country"], show_code=False)
+
+        self.assertEqual(lorna_simmons["country"], "AHO")
+        self.assertIn('src="data/flags/aho.svg"', flag_html)
+        self.assertTrue((PROJECT_DIR / "data" / "flags" / "aho.svg").is_file())
+
     def test_entry_lists_use_public_name_for_id_disambiguated_players(self):
         players = [{"name": "Yue Yuan (1998)", "player_id": "324325"}]
 

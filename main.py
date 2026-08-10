@@ -1995,7 +1995,6 @@ def process_tournaments(
     _past_6pm_spain = _now.hour >= 18
     _is_double_check_day = _now.weekday() in (5, 6, 0)  # Sat, Sun, Mon
     current_monday_str = (_now - timedelta(days=_now.weekday())).strftime("%Y-%m-%d")
-    next_monday_str = (_now + timedelta(days=7 - _now.weekday())).strftime("%Y-%m-%d")
     acceptance_state = _load_acceptance_state()
     acceptance_state_dirty = False
     if force_itf_acceptance:
@@ -2079,8 +2078,6 @@ def process_tournaments(
         if not week:
             continue
         tourneys = tournament_groups.get(week, {})
-        is_current_week = week_monday < next_monday_str
-
         md_date = get_monday_offset(week_monday, 4)
         q_date = get_monday_offset(week_monday, 3)
 
@@ -2270,11 +2267,9 @@ def process_tournaments(
                 list_available = _itf_acceptance_list_available(start_date_str, _now)
                 fresh_players = []
 
-                if is_current_week and not force_itf_acceptance:
-                    # Tournament week already started — use cache, don't hit API
-                    tourney_players_list = list(cached_players)
-                    itf_name_map = {}
-                elif already_updated_today and not force_itf_acceptance:
+                # Acceptance lists can still change during tournament week as
+                # late withdrawals and promotions are published by the ITF.
+                if already_updated_today and not force_itf_acceptance:
                     logger.debug(f"  ITF acceptance list already updated today, skipping fetch: {t_name}")
                     tourney_players_list = list(cached_players)
                     itf_name_map = {}
