@@ -16,6 +16,33 @@ window.__WTA_HISTORY_DATA__ = [
     ]
   },
   {
+    "TOURNAMENT_ID": "1100204687",
+    "DRAW": "M",
+    "TOURNAMENT": "W15 Campos do Jordao",
+    "CATEGORY": "W15",
+    "SURFACE": "Hard",
+    "MATCH_TYPE": "ITF",
+    "DATE": "2026-08-11",
+    "ROUND": "1st Round",
+    "SCORE": "6-3 6-4",
+    "_winnerId": "800603762",
+    "_loserId": "800580798",
+    "_winnerName": "Maria Jose Sanchez Uribe",
+    "_loserName": "Marina Bulbarella",
+    "_winnerCountry": "COL",
+    "_loserCountry": "ARG",
+    "_winnerEntry": "",
+    "_loserEntry": "",
+    "_winnerSeed": "",
+    "_loserSeed": "",
+    "_resultStatusDesc": "",
+    "_winnerRank": "1125",
+    "_loserRank": "1154",
+    "rows": [
+      {}
+    ]
+  },
+  {
     "TOURNAMENT_ID": "1100204783",
     "DRAW": "M",
     "TOURNAMENT": "W35 Chacabuco",
