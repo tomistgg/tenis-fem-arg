@@ -17061,7 +17061,7 @@
                       "roundDesc": "3rd Round", "roundNumber": 3,
                       "matches": [
                           {
-                            "matchId": 1183654099, "playStatusCode": "TP",
+                            "matchId": 1183654099, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
@@ -17074,7 +17074,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183654100, "playStatusCode": "TP",
+                            "matchId": 1183654100, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "seeding": 2, "entryStatus": "DA",
@@ -17113,14 +17113,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183654103, "playStatusCode": "IP",
+                            "matchId": 1183654103, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 5, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "seeding": 5, "entryStatus": "DA",
                                   "player": {"playerId":800455884,"nationality":"ROU","givenName":"Simona","familyName":"Ogescu"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 13, "entryStatus": "DA",
+                                  "scores": [3,3], "isWinner": false, "seeding": 13, "entryStatus": "DA",
                                   "player": {"playerId":800659656,"nationality":"ARG","givenName":"Valentina Abril","familyName":"Bruno"}
                                 }
                             ]
@@ -17139,14 +17139,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183654105, "playStatusCode": "IP",
+                            "matchId": 1183654105, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "entryStatus": "DA",
                                   "player": {"playerId":800566840,"nationality":"ROU","givenName":"Alexia Clara","familyName":"Adascalitei"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 11, "entryStatus": "DA",
+                                  "scores": [2,2], "isWinner": false, "seeding": 11, "entryStatus": "DA",
                                   "player": {"playerId":800367046,"nationality":"ITA","givenName":"Aurora","familyName":"Urso"}
                                 }
                             ]
