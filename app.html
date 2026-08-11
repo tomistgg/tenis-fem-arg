@@ -2709,10 +2709,13 @@
             }
             .home-grid {
                 max-width: 1050px;
-                grid-template-columns: repeat(5, minmax(0, 1fr));
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
                 gap: 12px;
             }
             .home-btn {
+                flex: 0 1 calc((100% - 48px) / 5);
                 min-height: 92px;
                 padding: 14px 12px;
                 border: 1px solid rgba(77,137,195,.24);
@@ -3128,10 +3131,10 @@
                 .home-grid {
                     width: 100%;
                     max-width: 460px;
-                    grid-template-columns: repeat(2, minmax(0,1fr));
                     gap: 8px;
                 }
                 .home-btn {
+                    flex-basis: calc((100% - 8px) / 2);
                     min-height: 70px;
                     padding: 9px 8px;
                     border-radius: 13px;

@@ -1722,8 +1722,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     }
     .home-hero { position: relative; z-index: 1; min-height: 100vh; padding: 28px 18px; }
     .home-logo { width: min(210px, 52vw); filter: none; }
-    .home-grid { max-width: 1050px; gap: 12px; }
+    .home-grid { max-width: 1050px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
     .home-btn {
+      flex: 0 1 calc((100% - 48px) / 5);
       min-height: 88px;
       border: 1px solid rgba(255,255,255,.24);
       border-radius: 16px;
@@ -1753,7 +1754,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
       .home-hero { min-height: 100dvh; padding: calc(18px + env(safe-area-inset-top)) 10px calc(18px + env(safe-area-inset-bottom)); }
       .home-logo { width: min(165px, 44vw); }
       .home-grid { gap: 8px; }
-      .home-btn { min-height: 70px; padding: 8px; border-radius: 13px; font-size: 10px; }
+      .home-btn { flex-basis: calc((100% - 8px) / 2); min-height: 70px; padding: 8px; border-radius: 13px; font-size: 10px; }
       .home-icon-img { width: 24px; height: 24px; margin-left: 2px; }
       .home-dark-btn { padding: 8px 16px; font-size: 11px; }
     }
@@ -4507,10 +4508,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
             .home-grid {{
                 max-width: 1050px;
-                grid-template-columns: repeat(5, minmax(0, 1fr));
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
                 gap: 12px;
             }}
             .home-btn {{
+                flex: 0 1 calc((100% - 48px) / 5);
                 min-height: 92px;
                 padding: 14px 12px;
                 border: 1px solid rgba(77,137,195,.24);
@@ -4926,10 +4930,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 .home-grid {{
                     width: 100%;
                     max-width: 460px;
-                    grid-template-columns: repeat(2, minmax(0,1fr));
                     gap: 8px;
                 }}
                 .home-btn {{
+                    flex-basis: calc((100% - 8px) / 2);
                     min-height: 70px;
                     padding: 9px 8px;
                     border-radius: 13px;

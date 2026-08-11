@@ -578,5 +578,14 @@ class GeneratedSiteTests(unittest.TestCase):
             source,
         )
 
+    def test_home_button_rows_are_centered(self):
+        for relative_path in ("index.html", "app.html"):
+            source = (PROJECT_DIR / relative_path).read_text(encoding="utf-8-sig")
+            with self.subTest(path=relative_path):
+                self.assertIn("flex-wrap: wrap;", source)
+                self.assertIn("justify-content: center;", source)
+                self.assertIn("flex: 0 1 calc((100% - 48px) / 5);", source)
+                self.assertIn("flex-basis: calc((100% - 8px) / 2);", source)
+
 if __name__ == "__main__":
     unittest.main()
