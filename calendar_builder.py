@@ -171,6 +171,8 @@ def build_calendar_data(tournaments):
                         "level": t["level"],
                         "surface": t.get("surface", ""),
                         "country": t.get("country", ""),
+                        "startDate": t["start"].strftime("%Y-%m-%d"),
+                        "endDate": t["end"].strftime("%Y-%m-%d"),
                         "calendarKey": t.get("calendarKey", ""),
                         "tournamentKey": t.get("tournamentKey", ""),
                         "tournamentId": t.get("tournamentId", ""),

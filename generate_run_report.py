@@ -19,7 +19,7 @@ from canonical_data import (
 )
 from config import repair_name_text
 from execution_analysis import analyze_execution, effective_run_status
-from time_utils import parse_utc_timestamp, utc_now
+from time_utils import madrid_today, parse_utc_timestamp, utc_now
 from html_generator import country_flag_html
 from runtime_logging import get_logger
 from utils import (
@@ -85,6 +85,143 @@ def normalize_calendar_name(value, column=""):
     if (column or "").strip().lower() == "itf":
         name = _ITF_CALENDAR_SEQUENCE_SUFFIX_RE.sub("", name)
     return name
+
+
+_CALENDAR_CHANGE_FIELDS = (
+    ("name", "Name"),
+    ("level", "Category"),
+    ("surface", "Surface"),
+    ("country", "Country"),
+    ("startDate", "Start date"),
+    ("endDate", "End date"),
+)
+
+
+def _calendar_identity_key(row):
+    """Return a provider-backed identity that survives calendar field changes."""
+    calendar_key = normalize_exact_name(row.get("calendarKey", ""))
+    if calendar_key:
+        return ("calendarKey", calendar_key)
+
+    source = normalize_exact_name(row.get("source", ""))
+    for field in ("tournamentId", "tournamentKey"):
+        identifier = normalize_exact_name(row.get(field, ""))
+        if identifier:
+            return (field, source, identifier)
+
+    # Legacy/manual rows have no provider ID. Their generated key is normally
+    # stored as calendarKey; this is only a compatibility fallback.
+    return (
+        "legacy",
+        source,
+        normalize_calendar_name(row.get("name", ""), row.get("column", "")),
+        normalize_exact_name(row.get("level", "")),
+        str(row.get("startDate") or row.get("week_label") or "")[:10],
+    )
+
+
+def _calendar_rows_by_identity(rows):
+    grouped = {}
+    for row in rows or []:
+        if not isinstance(row, dict):
+            continue
+        grouped.setdefault(_calendar_identity_key(row), []).append(row)
+    return grouped
+
+
+def _calendar_representative(rows):
+    return sorted(
+        rows,
+        key=lambda row: (
+            str(row.get("startDate") or ""),
+            str(row.get("week_label") or ""),
+            str(row.get("name") or ""),
+        ),
+    )[0]
+
+
+def _normalized_calendar_field(row, field):
+    value = row.get(field, "")
+    if field == "name":
+        return normalize_calendar_name(value, row.get("column", ""))
+    if field in {"startDate", "endDate"}:
+        return str(value or "").strip()[:10]
+    return normalize_exact_name(value)
+
+
+def _calendar_week_start(row, today):
+    start_date = str(row.get("startDate") or "").strip()[:10]
+    if start_date:
+        try:
+            return datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            pass
+
+    week_label = str(row.get("week_label") or "").strip()
+    if week_label.lower().startswith("week of "):
+        month_day = week_label[8:].strip()
+        try:
+            return datetime.strptime(f"{month_day} {today.year}", "%B %d %Y").date()
+        except ValueError:
+            pass
+    return None
+
+
+def diff_calendar_tournaments(before_rows, after_rows, *, today=None):
+    """Return added, changed, and cancelled tournaments from two snapshots.
+
+    A tournament can occupy more than one calendar week, so comparisons are
+    grouped by the provider identity instead of by an individual rendered row.
+    """
+    today = today or madrid_today()
+    before_by_id = _calendar_rows_by_identity(before_rows)
+    after_by_id = _calendar_rows_by_identity(after_rows)
+
+    added = [
+        _calendar_representative(after_by_id[key])
+        for key in sorted(after_by_id.keys() - before_by_id.keys())
+    ]
+
+    changed = []
+    for key in sorted(before_by_id.keys() & after_by_id.keys()):
+        before = _calendar_representative(before_by_id[key])
+        after = _calendar_representative(after_by_id[key])
+        changes = []
+        for field, label in _CALENDAR_CHANGE_FIELDS:
+            # Older snapshots do not include country/dates. Do not turn the
+            # one-time snapshot schema upgrade into a calendar-change alert.
+            if field not in before or field not in after:
+                continue
+            if _normalized_calendar_field(before, field) == _normalized_calendar_field(after, field):
+                continue
+            changes.append({
+                "field": field,
+                "label": label,
+                "before": before.get(field, ""),
+                "after": after.get(field, ""),
+            })
+        if changes:
+            changed.append({"before": before, "after": after, "changes": changes})
+
+    cancelled = []
+    for key in sorted(before_by_id.keys() - after_by_id.keys()):
+        before = _calendar_representative(before_by_id[key])
+        start_date = _calendar_week_start(before, today)
+        # The calendar window advances automatically. A tournament that starts
+        # today (or has already started) disappeared because it aged out, not
+        # because the provider cancelled it.
+        if start_date is not None and start_date <= today:
+            continue
+        cancelled.append(before)
+
+    sort_key = lambda row: (  # noqa: E731 - compact shared ordering for report sections
+        str(row.get("startDate") or row.get("week_label") or ""),
+        normalize_exact_name(row.get("name", "")),
+    )
+    added.sort(key=sort_key)
+    changed.sort(key=lambda item: sort_key(item["after"]))
+    cancelled.sort(key=sort_key)
+    return added, changed, cancelled
 
 
 def normalize_country(value):
@@ -273,6 +410,8 @@ def compute_report(before_dir, after_dir):
         "itf_seed_missing_rankings": [],
         "added_matches": {},
         "added_calendar_tournaments": [],
+        "changed_calendar_tournaments": [],
+        "cancelled_calendar_tournaments": [],
         "flagless_player_countries": [],
         "wta_ranking_status": {},
     }
@@ -493,48 +632,10 @@ def compute_report(before_dir, after_dir):
     after_calendar = load_json(os.path.join(after_dir, "calendar_snapshot.json")) or []
 
     if before_calendar and after_calendar:
-        def _calendar_compare_key(row):
-            week_label = row.get("week_label", "")
-            column = row.get("column", "")
-            continent = row.get("continent", "")
-            calendar_key = normalize_exact_name(row.get("calendarKey", ""))
-            if calendar_key:
-                return (week_label, column, continent, "calendarKey", calendar_key)
-
-            tournament_id = normalize_exact_name(row.get("tournamentId", ""))
-            if tournament_id:
-                source = normalize_exact_name(row.get("source", ""))
-                stable_id = f"{source}:{tournament_id}" if source else tournament_id
-                return (week_label, column, continent, "tournamentId", stable_id)
-
-            tournament_key = normalize_exact_name(row.get("tournamentKey", ""))
-            if tournament_key:
-                source = normalize_exact_name(row.get("source", ""))
-                stable_key = f"{source}:{tournament_key}" if source else tournament_key
-                return (week_label, column, continent, "tournamentKey", stable_key)
-
-            # Legacy fallback for older snapshots that do not carry source IDs.
-            return (
-                week_label,
-                column,
-                continent,
-                "legacy",
-                normalize_calendar_name(row.get("name", ""), column),
-                row.get("level", ""),
-            )
-
-        before_keys = {
-            _calendar_compare_key(row)
-            for row in before_calendar if isinstance(row, dict)
-        }
-        added = []
-        for row in after_calendar:
-            if not isinstance(row, dict):
-                continue
-            key = _calendar_compare_key(row)
-            if key not in before_keys:
-                added.append(row)
+        added, changed, cancelled = diff_calendar_tournaments(before_calendar, after_calendar)
         report["added_calendar_tournaments"] = added
+        report["changed_calendar_tournaments"] = changed
+        report["cancelled_calendar_tournaments"] = cancelled
 
     # Detect new tournament draws
     before_draws = load_json(os.path.join(before_dir, "draws_snapshot.json")) or {}
@@ -723,6 +824,26 @@ def _append_execution_summary(lines, run_status, *, include_technical=True):
         lines.append("")
 
 
+def _format_calendar_row(item):
+    return (
+        f"{item.get('week_label') or item.get('startDate', '')} | "
+        f"{repair_name_text(item.get('name') or '').strip()} | "
+        f"{item.get('level', '')} | {item.get('column', '')} | {item.get('continent', '')}"
+    )
+
+
+def _format_calendar_change(item):
+    after = item.get("after") or {}
+    before = item.get("before") or {}
+    name = repair_name_text(after.get("name") or before.get("name") or "").strip()
+    details = []
+    for change in item.get("changes") or []:
+        old_value = repair_name_text(str(change.get("before") or "(blank)"))
+        new_value = repair_name_text(str(change.get("after") or "(blank)"))
+        details.append(f"{change.get('label', change.get('field', 'Field'))}: {old_value} → {new_value}")
+    return f"{name}: {'; '.join(details)}"
+
+
 def render_email_markdown(report):
     now_utc = utc_now().strftime("%Y-%m-%d %H:%M:%S UTC")
     lines = []
@@ -750,6 +871,8 @@ def render_email_markdown(report):
             bool(report.get("added_matches")),
             bool(report.get("new_draws")),
             bool(report.get("added_calendar_tournaments")),
+            bool(report.get("changed_calendar_tournaments")),
+            bool(report.get("cancelled_calendar_tournaments")),
             bool(report.get("failed_draw_fetches")),
             bool(report.get("blocked_itf_responses")),
             bool(report.get("bad_draw_scores")),
@@ -832,21 +955,30 @@ def render_email_markdown(report):
     if report.get("added_calendar_tournaments"):
         lines.append("## 5) Tournaments Added to Calendar")
         for item in report["added_calendar_tournaments"]:
-            lines.append(
-                f"- {item.get('week_label', '')} | {item.get('name', '')} | "
-                f"{item.get('level', '')} | {item.get('column', '')} | {item.get('continent', '')}"
-            )
+            lines.append(f"- {_format_calendar_row(item)}")
+        lines.append("")
+
+    if report.get("changed_calendar_tournaments"):
+        lines.append("## 6) Tournaments Changed on Calendar")
+        for item in report["changed_calendar_tournaments"]:
+            lines.append(f"- {_format_calendar_change(item)}")
+        lines.append("")
+
+    if report.get("cancelled_calendar_tournaments"):
+        lines.append("## 7) Tournaments Cancelled")
+        for item in report["cancelled_calendar_tournaments"]:
+            lines.append(f"- {_format_calendar_row(item)}")
         lines.append("")
 
     if report.get("flagless_player_countries"):
-        lines.append("## 6) Player Countries Without a Flag")
+        lines.append("## 8) Player Countries Without a Flag")
         for item in report["flagless_player_countries"]:
             players = "; ".join(item.get("players") or [])
             lines.append(f"- {item.get('country', '')}: {players}")
         lines.append("")
 
     for csv_name, payload in (report.get("added_matches") or {}).items():
-        lines.append(f"## 7) Matches Added ({csv_name})")
+        lines.append(f"## 9) Matches Added ({csv_name})")
         for item in payload.get("items") or []:
             match_line = item.get("line") if isinstance(item, dict) else str(item)
             lines.append(f"- {match_line}")
@@ -858,7 +990,7 @@ def render_email_markdown(report):
         lines.append("")
 
     if report.get("failed_draw_fetches"):
-        lines.append("## 8) Draw Fetch Failures")
+        lines.append("## 10) Draw Fetch Failures")
         for item in report["failed_draw_fetches"]:
             name = item.get("name") or item.get("key", "")
             key = item.get("key", "")
@@ -869,7 +1001,7 @@ def render_email_markdown(report):
         lines.append("")
 
     if report.get("blocked_itf_responses"):
-        lines.append("## 9) ITF Blocked Responses")
+        lines.append("## 11) ITF Blocked Responses")
         grouped_blocks = {}
         for item in report["blocked_itf_responses"]:
             endpoint = item.get("endpoint") or "itf"
@@ -901,7 +1033,7 @@ def render_email_markdown(report):
         lines.append("")
 
     if report.get("bad_draw_scores"):
-        lines.append("## 10) Draw Matches with Invalid Scores")
+        lines.append("## 12) Draw Matches with Invalid Scores")
         for item in report["bad_draw_scores"]:
             lines.append(
                 f"- {item['tournament_name']} ({item['draw_label']}) "
@@ -959,14 +1091,23 @@ def render_markdown(report):
     if report["added_calendar_tournaments"]:
         lines.append("## 5) Tournaments Added to Calendar")
         for item in report["added_calendar_tournaments"]:
-            lines.append(
-                f"- {item.get('week_label', '')} | {item.get('name', '')} | "
-                f"{item.get('level', '')} | {item.get('column', '')} | {item.get('continent', '')}"
-            )
+            lines.append(f"- {_format_calendar_row(item)}")
+        lines.append("")
+
+    if report.get("changed_calendar_tournaments"):
+        lines.append("## 6) Tournaments Changed on Calendar")
+        for item in report["changed_calendar_tournaments"]:
+            lines.append(f"- {_format_calendar_change(item)}")
+        lines.append("")
+
+    if report.get("cancelled_calendar_tournaments"):
+        lines.append("## 7) Tournaments Cancelled")
+        for item in report["cancelled_calendar_tournaments"]:
+            lines.append(f"- {_format_calendar_row(item)}")
         lines.append("")
 
     if report.get("flagless_player_countries"):
-        lines.append("## 6) Player Countries Without a Flag")
+        lines.append("## 8) Player Countries Without a Flag")
         for item in report["flagless_player_countries"]:
             players = "; ".join(item.get("players") or [])
             lines.append(f"- {item.get('country', '')}: {players}")
