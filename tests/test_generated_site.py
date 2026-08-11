@@ -569,6 +569,11 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertIn("if (state.vsRankVal !== null) count += 1;", source)
         self.assertIn("if (window.innerWidth > 768", source)
         self.assertIn(
+            "const additiveSelection = event.ctrlKey || event.metaKey || window.innerWidth <= 768;",
+            source,
+        )
+        self.assertIn("Tap to add or remove filter options.", source)
+        self.assertIn(
             ".filter-panel { width: 250px; padding: 15px;",
             source,
         )

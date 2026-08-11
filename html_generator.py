@@ -2707,6 +2707,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             .rank-filter-mode {{ flex: 1; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; }}
             .filter-actions {{ margin-top: 20px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }}
             .filter-instructions {{ font-size: 10px; color: #64748b; flex: 1; line-height: 1.3; padding-left: 15px; }}
+            .filter-instructions-mobile {{ display: none; }}
             .filter-btn {{ display: inline-flex; align-items: center; justify-content: center; min-height: var(--btn-h); padding: 0 var(--sp-4); border: none; border-radius: var(--radius-pill); cursor: pointer; font-family: inherit; font-size: var(--fs-md); font-weight: 700; white-space: nowrap; box-sizing: border-box; transition: background 0.15s, color 0.15s; }}
             .filter-btn-clear {{ background: var(--c-surface-sunk); color: var(--c-text-subtle); }}
             .filter-btn-clear:hover {{ background: var(--c-border); }}
@@ -3481,6 +3482,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     padding-left: 8px;
                     font-size: 9px;
                 }}
+                .filter-instructions-desktop {{ display: none; }}
+                .filter-instructions-mobile {{ display: inline; }}
                 .filter-btn-clear {{ margin-right: 8px; }}
 
                 .milestones-filter-panel {{
@@ -5788,7 +5791,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             </div>
 
                             <div class="filter-actions">
-                                <div class="filter-instructions">Ctrl+Click to select multiple options.</div>
+                                <div class="filter-instructions">
+                                    <span class="filter-instructions-desktop">Ctrl+Click to select multiple options.</span>
+                                    <span class="filter-instructions-mobile">Tap to add or remove filter options.</span>
+                                </div>
                                 <button class="filter-btn filter-btn-clear" onclick="clearHistoryFilters()">Reset Filters</button>
                             </div>
                         </div>
@@ -9140,9 +9146,10 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             }}
 
             function toggleFilterOption(event, element) {{
-                // Support Ctrl+Click for multi-select
-                if (!event.ctrlKey && !event.metaKey) {{
-                    // Single click without Ctrl - deselect all others in this group first
+                // Mobile taps are additive; desktop keeps Ctrl/Cmd+Click multi-select.
+                const additiveSelection = event.ctrlKey || event.metaKey || window.innerWidth <= 768;
+                if (!additiveSelection) {{
+                    // Plain desktop click - deselect all others in this group first
                     const siblings = element.parentElement.querySelectorAll('.filter-option');
                     siblings.forEach(sib => {{
                         if (sib !== element) {{
