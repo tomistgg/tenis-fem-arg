@@ -137,6 +137,28 @@ class ProjectDataConstraintTests(unittest.TestCase):
         self.assertTrue(all(row["result"] == "W/O" for row in walkovers))
         self.assertTrue(all((row["loserName"] or "").strip() for row in walkovers))
 
+    def test_1986_grand_slam_editions_have_the_correct_year(self):
+        expected_rows = {
+            "1020000110": 26,
+            "1020000143": 11,
+            "1020000178": 13,
+        }
+        with (DATA_DIR / "gs_matches_arg.csv").open(
+            "r", encoding="utf-8-sig", newline=""
+        ) as handle:
+            rows = [
+                row for row in csv.DictReader(handle)
+                if row.get("tournamentId") in expected_rows
+            ]
+
+        for tournament_id, expected_count in expected_rows.items():
+            edition_rows = [row for row in rows if row["tournamentId"] == tournament_id]
+            self.assertEqual(len(edition_rows), expected_count)
+            self.assertTrue(
+                all(row["date"].startswith("1986-") for row in edition_rows),
+                tournament_id,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
