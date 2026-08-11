@@ -6,19 +6,13 @@ window.__WTA_HISTORY_DATA__ = [
     "CATEGORY": "W15",
     "SURFACE": "Clay",
     "MATCH_TYPE": "ITF",
-    "_winnerId": "800659656",
-    "_winnerName": "Valentina Bruno",
-    "_winnerCountry": "ARG",
     "_winnerEntry": "",
     "_loserEntry": "",
-    "_winnerSeed": "13",
-    "_loserSeed": "",
     "_resultStatusDesc": "",
-    "_winnerRank": "1303",
-    "_loserRank": "",
     "rows": [
-      {"DATE":"2026-08-10","ROUND":"QR2","SCORE":"5-7 6-1 10-2","_loserId":"800571495","_loserName":"Zala Bizjak","_loserCountry":"SLO"},
-      {"DATE":"2026-08-09","ROUND":"QR1","SCORE":"6-1 6-0","_loserId":"800650045","_loserName":"Mariya Ankudinova","_loserCountry":"KAZ"}
+      {"DATE":"2026-08-11","ROUND":"QR3","SCORE":"6-3 6-3","_winnerId":"800455884","_loserId":"800659656","_winnerName":"Simona Ogescu","_loserName":"Valentina Bruno","_winnerCountry":"ROU","_loserCountry":"ARG","_winnerSeed":"5","_loserSeed":"13","_winnerRank":"979","_loserRank":"1303"},
+      {"DATE":"2026-08-10","ROUND":"QR2","SCORE":"5-7 6-1 10-2","_winnerId":"800659656","_loserId":"800571495","_winnerName":"Valentina Bruno","_loserName":"Zala Bizjak","_winnerCountry":"ARG","_loserCountry":"SLO","_winnerSeed":"13","_loserSeed":"","_winnerRank":"1303","_loserRank":""},
+      {"DATE":"2026-08-09","ROUND":"QR1","SCORE":"6-1 6-0","_winnerId":"800659656","_loserId":"800650045","_winnerName":"Valentina Bruno","_loserName":"Mariya Ankudinova","_winnerCountry":"ARG","_loserCountry":"KAZ","_winnerSeed":"13","_loserSeed":"","_winnerRank":"1303","_loserRank":""}
     ]
   },
   {
@@ -165348,6 +165342,48 @@ window.__WTA_HISTORY_DATA__ = [
     ]
   },
   {
+    "TOURNAMENT_ID": "1020000178",
+    "DRAW": "M",
+    "TOURNAMENT": "US Open",
+    "CATEGORY": "GS",
+    "SURFACE": "Hard",
+    "MATCH_TYPE": "GS",
+    "DATE": "1986-08-26",
+    "_winnerEntry": "",
+    "_resultStatusDesc": "",
+    "rows": [
+      {"ROUND":"1st Round","SCORE":"6-3 6-2","_winnerId":"800178604","_loserId":"800178279","_winnerName":"Gabriela Sabatini","_loserName":"Nathalie Tauziat","_winnerCountry":"ARG","_loserCountry":"FRA","_loserEntry":"","_winnerSeed":"11","_loserSeed":"","_winnerRank":"11","_loserRank":"72"},
+      {"ROUND":"1st Round","SCORE":"6-7(5) 6-3 6-1","_winnerId":"800177709","_loserId":"800176405","_winnerName":"Pascale Paradis-Mangon","_loserName":"Adriana Villagrán","_winnerCountry":"FRA","_loserCountry":"ARG","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"121","_loserRank":""},
+      {"ROUND":"1st Round","SCORE":"6-1 6-1","_winnerId":"800176676","_loserId":"800178809","_winnerName":"Eva Pfaff","_loserName":"Mariana Pérez","_winnerCountry":"FRG","_loserCountry":"ARG","_loserEntry":"LL","_winnerSeed":"","_loserSeed":"","_winnerRank":"84","_loserRank":""},
+      {"ROUND":"1st Round","SCORE":"6-4 4-6 7-5","_winnerId":"800176469","_loserId":"800178275","_winnerName":"Jo Durie","_loserName":"Mercedes Paz","_winnerCountry":"GBR","_loserCountry":"ARG","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"23","_loserRank":"53"},
+      {"ROUND":"2nd Round","SCORE":"6-0 6-3","_winnerId":"800178604","_loserId":"800177599","_winnerName":"Gabriela Sabatini","_loserName":"Pam Casale-Telford","_winnerCountry":"ARG","_loserCountry":"USA","_loserEntry":"","_winnerSeed":"11","_loserSeed":"","_winnerRank":"11","_loserRank":"25"},
+      {"ROUND":"3rd Round","SCORE":"7-5 6-2","_winnerId":"800178604","_loserId":"800178266","_winnerName":"Gabriela Sabatini","_loserName":"Katerina Maleeva","_winnerCountry":"ARG","_loserCountry":"BUL","_loserEntry":"","_winnerSeed":"11","_loserSeed":"","_winnerRank":"11","_loserRank":"35"},
+      {"ROUND":"4th Round","SCORE":"6-4 6-2","_winnerId":"800175650","_loserId":"800178604","_winnerName":"Martina Navratilova","_loserName":"Gabriela Sabatini","_winnerCountry":"USA","_loserCountry":"ARG","_loserEntry":"","_winnerSeed":"1","_loserSeed":"11","_winnerRank":"1","_loserRank":"11"}
+    ]
+  },
+  {
+    "TOURNAMENT_ID": "1020000178",
+    "DRAW": "Q",
+    "TOURNAMENT": "US Open",
+    "CATEGORY": "GS",
+    "SURFACE": "Hard",
+    "MATCH_TYPE": "GS",
+    "DATE": "1986-08-19",
+    "_winnerEntry": "",
+    "_loserEntry": "",
+    "_winnerSeed": "",
+    "_loserSeed": "",
+    "_resultStatusDesc": "",
+    "rows": [
+      {"ROUND":"QR1","SCORE":"6-2 6-2","_winnerId":"800176177","_loserId":"800178895","_winnerName":"Renee Blount","_loserName":"Patricia Tarabini","_winnerCountry":"USA","_loserCountry":"ARG","_winnerRank":"","_loserRank":"122"},
+      {"ROUND":"QR1","SCORE":"6-4 6-2","_winnerId":"800178809","_loserId":"800179033","_winnerName":"Mariana Pérez","_loserName":"Amy Schwartz","_winnerCountry":"ARG","_loserCountry":"USA","_winnerRank":"","_loserRank":"193"},
+      {"ROUND":"QR1","SCORE":"6-1 1-6 6-4","_winnerId":"800178824","_loserId":"800177555","_winnerName":"Bettina Fulco","_loserName":"Kim Steinmetz","_winnerCountry":"ARG","_loserCountry":"USA","_winnerRank":"142","_loserRank":""},
+      {"ROUND":"QR2","SCORE":"3-6 6-2 6-4","_winnerId":"800178809","_loserId":"800179202","_winnerName":"Mariana Pérez","_loserName":"Trisha Laux","_winnerCountry":"ARG","_loserCountry":"USA","_winnerRank":"","_loserRank":""},
+      {"ROUND":"QR2","SCORE":"7-5 1-6 6-2","_winnerId":"800176571","_loserId":"800178824","_winnerName":"Susan Leo","_loserName":"Bettina Fulco","_winnerCountry":"AUS","_loserCountry":"ARG","_winnerRank":"","_loserRank":"142"},
+      {"ROUND":"QR3","SCORE":"3-6 6-0 6-4","_winnerId":"800178590","_loserId":"800178809","_winnerName":"Julie Richardson","_loserName":"Mariana Pérez","_winnerCountry":"NZL","_loserCountry":"ARG","_winnerRank":"146","_loserRank":""}
+    ]
+  },
+  {
     "TOURNAMENT_ID": "1020000761",
     "DRAW": "M",
     "TOURNAMENT": "United Jersey Bank Classic - Mahwah",
@@ -165597,6 +165633,28 @@ window.__WTA_HISTORY_DATA__ = [
     ]
   },
   {
+    "TOURNAMENT_ID": "1020000143",
+    "DRAW": "M",
+    "TOURNAMENT": "Wimbledon",
+    "CATEGORY": "GS",
+    "SURFACE": "Grass",
+    "MATCH_TYPE": "GS",
+    "DATE": "1986-06-23",
+    "_winnerEntry": "",
+    "_resultStatusDesc": "",
+    "rows": [
+      {"ROUND":"1st Round","SCORE":"6-2 1-6 6-4","_winnerId":"800178604","_loserId":"800176450","_winnerName":"Gabriela Sabatini","_loserName":"Christiane Jolissaint","_winnerCountry":"ARG","_loserCountry":"SUI","_loserEntry":"","_winnerSeed":"10","_loserSeed":"","_winnerRank":"12","_loserRank":""},
+      {"ROUND":"1st Round","SCORE":"6-3 6-2","_winnerId":"800178266","_loserId":"800178275","_winnerName":"Katerina Maleeva","_loserName":"Mercedes Paz","_winnerCountry":"BUL","_loserCountry":"ARG","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"35","_loserRank":"62"},
+      {"ROUND":"1st Round","SCORE":"6-4 2-6 6-4","_winnerId":"800176405","_loserId":"800176501","_winnerName":"Adriana Villagrán","_loserName":"Kay Mcdaniel","_winnerCountry":"ARG","_loserCountry":"USA","_loserEntry":"Q","_winnerSeed":"","_loserSeed":"","_winnerRank":"","_loserRank":""},
+      {"ROUND":"2nd Round","SCORE":"6-3 6-3","_winnerId":"800178604","_loserId":"800177980","_winnerName":"Gabriela Sabatini","_loserName":"Catherine Suire","_winnerCountry":"ARG","_loserCountry":"FRA","_loserEntry":"","_winnerSeed":"10","_loserSeed":"","_winnerRank":"12","_loserRank":"85"},
+      {"ROUND":"2nd Round","SCORE":"6-4 6-4","_winnerId":"800177180","_loserId":"800176405","_winnerName":"Kathleen Horvath","_loserName":"Adriana Villagrán","_winnerCountry":"USA","_loserCountry":"ARG","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"61","_loserRank":""},
+      {"ROUND":"3rd Round","SCORE":"6-2 6-1","_winnerId":"800178604","_loserId":"800177791","_winnerName":"Gabriela Sabatini","_loserName":"Barbara Gerken","_winnerCountry":"ARG","_loserCountry":"USA","_loserEntry":"","_winnerSeed":"10","_loserSeed":"","_winnerRank":"12","_loserRank":""},
+      {"ROUND":"4th Round","SCORE":"6-4 1-6 6-3","_winnerId":"800178604","_loserId":"800177898","_winnerName":"Gabriela Sabatini","_loserName":"Raffaella Reggi","_winnerCountry":"ARG","_loserCountry":"ITA","_loserEntry":"","_winnerSeed":"10","_loserSeed":"","_winnerRank":"12","_loserRank":"33"},
+      {"ROUND":"Quarter-finals","SCORE":"6-2 6-3","_winnerId":"800178604","_loserId":"800177455","_winnerName":"Gabriela Sabatini","_loserName":"Catarina Lindqvist","_winnerCountry":"ARG","_loserCountry":"SWE","_loserEntry":"","_winnerSeed":"10","_loserSeed":"15","_winnerRank":"12","_loserRank":"16"},
+      {"ROUND":"Semi-finals","SCORE":"6-2 6-2","_winnerId":"800175650","_loserId":"800178604","_winnerName":"Martina Navratilova","_loserName":"Gabriela Sabatini","_winnerCountry":"USA","_loserCountry":"ARG","_loserEntry":"","_winnerSeed":"1","_loserSeed":"10","_winnerRank":"1","_loserRank":"12"}
+    ]
+  },
+  {
     "TOURNAMENT_ID": "1020000494",
     "DRAW": "M",
     "TOURNAMENT": "Pilkington Glass Championships - Eastbourne",
@@ -165613,6 +165671,24 @@ window.__WTA_HISTORY_DATA__ = [
       {"ROUND":"2nd Round","SCORE":"6-2 6-2","_winnerId":"800178604","_loserId":"800177923","_winnerName":"Gabriela Sabatini","_loserName":"Sara Gomer","_winnerCountry":"ARG","_loserCountry":"GBR","_winnerEntry":"","_winnerSeed":"7","_loserSeed":"","_winnerRank":"12","_loserRank":"95"},
       {"ROUND":"3rd Round","SCORE":"1-6 6-4 6-4","_winnerId":"800178604","_loserId":"800176469","_winnerName":"Gabriela Sabatini","_loserName":"Jo Durie","_winnerCountry":"ARG","_loserCountry":"GBR","_winnerEntry":"","_winnerSeed":"7","_loserSeed":"10","_winnerRank":"12","_loserRank":"20"},
       {"ROUND":"Quarter-finals","SCORE":"6-3 7-5","_winnerId":"800178394","_loserId":"800178604","_winnerName":"Robin White","_loserName":"Gabriela Sabatini","_winnerCountry":"USA","_loserCountry":"ARG","_winnerEntry":"","_winnerSeed":"13","_loserSeed":"7","_winnerRank":"24","_loserRank":"12"}
+    ]
+  },
+  {
+    "TOURNAMENT_ID": "1020000143",
+    "DRAW": "Q",
+    "TOURNAMENT": "Wimbledon",
+    "CATEGORY": "GS",
+    "SURFACE": "Grass",
+    "MATCH_TYPE": "GS",
+    "DATE": "1986-06-16",
+    "_winnerEntry": "",
+    "_loserEntry": "",
+    "_winnerSeed": "",
+    "_loserSeed": "",
+    "_resultStatusDesc": "",
+    "rows": [
+      {"ROUND":"QR1","SCORE":"6-4 6-7 6-4","_winnerId":"800178895","_loserId":"800176749","_winnerName":"Patricia Tarabini","_loserName":"Heather Ludloff","_winnerCountry":"ARG","_loserCountry":"USA","_winnerRank":"150","_loserRank":"165"},
+      {"ROUND":"QR2","SCORE":"6-2 7-6","_winnerId":"800179034","_loserId":"800178895","_winnerName":"Jana Novotna","_loserName":"Patricia Tarabini","_winnerCountry":"TCH","_loserCountry":"ARG","_winnerRank":"193","_loserRank":"150"}
     ]
   },
   {
@@ -165643,6 +165719,32 @@ window.__WTA_HISTORY_DATA__ = [
     ]
   },
   {
+    "TOURNAMENT_ID": "1020000110",
+    "DRAW": "M",
+    "TOURNAMENT": "Roland Garros",
+    "CATEGORY": "GS",
+    "SURFACE": "Clay",
+    "MATCH_TYPE": "GS",
+    "DATE": "1986-05-26",
+    "_resultStatusDesc": "",
+    "rows": [
+      {"ROUND":"1st Round","SCORE":"3-6 6-3 6-4","_winnerId":"800178895","_loserId":"800176406","_winnerName":"Patricia Tarabini","_loserName":"Sylvia Hanika","_winnerCountry":"ARG","_loserCountry":"FRG","_winnerEntry":"Q","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"184","_loserRank":"39"},
+      {"ROUND":"1st Round","SCORE":"7-6(2) 2-6 7-5","_winnerId":"800178921","_loserId":"800178809","_winnerName":"Susan Sloane-Lundy","_loserName":"Mariana Pérez","_winnerCountry":"USA","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"","_loserSeed":"","_winnerRank":"113","_loserRank":""},
+      {"ROUND":"1st Round","SCORE":"6-4 7-5","_winnerId":"800175597","_loserId":"800176405","_winnerName":"Mima Jausovec","_loserName":"Adriana Villagrán","_winnerCountry":"YUG","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"","_loserRank":""},
+      {"ROUND":"1st Round","SCORE":"6-7(3) 7-6(3) 6-1","_winnerId":"800178275","_loserId":"800177643","_winnerName":"Mercedes Paz","_loserName":"Beth Herr","_winnerCountry":"ARG","_loserCountry":"USA","_winnerEntry":"","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"75","_loserRank":"56"},
+      {"ROUND":"1st Round","SCORE":"6-1 6-1","_winnerId":"800178604","_loserId":"800177705","_winnerName":"Gabriela Sabatini","_loserName":"Etsuko Kaneshiro","_winnerCountry":"ARG","_loserCountry":"JPN","_winnerEntry":"","_loserEntry":"","_winnerSeed":"9","_loserSeed":"","_winnerRank":"11","_loserRank":"108"},
+      {"ROUND":"1st Round","SCORE":"6-3 7-5","_winnerId":"800176408","_loserId":"800176896","_winnerName":"Ivanna Madruga","_loserName":"Ann Henricksson","_winnerCountry":"ARG","_loserCountry":"USA","_winnerEntry":"Q","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"","_loserRank":"44"},
+      {"ROUND":"2nd Round","SCORE":"6-4 6-2","_winnerId":"800178784","_loserId":"800178895","_winnerName":"Claudia Porwik","_loserName":"Patricia Tarabini","_winnerCountry":"FRG","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"","_loserSeed":"","_winnerRank":"121","_loserRank":"184"},
+      {"ROUND":"2nd Round","SCORE":"7-5 6-0","_winnerId":"800178275","_loserId":"800178497","_winnerName":"Mercedes Paz","_loserName":"Federica Bonsignori","_winnerCountry":"ARG","_loserCountry":"ITA","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"","_loserSeed":"","_winnerRank":"75","_loserRank":"168"},
+      {"ROUND":"2nd Round","SCORE":"6-1 6-3","_winnerId":"800178604","_loserId":"800177701","_winnerName":"Gabriela Sabatini","_loserName":"Petra Huber","_winnerCountry":"ARG","_loserCountry":"AUT","_winnerEntry":"","_loserEntry":"","_winnerSeed":"9","_loserSeed":"","_winnerRank":"11","_loserRank":"59"},
+      {"ROUND":"2nd Round","SCORE":"6-4 2-6 7-5","_winnerId":"800176408","_loserId":"800176407","_winnerName":"Ivanna Madruga","_loserName":"Iva Budarova","_winnerCountry":"ARG","_loserCountry":"TCH","_winnerEntry":"Q","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"","_loserRank":"70"},
+      {"ROUND":"3rd Round","SCORE":"5-7 7-6(6) 7-5","_winnerId":"800178275","_loserId":"800177976","_winnerName":"Mercedes Paz","_loserName":"Manuela Maleeva-Fragniere","_winnerCountry":"ARG","_loserCountry":"BUL","_winnerEntry":"","_loserEntry":"","_winnerSeed":"","_loserSeed":"8","_winnerRank":"75","_loserRank":"9"},
+      {"ROUND":"3rd Round","SCORE":"6-3 6-3","_winnerId":"800178604","_loserId":"800176408","_winnerName":"Gabriela Sabatini","_loserName":"Ivanna Madruga","_winnerCountry":"ARG","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"9","_loserSeed":"","_winnerRank":"11","_loserRank":""},
+      {"ROUND":"4th Round","SCORE":"6-4 2-6 6-0","_winnerId":"800177957","_loserId":"800178275","_winnerName":"Carling Bassett-Seguso","_loserName":"Mercedes Paz","_winnerCountry":"CAN","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"","_winnerSeed":"13","_loserSeed":"","_winnerRank":"16","_loserRank":"75"},
+      {"ROUND":"4th Round","SCORE":"1-6 6-3 6-3","_winnerId":"800175360","_loserId":"800178604","_winnerName":"Chris Evert","_loserName":"Gabriela Sabatini","_winnerCountry":"USA","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"","_winnerSeed":"2","_loserSeed":"9","_winnerRank":"2","_loserRank":"11"}
+    ]
+  },
+  {
     "TOURNAMENT_ID": "1020000521",
     "DRAW": "M",
     "TOURNAMENT": "European Open - Lugano",
@@ -165659,6 +165761,34 @@ window.__WTA_HISTORY_DATA__ = [
       {"ROUND":"3rd Round","SCORE":"6-4 6-4","_winnerId":"800178758","_loserId":"800178275","_winnerName":"Helen Kelesi","_loserName":"Mercedes Paz","_winnerCountry":"CAN","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"13","_loserSeed":"","_resultStatusDesc":"","_winnerRank":"29","_loserRank":"80"},
       {"ROUND":"3rd Round","SCORE":"3-6 6-2 7-5","_winnerId":"800178703","_loserId":"800178604","_winnerName":"Mary Joe Fernandez","_loserName":"Gabriela Sabatini","_winnerCountry":"USA","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"","_winnerSeed":"","_loserSeed":"2","_resultStatusDesc":"","_winnerRank":"69","_loserRank":"11"},
       {"ROUND":"1st Round","SCORE":"-","_winnerId":"800178604","_loserId":"Unknown","_winnerName":"Gabriela Sabatini","_loserName":"Bye","_winnerCountry":"ARG","_loserCountry":"-","_winnerEntry":"","_loserEntry":"","_winnerSeed":"2","_loserSeed":"","_resultStatusDesc":"Bye","_winnerRank":"11","_loserRank":""}
+    ]
+  },
+  {
+    "TOURNAMENT_ID": "1020000110",
+    "DRAW": "Q",
+    "TOURNAMENT": "Roland Garros",
+    "CATEGORY": "GS",
+    "SURFACE": "Clay",
+    "MATCH_TYPE": "GS",
+    "DATE": "1986-05-19",
+    "_winnerEntry": "",
+    "_loserEntry": "",
+    "_winnerSeed": "",
+    "_loserSeed": "",
+    "_resultStatusDesc": "",
+    "rows": [
+      {"ROUND":"QR1","SCORE":"6-2 6-3","_winnerId":"800178895","_loserId":"800178772","_winnerName":"Patricia Tarabini","_loserName":"Cornelia Lechner","_winnerCountry":"ARG","_loserCountry":"FRG","_winnerRank":"180","_loserRank":""},
+      {"ROUND":"QR1","SCORE":"6-3 6-3","_winnerId":"800177197","_loserId":"800177449","_winnerName":"Pilar Vasquez","_loserName":"Andrea Tiezzi","_winnerCountry":"PER","_loserCountry":"ARG","_winnerRank":"163","_loserRank":""},
+      {"ROUND":"QR1","SCORE":"6-0 6-1","_winnerId":"800178809","_loserId":"800178766","_winnerName":"Mariana Pérez","_loserName":"Diane Farrell","_winnerCountry":"ARG","_loserCountry":"USA","_winnerRank":"","_loserRank":""},
+      {"ROUND":"QR1","SCORE":"6-4 6-1","_winnerId":"800176408","_loserId":"800179018","_winnerName":"Ivanna Madruga","_loserName":"Arantxa Sanchez-Vicario","_winnerCountry":"ARG","_loserCountry":"ESP","_winnerRank":"","_loserRank":""},
+      {"ROUND":"QR1","SCORE":"6-3 6-3","_winnerId":"800101445","_loserId":"800178583","_winnerName":"María Méndez","_loserName":"Kathleen Schuurmans","_winnerCountry":"ARG","_loserCountry":"BEL","_winnerRank":"","_loserRank":""},
+      {"ROUND":"QR2","SCORE":"6-1 6-1","_winnerId":"800178895","_loserId":"800176119","_winnerName":"Patricia Tarabini","_loserName":"Heidi Eisterlenher","_winnerCountry":"ARG","_loserCountry":"FRG","_winnerRank":"180","_loserRank":""},
+      {"ROUND":"QR2","SCORE":"6-0 6-1","_winnerId":"800178809","_loserId":"800178743","_winnerName":"Mariana Pérez","_loserName":"Michelle Jaggard-Lai","_winnerCountry":"ARG","_loserCountry":"AUS","_winnerRank":"","_loserRank":"219"},
+      {"ROUND":"QR2","SCORE":"7-6(3) 6-1","_winnerId":"800176408","_loserId":"800178747","_winnerName":"Ivanna Madruga","_loserName":"Nicole Bradtke","_winnerCountry":"ARG","_loserCountry":"AUS","_winnerRank":"","_loserRank":"154"},
+      {"ROUND":"QR2","SCORE":"7-6(6) 6-0","_winnerId":"800177083","_loserId":"800101445","_winnerName":"Marcela Skuherska","_loserName":"María Méndez","_winnerCountry":"TCH","_loserCountry":"ARG","_winnerRank":"","_loserRank":""},
+      {"ROUND":"QR3","SCORE":"6-0 6-0","_winnerId":"800178895","_loserId":"800179033","_winnerName":"Patricia Tarabini","_loserName":"Amy Schwartz","_winnerCountry":"ARG","_loserCountry":"USA","_winnerRank":"180","_loserRank":"222"},
+      {"ROUND":"QR3","SCORE":"6-3 6-2","_winnerId":"800178809","_loserId":"800177410","_winnerName":"Mariana Pérez","_loserName":"Iwona Kuczynska","_winnerCountry":"ARG","_loserCountry":"POL","_winnerRank":"","_loserRank":""},
+      {"ROUND":"QR3","SCORE":"6-1 6-0","_winnerId":"800176408","_loserId":"800178222","_winnerName":"Ivanna Madruga","_loserName":"Jamie Golder","_winnerCountry":"ARG","_loserCountry":"USA","_winnerRank":"","_loserRank":""}
     ]
   },
   {
@@ -166116,52 +166246,6 @@ window.__WTA_HISTORY_DATA__ = [
     ]
   },
   {
-    "TOURNAMENT_ID": "1020000178",
-    "DRAW": "M",
-    "TOURNAMENT": "US Open",
-    "CATEGORY": "GS",
-    "SURFACE": "Hard",
-    "MATCH_TYPE": "GS",
-    "DATE": "1985-08-26",
-    "_winnerEntry": "",
-    "_resultStatusDesc": "",
-    "_winnerRank": "",
-    "_loserRank": "",
-    "rows": [
-      {"ROUND":"1st Round","SCORE":"6-3 6-2","_winnerId":"800178604","_loserId":"800178279","_winnerName":"Gabriela Sabatini","_loserName":"Nathalie Tauziat","_winnerCountry":"ARG","_loserCountry":"FRA","_loserEntry":"","_winnerSeed":"11","_loserSeed":""},
-      {"ROUND":"1st Round","SCORE":"6-7(5) 6-3 6-1","_winnerId":"800177709","_loserId":"800176405","_winnerName":"Pascale Paradis-Mangon","_loserName":"Adriana Villagrán","_winnerCountry":"FRA","_loserCountry":"ARG","_loserEntry":"","_winnerSeed":"","_loserSeed":""},
-      {"ROUND":"1st Round","SCORE":"6-1 6-1","_winnerId":"800176676","_loserId":"800178809","_winnerName":"Eva Pfaff","_loserName":"Mariana Pérez","_winnerCountry":"FRG","_loserCountry":"ARG","_loserEntry":"LL","_winnerSeed":"","_loserSeed":""},
-      {"ROUND":"1st Round","SCORE":"6-4 4-6 7-5","_winnerId":"800176469","_loserId":"800178275","_winnerName":"Jo Durie","_loserName":"Mercedes Paz","_winnerCountry":"GBR","_loserCountry":"ARG","_loserEntry":"","_winnerSeed":"","_loserSeed":""},
-      {"ROUND":"2nd Round","SCORE":"6-0 6-3","_winnerId":"800178604","_loserId":"800177599","_winnerName":"Gabriela Sabatini","_loserName":"Pam Casale-Telford","_winnerCountry":"ARG","_loserCountry":"USA","_loserEntry":"","_winnerSeed":"11","_loserSeed":""},
-      {"ROUND":"3rd Round","SCORE":"7-5 6-2","_winnerId":"800178604","_loserId":"800178266","_winnerName":"Gabriela Sabatini","_loserName":"Katerina Maleeva","_winnerCountry":"ARG","_loserCountry":"BUL","_loserEntry":"","_winnerSeed":"11","_loserSeed":""},
-      {"ROUND":"4th Round","SCORE":"6-4 6-2","_winnerId":"800175650","_loserId":"800178604","_winnerName":"Martina Navratilova","_loserName":"Gabriela Sabatini","_winnerCountry":"USA","_loserCountry":"ARG","_loserEntry":"","_winnerSeed":"1","_loserSeed":"11"}
-    ]
-  },
-  {
-    "TOURNAMENT_ID": "1020000178",
-    "DRAW": "Q",
-    "TOURNAMENT": "US Open",
-    "CATEGORY": "GS",
-    "SURFACE": "Hard",
-    "MATCH_TYPE": "GS",
-    "DATE": "1985-08-19",
-    "_winnerEntry": "",
-    "_loserEntry": "",
-    "_winnerSeed": "",
-    "_loserSeed": "",
-    "_resultStatusDesc": "",
-    "_winnerRank": "",
-    "_loserRank": "",
-    "rows": [
-      {"ROUND":"QR1","SCORE":"6-2 6-2","_winnerId":"800176177","_loserId":"800178895","_winnerName":"Renee Blount","_loserName":"Patricia Tarabini","_winnerCountry":"USA","_loserCountry":"ARG"},
-      {"ROUND":"QR1","SCORE":"6-4 6-2","_winnerId":"800178809","_loserId":"800179033","_winnerName":"Mariana Pérez","_loserName":"Amy Schwartz","_winnerCountry":"ARG","_loserCountry":"USA"},
-      {"ROUND":"QR1","SCORE":"6-1 1-6 6-4","_winnerId":"800178824","_loserId":"800177555","_winnerName":"Bettina Fulco","_loserName":"Kim Steinmetz","_winnerCountry":"ARG","_loserCountry":"USA"},
-      {"ROUND":"QR2","SCORE":"3-6 6-2 6-4","_winnerId":"800178809","_loserId":"800179202","_winnerName":"Mariana Pérez","_loserName":"Trisha Laux","_winnerCountry":"ARG","_loserCountry":"USA"},
-      {"ROUND":"QR2","SCORE":"7-5 1-6 6-2","_winnerId":"800176571","_loserId":"800178824","_winnerName":"Susan Leo","_loserName":"Bettina Fulco","_winnerCountry":"AUS","_loserCountry":"ARG"},
-      {"ROUND":"QR3","SCORE":"3-6 6-0 6-4","_winnerId":"800178590","_loserId":"800178809","_winnerName":"Julie Richardson","_loserName":"Mariana Pérez","_winnerCountry":"NZL","_loserCountry":"ARG"}
-    ]
-  },
-  {
     "TOURNAMENT_ID": "1020000760",
     "DRAW": "M",
     "TOURNAMENT": "United Jersey Bank Classic - Mahwah",
@@ -166283,28 +166367,6 @@ window.__WTA_HISTORY_DATA__ = [
     ]
   },
   {
-    "TOURNAMENT_ID": "1020000143",
-    "DRAW": "M",
-    "TOURNAMENT": "Wimbledon",
-    "CATEGORY": "GS",
-    "SURFACE": "Grass",
-    "MATCH_TYPE": "GS",
-    "DATE": "1985-06-23",
-    "_winnerEntry": "",
-    "_resultStatusDesc": "",
-    "rows": [
-      {"ROUND":"1st Round","SCORE":"6-2 1-6 6-4","_winnerId":"800178604","_loserId":"800176450","_winnerName":"Gabriela Sabatini","_loserName":"Christiane Jolissaint","_winnerCountry":"ARG","_loserCountry":"SUI","_loserEntry":"","_winnerSeed":"10","_loserSeed":"","_winnerRank":"15","_loserRank":""},
-      {"ROUND":"1st Round","SCORE":"6-3 6-2","_winnerId":"800178266","_loserId":"800178275","_winnerName":"Katerina Maleeva","_loserName":"Mercedes Paz","_winnerCountry":"BUL","_loserCountry":"ARG","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"27","_loserRank":"94"},
-      {"ROUND":"1st Round","SCORE":"6-4 2-6 6-4","_winnerId":"800176405","_loserId":"800176501","_winnerName":"Adriana Villagrán","_loserName":"Kay Mcdaniel","_winnerCountry":"ARG","_loserCountry":"USA","_loserEntry":"Q","_winnerSeed":"","_loserSeed":"","_winnerRank":"","_loserRank":""},
-      {"ROUND":"2nd Round","SCORE":"6-3 6-3","_winnerId":"800178604","_loserId":"800177980","_winnerName":"Gabriela Sabatini","_loserName":"Catherine Suire","_winnerCountry":"ARG","_loserCountry":"FRA","_loserEntry":"","_winnerSeed":"10","_loserSeed":"","_winnerRank":"15","_loserRank":"102"},
-      {"ROUND":"2nd Round","SCORE":"6-4 6-4","_winnerId":"800177180","_loserId":"800176405","_winnerName":"Kathleen Horvath","_loserName":"Adriana Villagrán","_winnerCountry":"USA","_loserCountry":"ARG","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"","_loserRank":""},
-      {"ROUND":"3rd Round","SCORE":"6-2 6-1","_winnerId":"800178604","_loserId":"800177791","_winnerName":"Gabriela Sabatini","_loserName":"Barbara Gerken","_winnerCountry":"ARG","_loserCountry":"USA","_loserEntry":"","_winnerSeed":"10","_loserSeed":"","_winnerRank":"15","_loserRank":""},
-      {"ROUND":"4th Round","SCORE":"6-4 1-6 6-3","_winnerId":"800178604","_loserId":"800177898","_winnerName":"Gabriela Sabatini","_loserName":"Raffaella Reggi","_winnerCountry":"ARG","_loserCountry":"ITA","_loserEntry":"","_winnerSeed":"10","_loserSeed":"","_winnerRank":"15","_loserRank":""},
-      {"ROUND":"Quarter-finals","SCORE":"6-2 6-3","_winnerId":"800178604","_loserId":"800177455","_winnerName":"Gabriela Sabatini","_loserName":"Catarina Lindqvist","_winnerCountry":"ARG","_loserCountry":"SWE","_loserEntry":"","_winnerSeed":"10","_loserSeed":"15","_winnerRank":"15","_loserRank":""},
-      {"ROUND":"Semi-finals","SCORE":"6-2 6-2","_winnerId":"800175650","_loserId":"800178604","_winnerName":"Martina Navratilova","_loserName":"Gabriela Sabatini","_winnerCountry":"USA","_loserCountry":"ARG","_loserEntry":"","_winnerSeed":"1","_loserSeed":"10","_winnerRank":"2","_loserRank":"15"}
-    ]
-  },
-  {
     "TOURNAMENT_ID": "1020000493",
     "DRAW": "M",
     "TOURNAMENT": "Pilkington Glass Championships - Eastbourne",
@@ -166318,26 +166380,6 @@ window.__WTA_HISTORY_DATA__ = [
       {"ROUND":"1st Round","SCORE":"7-6 6-0","_winnerId":"800178604","_loserId":"800176135","_winnerName":"Gabriela Sabatini","_loserName":"Candy Reynolds","_winnerCountry":"ARG","_loserCountry":"USA","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"11","_loserSeed":"","_winnerRank":"15","_loserRank":""},
       {"ROUND":"2nd Round","SCORE":"6-2 7-5","_winnerId":"800177455","_loserId":"800176405","_winnerName":"Catarina Lindqvist","_loserName":"Adriana Villagrán","_winnerCountry":"SWE","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"8","_loserSeed":"","_winnerRank":"","_loserRank":""},
       {"ROUND":"2nd Round","SCORE":"6-7 6-2 6-3","_winnerId":"800177709","_loserId":"800178604","_winnerName":"Pascale Paradis-Mangon","_loserName":"Gabriela Sabatini","_winnerCountry":"FRA","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"","_winnerSeed":"","_loserSeed":"11","_winnerRank":"43","_loserRank":"15"}
-    ]
-  },
-  {
-    "TOURNAMENT_ID": "1020000143",
-    "DRAW": "Q",
-    "TOURNAMENT": "Wimbledon",
-    "CATEGORY": "GS",
-    "SURFACE": "Grass",
-    "MATCH_TYPE": "GS",
-    "DATE": "1985-06-16",
-    "_winnerEntry": "",
-    "_loserEntry": "",
-    "_winnerSeed": "",
-    "_loserSeed": "",
-    "_resultStatusDesc": "",
-    "_winnerRank": "",
-    "_loserRank": "",
-    "rows": [
-      {"ROUND":"QR1","SCORE":"6-4 6-7 6-4","_winnerId":"800178895","_loserId":"800176749","_winnerName":"Patricia Tarabini","_loserName":"Heather Ludloff","_winnerCountry":"ARG","_loserCountry":"USA"},
-      {"ROUND":"QR2","SCORE":"6-2 7-6","_winnerId":"800179034","_loserId":"800178895","_winnerName":"Jana Novotna","_loserName":"Patricia Tarabini","_winnerCountry":"TCH","_loserCountry":"ARG"}
     ]
   },
   {
@@ -166391,32 +166433,6 @@ window.__WTA_HISTORY_DATA__ = [
     ]
   },
   {
-    "TOURNAMENT_ID": "1020000110",
-    "DRAW": "M",
-    "TOURNAMENT": "Roland Garros",
-    "CATEGORY": "GS",
-    "SURFACE": "Clay",
-    "MATCH_TYPE": "GS",
-    "DATE": "1985-05-26",
-    "_resultStatusDesc": "",
-    "rows": [
-      {"ROUND":"1st Round","SCORE":"3-6 6-3 6-4","_winnerId":"800178895","_loserId":"800176406","_winnerName":"Patricia Tarabini","_loserName":"Sylvia Hanika","_winnerCountry":"ARG","_loserCountry":"FRG","_winnerEntry":"Q","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"","_loserRank":""},
-      {"ROUND":"1st Round","SCORE":"7-6(2) 2-6 7-5","_winnerId":"800178921","_loserId":"800178809","_winnerName":"Susan Sloane-Lundy","_loserName":"Mariana Pérez","_winnerCountry":"USA","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"","_loserSeed":"","_winnerRank":"","_loserRank":""},
-      {"ROUND":"1st Round","SCORE":"6-4 7-5","_winnerId":"800175597","_loserId":"800176405","_winnerName":"Mima Jausovec","_loserName":"Adriana Villagrán","_winnerCountry":"YUG","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"","_loserRank":""},
-      {"ROUND":"1st Round","SCORE":"6-7(3) 7-6(3) 6-1","_winnerId":"800178275","_loserId":"800177643","_winnerName":"Mercedes Paz","_loserName":"Beth Herr","_winnerCountry":"ARG","_loserCountry":"USA","_winnerEntry":"","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"87","_loserRank":""},
-      {"ROUND":"1st Round","SCORE":"6-1 6-1","_winnerId":"800178604","_loserId":"800177705","_winnerName":"Gabriela Sabatini","_loserName":"Etsuko Kaneshiro","_winnerCountry":"ARG","_loserCountry":"JPN","_winnerEntry":"","_loserEntry":"","_winnerSeed":"9","_loserSeed":"","_winnerRank":"17","_loserRank":""},
-      {"ROUND":"1st Round","SCORE":"6-3 7-5","_winnerId":"800176408","_loserId":"800176896","_winnerName":"Ivanna Madruga","_loserName":"Ann Henricksson","_winnerCountry":"ARG","_loserCountry":"USA","_winnerEntry":"Q","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"","_loserRank":""},
-      {"ROUND":"2nd Round","SCORE":"6-4 6-2","_winnerId":"800178784","_loserId":"800178895","_winnerName":"Claudia Porwik","_loserName":"Patricia Tarabini","_winnerCountry":"FRG","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"","_loserSeed":"","_winnerRank":"","_loserRank":""},
-      {"ROUND":"2nd Round","SCORE":"7-5 6-0","_winnerId":"800178275","_loserId":"800178497","_winnerName":"Mercedes Paz","_loserName":"Federica Bonsignori","_winnerCountry":"ARG","_loserCountry":"ITA","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"","_loserSeed":"","_winnerRank":"87","_loserRank":""},
-      {"ROUND":"2nd Round","SCORE":"6-1 6-3","_winnerId":"800178604","_loserId":"800177701","_winnerName":"Gabriela Sabatini","_loserName":"Petra Huber","_winnerCountry":"ARG","_loserCountry":"AUT","_winnerEntry":"","_loserEntry":"","_winnerSeed":"9","_loserSeed":"","_winnerRank":"17","_loserRank":""},
-      {"ROUND":"2nd Round","SCORE":"6-4 2-6 7-5","_winnerId":"800176408","_loserId":"800176407","_winnerName":"Ivanna Madruga","_loserName":"Iva Budarova","_winnerCountry":"ARG","_loserCountry":"TCH","_winnerEntry":"Q","_loserEntry":"","_winnerSeed":"","_loserSeed":"","_winnerRank":"","_loserRank":""},
-      {"ROUND":"3rd Round","SCORE":"5-7 7-6(6) 7-5","_winnerId":"800178275","_loserId":"800177976","_winnerName":"Mercedes Paz","_loserName":"Manuela Maleeva-Fragniere","_winnerCountry":"ARG","_loserCountry":"BUL","_winnerEntry":"","_loserEntry":"","_winnerSeed":"","_loserSeed":"8","_winnerRank":"87","_loserRank":"4"},
-      {"ROUND":"3rd Round","SCORE":"6-3 6-3","_winnerId":"800178604","_loserId":"800176408","_winnerName":"Gabriela Sabatini","_loserName":"Ivanna Madruga","_winnerCountry":"ARG","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"Q","_winnerSeed":"9","_loserSeed":"","_winnerRank":"17","_loserRank":""},
-      {"ROUND":"4th Round","SCORE":"6-4 2-6 6-0","_winnerId":"800177957","_loserId":"800178275","_winnerName":"Carling Bassett-Seguso","_loserName":"Mercedes Paz","_winnerCountry":"CAN","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"","_winnerSeed":"13","_loserSeed":"","_winnerRank":"","_loserRank":"87"},
-      {"ROUND":"4th Round","SCORE":"1-6 6-3 6-3","_winnerId":"800175360","_loserId":"800178604","_winnerName":"Chris Evert","_loserName":"Gabriela Sabatini","_winnerCountry":"USA","_loserCountry":"ARG","_winnerEntry":"","_loserEntry":"","_winnerSeed":"2","_loserSeed":"9","_winnerRank":"2","_loserRank":"17"}
-    ]
-  },
-  {
     "TOURNAMENT_ID": "1020000520",
     "DRAW": "M",
     "TOURNAMENT": "Swiss Open - Lugano",
@@ -166432,35 +166448,6 @@ window.__WTA_HISTORY_DATA__ = [
       {"ROUND":"3rd Round","SCORE":"6-3 6-4","_winnerId":"800178604","_loserId":"800169265","_winnerName":"Gabriela Sabatini","_loserName":"Anne Minter","_winnerCountry":"ARG","_loserCountry":"AUS","_loserEntry":"","_winnerSeed":"6","_loserSeed":"","_resultStatusDesc":"","_winnerRank":"17","_loserRank":""},
       {"ROUND":"Quarter-finals","SCORE":"6-0 6-7 6-2","_winnerId":"800177976","_loserId":"800178604","_winnerName":"Manuela Maleeva-Fragniere","_loserName":"Gabriela Sabatini","_winnerCountry":"BUL","_loserCountry":"ARG","_loserEntry":"","_winnerSeed":"1","_loserSeed":"6","_resultStatusDesc":"","_winnerRank":"4","_loserRank":"17"},
       {"ROUND":"1st Round","SCORE":"-","_winnerId":"800178604","_loserId":"Unknown","_winnerName":"Gabriela Sabatini","_loserName":"Bye","_winnerCountry":"ARG","_loserCountry":"-","_loserEntry":"","_winnerSeed":"6","_loserSeed":"","_resultStatusDesc":"Bye","_winnerRank":"17","_loserRank":""}
-    ]
-  },
-  {
-    "TOURNAMENT_ID": "1020000110",
-    "DRAW": "Q",
-    "TOURNAMENT": "Roland Garros",
-    "CATEGORY": "GS",
-    "SURFACE": "Clay",
-    "MATCH_TYPE": "GS",
-    "DATE": "1985-05-19",
-    "_winnerEntry": "",
-    "_loserEntry": "",
-    "_winnerSeed": "",
-    "_loserSeed": "",
-    "_resultStatusDesc": "",
-    "_winnerRank": "",
-    "rows": [
-      {"ROUND":"QR1","SCORE":"6-2 6-3","_winnerId":"800178895","_loserId":"800178772","_winnerName":"Patricia Tarabini","_loserName":"Cornelia Lechner","_winnerCountry":"ARG","_loserCountry":"FRG","_loserRank":""},
-      {"ROUND":"QR1","SCORE":"6-3 6-3","_winnerId":"800177197","_loserId":"800177449","_winnerName":"Pilar Vasquez","_loserName":"Andrea Tiezzi","_winnerCountry":"PER","_loserCountry":"ARG","_loserRank":""},
-      {"ROUND":"QR1","SCORE":"6-0 6-1","_winnerId":"800178809","_loserId":"800178766","_winnerName":"Mariana Pérez","_loserName":"Diane Farrell","_winnerCountry":"ARG","_loserCountry":"USA","_loserRank":""},
-      {"ROUND":"QR1","SCORE":"6-4 6-1","_winnerId":"800176408","_loserId":"800179018","_winnerName":"Ivanna Madruga","_loserName":"Arantxa Sanchez-Vicario","_winnerCountry":"ARG","_loserCountry":"ESP","_loserRank":""},
-      {"ROUND":"QR1","SCORE":"6-3 6-3","_winnerId":"800101445","_loserId":"800178583","_winnerName":"María Méndez","_loserName":"Kathleen Schuurmans","_winnerCountry":"ARG","_loserCountry":"BEL","_loserRank":""},
-      {"ROUND":"QR2","SCORE":"6-1 6-1","_winnerId":"800178895","_loserId":"800176119","_winnerName":"Patricia Tarabini","_loserName":"Heidi Eisterlenher","_winnerCountry":"ARG","_loserCountry":"FRG","_loserRank":""},
-      {"ROUND":"QR2","SCORE":"6-0 6-1","_winnerId":"800178809","_loserId":"800178743","_winnerName":"Mariana Pérez","_loserName":"Michelle Jaggard-Lai","_winnerCountry":"ARG","_loserCountry":"AUS","_loserRank":"294"},
-      {"ROUND":"QR2","SCORE":"7-6(3) 6-1","_winnerId":"800176408","_loserId":"800178747","_winnerName":"Ivanna Madruga","_loserName":"Nicole Bradtke","_winnerCountry":"ARG","_loserCountry":"AUS","_loserRank":""},
-      {"ROUND":"QR2","SCORE":"7-6(6) 6-0","_winnerId":"800177083","_loserId":"800101445","_winnerName":"Marcela Skuherska","_loserName":"María Méndez","_winnerCountry":"TCH","_loserCountry":"ARG","_loserRank":""},
-      {"ROUND":"QR3","SCORE":"6-0 6-0","_winnerId":"800178895","_loserId":"800179033","_winnerName":"Patricia Tarabini","_loserName":"Amy Schwartz","_winnerCountry":"ARG","_loserCountry":"USA","_loserRank":""},
-      {"ROUND":"QR3","SCORE":"6-3 6-2","_winnerId":"800178809","_loserId":"800177410","_winnerName":"Mariana Pérez","_loserName":"Iwona Kuczynska","_winnerCountry":"ARG","_loserCountry":"POL","_loserRank":""},
-      {"ROUND":"QR3","SCORE":"6-1 6-0","_winnerId":"800176408","_loserId":"800178222","_winnerName":"Ivanna Madruga","_loserName":"Jamie Golder","_winnerCountry":"ARG","_loserCountry":"USA","_loserRank":""}
     ]
   },
   {
