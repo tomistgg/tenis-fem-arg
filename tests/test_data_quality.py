@@ -118,6 +118,7 @@ def test_offline_generation_creates_a_valid_site(offline_generated_site):
     report = validate_site_artifacts(offline_generated_site)
     assert report["generated_files"] >= 14
     app = (offline_generated_site / "app.html").read_text(encoding="utf-8-sig")
-    assert "Failed to load local rankings data" in app  # fallback exists but must not execute
+    app_js = (offline_generated_site / "assets/js/app.js").read_text(encoding="utf-8")
+    assert "Failed to load local rankings data" in app_js  # fallback exists but must not execute
     assert (offline_generated_site / "data" / "wta_rankings_latest_bundle.js").is_file()
     assert (offline_generated_site / "data" / "wta_rankings_2026_bundle.js").is_file()

@@ -122,9 +122,13 @@ def _build_site_contents(output_dir):
             _copy_file(apple_touch_icon, output_dir / filename)
 
     for dirname in COPY_ROOT_DIRS:
-        src = _site_source(dirname)
-        if src.exists():
-            _copy_tree(src, output_dir / dirname)
+        destination = output_dir / dirname
+        base_source = BASE_DIR / dirname
+        staged_source = SITE_ROOT / dirname
+        if base_source.exists():
+            _copy_tree(base_source, destination)
+        if staged_source.exists() and staged_source.resolve() != base_source.resolve():
+            _copy_tree(staged_source, destination)
 
     return _copy_deploy_data(output_dir)
 

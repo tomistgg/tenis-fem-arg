@@ -33,6 +33,14 @@ GENERATED_SITE_FILES = (
     "app.html",
     "index.html",
     "404.html",
+    "assets/app.css",
+    "assets/js/app.js",
+    "assets/js/data-loader.js",
+    "assets/js/generated-data.js",
+    "assets/js/router.js",
+    "assets/js/tabs/draws.js",
+    "assets/js/tabs/roadtogs.js",
+    "assets/js/tabs/tstrength.js",
     "upcoming/index.html",
     "entrylists/index.html",
     "draws/index.html",
@@ -486,8 +494,18 @@ def validate_site_artifacts(site_root: Path, deploy_root: Path | None = None) ->
                 path=str(path),
             )
     app_text = (site_root / "app.html").read_text(encoding="utf-8-sig")
+    frontend_text = "\n".join(
+        (site_root / relative_name).read_text(encoding="utf-8-sig")
+        for relative_name in (
+            "assets/js/app.js",
+            "assets/js/data-loader.js",
+            "assets/js/generated-data.js",
+            "assets/js/tabs/roadtogs.js",
+        )
+    )
     required_markers = ('id="rankings-table"', "__WTA_RANKINGS_LATEST__")
-    missing_markers = [marker for marker in required_markers if marker not in app_text]
+    combined_text = app_text + frontend_text
+    missing_markers = [marker for marker in required_markers if marker not in combined_text]
     if missing_markers:
         raise _quality_error(
             "validate generated site",
@@ -503,6 +521,9 @@ def validate_site_artifacts(site_root: Path, deploy_root: Path | None = None) ->
             "app.html",
             "index.html",
             "rankings/index.html",
+            "assets/app.css",
+            "assets/js/app.js",
+            "assets/js/generated-data.js",
             "data/wta_rankings_latest_bundle.js",
             "data/player_aliases_wta_itf_bundle.js",
         )

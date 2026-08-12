@@ -1,0 +1,608 @@
+    <!DOCTYPE html>
+    <html lang="en" class="app-booting">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+        <meta name="theme-color" content="#093366">
+        __WTARG_CSP_META__
+        <title>WTARG</title>
+        <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=20260709">
+        <link rel="manifest" href="site.webmanifest">
+        <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+        <script>(function(){ var t=localStorage.getItem('theme'); if(t==='dark') document.documentElement.setAttribute('data-theme','dark'); })();</script>
+        <base href="./">
+        <link href="assets/vendor/select2-4.1.0-rc.0.min.css" rel="stylesheet" />
+        <script src="assets/vendor/jquery-3.6.0.min.js"></script>
+        <script src="assets/vendor/select2-4.1.0-rc.0.min.js"></script>
+        <link rel="stylesheet" href="assets/app.css">
+    </head>
+    <body class="home-mode" onload="renderHistoryTable(); renderMilestonesTable();">
+        <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">\u2630</button>
+        <div class="app-container">
+            <nav class="sidebar" id="sidebar" aria-label="Primary">
+                <div class="sidebar-header">
+                    <img class="sidebar-logo" src="assets/wtarg-app-icon.png" alt="WTARG">
+                    <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode"><svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg><svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></button>
+                </div>
+                <button type="button" class="menu-item" id="btn-upcoming" onclick="switchTab('upcoming')">Schedule</button>
+                <button type="button" class="menu-item" id="btn-entrylists" onclick="switchTab('entrylists')">Entry Lists</button>
+                <button type="button" class="menu-item" id="btn-draws" onclick="switchTab('draws')">Draws</button>
+                <button type="button" class="menu-item" id="btn-calendar" onclick="switchTab('calendar')">Calendar</button>
+                <button type="button" class="menu-item" id="btn-rankings" onclick="switchTab('rankings')"><span class="desktop-only">WTA Rankings</span><span class="mobile-only">WTA Ranks</span></button>
+                <button type="button" class="menu-item" id="btn-roadtogs" onclick="switchTab('roadtogs')"><span class="desktop-only">Points Breakdown</span><span class="mobile-only">Points Breakd.</span></button>
+                <button type="button" class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</button>
+                <button type="button" class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</button>
+                <button type="button" class="menu-item" id="btn-tstrength" onclick="switchTab('tstrength')">WTA TRN STR</button>
+            </nav>
+
+            <div class="main-content">
+                <div id="view-home" class="single-layout">
+                    <div class="home-hero">
+                        <h1 class="home-title"><img class="home-logo" src="assets/wtarg-app-icon.png" alt="Women's Tennis Argentina"></h1>
+                        <div class="home-grid">
+                            <button class="home-btn" onclick="switchTab('upcoming')">
+                                <img class="home-icon-img" src="assets/trophy.png" alt="Trophy icon" />
+                                <span class="home-label">Schedule</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('entrylists')">
+                                <img class="home-icon-img" src="assets/files.png" alt="Files icon" />
+                                <span class="home-label">Entry Lists</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('draws')">
+                                <img class="home-icon-img" src="assets/tournament.png" alt="Tournament icon" />
+                                <span class="home-label">Draws</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('calendar')">
+                                <img class="home-icon-img" src="assets/calendar.png" alt="Calendar icon" />
+                                <span class="home-label">Calendar</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('rankings')">
+                                <img class="home-icon-img" src="assets/list.png" alt="List icon" />
+                                <span class="home-label">WTA Rankings</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('roadtogs')">
+                                <img class="home-icon-img" src="assets/data.png" alt="Data icon" />
+                                <span class="home-label">Points Breakdown</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('history')">
+                                <img class="home-icon-img" src="assets/tennis-player.png" alt="Tennis player icon" />
+                                <span class="home-label">Match History</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('fedbcup')">
+                                <img class="home-icon-img no-invert" src="assets/argentina.png" alt="Argentina flag icon" />
+                                <span class="home-label">Fed/BJK Cup</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('tstrength')">
+                                <img class="home-icon-img" src="assets/score-board.png" alt="Analytics icon" />
+                                <span class="home-label">WTA Tournament Strength</span>
+                            </button>
+                        </div>
+                        <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()"><svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg><svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><span id="home-dark-label">Dark Mode</span></button>
+                    </div>
+                </div>
+
+                <div id="view-upcoming" class="single-layout" style="display: none;">
+                    <div class="header-row">
+                        <h1>Schedule</h1>
+                    </div>
+                    <div class="content-card">
+                        <div class="table-wrapper">
+                            <table id="schedule-table">
+                                <thead>
+                                    <tr>
+                                        <th class="sticky-col col-rank">Rank</th>
+                                        <th class="sticky-col col-name">Player</th>
+                                        @@WTARG_SCHEDULE_WEEK_HEADERS@@
+                                    </tr>
+                                </thead>
+                                <tbody id="tb">@@WTARG_TABLE_ROWS@@</tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-entrylists" style="display: none;">
+                    <div class="entry-layout">
+                        <div class="entry-menu">
+                            <div class="entry-menu-header">Tournaments</div>
+                            @@WTARG_ENTRY_MENU_HTML@@
+                        </div>
+                        <div class="entry-content">
+                            <div class="entry-menu-toggle-wrap">
+                                <button type="button" id="btn-open-entry-menu" class="rankings-toggle-btn entry-menu-toggle-btn" hidden onclick="openEntryTournamentList()">Open tournament list</button>
+                            </div>
+                            <div class="header-row entry-header-row">
+                                <div id="entry-strength" class="entry-strength"><span class="entry-gm-value">-</span></div>
+                                <h1 id="entry-title">Entry List</h1>
+                                <div class="rankings-filter-container">
+                                    <button id="btn-prio1" class="rankings-toggle-btn" hidden onclick="togglePrio1()">Show Prio 1</button>
+                                </div>
+                            </div>
+                            <div class="content-card">
+                                <table id="entrylists-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:35px;min-width:35px">#</th>
+                                            <th>PLAYER</th>
+                                            <th id="entry-seed-header" style="width:35px;display:none">SEED</th>
+                                            <th style="width:70px">E-Rank</th>
+                                            <th id="entry-prio-header" style="width:35px;display:none">PRIO</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="entry-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-rankings" class="single-layout rankings-show-all" style="display: none;">
+                    <div class="header-row">
+                        <h1>WTA Rankings</h1>
+                        <div class="rankings-controls">
+                            <div class="search-container">
+                                <input type="text" id="rankings-search" placeholder="Search player..." oninput="filterRankings()">
+                            </div>
+                            <div class="rankings-filter-container">
+                                <div class="rankings-date-picker">
+                                    <select id="rankings-year-select" class="rankings-date-select" onchange="onRankingYearChange(this.value)">@@WTARG_RANKINGS_YEAR_OPTIONS@@</select>
+                                    <select id="rankings-month-select" class="rankings-date-select" onchange="onRankingMonthChange()"></select>
+                                    <select id="rankings-day-select" class="rankings-date-select"></select>
+                                    <button id="rankings-load-btn" class="rankings-load-btn" onclick="applyRankingSelection()">&#8594;</button>
+                                </div>
+                            </div>
+                            <div class="rankings-btn-end">
+                                <button id="rankings-toggle-btn" class="rankings-toggle-btn" onclick="toggleRankingsScope()">Show <img class="btn-flag-icon" src="assets/argentina.png" alt="ARG"></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content-card">
+                        <div class="table-wrapper">
+                            <table id="rankings-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:55px">RANK</th>
+                                        <th>PLAYER</th>
+                                        <th style="width:70px">POINTS</th>
+                                        <th style="width:100px">DOB</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rankings-body">@@WTARG_RANKINGS_ROWS@@</tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-history" class="single-layout" style="display: none;">
+                    <div class="history-layout">
+                        <button type="button" class="history-filter-backdrop" aria-label="Close filters" tabindex="-1" onclick="closeHistoryFilters()"></button>
+                        <div class="filter-panel" id="history-filter-panel">
+                            <div class="history-filter-sheet-header">
+                                <h3 id="history-filter-sheet-title">Filters</h3>
+                                <button type="button" class="history-filter-sheet-close" aria-label="Close filters" onclick="closeHistoryFilters()">&times;</button>
+                            </div>
+
+                            <div class="filter-group collapsed">
+                                <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-surface" onclick="toggleFilterGroup(this)">
+                                    Surface <span class="collapse-icon" aria-hidden="true"></span>
+                                </button>
+                                <div class="filter-options" id="filter-surface"></div>
+                            </div>
+
+                            <div class="filter-group collapsed">
+                                <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-round" onclick="toggleFilterGroup(this)">
+                                    Round <span class="collapse-icon" aria-hidden="true"></span>
+                                </button>
+                                <div class="filter-options" id="filter-round"></div>
+                            </div>
+
+                            <div class="filter-group collapsed">
+                                <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-result" onclick="toggleFilterGroup(this)">
+                                    Result <span class="collapse-icon" aria-hidden="true"></span>
+                                </button>
+                                <div class="filter-options" id="filter-result"></div>
+                            </div>
+
+                            <div class="filter-group collapsed">
+                                <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-year" onclick="toggleFilterGroup(this)">
+                                    Year <span class="collapse-icon" aria-hidden="true"></span>
+                                </button>
+                                <div class="filter-options" id="filter-year"></div>
+                            </div>
+
+                            <div class="filter-group collapsed">
+                                <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-tournament-container" onclick="toggleFilterGroup(this)">
+                                    Tournament <span class="collapse-icon" aria-hidden="true"></span>
+                                </button>
+                                <div class="opponent-select-container" id="filter-tournament-container" style="padding: 8px; overflow: visible;">
+                                    <select id="filter-tournament-select" style="width: 100%;">
+                                        <option value="">All Tournaments</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="filter-group collapsed">
+                                <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-category" onclick="toggleFilterGroup(this)">
+                                    Category <span class="collapse-icon" aria-hidden="true"></span>
+                                </button>
+                                <div class="filter-options scrollable" id="filter-category"></div>
+                            </div>
+
+                            <div class="filter-group collapsed">
+                                <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-opponent-container" onclick="toggleFilterGroup(this)">
+                                    Opponent <span class="collapse-icon" aria-hidden="true"></span>
+                                </button>
+                                <div class="opponent-select-container" id="filter-opponent-container" style="padding: 8px; overflow: visible;">
+                                    <select id="filter-opponent-select" style="width: 100%;">
+                                        <option value="">All Opponents</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="filter-group collapsed">
+                                <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-opponent-country" onclick="toggleFilterGroup(this)">
+                                    Opp. Country <span class="collapse-icon" aria-hidden="true"></span>
+                                </button>
+                                <div class="filter-options" id="filter-opponent-country"></div>
+                            </div>
+
+                            <div class="filter-group collapsed">
+                                <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-player-entry" onclick="toggleFilterGroup(this)">
+                                    Player Entry <span class="collapse-icon" aria-hidden="true"></span>
+                                </button>
+                                <div class="filter-options" id="filter-player-entry"></div>
+                            </div>
+
+                            <div class="filter-group collapsed">
+                                <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-seed" onclick="toggleFilterGroup(this)">
+                                    Seed <span class="collapse-icon" aria-hidden="true"></span>
+                                </button>
+                                <div class="filter-options" id="filter-seed"></div>
+                            </div>
+
+                            <div class="filter-group collapsed">
+                                <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-match-type" onclick="toggleFilterGroup(this)">
+                                    Match Type <span class="collapse-icon" aria-hidden="true"></span>
+                                </button>
+                                <div class="filter-options" id="filter-match-type"></div>
+                            </div>
+
+                                <div class="rank-filter-last-row">
+                                    <div class="filter-group collapsed">
+                                    <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-as-rank-panel" onclick="toggleRankFilterGroup(this)">
+                                        As Rank <span class="collapse-icon" aria-hidden="true"></span>
+                                    </button>
+                                    <div class="filter-options" id="filter-as-rank-panel" style="padding: 8px;">
+                                        <div class="rank-filter-row">
+                                            <input id="filter-as-rank" class="rank-filter-input" inputmode="numeric" placeholder="#" value="" oninput="this.value=this.value.replace(/\D/g,''); applyHistoryFilters();">
+                                            <select id="filter-as-rank-mode" class="rank-filter-mode" onchange="applyHistoryFilters();">
+                                                <option value="higher">or Higher</option>
+                                                <option value="lower">or Lower</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="filter-group collapsed">
+                                    <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-vs-rank-panel" onclick="toggleRankFilterGroup(this)">
+                                        VS Rank <span class="collapse-icon" aria-hidden="true"></span>
+                                    </button>
+                                    <div class="filter-options" id="filter-vs-rank-panel" style="padding: 8px;">
+                                        <div class="rank-filter-row">
+                                            <input id="filter-vs-rank" class="rank-filter-input" inputmode="numeric" placeholder="#" value="" oninput="this.value=this.value.replace(/\D/g,''); applyHistoryFilters();">
+                                            <select id="filter-vs-rank-mode" class="rank-filter-mode" onchange="applyHistoryFilters();">
+                                                <option value="higher">or Higher</option>
+                                                <option value="lower">or Lower</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="filter-actions">
+                                <div class="filter-instructions">
+                                    <span class="filter-instructions-desktop">Ctrl+Click to select multiple options.</span>
+                                    <span class="filter-instructions-mobile">Tap to add or remove filter options.</span>
+                                </div>
+                                <button class="filter-btn filter-btn-clear" onclick="clearHistoryFilters()">Reset Filters</button>
+                            </div>
+                        </div>
+
+                        <div class="history-content">
+                            <div id="history-match-page" class="history-subpage">
+                                <div class="table-header-section">
+                                    <div class="history-summary-container">
+                                        <span id="history-wl-counter" class="history-wl-counter">Matches: 0 (0-0)</span>
+                                    </div>
+                                    <h1 class="table-title">Match History</h1>
+                                    <div class="history-header-actions history-header-actions-player">
+                                        <div class="player-select-container">
+                                            <select id="playerHistorySelect">
+                                                <option value="">Select Player...</option>
+                                                <option value="__ALL__">ALL PLAYERS</option>
+                                                @@WTARG_HISTORY_PLAYER_OPTIONS@@
+                                            </select>
+                                        </div>
+                                        <button class="history-nav-btn" onclick="setHistorySubpage('milestones')">Milestones</button>
+                                    </div>
+                                </div>
+
+                                <div class="history-mobile-filter-bar">
+                                    <button type="button" class="history-mobile-filter-btn" id="history-mobile-filter-btn" aria-controls="history-filter-panel" aria-expanded="false" onclick="openHistoryFilters()">
+                                        <span id="history-mobile-filter-label">Filters</span>
+                                    </button>
+                                </div>
+
+                                <div class="content-card">
+                                    <div class="table-wrapper">
+                                        <table id="history-table">
+                                            <thead id="history-head"></thead>
+                                            <tbody id="history-body">
+                                                <tr><td colspan="100%" class="cell-state-info">Select a player to view their matches</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div id="history-pagination" style="display:none; justify-content:center; align-items:center; gap:12px; padding:12px; font-size:0.85rem;"></div>
+                                </div>
+                            </div>
+
+                            <div id="history-milestones-page" class="history-subpage" style="display: none;">
+                                <div class="table-header-section">
+                                    <h1 class="table-title">Milestones</h1>
+                                    <div class="milestones-header-actions">
+                                        <button class="history-nav-btn" onclick="setHistorySubpage('match')">Match History</button>
+                                    </div>
+                                </div>
+
+                                <div class="content-card">
+                                    <div class="milestones-filter-panel">
+                                        <h3>Filters</h3>
+                                        <div class="milestones-filter-body" id="milestones-filter-body"></div>
+                                    </div>
+
+                                    <div class="milestones-main-column">
+                                        <div class="table-wrapper">
+                                            <table id="milestones-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>PLAYER</th>
+                                                        <th>WINS</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="milestones-body">
+                                                    <tr><td colspan="2" class="cell-state-info">Open Milestones to view the leaderboard</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-fedbcup" class="single-layout fedbcup-series-active" style="display: none;">
+                    <div class="header-row">
+                        <h1>Fed/BJK Cup</h1>
+                    </div>
+                    <div class="fedbcup-header-controls">
+                        <div class="fedbcup-filter-left" id="fedbcup-filter-left">
+                            <select id="fedbcup-player-filter" onchange="filterFedBjkPlayer()">
+                                <option value="">All Players</option>
+                            </select>
+                        </div>
+                        <div class="fedbcup-toggle-row">
+                            <button class="fedbcup-btn active" id="fedbcup-btn-series" onclick="switchFedBjkTab('series')">Series</button>
+                            <button class="fedbcup-btn" id="fedbcup-btn-players" onclick="switchFedBjkTab('players')">Player Debuts</button>
+                            <button class="fedbcup-btn" id="fedbcup-btn-captains" onclick="switchFedBjkTab('captains')">Captain Debuts</button>
+                        </div>
+                        <div class="fedbcup-record-right" id="fedbcup-record-right">
+                            <span id="fedbcup-record" class="fedbcup-record-text"></span>
+                        </div>
+                    </div>
+                    <div id="fedbcup-view-players" class="content-card" style="display: none;">
+                        <div class="table-wrapper">
+                            <table id="national-table">
+                                <thead>
+                                    <tr>
+                                        @@WTARG_NATIONAL_HEADER_HTML@@
+                                    </tr>
+                                </thead>
+                                <tbody id="national-body">@@WTARG_NATIONAL_ROWS@@</tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="fedbcup-view-captains" class="content-card" style="display: none;">
+                        <div class="table-wrapper">
+                            <table id="captains-table">
+                                <thead>
+                                    <tr>
+                                        @@WTARG_CAPTAINS_HEADER_HTML@@
+                                    </tr>
+                                </thead>
+                                <tbody id="captains-body">@@WTARG_CAPTAINS_ROWS@@</tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="fedbcup-view-series">
+                        @@WTARG_BJKC_SERIES_HTML@@
+                    </div>
+                </div>
+
+                <div id="view-tstrength" class="single-layout" style="display: none;">
+                    <div class="header-row">
+                        <h1>WTA Tournament Strength</h1>
+                    </div>
+                    <div class="ts-controls">
+                        <div class="ts-row1"><button id="ts-sort-toggle" onclick="tsToggleSort()">Order by Strength</button>
+                        <button id="ts-view-toggle" onclick="tsToggleView()">View Qualy</button>
+                        <select id="ts-filter-year" onchange="tsRender()"><option value="2026">2026</option><option value="2025">2025</option></select></div>
+                        <div class="ts-row2"><select id="ts-filter-level" onchange="tsRender()"><option value="">All Levels</option><option value="WTA 1000">WTA 1000</option><option value="WTA 500">WTA 500</option><option value="WTA 250">WTA 250</option><option value="WTA 125">WTA 125</option></select>
+                        <select id="ts-filter-surface" onchange="tsRender()"><option value="">All Surfaces</option><option value="Hard">Hard</option><option value="Clay">Clay</option><option value="Grass">Grass</option></select>
+                        <select id="ts-filter-region" onchange="tsRender()"><option value="">All Regions</option><option value="Europe">Europe</option><option value="North America">North America</option><option value="South America">South America</option><option value="Asia">Asia</option><option value="Middle East">Middle East</option><option value="Oceania">Oceania</option><option value="Africa">Africa</option></select></div>
+                    </div>
+                    <div class="ts-explanation">
+                        <p><strong>GM</strong> (Geometric Mean): Balanced measure of overall draw quality across all players.</p>
+                        <p><strong>HM</strong> (Harmonic Mean): Weighted toward top-ranked players. Reflects star power in the draw.</p>
+                    </div>
+                    <div class="tstrength-wrapper">
+                        <table id="tstrength-table">
+                            <thead><tr><th>#</th><th>GM</th><th>HM</th><th>Date</th><th>Tournament</th><th>Level</th><th>Surface</th><th>Region</th><th>Draw</th></tr></thead>
+                            <tbody id="tstrength-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="view-calendar" class="single-layout" style="display: none;">
+                    <div class="calendar-toolbar" id="calendar-toolbar">
+                        <div class="cal-dd" data-cal-dd="categories">
+                            <button type="button" class="cal-dd-btn" data-cal-dd-btn aria-expanded="false">
+                                Categories
+                            </button>
+                        <div class="cal-dd-panel" role="menu">
+                            <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="gs" checked><span>GS</span></label>
+                            <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="wta_tour" checked><span>WTA TOUR</span></label>
+                            <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="wta125" checked><span>WTA 125</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="w100" checked><span>W100</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="w75" checked><span>W75</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="w50" checked><span>W50</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="w35" checked><span>W35</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="w15" checked><span>W15</span></label>
+                            </div>
+                        </div>
+
+                        <div class="cal-dd" data-cal-dd="region">
+                            <button type="button" class="cal-dd-btn" data-cal-dd-btn aria-expanded="false">
+                                Region
+                            </button>
+                            <div class="cal-dd-panel" role="menu">
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-continent-toggle="south_america" checked><span>S America</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-continent-toggle="north_central_america" checked><span>N/C America</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-continent-toggle="europe" checked><span>Europe</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-continent-toggle="africa" checked><span>Africa</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-continent-toggle="asia" checked><span>Asia</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-continent-toggle="oceania" checked><span>Oceania</span></label>
+                            </div>
+                        </div>
+
+                        <div class="cal-dd" data-cal-dd="surface">
+                            <button type="button" class="cal-dd-btn" data-cal-dd-btn aria-expanded="false">
+                                Surface
+                            </button>
+                            <div class="cal-dd-panel" role="menu">
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-surface-toggle="hard" checked><span>Hard</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-surface-toggle="clay" checked><span>Clay</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-surface-toggle="grass" checked><span>Grass</span></label>
+                                <label class="cal-dd-item"><input type="checkbox" data-cal-surface-toggle="carpet" checked><span>Carpet</span></label>
+                            </div>
+                        </div>
+
+                        <button type="button" class="calendar-gm-toggle active" id="calendar-gm-toggle"
+                                aria-pressed="true" aria-label="Hide draw quality" title="Hide draw quality">
+                            Hide Quality
+                        </button>
+
+                        <div class="cal-gm-legend">
+                            <span class="cal-gm-legend-badge">99.9</span> Draw quality from last year's edition of the tournament.
+                        </div>
+                    </div>
+
+                    <div class="content-card calendar-container">
+                        <div class="table-wrapper" tabindex="0" aria-label="Calendar table">
+                            @@WTARG_CALENDAR_HTML@@
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-roadtogs" class="single-layout" style="display: none;">
+                    <div class="header-row">
+                        <h1>Points Breakdown</h1>
+                    </div>
+                    <div class="roadtogs-controls">
+                        <div class="player-select-container">
+                            <select id="roadtogsPlayerSelect">
+                                <option value="">Select Player...</option>
+                                @@WTARG_ROADTOGS_PLAYER_OPTIONS@@
+                            </select>
+                        </div>
+                        <div id="roadtogs-points-total" style="font-size: 16px; font-weight: bold; padding-right: 12px;">Points: 0</div>
+                    </div>
+                    <div class="roadtogs-cutoffs">
+                        @@WTARG_GS_TABLES_HTML@@
+                    </div>
+                    <details class="roadtogs-info">
+                        <summary class="roadtogs-info-summary">
+                            <span class="roadtogs-info-summary-label"><span class="roadtogs-info-icon" aria-hidden="true">i</span>Grand Slams information</span>
+                        </summary>
+                        <div class="roadtogs-info-panel">
+                            <div class="roadtogs-info-col roadtogs-info-legend">
+                                <div class="roadtogs-info-line"><span class="roadtogs-info-term">ACC. PTS</span><span>Points accumulated that count towards the ranking as of the cutoff date.</span></div>
+                                <div class="roadtogs-info-line"><span class="roadtogs-info-term">EST. NEED</span><span>Estimated points needed to qualify for the Grand Slam: @@WTARG_GS_THRESHOLD_Q@@ for Q, @@WTARG_GS_THRESHOLD_MD@@ for MD.</span></div>
+                            </div>
+                            <div class="roadtogs-info-col roadtogs-info-cutoffs">
+                                <div>Cutoffs 2025 (Q/MD) = <span style="color:#0066B3;font-weight:700;">AO 316/756</span> - <span style="color:#C8602A;font-weight:700;">RG 326/742</span> - <span style="color:#3D7A3D;font-weight:700;">WB 315/727</span> - <span style="color:#003087;font-weight:700;">US 323/730</span></div>
+                                <div>Cutoffs 2026 (Q/MD) = <span style="color:#0066B3;font-weight:700;">AO 308/754</span> - <span style="color:#C8602A;font-weight:700;">RG 283/786</span> - <span style="color:#3D7A3D;font-weight:700;">WB 315/736</span></div>
+                            </div>
+                        </div>
+                    </details>
+                    <div class="content-card">
+                        <div class="table-wrapper">
+                            <table id="roadtogs-table">
+                                <colgroup>
+                                    <col class="rtgs-col-date">
+                                    <col class="rtgs-col-tournament">
+                                    <col class="rtgs-col-round">
+                                    <col class="rtgs-col-points">
+                                    <col class="rtgs-col-drop-date">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Tournament</th>
+                                        <th>Round</th>
+                                        <th>PTS</th>
+                                        <th>Drop Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="roadtogs-body">
+                                    <tr><td colspan="5" class="cell-state-info">Select a player to view their results</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-draws" class="single-layout" style="display: none;">
+                    <div class="draws-layout">
+                        <div class="draws-toolbar">
+                            <select id="draws-tournament-select" onchange="onDrawTournamentChange(this.value)">
+                                @@WTARG_DRAWS_DROPDOWN_HTML@@
+                            </select>
+                            <div class="draws-type-btns" id="draws-type-btns"></div>
+                            <span style="font-size:9px;color:#94a3b8;">Click a round header to filter</span>
+                            <span style="flex:1;"></span>
+                            <button class="draw-filter-reset" id="draw-filter-reset" onclick="resetDrawFilter()">Show Full Draw</button>
+                        </div>
+                        <div class="draw-bracket-wrapper" id="draw-bracket-wrapper">
+                            <div class="draw-bracket" id="draw-bracket"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <script src="assets/js/generated-data.js"></script>
+        <script src="assets/js/data-loader.js"></script>
+        <script src="assets/js/tabs/tstrength.js"></script>
+        <script src="data/player_aliases_wta_itf_bundle.js"></script>
+        <script src="assets/js/app.js"></script>
+        <script src="assets/js/tabs/roadtogs.js"></script>
+        <script src="assets/js/tabs/draws.js"></script>
+        <script src="assets/anonymous-analytics.js"></script>
+    <script src="assets/js/router.js"></script>
+    <script src="assets/app-shell.js"></script>
+    </body>
+    </html>
+    

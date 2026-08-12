@@ -39,6 +39,7 @@ def offline_generated_site(tmp_path_factory):
     previous_site_root = html_generator.RUNTIME_SITE_ROOT
     previous_loader = html_generator.load_player_mapping
     try:
+        shutil.copytree(PROJECT_ROOT / "assets", site_dir / "assets")
         html_generator.RUNTIME_DATA_DIR = data_dir
         html_generator.RUNTIME_SITE_ROOT = site_dir
         html_generator.load_player_mapping = lambda: {}
@@ -60,7 +61,6 @@ def offline_generated_site(tmp_path_factory):
     deploy_data.mkdir()
     for source in data_dir.glob("*_bundle.js"):
         shutil.copy2(source, deploy_data / source.name)
-    shutil.copytree(PROJECT_ROOT / "assets", site_dir / "assets")
     for filename in ("site.webmanifest",):
         shutil.copy2(PROJECT_ROOT / filename, site_dir / filename)
     return site_dir

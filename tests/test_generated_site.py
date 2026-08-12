@@ -21,6 +21,42 @@ from utils import expand_entry_lists_cache
 
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
+AUTHORING_FRONTEND_FILES = (
+    "web/templates/app.html",
+    "web/css/app.css",
+    "web/js/app.js",
+    "web/js/data-loader.js",
+    "web/js/router.js",
+    "web/js/tabs/draws.js",
+    "web/js/tabs/roadtogs.js",
+    "web/js/tabs/tstrength.js",
+)
+GENERATED_FRONTEND_FILES = (
+    "app.html",
+    "assets/app.css",
+    "assets/js/app.js",
+    "assets/js/data-loader.js",
+    "assets/js/generated-data.js",
+    "assets/js/router.js",
+    "assets/js/tabs/draws.js",
+    "assets/js/tabs/roadtogs.js",
+    "assets/js/tabs/tstrength.js",
+)
+
+
+def _combined_source(relative_paths):
+    return "\n".join(
+        (PROJECT_DIR / relative_path).read_text(encoding="utf-8-sig")
+        for relative_path in relative_paths
+    )
+
+
+def _authoring_frontend_source():
+    return _combined_source(AUTHORING_FRONTEND_FILES)
+
+
+def _generated_frontend_source():
+    return _combined_source(GENERATED_FRONTEND_FILES)
 
 
 class GeneratedSiteTests(unittest.TestCase):
@@ -83,7 +119,7 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertNotIn("Yue Yuan (1998)", entry_list_names)
         self.assertNotIn(
             "Yue Yuan (1998)",
-            (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig"),
+            _generated_frontend_source(),
         )
 
     def test_us_open_pdf_entry_list_is_assigned_to_august_31(self):
@@ -149,8 +185,8 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertEqual([player["pos"] for player in alternates], [str(i) for i in range(1, 10)])
         self.assertEqual(alternates[0]["name"], "DARJA VIDMANOVA")
 
-        app_source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
-        self.assertNotIn('"name": "EMMA RADUCANU"', app_source)
+        app_source = _generated_frontend_source()
+        self.assertNotIn('"name":"EMMA RADUCANU"', app_source.replace(": ", ":"))
 
     def test_us_open_qualifying_entry_list_is_assigned_to_august_24(self):
         tournament_key = "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list"
@@ -182,7 +218,7 @@ class GeneratedSiteTests(unittest.TestCase):
             ["17"],
         )
 
-        app_source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        app_source = _generated_frontend_source()
         self.assertNotIn(tournament_key + "#qual#qual", app_source)
         self.assertNotIn("US Open Qualifying Qualifying", app_source)
 
@@ -301,9 +337,9 @@ class GeneratedSiteTests(unittest.TestCase):
         )
 
     def test_mobile_schedule_surface_dot_matches_tournament_font_size(self):
-        source = (PROJECT_DIR / "html_generator.py").read_text(encoding="utf-8")
+        source = _authoring_frontend_source()
         self.assertIn(
-            "#view-upcoming .tournament-surface-dot {{ width: 5px; height: 5px;",
+            "#view-upcoming .tournament-surface-dot { width: 5px; height: 5px;",
             source,
         )
 
@@ -317,13 +353,13 @@ class GeneratedSiteTests(unittest.TestCase):
             "oceania": "OCE",
         }
         config_source = (PROJECT_DIR / "config.py").read_text(encoding="utf-8")
-        generator_source = (PROJECT_DIR / "html_generator.py").read_text(encoding="utf-8")
-        app_source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        generator_source = _authoring_frontend_source()
+        app_source = _generated_frontend_source()
 
         for key, label in expected_labels.items():
             self.assertIn(f'"{key}": "{label}"', config_source)
             self.assertIn(f'class="cal-cont-label-mobile">{label}</span>', app_source)
-        self.assertIn(".cal-cont-label-mobile {{ display: none; }}", generator_source)
+        self.assertIn(".cal-cont-label-mobile { display: none; }", generator_source)
         self.assertIn("min-width: 36px;", generator_source)
         self.assertIn(".cal-cont-label-mobile { display: none; }", app_source)
         self.assertIn("min-width: 36px;", app_source)
@@ -357,7 +393,7 @@ class GeneratedSiteTests(unittest.TestCase):
             with self.subTest(source_name=source_name):
                 self.assertEqual(_display_calendar_tournament_name(source_name), display_name)
 
-        app_source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        app_source = _generated_frontend_source()
         tournament_names = re.findall(
             r'<span class="calendar-tournament[^>]*>(?:<img[^>]*>\s*)?([^<]+)',
             app_source,
@@ -369,9 +405,11 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertTrue(any("Sharm ES." in name for name in tournament_names))
 
     def test_calendar_gm_toggle_is_visible_by_default_and_persists_state(self):
-        for relative_path in ("html_generator.py", "app.html"):
-            source = (PROJECT_DIR / relative_path).read_text(encoding="utf-8-sig")
-            with self.subTest(path=relative_path):
+        for label, source in (
+            ("authoring", _authoring_frontend_source()),
+            ("generated", _generated_frontend_source()),
+        ):
+            with self.subTest(path=label):
                 self.assertIn(
                     'class="calendar-gm-toggle active" id="calendar-gm-toggle"',
                     source,
@@ -385,9 +423,11 @@ class GeneratedSiteTests(unittest.TestCase):
                 self.assertIn("gmLegend.style.display = showGm ? '' : 'none'", source)
 
     def test_entry_menu_uses_gm_as_category_tiebreaker(self):
-        for relative_path in ("html_generator.py", "app.html"):
-            source = (PROJECT_DIR / relative_path).read_text(encoding="utf-8-sig")
-            with self.subTest(path=relative_path):
+        for label, source in (
+            ("authoring", _authoring_frontend_source()),
+            ("generated", _generated_frontend_source()),
+        ):
+            with self.subTest(path=label):
                 self.assertIn("function sortEntryMenuByCategoryThenGm(rows)", source)
                 self.assertIn("if (categoryDiff) return categoryDiff", source)
                 self.assertIn("if (hasGmA !== hasGmB) return hasGmA ? -1 : 1", source)
@@ -395,9 +435,11 @@ class GeneratedSiteTests(unittest.TestCase):
                 self.assertIn("sortEntryMenuByCategoryThenGm(rows);", source)
 
     def test_local_file_url_sync_stays_on_app_html(self):
-        for relative_path in ("html_generator.py", "app.html"):
-            source = (PROJECT_DIR / relative_path).read_text(encoding="utf-8")
-            with self.subTest(path=relative_path):
+        for label, source in (
+            ("authoring", _authoring_frontend_source()),
+            ("generated", _generated_frontend_source()),
+        ):
+            with self.subTest(path=label):
                 self.assertIn("location.protocol === 'file:'", source)
                 self.assertIn("location.href.split(/[?#]/)[0]", source)
                 self.assertIn("URL state update skipped:", source)
@@ -416,7 +458,7 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertNotIn('<details class="roadtogs-info" open', source)
 
     def test_fed_bjk_series_allows_multiple_open_ties_with_latest_tie_open(self):
-        source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        source = _generated_frontend_source()
         tie_tags = re.findall(
             r'<details class="bjkc-series-block"(?: open)?>',
             source,
@@ -436,7 +478,7 @@ class GeneratedSiteTests(unittest.TestCase):
         )
 
     def test_fed_bjk_series_only_controls_are_hidden_on_other_mobile_views(self):
-        source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        source = _generated_frontend_source()
         self.assertIn(
             'id="view-fedbcup" class="single-layout fedbcup-series-active"',
             source,
@@ -463,7 +505,7 @@ class GeneratedSiteTests(unittest.TestCase):
         )
 
     def test_fed_bjk_player_debuts_moves_tie_flag_into_opponent_column(self):
-        source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        source = _generated_frontend_source()
         table_match = re.search(
             r'<table id="national-table">(.*?)</table>',
             source,
@@ -568,7 +610,7 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertNotIn("#national-table th:nth-child(10)", source)
 
     def test_match_history_filters_use_a_mobile_bottom_sheet_with_active_count(self):
-        source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        source = _generated_frontend_source()
         self.assertIn('id="history-mobile-filter-btn"', source)
         self.assertIn('aria-controls="history-filter-panel"', source)
         self.assertIn('id="history-filter-panel"', source)
@@ -588,9 +630,11 @@ class GeneratedSiteTests(unittest.TestCase):
         )
 
     def test_home_button_rows_are_centered(self):
-        for relative_path in ("index.html", "app.html"):
-            source = (PROJECT_DIR / relative_path).read_text(encoding="utf-8-sig")
-            with self.subTest(path=relative_path):
+        for label, source in (
+            ("index.html", (PROJECT_DIR / "index.html").read_text(encoding="utf-8-sig")),
+            ("generated app", _generated_frontend_source()),
+        ):
+            with self.subTest(path=label):
                 self.assertIn("flex-wrap: wrap;", source)
                 self.assertIn("justify-content: center;", source)
                 self.assertIn("flex: 0 1 calc((100% - 48px) / 5);", source)

@@ -70,6 +70,18 @@ Build the deployable static site from the committed data:
 python build_deploy_site.py --output .site
 ```
 
+The browser application is maintained as normal frontend source under `web/`:
+
+- `web/templates/` contains the application and launcher HTML.
+- `web/css/` contains the application stylesheet.
+- `web/js/` contains shared code, routing, data loading, and tab modules.
+
+Site generation renders the small HTML placeholders and writes changing data to
+`assets/js/generated-data.js`. The CSS and application logic are copied as
+separate static assets, so they can be cached and reviewed independently of the
+data refresh. `build_deploy_site.py` merges those generated assets with the
+fonts, icons, and vendored libraries before atomically replacing `.site`.
+
 Historical WTA ranking CSVs are indexed lazily by week. Python keeps a small
 byte-offset index and an eight-week row cache instead of materializing the full
 2.1-million-row archive as dictionaries. Site generation emits
