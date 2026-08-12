@@ -46,6 +46,40 @@ def test_json_schema_rejects_unknown_alias_fields(tmp_path):
         _validate_json_schema(payload, PROJECT_ROOT / "schemas" / "player_aliases.schema.json", data_path)
 
 
+def test_tournament_snapshot_schema_requires_versioned_normalized_rows(tmp_path):
+    schema = PROJECT_ROOT / "schemas" / "tournament_snapshot.schema.json"
+    data_path = tmp_path / "tournament_snapshot.json"
+    invalid_payload = {
+        "schemaVersion": 1,
+        "fields": ["name", "level", "surface", "country", "startDate", "endDate", "week"],
+        "tournaments": {
+            "w-itf-srb-2026-016": [
+                "W75 Kursumlijska Banja ",
+                "W75",
+                "Clay",
+                "SRB",
+                "2026-08-17T00:00:00",
+                "2026-08-23",
+                "Week of August 17",
+            ]
+        },
+    }
+
+    with pytest.raises(DataValidationError, match="does not match"):
+        _validate_json_schema(invalid_payload, schema, data_path)
+
+
+def test_current_tournament_snapshot_matches_its_schema():
+    data_path = PROJECT_ROOT / "data" / "tournament_snapshot.json"
+    payload = json.loads(data_path.read_text(encoding="utf-8-sig"))
+
+    _validate_json_schema(
+        payload,
+        PROJECT_ROOT / "schemas" / "tournament_snapshot.schema.json",
+        data_path,
+    )
+
+
 def test_row_drop_threshold_is_blocking(tmp_path):
     baseline = tmp_path / "baseline"
     baseline.mkdir()

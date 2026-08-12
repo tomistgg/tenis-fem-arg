@@ -17263,14 +17263,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183654089, "playStatusCode": "IP",
+                            "matchId": 1183654089, "playStatusCode": "PC", "resultStatusDesc": "Retired", "resultStatusCode": "RET",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "scores": [2], "isWinner": true, "entryStatus": "Q",
                                   "player": {"playerId":800543088,"nationality":"ROU","givenName":"Patricia Georgiana","familyName":"Goina"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [6], "isWinner": false, "entryStatus": "DA",
                                   "player": {"playerId":800640357,"nationality":"ROU","givenName":"Giulia Safina","familyName":"Popa"}
                                 }
                             ]
@@ -17367,7 +17367,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183654097, "playStatusCode": "TP",
+                            "matchId": 1183654097, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "JR",
@@ -17441,7 +17441,8 @@
                             "matchId": 1183654078, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "player": {"playerId":800543088,"nationality":"ROU","givenName":"Patricia Georgiana","familyName":"Goina"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "JR",

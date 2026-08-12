@@ -109,6 +109,10 @@ The blocking gate validates critical JSON with committed JSON Schemas and
 Pydantic models, validates ranking and match CSVs with Pandera, enforces
 canonical unique keys and referential integrity, and checks freshness and
 minimum row counts. `data_quality_policy.json` contains the reviewed limits.
+`data/tournament_snapshot.json` uses a versioned compact contract: its
+`schemaVersion` and ordered `fields` describe positional rows, while readers
+expand those rows into normalized typed records with trimmed text and date-only
+values.
 When comparing a refresh with the previous dataset, pass
 `--baseline-dir <snapshot>/data`; the gate then also blocks excessive row drops
 or row-count changes. Raising a limit requires a reviewed policy change rather

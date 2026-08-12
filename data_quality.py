@@ -22,6 +22,7 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, ValidationErro
 from canonical_data import CanonicalConstraintError, validate_project_data
 from pipeline_errors import DataValidationError
 from time_utils import utc_now
+from tournament_snapshot import expand_tournament_snapshot
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -238,6 +239,22 @@ def _validate_pydantic_json(data_dir: Path) -> dict[str, int]:
     cache_path = data_dir / "cache_state.json"
     cache_state = _read_json(cache_path)
     _validate_json_schema(cache_state, SCHEMA_DIR / "cache_state.schema.json", cache_path)
+    tournament_snapshot_path = data_dir / "tournament_snapshot.json"
+    tournament_snapshot = _read_json(tournament_snapshot_path)
+    _validate_json_schema(
+        tournament_snapshot,
+        SCHEMA_DIR / "tournament_snapshot.schema.json",
+        tournament_snapshot_path,
+    )
+    try:
+        tournament_records = expand_tournament_snapshot(tournament_snapshot)
+    except ValueError as exc:
+        raise _quality_error(
+            "validate tournament snapshot",
+            "tournament snapshot normalization failed",
+            path=str(tournament_snapshot_path),
+            cause=str(exc),
+        ) from exc
     ranking_status_path = data_dir / "wta_ranking_refresh_status.json"
     ranking_status = _read_json(ranking_status_path)
     try:
@@ -249,7 +266,12 @@ def _validate_pydantic_json(data_dir: Path) -> dict[str, int]:
             "cache or ranking status model validation failed",
             errors=exc.errors(),
         ) from exc
-    return {"player_aliases": len(aliases), "pydantic_models": len(aliases) + 2, "json_schemas": 2}
+    return {
+        "player_aliases": len(aliases),
+        "tournament_snapshot": len(tournament_records),
+        "pydantic_models": len(aliases) + 2,
+        "json_schemas": 3,
+    }
 
 
 def _string_check(pattern: str, description: str, *, allow_empty: bool = False) -> pa.Check:

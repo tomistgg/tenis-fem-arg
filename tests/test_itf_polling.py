@@ -59,9 +59,11 @@ def test_current_week_itf_tournaments_remain_grouped_on_tuesday(monkeypatch):
     }
     tournament_groups = {
         current_week: {
-            "wta-current": {
+            "https://www.wtatennis.com/tournaments/1000/current/2026/player-list": {
                 "name": "WTA Current",
                 "level": "WTA 1000",
+                "surface": "Hard",
+                "country": "CAN",
                 "startDate": "2026-08-03",
                 "endDate": "2026-08-09",
             }

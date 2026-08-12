@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wtarg.example/schemas/tournament_snapshot.schema.json",
+  "title": "Active WTA and ITF tournament snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "fields", "tournaments"],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "fields": {
+      "type": "array",
+      "prefixItems": [
+        {"const": "name"},
+        {"const": "level"},
+        {"const": "surface"},
+        {"const": "country"},
+        {"const": "startDate"},
+        {"const": "endDate"},
+        {"const": "week"}
+      ],
+      "items": false,
+      "minItems": 7,
+      "maxItems": 7
+    },
+    "tournaments": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "anyOf": [
+          {
+            "pattern": "^https://www\\.wtatennis\\.com/tournaments/[0-9]+/[^/\\s]+/[0-9]{4}/player-list$"
+          },
+          {
+            "pattern": "^w-itf-[a-z]{3}-[0-9]{4}-[0-9]{3}$"
+          }
+        ]
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/tournamentRow"
+      }
+    }
+  },
+  "$defs": {
+    "trimmedRequiredText": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^\\S(?:.*\\S)?$"
+    },
+    "trimmedOptionalText": {
+      "type": "string",
+      "pattern": "^(?:\\S(?:.*\\S)?)?$"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "optionalDate": {
+      "anyOf": [
+        {"const": ""},
+        {"$ref": "#/$defs/date"}
+      ]
+    },
+    "tournamentRow": {
+      "type": "array",
+      "prefixItems": [
+        {"$ref": "#/$defs/trimmedRequiredText"},
+        {"$ref": "#/$defs/trimmedRequiredText"},
+        {"$ref": "#/$defs/trimmedOptionalText"},
+        {"type": "string", "pattern": "^[A-Z]{3}$"},
+        {"$ref": "#/$defs/date"},
+        {"$ref": "#/$defs/optionalDate"},
+        {"$ref": "#/$defs/trimmedRequiredText"}
+      ],
+      "items": false,
+      "minItems": 7,
+      "maxItems": 7
+    }
+  }
+}

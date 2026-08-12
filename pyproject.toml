@@ -67,6 +67,7 @@ py-modules = [
     "runtime_logging",
     "runtime_paths",
     "time_utils",
+    "tournament_snapshot",
     "transactional_io",
     "tstrength",
     "utils",
@@ -104,6 +105,7 @@ files = [
     "run_state.py",
     "runtime_paths.py",
     "time_utils.py",
+    "tournament_snapshot.py",
     "transactional_io.py",
 ]
 check_untyped_defs = true

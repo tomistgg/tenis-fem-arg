@@ -81,6 +81,12 @@ from itf_drawsheet_cache import (
     tournament_ids_with_published_main_draw,
 )
 from tstrength import build_tstrength_data
+from tournament_snapshot import (
+    TournamentSnapshotRecord,
+    dumps_tournament_snapshot,
+    normalize_tournament_snapshot_key,
+    normalize_tournament_snapshot_record,
+)
 
 logger = get_logger("main")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1860,12 +1866,13 @@ def build_all_tournament_groups(driver):
                 "endDate": item.get('endDate', None)
             }
 
-    tournament_snapshot = {}
+    tournament_snapshot: dict[str, TournamentSnapshotRecord] = {}
     for week, tourneys in tournament_groups.items():
         for key, info in tourneys.items():
             if 'cancel' in info.get("name", "").lower():
                 continue
-            tournament_snapshot[key] = {
+            normalized_key = normalize_tournament_snapshot_key(key)
+            tournament_snapshot[normalized_key] = normalize_tournament_snapshot_record({
                 "name": info.get("name", key),
                 "level": info.get("level", ""),
                 "surface": info.get("surface", ""),
@@ -1873,8 +1880,12 @@ def build_all_tournament_groups(driver):
                 "startDate": info.get("startDate"),
                 "endDate": info.get("endDate"),
                 "week": week,
-            }
-    save_json_file(TOURNAMENT_SNAPSHOT_FILE, compress_tournament_snapshot(tournament_snapshot))
+            })
+    save_json_file(
+        TOURNAMENT_SNAPSHOT_FILE,
+        compress_tournament_snapshot(tournament_snapshot),
+        formatter=dumps_tournament_snapshot,
+    )
 
     return tournament_groups, monday_map
 

@@ -57,6 +57,28 @@ def _normalize_country_code(code):
     return value
 
 
+def _wta_tournament_name_parts(raw_name):
+    """Return the display name parts and WTA website slug for a tournament.
+
+    The calendar API sometimes includes parenthetical qualifiers in the group
+    name, while the public website removes the parentheses from its URL.  Keep
+    the qualifier text, but normalize the punctuation before constructing the
+    player-list URL.
+    """
+    clean_name = fix_encoding(raw_name)
+    suffix = ""
+    if "#" in clean_name:
+        clean_name, raw_suffix = clean_name.split("#", 1)
+        clean_name = clean_name.strip()
+        suffix = " " + raw_suffix.strip()
+
+    url_slug = clean_name.lower().replace(" ", "-").replace("'", "-")
+    if suffix:
+        url_slug += "-" + suffix.strip()
+    url_slug = url_slug.replace("(", "").replace(")", "")
+    return clean_name, suffix, url_slug
+
+
 class WtaApiRateLimited(RuntimeError):
     pass
 
@@ -178,17 +200,7 @@ def build_tournament_groups():
         tournament_id = tournament["tournamentGroup"]["id"]
         raw_name = tournament["tournamentGroup"]["name"]
 
-        clean_name = fix_encoding(raw_name)
-
-        suffix = ""
-        if "#" in clean_name:
-            parts = clean_name.split("#")
-            clean_name = parts[0].strip()
-            suffix = " " + parts[1].strip()
-
-        name = clean_name.lower().replace(" ", "-").replace("'", "-")
-        if suffix:
-            name += "-" + suffix.strip()
+        _clean_name, suffix, url_slug = _wta_tournament_name_parts(raw_name)
 
         year = tournament["year"]
         level = tournament["level"]
@@ -209,7 +221,7 @@ def build_tournament_groups():
 
         week_label = format_week_label(monday)
 
-        t_url = f"https://www.wtatennis.com/tournaments/{tournament_id}/{name}/{year}/player-list"
+        t_url = f"https://www.wtatennis.com/tournaments/{tournament_id}/{url_slug}/{year}/player-list"
         if level.lower().replace(" ", "") == "grandslam":
             display_name = f"Grand Slam {city}{suffix}"
         else:
@@ -262,17 +274,7 @@ def get_draws_tournament_list():
         tournament_id = tournament["tournamentGroup"]["id"]
         raw_name = tournament["tournamentGroup"]["name"]
 
-        clean_name = fix_encoding(raw_name)
-
-        suffix = ""
-        if "#" in clean_name:
-            parts = clean_name.split("#")
-            clean_name = parts[0].strip()
-            suffix = " " + parts[1].strip()
-
-        name = clean_name.lower().replace(" ", "-").replace("'", "-")
-        if suffix:
-            name += "-" + suffix.strip()
+        _clean_name, suffix, url_slug = _wta_tournament_name_parts(raw_name)
 
         year = tournament["year"]
         level = tournament["level"]
@@ -283,7 +285,7 @@ def get_draws_tournament_list():
         monday = get_monday_from_date(start_date)
 
         week_label = format_week_label(monday)
-        t_url = f"https://www.wtatennis.com/tournaments/{tournament_id}/{name}/{year}/player-list"
+        t_url = f"https://www.wtatennis.com/tournaments/{tournament_id}/{url_slug}/{year}/player-list"
         if level.lower().replace(" ", "") == "grandslam":
             display_name = f"Grand Slam {city}{suffix}"
         else:

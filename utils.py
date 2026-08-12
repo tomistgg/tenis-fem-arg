@@ -13,6 +13,7 @@ from config import (
 from time_utils import utc_timestamp
 from runtime_logging import get_logger
 from runtime_paths import DATA_DIR
+from tournament_snapshot import compress_tournament_snapshot, expand_tournament_snapshot
 
 logger = get_logger("utils")
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1703,46 +1704,6 @@ def expand_row_mapping_cache(payload, field_order):
         key: expand_row_list_cache(value, field_order) if isinstance(value, list) else value
         for key, value in payload.items()
     }
-
-
-_TOURNAMENT_SNAPSHOT_FIELDS = (
-    "name",
-    "level",
-    "surface",
-    "country",
-    "startDate",
-    "endDate",
-    "week",
-)
-
-
-def compress_tournament_snapshot(payload):
-    """Convert tournament snapshot entries into compact positional rows."""
-    if not isinstance(payload, dict):
-        return payload
-    compressed = {}
-    for key, value in payload.items():
-        if isinstance(value, dict):
-            compressed[key] = [value.get(field, "") for field in _TOURNAMENT_SNAPSHOT_FIELDS]
-        else:
-            compressed[key] = value
-    return compressed
-
-
-def expand_tournament_snapshot(payload):
-    """Expand compact tournament snapshot rows back into dict entries."""
-    if not isinstance(payload, dict):
-        return payload
-    expanded = {}
-    for key, value in payload.items():
-        if isinstance(value, list):
-            expanded[key] = {
-                field: (value[idx] if idx < len(value) else "")
-                for idx, field in enumerate(_TOURNAMENT_SNAPSHOT_FIELDS)
-            }
-        else:
-            expanded[key] = value
-    return expanded
 
 
 _CALENDAR_SNAPSHOT_FIELDS = (

@@ -88,12 +88,13 @@ def test_calendar_cache_round_trips():
 
 
 def test_snapshot_round_trips():
+    tournament_key = "https://www.wtatennis.com/tournaments/1234/fixture-open/2026/player-list"
     tournament = {
-        "wta:1:2026": {
+        tournament_key: {
             "name": "Fixture Open",
             "level": "WTA 125",
             "surface": "Clay",
-            "country": "Argentina",
+            "country": "ARG",
             "startDate": "2026-07-20",
             "endDate": "2026-07-26",
             "week": "2026-07-20",
@@ -115,9 +116,40 @@ def test_snapshot_round_trips():
         "calendarKey": "fixture",
     }]
     draws = {"wta:1:2026": {"name": "Fixture Open", "types": ["M", "Q"]}}
-    assert_round_trip(tournament, compress_tournament_snapshot, expand_tournament_snapshot)
+    compressed_tournament = compress_tournament_snapshot(tournament)
+    assert compressed_tournament["schemaVersion"] == 1
+    assert compressed_tournament["fields"] == [
+        "name", "level", "surface", "country", "startDate", "endDate", "week",
+    ]
+    assert expand_tournament_snapshot(compressed_tournament) == tournament
     assert_round_trip(calendar, compress_calendar_snapshot, expand_calendar_snapshot)
     assert_round_trip(draws, compress_draws_snapshot, expand_draws_snapshot)
+
+
+def test_legacy_tournament_snapshot_is_normalized_when_expanded():
+    legacy = {
+        "W-ITF-SRB-2026-016": [
+            "W75 Kursumlijska Banja ",
+            " W75",
+            "Clay ",
+            "srb ",
+            "2026-08-17T00:00:00",
+            "2026-08-23T00:00:00",
+            " Week of August 17 ",
+        ]
+    }
+
+    assert expand_tournament_snapshot(legacy) == {
+        "w-itf-srb-2026-016": {
+            "name": "W75 Kursumlijska Banja",
+            "level": "W75",
+            "surface": "Clay",
+            "country": "SRB",
+            "startDate": "2026-08-17",
+            "endDate": "2026-08-23",
+            "week": "Week of August 17",
+        }
+    }
 
 
 def test_fixed_row_cache_round_trips():
