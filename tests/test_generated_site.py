@@ -384,6 +384,16 @@ class GeneratedSiteTests(unittest.TestCase):
                 self.assertIn("badge.style.display = showGm ? '' : 'none'", source)
                 self.assertIn("gmLegend.style.display = showGm ? '' : 'none'", source)
 
+    def test_entry_menu_uses_gm_as_category_tiebreaker(self):
+        for relative_path in ("html_generator.py", "app.html"):
+            source = (PROJECT_DIR / relative_path).read_text(encoding="utf-8-sig")
+            with self.subTest(path=relative_path):
+                self.assertIn("function sortEntryMenuByCategoryThenGm(rows)", source)
+                self.assertIn("if (categoryDiff) return categoryDiff", source)
+                self.assertIn("if (hasGmA !== hasGmB) return hasGmA ? -1 : 1", source)
+                self.assertIn("if (hasGmA && gmA !== gmB) return gmA - gmB", source)
+                self.assertIn("sortEntryMenuByCategoryThenGm(rows);", source)
+
     def test_local_file_url_sync_stays_on_app_html(self):
         for relative_path in ("html_generator.py", "app.html"):
             source = (PROJECT_DIR / relative_path).read_text(encoding="utf-8")

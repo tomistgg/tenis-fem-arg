@@ -8084,6 +8084,41 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 return `rgba(${{r}},${{g}},${{b}},0.72)`;
             }}
 
+            function sortEntryMenuByCategoryThenGm(rows) {{
+                const gmByItem = new Map(rows.map(row => [row.item, row.gm]));
+                document.querySelectorAll('#view-entrylists .entry-menu-week').forEach(weekHeader => {{
+                    const items = [];
+                    let nextWeek = weekHeader.nextElementSibling;
+                    while (nextWeek && nextWeek.classList.contains('entry-menu-item')) {{
+                        items.push(nextWeek);
+                        nextWeek = nextWeek.nextElementSibling;
+                    }}
+                    if (items.length < 2) return;
+
+                    const categoryOrder = new Map();
+                    const originalOrder = new Map();
+                    const categoryFor = item => String(item.getAttribute('data-level') || '')
+                        .replace(/\s+/g, '').toUpperCase();
+                    items.forEach((item, index) => {{
+                        const category = categoryFor(item);
+                        if (!categoryOrder.has(category)) categoryOrder.set(category, categoryOrder.size);
+                        originalOrder.set(item, index);
+                    }});
+                    items.sort((a, b) => {{
+                        const categoryDiff = categoryOrder.get(categoryFor(a)) - categoryOrder.get(categoryFor(b));
+                        if (categoryDiff) return categoryDiff;
+                        const gmA = gmByItem.get(a);
+                        const gmB = gmByItem.get(b);
+                        const hasGmA = Number.isFinite(gmA);
+                        const hasGmB = Number.isFinite(gmB);
+                        if (hasGmA !== hasGmB) return hasGmA ? -1 : 1;
+                        if (hasGmA && gmA !== gmB) return gmA - gmB;
+                        return originalOrder.get(a) - originalOrder.get(b);
+                    }});
+                    items.forEach(item => weekHeader.parentNode.insertBefore(item, nextWeek));
+                }});
+            }}
+
             function updateEntryMenuLabels() {{
                 const items = Array.from(document.querySelectorAll('#view-entrylists .entry-menu-item'));
                 const rows = [];
@@ -8107,6 +8142,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     gmEl.style.background = Number.isFinite(gm) ? entryMenuGmBadgeColor(gm, _entryMenuGmMin, _entryMenuGmMax) : '#94a3b8';
                     gmEl.style.color = '#1a1a1a';
                 }});
+                sortEntryMenuByCategoryThenGm(rows);
                 const headerGm = document.querySelector('#entry-strength');
                 if (headerGm) {{
                     const headerText = headerGm.querySelector('.entry-gm-value');
