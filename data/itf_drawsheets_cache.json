@@ -17237,14 +17237,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183654087, "playStatusCode": "IP",
+                            "matchId": 1183654087, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 3, "entryStatus": "DA",
+                                  "scores": [6,7], "isWinner": true, "seeding": 3, "entryStatus": "DA",
                                   "player": {"playerId":800426771,"nationality":"ROU","givenName":"Ilinca Dalina","familyName":"Amariei"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "LL",
+                                  "scores": [4,5], "isWinner": false, "entryStatus": "LL",
                                   "player": {"playerId":800650289,"nationality":"ITA","givenName":"Carolina","familyName":"Dibenedetto"}
                                 }
                             ]
@@ -17263,7 +17263,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183654089, "playStatusCode": "TP",
+                            "matchId": 1183654089, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "Q",
@@ -17328,7 +17328,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183654094, "playStatusCode": "TP",
+                            "matchId": 1183654094, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "Q",
@@ -17367,7 +17367,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183654097, "playStatusCode": "TP",
+                            "matchId": 1183654097, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "JR",
@@ -17428,7 +17428,8 @@
                             "matchId": 1183654077, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 3, "entryStatus": "DA",
+                                  "player": {"playerId":800426771,"nationality":"ROU","givenName":"Ilinca Dalina","familyName":"Amariei"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "DA",
