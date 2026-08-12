@@ -54,7 +54,7 @@ from utils import (
     expand_draws_store_cache,
     compress_tournament_snapshot, compress_draws_snapshot,
     compress_calendar_snapshot, dumps_calendar_snapshot,
-    normalize_country_overrides, load_csv_rows,
+    normalize_country_overrides,
     format_player_name, dumps_draws_store_cache, dumps_entry_lists_cache,
     get_cache_timestamp, set_cache_entry_meta, get_cache_entry_meta,
     is_draw_completed, mark_draw_completed, utc_now_iso,
@@ -75,7 +75,6 @@ from itf import (
     get_itf_level, parse_itf_entry_list,
     get_draws_itf_tournament_list, _load_itf_event_filters_cache
 )
-from html_generator import generate_html
 from draws import fetch_tournament_draws, fetch_itf_tournament_draws, _draw_is_complete
 from itf_drawsheet_cache import (
     tournament_draw_codes_with_definitive_no_nationality,
@@ -88,7 +87,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = str(RUNTIME_DATA_DIR)
 TOURNAMENT_SNAPSHOT_FILE = os.path.join(DATA_DIR, "tournament_snapshot.json")
 CALENDAR_SNAPSHOT_FILE = os.path.join(DATA_DIR, "calendar_snapshot.json")
-PLAYER_ALIASES_WTA_ITF_FILE = os.path.join(DATA_DIR, "player_aliases_wta_itf.json")
 DRAWS_STORE_CACHE_FILE = os.path.join(DATA_DIR, "draws_store_cache.json")
 DRAW_FETCH_ERRORS_FILE = os.path.join(DATA_DIR, "draw_fetch_errors.json")
 ENABLE_ITF_DRAWS_PREFETCH = False
@@ -1594,18 +1592,21 @@ def _map_to_display_name_upper(name):
 
 
 
-def enrich_history_with_wta_ranks(cleaned_history):
+def enrich_history_with_wta_ranks(cleaned_history, data_dir=None):
     """Add `_winnerRank` / `_loserRank` to cleaned history rows (empty if unknown)."""
     if not cleaned_history:
         return cleaned_history
+
+    source_data_dir = os.fspath(data_dir or DATA_DIR)
+    aliases_file = os.path.join(source_data_dir, "player_aliases_wta_itf.json")
 
     # Optional: map ITF-side names to WTA-side names (to resolve rankings even when
     # the match dataset uses ITF spelling while rankings CSV uses WTA spelling).
     aliases_lookup = {}
     itf_id_to_wta_id = {}
-    if os.path.exists(PLAYER_ALIASES_WTA_ITF_FILE):
+    if os.path.exists(aliases_file):
         try:
-            with open(PLAYER_ALIASES_WTA_ITF_FILE, "r", encoding="utf-8-sig") as f:
+            with open(aliases_file, "r", encoding="utf-8-sig") as f:
                 items = json.load(f)
             if not isinstance(items, list):
                 items = []
@@ -1645,7 +1646,7 @@ def enrich_history_with_wta_ranks(cleaned_history):
                     if cn not in aliases_lookup[k]:
                         aliases_lookup[k].append(cn)
 
-    csv_by_week = _load_wta_csv() or {}
+    csv_by_week = _load_wta_csv(source_data_dir) or {}
 
     def _is_itf_id(value):
         s = str(value or "").strip()
@@ -2500,17 +2501,18 @@ def process_tournaments(
     return schedule_map, tournament_store, entry_cache, unranked_schedule
 
 
-def load_match_history():
+def load_match_history(data_dir=None):
     """Read all match CSV files and return raw + cleaned/normalized rows."""
+    source_data_dir = os.fspath(data_dir or DATA_DIR)
     match_history_data = []
     matches_files = [
-        os.path.join(DATA_DIR, 'itf_matches_arg.csv'),
-        os.path.join(DATA_DIR, 'wta_matches_arg.csv'),
-        os.path.join(DATA_DIR, 'gs_matches_arg.csv'),
-        os.path.join(DATA_DIR, 'og_matches_arg.csv'),
-        os.path.join(DATA_DIR, 'bjkc_matches_arg.csv'),
-        os.path.join(DATA_DIR, 'united_cup_matches_arg.csv'),
-        os.path.join(DATA_DIR, 'manually_added_matches.csv'),
+        os.path.join(source_data_dir, 'itf_matches_arg.csv'),
+        os.path.join(source_data_dir, 'wta_matches_arg.csv'),
+        os.path.join(source_data_dir, 'gs_matches_arg.csv'),
+        os.path.join(source_data_dir, 'og_matches_arg.csv'),
+        os.path.join(source_data_dir, 'bjkc_matches_arg.csv'),
+        os.path.join(source_data_dir, 'united_cup_matches_arg.csv'),
+        os.path.join(source_data_dir, 'manually_added_matches.csv'),
     ]
     for file_path in matches_files:
         try:
@@ -2816,10 +2818,6 @@ def main():
                     'Key': name_upper,
                     'Rank': '-'
                 })
-
-        # 5. Load match history
-        match_history_data, cleaned_history = load_match_history()
-        enrich_history_with_wta_ranks(cleaned_history)
 
     except Exception:
         _quit_driver(driver, "quit browser after pipeline failure")
@@ -3271,22 +3269,7 @@ def main():
 
     # 7b. Build tournament strength data (cached)
     logger.info("Processing WTA Tournament Strength")
-    tstrength_data = build_tstrength_data()
-
-    # 8. Generate HTML
-    national_team_data = load_csv_rows(os.path.join(DATA_DIR, 'national_team_order.csv'), delimiter=';')
-    captains_data = load_csv_rows(os.path.join(DATA_DIR, 'captains.csv'))
-    website_draws_store = _filter_itf_draws_for_website(draws_store)
-
-    generate_html(
-        tournament_groups, tournament_store, players_data, schedule_map,
-        cleaned_history, calendar_data, match_history_data, all_wta_players,
-        national_team_data=national_team_data,
-        captains_data=captains_data,
-        draws_data=website_draws_store,
-        tstrength_data=tstrength_data,
-        monday_map=monday_map
-    )
+    build_tstrength_data()
 
 if __name__ == "__main__":
     from pipeline_transaction import run_current_script_transaction, transaction_is_active

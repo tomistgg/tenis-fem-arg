@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from data_quality import GENERATED_SITE_FILES, run_data_quality_gate, validate_site_artifacts
+from generated_artifacts import GENERATED_DATA_PATTERNS, remove_generated_data_artifacts
 from pipeline_errors import DataPromotionError, DataValidationError
 from run_state import (
     RunStatus,
@@ -41,6 +42,14 @@ RETIRED_GENERATED_DATA_FILES = {
     "wta_rankings_00_09_bundle.js",
     "wta_rankings_83_99_bundle.js",
 }
+
+
+def _is_retired_generated_data_file(relative_path: Path) -> bool:
+    relative = relative_path.as_posix()
+    return relative in RETIRED_GENERATED_DATA_FILES or (
+        len(relative_path.parts) == 1
+        and any(relative_path.match(pattern) for pattern in GENERATED_DATA_PATTERNS)
+    )
 
 
 def transaction_is_active() -> bool:
@@ -117,7 +126,7 @@ def validate_staged_dataset(data_dir: Path) -> dict[str, Any]:
         for path in PRODUCTION_DATA_DIR.rglob("*")
         if (
             path.is_file()
-            and path.relative_to(PRODUCTION_DATA_DIR).as_posix() not in RETIRED_GENERATED_DATA_FILES
+            and not _is_retired_generated_data_file(path.relative_to(PRODUCTION_DATA_DIR))
             and not (data_dir / path.relative_to(PRODUCTION_DATA_DIR)).is_file()
         )
     ]
@@ -579,6 +588,7 @@ def run_refresh_transaction(
 
     try:
         shutil.copytree(PRODUCTION_DATA_DIR, staging_data)
+        remove_generated_data_artifacts(staging_data)
         staging_site.mkdir(parents=True)
     except BaseException as exc:
         return _finish(
@@ -665,7 +675,7 @@ def run_refresh_transaction(
         validation = {"dataset": validate_staged_dataset(staging_data)}
         if include_generated_site:
             _build_staged_deploy_site(staging_deploy, environment)
-            validation["site"] = validate_staged_site(staging_site, staging_deploy)
+            validation["site"] = validate_staged_site(staging_deploy, staging_deploy)
         promotion = _promote_all(
             staging_root,
             staging_data,

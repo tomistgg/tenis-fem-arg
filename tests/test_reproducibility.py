@@ -77,6 +77,10 @@ def test_refresh_publishes_only_validated_data_to_main():
     assert 'GIT_INDEX_FILE="$main_index" git add -f -A -- data' in workflow
     assert 'git push origin "$main_commit:refs/heads/main"' in workflow
     assert 'if [ "$main_parent" != "$GITHUB_SHA" ]; then' in workflow
+    assert "Remove legacy generated bundles from canonical data" in workflow
+    assert workflow.index("Remove legacy generated bundles from canonical data") < workflow.index(
+        "Snapshot validated quality baseline"
+    )
     assert workflow.index("Require a promotable transaction") < workflow.index("Publish validated data to main")
 
 

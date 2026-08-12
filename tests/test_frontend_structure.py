@@ -49,15 +49,16 @@ def test_frontend_sources_are_separate_from_python_generator():
 def test_generated_static_frontend_assets_match_authoring_sources(
     source_name,
     generated_name,
+    offline_generated_site,
 ):
     source = (PROJECT_ROOT / source_name).read_text(encoding="utf-8")
-    generated = (PROJECT_ROOT / generated_name).read_text(encoding="utf-8")
+    generated = (offline_generated_site / generated_name).read_text(encoding="utf-8")
     assert generated == source
     assert "@@WTARG_" not in generated
 
 
-def test_generated_app_loads_data_before_static_application_scripts():
-    app = (PROJECT_ROOT / "app.html").read_text(encoding="utf-8-sig")
+def test_generated_app_loads_data_before_static_application_scripts(offline_generated_site):
+    app = (offline_generated_site / "app.html").read_text(encoding="utf-8-sig")
     expected_scripts = (
         "assets/js/generated-data.js",
         "assets/js/data-loader.js",
@@ -80,8 +81,8 @@ def test_generated_app_loads_data_before_static_application_scripts():
     assert len([script for script in inline_scripts if script.strip()]) == 1
 
 
-def test_generated_frontend_data_is_a_versioned_json_payload():
-    source = (PROJECT_ROOT / "assets/js/generated-data.js").read_text(encoding="utf-8")
+def test_generated_frontend_data_is_a_versioned_json_payload(offline_generated_site):
+    source = (offline_generated_site / "assets/js/generated-data.js").read_text(encoding="utf-8")
     prefix = "window.__WTARG_GENERATED_DATA__ = "
     assert source.startswith(prefix)
     assert source.endswith(";\n")
@@ -93,26 +94,34 @@ def test_generated_frontend_data_is_a_versioned_json_payload():
     assert isinstance(payload["rankingsDatesIndex"], dict)
 
 
-def test_deploy_builder_merges_base_and_staged_asset_trees(tmp_path, monkeypatch):
+def test_extracted_stylesheet_font_urls_resolve_next_to_the_css(offline_generated_site):
+    css = (offline_generated_site / "assets/app.css").read_text(encoding="utf-8")
+
+    assert "url('assets/Montserrat-" not in css
+    for filename in ("Montserrat-SemiBold.ttf", "Montserrat-ExtraBold.ttf"):
+        assert f"url('{filename}')" in css
+        assert (offline_generated_site / "assets" / filename).is_file()
+
+
+def test_deploy_builder_copies_static_assets_then_renders_site(tmp_path, monkeypatch):
     base_dir = tmp_path / "project"
-    staged_site = base_dir / "staged-site"
     output_dir = base_dir / ".site"
     data_dir = base_dir / "data"
     (base_dir / "assets/vendor").mkdir(parents=True)
-    (staged_site / "assets/js").mkdir(parents=True)
     data_dir.mkdir()
     (base_dir / "assets/vendor/library.js").write_text("vendor", encoding="utf-8")
-    (base_dir / "assets/js").mkdir()
-    (base_dir / "assets/js/app.js").write_text("old", encoding="utf-8")
-    (staged_site / "assets/js/app.js").write_text("generated", encoding="utf-8")
+
+    def fake_render(source_data_dir, site_root):
+        assert source_data_dir == data_dir
+        generated = site_root / "assets/js/app.js"
+        generated.parent.mkdir(parents=True)
+        generated.write_text("generated", encoding="utf-8")
 
     monkeypatch.setattr(build_deploy_site, "BASE_DIR", base_dir)
-    monkeypatch.setattr(build_deploy_site, "SITE_ROOT", staged_site)
     monkeypatch.setattr(build_deploy_site, "DATA_DIR", data_dir)
+    monkeypatch.setattr(build_deploy_site, "render_site_from_data", fake_render)
     monkeypatch.setattr(build_deploy_site, "COPY_ROOT_FILES", ())
     monkeypatch.setattr(build_deploy_site, "COPY_ROOT_DIRS", ("assets",))
-    monkeypatch.setattr(build_deploy_site, "COPY_DATA_FILES", ())
-    monkeypatch.setattr(build_deploy_site, "COPY_DATA_GLOBS", ())
     monkeypatch.setattr(build_deploy_site, "COPY_DATA_DIRS", ())
 
     build_deploy_site._build_site_contents(output_dir)

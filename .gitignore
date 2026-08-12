@@ -14,3 +14,23 @@ __pycache__/
 .publish_staging/
 .quality-baseline/
 .quality-report.json
+
+# Browser/deployment output: rebuild it into .site with build_deploy_site.py.
+/app.html
+/index.html
+/404.html
+/calendar/
+/draws/
+/entrylists/
+/fedbcup/
+/history/
+/rankings/
+/roadtogs/
+/tstrength/
+/upcoming/
+/assets/app.css
+/assets/js/
+/data/history_data_bundle.js
+/data/player_aliases_wta_itf_bundle.js
+/data/wta_rankings_latest_bundle.js
+/data/wta_rankings_[0-9][0-9][0-9][0-9]_bundle.js

@@ -35,13 +35,9 @@ def offline_generated_site(tmp_path_factory):
     (data_dir / "bjkc_matches_arg.csv").write_text(MATCH_COLUMNS, encoding="utf-8")
     (data_dir / "manually_added_matches.csv").write_text(MATCH_COLUMNS, encoding="utf-8")
 
-    previous_data_dir = html_generator.RUNTIME_DATA_DIR
-    previous_site_root = html_generator.RUNTIME_SITE_ROOT
     previous_loader = html_generator.load_player_mapping
     try:
         shutil.copytree(PROJECT_ROOT / "assets", site_dir / "assets")
-        html_generator.RUNTIME_DATA_DIR = data_dir
-        html_generator.RUNTIME_SITE_ROOT = site_dir
         html_generator.load_player_mapping = lambda: {}
         html_generator.generate_html(
             {}, {}, [], {}, [], [], [],
@@ -51,16 +47,12 @@ def offline_generated_site(tmp_path_factory):
             draws_data={},
             tstrength_data=[],
             monday_map={},
+            data_dir=data_dir,
+            site_root=site_dir,
         )
     finally:
-        html_generator.RUNTIME_DATA_DIR = previous_data_dir
-        html_generator.RUNTIME_SITE_ROOT = previous_site_root
         html_generator.load_player_mapping = previous_loader
 
-    deploy_data = site_dir / "data"
-    deploy_data.mkdir()
-    for source in data_dir.glob("*_bundle.js"):
-        shutil.copy2(source, deploy_data / source.name)
     for filename in ("site.webmanifest",):
         shutil.copy2(PROJECT_ROOT / filename, site_dir / filename)
     return site_dir

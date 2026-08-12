@@ -571,11 +571,16 @@ def _build_history_draw_slot_lookup(cleaned_history):
 def generate_html(tournament_groups, tournament_store, players_data, schedule_map,
                   cleaned_history, calendar_data, match_history_data, wta_rankings=None,
                   national_team_data=None, captains_data=None, draws_data=None,
-                  tstrength_data=None, monday_map=None):
+                  tstrength_data=None, monday_map=None, *, data_dir=None, site_root=None):
     """Generate the full app page (app.html) + a lightweight launcher (index.html)."""
 
+    source_data_dir = os.fspath(data_dir or RUNTIME_DATA_DIR)
+    output_site_root = os.fspath(site_root or RUNTIME_SITE_ROOT)
+    output_data_dir = os.path.join(output_site_root, "data")
+    os.makedirs(output_data_dir, exist_ok=True)
+
     # Load points distribution
-    points_dist_path = os.path.join(RUNTIME_DATA_DIR, 'points_distribution.json')
+    points_dist_path = os.path.join(source_data_dir, 'points_distribution.json')
     with open(points_dist_path, 'r', encoding='utf-8') as f:
         points_distribution = expand_points_distribution(json.load(f))
 
@@ -628,7 +633,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     # The browser lazy-loads this classic-script bundle. Do not also persist an
     # identical JSON copy: it doubled the 14.5 MB payload without any consumer.
-    history_bundle_path = os.path.join(RUNTIME_DATA_DIR, 'history_data_bundle.js')
+    history_bundle_path = os.path.join(output_data_dir, 'history_data_bundle.js')
     try:
         _write_js_bundle_file(history_bundle_path, '__WTA_HISTORY_DATA__', compact_history, formatter=dumps_history_data)
     except (OSError, TypeError, ValueError) as e:
@@ -638,15 +643,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             message="could not write the browser history bundle",
             context={"cause": str(e), "path": history_bundle_path},
         ) from e
-    redundant_history_path = os.path.join(RUNTIME_DATA_DIR, 'history_data.json')
+    redundant_history_path = os.path.join(output_data_dir, 'history_data.json')
     if os.path.exists(redundant_history_path):
         os.remove(redundant_history_path)
 
-    player_aliases_bundle_path = os.path.join(RUNTIME_DATA_DIR, 'player_aliases_wta_itf_bundle.js')
+    player_aliases_bundle_path = os.path.join(output_data_dir, 'player_aliases_wta_itf_bundle.js')
     try:
         # The ranking preflight may add newly seen WTA IDs in a subprocess, so
         # reload from disk instead of relying on this process's import-time copy.
-        identities_path = os.path.join(RUNTIME_DATA_DIR, 'player_aliases_wta_itf.json')
+        identities_path = os.path.join(source_data_dir, 'player_aliases_wta_itf.json')
         player_mapping_bundle = None
         try:
             with open(identities_path, 'r', encoding='utf-8-sig') as identities_file:
@@ -675,7 +680,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         logger.warning(f"[warn] could not write player_aliases_wta_itf_bundle.js: {e}")
 
     # Load tournament draw sizes (combined WTA + ITF)
-    draw_sizes_path = os.path.join(RUNTIME_DATA_DIR, 'tournament_draw_sizes.json')
+    draw_sizes_path = os.path.join(source_data_dir, 'tournament_draw_sizes.json')
     try:
         with open(draw_sizes_path, 'r', encoding='utf-8') as f:
             all_draw_sizes = expand_tournament_draw_sizes(json.load(f))
@@ -735,7 +740,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         return upper
 
     wta_country_map = {}
-    wta_cache_path = os.path.join(RUNTIME_DATA_DIR, "wta_full_calendar_cache.json")
+    wta_cache_path = os.path.join(source_data_dir, "wta_full_calendar_cache.json")
     try:
         with open(wta_cache_path, "r", encoding="utf-8") as f:
             wta_cache = json.load(f)
@@ -1227,7 +1232,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     calendar_html += '</tbody></table>'
 
     # Build cascading year/month/day selects for ranking week picker
-    _all_csv = _load_wta_csv(RUNTIME_DATA_DIR)
+    _all_csv = _load_wta_csv(source_data_dir)
     _all_dates = sorted(_all_csv.keys())
     _latest_date = _all_dates[-1] if _all_dates else ""
 
@@ -1273,13 +1278,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     rankings_latest_day = _latest_day_int
 
     try:
-        _write_wta_ranking_bundles(_all_csv, RUNTIME_DATA_DIR, _all_dates)
+        _write_wta_ranking_bundles(_all_csv, output_data_dir, _all_dates)
     except (OSError, TypeError, ValueError) as e:
         raise DataValidationError(
             component="html_generator",
             operation="write ranking bundles",
             message="could not write lazy WTA ranking bundles",
-            context={"cause": str(e), "data_dir": str(RUNTIME_DATA_DIR)},
+            context={"cause": str(e), "data_dir": str(output_data_dir)},
         ) from e
 
     # Build rankings table rows (initial: latest week)
@@ -1427,9 +1432,9 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     _all_bjkc_players = set()
     try:
         import pandas as _pd
-        _bjkc_path = os.path.join(RUNTIME_DATA_DIR, 'bjkc_matches_arg.csv')
+        _bjkc_path = os.path.join(source_data_dir, 'bjkc_matches_arg.csv')
         _bjkc_df = _pd.read_csv(_bjkc_path)
-        _manual_path = os.path.join(RUNTIME_DATA_DIR, 'manually_added_matches.csv')
+        _manual_path = os.path.join(source_data_dir, 'manually_added_matches.csv')
         _manual_df = _pd.read_csv(_manual_path)
         if 'matchType' in _manual_df.columns:
             _manual_bjkc = _manual_df[_manual_df['matchType'].astype(str).str.strip().str.lower() == 'fed/bjk cup']
@@ -1668,7 +1673,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     # Always write generated site files beside this module.  main.py may be
     # launched with a different working directory (for example from an IDE),
     # but build_deploy_site.py and the local file URL use the project root.
-    site_root = str(RUNTIME_SITE_ROOT)
+    site_root = output_site_root
     _write_frontend_assets(site_root, frontend_data)
     write_text_if_changed(os.path.join(site_root, "app.html"), html_template, encoding="utf-8-sig")
 
@@ -1735,7 +1740,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         "tstrength",
     ]
     for tab in route_tabs:
-        folder = os.path.join(RUNTIME_SITE_ROOT, tab)
+        folder = os.path.join(site_root, tab)
         os.makedirs(folder, exist_ok=True)
         route_html = _apply_content_security_policy(route_template.format(tab=tab)).rstrip() + "\n"
         write_text_if_changed(os.path.join(folder, "index.html"), route_html, encoding="utf-8")

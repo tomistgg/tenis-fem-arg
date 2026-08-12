@@ -66,7 +66,6 @@ jobs:
           python data_quality.py validate
           --data-dir data
           --baseline-dir .quality-baseline/data
-          --site-root .
           --report .quality-report.json
 
       - name: Ruff

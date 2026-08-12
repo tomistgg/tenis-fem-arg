@@ -18,9 +18,11 @@ from html_generator import (
 )
 from calendar_builder import format_week_label, get_monday_from_date
 from utils import expand_entry_lists_cache
+from site_renderer import render_site_from_data
 
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
+GENERATED_SITE_DIR = PROJECT_DIR
 AUTHORING_FRONTEND_FILES = (
     "web/templates/app.html",
     "web/css/app.css",
@@ -56,10 +58,29 @@ def _authoring_frontend_source():
 
 
 def _generated_frontend_source():
-    return _combined_source(GENERATED_FRONTEND_FILES)
+    return "\n".join(
+        (GENERATED_SITE_DIR / relative_path).read_text(encoding="utf-8-sig")
+        for relative_path in GENERATED_FRONTEND_FILES
+    )
 
 
 class GeneratedSiteTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        global GENERATED_SITE_DIR
+        cls._generated_site_temp = tempfile.TemporaryDirectory(
+            prefix=".wtarg-generated-site-",
+            dir=PROJECT_DIR,
+        )
+        GENERATED_SITE_DIR = Path(cls._generated_site_temp.name)
+        render_site_from_data(PROJECT_DIR / "data", GENERATED_SITE_DIR)
+
+    @classmethod
+    def tearDownClass(cls):
+        global GENERATED_SITE_DIR
+        GENERATED_SITE_DIR = PROJECT_DIR
+        cls._generated_site_temp.cleanup()
+
     def test_legacy_wta_country_codes_render_flags(self):
         players = json.loads(
             (PROJECT_DIR / "data" / "player_aliases_wta_itf.json").read_text(
@@ -445,14 +466,14 @@ class GeneratedSiteTests(unittest.TestCase):
                 self.assertIn("URL state update skipped:", source)
 
     def test_generated_app_csp_allows_every_inline_script(self):
-        source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        source = (GENERATED_SITE_DIR / "app.html").read_text(encoding="utf-8-sig")
         match = _CSP_META_RE.search(source)
         self.assertIsNotNone(match)
         allowed = set(re.findall(r"'sha256-[^']+'", unescape(match.group(0))))
         self.assertEqual(allowed, set(_script_hash_sources(source)))
 
     def test_grand_slam_information_is_collapsed_by_default(self):
-        source = (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig")
+        source = (GENERATED_SITE_DIR / "app.html").read_text(encoding="utf-8-sig")
         self.assertIn('<details class="roadtogs-info">', source)
         self.assertIn("Grand Slams information", source)
         self.assertNotIn('<details class="roadtogs-info" open', source)
@@ -631,7 +652,7 @@ class GeneratedSiteTests(unittest.TestCase):
 
     def test_home_button_rows_are_centered(self):
         for label, source in (
-            ("index.html", (PROJECT_DIR / "index.html").read_text(encoding="utf-8-sig")),
+            ("index.html", (GENERATED_SITE_DIR / "index.html").read_text(encoding="utf-8-sig")),
             ("generated app", _generated_frontend_source()),
         ):
             with self.subTest(path=label):

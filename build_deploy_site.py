@@ -5,38 +5,20 @@ import uuid
 from pathlib import Path
 
 from runtime_logging import get_logger
-from runtime_paths import DATA_DIR, SITE_ROOT
+from runtime_paths import DATA_DIR
+from site_renderer import render_site_from_data
 
 
 logger = get_logger("build")
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_OUTPUT_DIR = BASE_DIR / ".site"
-COPY_ROOT_FILES = ("app.html", "index.html", "404.html", "CNAME", "site.webmanifest")
+COPY_ROOT_FILES = ("CNAME", "site.webmanifest")
 APPLE_TOUCH_ICON_FALLBACKS = (
     "apple-touch-icon.png",
     "apple-touch-icon-precomposed.png",
     "apple-touch-icon-180x180.png",
 )
-COPY_ROOT_DIRS = (
-    "assets",
-    "calendar",
-    "draws",
-    "entrylists",
-    "fedbcup",
-    "history",
-    "rankings",
-    "roadtogs",
-    "tstrength",
-    "upcoming",
-)
-COPY_DATA_FILES = (
-    "history_data_bundle.js",
-    "player_aliases_wta_itf_bundle.js",
-)
-COPY_DATA_GLOBS = (
-    "wta_rankings_latest_bundle.js",
-    "wta_rankings_[0-9][0-9][0-9][0-9]_bundle.js",
-)
+COPY_ROOT_DIRS = ("assets",)
 COPY_DATA_DIRS = ("flags",)
 
 
@@ -83,36 +65,16 @@ def _copy_deploy_data(output_dir):
         return 0
 
     copied = 0
-    for filename in COPY_DATA_FILES:
-        src = src_root / filename
-        if src.exists():
-            _copy_file(src, dst_root / filename)
-            copied += 1
-
-    copied_ranking_files = set()
-    for pattern in COPY_DATA_GLOBS:
-        for src in sorted(src_root.glob(pattern)):
-            if not src.is_file() or src.name in copied_ranking_files:
-                continue
-            _copy_file(src, dst_root / src.name)
-            copied_ranking_files.add(src.name)
-            copied += 1
-
     for dirname in COPY_DATA_DIRS:
         copied += _copy_tree(src_root / dirname, dst_root / dirname)
     return copied
-
-
-def _site_source(relative_path):
-    staged = SITE_ROOT / relative_path
-    return staged if staged.exists() else BASE_DIR / relative_path
 
 
 def _build_site_contents(output_dir):
     output_dir = _prepare_output_dir(output_dir)
 
     for filename in COPY_ROOT_FILES:
-        src = _site_source(filename)
+        src = BASE_DIR / filename
         if src.exists():
             _copy_file(src, output_dir / filename)
 
@@ -122,15 +84,11 @@ def _build_site_contents(output_dir):
             _copy_file(apple_touch_icon, output_dir / filename)
 
     for dirname in COPY_ROOT_DIRS:
-        destination = output_dir / dirname
-        base_source = BASE_DIR / dirname
-        staged_source = SITE_ROOT / dirname
-        if base_source.exists():
-            _copy_tree(base_source, destination)
-        if staged_source.exists() and staged_source.resolve() != base_source.resolve():
-            _copy_tree(staged_source, destination)
+        _copy_tree(BASE_DIR / dirname, output_dir / dirname)
 
-    return _copy_deploy_data(output_dir)
+    _copy_deploy_data(output_dir)
+    render_site_from_data(DATA_DIR, output_dir)
+    return sum(1 for path in (output_dir / "data").rglob("*") if path.is_file())
 
 
 def build_site(output_dir):

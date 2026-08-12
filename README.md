@@ -55,7 +55,9 @@ python -m mypy
 python -m pytest
 python -m pre_commit run --all-files
 python -m pip_audit --require-hashes -r requirements.lock
-python data_quality.py validate --data-dir data --site-root .
+python data_quality.py validate --data-dir data
+python build_deploy_site.py --output .site
+python data_quality.py validate --data-dir data --site-root .site --deploy-root .site
 ```
 
 Ruff currently enforces high-confidence correctness rules across the legacy
@@ -85,15 +87,22 @@ fonts, icons, and vendored libraries before atomically replacing `.site`.
 Historical WTA ranking CSVs are indexed lazily by week. Python keeps a small
 byte-offset index and an eight-week row cache instead of materializing the full
 2.1-million-row archive as dictionaries. Site generation emits
-`wta_rankings_latest_bundle.js` for the initial rankings view and one
+`.site/data/wta_rankings_latest_bundle.js` for the initial rankings view and one
 `wta_rankings_<year>_bundle.js` file per historical year; the browser fetches a
 year only when the user selects one of its weeks. Match history is emitted only
-as `history_data_bundle.js`, which is the format consumed by the browser.
+as `.site/data/history_data_bundle.js`, which is the format consumed by the
+browser.
+
+Generated pages and browser bundles are deliberately not tracked by Git. A
+normal `git pull` still downloads the canonical ranking CSVs, match-history
+CSVs, player-alias JSON, and current tournament caches. Run the build command
+above to reproduce all deploy files locally from that pulled data; no network
+access is required for the build.
 
 Validate canonical player, ranking, match, and tournament data:
 
 ```text
-python data_quality.py validate --data-dir data --site-root . --report .run_state/data-quality.json
+python data_quality.py validate --data-dir data --report .run_state/data-quality.json
 ```
 
 The blocking gate validates critical JSON with committed JSON Schemas and
@@ -132,10 +141,10 @@ python main.py --check-environment
 
 The live refresh is transactional. It copies the current dataset into a unique
 `.run_staging/<run-id>/` directory, routes the preflight subprocesses and site
-generator to that copy, runs the complete blocking quality gate, validates the
-generated pages and deploy artifact, and only then promotes the dataset and
-generated site. Directly running one of the loader scripts uses the same
-staging mechanism.
+builder to that copy, runs the complete blocking quality gate, validates the
+generated `.site` deploy artifact, and only then promotes the dataset and deploy
+directory. Directly running one of the loader scripts uses the same staging
+mechanism.
 
 The final machine-readable status is written atomically to
 `.run_state/latest.json` and is one of:
@@ -162,7 +171,7 @@ failed, or the previous version remains online. `partial` and `failed` runs are
 never sent to Pages.
 
 The live refresh uses external websites, requires Chrome and network access,
-and modifies data and generated site files only after promotion. External
+and modifies canonical data and `.site` only after promotion. External
 source responses and the current browser release mean the retrieved data itself
 is not deterministic even though the Python environment is locked.
 
@@ -199,8 +208,9 @@ changes and the audit result before merging.
   fail.
 - The uploaded Pages artifact is the same immutable `.site` directory validated
   by the refresh transaction; Pages does not rebuild it. A successful run saves
-  only `data/` to `data-state` and mirrors that validated `data/` tree in a new
-  commit on `main`, so a normal `git pull` receives generated data updates.
+  only canonical `data/` to `data-state` and mirrors that validated source-data
+  tree in a new commit on `main`, so a normal `git pull` receives ranking and
+  history updates without committing their redundant browser-bundle copies.
 
 The workflow uses GitHub's short-lived `GITHUB_TOKEN`: `contents: write` is
 limited to the refresh job for updating `data-state` and `main`, while the deploy

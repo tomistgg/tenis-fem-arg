@@ -59,11 +59,15 @@ def test_browser_analytics_sends_country_and_allowlisted_aggregate_dimensions():
         assert forbidden not in source
 
 
-def test_generated_pages_do_not_load_the_removed_attribution_tracker():
-    html_paths = [PROJECT_DIR / "app.html", PROJECT_DIR / "index.html", PROJECT_DIR / "404.html"]
-    html_paths.extend(path for path in PROJECT_DIR.glob("*/index.html") if ".site" not in path.parts)
+def test_generated_pages_do_not_load_the_removed_attribution_tracker(offline_generated_site):
+    html_paths = [
+        offline_generated_site / "app.html",
+        offline_generated_site / "index.html",
+        offline_generated_site / "404.html",
+    ]
+    html_paths.extend(offline_generated_site.glob("*/index.html"))
 
-    for path in (PROJECT_DIR / "app.html", PROJECT_DIR / "index.html"):
+    for path in (offline_generated_site / "app.html", offline_generated_site / "index.html"):
         assert "assets/anonymous-analytics.js" in path.read_text(encoding="utf-8-sig")
     for path in html_paths:
         assert "visit-attribution.js" not in path.read_text(encoding="utf-8-sig"), path
