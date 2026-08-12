@@ -1,5 +1,21 @@
 window.__WTA_HISTORY_DATA__ = [
   {
+    "TOURNAMENT_ID": "1017",
+    "DRAW": "Q",
+    "TOURNAMENT": "Cincinnati Open - Cincinnati, OH",
+    "CATEGORY": "WTA 1000",
+    "SURFACE": "Hard",
+    "MATCH_TYPE": "WTA",
+    "_winnerEntry": "",
+    "_loserEntry": "",
+    "_resultStatusDesc": "",
+    "rows": [
+      {"DATE":"2026-08-12","ROUND":"QR1","SCORE":"6-1 6-1","_winnerId":"329009","_loserId":"329081","_winnerName":"Aoi Ito","_loserName":"Solana Sierra","_winnerCountry":"JPN","_loserCountry":"ARG","_winnerSeed":"","_loserSeed":"6","_winnerRank":"236","_loserRank":"86"},
+      {"DATE":"2025-08-06","ROUND":"QR2","SCORE":"6-3 7-5","_winnerId":"316464","_loserId":"329081","_winnerName":"Emina Bektas","_loserName":"Solana Sierra","_winnerCountry":"USA","_loserCountry":"ARG","_winnerSeed":"","_loserSeed":"3","_winnerRank":"299","_loserRank":"70"},
+      {"DATE":"2025-08-05","ROUND":"QR1","SCORE":"6-3 6-4","_winnerId":"329081","_loserId":"316266","_winnerName":"Solana Sierra","_loserName":"Martina Trevisan","_winnerCountry":"ARG","_loserCountry":"ITA","_winnerSeed":"3","_loserSeed":"","_winnerRank":"70","_loserRank":"272"}
+    ]
+  },
+  {
     "TOURNAMENT_ID": "1100204696",
     "DRAW": "Q",
     "TOURNAMENT": "W15 Bucharest",
@@ -6767,21 +6783,6 @@ window.__WTA_HISTORY_DATA__ = [
     "rows": [
       {"DATE":"2025-08-08","TOURNAMENT":"Cincinnati Open - Cincinnati, OH","SCORE":"6-3 7-6(4)","_winnerId":"332285","_loserId":"329081","_winnerName":"Iva Jovic","_loserName":"Solana Sierra","_winnerCountry":"USA","_winnerEntry":"LL","_loserEntry":"LL","_winnerSeed":"","_winnerRank":"91","_loserRank":"70"},
       {"DATE":"2021-08-16","TOURNAMENT":"Western & Southern Open - Cincinnati, OH, USA","SCORE":"6-3 6-4","_winnerId":"317964","_loserId":"319112","_winnerName":"Elise Mertens","_loserName":"Nadia Podoroska","_winnerCountry":"BEL","_winnerEntry":"","_loserEntry":"","_winnerSeed":"15","_winnerRank":"15","_loserRank":"37"}
-    ]
-  },
-  {
-    "TOURNAMENT_ID": "1017",
-    "DRAW": "Q",
-    "TOURNAMENT": "Cincinnati Open - Cincinnati, OH",
-    "CATEGORY": "WTA 1000",
-    "SURFACE": "Hard",
-    "MATCH_TYPE": "WTA",
-    "_winnerEntry": "",
-    "_loserEntry": "",
-    "_resultStatusDesc": "",
-    "rows": [
-      {"DATE":"2025-08-06","ROUND":"QR2","SCORE":"6-3 7-5","_winnerId":"316464","_loserId":"329081","_winnerName":"Emina Bektas","_loserName":"Solana Sierra","_winnerCountry":"USA","_loserCountry":"ARG","_winnerSeed":"","_loserSeed":"3","_winnerRank":"299","_loserRank":"70"},
-      {"DATE":"2025-08-05","ROUND":"QR1","SCORE":"6-3 6-4","_winnerId":"329081","_loserId":"316266","_winnerName":"Solana Sierra","_loserName":"Martina Trevisan","_winnerCountry":"ARG","_loserCountry":"ITA","_winnerSeed":"3","_loserSeed":"","_winnerRank":"70","_loserRank":"272"}
     ]
   },
   {
