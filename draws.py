@@ -1,16 +1,14 @@
 """Parse WTA draw PDFs and ITF draw JSON data."""
 
-import json
 import re
 import time
-import random
-import requests
-import fitz
 
-from utils import normalize_player_name
+import fitz  # type: ignore[import-untyped]
+import requests
+
 from itf_drawsheet_cache import get_cached_drawsheet, save_drawsheet
 from runtime_logging import get_logger
-
+from utils import normalize_player_name
 
 logger = get_logger("draws")
 _DRAW_TYPES = [
@@ -29,7 +27,7 @@ _WTA_API_HEADERS = {
 
 
 def _extract_tournament_id(url):
-    m = re.search(r'/tournaments/(\d+)/', url)
+    m = re.search(r"/tournaments/(\d+)/", url)
     return m.group(1) if m else None
 
 
@@ -37,14 +35,14 @@ def fetch_draw_pdf_bytes(tournament_id, year, draw_type="MDS"):
     url = _PDF_BASE.format(year=year, tid=tournament_id, dtype=draw_type)
     try:
         resp = requests.get(url, timeout=15)
-        if resp.status_code == 200 and len(resp.content) > 500 and resp.content[:5] == b'%PDF-':
+        if resp.status_code == 200 and len(resp.content) > 500 and resp.content[:5] == b"%PDF-":
             return resp.content
         return None
-    except Exception:
+    except requests.RequestException:
         return None
 
 
-_WO_TOKENS = {'WO', 'W/O', 'W.O.'}
+_WO_TOKENS = {"WO", "W/O", "W.O."}
 
 
 def _is_score(text):
@@ -54,11 +52,11 @@ def _is_score(text):
         return False
     if text.upper() in _WO_TOKENS:
         return True
-    _S = r'[\d]+(?:\(\d+\))?'
+    _S = r"[\d]+(?:\(\d+\))?"
     # Standard score: 2 or 3 set tokens (no RET/DEF required)
-    standard = rf'^(?:{_S}\s+){{1,2}}{_S}$'
+    standard = rf"^(?:{_S}\s+){{1,2}}{_S}$"
     # Retired/defaulted: 1–3 set tokens followed by RET or DEF
-    retired  = rf'^{_S}(?:\s+{_S}){{0,2}}\s+(?:RET|DEF)$'
+    retired = rf"^{_S}(?:\s+{_S}){{0,2}}\s+(?:RET|DEF)$"
     return bool(re.match(standard, text) or re.match(retired, text))
 
 
@@ -71,12 +69,12 @@ def _is_completed_score(score_str):
     """
     parts = score_str.strip().split()
     # Walkover/retirement/default marks the match as complete.
-    if any(p.upper() in ('RET', 'DEF') or p.upper() in _WO_TOKENS for p in parts):
+    if any(p.upper() in ("RET", "DEF") or p.upper() in _WO_TOKENS for p in parts):
         return True
 
     has_set = False
     for p in parts:
-        m = re.match(r'^(\d+)(?:\(\d+\))?$', p)
+        m = re.match(r"^(\d+)(?:\(\d+\))?$", p)
         if not m:
             continue
         digits = m.group(1)
@@ -102,9 +100,7 @@ def _is_winner_name(text):
     text = text.strip()
     if not text:
         return False
-    return bool(re.match(r'^[A-Z][a-z]*\.\s+\S', text))
-
-
+    return bool(re.match(r"^[A-Z][a-z]*\.\s+\S", text))
 
 
 def _split_player_name(player_name):
@@ -128,11 +124,11 @@ def _parse_winner_name_parts(winner_name):
     of each abbreviated token (e.g. 'Xin.' → 'X', not 'n').
     """
     clean = (winner_name or "").replace("...", "").strip()
-    m = re.match(r'^((?:[^\W\d_]+\.\s*)+)(.+)$', clean, flags=re.UNICODE)
+    m = re.match(r"^((?:[^\W\d_]+\.\s*)+)(.+)$", clean, flags=re.UNICODE)
     if not m:
         return clean, ""
     # Capture first letter of each "Token." group, e.g. "Xin." → 'X', "A." → 'A'
-    initials = "".join(re.findall(r'([^\W\d_])[^\W\d_]*\.', m.group(1), flags=re.UNICODE)).upper()
+    initials = "".join(re.findall(r"([^\W\d_])[^\W\d_]*\.", m.group(1), flags=re.UNICODE)).upper()
     family = m.group(2).strip()
     return family, initials
 
@@ -156,9 +152,10 @@ def _player_name_matches_winner(player_name, winner_name):
     w_last_norm = normalize_player_name(winner_last)
     if not p_last_norm or not w_last_norm:
         return False
-    if p_last_norm != w_last_norm:
-        if not (truncated and len(w_last_norm) >= 5 and p_last_norm.startswith(w_last_norm)):
-            return False
+    if p_last_norm != w_last_norm and not (
+        truncated and len(w_last_norm) >= 5 and p_last_norm.startswith(w_last_norm)
+    ):
+        return False
 
     # If we have winner initials, enforce first-initial agreement to avoid surname collisions.
     if winner_initials and player_first:
@@ -191,7 +188,7 @@ def _infer_match_num_from_winner_name(winner_name, round_num, players, used_matc
 
 # First code point must be any Unicode letter, not only ASCII, so names like
 # "SÁNCHEZ, Ana Sofia" are parsed correctly.
-_NAME_WITH_COMMA_RE = r'([^\W\d_][^,]*,\s*.+)'
+_NAME_WITH_COMMA_RE = r"([^\W\d_][^,]*,\s*.+)"
 
 
 def _parse_page(text):
@@ -209,13 +206,13 @@ def _parse_page(text):
       winner_name:  'A. Sabalenka '  (abbreviated first name)
       score:        '64 63'          (optional, missing for bye advances and unplayed matches)
     """
-    lines = text.split('\n')
+    lines = text.split("\n")
 
     players = []
     byes = set()
     qualifiers = set()
     result_entries = []
-    round_labels = []
+    round_labels: list[str] = []
     in_footer = False
 
     # Phase 1: Parse player entries and collect result lines
@@ -229,70 +226,71 @@ def _parse_page(text):
         line = lines[i].strip()
         i += 1
 
-        if not line or line == '\xa0':
+        if not line or line == "\xa0":
             continue
 
         if in_footer:
             continue
 
         # Footer detection
-        if line.startswith('WTA Supervisor') or line.startswith('Seeded players'):
+        if line.startswith("WTA Supervisor") or line.startswith("Seeded players"):
             in_footer = True
             continue
 
         # Round labels at the bottom
-        if re.match(r'^(Round of \d+|Quarterfinals|Semifinals|Final|Q\d)$', line):
+        if re.match(r"^(Round of \d+|Quarterfinals|Semifinals|Final|Q\d)$", line):
             round_labels.append(line)
             continue
         # "Qualifier" is a round label only after the player section
-        if line == 'Qualifier' and players_done:
+        if line == "Qualifier" and players_done:
             round_labels.append(line)
             continue
 
         # Skip known non-data
-        if line in ('CHAMPION', 'TOP HALF', 'BOTTOM HALF', 'RELEASED', 'Winner',
-                     'PLAYER', 'RANK'):
+        if line in ("CHAMPION", "TOP HALF", "BOTTOM HALF", "RELEASED", "Winner", "PLAYER", "RANK"):
             continue
-        if line.startswith('$') or re.match(r'^\d+\s*pt$', line):
+        if line.startswith("$") or re.match(r"^\d+\s*pt$", line):
             continue
         # Skip prize money lines like "$24,335" or "1,511,380" but NOT scores like "64 62"
-        if re.match(r'^[\$\d,.\s]+$', line) and not re.match(r'^\d+$', line):
-            if not (players_done and _is_score(line)):
-                continue
+        if (
+            re.match(r"^[\$\d,.\s]+$", line)
+            and not re.match(r"^\d+$", line)
+            and not (players_done and _is_score(line))
+        ):
+            continue
 
         if not players_done:
             # Combined line: "POS ENTRY SEED NAME, First" e.g. "1 WC 1 NAVARRO, Emma"
-            combo_match = re.match(
-                rf'^(\d+)\s+(WC|LL|PR|SE|ALT|Alt|Q)(?:\s+(\d+))?\s+{_NAME_WITH_COMMA_RE}$',
-                line
-            )
+            combo_match = re.match(rf"^(\d+)\s+(WC|LL|PR|SE|ALT|Alt|Q)(?:\s+(\d+))?\s+{_NAME_WITH_COMMA_RE}$", line)
             if combo_match:
                 current_pos = int(combo_match.group(1))
                 current_entry = combo_match.group(2)
                 current_seed = combo_match.group(3) or ""
                 name = combo_match.group(4).strip()
                 country = ""
-                inline_country = re.match(r'^(.+?)([A-Z]{3})$', name)
-                if inline_country and re.match(r'.*[a-z]$', inline_country.group(1)):
+                inline_country = re.match(r"^(.+?)([A-Z]{3})$", name)
+                if inline_country and re.match(r".*[a-z]$", inline_country.group(1)):
                     name = inline_country.group(1).strip()
                     country = inline_country.group(2)
                 if not country and i < len(lines):
                     next_line = lines[i].strip()
-                    if re.match(r'^[A-Z]{3}$', next_line):
+                    if re.match(r"^[A-Z]{3}$", next_line):
                         country = next_line
                         i += 1
-                players.append({
-                    "pos": current_pos,
-                    "seed": current_seed,
-                    "entry": current_entry,
-                    "name": name,
-                    "country": country,
-                })
+                players.append(
+                    {
+                        "pos": current_pos,
+                        "seed": current_seed,
+                        "entry": current_entry,
+                        "name": name,
+                        "country": country,
+                    }
+                )
                 current_pos = None
                 continue
 
             # Try to parse position line: just a number, or "number entry" like "3 Q" or "28 Q"
-            pos_match = re.match(r'^(\d+)(?:\s+(WC|LL|PR|SE|ALT|Alt|Q))?$', line)
+            pos_match = re.match(r"^(\d+)(?:\s+(WC|LL|PR|SE|ALT|Alt|Q))?$", line)
             if pos_match:
                 current_pos = int(pos_match.group(1))
                 current_entry = pos_match.group(2) or ""
@@ -300,28 +298,30 @@ def _parse_page(text):
                 continue
 
             # Bye line
-            if line == 'Bye' and current_pos is not None:
+            if line == "Bye" and current_pos is not None:
                 byes.add(current_pos)
                 current_pos = None
                 continue
 
             # Qualifier placeholder (empty Q spot)
-            if line == 'Qualifier' and current_pos is not None:
+            if line == "Qualifier" and current_pos is not None:
                 qualifiers.add(current_pos)
                 current_pos = None
                 continue
 
             # Name line: "[seed] LASTNAME, Firstname" or just "LASTNAME, Firstname"
-            name_match = re.match(rf'^(?:(\d+)\s+)?{_NAME_WITH_COMMA_RE}$', line)
+            name_match = re.match(rf"^(?:(\d+)\s+)?{_NAME_WITH_COMMA_RE}$", line)
             # Handle wrapped names: "LASTNAME," on one line, "Firstname" on next
             if not name_match and current_pos is not None:
-                wrap_match = re.match(r'^(?:(\d+)\s+)?([^\W\d_][^,]*,)\s*$', line)
+                wrap_match = re.match(r"^(?:(\d+)\s+)?([^\W\d_][^,]*,)\s*$", line)
                 if wrap_match and i < len(lines):
                     next_line = lines[i].strip()
-                    if next_line and re.match(r'^[A-Z][a-z]', next_line):
-                        combined = wrap_match.group(2) + ' ' + next_line
-                        name_match = re.match(rf'^(?:(\d+)\s+)?{_NAME_WITH_COMMA_RE}$',
-                                              (wrap_match.group(1) + ' ' if wrap_match.group(1) else '') + combined)
+                    if next_line and re.match(r"^[A-Z][a-z]", next_line):
+                        combined = wrap_match.group(2) + " " + next_line
+                        name_match = re.match(
+                            rf"^(?:(\d+)\s+)?{_NAME_WITH_COMMA_RE}$",
+                            (wrap_match.group(1) + " " if wrap_match.group(1) else "") + combined,
+                        )
                         if name_match:
                             i += 1
             if name_match and current_pos is not None:
@@ -329,23 +329,25 @@ def _parse_page(text):
                 name = name_match.group(2).strip()
                 country = ""
                 # Country code may be concatenated at end of name (e.g. "TiantsoaFRA")
-                inline_country = re.match(r'^(.+?)([A-Z]{3})$', name)
-                if inline_country and re.match(r'.*[a-z]$', inline_country.group(1)):
+                inline_country = re.match(r"^(.+?)([A-Z]{3})$", name)
+                if inline_country and re.match(r".*[a-z]$", inline_country.group(1)):
                     name = inline_country.group(1).strip()
                     country = inline_country.group(2)
                 # Or country might be on the next line
                 if not country and i < len(lines):
                     next_line = lines[i].strip()
-                    if re.match(r'^[A-Z]{3}$', next_line):
+                    if re.match(r"^[A-Z]{3}$", next_line):
                         country = next_line
                         i += 1
-                players.append({
-                    "pos": current_pos,
-                    "seed": current_seed,
-                    "entry": current_entry,
-                    "name": name,
-                    "country": country,
-                })
+                players.append(
+                    {
+                        "pos": current_pos,
+                        "seed": current_seed,
+                        "entry": current_entry,
+                        "name": name,
+                        "country": country,
+                    }
+                )
                 current_pos = None
                 continue
 
@@ -357,7 +359,7 @@ def _parse_page(text):
         if players_done:
             # Result section: winner names and scores
             if _is_winner_name(line):
-                name = re.sub(r'\s+\d+$', '', line).strip()
+                name = re.sub(r"\s+\d+$", "", line).strip()
                 result_entries.append({"name": name, "score": ""})
             elif _is_score(line):
                 score_line = line
@@ -391,20 +393,23 @@ def parse_draw_pdf(pdf_bytes):
 
     # Parse header from first page
     page0_text = doc[0].get_text() or ""
-    header_lines = page0_text.split('\n')
+    header_lines = page0_text.split("\n")
     tournament_name = header_lines[0].strip() if header_lines else ""
     location = header_lines[1].strip() if len(header_lines) > 1 else ""
 
     dates = prize = surface = ""
     if len(header_lines) > 2:
-        parts = [p.strip() for p in header_lines[2].split('|')]
-        if len(parts) >= 1: dates = parts[0]
-        if len(parts) >= 2: prize = parts[1]
-        if len(parts) >= 3: surface = parts[2]
+        parts = [p.strip() for p in header_lines[2].split("|")]
+        if len(parts) >= 1:
+            dates = parts[0]
+        if len(parts) >= 2:
+            prize = parts[1]
+        if len(parts) >= 3:
+            surface = parts[2]
 
     draw_type = ""
     for line in header_lines[3:8]:
-        if 'DRAW' in line.upper():
+        if "DRAW" in line.upper():
             draw_type = line.strip()
             break
 
@@ -412,7 +417,7 @@ def parse_draw_pdf(pdf_bytes):
     all_byes = set()
     all_qualifiers = set()
     page_results = []
-    round_labels = []
+    round_labels: list[str] = []
 
     for page_idx in range(num_pages):
         text = doc[page_idx].get_text() or ""
@@ -436,10 +441,7 @@ def parse_draw_pdf(pdf_bytes):
             unique_players.append(p)
 
     # Compute draw size from max position
-    max_pos = max(
-        [p["pos"] for p in unique_players] + list(all_byes) + list(all_qualifiers),
-        default=0
-    )
+    max_pos = max([p["pos"] for p in unique_players] + list(all_byes) + list(all_qualifiers), default=0)
     draw_size = max_pos
 
     # R1 matches per page
@@ -507,15 +509,19 @@ def _group_into_rounds(entries, r1_count, match_offset, players=None, ideal_r1=N
     pos = 0
 
     while pos < len(entries) and expected >= 1:
-        round_entries = entries[pos:pos + expected]
-        used_match_nums = set()
+        round_entries = entries[pos : pos + expected]
+        used_match_nums: set[int] = set()
         for match_num, entry in enumerate(round_entries):
-            inferred_match_num = _infer_match_num_from_winner_name(
-                entry.get("name", ""),
-                round_num,
-                players,
-                used_match_nums,
-            ) if players else None
+            inferred_match_num = (
+                _infer_match_num_from_winner_name(
+                    entry.get("name", ""),
+                    round_num,
+                    players,
+                    used_match_nums,
+                )
+                if players
+                else None
+            )
             if inferred_match_num is not None:
                 actual_match_num = inferred_match_num
                 used_match_nums.add(actual_match_num)
@@ -525,12 +531,14 @@ def _group_into_rounds(entries, r1_count, match_offset, players=None, ideal_r1=N
             else:
                 actual_match_num = match_num + match_offset // (2 ** (round_num - 1))
                 used_match_nums.add(actual_match_num)
-            matches.append({
-                "round": round_num,
-                "match_num": actual_match_num,
-                "winner_name": entry["name"],
-                "score": entry["score"],
-            })
+            matches.append(
+                {
+                    "round": round_num,
+                    "match_num": actual_match_num,
+                    "winner_name": entry["name"],
+                    "score": entry["score"],
+                }
+            )
         pos += expected
         ideal_expected = ideal_expected // 2
         expected = ideal_expected
@@ -590,17 +598,17 @@ def _wta_api_score_compact(score_str):
     parts = []
     for set_str in s.split(","):
         set_str = set_str.strip()
-        tb = re.match(r'^(\d+)-(\d+)\((\d+)\)$', set_str)
+        tb = re.match(r"^(\d+)-(\d+)\((\d+)\)$", set_str)
         if tb:
             parts.append(f"{tb.group(1)}{tb.group(2)}({tb.group(3)})")
             continue
-        plain = re.match(r'^(\d+)-(\d+)$', set_str)
+        plain = re.match(r"^(\d+)-(\d+)$", set_str)
         if plain:
-            w, l = plain.group(1), plain.group(2)
-            if int(w) >= 10 or int(l) >= 10:
-                parts.append(f"{w}-{l}")  # super-tiebreak: keep hyphen
+            winner_score, loser_score = plain.group(1), plain.group(2)
+            if int(winner_score) >= 10 or int(loser_score) >= 10:
+                parts.append(f"{winner_score}-{loser_score}")  # super-tiebreak: keep hyphen
             else:
-                parts.append(f"{w}{l}")
+                parts.append(f"{winner_score}{loser_score}")
     return " ".join(parts) + ret_suffix
 
 
@@ -617,7 +625,7 @@ def _fetch_draw_from_wta_api(tournament_id, year):
         if resp.status_code != 200:
             return None
         data = resp.json()
-    except Exception:
+    except (requests.RequestException, requests.JSONDecodeError, TypeError, ValueError):
         return None
 
     raw_matches = data.get("matches") if isinstance(data, dict) else data
@@ -649,7 +657,7 @@ def _fetch_draw_from_wta_api(tournament_id, year):
     # Build player list from R1 matches
     players = []
     for n in sorted(r1_ids):
-        pos_base = (n - 2 ** max_depth) * 2 + 1
+        pos_base = (n - 2**max_depth) * 2 + 1
         for side, pos in (("A", pos_base), ("B", pos_base + 1)):
             first = md[n].get(f"PlayerNameFirst{side}", "")
             last = md[n].get(f"PlayerNameLast{side}", "")
@@ -661,16 +669,15 @@ def _fetch_draw_from_wta_api(tournament_id, year):
                 entry = "WC"
             country = md[n].get(f"PlayerCountry{side}") or ""
             name = f"{last.upper()}, {first}" if first else last.upper()
-            players.append({"pos": pos, "seed": seed, "entry": entry,
-                            "name": name, "country": country})
+            players.append({"pos": pos, "seed": seed, "entry": entry, "name": name, "country": country})
 
     # Build match results from all completed matches
     matches_out = []
     for n in sorted(md):
         m = md[n]
         depth = _wta_api_tree_depth(n)
-        round_num = max_depth - depth + 1   # R1=1, R2=2, QF=3, …
-        match_num = n - 2 ** depth           # 0-indexed within the round
+        round_num = max_depth - depth + 1  # R1=1, R2=2, QF=3, …
+        match_num = n - 2**depth  # 0-indexed within the round
 
         w_first, w_last = _wta_api_winner(m)
         if not w_last:
@@ -679,8 +686,7 @@ def _fetch_draw_from_wta_api(tournament_id, year):
         winner_name = f"{abbrev} {w_last}".strip() if abbrev else w_last
         score = _wta_api_score_compact(m.get("ScoreString", ""))
 
-        matches_out.append({"round": round_num, "match_num": match_num,
-                             "winner_name": winner_name, "score": score})
+        matches_out.append({"round": round_num, "match_num": match_num, "winner_name": winner_name, "score": score})
 
     if not players:
         return None
@@ -735,7 +741,10 @@ def fetch_tournament_draws(tournament_url, year):
     if not draws.get("MDS", {}).get("players"):
         api_draw = _fetch_draw_from_wta_api(tid, year)
         if api_draw and api_draw.get("players"):
-            logger.debug(f"  [WTA API] Built main draw for {tid} from matches API ({api_draw['draw_size']}-draw, {len(api_draw['matches'])} results)")
+            logger.debug(
+                f"  [WTA API] Built main draw for {tid} from matches API "
+                f"({api_draw['draw_size']}-draw, {len(api_draw['matches'])} results)"
+            )
             draws["MDS"] = api_draw
 
     return draws
@@ -777,9 +786,7 @@ def _wait_for_itf_drawsheet_request_slot():
     """Keep direct drawsheet requests below ITF/Imperva's burst limit."""
     global _LAST_ITF_DRAWSHEET_REQUEST_AT
     now = time.monotonic()
-    wait_seconds = _ITF_DRAWSHEET_REQUEST_INTERVAL_SECONDS - (
-        now - _LAST_ITF_DRAWSHEET_REQUEST_AT
-    )
+    wait_seconds = _ITF_DRAWSHEET_REQUEST_INTERVAL_SECONDS - (now - _LAST_ITF_DRAWSHEET_REQUEST_AT)
     if wait_seconds > 0:
         time.sleep(wait_seconds)
     _LAST_ITF_DRAWSHEET_REQUEST_AT = time.monotonic()
@@ -788,7 +795,10 @@ def _wait_for_itf_drawsheet_request_slot():
 def _fetch_itf_drawsheet(tournament_id, classification, week_number=0):
     """Fetch an ITF drawsheet with the canonical direct GET request."""
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+        ),
         "Referer": f"https://www.itftennis.com/en/tournament/draws-and-results/print/?tournamentId={tournament_id}&circuitCode=WT",
         "Origin": "https://www.itftennis.com",
         "Accept": "application/json, text/plain, */*",
@@ -809,7 +819,7 @@ def _fetch_itf_drawsheet(tournament_id, classification, week_number=0):
         if resp.status_code != 200 or not text.startswith("{"):
             return None
         return resp.json()
-    except Exception:
+    except (requests.RequestException, requests.JSONDecodeError, TypeError, ValueError):
         return None
 
 
@@ -909,9 +919,9 @@ def _drawsheet_has_arg_in_round1(data):
     rounds_data = ko_groups[0].get("rounds") or []
     if not rounds_data:
         return False
-    for match in (rounds_data[0].get("matches") or []):
-        for team in (match.get("teams") or []):
-            for player in (team.get("players") or []):
+    for match in rounds_data[0].get("matches") or []:
+        for team in match.get("teams") or []:
+            for player in team.get("players") or []:
                 if isinstance(player, dict) and str(player.get("nationality") or "").upper() == "ARG":
                     return True
     return False
@@ -971,13 +981,15 @@ def _parse_itf_draw(data):
                 seed = str(team.get("seeding")) if team.get("seeding") else ""
                 entry_raw = team.get("entryStatus") or ""
                 entry = _ITF_ENTRY_MAP.get(entry_raw, entry_raw)
-                players.append({
-                    "pos": pos,
-                    "seed": seed,
-                    "entry": entry,
-                    "name": name,
-                    "country": country,
-                })
+                players.append(
+                    {
+                        "pos": pos,
+                        "seed": seed,
+                        "entry": entry,
+                        "name": name,
+                        "country": country,
+                    }
+                )
             elif is_bye:
                 byes.append(pos)
 
@@ -1111,23 +1123,23 @@ def fetch_itf_tournament_draws(
                 # makes the API request inherit an Incapsula-blocked context.
                 raw = None
                 blocked = False
-                for attempt in range(2):
-                    candidate = _fetch_itf_drawsheet(
-                        tournament_id, classification, week_number
-                    )
+                for _attempt in range(2):
+                    candidate = _fetch_itf_drawsheet(tournament_id, classification, week_number)
                     if candidate is _ITF_DRAW_BLOCKED:
                         blocked = True
                         raw = None
                         blocked_key = (dtype_code, str(week_number))
                         if blocked_key not in blocked_response_keys:
                             blocked_response_keys.add(blocked_key)
-                            blocked_responses.append({
-                                "endpoint": "itf",
-                                "tournament_id": str(tournament_id),
-                                "tournament_name": tournament_name,
-                                "code": dtype_code,
-                                "week_number": str(week_number),
-                            })
+                            blocked_responses.append(
+                                {
+                                    "endpoint": "itf",
+                                    "tournament_id": str(tournament_id),
+                                    "tournament_name": tournament_name,
+                                    "code": dtype_code,
+                                    "week_number": str(week_number),
+                                }
+                            )
                     else:
                         blocked = False
                         raw = candidate

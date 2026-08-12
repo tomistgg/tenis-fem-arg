@@ -19,16 +19,16 @@ from canonical_data import (
 )
 from config import repair_name_text
 from execution_analysis import analyze_execution, effective_run_status
-from time_utils import madrid_today, parse_utc_timestamp, utc_now
 from html_generator import country_flag_html
 from runtime_logging import get_logger
+from time_utils import madrid_today, parse_utc_timestamp, utc_now
 from utils import (
-    fix_encoding,
     expand_calendar_snapshot,
+    expand_draws_snapshot,
     expand_draws_store_cache,
     expand_entry_lists_cache,
     expand_tournament_snapshot,
-    expand_draws_snapshot,
+    fix_encoding,
     get_cache_timestamp,
     write_text_if_changed,
 )
@@ -36,7 +36,12 @@ from utils import (
 logger = get_logger("run-report")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MAX_MATCH_LINES_PER_FILE = 50
-RANKINGS_CSV_FILES = ["wta_rankings_83_99.csv", "wta_rankings_00_09.csv", "wta_rankings_10_19.csv", "wta_rankings_20_29.csv"]
+RANKINGS_CSV_FILES = [
+    "wta_rankings_83_99.csv",
+    "wta_rankings_00_09.csv",
+    "wta_rankings_10_19.csv",
+    "wta_rankings_20_29.csv",
+]
 ALIASES_JSON_FILE = "player_aliases_wta_itf.json"
 
 
@@ -45,7 +50,7 @@ def load_json(path):
         return None
     try:
         # Use utf-8-sig to tolerate BOM-prefixed JSON files (common on Windows).
-        with open(path, "r", encoding="utf-8-sig") as f:
+        with open(path, encoding="utf-8-sig") as f:
             data = json.load(f)
         if os.path.basename(path) == "calendar_snapshot.json":
             return expand_calendar_snapshot(data)
@@ -58,7 +63,7 @@ def load_json(path):
         if os.path.basename(path) == "entry_lists_cache.json":
             return expand_entry_lists_cache(data)
         return data
-    except Exception:
+    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError):
         return None
 
 
@@ -177,10 +182,7 @@ def diff_calendar_tournaments(before_rows, after_rows, *, today=None):
     before_by_id = _calendar_rows_by_identity(before_rows)
     after_by_id = _calendar_rows_by_identity(after_rows)
 
-    added = [
-        _calendar_representative(after_by_id[key])
-        for key in sorted(after_by_id.keys() - before_by_id.keys())
-    ]
+    added = [_calendar_representative(after_by_id[key]) for key in sorted(after_by_id.keys() - before_by_id.keys())]
 
     changed = []
     for key in sorted(before_by_id.keys() & after_by_id.keys()):
@@ -194,12 +196,14 @@ def diff_calendar_tournaments(before_rows, after_rows, *, today=None):
                 continue
             if _normalized_calendar_field(before, field) == _normalized_calendar_field(after, field):
                 continue
-            changes.append({
-                "field": field,
-                "label": label,
-                "before": before.get(field, ""),
-                "after": after.get(field, ""),
-            })
+            changes.append(
+                {
+                    "field": field,
+                    "label": label,
+                    "before": before.get(field, ""),
+                    "after": after.get(field, ""),
+                }
+            )
         if changes:
             changed.append({"before": before, "after": after, "changes": changes})
 
@@ -273,7 +277,7 @@ def monday_from_date_str(value):
         s = s[:10]
     try:
         d = datetime.strptime(s, "%Y-%m-%d").date()
-    except Exception:
+    except (TypeError, ValueError):
         return ""
     monday = d - timedelta(days=d.weekday())
     return monday.strftime("%Y-%m-%d")
@@ -282,7 +286,7 @@ def monday_from_date_str(value):
 def _safe_int(value, default=9999):
     try:
         return int(value)
-    except Exception:
+    except (TypeError, ValueError):
         return default
 
 
@@ -361,9 +365,13 @@ def format_match_line(row):
 def iter_match_sides(row):
     """Yield (side, player_id, player_name) for winner+loser."""
     w_id = (row.get("winnerId") or row.get("WINNERID") or row.get("winner_id") or "").strip()
-    w_name = (row.get("winnerName") or row.get("_winnerName") or row.get("WINNERNAME") or row.get("WINNER_NAME") or "").strip()
+    w_name = (
+        row.get("winnerName") or row.get("_winnerName") or row.get("WINNERNAME") or row.get("WINNER_NAME") or ""
+    ).strip()
     l_id = (row.get("loserId") or row.get("LOSERID") or row.get("loser_id") or "").strip()
-    l_name = (row.get("loserName") or row.get("_loserName") or row.get("LOSERNAME") or row.get("LOSER_NAME") or "").strip()
+    l_name = (
+        row.get("loserName") or row.get("_loserName") or row.get("LOSERNAME") or row.get("LOSER_NAME") or ""
+    ).strip()
     if w_name:
         yield "winner", w_id, w_name
     if l_name:
@@ -374,10 +382,10 @@ def load_csv_rows(path):
     if not os.path.exists(path):
         return [], []
     try:
-        with open(path, "r", encoding="utf-8-sig", newline="") as f:
+        with open(path, encoding="utf-8-sig", newline="") as f:
             reader = csv.DictReader(f)
             return reader.fieldnames or [], list(reader)
-    except Exception:
+    except (OSError, UnicodeError, csv.Error):
         return [], []
 
 
@@ -402,7 +410,6 @@ def build_row_key(row, headers, source=None):
     return None
 
 
-
 def compute_report(before_dir, after_dir):
     report = {
         "withdrawals": [],
@@ -424,14 +431,13 @@ def compute_report(before_dir, after_dir):
     after_entry = load_json(os.path.join(after_dir, "entry_lists_cache.json")) or {}
     before_ranking_status = load_json(os.path.join(before_dir, "wta_ranking_refresh_status.json")) or {}
     ranking_status = load_json(os.path.join(after_dir, "wta_ranking_refresh_status.json")) or {}
-    ranking_status_is_accepted = (
-        isinstance(ranking_status, dict)
-        and ranking_status.get("status") in {"confirmed_changed", "confirmed_frozen"}
-    )
+    ranking_status_is_accepted = isinstance(ranking_status, dict) and ranking_status.get("status") in {
+        "confirmed_changed",
+        "confirmed_frozen",
+    }
     ranking_was_already_accepted_this_week = (
         isinstance(ranking_status, dict)
-        and
-        isinstance(before_ranking_status, dict)
+        and isinstance(before_ranking_status, dict)
         and before_ranking_status.get("requested_date") == ranking_status.get("requested_date")
         and before_ranking_status.get("status") in {"confirmed_changed", "confirmed_frozen"}
     )
@@ -447,24 +453,26 @@ def compute_report(before_dir, after_dir):
         for row in entries:
             if not isinstance(row, dict):
                 continue
-            player_name = repair_name_text((row.get("name") or row.get("player") or "")).strip()
-            _record_flagless_country(flagless_player_countries, row.get("country") or row.get("Country") or "", player_name)
+            player_name = repair_name_text(row.get("name") or row.get("player") or "").strip()
+            _record_flagless_country(
+                flagless_player_countries, row.get("country") or row.get("Country") or "", player_name
+            )
 
     for fname in RANKINGS_CSV_FILES:
         path = os.path.join(after_dir, fname)
         if not os.path.exists(path):
             continue
         try:
-            with open(path, "r", encoding="utf-8-sig", newline="") as f:
+            with open(path, encoding="utf-8-sig", newline="") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
-                    player_name = repair_name_text((row.get("player") or row.get("Player") or "")).strip()
+                    player_name = repair_name_text(row.get("player") or row.get("Player") or "").strip()
                     _record_flagless_country(
                         flagless_player_countries,
                         row.get("country") or row.get("Country") or "",
                         player_name,
                     )
-        except Exception:
+        except (OSError, UnicodeError, csv.Error):
             continue
 
     report["flagless_player_countries"] = [
@@ -485,20 +493,24 @@ def compute_report(before_dir, after_dir):
 
             withdrew = sorted(old_arg - new_arg)
             if withdrew:
-                report["withdrawals"].append({
-                    "tournament_key": t_key,
-                    "tournament_name": get_tournament_label(t_key, before_tourney, after_tourney),
-                    "players": withdrew,
-                })
+                report["withdrawals"].append(
+                    {
+                        "tournament_key": t_key,
+                        "tournament_name": get_tournament_label(t_key, before_tourney, after_tourney),
+                        "players": withdrew,
+                    }
+                )
 
         old_has = len(old_entries) > 0
         new_has = len(new_entries) > 0
         if (not old_has) and new_has:
-            report["new_entry_lists"].append({
-                "tournament_key": t_key,
-                "tournament_name": get_tournament_label(t_key, before_tourney, after_tourney),
-                "entries_count": len(new_entries),
-            })
+            report["new_entry_lists"].append(
+                {
+                    "tournament_key": t_key,
+                    "tournament_name": get_tournament_label(t_key, before_tourney, after_tourney),
+                    "entries_count": len(new_entries),
+                }
+            )
 
         # Only alert on seed gaps when the acceptance list itself changed.
         # Seed_rank/seed can change later as rankings are refreshed, and we do
@@ -509,8 +521,7 @@ def compute_report(before_dir, after_dir):
             continue
 
         main_entries = [
-            row for row in new_entries
-            if isinstance(row, dict) and str(row.get("type") or "").upper() == "MAIN"
+            row for row in new_entries if isinstance(row, dict) and str(row.get("type") or "").upper() == "MAIN"
         ]
         if not main_entries:
             continue
@@ -519,7 +530,13 @@ def compute_report(before_dir, after_dir):
         seed_count = 8 if main_count <= 24 else 16
         placeholder_names = {"(AVAILABLE SLOT)", "(SPECIAL EXEMPT)"}
         missing_seed_rank_players = []
-        for row in sorted(main_entries, key=lambda item: (_safe_int((item or {}).get("pos_num"), 9999), normalize_exact_name((item or {}).get("name") or ""))):
+        for row in sorted(
+            main_entries,
+            key=lambda item: (
+                _safe_int((item or {}).get("pos_num"), 9999),
+                normalize_exact_name((item or {}).get("name") or ""),
+            ),
+        ):
             name = repair_name_text((row or {}).get("name") or "").strip()
             if not name:
                 continue
@@ -530,19 +547,23 @@ def compute_report(before_dir, after_dir):
                 continue
             if str((row or {}).get("seed_rank") or "").strip():
                 continue
-            missing_seed_rank_players.append({
-                "name": name,
-                "pos_num": pos_num,
-                "entry_rank": str((row or {}).get("rank") or "").strip(),
-            })
+            missing_seed_rank_players.append(
+                {
+                    "name": name,
+                    "pos_num": pos_num,
+                    "entry_rank": str((row or {}).get("rank") or "").strip(),
+                }
+            )
 
         if missing_seed_rank_players:
-            report["itf_seed_missing_rankings"].append({
-                "tournament_key": t_key,
-                "tournament_name": get_tournament_label(t_key, before_tourney, after_tourney),
-                "seed_count": seed_count,
-                "players": missing_seed_rank_players,
-            })
+            report["itf_seed_missing_rankings"].append(
+                {
+                    "tournament_key": t_key,
+                    "tournament_name": get_tournament_label(t_key, before_tourney, after_tourney),
+                    "seed_count": seed_count,
+                    "players": missing_seed_rank_players,
+                }
+            )
 
     before_files = set()
     after_files = set()
@@ -559,10 +580,7 @@ def compute_report(before_dir, after_dir):
         if not after_rows:
             continue
 
-        has_match_shape = (
-            "matchId" in after_headers or
-            ("winnerName" in after_headers and "loserName" in after_headers)
-        )
+        has_match_shape = "matchId" in after_headers or ("winnerName" in after_headers and "loserName" in after_headers)
         if not has_match_shape:
             continue
 
@@ -589,11 +607,7 @@ def compute_report(before_dir, after_dir):
             added_rows_by_csv[csv_name] = added
 
     if added_rows_by_csv:
-        new_match_rows = [
-            item.get("row") or {}
-            for rows in added_rows_by_csv.values()
-            for item in rows
-        ]
+        new_match_rows = [item.get("row") or {} for rows in added_rows_by_csv.values() for item in rows]
         player_table_path = Path(aliases_path)
         sync_itf_players(player_table_path, new_match_rows)
         sync_wta_match_players(player_table_path, new_match_rows)
@@ -610,9 +624,7 @@ def compute_report(before_dir, after_dir):
                         continue
                     record = player_index.by_itf_id.get(player_id)
                     if record is None:
-                        issues.append(
-                            f"{player_name} (itf_id {player_id}) is missing from the canonical player table."
-                        )
+                        issues.append(f"{player_name} (itf_id {player_id}) is missing from the canonical player table.")
                         continue
                     if not record.wta_id or not record.wta_name:
                         suffix = f" for week {week}" if week else ""
@@ -663,14 +675,13 @@ def compute_report(before_dir, after_dir):
     # expected (draws aren't published yet), not a real failure.
     failed_draw_fetches = load_json(os.path.join(after_dir, "draw_fetch_errors.json")) or []
     report["failed_draw_fetches"] = [
-        item for item in failed_draw_fetches
+        item
+        for item in failed_draw_fetches
         if isinstance(item, dict) and (item.get("startDate") or "9999") <= today_str
     ]
 
     blocked_itf_responses = load_json(os.path.join(after_dir, "itf_blocked_responses.json")) or []
-    report["blocked_itf_responses"] = [
-        item for item in blocked_itf_responses if isinstance(item, dict)
-    ]
+    report["blocked_itf_responses"] = [item for item in blocked_itf_responses if isinstance(item, dict)]
 
     # Stale draws: active tournaments whose draw hasn't been refreshed in >24h
     draws_store = load_json(os.path.join(after_dir, "draws_store_cache.json")) or {}
@@ -686,16 +697,18 @@ def compute_report(before_dir, after_dir):
             continue  # no timestamp yet (pre-existing cache entries)
         try:
             fetched_at = parse_utc_timestamp(fetched_at_str)
-        except Exception:
+        except (TypeError, ValueError):
             continue
         age_hours = (now_utc - fetched_at).total_seconds() / 3600
         if age_hours > 24:
-            stale_draws.append({
-                "name": entry.get("name", t_key),
-                "key": t_key,
-                "fetched_at": fetched_at_str,
-                "age_hours": round(age_hours, 1),
-            })
+            stale_draws.append(
+                {
+                    "name": entry.get("name", t_key),
+                    "key": t_key,
+                    "fetched_at": fetched_at_str,
+                    "age_hours": round(age_hours, 1),
+                }
+            )
     report["stale_draws"] = stale_draws
 
     # Bad draw scores: concluded matches whose score violates tennis rules
@@ -708,20 +721,22 @@ def compute_report(before_dir, after_dir):
             if not isinstance(draw, dict):
                 continue
             draw_label = {"MDS": "Main Draw", "QS": "Qualifying"}.get(draw_type, draw_type)
-            for m in (draw.get("matches") or []):
+            for m in draw.get("matches") or []:
                 if not isinstance(m, dict):
                     continue
                 winner = m.get("winner_name") or ""
                 score = m.get("score") or ""
                 if winner and score and _is_bad_draw_score(score):
-                    bad_draw_scores.append({
-                        "tournament_name": t_name,
-                        "draw_label": draw_label,
-                        "round": m.get("round", "?"),
-                        "match_num": m.get("match_num", "?"),
-                        "winner_name": winner,
-                        "score": score,
-                    })
+                    bad_draw_scores.append(
+                        {
+                            "tournament_name": t_name,
+                            "draw_label": draw_label,
+                            "round": m.get("round", "?"),
+                            "match_num": m.get("match_num", "?"),
+                            "winner_name": winner,
+                            "score": score,
+                        }
+                    )
     report["bad_draw_scores"] = bad_draw_scores
 
     return report
@@ -730,10 +745,10 @@ def compute_report(before_dir, after_dir):
 def _parse_compact_set(token):
     """Parse a compact set token (e.g. '64', '76(4)') into (winner_games, loser_games).
     Returns None if not a recognisable set token."""
-    mc = re.match(r'^\[?(\d+)[-:/](\d+)\]?(?:\(\d+\))?$', token)
+    mc = re.match(r"^\[?(\d+)[-:/](\d+)\]?(?:\(\d+\))?$", token)
     if mc:
         return int(mc.group(1)), int(mc.group(2))
-    mc2 = re.match(r'^(\d+)(?:\(\d+\))?$', token)
+    mc2 = re.match(r"^(\d+)(?:\(\d+\))?$", token)
     if mc2:
         d = mc2.group(1)
         if len(d) == 2:
@@ -757,7 +772,7 @@ def _is_bad_draw_score(score_str):
     if not score_str or not score_str.strip():
         return False
     parts = score_str.strip().upper().split()
-    non_score_tokens = {'RET', 'DEF', 'W/O', 'WO', 'W.O.'}
+    non_score_tokens = {"RET", "DEF", "W/O", "WO", "W.O."}
     if any(p in non_score_tokens for p in parts):
         return False  # retirement or walkover — valid regardless of game counts
     for p in parts:
@@ -818,9 +833,7 @@ def _append_execution_summary(lines, run_status, *, include_technical=True):
             lines.append(f"- Run reference: {run_status['run_id']}")
         for detail in technical:
             count = f" ({detail['count']} occurrences)" if detail["count"] > 1 else ""
-            lines.append(
-                f"- {detail['component']} / {detail['operation']}: {detail['message']}{count}"
-            )
+            lines.append(f"- {detail['component']} / {detail['operation']}: {detail['message']}{count}")
         lines.append("")
 
 
@@ -895,9 +908,7 @@ def render_email_markdown(report):
                 "The affected draws may be older or missing."
             )
         else:
-            lines.append(
-                "- One or more ITF draws could not be refreshed. The affected draws may be older or missing."
-            )
+            lines.append("- One or more ITF draws could not be refreshed. The affected draws may be older or missing.")
         lines.append("")
 
     if report.get("wta_ranking_status"):
@@ -940,8 +951,7 @@ def render_email_markdown(report):
             label = repair_name_text(item.get("tournament_name") or "").strip() or (item.get("tournament_key") or "")
             seed_phrase = "this seed slot" if len(players) == 1 else "these seed slots"
             lines.append(
-                f"- {label} (top {seed_count} seeds): {players_text}. "
-                f"WTA ranking not found for {seed_phrase}."
+                f"- {label} (top {seed_count} seeds): {players_text}. WTA ranking not found for {seed_phrase}."
             )
         lines.append("")
 
@@ -983,7 +993,7 @@ def render_email_markdown(report):
             match_line = item.get("line") if isinstance(item, dict) else str(item)
             lines.append(f"- {match_line}")
             issues = item.get("issues") if isinstance(item, dict) else []
-            for msg in (issues or []):
+            for msg in issues or []:
                 lines.append(f"  {msg}")
         if payload.get("truncated"):
             lines.append(f"- ... and {payload['count'] - len(payload.get('items') or [])} more")
@@ -1008,10 +1018,13 @@ def render_email_markdown(report):
             tournament_name = item.get("tournament_name") or ""
             tournament_id = item.get("tournament_id") or ""
             key = (endpoint, tournament_id, tournament_name)
-            bucket = grouped_blocks.setdefault(key, {
-                "codes": [],
-                "weeks": [],
-            })
+            bucket = grouped_blocks.setdefault(
+                key,
+                {
+                    "codes": [],
+                    "weeks": [],
+                },
+            )
             code = (item.get("code") or "").strip()
             week_number = (item.get("week_number") or "").strip()
             if code and code not in bucket["codes"]:
@@ -1020,16 +1033,25 @@ def render_email_markdown(report):
                 bucket["weeks"].append(week_number)
 
         for (endpoint, tournament_id, tournament_name), bucket in grouped_blocks.items():
-            context_parts = [p for p in [
-                tournament_name,
-                f"id={tournament_id}" if tournament_id else "",
-            ] if p]
+            context_parts = [
+                p
+                for p in [
+                    tournament_name,
+                    f"id={tournament_id}" if tournament_id else "",
+                ]
+                if p
+            ]
             context = " | ".join(context_parts) if context_parts else "general ITF request"
             lines.append(f"- The ITF website blocked the request to {endpoint}: {context}")
             if bucket["codes"]:
                 lines.append(f"  - codes: {', '.join(sorted(bucket['codes']))}")
             if bucket["weeks"]:
-                lines.append(f"  - weeks: {', '.join(sorted(bucket['weeks'], key=lambda v: int(v) if str(v).isdigit() else str(v)))}")
+                lines.append(
+                    "  - weeks: "
+                    + ", ".join(
+                        sorted(bucket["weeks"], key=lambda value: int(value) if str(value).isdigit() else str(value))
+                    )
+                )
         lines.append("")
 
     if report.get("bad_draw_scores"):
@@ -1038,7 +1060,7 @@ def render_email_markdown(report):
             lines.append(
                 f"- {item['tournament_name']} ({item['draw_label']}) "
                 f"R{item['round']}M{item['match_num']}: "
-                f"winner={item['winner_name']} score=\"{item['score']}\""
+                f'winner={item["winner_name"]} score="{item["score"]}"'
             )
         lines.append("")
 

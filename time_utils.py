@@ -4,12 +4,11 @@ UTC is the internal representation for instants.  Madrid and New York are
 used only where a business rule depends on the civil calendar in that zone.
 """
 
-from datetime import date, datetime, timezone, tzinfo
+from datetime import UTC, date, datetime, tzinfo
 from typing import Any
 from zoneinfo import ZoneInfo
 
-
-UTC = timezone.utc
+UTC = UTC
 MADRID = ZoneInfo("Europe/Madrid")
 NEW_YORK = ZoneInfo("America/New_York")
 

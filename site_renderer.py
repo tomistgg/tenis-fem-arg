@@ -7,10 +7,12 @@ to the requested site directory.
 
 from __future__ import annotations
 
+import contextlib
 import json
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 from config import CONTINENT_KEYS
 from html_generator import generate_html
@@ -32,11 +34,13 @@ from utils import (
 )
 from wta import _load_wta_csv
 
-
 CALENDAR_COLUMNS = ("gs", "wta_tour", "wta_125", "itf")
+TournamentInfo = dict[str, Any]
+TournamentGroups = OrderedDict[str, OrderedDict[str, TournamentInfo]]
+ScheduleMap = dict[str, dict[str, str]]
 
 
-def _load_json(path: Path, default):
+def _load_json(path: Path, default: Any) -> Any:
     try:
         with path.open("r", encoding="utf-8-sig") as source:
             return json.load(source)
@@ -49,68 +53,53 @@ def _monday_from_date(value: str) -> str:
     return (parsed - timedelta(days=parsed.weekday())).strftime("%Y-%m-%d")
 
 
-def _tournament_inputs(data_dir: Path):
-    snapshot = expand_tournament_snapshot(
-        _load_json(data_dir / "tournament_snapshot.json", {})
-    )
-    tournament_groups = OrderedDict()
-    monday_map = OrderedDict()
+def _tournament_inputs(data_dir: Path) -> tuple[TournamentGroups, OrderedDict[str, str]]:
+    snapshot = expand_tournament_snapshot(_load_json(data_dir / "tournament_snapshot.json", {}))
+    tournament_groups: TournamentGroups = OrderedDict()
+    monday_map: OrderedDict[str, str] = OrderedDict()
     for tournament_key, raw_info in (snapshot or {}).items():
-        if not isinstance(raw_info, dict):
-            continue
         info = dict(raw_info)
         week = str(info.pop("week", "") or "").strip()
         if not week:
             continue
         tournament_groups.setdefault(week, OrderedDict())[tournament_key] = info
         try:
-            monday_map.setdefault(_monday_from_date(info.get("startDate", "")), week)
+            monday_map.setdefault(_monday_from_date(str(info.get("startDate", ""))), week)
         except ValueError:
             continue
     return tournament_groups, monday_map
 
 
-def _entry_inputs(data_dir: Path, tournament_groups):
-    entry_cache = expand_entry_lists_cache(
-        _load_json(data_dir / "entry_lists_cache.json", {})
-    ) or {}
-    active_keys = {
-        key
-        for tournaments in tournament_groups.values()
-        for key in tournaments
-    }
+def _entry_inputs(
+    data_dir: Path,
+    tournament_groups: TournamentGroups,
+) -> tuple[dict[str, list[dict[str, Any]]], ScheduleMap, set[str]]:
+    entry_cache = expand_entry_lists_cache(_load_json(data_dir / "entry_lists_cache.json", {})) or {}
+    active_keys = {key for tournaments in tournament_groups.values() for key in tournaments}
     active_keys.update(f"{key}#qual" for key in tuple(active_keys))
     tournament_store = {
-        key: players
-        for key, players in entry_cache.items()
-        if key in active_keys and isinstance(players, list)
+        key: players for key, players in entry_cache.items() if key in active_keys and isinstance(players, list)
     }
 
-    key_to_week = {
-        key: week
-        for week, tournaments in tournament_groups.items()
-        for key in tournaments
-    }
+    key_to_week = {key: week for week, tournaments in tournament_groups.items() for key in tournaments}
     for key in tournament_store:
         if key.endswith("#qual") and key not in key_to_week:
             key_to_week[key] = key_to_week.get(key[:-5], "")
 
-    schedule_map = {}
-    unranked_arg_names = set()
+    schedule_map: ScheduleMap = {}
+    unranked_arg_names: set[str] = set()
     for tournament_key, players in tournament_store.items():
         week = key_to_week.get(tournament_key, "")
         base_key = tournament_key[:-5] if tournament_key.endswith("#qual") else tournament_key
-        tournament_info = next(
+        tournament_info: TournamentInfo = next(
             (
-                tournaments.get(tournament_key) or tournaments.get(base_key)
+                tournaments.get(tournament_key) or tournaments.get(base_key) or {}
                 for tournaments in tournament_groups.values()
                 if tournament_key in tournaments or base_key in tournaments
             ),
             {},
         )
-        tournament_name = _schedule_tournament_name(
-            tournament_key, tournament_info.get("name", base_key)
-        )
+        tournament_name = _schedule_tournament_name(tournament_key, tournament_info.get("name", base_key))
         for player in players:
             if not isinstance(player, dict) or str(player.get("country", "")).upper() != "ARG":
                 continue
@@ -136,23 +125,17 @@ def _entry_inputs(data_dir: Path, tournament_groups):
     return tournament_store, schedule_map, unranked_arg_names
 
 
-def _ranking_inputs(data_dir: Path, entry_arg_names):
+def _ranking_inputs(
+    data_dir: Path,
+    entry_arg_names: set[str],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     rankings_by_date = _load_wta_csv(data_dir) or {}
     latest_date = max(rankings_by_date, default="")
     all_wta_players = list(rankings_by_date.get(latest_date, []))
-    players_data = [
-        dict(player)
-        for player in all_wta_players
-        if str(player.get("Country", "")).upper() == "ARG"
-    ]
-    known_names = {
-        str(player.get("Player", "")).strip().upper()
-        for player in players_data
-    }
+    players_data = [dict(player) for player in all_wta_players if str(player.get("Country", "")).upper() == "ARG"]
+    known_names = {str(player.get("Player", "")).strip().upper() for player in players_data}
 
-    itf_by_date = expand_itf_rankings_cache(
-        _load_json(data_dir / "itf_rankings_cache.json", {})
-    ) or {}
+    itf_by_date = expand_itf_rankings_cache(_load_json(data_dir / "itf_rankings_cache.json", {})) or {}
     latest_itf_date = max(itf_by_date, default="")
     for player in itf_by_date.get(latest_itf_date, []):
         if not isinstance(player, dict):
@@ -167,11 +150,9 @@ def _ranking_inputs(data_dir: Path, entry_arg_names):
     return players_data, all_wta_players
 
 
-def _calendar_inputs(data_dir: Path):
-    rows = expand_calendar_snapshot(
-        _load_json(data_dir / "calendar_snapshot.json", [])
-    ) or []
-    weeks = OrderedDict()
+def _calendar_inputs(data_dir: Path) -> list[dict[str, Any]]:
+    rows = expand_calendar_snapshot(_load_json(data_dir / "calendar_snapshot.json", [])) or []
+    weeks: OrderedDict[str, dict[str, Any]] = OrderedDict()
     for row in rows:
         if not isinstance(row, dict):
             continue
@@ -186,30 +167,33 @@ def _calendar_inputs(data_dir: Path):
                 "week_label": week_label,
                 "monday_date": "",
                 "has_any": False,
-                "columns": {
-                    name: {key: [] for key in CONTINENT_KEYS}
-                    for name in CALENDAR_COLUMNS
-                },
+                "columns": {name: {key: [] for key in CONTINENT_KEYS} for name in CALENDAR_COLUMNS},
             },
         )
         tournament = {
             key: row.get(key, "")
             for key in (
-                "name", "level", "surface", "country", "startDate", "endDate",
-                "source", "tournamentKey", "tournamentId", "calendarKey",
+                "name",
+                "level",
+                "surface",
+                "country",
+                "startDate",
+                "endDate",
+                "source",
+                "tournamentKey",
+                "tournamentId",
+                "calendarKey",
             )
         }
         week["columns"][column][continent].append(tournament)
         week["has_any"] = True
         if not week["monday_date"]:
-            try:
+            with contextlib.suppress(ValueError):
                 week["monday_date"] = _monday_from_date(row.get("startDate", ""))
-            except ValueError:
-                pass
     return [week for week in weeks.values() if week.get("monday_date")]
 
 
-def render_site_from_data(data_dir, site_root):
+def render_site_from_data(data_dir: str | Path, site_root: str | Path) -> None:
     """Generate a complete browser site without network access."""
 
     data_dir = Path(data_dir).resolve()
@@ -221,12 +205,8 @@ def render_site_from_data(data_dir, site_root):
     players_data, all_wta_players = _ranking_inputs(data_dir, entry_arg_names)
     match_history_data, cleaned_history = load_match_history(data_dir)
     enrich_history_with_wta_ranks(cleaned_history, data_dir)
-    draws_store = expand_draws_store_cache(
-        _load_json(data_dir / "draws_store_cache.json", {})
-    ) or {}
-    tstrength_data = expand_tstrength_cache(
-        _load_json(data_dir / "tstrength_cache.json", [])
-    ) or []
+    draws_store = expand_draws_store_cache(_load_json(data_dir / "draws_store_cache.json", {})) or {}
+    tstrength_data = expand_tstrength_cache(_load_json(data_dir / "tstrength_cache.json", [])) or []
 
     generate_html(
         tournament_groups,

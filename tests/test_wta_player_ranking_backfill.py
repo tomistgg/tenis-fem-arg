@@ -6,7 +6,6 @@ from populate_data.backfill_wta_player_rankings import (
     parse_weekly_singles_rankings,
 )
 
-
 PAYLOAD = {
     "player": {
         "id": 50020,

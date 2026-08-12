@@ -5,7 +5,6 @@ import pytest
 
 import html_generator
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 MATCH_COLUMNS = (

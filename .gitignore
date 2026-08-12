@@ -4,9 +4,12 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
+.test_tmp*/
+.pre_commit_tmp/
 .coverage
 *.egg-info/
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
 .run_snapshot/
 .run_staging/
 .run_state/

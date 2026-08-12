@@ -10,7 +10,7 @@ import os
 import sys
 import tempfile
 from collections.abc import Mapping, Sequence
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any, Literal
 
@@ -23,7 +23,6 @@ from canonical_data import CanonicalConstraintError, validate_project_data
 from pipeline_errors import DataValidationError
 from time_utils import utc_now
 from tournament_snapshot import expand_tournament_snapshot
-
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_DATA_DIR = PROJECT_ROOT / "data"
@@ -198,7 +197,9 @@ def _load_policy(path: Path) -> QualityPolicyModel:
     try:
         return QualityPolicyModel.model_validate(payload)
     except ValidationError as exc:
-        raise _quality_error("validate policy", "data quality policy is invalid", path=str(path), errors=exc.errors()) from exc
+        raise _quality_error(
+            "validate policy", "data quality policy is invalid", path=str(path), errors=exc.errors()
+        ) from exc
 
 
 def _validate_json_schema(payload: Any, schema_path: Path, data_path: Path) -> None:
@@ -292,9 +293,13 @@ RANKING_SCHEMA = pa.DataFrameSchema(
         "week_date": pa.Column(str, checks=_DATE_CHECK, nullable=False),
         "id": pa.Column(str, checks=_NONEMPTY_CHECK, nullable=False),
         "rank": pa.Column(str, checks=_string_check(r"\d+", "must be an integer"), nullable=False),
-        "points": pa.Column(str, checks=_string_check(r"\d+", "must be a nonnegative integer", allow_empty=True), nullable=False),
+        "points": pa.Column(
+            str, checks=_string_check(r"\d+", "must be a nonnegative integer", allow_empty=True), nullable=False
+        ),
         "player": pa.Column(str, checks=_NONEMPTY_CHECK, nullable=False),
-        "country": pa.Column(str, checks=_string_check(r"[A-Z]{3}", "must be blank or a 3-letter code", allow_empty=True), nullable=False),
+        "country": pa.Column(
+            str, checks=_string_check(r"[A-Z]{3}", "must be blank or a 3-letter code", allow_empty=True), nullable=False
+        ),
         "dob": pa.Column(str, checks=_OPTIONAL_DATE_CHECK, nullable=False),
     },
     strict=True,
@@ -349,7 +354,7 @@ def _validate_tabular_file(path: Path, kind: str) -> int:
             keep_default_na=False,
             chunksize=100_000,
         )
-        for chunk_number, chunk in enumerate(chunks, 1):
+        for _chunk_number, chunk in enumerate(chunks, 1):
             schema.validate(chunk, lazy=True)
             total += len(chunk)
     except (OSError, UnicodeError, pd.errors.ParserError, pa.errors.SchemaError, pa.errors.SchemaErrors) as exc:
@@ -483,14 +488,14 @@ def _validate_freshness(
         observed[filename] = latest.isoformat()
 
     cache_state = CacheStateModel.model_validate(_read_json(data_dir / "cache_state.json"))
-    now = datetime.combine(today, datetime.min.time(), tzinfo=timezone.utc)
+    now = datetime.combine(today, datetime.min.time(), tzinfo=UTC)
     for filename, max_age_days in policy.cache_freshness.items():
         metadata = cache_state.files.get(filename)
         if metadata is None:
             raise _quality_error("freshness", f"cache freshness metadata missing for {filename}")
         if metadata.fetchedAt is None:
             raise _quality_error("freshness", f"cache fetchedAt metadata missing for {filename}")
-        fetched_at = metadata.fetchedAt.astimezone(timezone.utc)
+        fetched_at = metadata.fetchedAt.astimezone(UTC)
         age_seconds = (now - fetched_at).total_seconds()
         if age_seconds > max_age_days * 86400 or age_seconds < -2 * 86400:
             raise _quality_error(

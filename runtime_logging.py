@@ -6,7 +6,6 @@ import logging
 import os
 import sys
 
-
 LOGGER_NAME = "wtarg"
 LOG_LEVEL_ENV = "WTARG_LOG_LEVEL"
 VERBOSE_ENV = "WTARG_VERBOSE"

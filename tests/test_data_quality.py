@@ -5,11 +5,11 @@ from pathlib import Path
 import pytest
 
 from data_quality import (
+    FreshnessModel,
     LimitModel,
     PlayerAliasModel,
     QualityPolicyModel,
     TablePolicyModel,
-    FreshnessModel,
     _validate_freshness,
     _validate_json_schema,
     _validate_tabular_file,
@@ -17,7 +17,6 @@ from data_quality import (
     validate_site_artifacts,
 )
 from pipeline_errors import DataValidationError
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -151,7 +150,6 @@ def test_stale_table_is_blocking(tmp_path):
 def test_offline_generation_creates_a_valid_site(offline_generated_site):
     report = validate_site_artifacts(offline_generated_site)
     assert report["generated_files"] >= 14
-    app = (offline_generated_site / "app.html").read_text(encoding="utf-8-sig")
     app_js = (offline_generated_site / "assets/js/app.js").read_text(encoding="utf-8")
     assert "Failed to load local rankings data" in app_js  # fallback exists but must not execute
     assert (offline_generated_site / "data" / "wta_rankings_latest_bundle.js").is_file()

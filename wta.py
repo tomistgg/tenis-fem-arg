@@ -1,38 +1,49 @@
-import re
-import json
-import time
-import requests
-from datetime import timedelta
-from bs4 import BeautifulSoup
-
 import csv as _csv
+import json
 import os as _os
+import re
+import time
 from collections import OrderedDict
 from collections.abc import MutableMapping
- 
+from datetime import timedelta
+from typing import Any
+
+import requests
+from bs4 import BeautifulSoup
+
+from calendar_builder import format_week_label, get_monday_from_date, get_next_monday
 from config import (
-    API_URL, HEADERS, NAME_LOOKUP, WTA_ID_TO_DISPLAY,
+    API_URL,
+    DATA_DIR,
+    HEADERS,
+    NAME_LOOKUP,
+    WTA_ID_TO_DISPLAY,
+    WTA_RANKINGS_CSV,
+    WTA_RANKINGS_CSV_00_09,
+    WTA_RANKINGS_CSV_10_19,
+    WTA_RANKINGS_CSV_83_99,
     resolve_player_display_name,
-    WTA_RANKINGS_CSV, WTA_RANKINGS_CSV_10_19,
-    WTA_RANKINGS_CSV_00_09, WTA_RANKINGS_CSV_83_99,
-    DATA_DIR
 )
-from utils import (
-    fix_display_name, fix_encoding, format_player_name, save_json_file,
-    dumps_wta_full_calendar_cache, expand_wta_calendar_cache,
-    make_data_status, set_cache_file_meta, utc_now_iso,
-)
-from calendar_builder import get_next_monday, get_monday_from_date, format_week_label
+from http_client import get_with_retry
+from pipeline_errors import PipelineError
+from run_state import report_run_issue
+from runtime_logging import get_logger
 from time_utils import madrid_today
 from transactional_io import atomic_write_csv
-from run_state import report_run_issue
-from pipeline_errors import PipelineError
-from http_client import get_with_retry
-from runtime_logging import get_logger
-
+from utils import (
+    dumps_wta_full_calendar_cache,
+    expand_wta_calendar_cache,
+    fix_display_name,
+    fix_encoding,
+    format_player_name,
+    make_data_status,
+    save_json_file,
+    set_cache_file_meta,
+    utc_now_iso,
+)
 
 logger = get_logger("wta")
-_wta_tournaments_raw = None  # module-level cache for raw WTA tournament API data
+_wta_tournaments_raw: list[dict[str, Any]] | None = None
 _WTA_FULL_CALENDAR_CACHE_FILE = _os.path.join(DATA_DIR, "wta_full_calendar_cache.json")
 _WTA_FULL_CALENDAR_TTL = 3 * 60 * 60  # 3 hours
 _REQUESTS_SESSION = requests.Session()
@@ -94,13 +105,16 @@ class WtaApiPartialData(RuntimeError):
 def _load_cached_wta_tournaments_raw():
     """Load the last saved WTA tournament snapshot from disk."""
     try:
-        with open(_WTA_FULL_CALENDAR_CACHE_FILE, "r", encoding="utf-8") as f:
+        with open(_WTA_FULL_CALENDAR_CACHE_FILE, encoding="utf-8") as f:
             cached = json.load(f)
     except FileNotFoundError:
         return []
     except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
         report_run_issue(
-            "wta", "load calendar cache", exc, severity="degraded",
+            "wta",
+            "load calendar cache",
+            exc,
+            severity="degraded",
             context={"path": _WTA_FULL_CALENDAR_CACHE_FILE},
         )
         return []
@@ -122,17 +136,14 @@ def _fetch_wta_tournaments_raw():
 
     url = "https://api.wtatennis.com/tennis/tournaments/"
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+        ),
         "referer": "https://www.wtatennis.com/",
-        "account": "wta"
+        "account": "wta",
     }
-    params = {
-        "page": 0,
-        "pageSize": 200,
-        "excludeLevels": "ITF",
-        "from": from_date,
-        "to": to_date
-    }
+    params = {"page": 0, "pageSize": 200, "excludeLevels": "ITF", "from": from_date, "to": to_date}
 
     try:
         response = get_with_retry(
@@ -154,11 +165,15 @@ def _fetch_wta_tournaments_raw():
                 return _wta_tournaments_raw
         _wta_tournaments_raw = items
         if items:
-            save_json_file(_WTA_FULL_CALENDAR_CACHE_FILE, {
-                "from": from_date,
-                "to": to_date,
-                "items": _wta_tournaments_raw,
-            }, formatter=dumps_wta_full_calendar_cache)
+            save_json_file(
+                _WTA_FULL_CALENDAR_CACHE_FILE,
+                {
+                    "from": from_date,
+                    "to": to_date,
+                    "items": _wta_tournaments_raw,
+                },
+                formatter=dumps_wta_full_calendar_cache,
+            )
             set_cache_file_meta(
                 _WTA_FULL_CALENDAR_CACHE_FILE,
                 fetchedAt=utc_now_iso(),
@@ -170,14 +185,20 @@ def _fetch_wta_tournaments_raw():
         if cached_items:
             if not isinstance(e, PipelineError):
                 report_run_issue(
-                    "wta", "fetch calendar", e, severity="degraded",
+                    "wta",
+                    "fetch calendar",
+                    e,
+                    severity="degraded",
                     context={"fallback": "cached calendar"},
                 )
             logger.warning("Using cached WTA tournaments after live fetch failure")
             _wta_tournaments_raw = cached_items
         else:
             report_run_issue(
-                "wta", "fetch calendar", e, severity="partial",
+                "wta",
+                "fetch calendar",
+                e,
+                severity="partial",
                 context={"fallback": None},
             )
             _wta_tournaments_raw = []
@@ -194,7 +215,7 @@ def build_tournament_groups():
 
     raw_tournaments = _fetch_wta_tournaments_raw()
 
-    tournament_groups = {}
+    tournament_groups: dict[str, dict[str, dict[str, Any]]] = {}
 
     for tournament in raw_tournaments:
         tournament_id = tournament["tournamentGroup"]["id"]
@@ -211,7 +232,7 @@ def build_tournament_groups():
 
         monday = get_monday_from_date(start_date)
 
-        is_current_week = (monday == current_monday)
+        is_current_week = monday == current_monday
         if is_current_week:
             # Schedule / Entry Lists keep the current week only on Monday.
             if not is_mon_or_tue:
@@ -238,15 +259,22 @@ def build_tournament_groups():
             "surface": surface,
             "country": country,
             "startDate": start_date,
-            "endDate": end_date
+            "endDate": end_date,
         }
 
     return tournament_groups
 
 
 _WTA_TWO_WEEK_NAMES = [
-    'Australian Open', 'Roland Garros', 'Wimbledon', 'US Open',
-    'Indian Wells', 'Miami', 'Madrid', 'Rome', 'Internazionali'
+    "Australian Open",
+    "Roland Garros",
+    "Wimbledon",
+    "US Open",
+    "Indian Wells",
+    "Miami",
+    "Madrid",
+    "Rome",
+    "Internazionali",
 ]
 
 
@@ -268,7 +296,7 @@ def get_draws_tournament_list():
     two_weeks_later = current_monday + timedelta(weeks=2)
 
     raw_tournaments = _fetch_wta_tournaments_raw()
-    result = {}
+    result: dict[str, dict[str, dict[str, Any]]] = {}
 
     for tournament in raw_tournaments:
         tournament_id = tournament["tournamentGroup"]["id"]
@@ -303,12 +331,7 @@ def get_draws_tournament_list():
         if week_label not in result:
             result[week_label] = {}
 
-        result[week_label][t_url] = {
-            "name": display_name,
-            "level": level,
-            "startDate": start_date,
-            "endDate": end_date
-        }
+        result[week_label][t_url] = {"name": display_name, "level": level, "startDate": start_date, "endDate": end_date}
 
     return result
 
@@ -351,25 +374,28 @@ def get_full_wta_calendar():
                 country = raw_country
             else:
                 # Extract 3-letter code from title e.g. "... - City, GBR"
-                _m = re.search(r',\s*([A-Z]{3})\s*$', t.get("title", ""))
+                _m = re.search(r",\s*([A-Z]{3})\s*$", t.get("title", ""))
                 country = _m.group(1) if _m else raw_country
-        tournaments.append({
-            "name": display_name,
-            "level": level,
-            "surface": surface,
-            "country": country,
-            "startDate": start_date,
-            "endDate": t.get("endDate", None),
-            "source": "WTA",
-            "tournamentId": tournament_id,
-            "calendarKey": f"wta:{tournament_id}",
-        })
+        tournaments.append(
+            {
+                "name": display_name,
+                "level": level,
+                "surface": surface,
+                "country": country,
+                "startDate": start_date,
+                "endDate": t.get("endDate", None),
+                "source": "WTA",
+                "tournamentId": tournament_id,
+                "calendarKey": f"wta:{tournament_id}",
+            }
+        )
 
     return tournaments
 
 
 def get_rankings(date_str, nationality=None):
-    all_players, page = [], 0
+    all_players: list[dict[str, Any]] = []
+    page = 0
     seen_keys = set()
     while True:
         params = {
@@ -379,7 +405,7 @@ def get_rankings(date_str, nationality=None):
             "type": "rankSingles",
             "sort": "asc",
             "metric": "SINGLES",
-            "at": date_str
+            "at": date_str,
         }
 
         if nationality:
@@ -400,13 +426,13 @@ def get_rankings(date_str, nationality=None):
                     # Retry on throttling / transient server errors.
                     if r.status_code in (429, 500, 502, 503, 504):
                         saw_rate_limit = saw_rate_limit or (r.status_code == 429)
-                        time.sleep(min(_WTA_BACKOFF_MAX_SEC, _WTA_BACKOFF_BASE_SEC * (2 ** attempt)))
+                        time.sleep(min(_WTA_BACKOFF_MAX_SEC, _WTA_BACKOFF_BASE_SEC * (2**attempt)))
                         continue
                     ctype = (r.headers.get("content-type") or "").lower()
                     if "text/html" in ctype:
                         # CloudFront/WAF blocks often come back as HTML.
                         saw_rate_limit = True
-                        time.sleep(min(_WTA_BACKOFF_MAX_SEC, _WTA_BACKOFF_BASE_SEC * (2 ** attempt)))
+                        time.sleep(min(_WTA_BACKOFF_MAX_SEC, _WTA_BACKOFF_BASE_SEC * (2**attempt)))
                         continue
                     r.raise_for_status()
                     data = r.json()
@@ -414,7 +440,7 @@ def get_rankings(date_str, nationality=None):
                     break
                 except Exception as e:
                     last_err = e
-                    time.sleep(min(_WTA_BACKOFF_MAX_SEC, _WTA_BACKOFF_BASE_SEC * (2 ** attempt)))
+                    time.sleep(min(_WTA_BACKOFF_MAX_SEC, _WTA_BACKOFF_BASE_SEC * (2**attempt)))
             if last_err is not None and data is None:
                 if saw_rate_limit:
                     raise WtaApiRateLimited(f"WTA API rate limited for {date_str} (page {page})")
@@ -425,7 +451,7 @@ def get_rankings(date_str, nationality=None):
                     )
                 raise WtaApiFetchError(f"WTA rankings fetch failed for {date_str}: {last_err}")
             if isinstance(data, dict):
-                items = data.get('content', [])
+                items = data.get("content", [])
             elif isinstance(data, list):
                 items = data
             else:
@@ -434,7 +460,8 @@ def get_rankings(date_str, nationality=None):
                 raise WtaApiFetchError(f"WTA rankings payload was missing content for {date_str}")
             if not isinstance(items, list):
                 raise WtaApiFetchError(f"WTA rankings content was not a list for {date_str}")
-            if not items: break
+            if not items:
+                break
             # Defensive de-dup in case the API repeats pages (seen in the wild).
             new_items = []
             for it in items:
@@ -462,32 +489,30 @@ def get_rankings(date_str, nationality=None):
                 raise WtaApiPartialData(
                     f"WTA rankings fetch interrupted for {date_str} at page {page} "
                     f"after {len(all_players)} players: {e}"
-                )
-            raise WtaApiFetchError(f"WTA rankings fetch failed for {date_str}: {e}")
+                ) from e
+            raise WtaApiFetchError(f"WTA rankings fetch failed for {date_str}: {e}") from e
 
     ranking_results = []
     for p in all_players:
-        if not p.get('player'): continue
+        if not p.get("player"):
+            continue
         player_obj = p.get("player") or {}
-        player_id = (
-            player_obj.get("id")
-            or player_obj.get("playerId")
-            or p.get("playerId")
-            or p.get("id")
-        )
-        official_name = (p.get('player', {}).get('fullName') or '').strip()
+        player_id = player_obj.get("id") or player_obj.get("playerId") or p.get("playerId") or p.get("id")
+        official_name = (p.get("player", {}).get("fullName") or "").strip()
         official_upper = official_name.upper()
         display_name = WTA_ID_TO_DISPLAY.get(str(player_id or ""), NAME_LOOKUP.get(official_upper, official_upper))
-        ranking_results.append({
-            "Player": display_name,
-            "OfficialPlayer": official_name,
-            "Id": player_id,
-            "Rank": p.get('ranking'),
-            "Country": _normalize_country_code(p.get('player', {}).get('countryCode', '')),
-            "Key": display_name,
-            "Points": p.get('points', 0),
-            "DOB": p.get('player', {}).get('dateOfBirth', '')
-        })
+        ranking_results.append(
+            {
+                "Player": display_name,
+                "OfficialPlayer": official_name,
+                "Id": player_id,
+                "Rank": p.get("ranking"),
+                "Country": _normalize_country_code(p.get("player", {}).get("countryCode", "")),
+                "Key": display_name,
+                "Points": p.get("points", 0),
+                "DOB": p.get("player", {}).get("dateOfBirth", ""),
+            }
+        )
     return ranking_results
 
 
@@ -536,9 +561,7 @@ class WtaRankingsCsvStore(MutableMapping):
                 text = raw_line.decode("utf-8")
                 values = next(_csv.reader([text]))
                 if len(values) != len(header):
-                    raise ValueError(
-                        f"ranking CSV contains a multiline or malformed row at byte {row_start}: {path}"
-                    )
+                    raise ValueError(f"ranking CSV contains a multiline or malformed row at byte {row_start}: {path}")
                 date_str = values[week_date_index].strip()
                 if date_str != current_date:
                     if current_date is not None:
@@ -593,7 +616,7 @@ class WtaRankingsCsvStore(MutableMapping):
                     values = next(_csv.reader([raw_line.decode("utf-8")]))
                     if len(values) != len(header):
                         raise ValueError(f"ranking CSV row width changed while reading {source['path']}")
-                    players.append(self._player_from_row(dict(zip(header, values))))
+                    players.append(self._player_from_row(dict(zip(header, values, strict=False))))
         return players
 
     def _read_date(self, date_str):
@@ -635,8 +658,8 @@ class WtaRankingsCsvStore(MutableMapping):
         return len(set(self._date_index) | set(self._overrides))
 
 
-_wta_csv_cache = None
-_wta_csv_cache_paths = None
+_wta_csv_cache: WtaRankingsCsvStore | None = None
+_wta_csv_cache_paths: tuple[str, ...] | None = None
 
 
 def _ranking_csv_paths(data_dir=None):
@@ -696,6 +719,7 @@ def _save_wta_csv_date(date_str, players):
 
 def get_wta_rankings_cached(date_str, nationality=None, *, with_status=False):
     """Get WTA rankings from CSV/API, marking fallback data when requested."""
+
     def _finish(players, status):
         return (players, status) if with_status else players
 
@@ -708,14 +732,17 @@ def get_wta_rankings_cached(date_str, nationality=None, *, with_status=False):
 
     if date_str in csv_data:
         players = _filter(csv_data[date_str])
-        return _finish(players, make_data_status(
-            "WTA rankings",
-            "fresh",
-            requested=date_str,
-            effective=date_str,
-            row_count=len(players),
-            reason="Exact cached rankings date available.",
-        ))
+        return _finish(
+            players,
+            make_data_status(
+                "WTA rankings",
+                "fresh",
+                requested=date_str,
+                effective=date_str,
+                row_count=len(players),
+                reason="Exact cached rankings date available.",
+            ),
+        )
 
     # Date not in CSV — fetch from API, save to CSV, and keep in memory
     new_data = []
@@ -729,15 +756,18 @@ def get_wta_rankings_cached(date_str, nationality=None, *, with_status=False):
         csv_data[date_str] = new_data
         _save_wta_csv_date(date_str, new_data)
         players = _filter(new_data)
-        return _finish(players, make_data_status(
-            "WTA rankings",
-            "fresh",
-            requested=date_str,
-            effective=date_str,
-            fetched_at=utc_now_iso(),
-            row_count=len(players),
-            reason="Live rankings refreshed successfully.",
-        ))
+        return _finish(
+            players,
+            make_data_status(
+                "WTA rankings",
+                "fresh",
+                requested=date_str,
+                effective=date_str,
+                fetched_at=utc_now_iso(),
+                row_count=len(players),
+                reason="Live rankings refreshed successfully.",
+            ),
+        )
 
     # Fallback: use the latest available date in the CSV
     if csv_data:
@@ -745,41 +775,50 @@ def get_wta_rankings_cached(date_str, nationality=None, *, with_status=False):
         players = _filter(csv_data.get(latest_key, []))
         reason = (
             "Live rankings refresh failed; showing latest cached rankings."
-            if fetch_error else
-            "No live rankings were returned for the requested date; showing latest cached rankings."
+            if fetch_error
+            else "No live rankings were returned for the requested date; showing latest cached rankings."
         )
-        return _finish(players, make_data_status(
-            "WTA rankings",
-            "stale",
-            requested=date_str,
-            effective=latest_key,
-            row_count=len(players),
-            stale=True,
-            reason=reason,
-        ))
+        return _finish(
+            players,
+            make_data_status(
+                "WTA rankings",
+                "stale",
+                requested=date_str,
+                effective=latest_key,
+                row_count=len(players),
+                stale=True,
+                reason=reason,
+            ),
+        )
 
     reason = (
         "Live rankings refresh failed and no cached WTA rankings were available."
-        if fetch_error else
-        "No WTA rankings were available for the requested date."
+        if fetch_error
+        else "No WTA rankings were available for the requested date."
     )
-    return _finish([], make_data_status(
-        "WTA rankings",
-        "error",
-        requested=date_str,
-        row_count=0,
-        stale=True,
-        reason=reason,
-    ))
+    return _finish(
+        [],
+        make_data_status(
+            "WTA rankings",
+            "error",
+            requested=date_str,
+            row_count=0,
+            stale=True,
+            reason=reason,
+        ),
+    )
 
 
 def fetch_player_info(player_id):
     url = f"https://api.wtatennis.com/tennis/players/{player_id}/matches"
     params = {"page": 0, "pageSize": 1, "sort": "desc"}
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+        ),
         "referer": "https://www.wtatennis.com/",
-        "account": "wta"
+        "account": "wta",
     }
     try:
         r = get_with_retry(
@@ -801,7 +840,10 @@ def fetch_player_info(player_id):
         return None
     except Exception as exc:
         report_run_issue(
-            "wta", "fetch player profile", exc, severity="degraded",
+            "wta",
+            "fetch player profile",
+            exc,
+            severity="degraded",
             context={"player_id": str(player_id)},
         )
     return None
@@ -817,13 +859,16 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
             timeout=(10, 25),
             failure_status="degraded",
         )
-        soup = BeautifulSoup(r.text, 'html.parser')
+        soup = BeautifulSoup(r.text, "html.parser")
     except PipelineError as e:
         logger.error(f"Error scraping {url}: {e}")
         return [], {}
     except Exception as e:
         report_run_issue(
-            "wta", "parse tournament player list", e, severity="degraded",
+            "wta",
+            "parse tournament player list",
+            e,
+            severity="degraded",
             context={"url": str(url)},
         )
         logger.debug(f"Error scraping {url}: {e}")
@@ -849,7 +894,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
         """Return a lightweight view of the player-list JSON-LD if present."""
         import json as _json
 
-        state = {
+        state: dict[str, bool | int | None] = {
             "has_player_list": False,
             "singles_count": None,
             "qualifying_count": None,
@@ -862,7 +907,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
                 continue
             try:
                 data = _json.loads(raw)
-            except Exception:
+            except (json.JSONDecodeError, TypeError, ValueError):
                 continue
 
             if not isinstance(data, dict):
@@ -900,7 +945,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
         # When the live page only exposes doubles or hides the singles/qualifying
         # performers entirely, keep the last saved singles/qualifying list instead
         # of overwriting the cache with an empty or doubles-only result.
-        if (singles_count == 0 and (qual_count in (0, None)) and (doubles_count or 0) > 0):
+        if singles_count == 0 and (qual_count in (0, None)) and (doubles_count or 0) > 0:
             if cached_entries:
                 logger.warning(f"Using cached WTA entry list for {url} (live page shows doubles only)")
                 return list(cached_entries), _suffix_map_from_players(cached_entries)
@@ -912,7 +957,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
     current_state = "MAIN"
 
     for tag in soup.find_all(True):
-        ui_tab = tag.get('data-ui-tab', '').lower()
+        ui_tab = str(tag.get("data-ui-tab") or "").lower()
 
         if "qualifying" in ui_tab:
             current_state = "QUAL"
@@ -921,8 +966,8 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
         if current_state == "IGNORE":
             continue
 
-        href = tag.get('href', '')
-        m = re.match(r'/players/(\d+)/([^/]+)', href)
+        href = str(tag.get("href") or "")
+        m = re.match(r"/players/(\d+)/([^/]+)", href)
         if m:
             pid, slug = m.group(1), m.group(2)
             if current_state == "MAIN" and pid not in main_seen:
@@ -935,7 +980,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
     # Build cache lookup from previous run
     cached_lookup = {}
     cached_lookup_by_id = {}
-    for entry in (cached_entries or []):
+    for entry in cached_entries or []:
         cached_lookup[entry["name"].strip().upper()] = entry
         cached_id = str(entry.get("player_id") or "").strip()
         if cached_id:
@@ -982,14 +1027,14 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
     def parse_rank_num(value):
         try:
             return int(str(value).strip())
-        except Exception:
+        except (TypeError, ValueError):
             return 9999
 
     def get_p_rank(name, rank_list):
         return next((item for item in rank_list if item["Player"] == name), {"Rank": 9999, "Country": "-"})
 
     md_list = []
-    for pid, slug in main_entries:
+    for pid, _slug in main_entries:
         if pid not in player_cache:
             continue
         p_info = player_cache[pid]
@@ -997,14 +1042,18 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
         matched_name = resolve_player_display_name("wta", player_id=pid, name=name_key).upper()
         main_draw_names.add(matched_name)
         rank_info = get_p_rank(matched_name, md_rankings)
-        md_list.append({
-            "name": format_player_name(matched_name),
-            "country": rank_info["Country"] if rank_info["Country"] != "-" else (_normalize_country_code(p_info.get("country")) or "-"),
-            "rank_num": rank_info["Rank"],
-            "rank": f"{rank_info['Rank']}" if rank_info['Rank'] < 9999 else "-",
-            "type": "MAIN",
-            "player_id": pid,
-        })
+        md_list.append(
+            {
+                "name": format_player_name(matched_name),
+                "country": rank_info["Country"]
+                if rank_info["Country"] != "-"
+                else (_normalize_country_code(p_info.get("country")) or "-"),
+                "rank_num": rank_info["Rank"],
+                "rank": f"{rank_info['Rank']}" if rank_info["Rank"] < 9999 else "-",
+                "type": "MAIN",
+                "player_id": pid,
+            }
+        )
 
     # Some WTA pages temporarily expose only Qualifying. In that case, keep MAIN from cache.
     if not md_list and qual_entries and cached_entries:
@@ -1014,23 +1063,25 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
             if not name_key:
                 continue
             cached_pid = str(p.get("player_id") or "").strip()
-            matched_name = resolve_player_display_name(
-                "wta", player_id=cached_pid, name=name_key
-            ).upper()
+            matched_name = resolve_player_display_name("wta", player_id=cached_pid, name=name_key).upper()
             main_draw_names.add(matched_name)
             rank_num = p.get("rank_num")
             if not isinstance(rank_num, int):
                 rank_num = parse_rank_num(p.get("rank"))
             rank_value = p.get("rank")
-            rank_display = str(rank_value).strip() if rank_value not in (None, "") else (str(rank_num) if rank_num < 9999 else "-")
-            md_list.append({
-                "name": format_player_name(matched_name),
-                "country": _normalize_country_code(p.get("country")) or "-",
-                "rank_num": rank_num,
-                "rank": rank_display if rank_num < 9999 else "-",
-                "type": "MAIN",
-                "player_id": cached_pid,
-            })
+            rank_display = (
+                str(rank_value).strip() if rank_value not in (None, "") else (str(rank_num) if rank_num < 9999 else "-")
+            )
+            md_list.append(
+                {
+                    "name": format_player_name(matched_name),
+                    "country": _normalize_country_code(p.get("country")) or "-",
+                    "rank_num": rank_num,
+                    "rank": rank_display if rank_num < 9999 else "-",
+                    "type": "MAIN",
+                    "player_id": cached_pid,
+                }
+            )
 
     md_list.sort(key=lambda x: (x["rank_num"], x["name"]))
     for idx, p in enumerate(md_list, 1):
@@ -1038,7 +1089,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
         p["pos_num"] = idx
 
     qual_list = []
-    for pid, slug in qual_entries:
+    for pid, _slug in qual_entries:
         if pid not in player_cache:
             continue
         p_info = player_cache[pid]
@@ -1046,14 +1097,18 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
         matched_name = resolve_player_display_name("wta", player_id=pid, name=name_key).upper()
         qualifying_names.add(matched_name)
         rank_info = get_p_rank(matched_name, qual_rankings)
-        qual_list.append({
-            "name": format_player_name(matched_name),
-            "country": rank_info["Country"] if rank_info["Country"] != "-" else (_normalize_country_code(p_info.get("country")) or "-"),
-            "rank_num": rank_info["Rank"],
-            "rank": f"{rank_info['Rank']}" if rank_info['Rank'] < 9999 else "-",
-            "type": "QUAL",
-            "player_id": pid,
-        })
+        qual_list.append(
+            {
+                "name": format_player_name(matched_name),
+                "country": rank_info["Country"]
+                if rank_info["Country"] != "-"
+                else (_normalize_country_code(p_info.get("country")) or "-"),
+                "rank_num": rank_info["Rank"],
+                "rank": f"{rank_info['Rank']}" if rank_info["Rank"] < 9999 else "-",
+                "type": "QUAL",
+                "player_id": pid,
+            }
+        )
     qual_list.sort(key=lambda x: (x["rank_num"], x["name"]))
     for idx, p in enumerate(qual_list, 1):
         p["pos"] = str(idx)

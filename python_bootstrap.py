@@ -9,7 +9,6 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-
 SUPPORTED_PYTHON = (3, 11)
 REQUIRED_IMPORTS = ("pandera", "pydantic", "jsonschema")
 _BOOTSTRAP_FLAG = "WTARG_ENV_BOOTSTRAPPED"

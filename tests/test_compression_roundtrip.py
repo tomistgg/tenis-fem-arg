@@ -31,7 +31,6 @@ from utils import (
     expand_wta_calendar_cache,
 )
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 
 

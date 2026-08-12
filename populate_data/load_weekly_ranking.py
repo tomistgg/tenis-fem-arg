@@ -8,15 +8,15 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from config import PLAYER_ALIASES_WTA_ITF_FILE, WTA_RANKINGS_CSV
 from canonical_data import sync_wta_players
-from time_utils import new_york_now, new_york_today
-from wta import get_rankings
-from transactional_io import atomic_write_csv
-from utils import save_json_file
+from config import PLAYER_ALIASES_WTA_ITF_FILE, WTA_RANKINGS_CSV
 from pipeline_errors import PipelineError
 from run_state import report_run_issue
 from runtime_logging import get_logger
+from time_utils import new_york_now, new_york_today
+from transactional_io import atomic_write_csv
+from utils import save_json_file
+from wta import get_rankings
 
 logger = get_logger("weekly-ranking")
 RANKINGS_CSV = WTA_RANKINGS_CSV
@@ -275,7 +275,10 @@ def main():
                     "status": "pending_publication",
                     "comparison": "unavailable",
                     "cutoff": PUBLICATION_CUTOFF_LABEL,
-                    "message": "No valid current-week WTA ranking was returned; retaining last week's ranking and retrying later.",
+                    "message": (
+                        "No valid current-week WTA ranking was returned; retaining last week's ranking "
+                        "and retrying later."
+                    ),
                 }
                 logger.info(status["message"])
         save_status(status)

@@ -4,15 +4,17 @@ Incremental update for tournament draw sizes.
 - Appends new entries to data/tournament_draw_sizes.json
 - Removes entries older than 55 weeks
 """
+
 import json
+import os
 import sys
 import time
-import os
-import requests
 from datetime import datetime, timedelta
+
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -20,17 +22,19 @@ _REPO_ROOT = os.path.dirname(BASE_DIR)
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
 from http_client import get_with_retry
-from time_utils import madrid_today, parse_utc_timestamp, utc_now
 from itf_drawsheet_cache import get_cached_drawsheet, save_drawsheet
 from runtime_logging import get_logger
+from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
+from time_utils import madrid_today, parse_utc_timestamp, utc_now
 
 DATA_DIR = str(RUNTIME_DATA_DIR)
 from utils import (
-    expand_itf_calendar_cache, expand_wta_calendar_cache,
-    expand_points_distribution, expand_tournament_draw_sizes,
     compress_tournament_draw_sizes,
+    expand_itf_calendar_cache,
+    expand_points_distribution,
+    expand_tournament_draw_sizes,
+    expand_wta_calendar_cache,
     get_cache_timestamp,
     save_json_array_one_line_per_item,
 )
@@ -40,6 +44,7 @@ POINTS_DIST_PATH = os.path.join(DATA_DIR, "points_distribution.json")
 OUTPUT_PATH = os.path.join(DATA_DIR, "tournament_draw_sizes.json")
 
 # ── Shared ─────────────────────────────────────────────────────────────────────
+
 
 def get_monday(date_str):
     if not date_str:
@@ -53,7 +58,7 @@ def get_monday(date_str):
 
 def load_existing():
     if os.path.exists(OUTPUT_PATH):
-        with open(OUTPUT_PATH, 'r', encoding='utf-8') as f:
+        with open(OUTPUT_PATH, encoding="utf-8") as f:
             return expand_tournament_draw_sizes(json.load(f))
     return []
 
@@ -73,7 +78,10 @@ WTA_HEADERS = {
     "account": "wta",
     "origin": "https://www.wtatennis.com",
     "referer": "https://www.wtatennis.com/",
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+    "user-agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+    ),
 }
 
 
@@ -161,7 +169,7 @@ def wta_build_tournament_name(tournament):
 def _load_wta_calendar_cache(from_date, to_date):
     """Return cached WTA tournament list if fresh and covers the requested range."""
     try:
-        with open(WTA_CALENDAR_CACHE_FILE, "r", encoding="utf-8") as f:
+        with open(WTA_CALENDAR_CACHE_FILE, encoding="utf-8") as f:
             data = expand_wta_calendar_cache(json.load(f))
         fetched_at_str = get_cache_timestamp(WTA_CALENDAR_CACHE_FILE, payload=data)
         if not fetched_at_str:
@@ -173,7 +181,7 @@ def _load_wta_calendar_cache(from_date, to_date):
         if data.get("from", "") > from_date or data.get("to", "") < to_date:
             return None
         return data.get("items") or None
-    except Exception:
+    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError):
         return None
 
 
@@ -208,16 +216,18 @@ def fetch_wta_updates(from_date, to_date, desc_set):
         if desc and desc not in desc_set:
             desc = None
 
-        results.append({
-            "source": "WTA",
-            "date": date,
-            "tournamentName": name,
-            "tournamentId": str(t_id) if t_id else "",
-            "category": level,
-            "mainDrawSize": main_draw_size,
-            "qualifyingSize": qual_size,
-            "description": desc,
-        })
+        results.append(
+            {
+                "source": "WTA",
+                "date": date,
+                "tournamentName": name,
+                "tournamentId": str(t_id) if t_id else "",
+                "category": level,
+                "mainDrawSize": main_draw_size,
+                "qualifyingSize": qual_size,
+                "description": desc,
+            }
+        )
 
         q_info = f", {qual_size}Q" if qual_size else ""
         logger.debug(f"  {name}: {level}, {main_draw_size}M{q_info} -> {desc or 'NO MATCH'}")
@@ -227,13 +237,20 @@ def fetch_wta_updates(from_date, to_date, desc_set):
 
 # ── ITF ────────────────────────────────────────────────────────────────────────
 
+
 def get_itf_level(name):
-    if "W100" in name or "100k" in name: return "W100"
-    if "W75" in name or "75k" in name: return "W75"
-    if "W60" in name or "60k" in name: return "W60"
-    if "W50" in name or "50k" in name: return "W50"
-    if "W35" in name or "35k" in name: return "W35"
-    if "W25" in name or "25k" in name: return "W25"
+    if "W100" in name or "100k" in name:
+        return "W100"
+    if "W75" in name or "75k" in name:
+        return "W75"
+    if "W60" in name or "60k" in name:
+        return "W60"
+    if "W50" in name or "50k" in name:
+        return "W50"
+    if "W35" in name or "35k" in name:
+        return "W35"
+    if "W25" in name or "25k" in name:
+        return "W25"
     return "W15"
 
 
@@ -250,7 +267,10 @@ def itf_fetch_drawsheet(t_id, classification, week_number=0):
 
     url = "https://www.itftennis.com/tennis/api/TournamentApi/GetDrawsheet"
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+        ),
         "Referer": f"https://www.itftennis.com/en/tournament/draws-and-results/print/?tournamentId={t_id}&circuitCode=WT",
         "Origin": "https://www.itftennis.com",
         "Accept": "application/json, text/plain, */*",
@@ -260,7 +280,7 @@ def itf_fetch_drawsheet(t_id, classification, week_number=0):
         "matchTypeCode": "S",
         "tourType": "N",
         "tournamentId": str(t_id),
-        "weekNumber": week_number
+        "weekNumber": week_number,
     }
     try:
         r = get_with_retry(
@@ -274,7 +294,8 @@ def itf_fetch_drawsheet(t_id, classification, week_number=0):
         if isinstance(data, dict):
             save_drawsheet(t_id, classification, week_number, data)
         return data
-    except Exception:
+    except (RuntimeError, json.JSONDecodeError, TypeError, ValueError) as exc:
+        logger.debug(f"  ITF drawsheet fetch failed for {t_id}: {exc}")
         return stale_cached
 
 
@@ -312,12 +333,14 @@ def itf_parse_descriptions(points_dist):
             continue
         m_str = parts[0].strip().replace("M", "")
         q_str = parts[1].strip().replace("Q", "")
-        descs.append({
-            "description": d,
-            "category": d.split(" ")[0],
-            "main_size": int(m_str),
-            "qual_sizes": [int(x) for x in q_str.split("/")]
-        })
+        descs.append(
+            {
+                "description": d,
+                "category": d.split(" ")[0],
+                "main_size": int(m_str),
+                "qual_sizes": [int(x) for x in q_str.split("/")],
+            }
+        )
     return descs
 
 
@@ -358,18 +381,25 @@ _WTA_CALENDAR_CACHE_TTL = 3 * 60 * 60  # 3 hours — covers the gap between scri
 
 
 def _is_cancelled_itf_calendar_item(item):
-    status = " ".join(
-        str(item.get(field) or "")
-        for field in (
-            "status", "tournamentStatus", "statusDesc", "tournamentStatusDesc",
-            "tourStatusCode", "tourStatusDesc",
+    status = (
+        " ".join(
+            str(item.get(field) or "")
+            for field in (
+                "status",
+                "tournamentStatus",
+                "statusDesc",
+                "tournamentStatusDesc",
+                "tourStatusCode",
+                "tourStatusDesc",
+            )
         )
-    ).strip().upper()
+        .strip()
+        .upper()
+    )
     if status == "CN" or "CANCEL" in status:
         return True
     text = " ".join(
-        str(item.get(field) or "")
-        for field in ("tournamentName", "name", "location", "tournamentLink")
+        str(item.get(field) or "") for field in ("tournamentName", "name", "location", "tournamentLink")
     ).lower()
     return "cancel" in text
 
@@ -377,10 +407,10 @@ def _is_cancelled_itf_calendar_item(item):
 def _load_itf_calendar_cache(from_date, to_date):
     """Return filtered items from the persistent year-wide calendar cache."""
     try:
-        with open(ITF_CALENDAR_CACHE_FILE, "r", encoding="utf-8") as f:
+        with open(ITF_CALENDAR_CACHE_FILE, encoding="utf-8") as f:
             data = expand_itf_calendar_cache(json.load(f))
         items = data.get("items", []) if isinstance(data, dict) else (data or [])
-    except Exception:
+    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError):
         return None
     lo = datetime.strptime(from_date, "%Y-%m-%d").date()
     hi = datetime.strptime(to_date, "%Y-%m-%d").date()
@@ -399,10 +429,10 @@ def _load_itf_calendar_cache(from_date, to_date):
 def _load_itf_id_cache():
     """Return dict of tournamentKey (lower) -> tournamentId from persistent cache."""
     try:
-        with open(ITF_EVENT_FILTERS_CACHE_FILE, "r", encoding="utf-8") as f:
+        with open(ITF_EVENT_FILTERS_CACHE_FILE, encoding="utf-8") as f:
             data = json.load(f)
         return {k.lower(): str(v) for k, v in data.items() if v} if isinstance(data, dict) else {}
-    except Exception:
+    except (OSError, UnicodeError, json.JSONDecodeError, AttributeError, TypeError, ValueError):
         return {}
 
 
@@ -414,7 +444,10 @@ def _make_itf_driver():
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     chrome_options.add_argument("window-size=1920,1080")
-    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
+    chrome_options.add_argument(
+        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+    )
     service = Service(ChromeDriverManager().install())
     return webdriver.Chrome(service=service, options=chrome_options)
 
@@ -426,15 +459,17 @@ def _fill_ids_via_selenium(tournaments):
         driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
         time.sleep(5)
         for t in tournaments:
-            url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={t['tournamentKey']}"
+            url = (
+                f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={t['tournamentKey']}"
+            )
             driver.get(url)
             time.sleep(1)
             try:
                 raw = driver.find_element("tag name", "body").text.strip()
                 t["tournamentId"] = json.loads(raw).get("tournamentId")
-            except Exception:
+            except (WebDriverException, json.JSONDecodeError, AttributeError, KeyError, TypeError, ValueError):
                 t["tournamentId"] = None
-    except Exception as e:
+    except (WebDriverException, json.JSONDecodeError, AttributeError, KeyError, TypeError, ValueError) as e:
         logger.warning(f"  [!] Selenium ID fetch error: {e}")
     finally:
         driver.quit()
@@ -472,26 +507,30 @@ def _fetch_itf_via_selenium(from_date, to_date):
             if not key or key in seen_keys:
                 continue
             seen_keys.add(key)
-            tournaments.append({
-                "startDate": item.get("startDate"),
-                "tournamentName": name,
-                "tournamentKey": key,
-                "isMultiweek": category == "ITF Womens Multi-Week Circuit",
-                "tournamentId": None,
-            })
+            tournaments.append(
+                {
+                    "startDate": item.get("startDate"),
+                    "tournamentName": name,
+                    "tournamentKey": key,
+                    "isMultiweek": category == "ITF Womens Multi-Week Circuit",
+                    "tournamentId": None,
+                }
+            )
 
         for t in tournaments:
-            url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={t['tournamentKey']}"
+            url = (
+                f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={t['tournamentKey']}"
+            )
             driver.get(url)
             time.sleep(1)
             try:
                 raw = driver.find_element("tag name", "body").text.strip()
                 t["tournamentId"] = json.loads(raw).get("tournamentId")
-            except Exception:
+            except (WebDriverException, json.JSONDecodeError, AttributeError, KeyError, TypeError, ValueError):
                 t["tournamentId"] = None
 
         return tournaments
-    except Exception as e:
+    except (WebDriverException, json.JSONDecodeError, AttributeError, KeyError, TypeError, ValueError) as e:
         logger.warning(f"  Error in Selenium ITF fetch: {e}")
         return None
     finally:
@@ -513,26 +552,28 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
         seen_keys = set()
         tournaments = []
         for item in cached_items:
-            name = item.get('tournamentName', '')
+            name = item.get("tournamentName", "")
             if _is_cancelled_itf_calendar_item(item):
                 continue
             category = item.get("category", "")
             if category and category.strip().startswith("Tier"):
                 continue
             link = item.get("tournamentLink", "")
-            key = link.rstrip('/').split('/')[-1] if link else None
+            key = link.rstrip("/").split("/")[-1] if link else None
             if not key or key in seen_keys:
                 continue
             seen_keys.add(key)
             is_multiweek = category == "ITF Womens Multi-Week Circuit"
             t_id = id_cache.get(key.lower())
-            tournaments.append({
-                "startDate": item.get("startDate"),
-                "tournamentName": name,
-                "tournamentKey": key,
-                "isMultiweek": is_multiweek,
-                "tournamentId": t_id,
-            })
+            tournaments.append(
+                {
+                    "startDate": item.get("startDate"),
+                    "tournamentName": name,
+                    "tournamentKey": key,
+                    "isMultiweek": is_multiweek,
+                    "tournamentId": t_id,
+                }
+            )
         missing_ids = [t for t in tournaments if not t["tournamentId"]]
         if missing_ids:
             logger.warning(f"  {len(missing_ids)} tournament(s) missing IDs from cache; fetching via Selenium.")
@@ -579,16 +620,18 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
                 week_name = f"{name} (Week {week})"
                 desc = itf_find_description(cat, main_size, qual_size, itf_descs)
 
-                results.append({
-                    "source": "ITF",
-                    "date": date,
-                    "tournamentName": week_name,
-                    "tournamentKey": t["tournamentKey"],
-                    "category": cat,
-                    "mainDrawSize": main_size,
-                    "qualifyingSize": qual_size,
-                    "description": desc,
-                })
+                results.append(
+                    {
+                        "source": "ITF",
+                        "date": date,
+                        "tournamentName": week_name,
+                        "tournamentKey": t["tournamentKey"],
+                        "category": cat,
+                        "mainDrawSize": main_size,
+                        "qualifyingSize": qual_size,
+                        "description": desc,
+                    }
+                )
                 logger.debug(f"  {week_name}: {main_size}M, {qual_size}Q -> {desc or 'NO MATCH'}")
 
                 week += 1
@@ -605,16 +648,18 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
             date = get_monday(t["startDate"])
             desc = itf_find_description(cat, main_size, qual_size, itf_descs)
 
-            results.append({
-                "source": "ITF",
-                "date": date,
-                "tournamentName": name,
-                "tournamentKey": t["tournamentKey"],
-                "category": cat,
-                "mainDrawSize": main_size,
-                "qualifyingSize": qual_size,
-                "description": desc,
-            })
+            results.append(
+                {
+                    "source": "ITF",
+                    "date": date,
+                    "tournamentName": name,
+                    "tournamentKey": t["tournamentKey"],
+                    "category": cat,
+                    "mainDrawSize": main_size,
+                    "qualifyingSize": qual_size,
+                    "description": desc,
+                }
+            )
             logger.debug(f"  {name}: {main_size}M, {qual_size}Q -> {desc or 'NO MATCH'}")
 
     return results
@@ -622,8 +667,9 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 
+
 def main():
-    with open(POINTS_DIST_PATH, 'r', encoding='utf-8') as f:
+    with open(POINTS_DIST_PATH, encoding="utf-8") as f:
         points_dist = expand_points_distribution(json.load(f))
 
     desc_set = {entry["Description"] for entry in points_dist if isinstance(entry, dict)}

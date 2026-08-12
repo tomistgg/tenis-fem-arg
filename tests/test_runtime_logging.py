@@ -7,7 +7,6 @@ from pathlib import Path
 import generate_run_report
 from runtime_logging import configure_logging, get_logger
 
-
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 
 

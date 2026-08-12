@@ -2,7 +2,6 @@ from pathlib import Path
 
 from generated_artifacts import remove_generated_data_artifacts
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 

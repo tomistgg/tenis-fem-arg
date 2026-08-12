@@ -14,7 +14,7 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-from data_quality import GENERATED_SITE_FILES, run_data_quality_gate, validate_site_artifacts
+from data_quality import run_data_quality_gate, validate_site_artifacts
 from generated_artifacts import GENERATED_DATA_PATTERNS, remove_generated_data_artifacts
 from pipeline_errors import DataPromotionError, DataValidationError
 from run_state import (
@@ -24,9 +24,8 @@ from run_state import (
     initialize_run_state,
     load_run_state,
 )
-from time_utils import utc_now
 from runtime_logging import get_logger
-
+from time_utils import utc_now
 
 logger = get_logger("transaction")
 PROJECT_ROOT = Path(__file__).resolve().parent

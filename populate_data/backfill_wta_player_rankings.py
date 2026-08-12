@@ -22,10 +22,10 @@ import os
 import re
 import sys
 import time
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Iterable, Mapping, Sequence
 
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO_ROOT not in sys.path:
@@ -36,7 +36,6 @@ from config import PLAYER_ALIASES_WTA_ITF_FILE, WTA_RANKINGS_CSV_83_99
 from http_client import get_with_retry
 from runtime_logging import get_logger
 from transactional_io import atomic_write_csv
-
 
 logger = get_logger("historical-wta-player-rankings")
 
@@ -144,9 +143,7 @@ def parse_weekly_singles_rankings(
         rank = parsed_rank
         previous = rankings.get(date_key)
         if previous is not None and previous != rank:
-            raise ValueError(
-                f"WTA page contains two singles ranks for {date_key}: {previous} and {rank}"
-            )
+            raise ValueError(f"WTA page contains two singles ranks for {date_key}: {previous} and {rank}")
         rankings[date_key] = rank
 
     return profile, sorted(rankings.items())
@@ -194,9 +191,7 @@ def fetch_player_ranking_rows(
             to_year=to_year,
         )
         if profile.player_id != player_id:
-            raise ValueError(
-                f"WTA returned player {profile.player_id} when {player_id} was requested"
-            )
+            raise ValueError(f"WTA returned player {profile.player_id} when {player_id} was requested")
         if cache_path is not None:
             cache_path.parent.mkdir(parents=True, exist_ok=True)
             temporary = cache_path.with_name(cache_path.name + ".tmp")
@@ -222,9 +217,7 @@ def fetch_player_ranking_rows(
         to_year=to_year,
     )
     if profile.player_id != player_id:
-        raise ValueError(
-            f"WTA returned player {profile.player_id} when {player_id} was requested"
-        )
+        raise ValueError(f"WTA returned player {profile.player_id} when {player_id} was requested")
     return [
         {
             "week_date": week_date,
@@ -245,13 +238,8 @@ def load_ranking_rows(path: Path) -> list[dict[str, str]]:
     with path.open("r", newline="", encoding="utf-8-sig") as handle:
         reader = csv.DictReader(handle)
         if reader.fieldnames != CSV_FIELDNAMES:
-            raise ValueError(
-                f"unexpected ranking CSV columns in {path}: {reader.fieldnames!r}"
-            )
-        return [
-            {field: _compact(row.get(field)) for field in CSV_FIELDNAMES}
-            for row in reader
-        ]
+            raise ValueError(f"unexpected ranking CSV columns in {path}: {reader.fieldnames!r}")
+        return [{field: _compact(row.get(field)) for field in CSV_FIELDNAMES} for row in reader]
 
 
 def merge_ranking_rows(
@@ -262,10 +250,7 @@ def merge_ranking_rows(
 ) -> MergeResult:
     """Add absent player/weeks while reporting rank and date disagreements."""
 
-    existing = [
-        {field: _compact(row.get(field)) for field in CSV_FIELDNAMES}
-        for row in existing_rows
-    ]
+    existing = [{field: _compact(row.get(field)) for field in CSV_FIELDNAMES} for row in existing_rows]
     by_key = {(row["week_date"], row["id"]): row for row in existing}
     if len(by_key) != len(existing):
         raise ValueError("ranking CSV contains duplicate (week_date, id) keys")
@@ -297,25 +282,23 @@ def merge_ranking_rows(
                 (
                     candidate
                     for candidate in rows_by_player.get(row["id"], [])
-                    if abs(
-                        date.fromisoformat(candidate["week_date"]) - incoming_date
-                    ) <= timedelta(days=3)
+                    if abs(date.fromisoformat(candidate["week_date"]) - incoming_date) <= timedelta(days=3)
                 ),
-                key=lambda candidate: abs(
-                    date.fromisoformat(candidate["week_date"]) - incoming_date
-                ),
+                key=lambda candidate: abs(date.fromisoformat(candidate["week_date"]) - incoming_date),
             )
             if nearby:
                 current = nearby[0]
                 if current["rank"] == row["rank"]:
                     unchanged += 1
-                    date_aliases.append({
-                        "api_week_date": row["week_date"],
-                        "csv_week_date": current["week_date"],
-                        "id": row["id"],
-                        "player": row["player"],
-                        "rank": row["rank"],
-                    })
+                    date_aliases.append(
+                        {
+                            "api_week_date": row["week_date"],
+                            "csv_week_date": current["week_date"],
+                            "id": row["id"],
+                            "player": row["player"],
+                            "rank": row["rank"],
+                        }
+                    )
                     continue
             elif row["week_date"] not in existing_dates and not allow_new_weeks:
                 skipped_new_weeks.append(row)
@@ -329,14 +312,16 @@ def merge_ranking_rows(
         if current["rank"] == row["rank"]:
             unchanged += 1
             continue
-        conflicts.append({
-            "api_week_date": row["week_date"],
-            "csv_week_date": current["week_date"],
-            "id": row["id"],
-            "player": row["player"],
-            "existing_rank": current["rank"],
-            "wta_api_rank": row["rank"],
-        })
+        conflicts.append(
+            {
+                "api_week_date": row["week_date"],
+                "csv_week_date": current["week_date"],
+                "id": row["id"],
+                "player": row["player"],
+                "existing_rank": current["rank"],
+                "wta_api_rank": row["rank"],
+            }
+        )
 
     merged = [*existing, *additions]
     merged.sort(key=lambda row: (row["week_date"], int(row["rank"]), row["id"]))
@@ -472,8 +457,7 @@ def run(args: argparse.Namespace) -> int:
     )
     for addition in result.additions[:20]:
         logger.info(
-            f"Would add {addition['week_date']} {addition['player']} "
-            f"(WTA {addition['id']}) at #{addition['rank']}."
+            f"Would add {addition['week_date']} {addition['player']} (WTA {addition['id']}) at #{addition['rank']}."
         )
     if len(result.additions) > 20:
         logger.info(f"...and {len(result.additions) - 20} more additions.")
@@ -504,10 +488,7 @@ def run(args: argparse.Namespace) -> int:
 
     added_players = sync_wta_players(Path(PLAYER_ALIASES_WTA_ITF_FILE), result.additions)
     atomic_write_csv(args.output, CSV_FIELDNAMES, result.rows, encoding="utf-8")
-    logger.info(
-        f"Added {len(result.additions)} ranking rows and {added_players} canonical players "
-        f"to {args.output}."
-    )
+    logger.info(f"Added {len(result.additions)} ranking rows and {added_players} canonical players to {args.output}.")
     return 0
 
 

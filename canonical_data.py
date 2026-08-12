@@ -17,7 +17,6 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-
 PLAYER_FIELDS = (
     "player_key",
     "display_name",
@@ -127,12 +126,9 @@ class PlayerRecord:
     additional_bjkc_ids: tuple[str, ...] = ()
 
     @classmethod
-    def from_mapping(cls, row: Mapping[str, object]) -> "PlayerRecord":
+    def from_mapping(cls, row: Mapping[str, object]) -> PlayerRecord:
         display_name = compact_text(
-            row.get("display_name")
-            or row.get("wta_name")
-            or row.get("itf_name")
-            or row.get("bjkc_name")
+            row.get("display_name") or row.get("wta_name") or row.get("itf_name") or row.get("bjkc_name")
         )
         aliases: list[str] = []
         raw_aliases = row.get("aliases")
@@ -227,18 +223,12 @@ class PlayerIdentityIndex:
                 if key:
                     name_candidates.setdefault(key, {})[record.player_key] = record
 
-        self.name_candidates = {
-            key: tuple(candidates.values()) for key, candidates in name_candidates.items()
-        }
+        self.name_candidates = {key: tuple(candidates.values()) for key, candidates in name_candidates.items()}
         self.by_unique_name = {
-            key: candidates[0]
-            for key, candidates in self.name_candidates.items()
-            if len(candidates) == 1
+            key: candidates[0] for key, candidates in self.name_candidates.items() if len(candidates) == 1
         }
         self.ambiguous_names = {
-            key: candidates
-            for key, candidates in self.name_candidates.items()
-            if len(candidates) > 1
+            key: candidates for key, candidates in self.name_candidates.items() if len(candidates) > 1
         }
 
     @staticmethod
@@ -260,9 +250,7 @@ class PlayerIdentityIndex:
                 )
             target[value] = record
 
-    def resolve(
-        self, source: str, *, player_id: object = "", name: object = ""
-    ) -> PlayerRecord | None:
+    def resolve(self, source: str, *, player_id: object = "", name: object = "") -> PlayerRecord | None:
         identifier = normalized_identifier(player_id)
         if identifier:
             if source == "wta":
@@ -330,13 +318,9 @@ def tournament_key(row: Mapping[str, object], source: str) -> str:
     return f"{source}:{source_id}:{season}:{name}"
 
 
-def canonical_tournament(
-    row: Mapping[str, object], source: str
-) -> TournamentRecord:
+def canonical_tournament(row: Mapping[str, object], source: str) -> TournamentRecord:
     source = compact_text(source).casefold() or "unknown"
-    source_id = normalized_identifier(row.get("tournamentId")) or _slug(
-        row.get("tournamentName")
-    )
+    source_id = normalized_identifier(row.get("tournamentId")) or _slug(row.get("tournamentName"))
     date_value = compact_text(row.get("date"))[:10]
     return TournamentRecord(
         tournament_key=tournament_key(row, source),
@@ -363,16 +347,12 @@ def source_match_key(row: Mapping[str, object], source: str) -> str:
         raise CanonicalConstraintError(f"{source or 'unknown'} match is missing matchId")
     if source == "wta":
         if not tournament_id or not season:
-            raise CanonicalConstraintError(
-                "WTA match natural key requires tournamentId and a dated season"
-            )
+            raise CanonicalConstraintError("WTA match natural key requires tournamentId and a dated season")
         return f"{tournament_id}:{season}:{match_id}"
     if source == "itf":
         tournament_part = tournament_id or _slug(row.get("tournamentName"))
         if tournament_part == "unknown" or not season:
-            raise CanonicalConstraintError(
-                "ITF match natural key requires a tournament identifier and a dated season"
-            )
+            raise CanonicalConstraintError("ITF match natural key requires a tournament identifier and a dated season")
         return f"{tournament_part}:{season}:{match_id}"
     if source == "grand_slam":
         return f"{match_id}:{_slug(row.get('draw'))}:{round_name}:{winner_id}:{loser_id}"
@@ -388,9 +368,7 @@ def canonical_match_key(row: Mapping[str, object], source: str) -> tuple[str, st
     return source, source_match_key(row, source)
 
 
-def _player_key_for_match_id(
-    index: PlayerIdentityIndex, source: str, player_id: object, name: object
-) -> str:
+def _player_key_for_match_id(index: PlayerIdentityIndex, source: str, player_id: object, name: object) -> str:
     name_key = normalized_name(name)
     if name_key in {"bye", "unknown"}:
         return f"special:{name_key}"
@@ -418,18 +396,12 @@ def canonical_match(row: Mapping[str, object], source: str, index: PlayerIdentit
         source_match_key=source_match_key(row, source),
         tournament_key=tournament_key(row, source),
         date=compact_text(row.get("date"))[:10],
-        winner_key=_player_key_for_match_id(
-            index, source, row.get("winnerId"), row.get("winnerName")
-        ),
-        loser_key=_player_key_for_match_id(
-            index, source, row.get("loserId"), row.get("loserName")
-        ),
+        winner_key=_player_key_for_match_id(index, source, row.get("winnerId"), row.get("winnerName")),
+        loser_key=_player_key_for_match_id(index, source, row.get("loserId"), row.get("loserName")),
     )
 
 
-def canonical_ranking(
-    row: Mapping[str, object], index: PlayerIdentityIndex
-) -> RankingRecord:
+def canonical_ranking(row: Mapping[str, object], index: PlayerIdentityIndex) -> RankingRecord:
     player_id = normalized_identifier(row.get("id"))
     record = index.by_wta_id.get(player_id)
     if not record:
@@ -474,9 +446,7 @@ def validate_rankings(data_dir: Path, index: PlayerIdentityIndex) -> int:
                 try:
                     ranking = canonical_ranking(row, index)
                 except CanonicalConstraintError as exc:
-                    raise CanonicalConstraintError(
-                        f"{filename}:{line_number}: {exc}"
-                    ) from exc
+                    raise CanonicalConstraintError(f"{filename}:{line_number}: {exc}") from exc
                 except ValueError as exc:
                     raise CanonicalConstraintError(
                         f"{filename}:{line_number}: rank and points must be integers"
@@ -499,9 +469,7 @@ def validate_matches(data_dir: Path, index: PlayerIdentityIndex) -> tuple[int, i
             for line_number, row in enumerate(csv.DictReader(handle), 2):
                 key = canonical_match_key(row, source)
                 if key in seen_match_keys:
-                    raise CanonicalConstraintError(
-                        f"{filename}:{line_number}: duplicate canonical match key {key}"
-                    )
+                    raise CanonicalConstraintError(f"{filename}:{line_number}: duplicate canonical match key {key}")
                 seen_match_keys.add(key)
                 record = canonical_match(row, source, index)
                 if not record.date or not compact_text(row.get("winnerName")):
@@ -509,13 +477,9 @@ def validate_matches(data_dir: Path, index: PlayerIdentityIndex) -> tuple[int, i
                 if not compact_text(row.get("loserName")):
                     raise CanonicalConstraintError(f"{filename}:{line_number}: loser must be explicit or Unknown")
                 if (
-                    source == "itf"
-                    and compact_text(row.get("resultStatusDesc")).casefold() == "walkover"
-                ):
-                    if compact_text(row.get("result")) != "W/O":
-                        raise CanonicalConstraintError(
-                            f"{filename}:{line_number}: walkover result must be W/O"
-                        )
+                    source == "itf" and compact_text(row.get("resultStatusDesc")).casefold() == "walkover"
+                ) and compact_text(row.get("result")) != "W/O":
+                    raise CanonicalConstraintError(f"{filename}:{line_number}: walkover result must be W/O")
                 for side in ("winner", "loser"):
                     player_id = normalized_identifier(row.get(f"{side}Id"))
                     player_name = normalized_name(row.get(f"{side}Name"))
@@ -567,11 +531,7 @@ def write_player_rows(path: Path, rows: Iterable[Mapping[str, object]]) -> None:
                 "player_key": normalized["player_key"],
                 "display_name": normalized["display_name"],
                 "presentation_name": presentation_name,
-                **{
-                    field: value
-                    for field, value in normalized.items()
-                    if field not in {"player_key", "display_name"}
-                },
+                **{field: value for field, value in normalized.items() if field not in {"player_key", "display_name"}},
             }
         normalized_rows.append(normalized)
     normalized_rows.sort(
@@ -602,9 +562,10 @@ def sync_wta_players(path: Path, ranking_rows: Iterable[Mapping[str, object]]) -
         player_id = normalized_identifier(ranking.get("id") or ranking.get("Id"))
         if not player_id or player_id in index.by_wta_id:
             continue
-        display_name = compact_text(
-            ranking.get("player") or ranking.get("OfficialPlayer") or ranking.get("Player")
-        ) or f"WTA player {player_id}"
+        display_name = (
+            compact_text(ranking.get("player") or ranking.get("OfficialPlayer") or ranking.get("Player"))
+            or f"WTA player {player_id}"
+        )
         canonical_display = display_name
         presentation_name = ""
         if normalized_name(canonical_display) in index.by_display_name:
@@ -688,9 +649,7 @@ def sync_itf_players(path: Path, match_rows: Iterable[Mapping[str, object]]) -> 
     return added
 
 
-def sync_wta_match_players(
-    path: Path, match_rows: Iterable[Mapping[str, object]]
-) -> int:
+def sync_wta_match_players(path: Path, match_rows: Iterable[Mapping[str, object]]) -> int:
     """Add WTA IDs first observed in match data rather than a ranking."""
     ranking_rows = []
     for match in match_rows:
@@ -703,12 +662,14 @@ def sync_wta_match_players(
                 or normalized_name(source_name) in {"", "bye", "unknown"}
             ):
                 continue
-            ranking_rows.append({
-                "id": player_id,
-                "player": source_name,
-                "country": compact_text(match.get(f"{side}Country")).upper(),
-                "dob": "",
-            })
+            ranking_rows.append(
+                {
+                    "id": player_id,
+                    "player": source_name,
+                    "country": compact_text(match.get(f"{side}Country")).upper(),
+                    "dob": "",
+                }
+            )
     return sync_wta_players(path, ranking_rows)
 
 
@@ -718,9 +679,7 @@ def validate_project_data(data_dir: Path | str) -> dict[str, int]:
     for row_number, row in enumerate(player_rows, 1):
         missing = [field for field in PLAYER_FIELDS if field not in row]
         if missing:
-            raise CanonicalConstraintError(
-                f"player row {row_number} is missing canonical fields: {', '.join(missing)}"
-            )
+            raise CanonicalConstraintError(f"player row {row_number} is missing canonical fields: {', '.join(missing)}")
     index = PlayerIdentityIndex(player_rows)
     ranking_count = validate_rankings(data_dir, index)
     match_count, tournament_count = validate_matches(data_dir, index)

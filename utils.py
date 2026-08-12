@@ -1,19 +1,21 @@
-import os
-import json
-import re
-import unicodedata
-import tempfile
-
+import contextlib
 import csv
+import json
+import os
+import re
+import tempfile
+import unicodedata
 
-from config import (
-    TOURNAMENT_NAME_OVERRIDES, CITY_CASE_FIXES,
-    COUNTRY_TO_CONTINENT, COUNTRY_OVERRIDES
-)
-from time_utils import utc_timestamp
+from config import CITY_CASE_FIXES, COUNTRY_OVERRIDES, COUNTRY_TO_CONTINENT, TOURNAMENT_NAME_OVERRIDES
 from runtime_logging import get_logger
 from runtime_paths import DATA_DIR
-from tournament_snapshot import compress_tournament_snapshot, expand_tournament_snapshot
+from time_utils import utc_timestamp
+from tournament_snapshot import (
+    compress_tournament_snapshot as compress_tournament_snapshot,
+)
+from tournament_snapshot import (
+    expand_tournament_snapshot as expand_tournament_snapshot,
+)
 
 logger = get_logger("utils")
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -29,14 +31,14 @@ def format_player_name(text):
 
 
 # Common UTF-8-decoded-as-Latin-1 mojibake indicators
-_MOJIBAKE_MARKERS = ('\u00c3', '\u00c3\u00a1', '\u00c3\u00a9', '\u00c3\u00ad', '\u00c3\u00b3', '\u00c3\u00ba')
+_MOJIBAKE_MARKERS = ("\u00c3", "\u00c3\u00a1", "\u00c3\u00a9", "\u00c3\u00ad", "\u00c3\u00b3", "\u00c3\u00ba")
 
 
 def _repair_mojibake(text):
     """Re-decode text that was mistakenly decoded as Latin-1 instead of UTF-8."""
     if any(m in text for m in _MOJIBAKE_MARKERS):
         try:
-            return text.encode('latin-1').decode('utf-8')
+            return text.encode("latin-1").decode("utf-8")
         except (UnicodeDecodeError, UnicodeEncodeError):
             pass
     return text
@@ -48,7 +50,7 @@ def fix_encoding(text):
         return ""
     text = _repair_mojibake(text)
     try:
-        nfkd_form = unicodedata.normalize('NFKD', text)
+        nfkd_form = unicodedata.normalize("NFKD", text)
         return "".join(c for c in nfkd_form if not unicodedata.combining(c))
     except Exception:
         return text
@@ -71,7 +73,7 @@ def normalize_player_name(text):
 def write_text_if_changed(path, text, encoding="utf-8"):
     """Write text only when the file content actually changes."""
     try:
-        with open(path, "r", encoding=encoding, newline="") as f:
+        with open(path, encoding=encoding, newline="") as f:
             if f.read() == text:
                 return False
     except FileNotFoundError:
@@ -98,10 +100,8 @@ def write_text_if_changed(path, text, encoding="utf-8"):
         os.replace(tmp_path, path)
     except Exception:
         if tmp_path:
-            try:
+            with contextlib.suppress(OSError):
                 os.remove(tmp_path)
-            except OSError:
-                pass
         raise
     return True
 
@@ -117,7 +117,7 @@ def _load_cache_state():
 
     state = {"files": {}, "entries": {}}
     try:
-        with open(_CACHE_STATE_FILE, "r", encoding="utf-8-sig") as f:
+        with open(_CACHE_STATE_FILE, encoding="utf-8-sig") as f:
             raw = json.load(f)
     except FileNotFoundError:
         raw = {}
@@ -135,8 +135,7 @@ def _load_cache_state():
         # keep dict-valued keys usable under the new "files" section.
         if not state["files"] and not state["entries"]:
             state["files"] = {
-                key: value for key, value in raw.items()
-                if isinstance(key, str) and isinstance(value, dict)
+                key: value for key, value in raw.items() if isinstance(key, str) and isinstance(value, dict)
             }
 
     _CACHE_STATE_CACHE = state
@@ -321,7 +320,7 @@ def get_cache_timestamp(cache_file, entry_key=None, payload=None):
 def load_cache(cache_file, *, strict=False):
     """Load cache from JSON file. Returns {} if the file does not exist."""
     try:
-        with open(cache_file, "r", encoding="utf-8-sig") as f:
+        with open(cache_file, encoding="utf-8-sig") as f:
             return json.load(f)
     except FileNotFoundError:
         return {}
@@ -341,13 +340,15 @@ def merge_entry_list(cached_players, new_players):
     """Merge new scraped players with cached players, preserving sections that disappeared."""
     if isinstance(cached_players, dict):
         cached_players = [
-            row for section in _ENTRY_LISTS_CACHE_SECTION_ORDER
+            row
+            for section in _ENTRY_LISTS_CACHE_SECTION_ORDER
             for row in (cached_players.get(section) or [])
             if isinstance(row, dict)
         ]
     if isinstance(new_players, dict):
         new_players = [
-            row for section in _ENTRY_LISTS_CACHE_SECTION_ORDER
+            row
+            for section in _ENTRY_LISTS_CACHE_SECTION_ORDER
             for row in (new_players.get(section) or [])
             if isinstance(row, dict)
         ]
@@ -380,13 +381,24 @@ def fix_display_name(name):
 
 def get_tournament_sort_order(level):
     level_order = {
-        "GrandSlam": 0, "Grand Slam": 0, "grandSlam": 0,
-        "WTA1000": 1, "WTA 1000": 1,
-        "WTA500": 2, "WTA 500": 2,
-        "WTA250": 3, "WTA 250": 3,
-        "WTA125": 4, "WTA 125": 4,
-        "W100": 5, "W75": 6, "W60": 7,
-        "W50": 8, "W35": 9, "W25": 10, "W15": 11
+        "GrandSlam": 0,
+        "Grand Slam": 0,
+        "grandSlam": 0,
+        "WTA1000": 1,
+        "WTA 1000": 1,
+        "WTA500": 2,
+        "WTA 500": 2,
+        "WTA250": 3,
+        "WTA 250": 3,
+        "WTA125": 4,
+        "WTA 125": 4,
+        "W100": 5,
+        "W75": 6,
+        "W60": 7,
+        "W50": 8,
+        "W35": 9,
+        "W25": 10,
+        "W15": 11,
     }
     return level_order.get(level, 99)
 
@@ -429,11 +441,7 @@ def dumps_readable(payload, *, ensure_ascii=False, indent=2, list_item_indent=2,
         lines = ["["]
         for i, item in enumerate(payload):
             comma = "," if i < len(payload) - 1 else ""
-            lines.append(
-                " " * list_item_indent
-                + json.dumps(item, ensure_ascii=ensure_ascii)
-                + comma
-            )
+            lines.append(" " * list_item_indent + json.dumps(item, ensure_ascii=ensure_ascii) + comma)
         lines.append("]")
         return "\n".join(lines)
     if isinstance(payload, dict):
@@ -538,36 +546,40 @@ def dumps_wta_rankings_bundle(payload, *, ensure_ascii=False, indent=2):
     player_lines = _dump_players(players, 6)
     if len(player_lines) > 1:
         lines.extend(player_lines[1:-1])
-    lines.extend([
-        "    ],",
-        '    "d": {',
-    ])
+    lines.extend(
+        [
+            "    ],",
+            '    "d": {',
+        ]
+    )
     date_lines = _dump_dates(dates, 6)
     if len(date_lines) > 1:
         lines.extend(date_lines[1:-1])
-    lines.extend([
-        "    }",
-        "  };",
-        "  if (!b || typeof b !== 'object') return b;",
-        "  const p = Array.isArray(b.p) ? b.p : null;",
-        "  const d = b.d && typeof b.d === 'object' && !Array.isArray(b.d) ? b.d : null;",
-        "  if (!p || !d) return b;",
-        "  const o = {};",
-        "  for (const [date, rows] of Object.entries(d)) {",
-        "    if (!Array.isArray(rows)) {",
-        "      o[date] = rows;",
-        "      continue;",
-        "    }",
-        "    o[date] = rows.map(row => {",
-        "      if (!Array.isArray(row)) return row;",
-        "      const idx = Number.isInteger(row[2]) ? row[2] : -1;",
-        "      const pl = idx >= 0 && idx < p.length ? p[idx] : [];",
-        "      return { r: row[0] ?? null, pts: row[1] ?? 0, n: pl[0] || '', c: pl[1] || '', d: pl[2] || '' };",
-        "    });",
-        "  }",
-        "  return o;",
-        "})()",
-    ])
+    lines.extend(
+        [
+            "    }",
+            "  };",
+            "  if (!b || typeof b !== 'object') return b;",
+            "  const p = Array.isArray(b.p) ? b.p : null;",
+            "  const d = b.d && typeof b.d === 'object' && !Array.isArray(b.d) ? b.d : null;",
+            "  if (!p || !d) return b;",
+            "  const o = {};",
+            "  for (const [date, rows] of Object.entries(d)) {",
+            "    if (!Array.isArray(rows)) {",
+            "      o[date] = rows;",
+            "      continue;",
+            "    }",
+            "    o[date] = rows.map(row => {",
+            "      if (!Array.isArray(row)) return row;",
+            "      const idx = Number.isInteger(row[2]) ? row[2] : -1;",
+            "      const pl = idx >= 0 && idx < p.length ? p[idx] : [];",
+            "      return { r: row[0] ?? null, pts: row[1] ?? 0, n: pl[0] || '', c: pl[1] || '', d: pl[2] || '' };",
+            "    });",
+            "  }",
+            "  return o;",
+            "})()",
+        ]
+    )
     return "\n".join(lines)
 
 
@@ -579,6 +591,7 @@ def dumps_draws_store_cache(payload, *, ensure_ascii=False, indent=2):
     easy to scan in diffs.
     """
     payload = compress_draws_store_cache(payload)
+
     def _is_primitive(value):
         return value is None or isinstance(value, (bool, int, float, str))
 
@@ -621,18 +634,10 @@ def dumps_draws_store_cache(payload, *, ensure_ascii=False, indent=2):
                         item_pad = " " * (level + indent * 2)
                         for j, item in enumerate(child):
                             item_comma = "," if j < len(child) - 1 else ""
-                            lines.append(
-                                item_pad
-                                + json.dumps(item, ensure_ascii=ensure_ascii)
-                                + item_comma
-                            )
+                            lines.append(item_pad + json.dumps(item, ensure_ascii=ensure_ascii) + item_comma)
                         lines.append(f"{child_pad}]{comma}")
                 else:
-                    lines.append(
-                        f"{child_pad}{key_text}: "
-                        + json.dumps(child, ensure_ascii=ensure_ascii)
-                        + comma
-                    )
+                    lines.append(f"{child_pad}{key_text}: " + json.dumps(child, ensure_ascii=ensure_ascii) + comma)
             lines.append(pad + "}")
             return lines
         if isinstance(value, list):
@@ -716,11 +721,7 @@ def dumps_entry_lists_cache(payload, *, ensure_ascii=False, indent=2):
                                 + item_comma
                             )
                         else:
-                            lines.append(
-                                item_pad
-                                + json.dumps(item, ensure_ascii=ensure_ascii)
-                                + item_comma
-                            )
+                            lines.append(item_pad + json.dumps(item, ensure_ascii=ensure_ascii) + item_comma)
                     lines.append(f"{child_pad}]{comma}")
                 else:
                     lines.append(
@@ -784,9 +785,7 @@ def dumps_entry_lists_cache(payload, *, ensure_ascii=False, indent=2):
             for k, player in enumerate(players or []):
                 player_comma = "," if k < len(players) - 1 else ""
                 lines.append(
-                    "      "
-                    + json.dumps(player, ensure_ascii=ensure_ascii, separators=(",", ":"))
-                    + player_comma
+                    "      " + json.dumps(player, ensure_ascii=ensure_ascii, separators=(",", ":")) + player_comma
                 )
             lines.append(f"    ]{section_comma}")
         lines.append(f"  }}{comma}")
@@ -840,7 +839,9 @@ def expand_entry_lists_cache(payload):
     for tournament_key, tournament_value in payload.items():
         if isinstance(tournament_key, str) and tournament_key in _ENTRY_LISTS_CACHE_META_KEYS:
             continue
-        if isinstance(tournament_value, dict) and any(section in tournament_value for section in _ENTRY_LISTS_CACHE_SECTION_ORDER):
+        if isinstance(tournament_value, dict) and any(
+            section in tournament_value for section in _ENTRY_LISTS_CACHE_SECTION_ORDER
+        ):
             players = []
             for section in _ENTRY_LISTS_CACHE_SECTION_ORDER:
                 rows = tournament_value.get(section) or []
@@ -850,7 +851,7 @@ def expand_entry_lists_cache(payload):
                     if isinstance(row, dict):
                         player = dict(row)
                     elif isinstance(row, list):
-                        player = dict(zip(_ENTRY_LISTS_CACHE_PLAYER_FIELDS, row))
+                        player = dict(zip(_ENTRY_LISTS_CACHE_PLAYER_FIELDS, row, strict=False))
                     else:
                         continue
                     player["type"] = section
@@ -869,6 +870,7 @@ def expand_entry_lists_cache(payload):
 def dumps_itf_calendar_cache(payload, *, ensure_ascii=False, indent=2):
     """Serialize itf_calendar_cache.json with one calendar item per line."""
     payload = compress_itf_calendar_cache(payload)
+
     def _render_item(item, level):
         pad = " " * level
         if isinstance(item, dict):
@@ -879,7 +881,7 @@ def dumps_itf_calendar_cache(payload, *, ensure_ascii=False, indent=2):
         return dumps_readable(payload, ensure_ascii=ensure_ascii, indent=indent)
 
     lines = ["{"]
-    meta_keys = [k for k in payload.keys() if k != "items"]
+    meta_keys = [k for k in payload if k != "items"]
     for i, key in enumerate(meta_keys):
         comma = "," if i < len(meta_keys) - 1 or "items" in payload else ""
         lines.append(
@@ -925,9 +927,7 @@ def dumps_wta_full_calendar_cache(payload, *, ensure_ascii=False, indent=2):
             if key in seen:
                 continue
             parts.append(
-                json.dumps(key, ensure_ascii=ensure_ascii)
-                + ": "
-                + json.dumps(child, ensure_ascii=ensure_ascii)
+                json.dumps(key, ensure_ascii=ensure_ascii) + ": " + json.dumps(child, ensure_ascii=ensure_ascii)
             )
         if not parts:
             return "{}"
@@ -998,7 +998,7 @@ def dumps_wta_full_calendar_cache(payload, *, ensure_ascii=False, indent=2):
         return dumps_readable(payload, ensure_ascii=ensure_ascii, indent=indent)
 
     lines = ["{"]
-    meta_keys = [k for k in payload.keys() if k != "items"]
+    meta_keys = [k for k in payload if k != "items"]
     for i, key in enumerate(meta_keys):
         comma = "," if i < len(meta_keys) - 1 or "items" in payload else ""
         lines.append(
@@ -1132,11 +1132,22 @@ def expand_itf_calendar_cache(payload):
 
 
 _HISTORY_ALWAYS_EMPTY_FIELDS = (
-    "PLAYER", "ENTRY", "SEED", "RESULT",
-    "RIVAL_ENTRY", "RIVAL_SEED", "RIVAL", "RIVAL_COUNTRY",
+    "PLAYER",
+    "ENTRY",
+    "SEED",
+    "RESULT",
+    "RIVAL_ENTRY",
+    "RIVAL_SEED",
+    "RIVAL",
+    "RIVAL_COUNTRY",
 )
 _HISTORY_GROUP_FIELD_ORDER = (
-    "TOURNAMENT_ID", "DRAW", "TOURNAMENT", "CATEGORY", "SURFACE", "MATCH_TYPE",
+    "TOURNAMENT_ID",
+    "DRAW",
+    "TOURNAMENT",
+    "CATEGORY",
+    "SURFACE",
+    "MATCH_TYPE",
 )
 
 
@@ -1169,7 +1180,7 @@ def compress_history_data(rows):
         key_set = set(bucket[0].keys())
         for row in bucket[1:]:
             key_set &= set(row.keys())
-        for key in bucket[0].keys():
+        for key in bucket[0]:
             if key in _HISTORY_ALWAYS_EMPTY_FIELDS:
                 continue
             if key not in key_set:
@@ -1245,11 +1256,7 @@ def dumps_history_data(payload, *, ensure_ascii=False, indent=2):
             lines.append('    "rows": [')
             for j, row in enumerate(rows):
                 row_comma = "," if j < len(rows) - 1 else ""
-                lines.append(
-                    "      "
-                    + json.dumps(row, ensure_ascii=ensure_ascii, separators=(",", ":"))
-                    + row_comma
-                )
+                lines.append("      " + json.dumps(row, ensure_ascii=ensure_ascii, separators=(",", ":")) + row_comma)
             lines.append("    ]")
         else:
             lines.append('    "rows": []')
@@ -1342,12 +1349,7 @@ def dumps_itf_drawsheets_cache(payload, *, ensure_ascii=False, indent=2):
             if not value:
                 return [pad + key_text + ": []"]
             if key == "scores":
-                return [
-                    pad
-                    + key_text
-                    + ": "
-                    + json.dumps(value, ensure_ascii=ensure_ascii, separators=(",", ":"))
-                ]
+                return [pad + key_text + ": " + json.dumps(value, ensure_ascii=ensure_ascii, separators=(",", ":"))]
             lines = [pad + key_text + ": ["]
             for idx, item in enumerate(value):
                 item_lines = _render_list_item(item, level + indent * 2)
@@ -1358,12 +1360,7 @@ def dumps_itf_drawsheets_cache(payload, *, ensure_ascii=False, indent=2):
             return lines
         if isinstance(value, dict):
             if key == "player" and _can_inline_dict(value):
-                return [
-                    pad
-                    + key_text
-                    + ": "
-                    + json.dumps(value, ensure_ascii=ensure_ascii, separators=(",", ":"))
-                ]
+                return [pad + key_text + ": " + json.dumps(value, ensure_ascii=ensure_ascii, separators=(",", ":"))]
             lines = [pad + key_text + ":"]
             lines.extend(_render_dict(value, level + indent))
             return lines
@@ -1404,12 +1401,19 @@ def dumps_itf_drawsheets_cache(payload, *, ensure_ascii=False, indent=2):
     return "\n".join(_render(payload, 0))
 
 
-_DRAWS_STORE_META_FIELDS = (
-    "name", "level", "week", "startDate", "endDate", "fetchedAt", "arg_visibility"
-)
+_DRAWS_STORE_META_FIELDS = ("name", "level", "week", "startDate", "endDate", "fetchedAt", "arg_visibility")
 _DRAWS_STORE_DRAW_DEFAULT_KEYS = {
-    "tournament_name", "location", "dates", "prize", "surface", "draw_type",
-    "players", "matches", "byes", "qualifiers", "round_labels",
+    "tournament_name",
+    "location",
+    "dates",
+    "prize",
+    "surface",
+    "draw_type",
+    "players",
+    "matches",
+    "byes",
+    "qualifiers",
+    "round_labels",
 }
 _DRAWS_STORE_PLAYER_DEFAULTS = {
     "pos": "",
@@ -1570,9 +1574,7 @@ def compress_itf_drawsheet_cache(payload):
                             and score.get("score") is not None
                             and score.get("losingScore") is not None
                         ):
-                            compact_scores.append(
-                                f'{score["score"]}({score["losingScore"]})'
-                            )
+                            compact_scores.append(f"{score['score']}({score['losingScore']})")
                         else:
                             compact_scores.append(score)
                     child_compact = compact_scores
@@ -1614,10 +1616,12 @@ def expand_itf_drawsheet_cache(payload):
                         if isinstance(score, str):
                             match = re.fullmatch(r"(-?\d+)\((-?\d+)\)", score)
                             if match:
-                                expanded_scores.append({
-                                    "score": int(match.group(1)),
-                                    "losingScore": int(match.group(2)),
-                                })
+                                expanded_scores.append(
+                                    {
+                                        "score": int(match.group(1)),
+                                        "losingScore": int(match.group(2)),
+                                    }
+                                )
                                 continue
                         expanded_scores.append(score)
                     if expanded_scores and len(expanded_scores) < 5:
@@ -1677,10 +1681,7 @@ def expand_row_list_cache(payload, field_order):
         if isinstance(item, dict):
             expanded.append(dict(item))
         elif isinstance(item, list):
-            expanded.append({
-                field: (item[idx] if idx < len(item) else "")
-                for idx, field in enumerate(field_order)
-            })
+            expanded.append({field: (item[idx] if idx < len(item) else "") for idx, field in enumerate(field_order)})
         else:
             expanded.append(item)
     return expanded
@@ -1732,9 +1733,7 @@ def compress_calendar_snapshot(payload):
         if not isinstance(row, dict):
             continue
         week_label = row.get("week_label", "")
-        weeks.setdefault(week_label, []).append(
-            [row.get(field, "") for field in _CALENDAR_SNAPSHOT_FIELDS]
-        )
+        weeks.setdefault(week_label, []).append([row.get(field, "") for field in _CALENDAR_SNAPSHOT_FIELDS])
     return compressed
 
 
@@ -1773,29 +1772,17 @@ def dumps_calendar_snapshot(payload, *, ensure_ascii=False, indent=2):
 
     lines = ["{"]
     fields = payload.get("fields", [])
-    lines.append(
-        '  "fields": '
-        + json.dumps(fields, ensure_ascii=ensure_ascii, separators=(",", ":"))
-        + ","
-    )
+    lines.append('  "fields": ' + json.dumps(fields, ensure_ascii=ensure_ascii, separators=(",", ":")) + ",")
     lines.append('  "weeks": {')
     weeks = payload.get("weeks") or {}
     week_items = list(weeks.items())
     for i, (week_label, rows) in enumerate(week_items):
         week_comma = "," if i < len(week_items) - 1 else ""
-        lines.append(
-            "    "
-            + json.dumps(week_label, ensure_ascii=ensure_ascii)
-            + ": ["
-        )
+        lines.append("    " + json.dumps(week_label, ensure_ascii=ensure_ascii) + ": [")
         rows = rows or []
         for j, row in enumerate(rows):
             row_comma = "," if j < len(rows) - 1 else ""
-            lines.append(
-                "      "
-                + json.dumps(row, ensure_ascii=ensure_ascii, separators=(",", ":"))
-                + row_comma
-            )
+            lines.append("      " + json.dumps(row, ensure_ascii=ensure_ascii, separators=(",", ":")) + row_comma)
         lines.append("    ]" + week_comma)
     lines.append("  }")
     lines.append("}")
@@ -1859,12 +1846,7 @@ def expand_gs_calendar_cache(payload):
             expanded.append(item)
         elif isinstance(row, list):
             item = dict(meta)
-            item.update(
-                {
-                    field: (row[idx] if idx < len(row) else "")
-                    for idx, field in enumerate(fields)
-                }
-            )
+            item.update({field: (row[idx] if idx < len(row) else "") for idx, field in enumerate(fields)})
             expanded.append(item)
         else:
             expanded.append(row)
@@ -1927,10 +1909,12 @@ def expand_points_distribution(payload):
         if isinstance(item, dict):
             expanded.append(dict(item))
         elif isinstance(item, list):
-            expanded.append({
-                field: (item[idx] if idx < len(item) else None)
-                for idx, field in enumerate(_POINTS_DISTRIBUTION_FIELDS)
-            })
+            expanded.append(
+                {
+                    field: (item[idx] if idx < len(item) else None)
+                    for idx, field in enumerate(_POINTS_DISTRIBUTION_FIELDS)
+                }
+            )
         else:
             expanded.append(item)
     return expanded
@@ -2042,10 +2026,10 @@ def normalize_country_overrides(rows, name_key, country_key):
     return rows
 
 
-def load_csv_rows(file_path, delimiter=','):
+def load_csv_rows(file_path, delimiter=","):
     rows = []
     try:
-        with open(file_path, 'r', encoding='utf-8-sig') as f:
+        with open(file_path, encoding="utf-8-sig") as f:
             reader = csv.DictReader(f, delimiter=delimiter)
             for row in reader:
                 rows.append(row)

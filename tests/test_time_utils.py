@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from time_utils import (
@@ -14,31 +14,31 @@ from time_utils import (
 
 class TimeUtilsTests(unittest.TestCase):
     def test_madrid_spring_dst_transition_uses_zone_database(self):
-        before = datetime(2026, 3, 29, 0, 59, tzinfo=timezone.utc)
-        after = datetime(2026, 3, 29, 1, 0, tzinfo=timezone.utc)
+        before = datetime(2026, 3, 29, 0, 59, tzinfo=UTC)
+        after = datetime(2026, 3, 29, 1, 0, tzinfo=UTC)
         self.assertEqual(madrid_now(before).strftime("%Y-%m-%d %H:%M %z"), "2026-03-29 01:59 +0100")
         self.assertEqual(madrid_now(after).strftime("%Y-%m-%d %H:%M %z"), "2026-03-29 03:00 +0200")
 
     def test_madrid_autumn_dst_transition_uses_zone_database(self):
-        before = datetime(2026, 10, 25, 0, 59, tzinfo=timezone.utc)
-        after = datetime(2026, 10, 25, 1, 0, tzinfo=timezone.utc)
+        before = datetime(2026, 10, 25, 0, 59, tzinfo=UTC)
+        after = datetime(2026, 10, 25, 1, 0, tzinfo=UTC)
         self.assertEqual(madrid_now(before).strftime("%Y-%m-%d %H:%M %z"), "2026-10-25 02:59 +0200")
         self.assertEqual(madrid_now(after).strftime("%Y-%m-%d %H:%M %z"), "2026-10-25 02:00 +0100")
 
     def test_madrid_6pm_rule_is_correct_on_dst_start_weekend(self):
-        before = datetime(2026, 3, 29, 15, 59, tzinfo=timezone.utc)
-        after = datetime(2026, 3, 29, 16, 0, tzinfo=timezone.utc)
+        before = datetime(2026, 3, 29, 15, 59, tzinfo=UTC)
+        after = datetime(2026, 3, 29, 16, 0, tzinfo=UTC)
         self.assertFalse(madrid_now(before).hour >= 18)
         self.assertTrue(madrid_now(after).hour >= 18)
 
     def test_new_york_spring_dst_transition_uses_zone_database(self):
-        before = datetime(2026, 3, 8, 6, 59, tzinfo=timezone.utc)
-        after = datetime(2026, 3, 8, 7, 0, tzinfo=timezone.utc)
+        before = datetime(2026, 3, 8, 6, 59, tzinfo=UTC)
+        after = datetime(2026, 3, 8, 7, 0, tzinfo=UTC)
         self.assertEqual(new_york_now(before).strftime("%Y-%m-%d %H:%M %z"), "2026-03-08 01:59 -0500")
         self.assertEqual(new_york_now(after).strftime("%Y-%m-%d %H:%M %z"), "2026-03-08 03:00 -0400")
 
     def test_business_date_is_derived_at_the_madrid_boundary(self):
-        instant = datetime(2026, 1, 1, 23, 30, tzinfo=timezone.utc)
+        instant = datetime(2026, 1, 1, 23, 30, tzinfo=UTC)
         self.assertEqual(str(madrid_today(instant)), "2026-01-02")
 
     def test_timestamp_round_trip_is_aware_utc(self):

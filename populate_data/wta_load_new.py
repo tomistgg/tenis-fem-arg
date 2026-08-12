@@ -2,8 +2,8 @@ import csv
 import json
 import os
 import re
-import time
 import sys
+import time
 from datetime import timedelta
 from pathlib import Path
 
@@ -12,19 +12,21 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from time_utils import madrid_today, parse_utc_timestamp, utc_now, utc_timestamp
-from utils import (
-    save_json_file, dumps_wta_full_calendar_cache, expand_wta_calendar_cache,
-    get_cache_timestamp, set_cache_file_meta,
-)
 from canonical_data import source_match_key, sync_itf_players, sync_wta_match_players
 from http_client import get_with_retry
-from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
-from transactional_io import atomic_write_csv
 from pipeline_errors import PipelineError
 from run_state import report_run_issue
 from runtime_logging import get_logger
-
+from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
+from time_utils import madrid_today, parse_utc_timestamp, utc_now, utc_timestamp
+from transactional_io import atomic_write_csv
+from utils import (
+    dumps_wta_full_calendar_cache,
+    expand_wta_calendar_cache,
+    get_cache_timestamp,
+    save_json_file,
+    set_cache_file_meta,
+)
 
 logger = get_logger("wta-loader")
 
@@ -37,7 +39,10 @@ HEADERS = {
     "account": "wta",
     "origin": "https://www.wtatennis.com",
     "referer": "https://www.wtatennis.com/",
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+    "user-agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+    ),
 }
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -55,7 +60,7 @@ def _load_from_full_calendar_cache(from_date, to_date):
     Returns a list of tournament dicts, or None if cache is missing/stale.
     """
     try:
-        with open(_WTA_FULL_CALENDAR_CACHE_FILE, "r", encoding="utf-8") as f:
+        with open(_WTA_FULL_CALENDAR_CACHE_FILE, encoding="utf-8") as f:
             data = expand_wta_calendar_cache(json.load(f))
         fetched_at_str = get_cache_timestamp(_WTA_FULL_CALENDAR_CACHE_FILE, payload=data)
         if not fetched_at_str:
@@ -66,15 +71,18 @@ def _load_from_full_calendar_cache(from_date, to_date):
         if data.get("from", "") > from_date or data.get("to", "") < to_date:
             return None
         return [
-            t for t in (data.get("items") or [])
-            if from_date <= (t.get("startDate") or "")[:10] <= to_date
-            and t.get("level") != "Grand Slam"
+            t
+            for t in (data.get("items") or [])
+            if from_date <= (t.get("startDate") or "")[:10] <= to_date and t.get("level") != "Grand Slam"
         ]
     except FileNotFoundError:
         return None
     except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
         report_run_issue(
-            "wta-loader", "load full calendar cache", exc, severity="degraded",
+            "wta-loader",
+            "load full calendar cache",
+            exc,
+            severity="degraded",
             context={"path": _WTA_FULL_CALENDAR_CACHE_FILE},
         )
         return None
@@ -83,7 +91,7 @@ def _load_from_full_calendar_cache(from_date, to_date):
 def _load_from_window_calendar_cache(from_date, to_date):
     """Read the exact window cache written by this script, if it is still fresh."""
     try:
-        with open(WTA_CALENDAR_CACHE_FILE, "r", encoding="utf-8") as f:
+        with open(WTA_CALENDAR_CACHE_FILE, encoding="utf-8") as f:
             data = expand_wta_calendar_cache(json.load(f))
         fetched_at_str = get_cache_timestamp(WTA_CALENDAR_CACHE_FILE, payload=data)
         if not fetched_at_str:
@@ -94,32 +102,59 @@ def _load_from_window_calendar_cache(from_date, to_date):
         if data.get("from", "") > from_date or data.get("to", "") < to_date:
             return None
         return [
-            t for t in (data.get("items") or [])
-            if from_date <= (t.get("startDate") or "")[:10] <= to_date
-            and t.get("level") != "Grand Slam"
+            t
+            for t in (data.get("items") or [])
+            if from_date <= (t.get("startDate") or "")[:10] <= to_date and t.get("level") != "Grand Slam"
         ]
     except FileNotFoundError:
         return None
     except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
         report_run_issue(
-            "wta-loader", "load window calendar cache", exc, severity="degraded",
+            "wta-loader",
+            "load window calendar cache",
+            exc,
+            severity="degraded",
             context={"path": WTA_CALENDAR_CACHE_FILE},
         )
         return None
 
+
 CSV_COLUMNS = [
-    "matchType", "matchId", "date", "tournamentId",
-    "tournamentName", "tournamentCategory", "surface", "inOrOutdoor", "tournamentCountry",
-    "roundName", "draw", "result", "resultStatusDesc",
-    "winnerId", "winnerEntry", "winnerSeed", "winnerName", "winnerCountry",
-    "loserId", "loserEntry", "loserSeed", "loserName", "loserCountry",
+    "matchType",
+    "matchId",
+    "date",
+    "tournamentId",
+    "tournamentName",
+    "tournamentCategory",
+    "surface",
+    "inOrOutdoor",
+    "tournamentCountry",
+    "roundName",
+    "draw",
+    "result",
+    "resultStatusDesc",
+    "winnerId",
+    "winnerEntry",
+    "winnerSeed",
+    "winnerName",
+    "winnerCountry",
+    "loserId",
+    "loserEntry",
+    "loserSeed",
+    "loserName",
+    "loserCountry",
 ]
 
 
 MAIN_DRAW_ROUND_MAP = {
-    "1": "1st Round", "2": "2nd Round", "3": "3rd Round",
-    "4": "4th Round", "5": "5th Round",
-    "Q": "Quarter-finals", "S": "Semi-finals", "F": "Final",
+    "1": "1st Round",
+    "2": "2nd Round",
+    "3": "3rd Round",
+    "4": "4th Round",
+    "5": "5th Round",
+    "Q": "Quarter-finals",
+    "S": "Semi-finals",
+    "F": "Final",
 }
 
 
@@ -188,16 +223,13 @@ def fetch_tournaments_for_range(from_date, to_date):
 def build_meta(t):
     title = t.get("title", "")
     country = t.get("country", "")
-    if country and title.endswith(f", {country}"):
-        name = title[: -len(f", {country}")]
-    else:
-        name = title
+    name = title[: -len(f", {country}")] if country and title.endswith(f", {country}") else title
     return {
-        "tournamentName":     name,
+        "tournamentName": name,
         "tournamentCategory": t.get("level", ""),
-        "surface":            t.get("surface", ""),
-        "inOrOutdoor":        t.get("inOutdoor", ""),
-        "tournamentCountry":  country,
+        "surface": t.get("surface", ""),
+        "inOrOutdoor": t.get("inOutdoor", ""),
+        "tournamentCountry": country,
     }
 
 
@@ -209,7 +241,7 @@ def format_score(score_string):
         return "W/O"
     normalized = score_string.replace(",", " ").replace("Ret'd", "ret.").replace("ret'd", "ret.")
     # Convert compact set notation like "60" to "6-0".
-    return re.sub(r'(?<!\S)(\d{2})(?!\S)', lambda m: f"{m.group(1)[0]}-{m.group(1)[1]}", normalized)
+    return re.sub(r"(?<!\S)(\d{2})(?!\S)", lambda m: f"{m.group(1)[0]}-{m.group(1)[1]}", normalized)
 
 
 def get_status_desc(result):
@@ -226,26 +258,26 @@ def parse_match(m, meta, q_map=None):
     winner = str(m.get("Winner", ""))
 
     if winner in ("2", "4", "6"):
-        w_id      = m.get("PlayerIDA", "")
-        w_entry   = m.get("EntryTypeA", "").upper()
-        w_seed    = m.get("SeedA", "")
-        w_name    = f"{m.get('PlayerNameFirstA', '')} {m.get('PlayerNameLastA', '')}".strip()
+        w_id = m.get("PlayerIDA", "")
+        w_entry = m.get("EntryTypeA", "").upper()
+        w_seed = m.get("SeedA", "")
+        w_name = f"{m.get('PlayerNameFirstA', '')} {m.get('PlayerNameLastA', '')}".strip()
         w_country = m.get("PlayerCountryA", "")
-        l_id      = m.get("PlayerIDB", "")
-        l_entry   = m.get("EntryTypeB", "").upper()
-        l_seed    = m.get("SeedB", "")
-        l_name    = f"{m.get('PlayerNameFirstB', '')} {m.get('PlayerNameLastB', '')}".strip()
+        l_id = m.get("PlayerIDB", "")
+        l_entry = m.get("EntryTypeB", "").upper()
+        l_seed = m.get("SeedB", "")
+        l_name = f"{m.get('PlayerNameFirstB', '')} {m.get('PlayerNameLastB', '')}".strip()
         l_country = m.get("PlayerCountryB", "")
     else:
-        w_id      = m.get("PlayerIDB", "")
-        w_entry   = m.get("EntryTypeB", "").upper()
-        w_seed    = m.get("SeedB", "")
-        w_name    = f"{m.get('PlayerNameFirstB', '')} {m.get('PlayerNameLastB', '')}".strip()
+        w_id = m.get("PlayerIDB", "")
+        w_entry = m.get("EntryTypeB", "").upper()
+        w_seed = m.get("SeedB", "")
+        w_name = f"{m.get('PlayerNameFirstB', '')} {m.get('PlayerNameLastB', '')}".strip()
         w_country = m.get("PlayerCountryB", "")
-        l_id      = m.get("PlayerIDA", "")
-        l_entry   = m.get("EntryTypeA", "").upper()
-        l_seed    = m.get("SeedA", "")
-        l_name    = f"{m.get('PlayerNameFirstA', '')} {m.get('PlayerNameLastA', '')}".strip()
+        l_id = m.get("PlayerIDA", "")
+        l_entry = m.get("EntryTypeA", "").upper()
+        l_seed = m.get("SeedA", "")
+        l_name = f"{m.get('PlayerNameFirstA', '')} {m.get('PlayerNameLastA', '')}".strip()
         l_country = m.get("PlayerCountryA", "")
 
     timestamp = m.get("MatchTimeStamp", "")
@@ -259,29 +291,29 @@ def parse_match(m, meta, q_map=None):
         status_desc = "Walkover"
 
     return {
-        "matchType":          "WTA",
-        "matchId":            m.get("MatchID", ""),
-        "date":               date,
-        "tournamentId":       m.get("EventID", ""),
-        "tournamentName":     meta["tournamentName"],
+        "matchType": "WTA",
+        "matchId": m.get("MatchID", ""),
+        "date": date,
+        "tournamentId": m.get("EventID", ""),
+        "tournamentName": meta["tournamentName"],
         "tournamentCategory": meta["tournamentCategory"],
-        "surface":            meta["surface"],
-        "inOrOutdoor":        meta["inOrOutdoor"],
-        "tournamentCountry":  meta["tournamentCountry"],
-        "roundName":          _map_round(m.get("RoundID", ""), m.get("DrawLevelType", ""), q_map),
-        "draw":               m.get("DrawLevelType", ""),
-        "result":             result,
-        "resultStatusDesc":   status_desc,
-        "winnerId":           w_id,
-        "winnerEntry":        w_entry,
-        "winnerSeed":         w_seed,
-        "winnerName":         w_name,
-        "winnerCountry":      w_country,
-        "loserId":            l_id,
-        "loserEntry":         l_entry,
-        "loserSeed":          l_seed,
-        "loserName":          l_name,
-        "loserCountry":       l_country,
+        "surface": meta["surface"],
+        "inOrOutdoor": meta["inOrOutdoor"],
+        "tournamentCountry": meta["tournamentCountry"],
+        "roundName": _map_round(m.get("RoundID", ""), m.get("DrawLevelType", ""), q_map),
+        "draw": m.get("DrawLevelType", ""),
+        "result": result,
+        "resultStatusDesc": status_desc,
+        "winnerId": w_id,
+        "winnerEntry": w_entry,
+        "winnerSeed": w_seed,
+        "winnerName": w_name,
+        "winnerCountry": w_country,
+        "loserId": l_id,
+        "loserEntry": l_entry,
+        "loserSeed": l_seed,
+        "loserName": l_name,
+        "loserCountry": l_country,
     }
 
 
@@ -304,7 +336,7 @@ def load_existing_match_ids(output_file):
     if not os.path.exists(output_file):
         return set()
     ids = set()
-    with open(output_file, "r", encoding="utf-8-sig") as f:
+    with open(output_file, encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         for row in reader:
             ids.add(source_match_key(row, "wta"))
@@ -315,7 +347,7 @@ def append_to_csv(new_rows, output_file):
     """Merge WTA rows by natural key and replace the whole CSV atomically."""
     rows = []
     if os.path.exists(output_file):
-        with open(output_file, "r", newline="", encoding="utf-8-sig") as handle:
+        with open(output_file, newline="", encoding="utf-8-sig") as handle:
             reader = csv.DictReader(handle)
             if reader.fieldnames is None:
                 raise ValueError(f"WTA match CSV has no header: {output_file}")
@@ -355,11 +387,15 @@ if __name__ == "__main__":
             context={"from": from_date_str, "to": to_date_str},
         )
 
-    save_json_file(WTA_CALENDAR_CACHE_FILE, {
-        "from": from_date_str,
-        "to": to_date_str,
-        "items": tournaments,
-    }, formatter=dumps_wta_full_calendar_cache)
+    save_json_file(
+        WTA_CALENDAR_CACHE_FILE,
+        {
+            "from": from_date_str,
+            "to": to_date_str,
+            "items": tournaments,
+        },
+        formatter=dumps_wta_full_calendar_cache,
+    )
     set_cache_file_meta(
         WTA_CALENDAR_CACHE_FILE,
         fetchedAt=utc_timestamp(),
@@ -377,10 +413,7 @@ if __name__ == "__main__":
 
         # Determine tournament year from startDate
         start_date = t.get("startDate", "")
-        if start_date:
-            t_year = int(start_date[:4])
-        else:
-            t_year = today.year
+        t_year = int(start_date[:4]) if start_date else today.year
 
         try:
             raw_matches = fetch_matches(t_id, t_year)
@@ -389,7 +422,8 @@ if __name__ == "__main__":
             continue
 
         arg_matches = [
-            m for m in raw_matches
+            m
+            for m in raw_matches
             if m.get("MatchState") == "F"
             and m.get("DrawMatchType") == "S"
             and (m.get("PlayerCountryA") == "ARG" or m.get("PlayerCountryB") == "ARG")

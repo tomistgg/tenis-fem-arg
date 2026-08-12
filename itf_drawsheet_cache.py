@@ -12,13 +12,16 @@ cron fires two hours later.
 import json
 import os
 
-from time_utils import parse_utc_timestamp, utc_now, utc_timestamp
-from runtime_paths import DATA_DIR
 from pipeline_errors import DataValidationError
+from runtime_paths import DATA_DIR
+from time_utils import parse_utc_timestamp, utc_now, utc_timestamp
 from utils import (
-    save_json_file, dumps_itf_drawsheets_cache,
+    dumps_itf_drawsheets_cache,
     expand_itf_drawsheet_cache,
-    get_cache_timestamp, set_cache_entry_meta, remove_cache_entry_meta,
+    get_cache_timestamp,
+    remove_cache_entry_meta,
+    save_json_file,
+    set_cache_entry_meta,
 )
 
 _CACHE_FILE = os.path.join(DATA_DIR, "itf_drawsheets_cache.json")
@@ -34,7 +37,7 @@ def _load_raw_cache():
     if not os.path.exists(_CACHE_FILE):
         return {}
     try:
-        with open(_CACHE_FILE, "r", encoding="utf-8") as f:
+        with open(_CACHE_FILE, encoding="utf-8") as f:
             raw = json.load(f)
     except (OSError, json.JSONDecodeError) as exc:
         raise DataValidationError(
@@ -74,7 +77,7 @@ def _parse_ts(ts_str):
         return None
     try:
         return parse_utc_timestamp(ts_str)
-    except Exception:
+    except (TypeError, ValueError):
         return None
 
 

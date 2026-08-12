@@ -7,20 +7,19 @@ import os
 import time
 from datetime import date, datetime, timedelta
 
+from calendar_builder import get_previous_monday
+from http_client import get_with_retry
+from pipeline_errors import DataValidationError, PipelineError
+from run_state import report_run_issue
+from runtime_logging import get_logger
+from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
+from time_utils import madrid_today
 from utils import (
-    normalize_player_name,
-    save_json_file,
     compress_tstrength_cache,
     expand_tstrength_cache,
+    normalize_player_name,
+    save_json_file,
 )
-from calendar_builder import get_previous_monday
-from time_utils import madrid_today
-from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
-from pipeline_errors import DataValidationError
-from pipeline_errors import PipelineError
-from run_state import report_run_issue
-from http_client import get_with_retry
-from runtime_logging import get_logger
 
 logger = get_logger("tstrength")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -52,43 +51,105 @@ def _is_ignored_tournament(name):
 # Map country codes to regions
 _REGION_MAP = {
     # North America
-    "USA": "North America", "CAN": "North America", "MEX": "North America",
+    "USA": "North America",
+    "CAN": "North America",
+    "MEX": "North America",
     # Central America & Caribbean
-    "CRC": "Central America", "PAN": "Central America", "DOM": "Caribbean",
-    "PUR": "Caribbean", "JAM": "Caribbean", "CUB": "Caribbean",
+    "CRC": "Central America",
+    "PAN": "Central America",
+    "DOM": "Caribbean",
+    "PUR": "Caribbean",
+    "JAM": "Caribbean",
+    "CUB": "Caribbean",
     # South America
-    "ARG": "South America", "BRA": "South America", "CHI": "South America",
-    "COL": "South America", "PER": "South America", "ECU": "South America",
-    "URU": "South America", "VEN": "South America", "PAR": "South America",
+    "ARG": "South America",
+    "BRA": "South America",
+    "CHI": "South America",
+    "COL": "South America",
+    "PER": "South America",
+    "ECU": "South America",
+    "URU": "South America",
+    "VEN": "South America",
+    "PAR": "South America",
     "BOL": "South America",
     # Europe
-    "GBR": "Europe", "FRA": "Europe", "GER": "Europe", "ESP": "Europe",
-    "ITA": "Europe", "NED": "Europe", "BEL": "Europe", "SUI": "Europe",
-    "AUT": "Europe", "CZE": "Europe", "POL": "Europe", "ROU": "Europe",
-    "HUN": "Europe", "SVK": "Europe", "CRO": "Europe", "SRB": "Europe",
-    "SLO": "Europe", "BUL": "Europe", "GRE": "Europe", "POR": "Europe",
-    "SWE": "Europe", "NOR": "Europe", "DEN": "Europe", "FIN": "Europe",
-    "IRL": "Europe", "RUS": "Europe", "UKR": "Europe", "BLR": "Europe",
-    "LTU": "Europe", "LAT": "Europe", "EST": "Europe", "LUX": "Europe",
-    "MON": "Europe", "MNE": "Europe", "BIH": "Europe", "MKD": "Europe",
-    "ALB": "Europe", "GEO": "Europe", "ARM": "Europe", "CYP": "Europe",
-    "MLT": "Europe", "ISR": "Europe", "TUR": "Europe",
+    "GBR": "Europe",
+    "FRA": "Europe",
+    "GER": "Europe",
+    "ESP": "Europe",
+    "ITA": "Europe",
+    "NED": "Europe",
+    "BEL": "Europe",
+    "SUI": "Europe",
+    "AUT": "Europe",
+    "CZE": "Europe",
+    "POL": "Europe",
+    "ROU": "Europe",
+    "HUN": "Europe",
+    "SVK": "Europe",
+    "CRO": "Europe",
+    "SRB": "Europe",
+    "SLO": "Europe",
+    "BUL": "Europe",
+    "GRE": "Europe",
+    "POR": "Europe",
+    "SWE": "Europe",
+    "NOR": "Europe",
+    "DEN": "Europe",
+    "FIN": "Europe",
+    "IRL": "Europe",
+    "RUS": "Europe",
+    "UKR": "Europe",
+    "BLR": "Europe",
+    "LTU": "Europe",
+    "LAT": "Europe",
+    "EST": "Europe",
+    "LUX": "Europe",
+    "MON": "Europe",
+    "MNE": "Europe",
+    "BIH": "Europe",
+    "MKD": "Europe",
+    "ALB": "Europe",
+    "GEO": "Europe",
+    "ARM": "Europe",
+    "CYP": "Europe",
+    "MLT": "Europe",
+    "ISR": "Europe",
+    "TUR": "Europe",
     # Asia
-    "CHN": "Asia", "JPN": "Asia", "KOR": "Asia", "TPE": "Asia",
-    "HKG": "Asia", "THA": "Asia", "IND": "Asia", "KAZ": "Asia",
-    "UZB": "Asia", "MAS": "Asia", "SGP": "Asia", "INA": "Asia",
-    "PHI": "Asia", "VIE": "Asia", "MYA": "Asia",
+    "CHN": "Asia",
+    "JPN": "Asia",
+    "KOR": "Asia",
+    "TPE": "Asia",
+    "HKG": "Asia",
+    "THA": "Asia",
+    "IND": "Asia",
+    "KAZ": "Asia",
+    "UZB": "Asia",
+    "MAS": "Asia",
+    "SGP": "Asia",
+    "INA": "Asia",
+    "PHI": "Asia",
+    "VIE": "Asia",
+    "MYA": "Asia",
     # Middle East
-    "UAE": "Middle East", "QAT": "Middle East", "KSA": "Middle East",
-    "BRN": "Middle East", "KUW": "Middle East", "OMA": "Middle East",
+    "UAE": "Middle East",
+    "QAT": "Middle East",
+    "KSA": "Middle East",
+    "BRN": "Middle East",
+    "KUW": "Middle East",
+    "OMA": "Middle East",
     # Oceania
-    "AUS": "Oceania", "NZL": "Oceania",
+    "AUS": "Oceania",
+    "NZL": "Oceania",
     # Africa
-    "RSA": "Africa", "MAR": "Africa", "TUN": "Africa", "EGY": "Africa",
-    "NGR": "Africa", "KEN": "Africa",
+    "RSA": "Africa",
+    "MAR": "Africa",
+    "TUN": "Africa",
+    "EGY": "Africa",
+    "NGR": "Africa",
+    "KEN": "Africa",
 }
-
-
 
 
 def _resolve_ranking_week(start_date, draw, rankings_index, available_weeks):
@@ -183,23 +244,28 @@ def _fetch_tournaments_range(year, from_date, to_date):
                 start_date = t.get("startDate", "")[:10]
                 surface = t.get("surface") or t.get("surfaceType") or t.get("surfaceCode") or ""
                 country = t.get("countryCode") or t.get("country") or t.get("hostCountryCode") or ""
-                result.append({
-                    "id": str(tid),
-                    "name": raw_name,
-                    "city": city,
-                    "level": level,
-                    "startDate": start_date,
-                    "surface": surface,
-                    "country": country,
-                    "year": str(year),
-                })
+                result.append(
+                    {
+                        "id": str(tid),
+                        "name": raw_name,
+                        "city": city,
+                        "level": level,
+                        "startDate": start_date,
+                        "surface": surface,
+                        "country": country,
+                        "year": str(year),
+                    }
+                )
             page += 1
         except PipelineError as e:
             logger.error(f"Error fetching tournaments ({from_date} to {to_date}, page {page}): {e}")
             return []
         except Exception as e:
             report_run_issue(
-                "tstrength", "parse tournament page", e, severity="degraded",
+                "tstrength",
+                "parse tournament page",
+                e,
+                severity="degraded",
                 context={"from": from_date, "to": to_date, "page": page},
             )
             return []
@@ -226,7 +292,10 @@ def _fetch_tournament_matches(tournament_id, year="2025"):
         return None
     except Exception as e:
         report_run_issue(
-            "tstrength", "parse tournament matches", e, severity="degraded",
+            "tstrength",
+            "parse tournament matches",
+            e,
+            severity="degraded",
             context={"tournament_id": str(tournament_id), "year": str(year)},
         )
         return None
@@ -286,9 +355,7 @@ def _needs_refresh(cached_entry):
     rankings = cached_entry.get("rankings")
     if isinstance(rankings, list) and len(rankings) == 0:
         return True
-    if isinstance(rankings, list) and rankings and all(r == DEFAULT_RANK for r in rankings):
-        return True
-    return False
+    return bool(isinstance(rankings, list) and rankings and all(r == DEFAULT_RANK for r in rankings))
 
 
 def build_tstrength_data(from_year=None, full_backfill=False):
@@ -347,9 +414,7 @@ def build_tstrength_data(from_year=None, full_backfill=False):
                 tournaments_to_consider.extend(_fetch_tournaments_range(ys, f"{ys}-01-01", today_str))
             else:
                 logger.debug(f"Fetching {ys} tournaments (full year)...")
-                tournaments_to_consider.extend(
-                    _fetch_tournaments_range(ys, f"{ys}-01-01", f"{ys}-12-31")
-                )
+                tournaments_to_consider.extend(_fetch_tournaments_range(ys, f"{ys}-01-01", f"{ys}-12-31"))
         logger.info(f"  Found {len(tournaments_to_consider)} tournaments in range")
     else:
         # Auto-backfill: if a run was missed for >3 weeks, widen the window so we still pick up
@@ -366,7 +431,7 @@ def build_tstrength_data(from_year=None, full_backfill=False):
                 continue
             try:
                 dt = datetime.strptime(sd, "%Y-%m-%d").date()
-            except Exception:
+            except (TypeError, ValueError):
                 continue
             if last_dt is None or dt > last_dt:
                 last_dt = dt
@@ -437,15 +502,21 @@ def build_tstrength_data(from_year=None, full_backfill=False):
                 cache_key = f"{yr}_{tid}_{draw}"
                 if (not players) or (not participants_locked):
                     cache[cache_key] = {
-                        "id": tid, "name": t["name"], "city": t["city"],
-                        "level": t["level"], "startDate": t["startDate"],
+                        "id": tid,
+                        "name": t["name"],
+                        "city": t["city"],
+                        "level": t["level"],
+                        "startDate": t["startDate"],
                         "surface": surface,
                         "country": country,
                         "region": region,
                         "year": yr,
                         "draw": draw,
                         "participantsLocked": False,
-                        "rankings": [], "hm": 0, "gm": 0, "playerCount": 0
+                        "rankings": [],
+                        "hm": 0,
+                        "gm": 0,
+                        "playerCount": 0,
                     }
                     continue
 
@@ -504,7 +575,8 @@ def build_tstrength_data(from_year=None, full_backfill=False):
 
     # Return all cached entries with actual players
     results = [
-        e for e in cache.values()
+        e
+        for e in cache.values()
         if (not _is_ignored_tournament(e.get("name", "")))
         and e.get("playerCount", 0) > 0
         and (e.get("participantsLocked") is not False)

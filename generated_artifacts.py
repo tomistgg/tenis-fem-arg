@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-
 GENERATED_DATA_PATTERNS = (
     "history_data_bundle.js",
     "player_aliases_wta_itf_bundle.js",

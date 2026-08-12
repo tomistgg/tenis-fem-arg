@@ -3,41 +3,53 @@ import sys
 
 from python_bootstrap import ensure_project_environment
 
-
 ensure_project_environment(os.path.dirname(os.path.abspath(__file__)))
 if "--check-environment" in sys.argv:
     print(f"WTARG environment ready: {sys.executable} (Python {sys.version.split()[0]})")
     raise SystemExit(0)
 
 import argparse
-import json
-import io
-import html
 import copy
-import pandas as pd
 import csv
+import html
+import io
+import json
 import random
 import re
 import shutil
-import time
 import subprocess
+import time
 from datetime import datetime, timedelta
+
+import pandas as pd
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-from time_utils import MADRID, madrid_now, madrid_today, utc_now, utc_timestamp
-from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
-from runtime_logging import configure_logging, get_logger
+
 from pipeline_errors import DataValidationError
 from run_state import report_run_issue
+from runtime_logging import configure_logging, get_logger
+from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
+from time_utils import MADRID, madrid_now, madrid_today, utc_now, utc_timestamp
 
 try:
     import undetected_chromedriver as uc
+
     uc.Chrome.__del__ = lambda self: None
 except Exception:
     uc = None
 
+import contextlib
+
+from calendar_builder import (
+    build_calendar_data,
+    format_week_label,
+    generate_dynamic_monday_map,
+    get_calendar_tournament_key,
+    get_monday_offset,
+    get_previous_monday,
+)
 from config import (
     ENTRY_LISTS_CACHE_FILE,
     ITF_ACCEPTANCE_STATE_FILE,
@@ -46,46 +58,58 @@ from config import (
     resolve_player_display_name,
     resolve_player_presentation_name,
 )
-from utils import (
-    fix_encoding, fix_encoding_keep_accents,
-    load_cache, save_cache, merge_entry_list,
-    save_json_file,
-    expand_entry_lists_cache,
-    expand_draws_store_cache,
-    compress_tournament_snapshot, compress_draws_snapshot,
-    compress_calendar_snapshot, dumps_calendar_snapshot,
-    normalize_country_overrides,
-    format_player_name, dumps_draws_store_cache, dumps_entry_lists_cache,
-    get_cache_timestamp, set_cache_entry_meta, get_cache_entry_meta,
-    is_draw_completed, mark_draw_completed, utc_now_iso,
-)
-from calendar_builder import (
-    get_monday_offset, generate_dynamic_monday_map,
-    build_calendar_data, format_week_label, get_previous_monday,
-    get_calendar_tournament_key
-)
-from wta import (
-    build_tournament_groups, get_full_wta_calendar,
-    get_wta_rankings_cached, scrape_tournament_players,
-    get_draws_tournament_list, _load_wta_csv
-)
+from draws import _draw_is_complete, fetch_itf_tournament_draws, fetch_tournament_draws
 from itf import (
-    get_full_itf_calendar, get_itf_players,
-    get_dynamic_itf_calendar, get_itf_rankings_cached,
-    get_itf_level, parse_itf_entry_list,
-    get_draws_itf_tournament_list, _load_itf_event_filters_cache
+    _load_itf_event_filters_cache,
+    get_draws_itf_tournament_list,
+    get_dynamic_itf_calendar,
+    get_full_itf_calendar,
+    get_itf_level,
+    get_itf_players,
+    get_itf_rankings_cached,
+    parse_itf_entry_list,
 )
-from draws import fetch_tournament_draws, fetch_itf_tournament_draws, _draw_is_complete
 from itf_drawsheet_cache import (
     tournament_draw_codes_with_definitive_no_nationality,
     tournament_ids_with_published_main_draw,
 )
-from tstrength import build_tstrength_data
 from tournament_snapshot import (
     TournamentSnapshotRecord,
     dumps_tournament_snapshot,
     normalize_tournament_snapshot_key,
     normalize_tournament_snapshot_record,
+)
+from tstrength import build_tstrength_data
+from utils import (
+    compress_calendar_snapshot,
+    compress_draws_snapshot,
+    compress_tournament_snapshot,
+    dumps_calendar_snapshot,
+    dumps_draws_store_cache,
+    dumps_entry_lists_cache,
+    expand_draws_store_cache,
+    expand_entry_lists_cache,
+    fix_encoding,
+    fix_encoding_keep_accents,
+    format_player_name,
+    get_cache_timestamp,
+    is_draw_completed,
+    load_cache,
+    mark_draw_completed,
+    merge_entry_list,
+    normalize_country_overrides,
+    save_cache,
+    save_json_file,
+    set_cache_entry_meta,
+    utc_now_iso,
+)
+from wta import (
+    _load_wta_csv,
+    build_tournament_groups,
+    get_draws_tournament_list,
+    get_full_wta_calendar,
+    get_wta_rankings_cached,
+    scrape_tournament_players,
 )
 
 logger = get_logger("main")
@@ -102,6 +126,8 @@ HOURLY_PREFLIGHT_SCRIPTS = (
     ("WTA loader", os.path.join(BASE_DIR, "populate_data", "wta_load_new.py")),
     ("draw sizes updater", os.path.join(BASE_DIR, "populate_data", "tournament_sizes_update.py")),
 )
+
+
 def _subprocess_env():
     env = os.environ.copy()
     # Keep child scripts from crashing on Windows when they print Unicode status text.
@@ -194,7 +220,7 @@ def _get_chrome_major_version():
     for cmd in commands:
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, text=True, timeout=5)
-        except Exception:
+        except (OSError, subprocess.SubprocessError, UnicodeError):
             continue
         match = re.search(r"(\d+)\.", output or "")
         if match:
@@ -240,9 +266,7 @@ def _is_excluded_entry_list_tournament(t_key, t_info=None):
     name_text = str((t_info or {}).get("name") or "").lower()
     if any(f"/tournaments/{tid}/" in key_text for tid in EXCLUDED_ENTRY_LIST_TOURNAMENT_IDS):
         return True
-    if "roland garros" in name_text:
-        return True
-    return False
+    return "roland garros" in name_text
 
 
 def _is_excluded_draw_tournament(t_key, t_info=None):
@@ -251,9 +275,7 @@ def _is_excluded_draw_tournament(t_key, t_info=None):
     name_text = str((t_info or {}).get("name") or "").lower()
     if any(f"/tournaments/{tid}/" in key_text for tid in EXCLUDED_DRAWS_TOURNAMENT_IDS):
         return True
-    if "roland garros" in name_text or "wimbledon" in name_text:
-        return True
-    return False
+    return bool("roland garros" in name_text or "wimbledon" in name_text)
 
 
 def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
@@ -268,8 +290,9 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
 
     Returns (main_players, alt_players[:alt_limit]).
     """
-    import pdfplumber
     import re
+
+    import pdfplumber
 
     _STATUS_FLAGS = frozenset(["F", "A", "S", "None", "WC", "SE", "LL"])
     _ENTRY_FLAGS = frozenset(["WC", "SE", "LL", "A"])
@@ -416,7 +439,7 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
             return None
         rank_num = int(tokens[rank_idx])
         has_sr = rank_idx > 0 and tokens[rank_idx - 1].upper() == "SR"
-        name_tokens = tokens[:rank_idx - 1] if has_sr else tokens[:rank_idx]
+        name_tokens = tokens[: rank_idx - 1] if has_sr else tokens[:rank_idx]
         name_tokens, country, entry = _split_name_tail(name_tokens)
         raw_name = " ".join(name_tokens).strip()
         raw_name, country = _clean_wimbledon_name(raw_name, country)
@@ -456,7 +479,7 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
                 country = _normalize_pdf_country(m.group("country") or "")
                 entry = (m.group("entry") or "").upper().strip()
                 rank_num = int(m.group("rank"))
-            except Exception:
+            except (AttributeError, TypeError, ValueError):
                 continue
             if not raw_name:
                 continue
@@ -547,7 +570,7 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
         if end >= 2 and re.match(r"^[A-Z]{2,3}$", tokens[end]):
             country = _normalize_pdf_country(tokens[end])
             end -= 1
-        name_parts = tokens[2:end + 1]
+        name_parts = tokens[2 : end + 1]
         if not name_parts:
             return None
         name, country = _clean_wimbledon_name(" ".join(name_parts), country)
@@ -615,8 +638,21 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
                 if not saw_country_marker:
                     lowered_parts = [p.lower() for p in name_parts]
                     month_tokens = {
-                        "janvier", "fevrier", "février", "mars", "avril", "mai", "juin",
-                        "juillet", "aout", "août", "septembre", "octobre", "novembre", "decembre", "décembre"
+                        "janvier",
+                        "fevrier",
+                        "février",
+                        "mars",
+                        "avril",
+                        "mai",
+                        "juin",
+                        "juillet",
+                        "aout",
+                        "août",
+                        "septembre",
+                        "octobre",
+                        "novembre",
+                        "decembre",
+                        "décembre",
                     }
                     if "-" in name_parts:
                         continue
@@ -646,16 +682,18 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
                 for pos_num, name, country, entry, rank_num in _parse_compact_entry_list_line(line_text):
                     if not country:
                         with_country_missing += 1
-                    compact_main.append({
-                        "name": _format_player_name(name),
-                        "country": country,
-                        "entry": entry,
-                        "rank_num": rank_num,
-                        "rank": str(rank_num),
-                        "pos": str(pos_num),
-                        "pos_num": pos_num,
-                        "type": "MAIN",
-                    })
+                    compact_main.append(
+                        {
+                            "name": _format_player_name(name),
+                            "country": country,
+                            "entry": entry,
+                            "rank_num": rank_num,
+                            "rank": str(rank_num),
+                            "pos": str(pos_num),
+                            "pos_num": pos_num,
+                            "type": "MAIN",
+                        }
+                    )
 
         compact_main.sort(key=lambda p: p["pos_num"])
         for i, p in enumerate(compact_main, 1):
@@ -678,8 +716,7 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
             struck_segments = [
                 segment
                 for segment in [*(page.rects or []), *(page.lines or [])]
-                if segment.get("height", 99) < 2
-                and 8 < segment.get("width", 0) < 200
+                if segment.get("height", 99) < 2 and 8 < segment.get("width", 0) < 200
             ]
 
             words = page.extract_words(keep_blank_chars=False, x_tolerance=2, y_tolerance=2)
@@ -691,28 +728,21 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
             for _, line_words in sorted(lines.items()):
                 line_words.sort(key=lambda word: float(word["x0"]))
                 rank_words = [
-                    word for word in line_words
-                    if float(word["x0"]) < 100 and re.fullmatch(r"\d{1,4}", word["text"])
+                    word for word in line_words if float(word["x0"]) < 100 and re.fullmatch(r"\d{1,4}", word["text"])
                 ]
                 if len(rank_words) != 1:
                     continue
 
-                name_words = [
-                    word["text"] for word in line_words
-                    if 140 <= float(word["x0"]) < 310
-                ]
+                name_words = [word["text"] for word in line_words if 140 <= float(word["x0"]) < 310]
                 if not name_words:
                     continue
 
                 rank_num = int(rank_words[0]["text"])
                 has_special_rank = any(
-                    word["text"].upper() == "S" and 100 <= float(word["x0"]) < 140
-                    for word in line_words
+                    word["text"].upper() == "S" and 100 <= float(word["x0"]) < 140 for word in line_words
                 )
                 raw_name = re.sub(r"\s*\*\s*$", "", " ".join(name_words)).strip()
-                country_text = " ".join(
-                    word["text"] for word in line_words if float(word["x0"]) >= 310
-                ).strip()
+                country_text = " ".join(word["text"] for word in line_words if float(word["x0"]) >= 310).strip()
                 country = _PDF_COUNTRY_NORMALIZE.get(country_text.upper(), "")
                 if not raw_name:
                     continue
@@ -724,15 +754,17 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
 
                 target = parsed_alt if section == "ALT" else parsed_main
                 pos_num = len(target) + 1
-                target.append({
-                    "name": _format_player_name(raw_name),
-                    "country": country,
-                    "rank_num": rank_num,
-                    "rank": f"SR {rank_num}" if has_special_rank else str(rank_num),
-                    "pos": str(pos_num),
-                    "pos_num": pos_num,
-                    "type": section,
-                })
+                target.append(
+                    {
+                        "name": _format_player_name(raw_name),
+                        "country": country,
+                        "rank_num": rank_num,
+                        "rank": f"SR {rank_num}" if has_special_rank else str(rank_num),
+                        "pos": str(pos_num),
+                        "pos_num": pos_num,
+                        "type": section,
+                    }
+                )
 
         # USTA leaves withdrawn direct acceptances struck through in place and
         # moves the first eligible alternates into the main draw. Keep the main
@@ -757,9 +789,7 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
         col_x0 = min(float(w["x0"]) for w in col_words)
         col_x1 = max(float(w.get("x1", w["x0"])) for w in col_words)
         return any(
-            r["top"] <= y_mid <= r["bottom"]
-            and r["x0"] < col_x1
-            and r["x0"] + r.get("width", 0) > col_x0
+            r["top"] <= y_mid <= r["bottom"] and r["x0"] < col_x1 and r["x0"] + r.get("width", 0) > col_x0
             for r in struck_rects
         )
 
@@ -775,10 +805,7 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
 
         for page in pdf.pages:
             mid_x = page.width / 2
-            struck_rects = [
-                r for r in (page.rects or [])
-                if r.get("height", 99) < 2 and 8 < r.get("width", 0) < 200
-            ]
+            struck_rects = [r for r in (page.rects or []) if r.get("height", 99) < 2 and 8 < r.get("width", 0) < 200]
 
             words = page.extract_words(keep_blank_chars=False, x_tolerance=3, y_tolerance=3)
             lines = {}
@@ -786,7 +813,7 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
                 y = round(float(w["top"]), 1)
                 lines.setdefault(y, []).append(w)
 
-            for y_top, word_list in sorted(lines.items()):
+            for _y_top, word_list in sorted(lines.items()):
                 word_list.sort(key=lambda w: float(w["x0"]))
                 line_text = " ".join(w["text"] for w in word_list).strip()
                 if not line_text:
@@ -843,10 +870,7 @@ def _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=10):
                         player["type"] = "ALT"
                         alt_players.append(player)
 
-    all_main = (
-        sorted(main_players, key=lambda p: p["pos_num"])
-        + sorted(moved_in_players, key=lambda p: p["pos_num"])
-    )
+    all_main = sorted(main_players, key=lambda p: p["pos_num"]) + sorted(moved_in_players, key=lambda p: p["pos_num"])
     for i, p in enumerate(all_main, 1):
         p["pos"] = str(i)
         p["pos_num"] = i
@@ -883,6 +907,7 @@ def _build_wta_country_lookup():
     if _wta_country_lookup_cache is not None:
         return _wta_country_lookup_cache
     from config import WTA_RANKINGS_CSV, WTA_RANKINGS_CSV_10_19, _lookup_keys
+
     player_latest = {}  # upper_name → (week_date, country)
     for csv_path in [WTA_RANKINGS_CSV, WTA_RANKINGS_CSV_10_19]:
         if not os.path.exists(csv_path):
@@ -947,20 +972,10 @@ def _canonicalize_player_names(players, source="", names_only=False):
         if not raw_name:
             continue
         player_id = str(
-            player.get("player_id")
-            or player.get("itf_id")
-            or player.get("wta_id")
-            or player.get("playerId")
-            or ""
+            player.get("player_id") or player.get("itf_id") or player.get("wta_id") or player.get("playerId") or ""
         ).strip()
-        resolver = (
-            resolve_player_presentation_name
-            if names_only
-            else resolve_player_display_name
-        )
-        mapped_name = resolver(
-            source, player_id=player_id, name=raw_name
-        )
+        resolver = resolve_player_presentation_name if names_only else resolve_player_display_name
+        mapped_name = resolver(source, player_id=player_id, name=raw_name)
         if mapped_name != raw_name:
             player["name"] = mapped_name
             changed += 1
@@ -989,10 +1004,7 @@ def _schedule_cell_contains_label(cell_html, label):
     raw = raw.replace("</div>", "\n")
     raw = re.sub(r"<[^>]+>", "", raw)
     raw = html.unescape(raw)
-    for line in raw.splitlines():
-        if _normalize_schedule_text(line) == normalized_label:
-            return True
-    return False
+    return any(_normalize_schedule_text(line) == normalized_label for line in raw.splitlines())
 
 
 def _append_schedule_label(target_map, player_key, week_label, label, style="append_div"):
@@ -1022,7 +1034,9 @@ def _schedule_tournament_name(cache_key, tournament_name):
     return name
 
 
-def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_set, schedule_map, unranked_schedule, players_data):
+def _apply_pdf_schedule_entries(
+    tournament_store, tournament_groups, arg_names_set, schedule_map, unranked_schedule, players_data
+):
     """Add MAIN/QUAL draw players from PDF-sourced entry lists to schedule_map for ARG players.
 
     Uses NAME_LOOKUP from config for alias resolution (e.g. 'Jazmin Ortenzi' -> 'Jazmín Ortenzi').
@@ -1038,7 +1052,7 @@ def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_s
                 continue
             url_to_week[t_url] = (week_label, t_info["name"])
 
-    existing_player_keys = {p['Player'] for p in players_data}
+    existing_player_keys = {p["Player"] for p in players_data}
     added = 0
     for cache_key, (week_label, t_name) in url_to_week.items():
         players = tournament_store.get(cache_key)
@@ -1050,10 +1064,10 @@ def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_s
             continue
         schedule_name = _schedule_tournament_name(cache_key, t_name)
         for player in players:
-            p_type = player.get('type', 'MAIN')
-            if p_type not in ('MAIN', 'QUAL'):
+            p_type = player.get("type", "MAIN")
+            if p_type not in ("MAIN", "QUAL"):
                 continue
-            raw_name = player.get('name', '')
+            raw_name = player.get("name", "")
             p_upper = raw_name.upper()
             # Resolve through alias lookup
             for key in _lookup_keys(raw_name):
@@ -1061,18 +1075,16 @@ def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_s
                 if canonical:
                     p_upper = canonical
                     break
-            p_country = player.get('country', '')
+            p_country = player.get("country", "")
             for target_map, condition in [
                 (schedule_map, p_upper in arg_names_set),
-                (unranked_schedule, p_country == 'ARG' and p_upper not in arg_names_set),
+                (unranked_schedule, p_country == "ARG" and p_upper not in arg_names_set),
             ]:
                 if not condition:
                     continue
-                inserted = _append_schedule_label(
-                    target_map, p_upper, week_label, schedule_name, style="prepend_br"
-                )
+                inserted = _append_schedule_label(target_map, p_upper, week_label, schedule_name, style="prepend_br")
                 if target_map is unranked_schedule and p_upper not in existing_player_keys:
-                    players_data.append({'Player': p_upper, 'Key': p_upper, 'Rank': '-'})
+                    players_data.append({"Player": p_upper, "Key": p_upper, "Rank": "-"})
                     existing_player_keys.add(p_upper)
                 if inserted:
                     added += 1
@@ -1083,9 +1095,9 @@ def _apply_pdf_schedule_entries(tournament_store, tournament_groups, arg_names_s
 def _get_pdf_cache_keys():
     """Return the set of tournament_store keys that are PDF-sourced (main + #qual)."""
     try:
-        with open(GS_PDF_URLS_FILE, "r", encoding="utf-8") as f:
+        with open(GS_PDF_URLS_FILE, encoding="utf-8") as f:
             pdf_urls = json.load(f)
-    except Exception:
+    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError):
         return set()
     keys = set()
     for cache_key, url_config in pdf_urls.items():
@@ -1099,15 +1111,9 @@ def _get_pdf_cache_keys():
 
 def _apply_manual_entry_list_withdrawals(main_players, alt_players, withdrawals, main_type="MAIN"):
     """Remove configured withdrawals, promote alternates, and renumber both lists."""
-    withdrawal_names = {
-        str(name or "").strip().casefold()
-        for name in (withdrawals or [])
-        if str(name or "").strip()
-    }
+    withdrawal_names = {str(name or "").strip().casefold() for name in (withdrawals or []) if str(name or "").strip()}
     remaining_main = [
-        player
-        for player in main_players
-        if str(player.get("name") or "").strip().casefold() not in withdrawal_names
+        player for player in main_players if str(player.get("name") or "").strip().casefold() not in withdrawal_names
     ]
     removed_count = len(main_players) - len(remaining_main)
     promoted = alt_players[:removed_count]
@@ -1135,22 +1141,25 @@ def _refresh_entry_lists_from_pdfs(
 ):
     """Fetch configured Grand Slam PDFs and override active entry lists in-place."""
     import requests
-    from wta import get_monday_from_date, format_week_label
+
+    from wta import format_week_label, get_monday_from_date
 
     try:
-        with open(GS_PDF_URLS_FILE, "r", encoding="utf-8") as f:
+        with open(GS_PDF_URLS_FILE, encoding="utf-8") as f:
             pdf_urls = json.load(f)
     except FileNotFoundError:
         return
-    except Exception as e:
+    except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as e:
         logger.warning(f"[PDF] Failed to load {GS_PDF_URLS_FILE}: {e}")
         return
 
     pdf_session = requests.Session()
-    pdf_session.headers.update({
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/144 Safari/537.36",
-        "Accept": "application/pdf,application/octet-stream;q=0.9,*/*;q=0.8",
-    })
+    pdf_session.headers.update(
+        {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/144 Safari/537.36",
+            "Accept": "application/pdf,application/octet-stream;q=0.9,*/*;q=0.8",
+        }
+    )
 
     def _inject_group(cache_key, draw_type, draw_meta):
         if tournament_groups is None or monday_map is None or not isinstance(draw_meta, dict):
@@ -1246,13 +1255,9 @@ def _refresh_entry_lists_from_pdfs(
             try:
                 alt_limit = 20 if draw_type == "qual" else 10
                 if draw_meta.get("alt_limit") is not None:
-                    try:
+                    with contextlib.suppress(TypeError, ValueError):
                         alt_limit = int(draw_meta["alt_limit"])
-                    except (TypeError, ValueError):
-                        pass
-                draw_main, draw_alt = _parse_gs_entry_list_pdf(
-                    pdf_bytes, alt_limit=alt_limit
-                )
+                draw_main, draw_alt = _parse_gs_entry_list_pdf(pdf_bytes, alt_limit=alt_limit)
             except Exception as e:
                 _restore_cached_list(target_key)
                 logger.warning(f"[PDF] Parse failed for {pdf_url}: {e}")
@@ -1332,15 +1337,11 @@ def _itf_keys_with_published_main_draw(
             tournament_id = str((tournament_info or {}).get("tournamentId") or "").strip()
             if not tournament_id:
                 continue
-            keys_by_id.setdefault(tournament_id, set()).add(
-                _canonical_draw_store_key(tournament_key)
-            )
+            keys_by_id.setdefault(tournament_id, set()).add(_canonical_draw_store_key(tournament_key))
 
     published_ids = tournament_ids_with_published_main_draw(keys_by_id)
     published_keys = {
-        tournament_key
-        for tournament_id in published_ids
-        for tournament_key in keys_by_id.get(tournament_id, ())
+        tournament_key for tournament_id in published_ids for tournament_key in keys_by_id.get(tournament_id, ())
     }
 
     for source in (cached_draws_store, prefetched_itf_draws):
@@ -1414,10 +1415,7 @@ def _itf_cached_draw_arg_visibility(draw_entry):
         if not isinstance(draw_data, dict):
             continue
         players = draw_data.get("players") or []
-        has_arg = any(
-            isinstance(p, dict) and str(p.get("country") or "").upper() == "ARG"
-            for p in players
-        )
+        has_arg = any(isinstance(p, dict) and str(p.get("country") or "").upper() == "ARG" for p in players)
         if dtype == "MDS" and has_arg:
             has_arg_main = True
         elif dtype == "QS" and has_arg:
@@ -1442,11 +1440,11 @@ def _itf_draw_skip_reason(
     end_date = str((t_info or {}).get("endDate") or "")[:10]
     try:
         start_dt = datetime.strptime(start_date, "%Y-%m-%d") if start_date else None
-    except Exception:
+    except (TypeError, ValueError):
         start_dt = None
     try:
         end_dt = datetime.strptime(end_date, "%Y-%m-%d") if end_date else None
-    except Exception:
+    except (TypeError, ValueError):
         end_dt = None
 
     prev_draws = (cached_draw_entry or {}).get("draws") or {}
@@ -1555,8 +1553,12 @@ def _merge_draw_store_entry(existing, incoming):
         merged_draws.update(existing_draws)
         for dtype_code, new_draw in incoming_draws.items():
             old_draw = merged_draws.get(dtype_code)
-            if (isinstance(old_draw, dict) and old_draw.get("players")
-                    and isinstance(new_draw, dict) and not new_draw.get("players")):
+            if (
+                isinstance(old_draw, dict)
+                and old_draw.get("players")
+                and isinstance(new_draw, dict)
+                and not new_draw.get("players")
+            ):
                 continue
             merged_draws[dtype_code] = new_draw
         merged["draws"] = merged_draws
@@ -1596,8 +1598,6 @@ def _map_to_display_name_upper(name):
     return NAME_LOOKUP.get(raw_upper) or NAME_LOOKUP.get(alt_upper) or raw_upper
 
 
-
-
 def enrich_history_with_wta_ranks(cleaned_history, data_dir=None):
     """Add `_winnerRank` / `_loserRank` to cleaned history rows (empty if unknown)."""
     if not cleaned_history:
@@ -1612,11 +1612,11 @@ def enrich_history_with_wta_ranks(cleaned_history, data_dir=None):
     itf_id_to_wta_id = {}
     if os.path.exists(aliases_file):
         try:
-            with open(aliases_file, "r", encoding="utf-8-sig") as f:
+            with open(aliases_file, encoding="utf-8-sig") as f:
                 items = json.load(f)
             if not isinstance(items, list):
                 items = []
-        except Exception:
+        except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError):
             items = []
         for it in items:
             if not isinstance(it, dict):
@@ -1643,7 +1643,10 @@ def enrich_history_with_wta_ranks(cleaned_history, data_dir=None):
             if not itf_name or not cand_norms:
                 continue
             # Allow lookups by raw ITF name or by our display-mapped key.
-            for k in {_normalize_name_for_lookup(itf_name), _normalize_name_for_lookup(_map_to_display_name_upper(itf_name))}:
+            for k in {
+                _normalize_name_for_lookup(itf_name),
+                _normalize_name_for_lookup(_map_to_display_name_upper(itf_name)),
+            }:
                 if not k:
                     continue
                 if k not in aliases_lookup:
@@ -1686,7 +1689,7 @@ def enrich_history_with_wta_ranks(cleaned_history, data_dir=None):
     def week_index(week_date):
         idx_by_name = {}
         idx_by_id = {}
-        for p in (csv_by_week.get(week_date) or []):
+        for p in csv_by_week.get(week_date) or []:
             r = p.get("Rank", "")
             if r is None or r == "":
                 continue
@@ -1713,7 +1716,7 @@ def enrich_history_with_wta_ranks(cleaned_history, data_dir=None):
         for k in (disp_norm, raw_norm):
             if not k:
                 continue
-            for cand in (aliases_lookup.get(k) or []):
+            for cand in aliases_lookup.get(k) or []:
                 rank = idx.get(cand) or ""
                 if rank:
                     return rank
@@ -1724,10 +1727,7 @@ def enrich_history_with_wta_ranks(cleaned_history, data_dir=None):
         pid = str(player_id_raw or "").strip()
         wta_id = ""
         if pid.isdigit():
-            if _is_itf_id(pid):
-                wta_id = itf_id_to_wta_id.get(pid, "")
-            else:
-                wta_id = pid
+            wta_id = itf_id_to_wta_id.get(pid, "") if _is_itf_id(pid) else pid
         if wta_id:
             rank = idx_by_id.get(wta_id) or ""
             if rank:
@@ -1793,12 +1793,15 @@ def create_driver():
             "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
         )
-        chrome_options.add_experimental_option("prefs", {
-            "plugins.always_open_pdf_externally": True,
-            "download.prompt_for_download": False,
-            "download.directory_upgrade": True,
-            "safebrowsing.enabled": True,
-        })
+        chrome_options.add_experimental_option(
+            "prefs",
+            {
+                "plugins.always_open_pdf_externally": True,
+                "download.prompt_for_download": False,
+                "download.directory_upgrade": True,
+                "safebrowsing.enabled": True,
+            },
+        )
         chromedriver_path = _find_local_chromedriver()
         if chromedriver_path:
             driver = webdriver.Chrome(service=Service(chromedriver_path), options=chrome_options)
@@ -1850,37 +1853,39 @@ def build_all_tournament_groups(driver):
             tournament_groups[label] = {}
 
     for item in itf_items:
-        t_name = item['tournamentName']
-        if 'cancel' in t_name.lower():
+        t_name = item["tournamentName"]
+        if "cancel" in t_name.lower():
             continue
-        s_date = pd.to_datetime(item['startDate'])
-        monday_date = (s_date - timedelta(days=s_date.weekday())).strftime('%Y-%m-%d')
+        s_date = pd.to_datetime(item["startDate"])
+        monday_date = (s_date - timedelta(days=s_date.weekday())).strftime("%Y-%m-%d")
         if monday_date in itf_monday_map:
             week_label = itf_monday_map[monday_date]
-            tournament_groups[week_label][item['tournamentKey'].lower()] = {
+            tournament_groups[week_label][item["tournamentKey"].lower()] = {
                 "name": t_name,
                 "level": get_itf_level(t_name),
-                "surface": item.get('surfaceDesc') or item.get('surface') or "",
-                "country": item.get('hostNationCode') or item.get('hostNation') or item.get('countryCode') or "",
-                "startDate": item['startDate'],
-                "endDate": item.get('endDate', None)
+                "surface": item.get("surfaceDesc") or item.get("surface") or "",
+                "country": item.get("hostNationCode") or item.get("hostNation") or item.get("countryCode") or "",
+                "startDate": item["startDate"],
+                "endDate": item.get("endDate", None),
             }
 
     tournament_snapshot: dict[str, TournamentSnapshotRecord] = {}
     for week, tourneys in tournament_groups.items():
         for key, info in tourneys.items():
-            if 'cancel' in info.get("name", "").lower():
+            if "cancel" in info.get("name", "").lower():
                 continue
             normalized_key = normalize_tournament_snapshot_key(key)
-            tournament_snapshot[normalized_key] = normalize_tournament_snapshot_record({
-                "name": info.get("name", key),
-                "level": info.get("level", ""),
-                "surface": info.get("surface", ""),
-                "country": info.get("country", ""),
-                "startDate": info.get("startDate"),
-                "endDate": info.get("endDate"),
-                "week": week,
-            })
+            tournament_snapshot[normalized_key] = normalize_tournament_snapshot_record(
+                {
+                    "name": info.get("name", key),
+                    "level": info.get("level", ""),
+                    "surface": info.get("surface", ""),
+                    "country": info.get("country", ""),
+                    "startDate": info.get("startDate"),
+                    "endDate": info.get("endDate"),
+                    "week": week,
+                }
+            )
     save_json_file(
         TOURNAMENT_SNAPSHOT_FILE,
         compress_tournament_snapshot(tournament_snapshot),
@@ -1895,21 +1900,17 @@ def fetch_arg_players():
     today = madrid_now()
     ranking_monday = (today - timedelta(days=today.weekday())).strftime("%Y-%m-%d")
 
-    all_wta_players, wta_status = get_wta_rankings_cached(
-        ranking_monday, nationality=None, with_status=True
-    )
+    all_wta_players, wta_status = get_wta_rankings_cached(ranking_monday, nationality=None, with_status=True)
     normalize_country_overrides(all_wta_players, "Player", "Country")
 
-    wta_players_arg = [p for p in all_wta_players if p['Country'] == 'ARG']
-    itf_players_arg, itf_status = get_itf_rankings_cached(
-        ranking_monday, nationality="ARG", with_status=True
-    )
+    wta_players_arg = [p for p in all_wta_players if p["Country"] == "ARG"]
+    itf_players_arg, itf_status = get_itf_rankings_cached(ranking_monday, nationality="ARG", with_status=True)
 
-    wta_names_arg = {p['Player'] for p in wta_players_arg}
-    itf_only_arg = [p for p in itf_players_arg if p['Player'] not in wta_names_arg]
+    wta_names_arg = {p["Player"] for p in wta_players_arg}
+    itf_only_arg = [p for p in itf_players_arg if p["Player"] not in wta_names_arg]
 
     players_data = wta_players_arg + itf_only_arg
-    arg_names_set = {p['Player'] for p in players_data}
+    arg_names_set = {p["Player"] for p in players_data}
 
     data_status = {
         "generatedAt": utc_now_iso(),
@@ -1964,10 +1965,7 @@ def _acceptance_fingerprint(players):
     """Stable fingerprint of a player list used to detect acceptance-list changes."""
     if not players:
         return ""
-    key_fields = sorted(
-        (p.get("name", ""), p.get("type", ""), p.get("pos_num", 9999))
-        for p in players
-    )
+    key_fields = sorted((p.get("name", ""), p.get("type", ""), p.get("pos_num", 9999)) for p in players)
     return json.dumps(key_fields, ensure_ascii=False)
 
 
@@ -1976,10 +1974,10 @@ def _load_acceptance_state():
     if not os.path.exists(ITF_ACCEPTANCE_STATE_FILE):
         return {}
     try:
-        with open(ITF_ACCEPTANCE_STATE_FILE, "r", encoding="utf-8") as f:
+        with open(ITF_ACCEPTANCE_STATE_FILE, encoding="utf-8") as f:
             data = json.load(f)
         return data if isinstance(data, dict) else {}
-    except Exception:
+    except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError):
         return {}
 
 
@@ -2021,10 +2019,7 @@ def process_tournaments(
     current_monday_str = (_now - timedelta(days=_now.weekday())).strftime("%Y-%m-%d")
     acceptance_state = _load_acceptance_state()
     acceptance_state_dirty = False
-    itf_main_draw_available_keys = {
-        _canonical_draw_store_key(key)
-        for key in (itf_main_draw_available_keys or set())
-    }
+    itf_main_draw_available_keys = {_canonical_draw_store_key(key) for key in (itf_main_draw_available_keys or set())}
     if force_itf_acceptance:
         logger.info("Forcing refresh of all open ITF acceptance lists.")
 
@@ -2047,33 +2042,37 @@ def process_tournaments(
     def _safe_pos_num(value):
         try:
             return int(value)
-        except Exception:
+        except (TypeError, ValueError):
             return 9999
 
     def _suffix_from_itf_player(player_row):
-        p_type = (player_row or {}).get('type', '')
-        if p_type == 'MAIN':
-            return ''
-        if p_type == 'QUAL':
-            return ' (Q)'
-        pos = (player_row or {}).get('pos', '')
-        return f" (ALT {pos})" if pos else ' (ALT)'
+        p_type = (player_row or {}).get("type", "")
+        if p_type == "MAIN":
+            return ""
+        if p_type == "QUAL":
+            return " (Q)"
+        pos = (player_row or {}).get("pos", "")
+        return f" (ALT {pos})" if pos else " (ALT)"
 
-    def _queue_itf_entry(container, player_key, week_label, tournament_key, tournament_name, suffix, priority, entry_type, pos_num):
+    def _queue_itf_entry(
+        container, player_key, week_label, tournament_key, tournament_name, suffix, priority, entry_type, pos_num
+    ):
         if not player_key or not week_label:
             return
         by_week = container.setdefault(player_key, {})
         items = by_week.setdefault(week_label, [])
         if any(item.get("tournament_key") == tournament_key for item in items):
             return
-        items.append({
-            "tournament_key": tournament_key,
-            "name": tournament_name,
-            "suffix": suffix or "",
-            "priority": priority,
-            "entry_type": entry_type,
-            "pos_num": _safe_pos_num(pos_num),
-        })
+        items.append(
+            {
+                "tournament_key": tournament_key,
+                "name": tournament_name,
+                "suffix": suffix or "",
+                "priority": priority,
+                "entry_type": entry_type,
+                "pos_num": _safe_pos_num(pos_num),
+            }
+        )
 
     def _itf_item_sort_key(item):
         return (
@@ -2174,8 +2173,7 @@ def process_tournaments(
                         entry_cache[qual_key] = qual_players
                         tournament_store[qual_key] = qual_players
                         qual_already_grouped = any(
-                            qual_key in week_tourneys
-                            for week_tourneys in tournament_groups.values()
+                            qual_key in week_tourneys for week_tourneys in tournament_groups.values()
                         )
                         if not qual_already_grouped:
                             tournament_groups.setdefault(week, {})[qual_key] = {
@@ -2207,11 +2205,9 @@ def process_tournaments(
                 _level = t_info.get("level", "")
                 _is_gs = "grand slam" in _level.lower()
                 _main_players = [_p for _p in t_list if _p.get("type") == "MAIN"]
-                _qual_players  = [_p for _p in t_list if _p.get("type") == "QUAL"]
+                _qual_players = [_p for _p in t_list if _p.get("type") == "QUAL"]
                 _main_count = len(_main_players)
-                if _is_gs:
-                    _num_seeds = 32
-                elif _main_count > 70:
+                if _is_gs or _main_count > 70:
                     _num_seeds = 32
                 elif _main_count >= 40:
                     _num_seeds = 16
@@ -2234,6 +2230,7 @@ def process_tournaments(
                     _pname_up = _map_to_display_name_upper(_p["name"])
                     _r = _name_to_rank.get(_pname_up)
                     _p["seed_rank"] = _r if _r is not None else ""
+
                 def _build_seed_map(player_list, n):
                     candidates = []
                     for _p in player_list:
@@ -2242,6 +2239,7 @@ def process_tournaments(
                             candidates.append((_r, _p["name"]))
                     candidates.sort()
                     return {name: i + 1 for i, (_, name) in enumerate(candidates[:n])}
+
                 _main_seed_map = _build_seed_map(_main_players, _num_seeds)
                 for _p in t_list:
                     if _p.get("type") == "MAIN":
@@ -2258,16 +2256,14 @@ def process_tournaments(
                     p_key = p_name.upper()
                     if p_key not in arg_names_set:
                         continue
-                    _append_schedule_label(
-                        schedule_map, p_key, week, f"{schedule_name}{suffix}", style="append_div"
-                    )
+                    _append_schedule_label(schedule_map, p_key, week, f"{schedule_name}{suffix}", style="append_div")
                 for p in t_list:
-                    p_upper = p['name'].upper()
+                    p_upper = p["name"].upper()
                     if p_upper in arg_names_set:
                         continue
-                    if p.get('country', '') != 'ARG':
+                    if p.get("country", "") != "ARG":
                         continue
-                    suffix = '' if p.get('type') == 'MAIN' else ' (Q)'
+                    suffix = "" if p.get("type") == "MAIN" else " (Q)"
                     _append_schedule_label(
                         unranked_schedule, p_upper, week, f"{schedule_name}{suffix}", style="append_div"
                     )
@@ -2275,7 +2271,7 @@ def process_tournaments(
         # ITF tournaments
         for key, t_info in list(tourneys.items()):
             t_name = t_info["name"]
-            if 'cancel' in t_name.lower():
+            if "cancel" in t_name.lower():
                 continue
             if not key.startswith("http"):
                 cached_players = entry_cache.get(key, [])
@@ -2284,22 +2280,16 @@ def process_tournaments(
 
                 state_entry = acceptance_state.get(key, {}) or {}
                 main_draw_available = bool(state_entry.get("main_draw_available_date"))
-                if (
-                    not main_draw_available
-                    and _canonical_draw_store_key(key) in itf_main_draw_available_keys
-                ):
+                if not main_draw_available and _canonical_draw_store_key(key) in itf_main_draw_available_keys:
                     state_entry = acceptance_state.setdefault(key, {})
                     state_entry["main_draw_available_date"] = today_str
                     acceptance_state_dirty = True
                     main_draw_available = True
                 already_updated_today = state_entry.get("last_changed_date") == today_str
                 fetched_today_no_change = (
-                    state_entry.get("last_fetched_date") == today_str
-                    and not already_updated_today
+                    state_entry.get("last_fetched_date") == today_str and not already_updated_today
                 )
-                evening_already_fetched = (
-                    state_entry.get("last_fetched_evening_date") == today_str
-                )
+                evening_already_fetched = state_entry.get("last_fetched_evening_date") == today_str
                 start_date_str = t_info.get("startDate", "")
                 list_available = _itf_acceptance_list_available(start_date_str, _now)
                 fresh_players = []
@@ -2314,11 +2304,16 @@ def process_tournaments(
                     logger.debug(f"  ITF acceptance list already updated today, skipping fetch: {t_name}")
                     tourney_players_list = list(cached_players)
                     itf_name_map = {}
-                elif not force_itf_acceptance and fetched_today_no_change and _past_noon_utc and (
-                    not _is_double_check_day or not _past_6pm_spain or evening_already_fetched
+                elif (
+                    not force_itf_acceptance
+                    and fetched_today_no_change
+                    and _past_noon_utc
+                    and (not _is_double_check_day or not _past_6pm_spain or evening_already_fetched)
                 ):
                     if _is_double_check_day and not _past_6pm_spain:
-                        logger.debug(f"  ITF acceptance list unchanged this morning, will re-check after 6 pm Spain: {t_name}")
+                        logger.debug(
+                            f"  ITF acceptance list unchanged this morning, will re-check after 6 pm Spain: {t_name}"
+                        )
                     else:
                         logger.debug(f"  ITF acceptance list unchanged through noon UTC, skipping: {t_name}")
                     tourney_players_list = list(cached_players)
@@ -2336,7 +2331,11 @@ def process_tournaments(
                     if state_entry.get("last_fetched_date") != today_str:
                         state_entry["last_fetched_date"] = today_str
                         acceptance_state_dirty = True
-                    if _is_double_check_day and _past_6pm_spain and state_entry.get("last_fetched_evening_date") != today_str:
+                    if (
+                        _is_double_check_day
+                        and _past_6pm_spain
+                        and state_entry.get("last_fetched_evening_date") != today_str
+                    ):
                         state_entry["last_fetched_evening_date"] = today_str
                         acceptance_state_dirty = True
                     if fresh_players:
@@ -2404,26 +2403,26 @@ def process_tournaments(
 
                 itf_player_meta = {}
                 for p in tourney_players_list:
-                    raw_upper = p.get('name', '').upper()
+                    raw_upper = p.get("name", "").upper()
                     p_key = NAME_LOOKUP.get(raw_upper, raw_upper)
                     candidate = {
-                        'priority': str(p.get('priority', '')).strip(),
-                        'entry_type': p.get('type', ''),
-                        'pos_num': p.get('pos_num', 9999),
+                        "priority": str(p.get("priority", "")).strip(),
+                        "entry_type": p.get("type", ""),
+                        "pos_num": p.get("pos_num", 9999),
                     }
                     prev = itf_player_meta.get(p_key)
                     if not prev:
                         itf_player_meta[p_key] = candidate
                         continue
                     prev_key = (
-                        _entry_type_rank(prev.get('entry_type')),
-                        _priority_num(prev.get('priority')),
-                        _safe_pos_num(prev.get('pos_num')),
+                        _entry_type_rank(prev.get("entry_type")),
+                        _priority_num(prev.get("priority")),
+                        _safe_pos_num(prev.get("pos_num")),
                     )
                     cand_key = (
-                        _entry_type_rank(candidate.get('entry_type')),
-                        _priority_num(candidate.get('priority')),
-                        _safe_pos_num(candidate.get('pos_num')),
+                        _entry_type_rank(candidate.get("entry_type")),
+                        _priority_num(candidate.get("priority")),
+                        _safe_pos_num(candidate.get("pos_num")),
                     )
                     if cand_key < prev_key:
                         itf_player_meta[p_key] = candidate
@@ -2431,7 +2430,7 @@ def process_tournaments(
                 for p_name, suffix in itf_name_map.items():
                     if p_name not in arg_names_set:
                         continue
-                    suffix_text = suffix.get('suffix', '') if isinstance(suffix, dict) else str(suffix or '')
+                    suffix_text = suffix.get("suffix", "") if isinstance(suffix, dict) else str(suffix or "")
                     p_meta = itf_player_meta.get(p_name, {})
                     _queue_itf_entry(
                         itf_schedule_pending,
@@ -2440,13 +2439,13 @@ def process_tournaments(
                         key,
                         t_name,
                         suffix_text,
-                        p_meta.get('priority', ''),
-                        p_meta.get('entry_type', ''),
-                        p_meta.get('pos_num', 9999),
+                        p_meta.get("priority", ""),
+                        p_meta.get("entry_type", ""),
+                        p_meta.get("pos_num", 9999),
                     )
                 if not itf_name_map:
                     for p in tourney_players_list:
-                        raw_upper = p.get('name', '').upper()
+                        raw_upper = p.get("name", "").upper()
                         p_key = NAME_LOOKUP.get(raw_upper, raw_upper)
                         if p_key not in arg_names_set:
                             continue
@@ -2458,18 +2457,18 @@ def process_tournaments(
                             key,
                             t_name,
                             _suffix_from_itf_player(p),
-                            p_meta.get('priority', ''),
-                            p_meta.get('entry_type', ''),
-                            p_meta.get('pos_num', 9999),
+                            p_meta.get("priority", ""),
+                            p_meta.get("entry_type", ""),
+                            p_meta.get("pos_num", 9999),
                         )
                 for p in tourney_players_list:
-                    raw_upper = p['name'].upper()
+                    raw_upper = p["name"].upper()
                     p_key = NAME_LOOKUP.get(raw_upper, raw_upper)
                     if p_key in arg_names_set:
                         continue
-                    if p.get('country', '') != 'ARG':
+                    if p.get("country", "") != "ARG":
                         continue
-                    p_type = p.get('type', '')
+                    p_type = p.get("type", "")
                     suffix = _suffix_from_itf_player(p)
                     _queue_itf_entry(
                         unranked_itf_pending,
@@ -2478,9 +2477,9 @@ def process_tournaments(
                         key,
                         t_name,
                         suffix,
-                        str(p.get('priority', '')).strip(),
+                        str(p.get("priority", "")).strip(),
                         p_type,
-                        p.get('pos_num', 9999),
+                        p.get("pos_num", 9999),
                     )
 
     if acceptance_state_dirty:
@@ -2503,7 +2502,7 @@ def process_tournaments(
     # Defensive fallback: when ITF calendar fetch fails for a run, keep previous ITF
     # entry lists instead of deleting them from cache.
     if not active_itf_keys:
-        for cached_key in entry_cache.keys():
+        for cached_key in entry_cache:
             if not str(cached_key).startswith("http"):
                 active_keys.add(cached_key)
 
@@ -2517,21 +2516,21 @@ def load_match_history(data_dir=None):
     source_data_dir = os.fspath(data_dir or DATA_DIR)
     match_history_data = []
     matches_files = [
-        os.path.join(source_data_dir, 'itf_matches_arg.csv'),
-        os.path.join(source_data_dir, 'wta_matches_arg.csv'),
-        os.path.join(source_data_dir, 'gs_matches_arg.csv'),
-        os.path.join(source_data_dir, 'og_matches_arg.csv'),
-        os.path.join(source_data_dir, 'bjkc_matches_arg.csv'),
-        os.path.join(source_data_dir, 'united_cup_matches_arg.csv'),
-        os.path.join(source_data_dir, 'manually_added_matches.csv'),
+        os.path.join(source_data_dir, "itf_matches_arg.csv"),
+        os.path.join(source_data_dir, "wta_matches_arg.csv"),
+        os.path.join(source_data_dir, "gs_matches_arg.csv"),
+        os.path.join(source_data_dir, "og_matches_arg.csv"),
+        os.path.join(source_data_dir, "bjkc_matches_arg.csv"),
+        os.path.join(source_data_dir, "united_cup_matches_arg.csv"),
+        os.path.join(source_data_dir, "manually_added_matches.csv"),
     ]
     for file_path in matches_files:
         try:
-            with open(file_path, 'r', encoding='utf-8-sig') as file_obj:
-                reader = csv.DictReader(file_obj, delimiter=',')
+            with open(file_path, encoding="utf-8-sig") as file_obj:
+                reader = csv.DictReader(file_obj, delimiter=",")
                 for row in reader:
                     match_history_data.append(row)
-        except Exception as e:
+        except (OSError, UnicodeError, csv.Error) as e:
             logger.error(f"Error reading matches data from {file_path}: {e}")
 
     def _history_identity_source(match_type):
@@ -2553,86 +2552,92 @@ def load_match_history(data_dir=None):
                 normalize_history_player_name(part, source=source) if part.strip() else part.strip()
                 for part in name.split("/")
             )
-        mapped = resolve_player_display_name(
-            source, player_id=player_id, name=name
-        )
+        mapped = resolve_player_display_name(source, player_id=player_id, name=name)
         return format_player_name(mapped)
 
     cleaned_history = []
     for m in match_history_data:
-        fecha = (m.get('date') or m.get('Date') or m.get('matchDate') or
-                m.get('match_date') or m.get('FECHA') or '')
+        fecha = m.get("date") or m.get("Date") or m.get("matchDate") or m.get("match_date") or m.get("FECHA") or ""
 
-        winner_entry = m.get('winnerEntry') or m.get('winner_entry') or m.get('WinnerEntry') or ''
-        loser_entry = m.get('loserEntry') or m.get('loser_entry') or m.get('LoserEntry') or ''
+        winner_entry = m.get("winnerEntry") or m.get("winner_entry") or m.get("WinnerEntry") or ""
+        loser_entry = m.get("loserEntry") or m.get("loser_entry") or m.get("LoserEntry") or ""
         winner_entry = winner_entry.strip().upper()
         loser_entry = loser_entry.strip().upper()
-        winner_entry = 'LL' if winner_entry == 'L' else ('' if winner_entry == 'DA' else winner_entry)
-        loser_entry = 'LL' if loser_entry == 'L' else ('' if loser_entry == 'DA' else loser_entry)
+        winner_entry = "LL" if winner_entry == "L" else ("" if winner_entry == "DA" else winner_entry)
+        loser_entry = "LL" if loser_entry == "L" else ("" if loser_entry == "DA" else loser_entry)
 
-        raw_round = m.get('roundName') or m.get('round_name') or m.get('RoundName') or ''
-        draw_type = m.get('draw') or m.get('Draw') or m.get('DRAW') or ''
-        match_type_value = (m.get('matchType') or m.get('MatchType') or m.get('MATCH_TYPE') or '').strip()
-        tournament_category_value = (m.get('tournamentCategory') or m.get('tournament_category') or m.get('TournamentCategory') or '').strip()
-        tournament_name_value = (m.get('tournamentName') or m.get('tournament_name') or m.get('TournamentName') or '').strip()
+        raw_round = m.get("roundName") or m.get("round_name") or m.get("RoundName") or ""
+        draw_type = m.get("draw") or m.get("Draw") or m.get("DRAW") or ""
+        match_type_value = (m.get("matchType") or m.get("MatchType") or m.get("MATCH_TYPE") or "").strip()
+        tournament_category_value = (
+            m.get("tournamentCategory") or m.get("tournament_category") or m.get("TournamentCategory") or ""
+        ).strip()
+        tournament_name_value = (
+            m.get("tournamentName") or m.get("tournament_name") or m.get("TournamentName") or ""
+        ).strip()
         identity_source = _history_identity_source(match_type_value)
 
         final_round = raw_round
 
-        raw_surface = m.get('surface') or m.get('Surface') or ''
-        in_or_outdoor = m.get('inOrOutdoor') or m.get('InOrOutdoor') or ''
-        if raw_surface.startswith('I.'):
-            formatted_surface = 'Ind. ' + raw_surface[2:].capitalize()
-        elif in_or_outdoor == 'I':
-            formatted_surface = 'Ind. ' + raw_surface
+        raw_surface = m.get("surface") or m.get("Surface") or ""
+        in_or_outdoor = m.get("inOrOutdoor") or m.get("InOrOutdoor") or ""
+        if raw_surface.startswith("I."):
+            formatted_surface = "Ind. " + raw_surface[2:].capitalize()
+        elif in_or_outdoor == "I":
+            formatted_surface = "Ind. " + raw_surface
         else:
             formatted_surface = raw_surface
 
-        tournament_id_value = (m.get('tournamentId') or m.get('tournament_id') or m.get('TournamentId') or '').strip()
-        winner_id_value = (m.get('winnerId') or m.get('winner_id') or m.get('WinnerId') or '').strip()
-        loser_id_value = (m.get('loserId') or m.get('loser_id') or m.get('LoserId') or '').strip()
+        tournament_id_value = (m.get("tournamentId") or m.get("tournament_id") or m.get("TournamentId") or "").strip()
+        winner_id_value = (m.get("winnerId") or m.get("winner_id") or m.get("WinnerId") or "").strip()
+        loser_id_value = (m.get("loserId") or m.get("loser_id") or m.get("LoserId") or "").strip()
 
-        cleaned_history.append({
-            'DATE': fecha,
-            'TOURNAMENT': fix_encoding(tournament_name_value),
-            'TOURNAMENT_ID': tournament_id_value,
-            'CATEGORY': fix_encoding(tournament_category_value),
-            'SURFACE': formatted_surface,
-            'MATCH_TYPE': match_type_value,
-            'DRAW': draw_type,
-            'ROUND': final_round,
-            'PLAYER': '',
-            'ENTRY': '',
-            'SEED': '',
-            'RESULT': '',
-            'SCORE': m.get('result') or m.get('Result') or '',
-            'RIVAL_ENTRY': '',
-            'RIVAL_SEED': '',
-            'RIVAL': '',
-            'RIVAL_COUNTRY': '',
-            '_winnerId': winner_id_value,
-            '_loserId': loser_id_value,
-            '_winnerName': normalize_history_player_name(
-                m.get('winnerName') or m.get('winner_name') or m.get('WinnerName') or '',
-                player_id=winner_id_value,
-                source=identity_source,
-            ),
-            '_loserName': normalize_history_player_name(
-                m.get('loserName') or m.get('loser_name') or m.get('LoserName') or '',
-                player_id=loser_id_value,
-                source=identity_source,
-            ),
-            '_winnerCountry': m.get('winnerCountry') or m.get('winner_country') or m.get('WinnerCountry') or '',
-            '_loserCountry': m.get('loserCountry') or m.get('loser_country') or m.get('LoserCountry') or '',
-            '_winnerEntry': winner_entry,
-            '_loserEntry': loser_entry,
-            '_winnerSeed': m.get('winnerSeed') or m.get('winner_seed') or m.get('WinnerSeed') or '',
-            '_loserSeed': m.get('loserSeed') or m.get('loser_seed') or m.get('LoserSeed') or '',
-            '_resultStatusDesc': m.get('resultStatusDesc') or m.get('result_status_desc') or m.get('ResultStatusDesc') or ''
-        })
+        cleaned_history.append(
+            {
+                "DATE": fecha,
+                "TOURNAMENT": fix_encoding(tournament_name_value),
+                "TOURNAMENT_ID": tournament_id_value,
+                "CATEGORY": fix_encoding(tournament_category_value),
+                "SURFACE": formatted_surface,
+                "MATCH_TYPE": match_type_value,
+                "DRAW": draw_type,
+                "ROUND": final_round,
+                "PLAYER": "",
+                "ENTRY": "",
+                "SEED": "",
+                "RESULT": "",
+                "SCORE": m.get("result") or m.get("Result") or "",
+                "RIVAL_ENTRY": "",
+                "RIVAL_SEED": "",
+                "RIVAL": "",
+                "RIVAL_COUNTRY": "",
+                "_winnerId": winner_id_value,
+                "_loserId": loser_id_value,
+                "_winnerName": normalize_history_player_name(
+                    m.get("winnerName") or m.get("winner_name") or m.get("WinnerName") or "",
+                    player_id=winner_id_value,
+                    source=identity_source,
+                ),
+                "_loserName": normalize_history_player_name(
+                    m.get("loserName") or m.get("loser_name") or m.get("LoserName") or "",
+                    player_id=loser_id_value,
+                    source=identity_source,
+                ),
+                "_winnerCountry": m.get("winnerCountry") or m.get("winner_country") or m.get("WinnerCountry") or "",
+                "_loserCountry": m.get("loserCountry") or m.get("loser_country") or m.get("LoserCountry") or "",
+                "_winnerEntry": winner_entry,
+                "_loserEntry": loser_entry,
+                "_winnerSeed": m.get("winnerSeed") or m.get("winner_seed") or m.get("WinnerSeed") or "",
+                "_loserSeed": m.get("loserSeed") or m.get("loser_seed") or m.get("LoserSeed") or "",
+                "_resultStatusDesc": m.get("resultStatusDesc")
+                or m.get("result_status_desc")
+                or m.get("ResultStatusDesc")
+                or "",
+            }
+        )
 
     def parse_match_date(item):
-        d = item.get('DATE') or "1900-01-01"
+        d = item.get("DATE") or "1900-01-01"
         try:
             return pd.to_datetime(d, dayfirst=False)
         except (ValueError, TypeError):
@@ -2658,21 +2663,23 @@ def build_calendar_snapshot(calendar_data):
                     if key in seen:
                         continue
                     seen.add(key)
-                    calendar_snapshot.append({
-                        "week_label": week_label,
-                        "column": column_name,
-                        "continent": continent,
-                        "name": t.get("name", ""),
-                        "level": t.get("level", ""),
-                        "surface": t.get("surface", ""),
-                        "country": t.get("country", ""),
-                        "startDate": t.get("startDate", ""),
-                        "endDate": t.get("endDate", ""),
-                        "source": t.get("source", ""),
-                        "tournamentKey": t.get("tournamentKey", ""),
-                        "tournamentId": t.get("tournamentId", ""),
-                        "calendarKey": calendar_key,
-                    })
+                    calendar_snapshot.append(
+                        {
+                            "week_label": week_label,
+                            "column": column_name,
+                            "continent": continent,
+                            "name": t.get("name", ""),
+                            "level": t.get("level", ""),
+                            "surface": t.get("surface", ""),
+                            "country": t.get("country", ""),
+                            "startDate": t.get("startDate", ""),
+                            "endDate": t.get("endDate", ""),
+                            "source": t.get("source", ""),
+                            "tournamentKey": t.get("tournamentKey", ""),
+                            "tournamentId": t.get("tournamentId", ""),
+                            "calendarKey": calendar_key,
+                        }
+                    )
     # Store week labels once and keep the tournament rows compact.
     save_json_file(
         CALENDAR_SNAPSHOT_FILE,
@@ -2682,9 +2689,7 @@ def build_calendar_snapshot(calendar_data):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Refresh site data and regenerate app.html."
-    )
+    parser = argparse.ArgumentParser(description="Refresh site data and regenerate app.html.")
     parser.add_argument(
         "--fast",
         action="store_true",
@@ -2741,15 +2746,13 @@ def main():
                     itf_prefetch_jobs.append((week, t_key, t_info))
 
             total_itf_prefetch = len(itf_prefetch_jobs) or 1
-            for i, (week, t_key, t_info) in enumerate(itf_prefetch_jobs, start=1):
+            for i, (_week, t_key, t_info) in enumerate(itf_prefetch_jobs, start=1):
                 logger.debug(f"Prefetching ITF Draws ({i}/{total_itf_prefetch})")
                 tid = t_info.get("tournamentId")
                 is_multiweek = t_info.get("is_multiweek", False)
                 dvr = create_driver()
                 try:
-                    t_draws = fetch_itf_tournament_draws(
-                        tid, is_multiweek=is_multiweek, driver=dvr
-                    ) or {}
+                    t_draws = fetch_itf_tournament_draws(tid, is_multiweek=is_multiweek, driver=dvr) or {}
                 finally:
                     _quit_driver(dvr, "quit ITF prefetch browser")
                 if t_draws:
@@ -2769,9 +2772,7 @@ def main():
             monday_map,
             original_entry_cache=entry_cache_before_pdf_override,
         )
-        cached_draws_for_acceptance = expand_draws_store_cache(
-            load_cache(DRAWS_STORE_CACHE_FILE)
-        ) or {}
+        cached_draws_for_acceptance = expand_draws_store_cache(load_cache(DRAWS_STORE_CACHE_FILE)) or {}
         main_draw_available_keys = _itf_keys_with_published_main_draw(
             itf_draws_tournaments,
             _normalize_draws_store_keys(cached_draws_for_acceptance),
@@ -2800,7 +2801,7 @@ def main():
             _srank = _sp.get("Rank")
             if _sname and _srank is not None:
                 _gs_name_to_rank[_sname] = int(_srank)
-        for _gs_key in [k for k in tournament_store.keys() if str(k).endswith("#qual")]:
+        for _gs_key in [k for k in tournament_store if str(k).endswith("#qual")]:
             _gs_players = tournament_store.get(_gs_key)
             if not _gs_players:
                 continue
@@ -2820,15 +2821,11 @@ def main():
                     _p["seed"] = _sv if _sv is not None else ""
 
         # Add unranked ARG players found in entry lists to players_data and schedule_map
-        existing_player_keys = {p['Player'] for p in players_data}
+        existing_player_keys = {p["Player"] for p in players_data}
         for name_upper, weeks in unranked_schedule.items():
             schedule_map[name_upper] = weeks
             if name_upper not in existing_player_keys:
-                players_data.append({
-                    'Player': name_upper,
-                    'Key': name_upper,
-                    'Rank': '-'
-                })
+                players_data.append({"Player": name_upper, "Key": name_upper, "Rank": "-"})
 
     except Exception:
         _quit_driver(driver, "quit browser after pipeline failure")
@@ -2847,7 +2844,7 @@ def main():
         end_date = str(entry.get("endDate") or "")[:10]
         try:
             entry_end = datetime.strptime(end_date, "%Y-%m-%d").date() if end_date else None
-        except Exception:
+        except (TypeError, ValueError):
             entry_end = None
         if entry_end and entry_end <= today_date and _draw_is_complete((entry.get("draws") or {}).get("MDS")):
             mark_draw_completed(store_key)
@@ -2880,22 +2877,21 @@ def main():
         return week, t_key, t_info, fetch_tournament_draws(t_key, current_year) or {}
 
     from concurrent.futures import ThreadPoolExecutor, as_completed
+
     wta_draw_results = {}
     with ThreadPoolExecutor(max_workers=6) as pool:
         futures = {pool.submit(_fetch_wta_draw_job, job): job for job in wta_draw_jobs}
-        done = 0
-        for fut in as_completed(futures):
-            done += 1
+        for done, fut in enumerate(as_completed(futures), start=1):
             try:
                 week, t_key, t_info, t_draws = fut.result()
             except Exception as e:
                 week, t_key, t_info = futures[fut]
                 t_draws = {}
-                logger.warning(f"  [!] WTA draw fetch failed for {t_info.get('name','')}: {e}")
+                logger.warning(f"  [!] WTA draw fetch failed for {t_info.get('name', '')}: {e}")
             wta_draw_results[_canonical_draw_store_key(t_key)] = (week, t_key, t_info, t_draws)
-            logger.debug(f"  WTA draw fetched ({done}/{total_wta_draws}): {t_info.get('name','')}")
+            logger.debug(f"  WTA draw fetched ({done}/{total_wta_draws}): {t_info.get('name', '')}")
 
-    for store_key, (week, t_key, t_info, t_draws) in wta_draw_results.items():
+    for store_key, (week, _t_key, t_info, t_draws) in wta_draw_results.items():
         prev = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
         prev_draws = (prev or {}).get("draws") or {}
         merged_draws = {}
@@ -2905,18 +2901,21 @@ def main():
             for dtype_code, new_draw in t_draws.items():
                 old_draw = merged_draws.get(dtype_code)
                 # Don't overwrite a non-empty cached draw with an empty new fetch
-                if (isinstance(old_draw, dict) and old_draw.get("players")
-                        and isinstance(new_draw, dict) and not new_draw.get("players")):
-                    logger.warning(f"  Keeping cached {dtype_code} for {t_info.get('name','')} (new fetch returned empty)")
+                if (
+                    isinstance(old_draw, dict)
+                    and old_draw.get("players")
+                    and isinstance(new_draw, dict)
+                    and not new_draw.get("players")
+                ):
+                    logger.warning(
+                        f"  Keeping cached {dtype_code} for {t_info.get('name', '')} (new fetch returned empty)"
+                    )
                     continue
                 merged_draws[dtype_code] = new_draw
         if merged_draws:
-            fetched_at = (
-                utc_timestamp()
-                if t_draws else get_cache_timestamp(DRAWS_STORE_CACHE_FILE, store_key, prev)
-            )
+            fetched_at = utc_timestamp() if t_draws else get_cache_timestamp(DRAWS_STORE_CACHE_FILE, store_key, prev)
             if not t_draws and prev_draws:
-                logger.warning(f"  Using cached WTA draws for: {t_info.get('name','')}")
+                logger.warning(f"  Using cached WTA draws for: {t_info.get('name', '')}")
             arg_visibility = _itf_cached_draw_arg_visibility({"draws": merged_draws})
             draws_store[store_key] = {
                 "name": t_info["name"],
@@ -2997,15 +2996,18 @@ def main():
                 if existing_draws:
                     logger.warning(f"  Keeping cached ITF draws for: {t_info.get('name', '')} (missing tournamentId)")
                     arg_visibility = _itf_cached_draw_arg_visibility({"draws": existing_draws})
-                    draws_store[store_key] = _merge_draw_store_entry(existing, {
-                        "name": t_info.get("name", ""),
-                        "level": t_info.get("level", ""),
-                        "week": week,
-                        "startDate": t_info.get("startDate"),
-                        "endDate": t_info.get("endDate"),
-                        "draws": existing_draws,
-                        "arg_visibility": arg_visibility,
-                    })
+                    draws_store[store_key] = _merge_draw_store_entry(
+                        existing,
+                        {
+                            "name": t_info.get("name", ""),
+                            "level": t_info.get("level", ""),
+                            "week": week,
+                            "startDate": t_info.get("startDate"),
+                            "endDate": t_info.get("endDate"),
+                            "draws": existing_draws,
+                            "arg_visibility": arg_visibility,
+                        },
+                    )
                 continue
             count_empty_for_backoff = _itf_empty_draw_counts_toward_backoff(acceptance_players, cached_entry)
             cached_draws = (cached_entry or {}).get("draws") or {}
@@ -3015,15 +3017,11 @@ def main():
                 dtype_code
                 for dtype_code in requested_draw_types
                 if not (
-                    (dtype_code == "QS" and "Q" in excluded_codes)
-                    or (dtype_code == "MDS" and "M" in excluded_codes)
+                    (dtype_code == "QS" and "Q" in excluded_codes) or (dtype_code == "MDS" and "M" in excluded_codes)
                 )
             ]
             if not requested_draw_types:
-                logger.debug(
-                    f"  Skipping ITF draw for: {t_info.get('name', '')} "
-                    "(no ARG-relevant draw types remain)"
-                )
+                logger.debug(f"  Skipping ITF draw for: {t_info.get('name', '')} (no ARG-relevant draw types remain)")
                 continue
             itf_draw_jobs.append((week, t_key, t_info, count_empty_for_backoff, requested_draw_types))
 
@@ -3093,24 +3091,23 @@ def main():
         qs_complete = _draw_is_complete(prev_draws.get("QS"), is_qualifying=True)
         mds_complete = _draw_is_complete(prev_draws.get("MDS"))
         if mds_complete and (qs_complete or "QS" not in prev_draws):
-            logger.debug(f"  Draws complete, using cache: {t_info.get('name','')}")
+            logger.debug(f"  Draws complete, using cache: {t_info.get('name', '')}")
             arg_visibility = _itf_cached_draw_arg_visibility({"draws": prev_draws})
-            draws_store[store_key] = _merge_draw_store_entry(prev, {
-                "name": t_info["name"],
-                "level": t_info.get("level", ""),
-                "week": week,
-                "startDate": t_info.get("startDate"),
-                "endDate": t_info.get("endDate"),
-                "draws": prev_draws,
-                "arg_visibility": arg_visibility,
-            })
+            draws_store[store_key] = _merge_draw_store_entry(
+                prev,
+                {
+                    "name": t_info["name"],
+                    "level": t_info.get("level", ""),
+                    "week": week,
+                    "startDate": t_info.get("startDate"),
+                    "endDate": t_info.get("endDate"),
+                    "draws": prev_draws,
+                    "arg_visibility": arg_visibility,
+                },
+            )
             continue
 
-        t_draws = (
-            prefetched_itf_draws.get(store_key)
-            if isinstance(prefetched_itf_draws.get(store_key), dict)
-            else {}
-        )
+        t_draws = prefetched_itf_draws.get(store_key) if isinstance(prefetched_itf_draws.get(store_key), dict) else {}
         fetch_had_block = False
         if not t_draws:
             t_draws, meta = _fetch_itf_draws_with_meta(
@@ -3121,12 +3118,7 @@ def main():
                 requested_draw_types,
             )
             fetch_had_block = bool((meta or {}).get("blocked_responses"))
-        if (
-            not t_draws
-            and not itf_cooloff_applied
-            and i == 1
-            and len(itf_draw_jobs) >= ITF_FIRST_BURST_MIN_JOBS
-        ):
+        if not t_draws and not itf_cooloff_applied and i == 1 and len(itf_draw_jobs) >= ITF_FIRST_BURST_MIN_JOBS:
             # ITF often enforces a short temporary block after the tournament-id burst.
             # Wait once, then retry the same event with a fresh session.
             logger.warning(f"  ITF cooldown triggered ({ITF_FIRST_BURST_COOLDOWN_SEC}s) before retrying draw fetch...")
@@ -3167,12 +3159,9 @@ def main():
         if merged_draws:
             itf_consecutive_empty = 0
             itf_consecutive_blocked = 0
-            fetched_at = (
-                utc_timestamp()
-                if t_draws else get_cache_timestamp(DRAWS_STORE_CACHE_FILE, store_key, prev)
-            )
+            fetched_at = utc_timestamp() if t_draws else get_cache_timestamp(DRAWS_STORE_CACHE_FILE, store_key, prev)
             if not t_draws and prev_draws:
-                logger.warning(f"  Using cached ITF draws for: {t_info.get('name','')}")
+                logger.warning(f"  Using cached ITF draws for: {t_info.get('name', '')}")
             arg_visibility = _itf_cached_draw_arg_visibility({"draws": merged_draws})
             draws_store[store_key] = {
                 "name": t_info["name"],
@@ -3190,27 +3179,40 @@ def main():
             if fetch_had_block:
                 itf_consecutive_blocked += 1
                 itf_consecutive_empty = 0
-                if itf_consecutive_blocked >= ITF_CONSECUTIVE_BLOCKED_THRESHOLD and i < total_itf_draws:
-                    logger.warning(f"  ITF backoff triggered ({ITF_CONSECUTIVE_BLOCKED_BACKOFF_SEC}s) after consecutive 403 blocks.")
+                if (
+                    itf_consecutive_blocked >= ITF_CONSECUTIVE_BLOCKED_THRESHOLD
+                    and i < total_itf_draws
+                ):
+                    logger.warning(
+                        f"  ITF backoff triggered ({ITF_CONSECUTIVE_BLOCKED_BACKOFF_SEC}s) "
+                        "after consecutive 403 blocks."
+                    )
                     time.sleep(ITF_CONSECUTIVE_BLOCKED_BACKOFF_SEC)
                     itf_consecutive_blocked = 0
                     itf_consecutive_empty = 0
             elif count_empty_for_backoff:
                 itf_consecutive_empty += 1
                 itf_consecutive_blocked = 0
-                draw_fetch_errors.append({
-                    "key": t_key,
-                    "name": t_info.get("name", t_key),
-                    "startDate": (t_info.get("startDate") or "")[:10],
-                    "drawTypes": requested_draw_types,
-                    "reason": _itf_empty_draw_status(requested_draw_types),
-                })
+                draw_fetch_errors.append(
+                    {
+                        "key": t_key,
+                        "name": t_info.get("name", t_key),
+                        "startDate": (t_info.get("startDate") or "")[:10],
+                        "drawTypes": requested_draw_types,
+                        "reason": _itf_empty_draw_status(requested_draw_types),
+                    }
+                )
                 if itf_consecutive_empty >= ITF_CONSECUTIVE_EMPTY_THRESHOLD and i < total_itf_draws:
                     # Back off only for ARG-relevant empties; no-ARG events often
                     # legitimately return nothing and should not look like a block.
                     draw_label = _itf_draw_types_label(requested_draw_types)
-                    draw_noun = f"{draw_label} draw" if draw_label in {"main", "qualifying"} else f"{draw_label} draws"
-                    logger.warning(f"  ITF backoff triggered ({ITF_CONSECUTIVE_EMPTY_BACKOFF_SEC}s) after consecutive ARG-relevant empty {draw_noun} - refreshing session.")
+                    draw_noun = (
+                        f"{draw_label} draw" if draw_label in {"main", "qualifying"} else f"{draw_label} draws"
+                    )
+                    logger.warning(
+                        f"  ITF backoff triggered ({ITF_CONSECUTIVE_EMPTY_BACKOFF_SEC}s) after consecutive "
+                        f"ARG-relevant empty {draw_noun} - refreshing session."
+                    )
                     time.sleep(ITF_CONSECUTIVE_EMPTY_BACKOFF_SEC)
                     _quit_driver(driver, "recycle empty ITF browser")
                     driver = create_driver()
@@ -3233,7 +3235,7 @@ def main():
             continue
         try:
             end_date = datetime.strptime(end, "%Y-%m-%d").date()
-        except Exception:
+        except (TypeError, ValueError):
             continue
         if end_date < today:
             keys_to_delete.append(t_key)
@@ -3242,17 +3244,16 @@ def main():
 
     # Always remove explicitly excluded draws (e.g., Roland Garros) from cache/output.
     excluded_draw_keys = [
-        k for k, v in (draws_store or {}).items()
-        if _is_excluded_draw_tournament(k, v if isinstance(v, dict) else None)
+        k for k, v in (draws_store or {}).items() if _is_excluded_draw_tournament(k, v if isinstance(v, dict) else None)
     ]
     for t_key in excluded_draw_keys:
         draws_store.pop(t_key, None)
 
     # Remove any ITF draw entries that do not contain ARG players.
     argless_draw_keys = [
-        k for k, v in (draws_store or {}).items()
-        if str(k).lower().startswith("w-itf-")
-        and not _itf_cached_draw_arg_visibility(v).get("has_arg_any")
+        k
+        for k, v in (draws_store or {}).items()
+        if str(k).lower().startswith("w-itf-") and not _itf_cached_draw_arg_visibility(v).get("has_arg_any")
     ]
     for t_key in argless_draw_keys:
         draws_store.pop(t_key, None)
@@ -3274,7 +3275,11 @@ def main():
     # 7. Build calendar — uses cached WTA data
     full_wta = get_full_wta_calendar()
     _manual_entries_file = os.path.join(DATA_DIR, "manual_calendar_entries.json")
-    _manual_entries = json.load(open(_manual_entries_file, encoding="utf-8")) if os.path.exists(_manual_entries_file) else []
+    if os.path.exists(_manual_entries_file):
+        with open(_manual_entries_file, encoding="utf-8") as source:
+            _manual_entries = json.load(source)
+    else:
+        _manual_entries = []
     calendar_data = build_calendar_data(full_wta + full_itf + _manual_entries)
     build_calendar_snapshot(calendar_data)
 
@@ -3282,12 +3287,11 @@ def main():
     logger.info("Processing WTA Tournament Strength")
     build_tstrength_data()
 
+
 if __name__ == "__main__":
     from pipeline_transaction import run_current_script_transaction, transaction_is_active
 
     if transaction_is_active():
         main()
     else:
-        raise SystemExit(
-            run_current_script_transaction(__file__, include_generated_site=True)
-        )
+        raise SystemExit(run_current_script_transaction(__file__, include_generated_site=True))

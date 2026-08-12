@@ -12,7 +12,6 @@ from populate_data import itf_load_new
 from populate_data.bjkc_load_new import parse_tie_matches
 from populate_data.wta_load_new import parse_match
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 
 

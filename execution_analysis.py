@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import argparse
-from collections import Counter
 import json
-from pathlib import Path
 import re
+from collections import Counter
+from pathlib import Path
 from typing import Any
-
 
 PROMOTABLE_STATUSES = {"success", "degraded"}
 FINAL_STATUSES = {"success", "degraded", "partial", "failed"}

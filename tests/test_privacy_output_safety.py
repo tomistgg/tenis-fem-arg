@@ -3,7 +3,6 @@ from pathlib import Path
 
 from html_generator import _script_safe_json
 
-
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 
 

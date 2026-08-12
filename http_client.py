@@ -12,7 +12,6 @@ import requests
 from pipeline_errors import SourceRequestError
 from run_state import IssueSeverity, record_run_issue
 
-
 DEFAULT_TIMEOUT = (10.0, 30.0)
 RETRYABLE_STATUS_CODES = {408, 425, 429, 500, 502, 503, 504}
 

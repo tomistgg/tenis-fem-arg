@@ -1,24 +1,25 @@
 import json
-import time
-import pandas as pd
 import os
 import sys
-import requests
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
+
+import pandas as pd
+import requests
 
 # Allow imports from the project root when invoked as `python populate_data/itf_load_gs.py`.
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from utils import expand_gs_calendar_cache
 from canonical_data import source_match_key, sync_itf_players
 from http_client import get_with_retry, request_with_retry
-from transactional_io import atomic_write_dataframe
 from pipeline_errors import DataValidationError, PipelineError
 from run_state import report_run_issue
 from runtime_logging import get_logger
+from transactional_io import atomic_write_dataframe
+from utils import expand_gs_calendar_cache
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
@@ -26,6 +27,7 @@ from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
 logger = get_logger("grand-slam-loader")
 DATA_DIR = str(RUNTIME_DATA_DIR)
 TOURNAMENT_LINK_PREFIX = "/en/tournament/"
+
 
 def create_tournament_df(tournament_list):
     tournament_list = expand_gs_calendar_cache(tournament_list)
@@ -36,19 +38,22 @@ def create_tournament_df(tournament_list):
     rows = []
     for item in tournament_list:
         link = TOURNAMENT_LINK_PREFIX + item.get("tournamentLink", "")
-        t_key = link.rstrip('/').split('/')[-1] if link else None
+        t_key = link.rstrip("/").split("/")[-1] if link else None
 
-        rows.append({
-            "startDate": item.get("startDate"),
-            "tournamentName": item.get("tournamentName"),
-            "hostNation": item.get("hostNation"),
-            "category": item.get("category"),
-            "surfaceDesc": item.get("surfaceDesc"),
-            "indoorOrOutDoor": item.get("indoorOrOutDoor"),
-            "tournamentKey": t_key
-        })
+        rows.append(
+            {
+                "startDate": item.get("startDate"),
+                "tournamentName": item.get("tournamentName"),
+                "hostNation": item.get("hostNation"),
+                "category": item.get("category"),
+                "surfaceDesc": item.get("surfaceDesc"),
+                "indoorOrOutDoor": item.get("indoorOrOutDoor"),
+                "tournamentKey": t_key,
+            }
+        )
 
     return pd.DataFrame(rows)
+
 
 def fetch_itf_ids_to_json(keys_list):
     if not keys_list:
@@ -57,9 +62,12 @@ def fetch_itf_ids_to_json(keys_list):
     results = []
     session = requests.Session()
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        ),
         "Accept": "application/json, text/plain, */*",
-        "Referer": "https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/"
+        "Referer": "https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/",
     }
 
     for key in keys_list:
@@ -81,16 +89,16 @@ def fetch_itf_ids_to_json(keys_list):
             data = None
         except Exception as exc:
             report_run_issue(
-                "grand-slam-loader", "parse tournament ID", exc,
-                severity="partial", context={"tournament_key": str(key)},
+                "grand-slam-loader",
+                "parse tournament ID",
+                exc,
+                severity="partial",
+                context={"tournament_key": str(key)},
             )
             data = None
 
         if isinstance(data, dict) and data.get("tournamentId"):
-            results.append({
-                "tournamentKey": key,
-                "tournamentId": data["tournamentId"]
-            })
+            results.append({"tournamentKey": key, "tournamentId": data["tournamentId"]})
         elif data is not None:
             report_run_issue(
                 "grand-slam-loader",
@@ -101,6 +109,7 @@ def fetch_itf_ids_to_json(keys_list):
             )
 
     return json.dumps(results)
+
 
 def merge_ids_with_pandas(calendar_df, json_ids_string):
     try:
@@ -119,23 +128,26 @@ def merge_ids_with_pandas(calendar_df, json_ids_string):
 
 def fetch_api_data(tId, classification, week_number=0):
     url = "https://www.itftennis.com/tennis/api/TournamentApi/GetDrawsheet"
-    
+
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+        ),
         "Referer": f"https://www.itftennis.com/en/tournament/draws-and-results/print/?tournamentId={tId}&circuitCode=WT",
         "Origin": "https://www.itftennis.com",
         "Accept": "application/json, text/plain, */*",
     }
-    
+
     payload = {
         "circuitCode": "WT",
         "eventClassificationCode": classification,
         "matchTypeCode": "S",
         "tourType": "WT",
         "tournamentId": f"{tId}",
-        "weekNumber": week_number
+        "weekNumber": week_number,
     }
-    
+
     try:
         response = get_with_retry(
             url,
@@ -150,30 +162,32 @@ def fetch_api_data(tId, classification, week_number=0):
         report_run_issue("grand-slam-loader", "parse drawsheet", exc, severity="partial")
         return None
 
+
 def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
-    if not data or not isinstance(data, dict): return []
+    if not data or not isinstance(data, dict):
+        return []
     rows = []
-    
-    t_id = tourney_meta.get('tournamentId')
-    t_name = tourney_meta.get('tournamentName')
-    t_cat = tourney_meta.get('category')
-    t_surf = tourney_meta.get('surfaceDesc')
-    t_indoor = tourney_meta.get('indoorOrOutDoor', '')
-    t_io = 'I' if t_indoor == 'Indoor' else 'O'
-    t_nation = tourney_meta.get('hostNation')
-    
-    base_date = tourney_meta.get('startDate')
-    
+
+    t_id = tourney_meta.get("tournamentId")
+    t_name = tourney_meta.get("tournamentName")
+    t_cat = tourney_meta.get("category")
+    t_surf = tourney_meta.get("surfaceDesc")
+    t_indoor = tourney_meta.get("indoorOrOutDoor", "")
+    t_io = "I" if t_indoor == "Indoor" else "O"
+    t_nation = tourney_meta.get("hostNation")
+
+    base_date = tourney_meta.get("startDate")
+
     if base_date and "T" in base_date:
         base_date = base_date.split("T")[0]
 
-    t_date = base_date 
+    t_date = base_date
 
-    if base_date and week_offset != 0: 
+    if base_date and week_offset != 0:
         try:
-            date_obj = datetime.strptime(base_date, '%Y-%m-%d')
+            date_obj = datetime.strptime(base_date, "%Y-%m-%d")
             adjusted_date_obj = date_obj + timedelta(days=7 * week_offset)
-            t_date = adjusted_date_obj.strftime('%Y-%m-%d')
+            t_date = adjusted_date_obj.strftime("%Y-%m-%d")
         except Exception as e:
             raise DataValidationError(
                 component="grand-slam-loader",
@@ -202,33 +216,40 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
             matches = rnd.get("matches", [])
             for match in matches:
                 try:
-                    if match.get("playStatusCode") != "PC" and match.get("resultStatusCode") not in ("WO", "BYE"): continue
-                    
+                    if match.get("playStatusCode") != "PC" and match.get("resultStatusCode") not in ("WO", "BYE"):
+                        continue
+
                     matchId = match.get("matchId")
                     teams = match.get("teams", [])
-                    if len(teams) < 2: continue
-                    
+                    if len(teams) < 2:
+                        continue
+
                     is_winner_0 = str(teams[0].get("isWinner")).lower() == "true"
-                    
+
                     if is_winner_0:
                         winner, loser = teams[0], teams[1]
                     else:
                         winner, loser = teams[1], teams[0]
-                    
+
                     def get_p(t):
                         ps = t.get("players", [])
-                        if not ps or not isinstance(ps[0], dict): return "Unknown", "", ""
+                        if not ps or not isinstance(ps[0], dict):
+                            return "Unknown", "", ""
                         p = ps[0]
-                        return p.get('playerId',''), f"{p.get('givenName','')} {p.get('familyName','')}".strip(), p.get('nationality','')
+                        return (
+                            p.get("playerId", ""),
+                            f"{p.get('givenName', '')} {p.get('familyName', '')}".strip(),
+                            p.get("nationality", ""),
+                        )
 
                     w_id, w_n, w_c = get_p(winner)
                     l_id, l_n, l_c = get_p(loser)
-                    
-                    w_en = winner.get('entryStatus') or ""
-                    w_sd = winner.get('seeding') or ""
-                    l_en = loser.get('entryStatus') or ""
-                    l_sd = loser.get('seeding') or ""
-                    
+
+                    w_en = winner.get("entryStatus") or ""
+                    w_sd = winner.get("seeding") or ""
+                    l_en = loser.get("entryStatus") or ""
+                    l_sd = loser.get("seeding") or ""
+
                     # Score Parsing
                     w_s, l_s = winner.get("scores", []), loser.get("scores", [])
                     parts = []
@@ -241,9 +262,10 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
                             if sc_w is not None and sc_l is not None:
                                 s = f"{sc_w}-{sc_l}"
                                 tb = ws.get("losingScore") or ls.get("losingScore")
-                                if tb: s += f"({tb})"
+                                if tb:
+                                    s += f"({tb})"
                                 parts.append(s)
-                                
+
                     res = " ".join(parts)
                     status_desc = match.get("resultStatusDesc", "Completed")
                     if status_desc:
@@ -267,34 +289,38 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
                     if w_c != "ARG" and l_c != "ARG":
                         continue
 
-                    rows.append({
-                        "matchType": "GS",
-                        "matchId": matchId,
-                        "date": t_date,
-                        "tournamentId": t_id,
-                        "tournamentName": t_name,
-                        "tournamentCategory": t_cat,
-                        "surface": t_surf,
-                        "inOrOutdoor": t_io,
-                        "tournamentCountry": t_nation,
-                        "roundName": q_map.get(r_ds, r_ds) if draw_type == "Q" else r_ds,
-                        "draw": draw_type,
-                        "result": res,
-                        "resultStatusDesc": status_desc,
-                        "winnerId": w_id,
-                        "winnerEntry": w_en,
-                        "winnerSeed": w_sd,
-                        "winnerName": w_n,
-                        "winnerCountry": w_c,
-                        "loserId": l_id,
-                        "loserEntry": l_en,
-                        "loserSeed": l_sd,
-                        "loserName": l_n,
-                        "loserCountry": l_c
-                    })
+                    rows.append(
+                        {
+                            "matchType": "GS",
+                            "matchId": matchId,
+                            "date": t_date,
+                            "tournamentId": t_id,
+                            "tournamentName": t_name,
+                            "tournamentCategory": t_cat,
+                            "surface": t_surf,
+                            "inOrOutdoor": t_io,
+                            "tournamentCountry": t_nation,
+                            "roundName": q_map.get(r_ds, r_ds) if draw_type == "Q" else r_ds,
+                            "draw": draw_type,
+                            "result": res,
+                            "resultStatusDesc": status_desc,
+                            "winnerId": w_id,
+                            "winnerEntry": w_en,
+                            "winnerSeed": w_sd,
+                            "winnerName": w_n,
+                            "winnerCountry": w_c,
+                            "loserId": l_id,
+                            "loserEntry": l_en,
+                            "loserSeed": l_sd,
+                            "loserName": l_n,
+                            "loserCountry": l_c,
+                        }
+                    )
                 except Exception as e:
                     report_run_issue(
-                        "grand-slam-loader", "parse drawsheet match", e,
+                        "grand-slam-loader",
+                        "parse drawsheet match",
+                        e,
                         severity="partial",
                         context={
                             "tournament_id": str(t_id),
@@ -305,18 +331,18 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
                     continue
     return rows
 
+
 if __name__ == "__main__":
     from pipeline_transaction import run_current_script_transaction, transaction_is_active
 
     if not transaction_is_active():
         raise SystemExit(run_current_script_transaction(__file__))
 
-    gs_files = ['current_gs.json']
+    gs_files = ["current_gs.json"]
     all_matches = []
 
     for file_name in gs_files:
-
-        with open(os.path.join(DATA_DIR, file_name), 'r', encoding='utf-8') as f:
+        with open(os.path.join(DATA_DIR, file_name), encoding="utf-8") as f:
             raw_data = json.load(f)
 
         tournaments_df = create_tournament_df(raw_data)
@@ -331,11 +357,11 @@ if __name__ == "__main__":
 
         logger.debug("Step 3: Merging Data...")
         final_df = merge_ids_with_pandas(tournaments_df, json_ids_string)
-        final_df['tournamentId'] = final_df['tournamentId'].fillna(0).astype(int).astype(str).replace('0', '')
+        final_df["tournamentId"] = final_df["tournamentId"].fillna(0).astype(int).astype(str).replace("0", "")
 
         logger.info(f"Step 4: Fetching Match Details for {len(final_df)} tournaments...")
 
-        tournaments_list = final_df.to_dict('records')
+        tournaments_list = final_df.to_dict("records")
 
         for tourney in tournaments_list:
             tId = tourney.get("tournamentId")
@@ -366,9 +392,7 @@ if __name__ == "__main__":
             time.sleep(0.5)
 
     if all_matches:
-        added_players = sync_itf_players(
-            Path(DATA_DIR) / "player_aliases_wta_itf.json", all_matches
-        )
+        added_players = sync_itf_players(Path(DATA_DIR) / "player_aliases_wta_itf.json", all_matches)
         if added_players:
             logger.info(f"Added {added_players} new ITF identities to the canonical player table.")
         final_matches_df = pd.DataFrame(all_matches)
@@ -377,21 +401,21 @@ if __name__ == "__main__":
         if os.path.exists(file_path):
             existing_df = pd.read_csv(file_path, dtype=str, keep_default_na=False)
             combined_df = pd.concat([existing_df, final_matches_df], ignore_index=True)
-            combined_df['_canonical_key'] = combined_df.apply(
+            combined_df["_canonical_key"] = combined_df.apply(
                 lambda row: source_match_key(row.to_dict(), "grand_slam"), axis=1
             )
-            combined_df = combined_df.drop_duplicates(subset=['_canonical_key'], keep='last')
-            combined_df = combined_df.drop(columns=['_canonical_key'])
-            atomic_write_dataframe(combined_df, file_path, index=False, encoding='utf-8-sig')
+            combined_df = combined_df.drop_duplicates(subset=["_canonical_key"], keep="last")
+            combined_df = combined_df.drop(columns=["_canonical_key"])
+            atomic_write_dataframe(combined_df, file_path, index=False, encoding="utf-8-sig")
             logger.info(f"Appended current GS data; total rows: {len(combined_df)}; file: {file_path}")
         else:
-            final_matches_df['_canonical_key'] = final_matches_df.apply(
+            final_matches_df["_canonical_key"] = final_matches_df.apply(
                 lambda row: source_match_key(row.to_dict(), "grand_slam"), axis=1
             )
-            final_matches_df = final_matches_df.drop_duplicates(
-                subset=['_canonical_key'], keep='last'
-            ).drop(columns=['_canonical_key'])
-            atomic_write_dataframe(final_matches_df, file_path, index=False, encoding='utf-8-sig')
+            final_matches_df = final_matches_df.drop_duplicates(subset=["_canonical_key"], keep="last").drop(
+                columns=["_canonical_key"]
+            )
+            atomic_write_dataframe(final_matches_df, file_path, index=False, encoding="utf-8-sig")
             logger.info(f"Saved {len(final_matches_df)} ARG matches to {file_path}")
     else:
         logger.info("Finished processing files, but no ARG matches were found.")

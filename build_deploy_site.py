@@ -8,7 +8,6 @@ from runtime_logging import get_logger
 from runtime_paths import DATA_DIR
 from site_renderer import render_site_from_data
 
-
 logger = get_logger("build")
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_OUTPUT_DIR = BASE_DIR / ".site"

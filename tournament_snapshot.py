@@ -8,7 +8,6 @@ from collections.abc import Mapping
 from datetime import date
 from typing import Literal, TypedDict
 
-
 TOURNAMENT_SNAPSHOT_SCHEMA_VERSION: Literal[1] = 1
 TOURNAMENT_SNAPSHOT_FIELDS = (
     "name",

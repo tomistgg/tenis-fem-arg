@@ -23,15 +23,21 @@ def _browser_paths():
     browser = os.environ.get("CHROME_BINARY")
     if not browser:
         browser = next(
-            (shutil.which(name) for name in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser") if shutil.which(name)),
+            (
+                shutil.which(name)
+                for name in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser")
+                if shutil.which(name)
+            ),
             None,
         )
     if not browser and os.name == "nt":
-        browser = _first_existing([
-            Path(os.environ.get("PROGRAMFILES", "")) / "Google/Chrome/Application/chrome.exe",
-            Path(os.environ.get("PROGRAMFILES(X86)", "")) / "Google/Chrome/Application/chrome.exe",
-            Path(os.environ.get("LOCALAPPDATA", "")) / "Google/Chrome/Application/chrome.exe",
-        ])
+        browser = _first_existing(
+            [
+                Path(os.environ.get("PROGRAMFILES", "")) / "Google/Chrome/Application/chrome.exe",
+                Path(os.environ.get("PROGRAMFILES(X86)", "")) / "Google/Chrome/Application/chrome.exe",
+                Path(os.environ.get("LOCALAPPDATA", "")) / "Google/Chrome/Application/chrome.exe",
+            ]
+        )
     return browser, driver
 
 

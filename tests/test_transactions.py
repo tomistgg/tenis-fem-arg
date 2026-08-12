@@ -1,4 +1,3 @@
-import json
 import os
 from datetime import datetime
 from pathlib import Path
@@ -6,22 +5,21 @@ from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import patch
 
-import pytest
 import pandas as pd
+import pytest
 import requests
 import yaml
 
-from canonical_data import CanonicalConstraintError, source_match_key
-from http_client import request_with_retry
-from pipeline_errors import DataPromotionError, SourceRequestError
 import pipeline_transaction
 import populate_data.load_weekly_ranking as weekly_ranking
+from canonical_data import CanonicalConstraintError, source_match_key
+from generate_run_report import render_email_markdown
+from http_client import request_with_retry
+from pipeline_errors import DataPromotionError, SourceRequestError
 from populate_data.load_weekly_ranking import csv_date_is_complete
 from run_state import initialize_run_state, load_run_state, record_run_issue
 from time_utils import NEW_YORK
 from transactional_io import atomic_write_csv, atomic_write_dataframe
-from generate_run_report import render_email_markdown
-
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 
@@ -260,15 +258,18 @@ def test_http_retries_are_bounded_and_use_timeouts():
         response.url = url
         return response
 
-    with patch("http_client.time.sleep"), patch("http_client.random.uniform", return_value=0):
-        with pytest.raises(SourceRequestError):
-            request_with_retry(
-                "GET",
-                "https://example.invalid/data",
-                component="test-source",
-                attempts=3,
-                requester=unavailable,
-            )
+    with (
+        patch("http_client.time.sleep"),
+        patch("http_client.random.uniform", return_value=0),
+        pytest.raises(SourceRequestError),
+    ):
+        request_with_retry(
+            "GET",
+            "https://example.invalid/data",
+            component="test-source",
+            attempts=3,
+            requester=unavailable,
+        )
 
     assert len(calls) == 3
     assert all(call[2]["timeout"] == (10.0, 30.0) for call in calls)

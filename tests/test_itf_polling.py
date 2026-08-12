@@ -1,5 +1,5 @@
-from datetime import date, datetime, timezone
 import subprocess
+from datetime import UTC, date, datetime
 from types import SimpleNamespace
 
 import pandas as pd
@@ -116,7 +116,7 @@ def test_current_week_acceptance_is_refetched_and_withdrawal_removed(monkeypatch
     monkeypatch.setattr(
         main,
         "utc_now",
-        lambda: datetime(2026, 8, 10, 10, 0, tzinfo=timezone.utc),
+        lambda: datetime(2026, 8, 10, 10, 0, tzinfo=UTC),
     )
     monkeypatch.setattr(main, "_load_acceptance_state", lambda: {})
     monkeypatch.setattr(main, "_save_acceptance_state", lambda state: None)
@@ -179,7 +179,7 @@ def test_published_main_draw_permanently_closes_acceptance_refresh(monkeypatch):
         }
     }
 
-    current_time = [datetime(2026, 8, 10, 10, 0, tzinfo=timezone.utc)]
+    current_time = [datetime(2026, 8, 10, 10, 0, tzinfo=UTC)]
     monkeypatch.setattr(main, "utc_now", lambda: current_time[0])
     monkeypatch.setattr(main, "_load_acceptance_state", lambda: acceptance_state)
     monkeypatch.setattr(main, "_save_acceptance_state", lambda state: None)
@@ -207,7 +207,7 @@ def test_published_main_draw_permanently_closes_acceptance_refresh(monkeypatch):
 
     assert acceptance_state[tournament_key]["main_draw_available_date"] == "2026-08-10"
 
-    current_time[0] = datetime(2026, 8, 11, 10, 0, tzinfo=timezone.utc)
+    current_time[0] = datetime(2026, 8, 11, 10, 0, tzinfo=UTC)
     main.process_tournaments(
         **process_args,
         itf_main_draw_available_keys=set(),

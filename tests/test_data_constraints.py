@@ -13,11 +13,10 @@ from config import (
 from migrate_canonical_data import (
     NAME_OVERRIDE_BY_ITF_ID,
     NAME_OVERRIDE_BY_WTA_ID,
-    PRIMARY_ITF_BY_WTA_ID,
     PRESENTATION_BY_PLAYER_KEY,
+    PRIMARY_ITF_BY_WTA_ID,
     WTA_BY_ITF_ID,
 )
-
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 

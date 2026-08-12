@@ -25,7 +25,6 @@ from canonical_data import (
     write_player_rows,
 )
 
-
 # Evidence-backed corrections for identities that cannot be resolved
 # mechanically from a shared source name. Every override stores both the
 # unique canonical identity label and the public presentation name, even when

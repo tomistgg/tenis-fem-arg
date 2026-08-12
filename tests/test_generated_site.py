@@ -1,5 +1,5 @@
-import re
 import json
+import re
 import tempfile
 import unittest
 from html import unescape
@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import main as main_module
+from calendar_builder import format_week_label, get_monday_from_date
 from html_generator import (
     _CSP_META_RE,
     _display_calendar_tournament_name,
@@ -16,10 +17,8 @@ from html_generator import (
     _week_label_sort_key,
     country_flag_html,
 )
-from calendar_builder import format_week_label, get_monday_from_date
-from utils import expand_entry_lists_cache
 from site_renderer import render_site_from_data
-
+from utils import expand_entry_lists_cache
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 GENERATED_SITE_DIR = PROJECT_DIR

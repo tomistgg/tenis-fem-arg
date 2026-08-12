@@ -1,40 +1,47 @@
-﻿import json
 import base64
+import contextlib
 import hashlib
+import json
 import math
-import re
-from html import escape, unescape
 import os
+import re
 from datetime import datetime, timedelta
+from html import escape, unescape
 from pathlib import Path
+
 from config import (
-    PLAYER_IDENTITIES,
-    PLAYER_MAPPING,
     CONTINENT_KEYS,
     CONTINENT_LABELS,
     MOBILE_CONTINENT_LABELS,
     NAME_LOOKUP,
+    PLAYER_IDENTITIES,
+    PLAYER_MAPPING,
     load_player_mapping,
     player_name_only,
     resolve_player_display_name,
     resolve_player_presentation_name,
 )
-from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR, SITE_ROOT as RUNTIME_SITE_ROOT
-from time_utils import madrid_today
 from pipeline_errors import DataValidationError
 from run_state import report_run_issue
 from runtime_logging import get_logger
+from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
+from runtime_paths import SITE_ROOT as RUNTIME_SITE_ROOT
+from time_utils import madrid_today
 from utils import (
-    dumps_readable, format_player_name, get_tournament_sort_order,
-    get_surface_class, fix_encoding_keep_accents,
-    compress_history_data, dumps_history_data,
+    compress_history_data,
+    dumps_history_data,
+    dumps_readable,
     dumps_wta_rankings_bundle,
+    expand_points_distribution,
+    expand_tournament_draw_sizes,
     expand_wta_calendar_cache,
-    expand_points_distribution, expand_tournament_draw_sizes,
+    fix_encoding_keep_accents,
+    format_player_name,
+    get_surface_class,
+    get_tournament_sort_order,
     write_text_if_changed,
 )
 from wta import _load_wta_csv
-
 
 logger = get_logger("html-generator")
 
@@ -143,8 +150,7 @@ def _script_safe_json(payload, **options):
 
     serialized = json.dumps(payload, **options)
     return (
-        serialized
-        .replace("<", "\\u003c")
+        serialized.replace("<", "\\u003c")
         .replace(">", "\\u003e")
         .replace("&", "\\u0026")
         .replace("\u2028", "\\u2028")
@@ -160,12 +166,8 @@ def _roll_forward_passed_gs_cutoffs(gs_data, today):
         q_cutoff = gs.get("qCutoff")
         if q_cutoff in ("N/A", "") or q_cutoff >= today_str:
             continue
-        gs["qCutoff"] = (
-            datetime.strptime(q_cutoff, "%Y-%m-%d") + timedelta(weeks=52)
-        ).strftime("%Y-%m-%d")
-        gs["mdCutoff"] = (
-            datetime.strptime(gs["mdCutoff"], "%Y-%m-%d") + timedelta(weeks=52)
-        ).strftime("%Y-%m-%d")
+        gs["qCutoff"] = (datetime.strptime(q_cutoff, "%Y-%m-%d") + timedelta(weeks=52)).strftime("%Y-%m-%d")
+        gs["mdCutoff"] = (datetime.strptime(gs["mdCutoff"], "%Y-%m-%d") + timedelta(weeks=52)).strftime("%Y-%m-%d")
         if isinstance(gs.get("year"), int):
             gs["year"] += 1
 
@@ -290,87 +292,249 @@ def _write_frontend_assets(site_root, frontend_data):
 
 
 IOC_TO_ISO2 = {
-    'ALB':'al','ALG':'dz','AND':'ad','ANG':'ao','ARG':'ar','ARM':'am','ASA':'as','AUS':'au','AUT':'at','AZE':'az',
-    'BAH':'bs','BAR':'bb','BDI':'bi','BEL':'be','BEN':'bj','BIH':'ba','BLR':'by','BOL':'bo',
-    'BOT':'bw','BRA':'br','BUL':'bg','CAL':'nc','CAM':'kh','CAN':'ca','CHI':'cl','CHL':'cl','CHN':'cn',
-    'CIV':'ci','CMR':'cm','COD':'cd','COL':'co','CRC':'cr','CRO':'hr','CUB':'cu','CUW':'cw','CYP':'cy','CZE':'cz','CZS':'cz',
-    'DEN':'dk','DOM':'do','DZA':'dz','ECU':'ec','EGY':'eg','ESA':'sv','ESP':'es','EST':'ee',
-    'FIJ':'fj','FIN':'fi','FRA':'fr','FRG':'de',
-    'GAB':'ga','GBR':'gb','GEO':'ge','GER':'de','GHA':'gh','GLP':'gp','GRB':'gb','GRE':'gr','GRC':'gr','GUA':'gt',
-    'HAI':'ht','HKG':'hk','HRV':'hr','HUN':'hu',
-    'INA':'id','IND':'in','IRI':'ir','IRL':'ie','IRN':'ir','ISR':'il','ITA':'it',
-    'JAM':'jm','JOR':'jo','JPN':'jp',
-    'KAZ':'kz','KEN':'ke','KGZ':'kg','KHM':'kh','KOR':'kr','KOS':'xk','KSA':'sa',
-    'LAO':'la','LAT':'lv','LIE':'li','LTU':'lt','LUX':'lu',
-    'MAD':'mg','MAR':'ma','MAS':'my','MDA':'md','MEX':'mx','MKD':'mk','MLI':'ml','MLT':'mt','MNE':'me','MON':'mc',
-    'MRI':'mu','MOZ':'mz','NAM':'na','NCA':'ni','NCD':'nc','NED':'nl','NEP':'np','NET':'nl','NGA':'ng','NGR':'ng','NOR':'no','NZL':'nz',
-    'OMA':'om','OMN':'om','PAK':'pk','PAN':'pa','PAR':'py','PER':'pe','PHI':'ph','PLE':'ps','PNG':'pg',
-    'POL':'pl','POR':'pt','PUR':'pr','QAT':'qa',
-    'ROC':'ru','ROM':'ro','ROU':'ro','RSA':'za','RUS':'ru',
-    'SAF':'za','SAM':'ws','SEN':'sn','SGP':'sg','SIN':'sg','SLO':'si','SMR':'sm',
-    'SRB':'rs','SRI':'lk','SUI':'ch','SVK':'sk','SWE':'se','SYR':'sy',
-    'TCH':'cz',
-    'THA':'th','TKM':'tm','TOG':'tg','TPE':'tw','TRI':'tt','TTO':'tt','TUN':'tn','TUR':'tr',
-    'UAE':'ae','UKR':'ua','URU':'uy','USA':'us','UZB':'uz','VEN':'ve','VIE':'vn',
-    'XKX':'xk','ZAM':'zm','ZIM':'zw',
+    "ALB": "al",
+    "ALG": "dz",
+    "AND": "ad",
+    "ANG": "ao",
+    "ARG": "ar",
+    "ARM": "am",
+    "ASA": "as",
+    "AUS": "au",
+    "AUT": "at",
+    "AZE": "az",
+    "BAH": "bs",
+    "BAR": "bb",
+    "BDI": "bi",
+    "BEL": "be",
+    "BEN": "bj",
+    "BIH": "ba",
+    "BLR": "by",
+    "BOL": "bo",
+    "BOT": "bw",
+    "BRA": "br",
+    "BUL": "bg",
+    "CAL": "nc",
+    "CAM": "kh",
+    "CAN": "ca",
+    "CHI": "cl",
+    "CHL": "cl",
+    "CHN": "cn",
+    "CIV": "ci",
+    "CMR": "cm",
+    "COD": "cd",
+    "COL": "co",
+    "CRC": "cr",
+    "CRO": "hr",
+    "CUB": "cu",
+    "CUW": "cw",
+    "CYP": "cy",
+    "CZE": "cz",
+    "CZS": "cz",
+    "DEN": "dk",
+    "DOM": "do",
+    "DZA": "dz",
+    "ECU": "ec",
+    "EGY": "eg",
+    "ESA": "sv",
+    "ESP": "es",
+    "EST": "ee",
+    "FIJ": "fj",
+    "FIN": "fi",
+    "FRA": "fr",
+    "FRG": "de",
+    "GAB": "ga",
+    "GBR": "gb",
+    "GEO": "ge",
+    "GER": "de",
+    "GHA": "gh",
+    "GLP": "gp",
+    "GRB": "gb",
+    "GRE": "gr",
+    "GRC": "gr",
+    "GUA": "gt",
+    "HAI": "ht",
+    "HKG": "hk",
+    "HRV": "hr",
+    "HUN": "hu",
+    "INA": "id",
+    "IND": "in",
+    "IRI": "ir",
+    "IRL": "ie",
+    "IRN": "ir",
+    "ISR": "il",
+    "ITA": "it",
+    "JAM": "jm",
+    "JOR": "jo",
+    "JPN": "jp",
+    "KAZ": "kz",
+    "KEN": "ke",
+    "KGZ": "kg",
+    "KHM": "kh",
+    "KOR": "kr",
+    "KOS": "xk",
+    "KSA": "sa",
+    "LAO": "la",
+    "LAT": "lv",
+    "LIE": "li",
+    "LTU": "lt",
+    "LUX": "lu",
+    "MAD": "mg",
+    "MAR": "ma",
+    "MAS": "my",
+    "MDA": "md",
+    "MEX": "mx",
+    "MKD": "mk",
+    "MLI": "ml",
+    "MLT": "mt",
+    "MNE": "me",
+    "MON": "mc",
+    "MRI": "mu",
+    "MOZ": "mz",
+    "NAM": "na",
+    "NCA": "ni",
+    "NCD": "nc",
+    "NED": "nl",
+    "NEP": "np",
+    "NET": "nl",
+    "NGA": "ng",
+    "NGR": "ng",
+    "NOR": "no",
+    "NZL": "nz",
+    "OMA": "om",
+    "OMN": "om",
+    "PAK": "pk",
+    "PAN": "pa",
+    "PAR": "py",
+    "PER": "pe",
+    "PHI": "ph",
+    "PLE": "ps",
+    "PNG": "pg",
+    "POL": "pl",
+    "POR": "pt",
+    "PUR": "pr",
+    "QAT": "qa",
+    "ROC": "ru",
+    "ROM": "ro",
+    "ROU": "ro",
+    "RSA": "za",
+    "RUS": "ru",
+    "SAF": "za",
+    "SAM": "ws",
+    "SEN": "sn",
+    "SGP": "sg",
+    "SIN": "sg",
+    "SLO": "si",
+    "SMR": "sm",
+    "SRB": "rs",
+    "SRI": "lk",
+    "SUI": "ch",
+    "SVK": "sk",
+    "SWE": "se",
+    "SYR": "sy",
+    "TCH": "cz",
+    "THA": "th",
+    "TKM": "tm",
+    "TOG": "tg",
+    "TPE": "tw",
+    "TRI": "tt",
+    "TTO": "tt",
+    "TUN": "tn",
+    "TUR": "tr",
+    "UAE": "ae",
+    "UKR": "ua",
+    "URU": "uy",
+    "USA": "us",
+    "UZB": "uz",
+    "VEN": "ve",
+    "VIE": "vn",
+    "XKX": "xk",
+    "ZAM": "zm",
+    "ZIM": "zw",
 }
 
 # ``national_team_order.csv`` stores the opposing nation as a display name in
 # its legacy Tie column. Keep that source value available for the flag even
 # though the column itself is no longer rendered in Player Debuts.
 _BJKC_TIE_COUNTRY_CODES = {
-    name.casefold(): code for name, code in {
-        'Australia': 'AUS', 'Austria': 'AUT', 'Belgium': 'BEL', 'Bolivia': 'BOL',
-        'Bulgaria': 'BUL', 'Chile': 'CHI', 'Colombia': 'COL', 'Croatia': 'CRO',
-        'Cuba': 'CUB', 'Denmark': 'DEN', 'Dominican Republic': 'DOM', 'Ecuador': 'ECU',
-        'Estonia': 'EST', 'Finland': 'FIN', 'France': 'FRA', 'Germany F.R.': 'FRG',
-        'Greece': 'GRE', 'Guatemala': 'GUA', 'Hungary': 'HUN', 'Japan': 'JPN',
-        'Korea, Rep.': 'KOR', 'Netherlands': 'NED', 'New Zealand': 'NZL',
-        'Paraguay': 'PAR', 'Peru': 'PER', 'Philippines': 'PHI', 'Poland': 'POL',
-        'Russia': 'RUS', 'Slovenia': 'SLO', 'Sweden': 'SWE', 'Switzerland': 'SUI',
-        'Ukraine': 'UKR', 'USA': 'USA', 'Venezuela': 'VEN',
+    name.casefold(): code
+    for name, code in {
+        "Australia": "AUS",
+        "Austria": "AUT",
+        "Belgium": "BEL",
+        "Bolivia": "BOL",
+        "Bulgaria": "BUL",
+        "Chile": "CHI",
+        "Colombia": "COL",
+        "Croatia": "CRO",
+        "Cuba": "CUB",
+        "Denmark": "DEN",
+        "Dominican Republic": "DOM",
+        "Ecuador": "ECU",
+        "Estonia": "EST",
+        "Finland": "FIN",
+        "France": "FRA",
+        "Germany F.R.": "FRG",
+        "Greece": "GRE",
+        "Guatemala": "GUA",
+        "Hungary": "HUN",
+        "Japan": "JPN",
+        "Korea, Rep.": "KOR",
+        "Netherlands": "NED",
+        "New Zealand": "NZL",
+        "Paraguay": "PAR",
+        "Peru": "PER",
+        "Philippines": "PHI",
+        "Poland": "POL",
+        "Russia": "RUS",
+        "Slovenia": "SLO",
+        "Sweden": "SWE",
+        "Switzerland": "SUI",
+        "Ukraine": "UKR",
+        "USA": "USA",
+        "Venezuela": "VEN",
     }.items()
 }
 
 # Dissolved countries with local SVG flags
-LOCAL_FLAGS = {'AHO', 'YUG', 'SCG', 'CIS', 'URS'}
+LOCAL_FLAGS = {"AHO", "YUG", "SCG", "CIS", "URS"}
 
-FLAG_STYLE = 'vertical-align:middle;margin-right:3px;width:16px;height:11px;outline:0.3px solid #000'
+FLAG_STYLE = "vertical-align:middle;margin-right:3px;width:16px;height:11px;outline:0.3px solid #000"
 
 # Road-to-GS thresholds â€” single source of truth shared between JS logic and the
 # user-facing legend text so the displayed numbers can't drift from the calculation.
 GS_THRESHOLD_Q = 330
 GS_THRESHOLD_MD = 780
 
+
 def country_flag_html(code, show_code=True):
-    if not code or code == '-':
-        return code or ''
+    if not code or code == "-":
+        return code or ""
     upper = code.upper()
     if upper == "GRC":
         upper = "GRE"
         code = "GRE"
     if upper in LOCAL_FLAGS:
         img = f'<img src="data/flags/{upper.lower()}.svg" alt="{code}" title="{code}" style="{FLAG_STYLE}">'
-        return f'{img}{code}' if show_code else img
+        return f"{img}{code}" if show_code else img
     iso = IOC_TO_ISO2.get(upper)
     if not iso:
         return code
     img = f'<img src="https://purecatamphetamine.github.io/country-flag-icons/3x2/{iso.upper()}.svg" alt="{code}" title="{code}" style="{FLAG_STYLE}">'
-    return f'{img}{code}' if show_code else img
+    return f"{img}{code}" if show_code else img
 
 
 def _bjkc_tie_country_code(value):
-    raw = str(value or '').strip()
+    raw = str(value or "").strip()
     if not raw:
-        return ''
+        return ""
     upper = raw.upper()
     if upper in IOC_TO_ISO2:
         return upper
-    return _BJKC_TIE_COUNTRY_CODES.get(raw.casefold(), '')
+    return _BJKC_TIE_COUNTRY_CODES.get(raw.casefold(), "")
 
 
 def _player_display_name(raw_name):
-    name = fix_encoding_keep_accents(str(raw_name or '')).strip()
+    name = fix_encoding_keep_accents(str(raw_name or "")).strip()
     if not name:
         return ""
     mapped = NAME_LOOKUP.get(name.upper(), name)
@@ -382,16 +546,18 @@ def _write_js_bundle_file(bundle_path, global_name, data, formatter=None):
     os.makedirs(os.path.dirname(bundle_path), exist_ok=True)
     dump_func = formatter or dumps_readable
     payload = dump_func(data, ensure_ascii=False)
-    write_text_if_changed(bundle_path, f'window.{global_name} = {payload};\n', encoding='utf-8')
+    write_text_if_changed(bundle_path, f"window.{global_name} = {payload};\n", encoding="utf-8")
 
 
 _LEGACY_WTA_RANKING_BUNDLES = {
-    'wta_rankings_20_29_bundle.js',
-    'wta_rankings_10_19_bundle.js',
-    'wta_rankings_00_09_bundle.js',
-    'wta_rankings_83_99_bundle.js',
+    "wta_rankings_20_29_bundle.js",
+    "wta_rankings_10_19_bundle.js",
+    "wta_rankings_00_09_bundle.js",
+    "wta_rankings_83_99_bundle.js",
 }
-_YEAR_WTA_RANKING_BUNDLE_RE = re.compile(r'^wta_rankings_\d{4}_bundle\.js$')
+_YEAR_WTA_RANKING_BUNDLE_RE = re.compile(r"^wta_rankings_\d{4}_bundle\.js$")
+
+
 def _ranking_display_name(player):
     """Resolve a ranking identity to its explicitly configured public name.
 
@@ -416,7 +582,7 @@ def _ranking_bundle_rows(players):
             "pts": player.get("Points", 0),
             "n": _ranking_display_name(player),
             "c": player.get("Country", ""),
-            "d": str(player.get("DOB", "") or "").replace('\r', '').strip(),
+            "d": str(player.get("DOB", "") or "").replace("\r", "").strip(),
         }
         identity = (
             row["n"].casefold(),
@@ -451,30 +617,23 @@ def _write_wta_ranking_bundles(rankings_by_date, data_dir, dates=None):
             continue
         dates_by_year.setdefault(year, []).append(date_str)
 
-    expected_files = {'wta_rankings_latest_bundle.js'}
+    expected_files = {"wta_rankings_latest_bundle.js"}
     for year, year_dates in sorted(dates_by_year.items()):
-        filename = f'wta_rankings_{year}_bundle.js'
-        payload = {
-            date_str: _ranking_bundle_rows(rankings_by_date.get(date_str) or [])
-            for date_str in year_dates
-        }
+        filename = f"wta_rankings_{year}_bundle.js"
+        payload = {date_str: _ranking_bundle_rows(rankings_by_date.get(date_str) or []) for date_str in year_dates}
         _write_js_bundle_file(
             os.path.join(data_dir, filename),
-            f'__WTA_RANKINGS_{year}__',
+            f"__WTA_RANKINGS_{year}__",
             payload,
             formatter=dumps_wta_rankings_bundle,
         )
         expected_files.add(filename)
 
-    latest_date = all_dates[-1] if all_dates else ''
-    latest_payload = (
-        {latest_date: _ranking_bundle_rows(rankings_by_date.get(latest_date) or [])}
-        if latest_date
-        else {}
-    )
+    latest_date = all_dates[-1] if all_dates else ""
+    latest_payload = {latest_date: _ranking_bundle_rows(rankings_by_date.get(latest_date) or [])} if latest_date else {}
     _write_js_bundle_file(
-        os.path.join(data_dir, 'wta_rankings_latest_bundle.js'),
-        '__WTA_RANKINGS_LATEST__',
+        os.path.join(data_dir, "wta_rankings_latest_bundle.js"),
+        "__WTA_RANKINGS_LATEST__",
         latest_payload,
         formatter=dumps_wta_rankings_bundle,
     )
@@ -513,10 +672,8 @@ def _history_draw_keys(tournament_id, date_value, tournament_name):
     keys = []
     norm_id = str(tournament_id or "").strip()
     if norm_id:
-        try:
+        with contextlib.suppress(ValueError):
             norm_id = str(int(norm_id))
-        except ValueError:
-            pass
         keys.append(f"id|{norm_id}|{year}")
     norm_name = str(tournament_name or "").strip().upper()
     if norm_name:
@@ -568,10 +725,25 @@ def _build_history_draw_slot_lookup(cleaned_history):
         if slot_size
     }
 
-def generate_html(tournament_groups, tournament_store, players_data, schedule_map,
-                  cleaned_history, calendar_data, match_history_data, wta_rankings=None,
-                  national_team_data=None, captains_data=None, draws_data=None,
-                  tstrength_data=None, monday_map=None, *, data_dir=None, site_root=None):
+
+def generate_html(
+    tournament_groups,
+    tournament_store,
+    players_data,
+    schedule_map,
+    cleaned_history,
+    calendar_data,
+    match_history_data,
+    wta_rankings=None,
+    national_team_data=None,
+    captains_data=None,
+    draws_data=None,
+    tstrength_data=None,
+    monday_map=None,
+    *,
+    data_dir=None,
+    site_root=None,
+):
     """Generate the full app page (app.html) + a lightweight launcher (index.html)."""
 
     source_data_dir = os.fspath(data_dir or RUNTIME_DATA_DIR)
@@ -580,8 +752,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     os.makedirs(output_data_dir, exist_ok=True)
 
     # Load points distribution
-    points_dist_path = os.path.join(source_data_dir, 'points_distribution.json')
-    with open(points_dist_path, 'r', encoding='utf-8') as f:
+    points_dist_path = os.path.join(source_data_dir, "points_distribution.json")
+    with open(points_dist_path, encoding="utf-8") as f:
         points_distribution = expand_points_distribution(json.load(f))
 
     def _history_identity_source(match_type):
@@ -595,36 +767,41 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         return value.casefold()
 
     def _normalize_history_player_name(raw_name, *, player_id="", source=""):
-        name = fix_encoding_keep_accents(str(raw_name or '')).strip()
+        name = fix_encoding_keep_accents(str(raw_name or "")).strip()
         if not name:
             return name
-        if '/' in name:
-            return ' / '.join(
+        if "/" in name:
+            return " / ".join(
                 _normalize_history_player_name(part, source=source) if part.strip() else part.strip()
-                for part in name.split('/')
+                for part in name.split("/")
             )
-        mapped = resolve_player_display_name(
-            source, player_id=player_id, name=name
-        )
+        mapped = resolve_player_display_name(source, player_id=player_id, name=name)
         return format_player_name(mapped)
 
     def _normalize_history_row(row):
         if not isinstance(row, dict):
             return row
         normalized = dict(row)
-        source = _history_identity_source(normalized.get('MATCH_TYPE'))
+        source = _history_identity_source(normalized.get("MATCH_TYPE"))
         for field in (
-            '_winnerName', '_loserName', 'winnerName', 'loserName',
-            'winner_name', 'loser_name', 'PLAYER', 'OPPONENT', 'RIVAL',
-            'player', 'opponent', 'rival',
+            "_winnerName",
+            "_loserName",
+            "winnerName",
+            "loserName",
+            "winner_name",
+            "loser_name",
+            "PLAYER",
+            "OPPONENT",
+            "RIVAL",
+            "player",
+            "opponent",
+            "rival",
         ):
             value = normalized.get(field)
-            if isinstance(value, str) and value.strip() and '/' not in value:
-                side = 'winner' if 'winner' in field.lower() else 'loser' if 'loser' in field.lower() else ''
-                player_id = normalized.get(f'_{side}Id') if side else ''
-                normalized[field] = _normalize_history_player_name(
-                    value, player_id=player_id, source=source
-                )
+            if isinstance(value, str) and value.strip() and "/" not in value:
+                side = "winner" if "winner" in field.lower() else "loser" if "loser" in field.lower() else ""
+                player_id = normalized.get(f"_{side}Id") if side else ""
+                normalized[field] = _normalize_history_player_name(value, player_id=player_id, source=source)
         return normalized
 
     cleaned_history = [_normalize_history_row(row) for row in (cleaned_history or [])]
@@ -633,9 +810,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     # The browser lazy-loads this classic-script bundle. Do not also persist an
     # identical JSON copy: it doubled the 14.5 MB payload without any consumer.
-    history_bundle_path = os.path.join(output_data_dir, 'history_data_bundle.js')
+    history_bundle_path = os.path.join(output_data_dir, "history_data_bundle.js")
     try:
-        _write_js_bundle_file(history_bundle_path, '__WTA_HISTORY_DATA__', compact_history, formatter=dumps_history_data)
+        _write_js_bundle_file(
+            history_bundle_path, "__WTA_HISTORY_DATA__", compact_history, formatter=dumps_history_data
+        )
     except (OSError, TypeError, ValueError) as e:
         raise DataValidationError(
             component="html_generator",
@@ -643,18 +822,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             message="could not write the browser history bundle",
             context={"cause": str(e), "path": history_bundle_path},
         ) from e
-    redundant_history_path = os.path.join(output_data_dir, 'history_data.json')
+    redundant_history_path = os.path.join(output_data_dir, "history_data.json")
     if os.path.exists(redundant_history_path):
         os.remove(redundant_history_path)
 
-    player_aliases_bundle_path = os.path.join(output_data_dir, 'player_aliases_wta_itf_bundle.js')
+    player_aliases_bundle_path = os.path.join(output_data_dir, "player_aliases_wta_itf_bundle.js")
     try:
         # The ranking preflight may add newly seen WTA IDs in a subprocess, so
         # reload from disk instead of relying on this process's import-time copy.
-        identities_path = os.path.join(source_data_dir, 'player_aliases_wta_itf.json')
+        identities_path = os.path.join(source_data_dir, "player_aliases_wta_itf.json")
         player_mapping_bundle = None
         try:
-            with open(identities_path, 'r', encoding='utf-8-sig') as identities_file:
+            with open(identities_path, encoding="utf-8-sig") as identities_file:
                 candidate = json.load(identities_file)
             if isinstance(candidate, list):
                 player_mapping_bundle = candidate
@@ -667,28 +846,27 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 {
                     **identity,
                     "display_name": (
-                        identity.get("presentation_name")
-                        or player_name_only(identity.get("display_name"))
+                        identity.get("presentation_name") or player_name_only(identity.get("display_name"))
                     ),
                 }
                 if isinstance(identity, dict)
                 else identity
                 for identity in player_mapping_bundle
             ]
-        _write_js_bundle_file(player_aliases_bundle_path, '__WTA_PLAYER_MAPPING__', player_mapping_bundle)
+        _write_js_bundle_file(player_aliases_bundle_path, "__WTA_PLAYER_MAPPING__", player_mapping_bundle)
     except (OSError, TypeError, ValueError) as e:
         logger.warning(f"[warn] could not write player_aliases_wta_itf_bundle.js: {e}")
 
     # Load tournament draw sizes (combined WTA + ITF)
-    draw_sizes_path = os.path.join(source_data_dir, 'tournament_draw_sizes.json')
+    draw_sizes_path = os.path.join(source_data_dir, "tournament_draw_sizes.json")
     try:
-        with open(draw_sizes_path, 'r', encoding='utf-8') as f:
+        with open(draw_sizes_path, encoding="utf-8") as f:
             all_draw_sizes = expand_tournament_draw_sizes(json.load(f))
     except (OSError, json.JSONDecodeError) as e:
         logger.warning(f"[warn] could not load tournament_draw_sizes.json: {e}")
         all_draw_sizes = []
-    itf_draw_sizes = [t for t in all_draw_sizes if t.get('source') == 'ITF']
-    wta_draw_sizes = [t for t in all_draw_sizes if t.get('source') == 'WTA']
+    itf_draw_sizes = [t for t in all_draw_sizes if t.get("source") == "ITF"]
+    wta_draw_sizes = [t for t in all_draw_sizes if t.get("source") == "WTA"]
 
     # Build tournament name â†’ surface lookup (used by Schedule and Entry Lists)
     _SCHED_SURFACE_COLORS = {
@@ -717,11 +895,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         if not _n or not _s:
             return
         _name_to_surface[_n.lower()] = _s
-        _base_n = re.sub(r'\s+\d+$', '', _n).strip()
+        _base_n = re.sub(r"\s+\d+$", "", _n).strip()
         if _base_n != _n:
             _name_to_surface.setdefault(_base_n.lower(), _s)
 
-    for _cw in (calendar_data or []):
+    for _cw in calendar_data or []:
         for _ck in ["gs", "wta_tour", "wta_125", "itf"]:
             for _ct in _cw.get("columns", {}).get(_ck, {}).values():
                 for _t in _ct:
@@ -742,7 +920,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     wta_country_map = {}
     wta_cache_path = os.path.join(source_data_dir, "wta_full_calendar_cache.json")
     try:
-        with open(wta_cache_path, "r", encoding="utf-8") as f:
+        with open(wta_cache_path, encoding="utf-8") as f:
             wta_cache = json.load(f)
         wta_cache = expand_wta_calendar_cache(wta_cache)
         wta_items = wta_cache.get("items", wta_cache) if isinstance(wta_cache, dict) else wta_cache
@@ -760,9 +938,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     def _entry_country_from_key(t_key, t_info):
         country = _normalize_entry_country(
-            (t_info or {}).get("country", "")
-            or (t_info or {}).get("countryCode", "")
-            or ""
+            (t_info or {}).get("country", "") or (t_info or {}).get("countryCode", "") or ""
         )
         if country:
             return country
@@ -793,15 +969,14 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     entry_menu_html = ""
     first_key = None
     legend_html = '<div class="entry-menu-legend"><span class="entry-menu-gm-sample">99.9</span> Geometric Mean: Overall draw quality across all players.</div>'
-    for week, tourneys in sorted(
-        tournament_groups.items(), key=lambda item: _week_label_sort_key(item[0])
-    ):
+    for week, tourneys in sorted(tournament_groups.items(), key=lambda item: _week_label_sort_key(item[0])):
         week_has_data = False
-        for t_key in tourneys.keys():
+        for t_key in tourneys:
             if t_key in tournament_store and tournament_store[t_key]:
                 week_has_data = True
                 break
-        if not week_has_data: continue
+        if not week_has_data:
+            continue
 
         entry_menu_html += f'<div class="entry-menu-week">{week.upper()}</div>'
         sorted_tourneys = sorted(tourneys.items(), key=lambda x: get_tournament_sort_order(x[1]["level"]))
@@ -818,14 +993,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 t_flag_html = f'<span class="entry-menu-flag">{t_flag}</span>' if t_flag else ""
                 t_dot = _sched_dot(t_source_name)
                 active = " active" if first_key is None else ""
-                if first_key is None: first_key = t_key
+                if first_key is None:
+                    first_key = t_key
                 entry_menu_html += (
                     f'<div class="entry-menu-item{active}" data-key="{t_key}" data-country="{escape(t_country)}" '
                     f'data-level="{t_level}" onclick="selectEntryTournament(this)">'
                     f'<div class="entry-menu-top">{t_dot}<span class="entry-menu-level">{t_level}</span>'
-                    f'{t_flag_html}'
+                    f"{t_flag_html}"
                     f'<span class="entry-menu-gm"><span class="entry-menu-gm-value">-</span></span>'
-                    f'</div>'
+                    f"</div>"
                     f'<div class="entry-menu-name">{escape(t_name)}</div></div>'
                 )
 
@@ -854,14 +1030,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 first_draw_tkey = t_key
                 selected = " selected"
             draws_dropdown_html += f'<option value="{t_key}"{selected}>{t_name}</option>'
-        draws_dropdown_html += '</optgroup>'
+        draws_dropdown_html += "</optgroup>"
 
     draws_tournament_info = {}
     for t_key, tdata in draws_data.items():
-        draw_types = [
-            dt for dt, di in tdata.get("draws", {}).items()
-            if isinstance(di, dict) and di.get("players")
-        ]
+        draw_types = [dt for dt, di in tdata.get("draws", {}).items() if isinstance(di, dict) and di.get("players")]
         draws_tournament_info[t_key] = {"name": tdata["name"], "types": draw_types}
 
     draws_js_data = {}
@@ -875,36 +1048,41 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     week_keys = list(monday_map.values()) if monday_map else list(tournament_groups.keys())
     schedule_week_headers = "".join(
         f'<th class="col-week">{week_label}</th>'
-        for week_label in (
-            re.sub(r"^Week of\s+", "", week, flags=re.IGNORECASE)
-            for week in week_keys
-        )
+        for week_label in (re.sub(r"^Week of\s+", "", week, flags=re.IGNORECASE) for week in week_keys)
     )
 
     def get_sort_key(player_name):
         p = next(item for item in players_data if item["Player"] == player_name)
-        rank = p['Rank']
-        if isinstance(rank, int): return (0, rank)
+        rank = p["Rank"]
+        if isinstance(rank, int):
+            return (0, rank)
         else:
             itf_rank = int(rank.replace("ITF ", "")) if isinstance(rank, str) and "ITF" in rank else 999999
             return (1, itf_rank)
 
-    for p_name in sorted([p['Player'] for p in players_data], key=get_sort_key):
+    for p_name in sorted([p["Player"] for p in players_data], key=get_sort_key):
         p = next(item for item in players_data if item["Player"] == p_name)
-        player_display = _player_display_name(p['Player'])
+        player_display = _player_display_name(p["Player"])
         row = f'<tr data-name="{player_display.lower()}">'
         row += f'<td class="sticky-col col-rank">{p["Rank"]}</td>'
         mobile_name = "<br>".join(player_display.split())
         row += f'<td class="sticky-col col-name"><span class="desktop-only">{player_display}</span><span class="mobile-only">{mobile_name}</span></td>'
         for week in week_keys:
-            val = schedule_map.get(p['Key'], {}).get(week, "\u2014")
+            val = schedule_map.get(p["Key"], {}).get(week, "\u2014")
             val = val.replace("Sharm ElSheikh", "Sharm ES")
-            val = re.sub(r'</div>\s*<div[^>]*>', '<br>', val, flags=re.IGNORECASE)
-            val = re.sub(r'^<div[^>]*>\s*', '', val, flags=re.IGNORECASE)
-            val = re.sub(r'\s*</div>$', '', val, flags=re.IGNORECASE)
+            val = re.sub(r"</div>\s*<div[^>]*>", "<br>", val, flags=re.IGNORECASE)
+            val = re.sub(r"^<div[^>]*>\s*", "", val, flags=re.IGNORECASE)
+            val = re.sub(r"\s*</div>$", "", val, flags=re.IGNORECASE)
             parts = [part for part in val.split("<br>") if part]
             rendered = "<br>".join(
-                (_sched_dot(e) + (f"<b>{e}</b>" if "(Q)" not in re.sub(r'<[^>]+>', '', e) and re.sub(r'<[^>]+>', '', e).strip() != "\u2014" else e))
+                (
+                    _sched_dot(e)
+                    + (
+                        f"<b>{e}</b>"
+                        if "(Q)" not in re.sub(r"<[^>]+>", "", e) and re.sub(r"<[^>]+>", "", e).strip() != "\u2014"
+                        else e
+                    )
+                )
                 for e in parts
             )
             row += f'<td class="col-week">{rendered}</td>'
@@ -913,18 +1091,18 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     # Build history players list
     history_arg_players = set()
     for m in match_history_data:
-        if m.get('winnerCountry') == 'ARG' or m.get('winner_country') == 'ARG':
-            name = m.get('winnerName') or m.get('winner_name')
+        if m.get("winnerCountry") == "ARG" or m.get("winner_country") == "ARG":
+            name = m.get("winnerName") or m.get("winner_name")
             if name:
-                if '/' in name:
+                if "/" in name:
                     continue
                 name_upper = name.strip().upper()
                 display_name = NAME_LOOKUP.get(name_upper, name_upper)
                 history_arg_players.add(format_player_name(display_name))
-        if m.get('loserCountry') == 'ARG' or m.get('loser_country') == 'ARG':
-            name = m.get('loserName') or m.get('loser_name')
+        if m.get("loserCountry") == "ARG" or m.get("loser_country") == "ARG":
+            name = m.get("loserName") or m.get("loser_name")
             if name:
-                if '/' in name:
+                if "/" in name:
                     continue
                 name_upper = name.strip().upper()
                 display_name = NAME_LOOKUP.get(name_upper, name_upper)
@@ -933,19 +1111,21 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     history_players_sorted = sorted(list(history_arg_players))
 
     # Build roadtogs player list: only players present in the WTA rankings, sorted by rank
-    wta_rank_lookup = {format_player_name(p.get("Player", "")).upper(): int(p.get("Rank") or 9999) for p in (wta_rankings or [])}
+    wta_rank_lookup = {
+        format_player_name(p.get("Player", "")).upper(): int(p.get("Rank") or 9999) for p in (wta_rankings or [])
+    }
     roadtogs_players_sorted = sorted(
         [name for name in history_arg_players if name.upper() in wta_rank_lookup],
-        key=lambda name: wta_rank_lookup.get(name.upper(), 9999)
+        key=lambda name: wta_rank_lookup.get(name.upper(), 9999),
     )
 
     # Compute GS cutoff dates
     current_year = str(madrid_today().year)
     gs_list_raw = [
         ("Australian Open", "#0066B3", "AO"),
-        ("Roland Garros",   "#C8602A", "RG"),
-        ("Wimbledon",        "#3D7A3D", "WIM"),
-        ("US Open",          "#003087", "USO"),
+        ("Roland Garros", "#C8602A", "RG"),
+        ("Wimbledon", "#3D7A3D", "WIM"),
+        ("US Open", "#003087", "USO"),
     ]
     gs_data = []
     for gs_name, gs_color, gs_id in gs_list_raw:
@@ -965,20 +1145,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             gs_dt = datetime.strptime(monday_date, "%Y-%m-%d")
             gs_year = gs_dt.year
             md_cutoff = (gs_dt - timedelta(weeks=6)).strftime("%Y-%m-%d")
-            q_cutoff  = (gs_dt - timedelta(weeks=4)).strftime("%Y-%m-%d")
+            q_cutoff = (gs_dt - timedelta(weeks=4)).strftime("%Y-%m-%d")
         else:
             gs_upper = gs_name.upper()
             year_rows = [
-                r for r in cleaned_history
-                if gs_upper in (r.get("TOURNAMENT") or "").upper()
-                and (r.get("DATE") or "").startswith(current_year)
+                r
+                for r in cleaned_history
+                if gs_upper in (r.get("TOURNAMENT") or "").upper() and (r.get("DATE") or "").startswith(current_year)
             ]
             # Use the first main-draw week, not qualifying, when we have to
             # project the next season from current-year history.
-            ref_rows = [
-                r for r in year_rows
-                if (r.get("DRAW") or "").strip().upper() != "Q"
-            ] or year_rows
+            ref_rows = [r for r in year_rows if (r.get("DRAW") or "").strip().upper() != "Q"] or year_rows
             if ref_rows:
                 earliest = min(r["DATE"] for r in ref_rows if r.get("DATE"))
                 gs_dt = datetime.strptime(earliest, "%Y-%m-%d")
@@ -986,12 +1163,20 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 gs_dt += timedelta(weeks=52)
                 gs_year = gs_dt.year
                 md_cutoff = (gs_dt - timedelta(weeks=6)).strftime("%Y-%m-%d")
-                q_cutoff  = (gs_dt - timedelta(weeks=4)).strftime("%Y-%m-%d")
+                q_cutoff = (gs_dt - timedelta(weeks=4)).strftime("%Y-%m-%d")
             else:
                 md_cutoff = "N/A"
-                q_cutoff  = "N/A"
-        gs_data.append({"id": gs_id, "name": gs_name, "color": gs_color,
-                         "qCutoff": q_cutoff, "mdCutoff": md_cutoff, "year": gs_year})
+                q_cutoff = "N/A"
+        gs_data.append(
+            {
+                "id": gs_id,
+                "name": gs_name,
+                "color": gs_color,
+                "qCutoff": q_cutoff,
+                "mdCutoff": md_cutoff,
+                "year": gs_year,
+            }
+        )
 
     # Keep the current edition visible through its qualifying cutoff date.
     _roll_forward_passed_gs_cutoffs(gs_data, madrid_today())
@@ -1010,8 +1195,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     gs_tables_html = ""
     for gs in gs_data:
-        gs_id    = gs["id"]
-        gs_name  = gs["name"]
+        gs_id = gs["id"]
+        gs_name = gs["name"]
         gs_color = gs["color"]
         q_cutoff = gs["qCutoff"]
         md_cutoff = gs["mdCutoff"]
@@ -1021,20 +1206,19 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         md_cutoff_display = _format_cutoff_display(md_cutoff)
         gs_tables_html += (
             f'<table class="gs-cutoff-table">'
-            f'<colgroup>'
+            f"<colgroup>"
             f'<col class="gs-col-d"><col class="gs-col-cutoff"><col class="gs-col-acc"><col class="gs-col-est">'
-            f'</colgroup>'
-            f'<thead>'
+            f"</colgroup>"
+            f"<thead>"
             f'<tr><th colspan="4" style="background:{gs_color} !important;color:white !important;">{table_title}</th></tr>'
-            f'<tr><th>D</th><th>Cut Off</th><th>Acc. Pts</th><th>Est. Need</th></tr>'
-            f'</thead>'
-            f'<tbody>'
+            f"<tr><th>D</th><th>Cut Off</th><th>Acc. Pts</th><th>Est. Need</th></tr>"
+            f"</thead>"
+            f"<tbody>"
             f'<tr><td>Q</td><td>{q_cutoff_display}</td><td id="gs-acc-q-{gs_id}">-</td><td id="gs-est-q-{gs_id}">-</td></tr>'
             f'<tr><td>MD</td><td>{md_cutoff_display}</td><td id="gs-acc-md-{gs_id}">-</td><td id="gs-est-md-{gs_id}">-</td></tr>'
-            f'</tbody>'
-            f'</table>'
+            f"</tbody>"
+            f"</table>"
         )
-
 
     # Build GS "last week to get points" boxes for the calendar GS row
     _GS_DISPLAY = {"Australian Open": "AO", "Roland Garros": "RG", "Wimbledon": "WMB", "US Open": "USO"}
@@ -1046,7 +1230,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         _wmon = _w["monday_date"]
         for _ck in ("gs", "wta_tour"):
             for _cl in _w.get("columns", {}).get(_ck, {}).values():
-                for _t in (_cl or []):
+                for _t in _cl or []:
                     _tlv = (_t.get("level") or "").lower().replace(" ", "")
                     if _tlv in ("grandslam", "wta1000") and "qualifying" not in _t["name"].lower():
                         _tourn_weeks.setdefault(_t["name"], []).append(_wmon)
@@ -1065,7 +1249,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             _cutoff_dt = _start_dt - timedelta(weeks=_wks)
             _cutoff_str = _cutoff_dt.strftime("%Y-%m-%d")
             # Last week to add points = 1 week before the cutoff (plus 1 more if cutoff week is frozen)
-            _last_dt = (_cutoff_dt - timedelta(weeks=2)) if _cutoff_str in _frozen_mondays else (_cutoff_dt - timedelta(weeks=1))
+            _last_dt = (
+                (_cutoff_dt - timedelta(weeks=2))
+                if _cutoff_str in _frozen_mondays
+                else (_cutoff_dt - timedelta(weeks=1))
+            )
             _gs_cutoff_boxes.setdefault(_last_dt.strftime("%Y-%m-%d"), []).append(
                 (_gi * 3 + _di * 2, f"Last week for {_gslabel} {_draw_type}{' in W50+' if _draw_type == 'Q' else ''}")
             )
@@ -1108,7 +1296,8 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     # Build 2025 GM lookup for WTA 125/250/500 only: (level, city_upper) -> [(startDate, gm), ...]
     _CAL_GM_LEVELS = {"WTA 125", "WTA 250", "WTA 500"}
     _ts_2025 = [
-        e for e in (tstrength_data or [])
+        e
+        for e in (tstrength_data or [])
         if str(e.get("year", "")) == "2025"
         and e.get("draw", "MD") in ("MD", "M", "MAIN")
         and e.get("gm", 0) > 0
@@ -1141,11 +1330,11 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     def _get_gm_badge(t_name, t_level, week_monday):
         if t_level not in _CAL_GM_LEVELS:
-            return ''
-        city_part = t_name[len(t_level):].strip().split("#")[0].strip().upper()
+            return ""
+        city_part = t_name[len(t_level) :].strip().split("#")[0].strip().upper()
         entries = _gm_lookup.get((t_level.upper(), city_part))
         if not entries:
-            return ''
+            return ""
         if len(entries) == 1:
             gm = entries[0][1]
         else:
@@ -1167,7 +1356,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     calendar_html += '<th class="cal-cat-header"></th><th class="cal-cont-header"></th>'
     for week in calendar_data:
         calendar_html += f'<th class="cal-week-header">{week["week_label"]}</th>'
-    calendar_html += '</tr></thead><tbody>'
+    calendar_html += "</tr></thead><tbody>"
 
     for group in col_groups:
         if group.get("single_row"):
@@ -1187,13 +1376,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         fk = get_calendar_filter_key(t.get("level", ""))
                         sk = get_calendar_surface_key(t.get("surface", ""))
                         flag = country_flag_html(t.get("country", ""), show_code=False)
-                        flag_prefix = f'{flag} ' if flag else ''
+                        flag_prefix = f"{flag} " if flag else ""
                         display_name = escape(_display_calendar_tournament_name(t["name"]))
                         calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-surface="{sk}">{flag_prefix}{display_name}</span>'
                 for _, _box_label in sorted(_gs_cutoff_boxes.get(week["monday_date"], [])):
                     calendar_html += f'<span class="cal-cutoff-box">{_box_label}</span>'
-                calendar_html += '</td>'
-            calendar_html += '</tr>'
+                calendar_html += "</td>"
+            calendar_html += "</tr>"
         else:
             for ci, cont in enumerate(CONTINENT_KEYS):
                 row_cls = "cal-group-first" if ci == 0 else ("cal-group-last" if ci == len(CONTINENT_KEYS) - 1 else "")
@@ -1207,7 +1396,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     '<td class="cal-cont-label">'
                     f'<span class="cal-cont-label-desktop">{cont_labels[cont]}</span>'
                     f'<span class="cal-cont-label-mobile">{mobile_cont_labels[cont]}</span>'
-                    '</td>'
+                    "</td>"
                 )
                 for week in calendar_data:
                     calendar_html += '<td class="cal-cell">'
@@ -1221,15 +1410,17 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                             fk = get_calendar_filter_key(t.get("level", ""))
                             sk = get_calendar_surface_key(t.get("surface", ""))
                             flag = country_flag_html(t.get("country", ""), show_code=False)
-                            flag_prefix = f'{flag} ' if flag else ''
+                            flag_prefix = f"{flag} " if flag else ""
                             is_wta = any(ck in _wta_keys for ck in group["keys"])
-                            gm_badge = _get_gm_badge(t["name"], t.get("level", ""), week["monday_date"]) if is_wta else ''
+                            gm_badge = (
+                                _get_gm_badge(t["name"], t.get("level", ""), week["monday_date"]) if is_wta else ""
+                            )
                             display_name = escape(_display_calendar_tournament_name(t["name"]))
                             calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-continent="{cont}" data-cal-surface="{sk}">{flag_prefix}{display_name}{gm_badge}</span>'
-                    calendar_html += '</td>'
-                calendar_html += '</tr>'
+                    calendar_html += "</td>"
+                calendar_html += "</tr>"
 
-    calendar_html += '</tbody></table>'
+    calendar_html += "</tbody></table>"
 
     # Build cascading year/month/day selects for ranking week picker
     _all_csv = _load_wta_csv(source_data_dir)
@@ -1271,7 +1462,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     _all_years = sorted(_date_index.keys(), reverse=True)
     rankings_year_options = ""
     for _y in _all_years:
-        _sel = ' selected' if _y == _latest_year_str else ''
+        _sel = " selected" if _y == _latest_year_str else ""
         rankings_year_options += f'<option value="{_y}"{_sel}>{_y}</option>'
 
     rankings_latest_month = _latest_month_int
@@ -1289,7 +1480,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
     # Build rankings table rows (initial: latest week)
     rankings_rows = ""
-    for p in (wta_rankings or []):
+    for p in wta_rankings or []:
         dob = p.get("DOB", "")
         if dob and "T" in dob:
             dob = dob.split("T")[0]
@@ -1309,16 +1500,15 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         "Event": ' style="width:190px"',
         "Partner": ' style="width:160px"',
         "Opponent": "",
-        "Score": ' style="width:110px"'
+        "Score": ' style="width:110px"',
     }
     national_header_html = "".join(
-        f'<th>{escape(header_label_map.get(col, col.upper()))}</th>'
-        for col in national_columns
+        f"<th>{escape(header_label_map.get(col, col.upper()))}</th>" for col in national_columns
     )
 
     national_rows = ""
-    for row in (national_team_data or []):
-        national_rows += '<tr>'
+    for row in national_team_data or []:
+        national_rows += "<tr>"
         opponent_country = _bjkc_tie_country_code(row.get("Tie", ""))
         opponent_flag = country_flag_html(opponent_country, show_code=False)
         for col in national_columns:
@@ -1341,47 +1531,52 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
             elif col == "Player":
                 desktop_value = escape(value)
                 mobile_value = escape(value)
-                display_value = f'<span class="desktop-only">{desktop_value}</span><span class="mobile-only">{mobile_value}</span>'
+                display_value = (
+                    f'<span class="desktop-only">{desktop_value}</span><span class="mobile-only">{mobile_value}</span>'
+                )
             elif col == "Partner":
                 desktop_value = escape(value)
                 mobile_value = "<br>".join(escape(value).split())
-                display_value = f'<span class="desktop-only">{desktop_value}</span><span class="mobile-only">{mobile_value}</span>'
+                display_value = (
+                    f'<span class="desktop-only">{desktop_value}</span><span class="mobile-only">{mobile_value}</span>'
+                )
             elif col == "Opponent":
                 cell_class = ' class="national-opponent-cell"'
                 opponent_flag_cell = f'<span class="national-opponent-flag">{opponent_flag}</span>'
                 desktop_value = (
                     '<span class="national-opponent-content">'
                     f'{opponent_flag_cell}<span class="national-opponent-name">{escape(value)}</span>'
-                    '</span>'
+                    "</span>"
                 )
                 parts = value.split("/")
                 mobile_players = [
-                    f'<span class="national-opponent-player">{escape(part.strip())}</span>'
-                    for part in parts
+                    f'<span class="national-opponent-player">{escape(part.strip())}</span>' for part in parts
                 ]
                 opponent_mobile_name = "".join(mobile_players)
                 mobile_value = (
                     '<span class="national-opponent-content">'
                     f'{opponent_flag_cell}<span class="national-opponent-name">{opponent_mobile_name}</span>'
-                    '</span>'
+                    "</span>"
                 )
-                display_value = f'<span class="desktop-only">{desktop_value}</span><span class="mobile-only">{mobile_value}</span>'
+                display_value = (
+                    f'<span class="desktop-only">{desktop_value}</span><span class="mobile-only">{mobile_value}</span>'
+                )
             else:
                 display_value = escape(value)
-            national_rows += f'<td{cell_class}{cell_style}>{display_value}</td>'
-        national_rows += '</tr>'
+            national_rows += f"<td{cell_class}{cell_style}>{display_value}</td>"
+        national_rows += "</tr>"
 
     default_captains_columns = ["N", "Captain", "Year"]
     captains_columns = list(captains_data[0].keys()) if captains_data else default_captains_columns
 
     captains_header_html = "".join(
-        f'<th{header_style_map.get(col, "")}>{escape(header_label_map.get(col, col.upper()))}</th>'
+        f"<th{header_style_map.get(col, '')}>{escape(header_label_map.get(col, col.upper()))}</th>"
         for col in captains_columns
     )
 
     captains_rows = ""
-    for row in (captains_data or []):
-        captains_rows += '<tr>'
+    for row in captains_data or []:
+        captains_rows += "<tr>"
         for col in captains_columns:
             value = str(row.get(col, "") or "")
             cell_style = ""
@@ -1390,40 +1585,77 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 value = format_player_name(value)
                 cell_style = ' style="font-weight:bold;"'
 
-            captains_rows += f'<td{cell_style}>{escape(value)}</td>'
-        captains_rows += '</tr>'
+            captains_rows += f"<td{cell_style}>{escape(value)}</td>"
+        captains_rows += "</tr>"
 
     # Build BJK Cup Series HTML
     _bjkc_iso_to_name = {
-        'ARG': 'Argentina', 'AUS': 'Australia', 'AUT': 'Austria',
-        'BAH': 'Bahamas', 'BEL': 'Belgium', 'BOL': 'Bolivia',
-        'BRA': 'Brazil', 'BUL': 'Bulgaria', 'CAN': 'Canada',
-        'CHI': 'Chile', 'CHN': 'China', 'COL': 'Colombia',
-        'CRO': 'Croatia', 'CUB': 'Cuba', 'CZE': 'Czechia',
-        'DEN': 'Denmark', 'DOM': 'Dominican Republic', 'ECU': 'Ecuador',
-        'ESP': 'Spain', 'EST': 'Estonia', 'FIN': 'Finland',
-        'FRA': 'France', 'FRG': 'West Germany', 'GBR': 'Great Britain',
-        'GER': 'Germany', 'GRE': 'Greece', 'GUA': 'Guatemala',
-        'HUN': 'Hungary', 'INA': 'Indonesia', 'JPN': 'Japan',
-        'KAZ': 'Kazakhstan', 'KOR': 'South Korea', 'MEX': 'Mexico',
-        'NED': 'Netherlands', 'NOR': 'Norway', 'NZL': 'New Zealand',
-        'PAR': 'Paraguay', 'PER': 'Peru', 'PHI': 'Philippines',
-        'POL': 'Poland', 'PUR': 'Puerto Rico', 'ROU': 'Romania',
-        'RUS': 'Russia', 'SEN': 'Senegal', 'SLO': 'Slovenia',
-        'SUI': 'Switzerland', 'SVK': 'Slovakia', 'SWE': 'Sweden',
-        'TCH': 'Czechoslovakia', 'TPE': 'Chinese Taipei', 'UKR': 'Ukraine',
-        'URU': 'Uruguay', 'USA': 'USA', 'VEN': 'Venezuela',
-        'YUG': 'Yugoslavia',
+        "ARG": "Argentina",
+        "AUS": "Australia",
+        "AUT": "Austria",
+        "BAH": "Bahamas",
+        "BEL": "Belgium",
+        "BOL": "Bolivia",
+        "BRA": "Brazil",
+        "BUL": "Bulgaria",
+        "CAN": "Canada",
+        "CHI": "Chile",
+        "CHN": "China",
+        "COL": "Colombia",
+        "CRO": "Croatia",
+        "CUB": "Cuba",
+        "CZE": "Czechia",
+        "DEN": "Denmark",
+        "DOM": "Dominican Republic",
+        "ECU": "Ecuador",
+        "ESP": "Spain",
+        "EST": "Estonia",
+        "FIN": "Finland",
+        "FRA": "France",
+        "FRG": "West Germany",
+        "GBR": "Great Britain",
+        "GER": "Germany",
+        "GRE": "Greece",
+        "GUA": "Guatemala",
+        "HUN": "Hungary",
+        "INA": "Indonesia",
+        "JPN": "Japan",
+        "KAZ": "Kazakhstan",
+        "KOR": "South Korea",
+        "MEX": "Mexico",
+        "NED": "Netherlands",
+        "NOR": "Norway",
+        "NZL": "New Zealand",
+        "PAR": "Paraguay",
+        "PER": "Peru",
+        "PHI": "Philippines",
+        "POL": "Poland",
+        "PUR": "Puerto Rico",
+        "ROU": "Romania",
+        "RUS": "Russia",
+        "SEN": "Senegal",
+        "SLO": "Slovenia",
+        "SUI": "Switzerland",
+        "SVK": "Slovakia",
+        "SWE": "Sweden",
+        "TCH": "Czechoslovakia",
+        "TPE": "Chinese Taipei",
+        "UKR": "Ukraine",
+        "URU": "Uruguay",
+        "USA": "USA",
+        "VEN": "Venezuela",
+        "YUG": "Yugoslavia",
     }
 
     def _bjkc_flip_score(s):
-        if not s: return ""
+        if not s:
+            return ""
         out = []
         for part in s.split():
             tb = ""
             if "(" in part:
-                tb = part[part.index("("):]
-                part = part[:part.index("(")]
+                tb = part[part.index("(") :]
+                part = part[: part.index("(")]
             ab = part.split("-")
             out.append(f"{ab[1]}-{ab[0]}{tb}" if len(ab) == 2 else part + tb)
         return " ".join(out)
@@ -1432,12 +1664,13 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
     _all_bjkc_players = set()
     try:
         import pandas as _pd
-        _bjkc_path = os.path.join(source_data_dir, 'bjkc_matches_arg.csv')
+
+        _bjkc_path = os.path.join(source_data_dir, "bjkc_matches_arg.csv")
         _bjkc_df = _pd.read_csv(_bjkc_path)
-        _manual_path = os.path.join(source_data_dir, 'manually_added_matches.csv')
+        _manual_path = os.path.join(source_data_dir, "manually_added_matches.csv")
         _manual_df = _pd.read_csv(_manual_path)
-        if 'matchType' in _manual_df.columns:
-            _manual_bjkc = _manual_df[_manual_df['matchType'].astype(str).str.strip().str.lower() == 'fed/bjk cup']
+        if "matchType" in _manual_df.columns:
+            _manual_bjkc = _manual_df[_manual_df["matchType"].astype(str).str.strip().str.lower() == "fed/bjk cup"]
             if not _manual_bjkc.empty:
                 _bjkc_df = _pd.concat([_bjkc_df, _manual_bjkc], ignore_index=True)
 
@@ -1457,125 +1690,130 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
 
         def _apply_alias(name_str):
             """Apply alias lookup to a player name or 'P1 / P2' doubles string."""
-            parts = name_str.split(' / ')
-            return ' / '.join(_alias_reverse.get(p.strip().upper(), p.strip()) for p in parts)
+            parts = name_str.split(" / ")
+            return " / ".join(_alias_reverse.get(p.strip().upper(), p.strip()) for p in parts)
 
         def _fmt_name(name_str):
             """Format player name; doubles get a desktop slash + mobile line-break."""
-            if ' / ' in name_str:
-                p = name_str.split(' / ', 1)
+            if " / " in name_str:
+                p = name_str.split(" / ", 1)
                 return escape(p[0]) + '<span class="doubles-slash"> / </span><br class="doubles-br">' + escape(p[1])
             return escape(name_str)
 
         # Sort ties by earliest date (newest first), then by best round (best first).
         _tie_round_order = {
-            'Round Robin': 1,
-            'Last 128': 2,
-            'Last 64': 3,
-            'Last 32': 4,
-            'Last 16': 5,
-            'Quarter Finals': 6,
-            'Semi Finals': 7,
-            'Final': 8,
+            "Round Robin": 1,
+            "Last 128": 2,
+            "Last 64": 3,
+            "Last 32": 4,
+            "Last 16": 5,
+            "Quarter Finals": 6,
+            "Semi Finals": 7,
+            "Final": 8,
         }
         _tie_draw_order = {
-            'Main Draw': 1,
-            'Consolation Round': 2,
+            "Main Draw": 1,
+            "Consolation Round": 2,
         }
 
         def _round_rank(v):
-            return _tie_round_order.get(str(v or '').strip(), 0)
+            return _tie_round_order.get(str(v or "").strip(), 0)
+
         def _draw_rank(v):
-            return _tie_draw_order.get(str(v or '').strip(), 0)
+            return _tie_draw_order.get(str(v or "").strip(), 0)
 
-        _tie_meta = _bjkc_df.groupby('tournamentId', as_index=False).agg(
-            tieDate=('date', 'min'),
-            roundRank=('roundName', lambda s: max((_round_rank(x) for x in s), default=0)),
-            drawRank=('draw', lambda s: max((_draw_rank(x) for x in s), default=0))
+        _tie_meta = _bjkc_df.groupby("tournamentId", as_index=False).agg(
+            tieDate=("date", "min"),
+            roundRank=("roundName", lambda s: max((_round_rank(x) for x in s), default=0)),
+            drawRank=("draw", lambda s: max((_draw_rank(x) for x in s), default=0)),
         )
-        _tie_meta['tieDateDt'] = _pd.to_datetime(_tie_meta['tieDate'], errors='coerce')
+        _tie_meta["tieDateDt"] = _pd.to_datetime(_tie_meta["tieDate"], errors="coerce")
         _tie_meta = _tie_meta.sort_values(
-            by=['tieDateDt', 'drawRank', 'roundRank', 'tournamentId'],
-            ascending=[False, False, False, True]
+            by=["tieDateDt", "drawRank", "roundRank", "tournamentId"], ascending=[False, False, False, True]
         )
 
-        for _tie_index, _tid in enumerate(_tie_meta['tournamentId'].tolist()):
-            _grp = _bjkc_df[_bjkc_df['tournamentId'] == _tid].copy()
+        for _tie_index, _tid in enumerate(_tie_meta["tournamentId"].tolist()):
+            _grp = _bjkc_df[_bjkc_df["tournamentId"] == _tid].copy()
             _first = _grp.iloc[0]
 
             # Determine opponent ISO -> name
             _opp_iso = None
             for _, _mr in _grp.iterrows():
-                if str(_mr.get('winnerCountry', '')) != 'ARG':
-                    _opp_iso = str(_mr['winnerCountry'])
+                if str(_mr.get("winnerCountry", "")) != "ARG":
+                    _opp_iso = str(_mr["winnerCountry"])
                     break
-                if str(_mr.get('loserCountry', '')) != 'ARG':
-                    _opp_iso = str(_mr['loserCountry'])
+                if str(_mr.get("loserCountry", "")) != "ARG":
+                    _opp_iso = str(_mr["loserCountry"])
                     break
-            _opp_name = _bjkc_iso_to_name.get(_opp_iso or '', _opp_iso or '?')
+            _opp_name = _bjkc_iso_to_name.get(_opp_iso or "", _opp_iso or "?")
 
-            _t_name = str(_first.get('tournamentName', ''))
-            _opp_flag = country_flag_html(_opp_iso or '', show_code=False)
-            _header_text = _t_name if ' vs ' in _t_name.lower() else f"{_t_name} vs {_opp_name}"
+            _t_name = str(_first.get("tournamentName", ""))
+            _opp_flag = country_flag_html(_opp_iso or "", show_code=False)
+            _header_text = _t_name if " vs " in _t_name.lower() else f"{_t_name} vs {_opp_name}"
 
             # Overall tie result: only count played matches
             _arg_wins = 0
             _arg_losses = 0
             for _, _mr in _grp.iterrows():
-                _r = str(_mr.get('result', '') or '')
-                if not _r or _r.lower() == 'nan':
+                _r = str(_mr.get("result", "") or "")
+                if not _r or _r.lower() == "nan":
                     continue
-                if str(_mr.get('winnerCountry', '')) == 'ARG':
+                if str(_mr.get("winnerCountry", "")) == "ARG":
                     _arg_wins += 1
                 else:
                     _arg_losses += 1
             _tie_won = _arg_wins > _arg_losses
-            _badge_bg = '#dcfce7' if _tie_won else '#fee2e2'
-            _badge_color = '#166534' if _tie_won else '#991b1b'
+            _badge_bg = "#dcfce7" if _tie_won else "#fee2e2"
+            _badge_color = "#166534" if _tie_won else "#991b1b"
             _tie_res_label = f"{_arg_wins}-{_arg_losses}"
 
-            _tie_date = str(_grp['date'].dropna().min()) if not _grp['date'].dropna().empty else ''
+            _tie_date = str(_grp["date"].dropna().min()) if not _grp["date"].dropna().empty else ""
 
             _rows_html = ""
+
             def _sort_key(row):
-                mo = row.get('matchOrder')
+                mo = row.get("matchOrder")
                 try:
-                    if mo is None or (isinstance(mo, float) and math.isnan(mo)): raise ValueError
+                    if mo is None or (isinstance(mo, float) and math.isnan(mo)):
+                        raise ValueError
                     return int(mo)
                 except (ValueError, TypeError):
-                    is_d = ' / ' in str(row.get('winnerName', '')) or ' / ' in str(row.get('loserName', ''))
+                    is_d = " / " in str(row.get("winnerName", "")) or " / " in str(row.get("loserName", ""))
                     return 999 if is_d else 998
-            _grp_sorted = _grp.copy()
-            _grp_sorted['_sk'] = _grp_sorted.apply(_sort_key, axis=1)
-            _grp_sorted = _grp_sorted.sort_values('_sk').drop(columns=['_sk'])
-            for _, _mr in _grp_sorted.iterrows():
-                _result_raw = str(_mr.get('result', '') or '')
-                _has_result = bool(_result_raw) and _result_raw.lower() != 'nan'
-                _arg_won = str(_mr.get('winnerCountry', '')) == 'ARG'
 
-                _arg_player = _apply_alias(str(_mr['winnerName'] if _arg_won else _mr['loserName']))
-                _opp_player = str(_mr['loserName'] if _arg_won else _mr['winnerName'])
+            _grp_sorted = _grp.copy()
+            _grp_sorted["_sk"] = _grp_sorted.apply(_sort_key, axis=1)
+            _grp_sorted = _grp_sorted.sort_values("_sk").drop(columns=["_sk"])
+            for _, _mr in _grp_sorted.iterrows():
+                _result_raw = str(_mr.get("result", "") or "")
+                _has_result = bool(_result_raw) and _result_raw.lower() != "nan"
+                _arg_won = str(_mr.get("winnerCountry", "")) == "ARG"
+
+                _arg_player = _apply_alias(str(_mr["winnerName"] if _arg_won else _mr["loserName"]))
+                _opp_player = str(_mr["loserName"] if _arg_won else _mr["winnerName"])
 
                 if not _has_result:
                     _score_display = '<em class="text-muted">Not Played</em>'
-                    _res_label = '-'
-                    _res_class = 'text-muted'
-                    _res_extra_style = 'font-weight:bold;'
+                    _res_label = "-"
+                    _res_class = "text-muted"
+                    _res_extra_style = "font-weight:bold;"
                 else:
                     _score = _result_raw if _arg_won else _bjkc_flip_score(_result_raw)
-                    _status = str(_mr.get('resultStatusDesc', '') or '')
+                    _status = str(_mr.get("resultStatusDesc", "") or "")
                     _score_display = escape(_score)
-                    if _status and _status.lower() != 'nan':
-                        _score_display += f' <span class="text-muted" style="font-size:0.85em;">({escape(_status)})</span>'
-                    _res_label = 'W' if _arg_won else 'L'
-                    _res_class = 'res-win' if _arg_won else 'res-loss'
-                    _res_extra_style = ''
+                    if _status and _status.lower() != "nan":
+                        _score_display += (
+                            f' <span class="text-muted" style="font-size:0.85em;">({escape(_status)})</span>'
+                        )
+                    _res_label = "W" if _arg_won else "L"
+                    _res_class = "res-win" if _arg_won else "res-loss"
+                    _res_extra_style = ""
 
-                _is_doubles = ' / ' in _arg_player
-                _data_type = 'D' if _is_doubles else 'S'
+                _is_doubles = " / " in _arg_player
+                _data_type = "D" if _is_doubles else "S"
                 if _is_doubles:
-                    _player_parts = [p.strip() for p in _arg_player.split(' / ', 1)]
-                    _data_player = '|'.join(_player_parts)
+                    _player_parts = [p.strip() for p in _arg_player.split(" / ", 1)]
+                    _data_player = "|".join(_player_parts)
                     for _pp in _player_parts:
                         if _pp:
                             _all_bjkc_players.add(_pp)
@@ -1583,7 +1821,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                     _data_player = _arg_player.strip()
                     if _data_player:
                         _all_bjkc_players.add(_data_player)
-                _data_result = ('W' if _arg_won else 'L') if _has_result else ''
+                _data_result = ("W" if _arg_won else "L") if _has_result else ""
 
                 _rows_html += f"""<tr data-player="{escape(_data_player)}" data-type="{_data_type}" data-result="{_data_result}">
                         <td style="font-weight:bold;white-space:nowrap;">{_fmt_name(_arg_player)}</td>
@@ -1592,7 +1830,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                         <td style="white-space:nowrap;">{_fmt_name(_opp_player)}</td>
                     </tr>"""
 
-            _open_attr = ' open' if _tie_index == 0 else ''
+            _open_attr = " open" if _tie_index == 0 else ""
             bjkc_series_html += f"""<details class="bjkc-series-block"{_open_attr}>
                 <summary class="bjkc-series-header">
                     <span class="bjkc-header-date">{escape(_tie_date)}</span>
@@ -1612,9 +1850,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
                 </div>
             </details>"""
     except Exception as _e:
-        report_run_issue(
-            "html_generator", "render BJK Cup section", _e, severity="partial"
-        )
+        report_run_issue("html_generator", "render BJK Cup section", _e, severity="partial")
         bjkc_series_html = f'<p style="color:red;">Error loading BJK Cup data: {escape(str(_e))}</p>'
 
     # Build T-Strength data as JSON for JS rendering
@@ -1629,10 +1865,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         "ENTRY_MENU_HTML": entry_menu_html,
         "RANKINGS_YEAR_OPTIONS": rankings_year_options,
         "RANKINGS_ROWS": rankings_rows,
-        "HISTORY_PLAYER_OPTIONS": "".join(
-            f'<option value="{name}">{name}</option>'
-            for name in history_players_sorted
-        ),
+        "HISTORY_PLAYER_OPTIONS": "".join(f'<option value="{name}">{name}</option>' for name in history_players_sorted),
         "NATIONAL_HEADER_HTML": national_header_html,
         "NATIONAL_ROWS": national_rows,
         "CAPTAINS_HEADER_HTML": captains_header_html,
@@ -1640,8 +1873,7 @@ def generate_html(tournament_groups, tournament_store, players_data, schedule_ma
         "BJKC_SERIES_HTML": bjkc_series_html,
         "CALENDAR_HTML": calendar_html,
         "ROADTOGS_PLAYER_OPTIONS": "".join(
-            f'<option value="{escape(name, quote=True)}">{escape(name)}</option>'
-            for name in roadtogs_players_sorted
+            f'<option value="{escape(name, quote=True)}">{escape(name)}</option>' for name in roadtogs_players_sorted
         ),
         "GS_TABLES_HTML": gs_tables_html,
         "GS_THRESHOLD_Q": GS_THRESHOLD_Q,

@@ -2,7 +2,6 @@ from datetime import date
 
 import wta
 
-
 ANTALYA_URL = (
     "https://www.wtatennis.com/tournaments/1173/"
     "antalya-125-atik/2026/player-list"

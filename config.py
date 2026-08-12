@@ -1,5 +1,5 @@
-import os
 import json
+import os
 import re
 import subprocess
 import unicodedata
@@ -45,6 +45,7 @@ def repair_name_text(value):
         repaired = repaired.replace(bad, good)
 
     return repaired
+
 
 def _compact_spaces(value):
     return " ".join(repair_name_text(value).strip().split())
@@ -117,7 +118,7 @@ def _load_player_mapping_from_git(filename, *, min_entries=100, max_commits=50):
             text=True,
             check=False,
         )
-    except Exception:
+    except (OSError, subprocess.SubprocessError):
         return {}
 
     if rev_list.returncode != 0:
@@ -134,7 +135,7 @@ def _load_player_mapping_from_git(filename, *, min_entries=100, max_commits=50):
                 continue
             raw_text = show.stdout.decode("latin-1")
             raw = json.loads(raw_text)
-        except Exception:
+        except (OSError, subprocess.SubprocessError, UnicodeError, json.JSONDecodeError):
             continue
 
         mapping = _build_player_mapping(raw)
@@ -170,11 +171,11 @@ def load_player_mapping(filename=PLAYER_ALIASES_WTA_ITF_FILE):
     read_error = None
     try:
         if os.path.exists(filename):
-            with open(filename, "r", encoding="utf-8-sig") as f:
+            with open(filename, encoding="utf-8-sig") as f:
                 raw = json.load(f)
         else:
             read_error = FileNotFoundError(filename)
-    except Exception as e:
+    except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as e:
         read_error = e
     mapping = _build_player_mapping(raw)
     if len(mapping) >= 100:
@@ -193,7 +194,7 @@ def load_player_mapping(filename=PLAYER_ALIASES_WTA_ITF_FILE):
     return mapping
 
 
-with open(PLAYER_ALIASES_WTA_ITF_FILE, "r", encoding="utf-8-sig") as _players_file:
+with open(PLAYER_ALIASES_WTA_ITF_FILE, encoding="utf-8-sig") as _players_file:
     PLAYER_IDENTITIES = json.load(_players_file)
 PLAYER_IDENTITY_INDEX = PlayerIdentityIndex(PLAYER_IDENTITIES)
 PLAYER_MAPPING = _build_player_mapping(PLAYER_IDENTITIES)
@@ -210,11 +211,7 @@ def _build_unambiguous_name_lookup(identity_index):
                 keys.append(raw_upper)
             for key in keys:
                 candidates.setdefault(key, {})[record.player_key] = display_upper
-    return {
-        key: next(iter(records.values()))
-        for key, records in candidates.items()
-        if len(records) == 1
-    }
+    return {key: next(iter(records.values())) for key, records in candidates.items() if len(records) == 1}
 
 
 NAME_LOOKUP = _build_unambiguous_name_lookup(PLAYER_IDENTITY_INDEX)
@@ -226,14 +223,8 @@ ITF_ID_TO_DISPLAY = {
     player_id: player_name_only(record.display_name).upper()
     for player_id, record in PLAYER_IDENTITY_INDEX.by_itf_id.items()
 }
-WTA_ID_TO_PLAYER_KEY = {
-    player_id: record.player_key
-    for player_id, record in PLAYER_IDENTITY_INDEX.by_wta_id.items()
-}
-ITF_ID_TO_PLAYER_KEY = {
-    player_id: record.player_key
-    for player_id, record in PLAYER_IDENTITY_INDEX.by_itf_id.items()
-}
+WTA_ID_TO_PLAYER_KEY = {player_id: record.player_key for player_id, record in PLAYER_IDENTITY_INDEX.by_wta_id.items()}
+ITF_ID_TO_PLAYER_KEY = {player_id: record.player_key for player_id, record in PLAYER_IDENTITY_INDEX.by_itf_id.items()}
 
 
 def resolve_player_display_name(source, *, player_id="", name=""):
@@ -275,6 +266,7 @@ def resolve_player_presentation_name(source, *, player_id="", name=""):
         return record.presentation_name
     return resolve_player_display_name(source, player_id=player_id, name=name)
 
+
 WTA_RANKINGS_CSV = os.path.join(DATA_DIR, "wta_rankings_20_29.csv")
 WTA_RANKINGS_CSV_10_19 = os.path.join(DATA_DIR, "wta_rankings_10_19.csv")
 WTA_RANKINGS_CSV_00_09 = os.path.join(DATA_DIR, "wta_rankings_00_09.csv")
@@ -285,7 +277,12 @@ ENTRY_LISTS_CACHE_FILE = os.path.join(DATA_DIR, "entry_lists_cache.json")
 ITF_ACCEPTANCE_STATE_FILE = os.path.join(DATA_DIR, "itf_acceptance_state.json")
 
 API_URL = "https://api.wtatennis.com/tennis/players/ranked"
-HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"}
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+    )
+}
 
 TOURNAMENT_NAME_OVERRIDES = {
     "Grand Slam Paris": "Roland Garros",
@@ -299,41 +296,161 @@ CITY_CASE_FIXES = {
 
 COUNTRY_TO_CONTINENT = {
     # South America
-    "BRA": "south_america", "ARG": "south_america", "CHI": "south_america", "COL": "south_america",
-    "PER": "south_america", "ECU": "south_america", "URU": "south_america", "VEN": "south_america",
-    "BOL": "south_america", "PAR": "south_america", "GUY": "south_america", "SUR": "south_america",
+    "BRA": "south_america",
+    "ARG": "south_america",
+    "CHI": "south_america",
+    "COL": "south_america",
+    "PER": "south_america",
+    "ECU": "south_america",
+    "URU": "south_america",
+    "VEN": "south_america",
+    "BOL": "south_america",
+    "PAR": "south_america",
+    "GUY": "south_america",
+    "SUR": "south_america",
     # North and Central America
-    "USA": "north_central_america", "US": "north_central_america", "CAN": "north_central_america", "MEX": "north_central_america",
-    "CRC": "north_central_america", "DOM": "north_central_america", "PUR": "north_central_america", "GUA": "north_central_america",
-    "HON": "north_central_america", "ESA": "north_central_america", "NCA": "north_central_america", "PAN": "north_central_america",
-    "JAM": "north_central_america", "TTO": "north_central_america", "HAI": "north_central_america", "BAH": "north_central_america",
-    "BAR": "north_central_america", "CUB": "north_central_america", "BER": "north_central_america", "AHO": "north_central_america",
+    "USA": "north_central_america",
+    "US": "north_central_america",
+    "CAN": "north_central_america",
+    "MEX": "north_central_america",
+    "CRC": "north_central_america",
+    "DOM": "north_central_america",
+    "PUR": "north_central_america",
+    "GUA": "north_central_america",
+    "HON": "north_central_america",
+    "ESA": "north_central_america",
+    "NCA": "north_central_america",
+    "PAN": "north_central_america",
+    "JAM": "north_central_america",
+    "TTO": "north_central_america",
+    "HAI": "north_central_america",
+    "BAH": "north_central_america",
+    "BAR": "north_central_america",
+    "CUB": "north_central_america",
+    "BER": "north_central_america",
+    "AHO": "north_central_america",
     "ARU": "north_central_america",
     # Europe
-    "FRA": "europe", "GBR": "europe", "ESP": "europe", "ITA": "europe", "GER": "europe", "SUI": "europe",
-    "AUT": "europe", "BEL": "europe", "NED": "europe", "POR": "europe", "SWE": "europe", "NOR": "europe",
-    "DEN": "europe", "FIN": "europe", "POL": "europe", "CZE": "europe", "SVK": "europe", "HUN": "europe",
-    "ROU": "europe", "BUL": "europe", "CRO": "europe", "SRB": "europe", "SLO": "europe", "BIH": "europe",
-    "MNE": "europe", "MKD": "europe", "ALB": "europe", "GRE": "europe", "CYP": "europe", "TUR": "europe",
-    "GEO": "europe", "ARM": "europe", "UKR": "europe", "BLR": "europe", "MDA": "europe", "LAT": "europe",
-    "LTU": "europe", "EST": "europe", "IRL": "europe", "LUX": "europe", "MON": "europe", "AND": "europe",
-    "MLT": "europe", "ISR": "europe", "ISL": "europe", "RUS": "europe",
+    "FRA": "europe",
+    "GBR": "europe",
+    "ESP": "europe",
+    "ITA": "europe",
+    "GER": "europe",
+    "SUI": "europe",
+    "AUT": "europe",
+    "BEL": "europe",
+    "NED": "europe",
+    "POR": "europe",
+    "SWE": "europe",
+    "NOR": "europe",
+    "DEN": "europe",
+    "FIN": "europe",
+    "POL": "europe",
+    "CZE": "europe",
+    "SVK": "europe",
+    "HUN": "europe",
+    "ROU": "europe",
+    "BUL": "europe",
+    "CRO": "europe",
+    "SRB": "europe",
+    "SLO": "europe",
+    "BIH": "europe",
+    "MNE": "europe",
+    "MKD": "europe",
+    "ALB": "europe",
+    "GRE": "europe",
+    "CYP": "europe",
+    "TUR": "europe",
+    "GEO": "europe",
+    "ARM": "europe",
+    "UKR": "europe",
+    "BLR": "europe",
+    "MDA": "europe",
+    "LAT": "europe",
+    "LTU": "europe",
+    "EST": "europe",
+    "IRL": "europe",
+    "LUX": "europe",
+    "MON": "europe",
+    "AND": "europe",
+    "MLT": "europe",
+    "ISR": "europe",
+    "ISL": "europe",
+    "RUS": "europe",
     # Asia
-    "CHN": "asia", "JPN": "asia", "KOR": "asia",
-    "IND": "asia", "THA": "asia", "MAS": "asia", "INA": "asia", "PHI": "asia",
-    "SGP": "asia", "VIE": "asia", "TPE": "asia", "HKG": "asia", "MAC": "asia",
-    "KAZ": "asia", "UZB": "asia", "QAT": "asia", "UAE": "asia", "KSA": "asia",
-    "BRN": "asia", "KUW": "asia", "OMA": "asia", "JOR": "asia", "LBN": "asia",
-    "IRQ": "asia", "IRI": "asia", "PAK": "asia", "SRI": "asia", "BAN": "asia",
-    "NEP": "asia", "MGL": "asia", "MYA": "asia", "CAM": "asia", "LAO": "asia",
+    "CHN": "asia",
+    "JPN": "asia",
+    "KOR": "asia",
+    "IND": "asia",
+    "THA": "asia",
+    "MAS": "asia",
+    "INA": "asia",
+    "PHI": "asia",
+    "SGP": "asia",
+    "VIE": "asia",
+    "TPE": "asia",
+    "HKG": "asia",
+    "MAC": "asia",
+    "KAZ": "asia",
+    "UZB": "asia",
+    "QAT": "asia",
+    "UAE": "asia",
+    "KSA": "asia",
+    "BRN": "asia",
+    "KUW": "asia",
+    "OMA": "asia",
+    "JOR": "asia",
+    "LBN": "asia",
+    "IRQ": "asia",
+    "IRI": "asia",
+    "PAK": "asia",
+    "SRI": "asia",
+    "BAN": "asia",
+    "NEP": "asia",
+    "MGL": "asia",
+    "MYA": "asia",
+    "CAM": "asia",
+    "LAO": "asia",
     # Oceania
-    "AUS": "oceania", "NZL": "oceania", "FIJ": "oceania", "SAM": "oceania", "PNG": "oceania", "GUM": "oceania",
+    "AUS": "oceania",
+    "NZL": "oceania",
+    "FIJ": "oceania",
+    "SAM": "oceania",
+    "PNG": "oceania",
+    "GUM": "oceania",
     # Africa
-    "RSA": "africa", "ANG": "africa", "DZA": "africa", "EGY": "africa", "MAR": "africa", "TUN": "africa", "ALG": "africa", "NGR": "africa",
-    "KEN": "africa", "GHA": "africa", "CIV": "africa", "SEN": "africa", "CMR": "africa", "UGA": "africa",
-    "ETH": "africa", "TAN": "africa", "ZIM": "africa", "ZAM": "africa", "MOZ": "africa", "MAD": "africa",
-    "BEN": "africa", "TOG": "africa", "GAB": "africa", "COD": "africa", "RWA": "africa", "BUR": "africa",
-    "MLI": "africa", "NIG": "africa", "BOT": "africa", "NAM": "africa", "MRI": "africa", "LBA": "africa",
+    "RSA": "africa",
+    "ANG": "africa",
+    "DZA": "africa",
+    "EGY": "africa",
+    "MAR": "africa",
+    "TUN": "africa",
+    "ALG": "africa",
+    "NGR": "africa",
+    "KEN": "africa",
+    "GHA": "africa",
+    "CIV": "africa",
+    "SEN": "africa",
+    "CMR": "africa",
+    "UGA": "africa",
+    "ETH": "africa",
+    "TAN": "africa",
+    "ZIM": "africa",
+    "ZAM": "africa",
+    "MOZ": "africa",
+    "MAD": "africa",
+    "BEN": "africa",
+    "TOG": "africa",
+    "GAB": "africa",
+    "COD": "africa",
+    "RWA": "africa",
+    "BUR": "africa",
+    "MLI": "africa",
+    "NIG": "africa",
+    "BOT": "africa",
+    "NAM": "africa",
+    "MRI": "africa",
+    "LBA": "africa",
 }
 
 CONTINENT_LABELS = {
@@ -342,7 +459,7 @@ CONTINENT_LABELS = {
     "europe": "Europe",
     "africa": "Africa",
     "asia": "Asia",
-    "oceania": "Oceania"
+    "oceania": "Oceania",
 }
 
 MOBILE_CONTINENT_LABELS = {
