@@ -17185,14 +17185,14 @@
                       "roundDesc": "1st Round", "roundNumber": 1,
                       "matches": [
                           {
-                            "matchId": 1183654083, "playStatusCode": "TP",
+                            "matchId": 1183654083, "playStatusCode": "PC", "resultStatusDesc": "Retired", "resultStatusCode": "RET",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
+                                  "scores": [1], "isWinner": true, "seeding": 1, "entryStatus": "DA",
                                   "player": {"playerId":800495699,"nationality":"ROU","givenName":"Maria Sara","familyName":"Popa"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "scores": [0], "isWinner": false, "entryStatus": "Q",
                                   "player": {"playerId":800419757,"nationality":"ITA","givenName":"Matilde","familyName":"Mariani"}
                                 }
                             ]
@@ -17237,7 +17237,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183654087, "playStatusCode": "TP",
+                            "matchId": 1183654087, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "seeding": 3, "entryStatus": "DA",
@@ -17276,7 +17276,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183654090, "playStatusCode": "TP",
+                            "matchId": 1183654090, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "JR",
@@ -17315,14 +17315,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183654093, "playStatusCode": "IP",
+                            "matchId": 1183654093, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "scores": [6,7], "isWinner": true, "entryStatus": "Q",
                                   "player": {"playerId":800544953,"nationality":"ROU","givenName":"Cristiana Nicoleta","familyName":"Todoni"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [1,"6(3)"], "isWinner": false, "entryStatus": "DA",
                                   "player": {"playerId":800347632,"nationality":"ROU","givenName":"Georgia Andreea","familyName":"Craciun"}
                                 }
                             ]
@@ -17354,14 +17354,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183654096, "playStatusCode": "IP",
+                            "matchId": 1183654096, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "entryStatus": "DA",
                                   "player": {"playerId":800427300,"nationality":"ESP","givenName":"Maria","familyName":"Oliver sanchez"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "scores": [3,1], "isWinner": false, "entryStatus": "Q",
                                   "player": {"playerId":800548185,"nationality":"ITA","givenName":"Lavinia","familyName":"Luciano"}
                                 }
                             ]
@@ -17402,7 +17402,8 @@
                             "matchId": 1183654075, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
+                                  "player": {"playerId":800495699,"nationality":"ROU","givenName":"Maria Sara","familyName":"Popa"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "DA",
@@ -17461,7 +17462,8 @@
                             "matchId": 1183654080, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "player": {"playerId":800544953,"nationality":"ROU","givenName":"Cristiana Nicoleta","familyName":"Todoni"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": null
@@ -17475,7 +17477,8 @@
                                   "scores": [], "isWinner": false, "entryStatus": null
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "player": {"playerId":800427300,"nationality":"ESP","givenName":"Maria","familyName":"Oliver sanchez"}
                                 }
                             ]
                           },
