@@ -80,6 +80,30 @@ def test_refresh_publishes_only_validated_data_to_main():
     assert workflow.index("Require a promotable transaction") < workflow.index("Publish validated data to main")
 
 
+def test_refresh_runs_complete_quality_gate_before_updating_or_deploying():
+    workflow = (WORKFLOW_DIR / "hourly-update.yml").read_text(encoding="utf-8")
+    overlay_index = workflow.index("Preserve pushed data files")
+    refresh_index = workflow.index("Extract, transform, validate, and build once")
+    upload_index = workflow.index("Upload immutable Pages artifact")
+    required_commands = [
+        "python -m pip check",
+        "python data_quality.py validate",
+        "--baseline-dir .quality-baseline/data",
+        "python -m ruff check .",
+        "python -m mypy",
+        "python -m pytest",
+        "python -m pre_commit run --all-files",
+        "python -m pip_audit --require-hashes -r requirements.lock",
+    ]
+
+    for command in required_commands:
+        command_index = workflow.index(command)
+        assert command_index < refresh_index
+        assert command_index < upload_index
+
+    assert workflow.index("Snapshot validated quality baseline") < overlay_index
+
+
 def test_update_notification_is_finalized_after_pages_deployment():
     workflow = (WORKFLOW_DIR / "hourly-update.yml").read_text(encoding="utf-8")
 

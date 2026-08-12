@@ -43,6 +43,11 @@ jobs:
             echo "data-state branch does not exist yet; bootstrapping from main"
           fi
 
+      - name: Snapshot validated quality baseline
+        run: |
+          mkdir -p .quality-baseline/data
+          cp -a data/. .quality-baseline/data/
+
       - name: Preserve pushed data files
         env:
           EVENT_NAME: ${{ github.event_name }}
@@ -105,11 +110,28 @@ jobs:
           echo "CHROMEDRIVER=${{ steps.chrome.outputs.chromedriver-path }}" >> "$GITHUB_ENV"
           echo "WTARG_REQUIRE_BROWSER_TESTS=1" >> "$GITHUB_ENV"
 
-      - name: Run blocking tests
+      - name: Blocking data-quality gate before refresh
+        run: >-
+          python data_quality.py validate
+          --data-dir data
+          --baseline-dir .quality-baseline/data
+          --site-root .
+          --report .quality-report.json
+
+      - name: Ruff
+        run: python -m ruff check .
+
+      - name: Type checking
+        run: python -m mypy
+
+      - name: Tests
         run: python -m pytest
 
-      - name: Validate source data before refresh
-        run: python data_quality.py validate --data-dir data --site-root .
+      - name: Pre-commit
+        run: python -m pre_commit run --all-files
+
+      - name: Dependency vulnerability scan
+        run: python -m pip_audit --require-hashes -r requirements.lock
 
       - name: Snapshot previous data state
         run: |

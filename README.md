@@ -178,10 +178,13 @@ changes and the audit result before merging.
   its two-hour schedule, or when manually started, it checks out the triggering
   source revision and never rebases it. It restores the last validated snapshot
   from the dedicated `data-state` branch, overlays data files changed by a
-  source push, then runs extract, transform, data validation, one `.site` build,
-  exact-artifact validation, artifact upload, data publication, and Pages
-  deployment in that order. This keeps the validated snapshot as refresh state
-  without discarding pushed match, entry-list, or tracker data.
+  source push, runs the complete blocking gate (data validation, Ruff, mypy,
+  pytest, pre-commit, and `pip-audit`), then runs extract, transform, refreshed
+  data validation, one `.site` build, exact-artifact validation, artifact upload,
+  data publication, and Pages deployment in that order. This keeps the validated
+  snapshot as refresh state without discarding pushed match, entry-list, or
+  tracker data, and prevents a revision from deploying while its quality checks
+  fail.
 - The uploaded Pages artifact is the same immutable `.site` directory validated
   by the refresh transaction; Pages does not rebuild it. A successful run saves
   only `data/` to `data-state` and mirrors that validated `data/` tree in a new
