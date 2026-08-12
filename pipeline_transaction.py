@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 import uuid
 from pathlib import Path
 from typing import Any
@@ -32,6 +33,7 @@ PRODUCTION_DATA_DIR = PROJECT_ROOT / "data"
 STAGING_PARENT = PROJECT_ROOT / ".run_staging"
 STATE_PARENT = PROJECT_ROOT / ".run_state"
 LATEST_STATE_PATH = STATE_PARENT / "latest.json"
+STAGING_CLEANUP_ATTEMPTS = 3
 RETIRED_GENERATED_DATA_FILES = {
     "history_data.json",
     "wta_rankings_20_29_bundle.js",
@@ -499,16 +501,55 @@ def _promote_all(
         raise error from exc
 
 
+def _cleanup_staging(staging_root: Path) -> tuple[bool, dict[str, Any] | None]:
+    """Delete run-scoped files, retrying briefly for transient Windows locks."""
+
+    last_error: OSError | None = None
+    for attempt in range(STAGING_CLEANUP_ATTEMPTS):
+        try:
+            shutil.rmtree(staging_root)
+        except FileNotFoundError:
+            return False, None
+        except OSError as exc:
+            last_error = exc
+            if attempt + 1 < STAGING_CLEANUP_ATTEMPTS:
+                time.sleep(0.25 * (attempt + 1))
+                continue
+        else:
+            return False, None
+        break
+
+    retained = staging_root.exists()
+    if not retained:
+        return False, None
+    assert last_error is not None
+    return True, {
+        "type": type(last_error).__name__,
+        "message": str(last_error),
+        "path": str(staging_root),
+        "attempts": STAGING_CLEANUP_ATTEMPTS,
+    }
+
+
 def _finish(
     run_state_path: Path,
     status: RunStatus,
+    staging_root: Path,
     **details: Any,
 ) -> int:
+    staging_retained, cleanup_warning = _cleanup_staging(staging_root)
+    details["staging_retained"] = staging_retained
+    if cleanup_warning is not None:
+        details["cleanup_warning"] = cleanup_warning
+        if status in {"success", "degraded"}:
+            status = "degraded"
+
     state = finalize_run_state(run_state_path, status, **details)
-    copy_run_state(run_state_path, LATEST_STATE_PATH)
+    LATEST_STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    os.replace(run_state_path, LATEST_STATE_PATH)
     logger.info(
         f"Run {state.get('run_id', 'unknown')} finished with status={status}; "
-        f"details={run_state_path}"
+        f"details={LATEST_STATE_PATH}"
     )
     return 0 if status in {"success", "degraded"} else (2 if status == "partial" else 1)
 
@@ -543,12 +584,12 @@ def run_refresh_transaction(
         return _finish(
             run_state_path,
             "failed",
+            staging_root,
             error={
                 "type": type(exc).__name__,
                 "operation": "initialize staging",
                 "message": str(exc),
             },
-            staging_retained=True,
         )
 
     environment = os.environ.copy()
@@ -570,12 +611,12 @@ def run_refresh_transaction(
         return _finish(
             run_state_path,
             "failed",
+            staging_root,
             error={
                 "type": type(exc).__name__,
                 "operation": "parse run timeout",
                 "message": str(exc),
             },
-            staging_retained=True,
         )
     effective_timeout = timeout_seconds or configured_timeout
 
@@ -591,23 +632,23 @@ def run_refresh_transaction(
         return _finish(
             run_state_path,
             "failed",
+            staging_root,
             error={"type": type(exc).__name__, "message": str(exc)},
-            staging_retained=True,
         )
     except BaseException as exc:
         return _finish(
             run_state_path,
             "failed",
+            staging_root,
             error={"type": type(exc).__name__, "message": str(exc)},
-            staging_retained=True,
         )
 
     if completed.returncode != 0:
         return _finish(
             run_state_path,
             "failed",
+            staging_root,
             error={"type": "ChildProcessError", "returncode": completed.returncode},
-            staging_retained=True,
         )
 
     state = load_run_state(run_state_path)
@@ -616,8 +657,8 @@ def run_refresh_transaction(
         return _finish(
             run_state_path,
             "partial",
+            staging_root,
             promotion="blocked",
-            staging_retained=True,
         )
 
     try:
@@ -640,28 +681,17 @@ def run_refresh_transaction(
         return _finish(
             run_state_path,
             "failed",
+            staging_root,
             error=details,
-            staging_retained=True,
         )
 
     final_status: RunStatus = "degraded" if "degraded" in issue_statuses else "success"
-    staging_retained = False
-    try:
-        shutil.rmtree(staging_root)
-    except OSError as exc:
-        final_status = "degraded"
-        staging_retained = staging_root.exists()
-        promotion["cleanup_warning"] = {
-            "type": type(exc).__name__,
-            "message": str(exc),
-            "path": str(staging_root),
-        }
     return _finish(
         run_state_path,
         final_status,
+        staging_root,
         validation=validation,
         promotion=promotion,
-        staging_retained=staging_retained,
     )
 
 

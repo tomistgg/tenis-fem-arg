@@ -131,10 +131,9 @@ The final machine-readable status is written atomically to
 - `success`: validation and promotion completed without source gaps.
 - `degraded`: a documented stale-cache fallback was used, but the staged
   dataset passed validation and was promoted.
-- `partial`: a required source result is missing; promotion is blocked and the
-  staging directory is retained for diagnosis.
+- `partial`: a required source result is missing and promotion is blocked.
 - `failed`: execution, validation, timeout, or promotion failed; production is
-  unchanged or rolled back and staging is retained.
+  unchanged or rolled back.
 
 While a refresh is active its status is `running`. Human-facing reports keep
 these stable machine values in the technical details, but present them as

@@ -613,7 +613,11 @@ def test_degraded_refresh_validates_builds_and_promotes(tmp_path, monkeypatch):
     )
 
     assert result == 0
-    assert load_run_state(project / ".run_state" / "latest.json")["status"] == "degraded"
+    latest_state = load_run_state(project / ".run_state" / "latest.json")
+    assert latest_state["status"] == "degraded"
+    assert latest_state["staging_retained"] is False
+    assert not (project / ".run_staging" / "test-run").exists()
+    assert [path.name for path in (project / ".run_state").iterdir()] == ["latest.json"]
     assert calls == [
         "extract-transform",
         "validate-data",
@@ -621,6 +625,88 @@ def test_degraded_refresh_validates_builds_and_promotes(tmp_path, monkeypatch):
         "validate-site",
         "promote",
     ]
+
+
+@pytest.mark.parametrize(
+    ("outcome", "expected_status", "expected_result"),
+    [
+        ("failed", "failed", 1),
+        ("partial", "partial", 2),
+        ("interrupted", "failed", 1),
+    ],
+)
+def test_unsuccessful_refresh_discards_run_files(
+    tmp_path,
+    monkeypatch,
+    outcome,
+    expected_status,
+    expected_result,
+):
+    project = tmp_path / "project"
+    production = project / "data"
+    production.mkdir(parents=True)
+    (production / "existing.json").write_text("{}", encoding="utf-8")
+
+    monkeypatch.setattr(pipeline_transaction, "PROJECT_ROOT", project)
+    monkeypatch.setattr(pipeline_transaction, "PRODUCTION_DATA_DIR", production)
+    monkeypatch.setattr(pipeline_transaction, "STAGING_PARENT", project / ".run_staging")
+    monkeypatch.setattr(pipeline_transaction, "STATE_PARENT", project / ".run_state")
+    monkeypatch.setattr(
+        pipeline_transaction,
+        "LATEST_STATE_PATH",
+        project / ".run_state" / "latest.json",
+    )
+    monkeypatch.setattr(pipeline_transaction, "_new_run_id", lambda: "test-run")
+
+    def run_child(*args, **kwargs):
+        if outcome == "interrupted":
+            raise KeyboardInterrupt
+        if outcome == "partial":
+            monkeypatch.setenv(
+                "WTARG_RUN_STATUS_PATH",
+                kwargs["env"]["WTARG_RUN_STATUS_PATH"],
+            )
+            record_run_issue("itf-loader", RuntimeError("source incomplete"), severity="partial")
+            return SimpleNamespace(returncode=0)
+        return SimpleNamespace(returncode=1)
+
+    monkeypatch.setattr(pipeline_transaction.subprocess, "run", run_child)
+
+    result = pipeline_transaction.run_refresh_transaction(
+        ["python", "main.py"],
+        include_generated_site=True,
+    )
+
+    latest_state = load_run_state(project / ".run_state" / "latest.json")
+    assert result == expected_result
+    assert latest_state["status"] == expected_status
+    assert latest_state["staging_retained"] is False
+    assert not (project / ".run_staging" / "test-run").exists()
+    assert [path.name for path in (project / ".run_state").iterdir()] == ["latest.json"]
+
+
+def test_staging_cleanup_retries_transient_lock(tmp_path, monkeypatch):
+    staging_root = tmp_path / "test-run"
+    staging_root.mkdir()
+    (staging_root / "data.json").write_text("{}", encoding="utf-8")
+    real_rmtree = pipeline_transaction.shutil.rmtree
+    attempts = []
+
+    def flaky_rmtree(path):
+        attempts.append(Path(path))
+        if len(attempts) < pipeline_transaction.STAGING_CLEANUP_ATTEMPTS:
+            raise PermissionError("temporarily locked")
+        real_rmtree(path)
+
+    monkeypatch.setattr(pipeline_transaction.shutil, "rmtree", flaky_rmtree)
+    monkeypatch.setattr(pipeline_transaction.time, "sleep", lambda _seconds: None)
+
+    retained, warning = pipeline_transaction._cleanup_staging(staging_root)
+
+    assert retained is False
+    assert warning is None
+    assert len(attempts) == pipeline_transaction.STAGING_CLEANUP_ATTEMPTS
+    assert not staging_root.exists()
 
 
 def test_all_ci_jobs_have_timeouts():
