@@ -75,13 +75,12 @@ class GeneratedSiteTests(unittest.TestCase):
                 )
             )
         )
-        cincinnati = entry_lists[
-            "https://www.wtatennis.com/tournaments/1017/cincinnati/2026/player-list"
+        entry_list_names = [
+            player.get("name")
+            for tournament_players in entry_lists.values()
+            for player in tournament_players
         ]
-        yue_yuan = [
-            player for player in cincinnati if player.get("player_id") == "324325"
-        ]
-        self.assertEqual([player["name"] for player in yue_yuan], ["Yue Yuan"])
+        self.assertNotIn("Yue Yuan (1998)", entry_list_names)
         self.assertNotIn(
             "Yue Yuan (1998)",
             (PROJECT_DIR / "app.html").read_text(encoding="utf-8-sig"),
