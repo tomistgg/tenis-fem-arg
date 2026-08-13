@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from calendar_builder import format_week_label, get_monday_from_date
 from config import CONTINENT_KEYS
 from html_generator import generate_html
 from main import (
@@ -35,6 +36,7 @@ from utils import (
 from wta import _load_wta_csv
 
 CALENDAR_COLUMNS = ("gs", "wta_tour", "wta_125", "itf")
+SCHEDULE_WEEK_COUNT = 4
 TournamentInfo = dict[str, Any]
 TournamentGroups = OrderedDict[str, OrderedDict[str, TournamentInfo]]
 ScheduleMap = dict[str, dict[str, str]]
@@ -53,21 +55,74 @@ def _monday_from_date(value: str) -> str:
     return (parsed - timedelta(days=parsed.weekday())).strftime("%Y-%m-%d")
 
 
+def _add_configured_entry_list_groups(data_dir: Path, tournament_groups: TournamentGroups) -> None:
+    """Restore separately configured main and qualifying lists to their draw weeks."""
+    configured_draws = _load_json(data_dir / "gs_pdf_urls.json", {})
+    for base_key, draw_config in configured_draws.items():
+        if not isinstance(draw_config, dict):
+            continue
+        for draw_type in ("main", "qual"):
+            draw = draw_config.get(draw_type)
+            if not isinstance(draw, dict):
+                continue
+            start_date = str(draw.get("start_date") or "")[:10]
+            try:
+                monday = get_monday_from_date(start_date)
+            except ValueError:
+                continue
+
+            target_key = base_key if draw_type == "main" else f"{base_key}#qual"
+            existing_info = next(
+                (
+                    tournaments.get(target_key) or tournaments.get(base_key) or {}
+                    for tournaments in tournament_groups.values()
+                    if target_key in tournaments or base_key in tournaments
+                ),
+                {},
+            )
+            default_name = str(existing_info.get("name") or "Grand Slam")
+            if draw_type == "qual":
+                default_name = f"{default_name} Qualifying"
+            for tournaments in tournament_groups.values():
+                tournaments.pop(target_key, None)
+            week = format_week_label(monday)
+            tournament_groups.setdefault(week, OrderedDict())[target_key] = {
+                "name": draw.get("display_name") or default_name,
+                "level": draw.get("level") or existing_info.get("level", "Grand Slam"),
+                "surface": draw.get("surface") or existing_info.get("surface", ""),
+                "country": draw.get("country") or existing_info.get("country", ""),
+                "startDate": start_date,
+                "endDate": draw.get("end_date") or existing_info.get("endDate"),
+            }
+
+
 def _tournament_inputs(data_dir: Path) -> tuple[TournamentGroups, OrderedDict[str, str]]:
     snapshot = expand_tournament_snapshot(_load_json(data_dir / "tournament_snapshot.json", {}))
     tournament_groups: TournamentGroups = OrderedDict()
-    monday_map: OrderedDict[str, str] = OrderedDict()
     for tournament_key, raw_info in (snapshot or {}).items():
         info = dict(raw_info)
         week = str(info.pop("week", "") or "").strip()
         if not week:
             continue
         tournament_groups.setdefault(week, OrderedDict())[tournament_key] = info
-        try:
-            monday_map.setdefault(_monday_from_date(str(info.get("startDate", ""))), week)
-        except ValueError:
-            continue
+    _add_configured_entry_list_groups(data_dir, tournament_groups)
+
+    week_dates: dict[str, str] = {}
+    for week, tournaments in tournament_groups.items():
+        for info in tournaments.values():
+            try:
+                monday = get_monday_from_date(str(info.get("startDate", "")))
+            except ValueError:
+                continue
+            week_dates[week] = monday.strftime("%Y-%m-%d")
+            break
+    monday_map = OrderedDict((monday, week) for week, monday in sorted(week_dates.items(), key=lambda item: item[1]))
     return tournament_groups, monday_map
+
+
+def _visible_schedule_monday_map(monday_map: OrderedDict[str, str]) -> OrderedDict[str, str]:
+    """Return the four chronological weeks shown in Schedule."""
+    return OrderedDict(list(monday_map.items())[:SCHEDULE_WEEK_COUNT])
 
 
 def _entry_inputs(
@@ -202,6 +257,7 @@ def render_site_from_data(data_dir: str | Path, site_root: str | Path) -> None:
 
     tournament_groups, monday_map = _tournament_inputs(data_dir)
     tournament_store, schedule_map, entry_arg_names = _entry_inputs(data_dir, tournament_groups)
+    monday_map = _visible_schedule_monday_map(monday_map)
     players_data, all_wta_players = _ranking_inputs(data_dir, entry_arg_names)
     match_history_data, cleaned_history = load_match_history(data_dir)
     enrich_history_with_wta_ranks(cleaned_history, data_dir)
