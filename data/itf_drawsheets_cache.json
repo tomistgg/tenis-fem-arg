@@ -17522,7 +17522,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183654072, "playStatusCode": "TP",
+                            "matchId": 1183654072, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "DA",
@@ -17548,14 +17548,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183654074, "playStatusCode": "IP",
+                            "matchId": 1183654074, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 5, "entryStatus": "DA",
+                                  "scores": [5,4], "isWinner": false, "seeding": 5, "entryStatus": "DA",
                                   "player": {"playerId":800329736,"nationality":"ROU","givenName":"Oana Georgeta","familyName":"Simion"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [7,6], "isWinner": true, "entryStatus": "DA",
                                   "player": {"playerId":800671481,"nationality":"GER","givenName":"Ida","familyName":"Wobker"}
                                 }
                             ]
@@ -17586,7 +17586,8 @@
                                   "player": {"playerId":800544953,"nationality":"ROU","givenName":"Cristiana Nicoleta","familyName":"Todoni"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "player": {"playerId":800671481,"nationality":"GER","givenName":"Ida","familyName":"Wobker"}
                                 }
                             ]
                           }
