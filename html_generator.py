@@ -335,6 +335,7 @@ IOC_TO_ISO2 = {
     "DZA": "dz",
     "ECU": "ec",
     "EGY": "eg",
+    "ERI": "er",
     "ESA": "sv",
     "ESP": "es",
     "EST": "ee",

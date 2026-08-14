@@ -117,6 +117,11 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertIn('src="data/flags/aho.svg"', flag_html)
         self.assertTrue((PROJECT_DIR / "data" / "flags" / "aho.svg").is_file())
 
+    def test_eritrea_country_code_renders_flag(self):
+        flag_html = country_flag_html("ERI", show_code=False)
+
+        self.assertIn("country-flag-icons/3x2/ER.svg", flag_html)
+
     def test_entry_lists_use_public_name_for_id_disambiguated_players(self):
         players = [{"name": "Yue Yuan (1998)", "player_id": "324325"}]
 

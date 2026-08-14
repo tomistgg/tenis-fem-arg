@@ -3279,6 +3279,23 @@
                     width: 19px;
                     height: 19px;
                 }
+                .sidebar .menu-item.active {
+                    position: relative;
+                    padding-right: 30px !important;
+                    box-shadow: 0 6px 16px rgba(4,31,66,.22);
+                }
+                .sidebar .menu-item.active::after {
+                    content: '';
+                    position: absolute;
+                    top: 50%;
+                    right: 12px;
+                    width: 7px;
+                    height: 7px;
+                    border-radius: 50%;
+                    background: var(--c-sun);
+                    box-shadow: 0 0 0 3px rgba(246,196,83,.16);
+                    transform: translateY(-50%);
+                }
 
                 body.home-mode,
                 .home-mode .main-content {
