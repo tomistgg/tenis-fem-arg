@@ -158,7 +158,7 @@ class GeneratedSiteTests(unittest.TestCase):
             format_week_label(get_monday_from_date(us_open["start_date"])),
             "Week of August 31",
         )
-        self.assertEqual(us_open["withdrawals"], ["Emma Raducanu"])
+        self.assertEqual(us_open["withdrawals"], ["Emma Raducanu", "Laura Siegemund"])
 
     def test_manual_entry_list_withdrawal_promotes_and_renumbers_alternates(self):
         main_players = [
@@ -204,11 +204,15 @@ class GeneratedSiteTests(unittest.TestCase):
         alternates = [player for player in players if player["type"] == "ALT"]
 
         self.assertNotIn("EMMA RADUCANU", [player["name"] for player in accepted])
+        self.assertNotIn("LAURA SIEGEMUND", [player["name"] for player in accepted])
         self.assertEqual([player["pos"] for player in accepted], [str(i) for i in range(1, 105)])
         self.assertEqual(accepted[34]["name"], "JANICE TJEN")
-        self.assertEqual(accepted[-1]["name"], "ANNA BLINKOVA")
-        self.assertEqual([player["pos"] for player in alternates], [str(i) for i in range(1, 10)])
-        self.assertEqual(alternates[0]["name"], "DARJA VIDMANOVA")
+        self.assertEqual(accepted[-1]["name"], "DARJA VIDMANOVA")
+        self.assertEqual([player["pos"] for player in alternates], [str(i) for i in range(1, 9)])
+        self.assertEqual(alternates[0]["name"], "NADIA PODOROSKA")
+        main_seeds = {player["name"]: player["seed"] for player in accepted if player.get("seed") != ""}
+        self.assertEqual(set(main_seeds.values()), set(range(1, 33)))
+        self.assertNotIn("DARJA VIDMANOVA", main_seeds)
 
         app_source = _generated_frontend_source()
         self.assertNotIn('"name":"EMMA RADUCANU"', app_source.replace(": ", ":"))
@@ -233,14 +237,22 @@ class GeneratedSiteTests(unittest.TestCase):
         accepted = [player for player in players if player["type"] == "QUAL"]
         alternates = [player for player in players if player["type"] == "ALT"]
         self.assertEqual(len(accepted), 119)
-        self.assertEqual(len(alternates), 20)
+        self.assertEqual(len(alternates), 19)
+        self.assertNotIn("DARJA VIDMANOVA", [player["name"] for player in accepted])
+        self.assertEqual(accepted[-1]["name"], "NAO HIBINO")
+        qualifying_seeds = {
+            player["name"]: player["seed"] for player in accepted if player.get("seed") != ""
+        }
+        self.assertEqual(set(qualifying_seeds.values()), set(range(1, 33)))
+        self.assertEqual(qualifying_seeds["POLINA KUDERMETOVA"], 1)
+        self.assertEqual(qualifying_seeds["LUCREZIA STEFANINI"], 32)
         self.assertEqual(
             [player["pos"] for player in accepted if player["country"] == "ARG"],
-            ["4", "46", "55", "60", "112"],
+            ["3", "45", "54", "59", "111"],
         )
         self.assertEqual(
             [player["pos"] for player in alternates if player["country"] == "ARG"],
-            ["17"],
+            ["16"],
         )
 
         app_source = _generated_frontend_source()
