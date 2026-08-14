@@ -18276,15 +18276,15 @@
                       "roundDesc": "Quarter-finals", "roundNumber": 3,
                       "matches": [
                           {
-                            "matchId": 1183656231, "playStatusCode": "TP",
+                            "matchId": 1183656231, "playStatusCode": "PC",
                             "teams": [
                                 {
                                   "player": {"playerId":800557910,"nationality":"CHN","givenName":"Lan","familyName":"Mi"},
-                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA"
+                                  "scores": [6,6], "isWinner": true, "seeding": 1, "entryStatus": "DA"
                                 },
                                 {
                                   "player": {"playerId":800577682,"nationality":"ARG","givenName":"Lourdes","familyName":"Ayala"},
-                                  "scores": [], "isWinner": false, "seeding": 8, "entryStatus": "DA"
+                                  "scores": [0,4], "isWinner": false, "seeding": 8, "entryStatus": "DA"
                                 }
                             ]
                           },
@@ -18302,7 +18302,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183656233, "playStatusCode": "TP",
+                            "matchId": 1183656233, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "player": {"playerId":800598663,"nationality":"BRA","givenName":"Beatriz","familyName":"Guerra"},
@@ -18315,7 +18315,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183656234, "playStatusCode": "TP",
+                            "matchId": 1183656234, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "player": {"playerId":800590927,"nationality":"ISR","givenName":"Maayan","familyName":"Laron"},
@@ -18337,7 +18337,8 @@
                             "matchId": 1183656229, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "player": {"playerId":800557910,"nationality":"CHN","givenName":"Lan","familyName":"Mi"},
+                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA"
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": null
