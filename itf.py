@@ -10,6 +10,7 @@ from typing import Any
 
 import requests
 from selenium.common.exceptions import InvalidSessionIdException, WebDriverException
+from urllib3.exceptions import HTTPError as Urllib3HTTPError
 
 from calendar_builder import get_next_monday
 from config import (
@@ -396,7 +397,7 @@ def _ensure_itf_session(driver, force_navigation=False):
         driver.get(ITF_CALENDAR_PAGE_URL)
         settle_min, settle_max = (2.5, 4.0) if force_navigation else (1.8, 3.0)
         time.sleep(random.uniform(settle_min, settle_max))
-    except WebDriverException as e:
+    except (WebDriverException, Urllib3HTTPError) as e:
         if _is_invalid_browser_session(e):
             _itf_note_browser_unavailable(e)
         else:
@@ -436,7 +437,7 @@ fetch(url, { credentials: "include", signal: controller.signal, cache: "no-store
         if isinstance(result, dict) and result.get("ok"):
             return result.get("text", "")
         return ""
-    except WebDriverException as exc:
+    except (WebDriverException, Urllib3HTTPError) as exc:
         if _is_invalid_browser_session(exc):
             _itf_note_browser_unavailable(exc)
         return ""
@@ -490,7 +491,7 @@ def _fetch_itf_json(driver, url, timeout_ms=12000, retries=2):
                 for item in driver.get_cookies()
                 if item.get("name") and item.get("value") is not None
             }
-    except WebDriverException:
+    except (WebDriverException, Urllib3HTTPError):
         browser_cookies = None
 
     req_data = _fetch_itf_json_via_requests(
@@ -531,7 +532,7 @@ def _fetch_itf_json_via_navigation(driver, url, settle_seconds=1.0):
         parsed = json.loads(raw)
         _itf_note_successful_response()
         return parsed if isinstance(parsed, dict) else None
-    except (WebDriverException, json.JSONDecodeError, AttributeError, TypeError, ValueError) as exc:
+    except (WebDriverException, Urllib3HTTPError, json.JSONDecodeError, AttributeError, TypeError, ValueError) as exc:
         if _is_invalid_browser_session(exc):
             _itf_note_browser_unavailable(exc)
         else:
@@ -982,7 +983,7 @@ def get_itf_players(tournament_key, driver):
                     driver.get(acceptance_url)
                     time.sleep(random.uniform(3, 5))
                     root_data = _parse_acceptance_html_sections(driver.page_source)
-                except (WebDriverException, AttributeError, TypeError, ValueError) as exc:
+                except (WebDriverException, Urllib3HTTPError, AttributeError, TypeError, ValueError) as exc:
                     report_run_issue(
                         "itf",
                         "parse acceptance page fallback",
@@ -994,7 +995,7 @@ def get_itf_players(tournament_key, driver):
 
         name_map = _build_name_map(root_data)
         return root_data, name_map
-    except (WebDriverException, AttributeError, KeyError, TypeError, ValueError) as e:
+    except (WebDriverException, Urllib3HTTPError, AttributeError, KeyError, TypeError, ValueError) as e:
         logger.error(f"Error en {tournament_key}: {e}")
         return [], {}
 

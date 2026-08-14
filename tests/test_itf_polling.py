@@ -3,6 +3,7 @@ from datetime import UTC, date, datetime
 from types import SimpleNamespace
 
 import pandas as pd
+from urllib3.exceptions import ReadTimeoutError
 
 import draws
 import itf
@@ -561,6 +562,36 @@ def test_invalid_itf_browser_session_fast_fails_to_http_fallback(monkeypatch):
     assert result == {"tournamentId": 123}
     assert calls == {"browser": 1, "http": 1}
     assert itf._itf_browser_unavailable is True
+
+
+def test_itf_navigation_transport_timeout_falls_back_to_http(monkeypatch):
+    calls = {"navigation": 0, "http": 0}
+    endpoint = "https://example.test/TournamentApi/GetCalendar"
+
+    class TimedOutDriver:
+        def execute_async_script(self, *args):
+            return {"ok": False, "error": "timeout"}
+
+        def get(self, url):
+            calls["navigation"] += 1
+            raise ReadTimeoutError(None, url, "read timed out")
+
+        def get_cookies(self):
+            return []
+
+    def http_fallback(*args, **kwargs):
+        calls["http"] += 1
+        return {"items": [{"tournamentKey": "w-test"}], "totalItems": 1}
+
+    monkeypatch.setattr(itf, "_itf_browser_unavailable", False)
+    monkeypatch.setattr(itf, "_itf_session_warmed", True)
+    monkeypatch.setattr(itf, "_itf_wait_for_rate_limit", lambda: None)
+    monkeypatch.setattr(itf, "_fetch_itf_json_via_requests", http_fallback)
+
+    result = itf._fetch_itf_json(TimedOutDriver(), endpoint, retries=1)
+
+    assert result == {"items": [{"tournamentKey": "w-test"}], "totalItems": 1}
+    assert calls == {"navigation": 1, "http": 1}
 
 
 def test_uncached_blocked_draw_retries_without_poisoning_browser_session(monkeypatch):
