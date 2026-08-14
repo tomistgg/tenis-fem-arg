@@ -17522,14 +17522,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183654072, "playStatusCode": "IP",
+                            "matchId": 1183654072, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [6,5,6], "isWinner": true, "entryStatus": "DA",
                                   "player": {"playerId":800576187,"nationality":"ROU","givenName":"Diana-Ioana","familyName":"Simionescu"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "JR",
+                                  "scores": [1,7,4], "isWinner": false, "entryStatus": "JR",
                                   "player": {"playerId":800636281,"nationality":"ROU","givenName":"Maia Ilinca","familyName":"Burcescu"}
                                 }
                             ]
@@ -17574,7 +17574,8 @@
                                   "player": {"playerId":800495699,"nationality":"ROU","givenName":"Maria Sara","familyName":"Popa"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "player": {"playerId":800576187,"nationality":"ROU","givenName":"Diana-Ioana","familyName":"Simionescu"}
                                 }
                             ]
                           },
