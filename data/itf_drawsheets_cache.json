@@ -18336,14 +18336,14 @@
                       "roundDesc": "Semi-finals", "roundNumber": 4,
                       "matches": [
                           {
-                            "matchId": 1183656229, "playStatusCode": "TP",
+                            "matchId": 1183656229, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "seeding": 1, "entryStatus": "DA",
                                   "player": {"playerId":800557910,"nationality":"CHN","givenName":"Lan","familyName":"Mi"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 4, "entryStatus": "DA",
+                                  "scores": [0,4], "isWinner": false, "seeding": 4, "entryStatus": "DA",
                                   "player": {"playerId":800547501,"nationality":"BRA","givenName":"Marjorie","familyName":"Souza"}
                                 }
                             ]
@@ -18371,7 +18371,8 @@
                             "matchId": 1183656228, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
+                                  "player": {"playerId":800557910,"nationality":"CHN","givenName":"Lan","familyName":"Mi"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": null
