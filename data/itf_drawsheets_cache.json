@@ -17580,14 +17580,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183654070, "playStatusCode": "TP",
+                            "matchId": 1183654070, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "scores": [4,5], "isWinner": false, "entryStatus": "Q",
                                   "player": {"playerId":800544953,"nationality":"ROU","givenName":"Cristiana Nicoleta","familyName":"Todoni"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [6,7], "isWinner": true, "entryStatus": "DA",
                                   "player": {"playerId":800671481,"nationality":"GER","givenName":"Ida","familyName":"Wobker"}
                                 }
                             ]
@@ -17605,7 +17605,8 @@
                                   "scores": [], "isWinner": false, "entryStatus": null
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "player": {"playerId":800671481,"nationality":"GER","givenName":"Ida","familyName":"Wobker"}
                                 }
                             ]
                           }
