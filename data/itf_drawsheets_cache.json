@@ -17567,14 +17567,14 @@
                       "roundDesc": "Semi-finals", "roundNumber": 4,
                       "matches": [
                           {
-                            "matchId": 1183654069, "playStatusCode": "TP",
+                            "matchId": 1183654069, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
+                                  "scores": [6,7], "isWinner": true, "seeding": 1, "entryStatus": "DA",
                                   "player": {"playerId":800495699,"nationality":"ROU","givenName":"Maria Sara","familyName":"Popa"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [3,5], "isWinner": false, "entryStatus": "DA",
                                   "player": {"playerId":800576187,"nationality":"ROU","givenName":"Diana-Ioana","familyName":"Simionescu"}
                                 }
                             ]
@@ -17602,7 +17602,8 @@
                             "matchId": 1183654068, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
+                                  "player": {"playerId":800495699,"nationality":"ROU","givenName":"Maria Sara","familyName":"Popa"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "DA",
