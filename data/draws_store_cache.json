@@ -526,7 +526,9 @@
           {"round": 1, "match_num": 60, "winner_name": "J. Ostapenko"},
           {"round": 1, "match_num": 61, "winner_name": "M. Frech", "score": "62 75"},
           {"round": 1, "match_num": 62, "winner_name": "T. Townsend", "score": "36 63 63"},
-          {"round": 1, "match_num": 63, "winner_name": "E. Rybakina"}
+          {"round": 1, "match_num": 63, "winner_name": "E. Rybakina"},
+          {"round": 2, "match_num": 18, "winner_name": "A. Eala", "score": "61 30 RET"},
+          {"round": 2, "match_num": 19, "winner_name": "A. Anisimova", "score": "62 63"}
         ],
         "byes": [
           2,
@@ -572,6 +574,157 @@
           "Final"
         ],
         "num_rounds": 7
+      }
+    }
+  },
+  "w-itf-esp-2026-016":
+  {
+    "meta":
+    {
+      "name": "W15 Logrono",
+      "level": "W15",
+      "week": "Week of August 17",
+      "startDate": "2026-08-17T00:00:00",
+      "endDate": "2026-08-23T00:00:00",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "draw_size": 64,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "KRUPENINA, Ksenia", "country": "RUS"},
+          {"pos": 3, "name": "RIVERO ZERPA, Isabella Constanza", "country": "VEN"},
+          {"pos": 4, "entry": "WC", "name": "OPRESCU, Luisa Maria", "country": "ESP"},
+          {"pos": 5, "name": "VIGGIANI, Diana", "country": "ITA"},
+          {"pos": 6, "name": "KURZ, Viktoria", "country": "AUT"},
+          {"pos": 7, "name": "CABASSERS MORROS, Mar", "country": "ESP"},
+          {"pos": 8, "seed": "11", "name": "DE EZCURRA, Leire", "country": "FRA"},
+          {"pos": 9, "seed": "2", "name": "MEDVEDEVA, Miroslava", "country": "RUS"},
+          {"pos": 11, "name": "PATIER, Rocio", "country": "ESP"},
+          {"pos": 12, "name": "JIMENEZ PEREZ, Paula", "country": "ESP"},
+          {"pos": 13, "name": "GIL ITURRALDE, Paulina", "country": "ESP"},
+          {"pos": 14, "name": "PEREZ NARANJO, Anasofia", "country": "COL"},
+          {"pos": 15, "name": "IBRAHIMOVIC, Denisa", "country": "GER"},
+          {"pos": 16, "seed": "15", "name": "FERNANDEZ FIGUERAS, SOFIA", "country": "ESP"},
+          {"pos": 17, "seed": "3", "name": "BREEN, Saoirse", "country": "FIJ"},
+          {"pos": 19, "name": "ROOT, Megan Mae", "country": "USA"},
+          {"pos": 20, "entry": "WC", "name": "KNIESE JAUREGUI, Leire", "country": "ESP"},
+          {"pos": 21, "name": "KIJIMA, Mio", "country": "JPN"},
+          {"pos": 22, "name": "FRANCHI, Francesca", "country": "GBR"},
+          {"pos": 23, "name": "CABASSERS MORROS, Anna", "country": "ESP"},
+          {"pos": 24, "seed": "13", "name": "SHUBINA, Daria", "country": "UZB"},
+          {"pos": 25, "seed": "4", "name": "BIENZOBAS FERNANDEZ SANCHO, Olga", "country": "ESP"},
+          {"pos": 27, "name": "PALAZON LACASA, Andrea", "country": "ESP"},
+          {"pos": 28, "name": "VARGAS, Mariel", "country": "ECU"},
+          {"pos": 29, "name": "ORLOVA, Natalia", "country": "RUS"},
+          {"pos": 30, "name": "IBARROLA, Lucia", "country": "ESP"},
+          {"pos": 31, "name": "SANTAOLALLA-RISTIC, Monica", "country": "ESP"},
+          {"pos": 32, "seed": "12", "name": "SARGANELLA VERDU, Nuria", "country": "ESP"},
+          {"pos": 33, "seed": "5", "name": "HEDDAR, Farah", "country": "ALG"},
+          {"pos": 35, "name": "KOSKEL, Anet Angelika", "country": "EST"},
+          {"pos": 36, "name": "ORTEGA REDONDO, Paula", "country": "ESP"},
+          {"pos": 37, "name": "MARTIN LOPEZ, Valeria", "country": "ESP"},
+          {"pos": 38, "name": "PAVEL, Angelina Maria Irene", "country": "ROU"},
+          {"pos": 39, "name": "BAKULINA, Maria", "country": "ESP"},
+          {"pos": 40, "seed": "16", "name": "RODRIGUEZ CARRETERO, Patricia", "country": "ESP"},
+          {"pos": 41, "seed": "6", "name": "RUAN, Zi Ying", "country": "CHN"},
+          {"pos": 43, "name": "TEIXIDO GARCIA, Ares", "country": "ESP"},
+          {"pos": 44, "name": "SAMARDZIC, Kristina", "country": "GER"},
+          {"pos": 45, "name": "ANKUDINOVA, Mariya", "country": "KAZ"},
+          {"pos": 46, "name": "PATIL, Suhani", "country": "IND"},
+          {"pos": 47, "name": "PEREZ LERCHUNDI, Ariadna", "country": "ESP"},
+          {"pos": 48, "seed": "14", "name": "VYAS, Prisha", "country": "USA"},
+          {"pos": 49, "seed": "7", "name": "PASCUAL MONTALVO, Isabel", "country": "ESP"},
+          {"pos": 50, "name": "ROSSINOL, Elisabet", "country": "ESP"},
+          {"pos": 51, "name": "RABASCO SEGURA, Laura", "country": "ESP"},
+          {"pos": 52, "name": "JIMENEZ PEREZ, Maria", "country": "ESP"},
+          {"pos": 53, "name": "MANDAVKAR, Harsshali", "country": "IND"},
+          {"pos": 54, "name": "BIENZOBAS, Suyapa", "country": "ESP"},
+          {"pos": 55, "name": "SHARABURA, Kate", "country": "USA"},
+          {"pos": 56, "seed": "10", "name": "PEET, Freya", "country": "GBR"},
+          {"pos": 57, "seed": "8", "name": "FONT, Jordina", "country": "ESP"},
+          {"pos": 58, "name": "BASTOS-SOUSA BETANZOS, Alexia Paula", "country": "ESP"},
+          {"pos": 59, "name": "GARCIA BEITIA, Eneritz", "country": "ESP"},
+          {"pos": 60, "name": "BAIER, Jazmin", "country": "ARG"},
+          {"pos": 61, "name": "VALLE, CORAL", "country": "ESP"},
+          {"pos": 62, "name": "PEREZ NARANJO, Saralucia", "country": "COL"},
+          {"pos": 63, "name": "ORDONEZ ANDUIZA, Patricia", "country": "ESP"},
+          {"pos": 64, "seed": "9", "name": "MONTESINOS VILANOVA, Sofia", "country": "ESP"}
+        ],
+        "byes": [
+          2,
+          10,
+          18,
+          26,
+          34,
+          42
+        ],
+        "round_labels": [
+          "Round of 64",
+          "Round of 32",
+          "Round of 16"
+        ],
+        "num_rounds": 3
+      }
+    }
+  },
+  "w-itf-pol-2026-007":
+  {
+    "meta":
+    {
+      "name": "W35 Krakow",
+      "level": "W35",
+      "week": "Week of August 17",
+      "startDate": "2026-08-17T00:00:00",
+      "endDate": "2026-08-23T00:00:00",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "HEJTMANEK, Amelie Justine", "country": "CZE"},
+          {"pos": 2, "name": "DROZDZ, Oliwia", "country": "POL"},
+          {"pos": 3, "name": "STEPANKOVA, Tereza", "country": "CZE"},
+          {"pos": 4, "seed": "10", "name": "MRAZIKOVA, Karolina", "country": "SVK"},
+          {"pos": 5, "seed": "2", "name": "DRUGDOVA, Salma", "country": "SVK"},
+          {"pos": 6, "name": "MRAZOVA, Vanesa", "country": "SVK"},
+          {"pos": 7, "name": "JANKOWSKA, Hanna", "country": "POL"},
+          {"pos": 8, "seed": "11", "name": "VELIKOVA, Darya", "country": "BUL"},
+          {"pos": 9, "seed": "3", "name": "GEERLINGS, Ariana", "country": "ESP"},
+          {"pos": 10, "entry": "WC", "name": "WROBEL, Maja", "country": "POL"},
+          {"pos": 11, "entry": "WC", "name": "PABISIAK, Jessica Laura", "country": "POL"},
+          {"pos": 12, "seed": "9", "name": "BRUNO, Valentina Abril", "country": "ARG"},
+          {"pos": 13, "seed": "4", "name": "VELEVA, Viktoria", "country": "BUL"},
+          {"pos": 14, "entry": "WC", "name": "CZAPULAK, Ewa", "country": "POL"},
+          {"pos": 15, "name": "WYSOCZANSKA, Katarzyna", "country": "POL"},
+          {"pos": 16, "seed": "12", "name": "HEUSER, Megan", "country": "USA"},
+          {"pos": 17, "seed": "5", "name": "STAGNO, Beatrice", "country": "ITA"},
+          {"pos": 18, "name": "KLYS, Natalia", "country": "POL"},
+          {"pos": 19, "name": "SRUTWA, Martyna", "country": "POL"},
+          {"pos": 20, "seed": "14", "name": "VOJCINAKOVA, Ingrid", "country": "SVK"},
+          {"pos": 21, "seed": "6", "name": "KUMRU, Ada", "country": "TUR"},
+          {"pos": 22, "entry": "WC", "name": "AFFELT, Nadia", "country": "POL"},
+          {"pos": 23, "name": "HUSAROVA, Silvia", "country": "SVK"},
+          {"pos": 24, "seed": "16", "name": "TIGLEA, Cristina Elena", "country": "ITA"},
+          {"pos": 25, "seed": "7", "name": "GORSKA, Daria", "country": "POL"},
+          {"pos": 26, "entry": "WC", "name": "KADZIELSKA, Oliwia", "country": "POL"},
+          {"pos": 27, "name": "HUSAR, Sara", "country": "POL"},
+          {"pos": 28, "seed": "13", "name": "BANDUROWSKA, Xenia", "country": "POL"},
+          {"pos": 29, "seed": "8", "name": "BURYLO, Matylda", "country": "NOR"},
+          {"pos": 30, "name": "KUSY, Janika", "country": "GUA"},
+          {"pos": 31, "entry": "WC", "name": "KORZENIAK, Anna", "country": "POL"},
+          {"pos": 32, "seed": "15", "name": "OZEROVA, Anna", "country": "LAT"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16"
+        ],
+        "num_rounds": 2
       }
     }
   }
