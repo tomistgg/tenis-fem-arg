@@ -623,7 +623,6 @@
           {"pos": 14, "name": "PEREZ NARANJO, Anasofia", "country": "COL"},
           {"pos": 15, "name": "IBRAHIMOVIC, Denisa", "country": "GER"},
           {"pos": 16, "seed": "15", "name": "FERNANDEZ FIGUERAS, SOFIA", "country": "ESP"},
-          {"pos": 17, "seed": "3", "name": "BREEN, Saoirse", "country": "FIJ"},
           {"pos": 19, "name": "ROOT, Megan Mae", "country": "USA"},
           {"pos": 20, "entry": "WC", "name": "KNIESE JAUREGUI, Leire", "country": "ESP"},
           {"pos": 21, "name": "KIJIMA, Mio", "country": "JPN"},
@@ -668,9 +667,19 @@
           {"pos": 63, "name": "ORDONEZ ANDUIZA, Patricia", "country": "ESP"},
           {"pos": 64, "seed": "9", "name": "MONTESINOS VILANOVA, Sofia", "country": "ESP"}
         ],
+        "matches": [
+          {"round": 1, "match_num": 1, "winner_name": "L. Oprescu", "score": "61 60"},
+          {"round": 1, "match_num": 5, "winner_name": "R. Patier", "score": "62 75"},
+          {"round": 1, "match_num": 6, "winner_name": "P. Gil Iturralde", "score": "63 63"},
+          {"round": 1, "match_num": 17, "winner_name": "A. Koskel", "score": "26 76(5) 10-7"},
+          {"round": 1, "match_num": 18, "winner_name": "V. Martin Lopez", "score": "63 75"},
+          {"round": 1, "match_num": 21, "winner_name": "A. Teixido Garcia", "score": "W/O"},
+          {"round": 1, "match_num": 25, "winner_name": "M. Jimenez Perez", "score": "62 62"}
+        ],
         "byes": [
           2,
           10,
+          17,
           18,
           26,
           34,
@@ -736,7 +745,12 @@
           {"pos": 32, "seed": "15", "name": "OZEROVA, Anna", "country": "LAT"}
         ],
         "matches": [
+          {"round": 1, "match_num": 1, "winner_name": "K. Mrazikova", "score": "61 62"},
+          {"round": 1, "match_num": 3, "winner_name": "D. Velikova", "score": "62 61"},
+          {"round": 1, "match_num": 9, "winner_name": "I. Vojcinakova", "score": "61 26 10-6"},
+          {"round": 1, "match_num": 10, "winner_name": "A. Kumru", "score": "61 75"},
           {"round": 1, "match_num": 11, "winner_name": "C. Tiglea", "score": "60 63"},
+          {"round": 1, "match_num": 14, "winner_name": "J. Kusy", "score": "61 06 10-6"},
           {"round": 1, "match_num": 15, "winner_name": "A. Ozerova", "score": "61 36 10-8"}
         ],
         "round_labels": [
