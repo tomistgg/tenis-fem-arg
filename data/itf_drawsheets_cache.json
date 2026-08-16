@@ -18349,14 +18349,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183656230, "playStatusCode": "TP",
+                            "matchId": 1183656230, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 3, "entryStatus": "DA",
+                                  "scores": [1,6,3], "isWinner": false, "seeding": 3, "entryStatus": "DA",
                                   "player": {"playerId":800667459,"nationality":"BRA","givenName":"Carolina","familyName":"Bohrer Martins"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 2, "entryStatus": "DA",
+                                  "scores": [6,3,6], "isWinner": true, "seeding": 2, "entryStatus": "DA",
                                   "player": {"playerId":800520329,"nationality":"BRA","givenName":"Luiza","familyName":"Fullana"}
                                 }
                             ]
@@ -18375,7 +18375,8 @@
                                   "player": {"playerId":800557910,"nationality":"CHN","givenName":"Lan","familyName":"Mi"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 2, "entryStatus": "DA",
+                                  "player": {"playerId":800520329,"nationality":"BRA","givenName":"Luiza","familyName":"Fullana"}
                                 }
                             ]
                           }
