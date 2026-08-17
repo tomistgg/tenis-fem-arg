@@ -237,9 +237,15 @@ class GeneratedSiteTests(unittest.TestCase):
         accepted = [player for player in players if player["type"] == "QUAL"]
         alternates = [player for player in players if player["type"] == "ALT"]
         self.assertEqual(len(accepted), 119)
-        self.assertEqual(len(alternates), 19)
+        self.assertEqual(len(alternates), 16)
         self.assertNotIn("DARJA VIDMANOVA", [player["name"] for player in accepted])
-        self.assertEqual(accepted[-1]["name"], "NAO HIBINO")
+        withdrawn = {"NADIA PODOROSKA", "ALICIA DUDENEY", "CELINE NAEF"}
+        self.assertTrue(withdrawn.isdisjoint(player["name"] for player in players))
+        self.assertEqual(
+            [player["name"] for player in accepted[-2:]],
+            ["ALIONA FALEI", "VIKTORIA HRUNCAKOVA"],
+        )
+        self.assertEqual(alternates[0]["name"], "POLONA HERCOG")
         qualifying_seeds = {
             player["name"]: player["seed"] for player in accepted if player.get("seed") != ""
         }
@@ -248,11 +254,11 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertEqual(qualifying_seeds["LUCREZIA STEFANINI"], 32)
         self.assertEqual(
             [player["pos"] for player in accepted if player["country"] == "ARG"],
-            ["3", "45", "54", "59", "111"],
+            ["44", "53", "58", "110"],
         )
         self.assertEqual(
             [player["pos"] for player in alternates if player["country"] == "ARG"],
-            ["16"],
+            ["13"],
         )
 
         app_source = _generated_frontend_source()
