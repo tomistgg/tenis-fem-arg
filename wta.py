@@ -6,17 +6,20 @@ import time
 from collections import OrderedDict
 from collections.abc import MutableMapping
 from datetime import timedelta
+from pathlib import Path
 from typing import Any
 
 import requests
 from bs4 import BeautifulSoup
 
 from calendar_builder import format_week_label, get_monday_from_date, get_next_monday
+from canonical_data import sync_wta_players
 from config import (
     API_URL,
     DATA_DIR,
     HEADERS,
     NAME_LOOKUP,
+    PLAYER_ALIASES_WTA_ITF_FILE,
     WTA_ID_TO_DISPLAY,
     WTA_RANKINGS_CSV,
     WTA_RANKINGS_CSV_00_09,
@@ -694,6 +697,9 @@ def _save_wta_csv_date(date_str, players):
     """Merge a new ranking week and atomically replace the decade CSV."""
     if not players:
         return
+    # Keep the canonical identity table ahead of the ranking write so a newly
+    # ranked player can never leave a dangling WTA ID in the persisted CSV.
+    sync_wta_players(Path(PLAYER_ALIASES_WTA_ITF_FILE), players)
     columns = ["week_date", "id", "rank", "points", "player", "country", "dob"]
 
     def merged_rows():

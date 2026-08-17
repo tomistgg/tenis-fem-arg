@@ -28,10 +28,11 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 from pipeline_errors import DataValidationError
+from ranking_publication import effective_wta_ranking_date
 from run_state import report_run_issue
 from runtime_logging import configure_logging, get_logger
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
-from time_utils import MADRID, madrid_now, madrid_today, utc_now, utc_timestamp
+from time_utils import MADRID, madrid_now, madrid_today, new_york_now, utc_now, utc_timestamp
 
 try:
     import undetected_chromedriver as uc
@@ -1897,8 +1898,16 @@ def build_all_tournament_groups(driver):
 
 def fetch_arg_players():
     """Fetch WTA+ITF rankings and return deduplicated ARG player list."""
-    today = madrid_now()
-    ranking_monday = (today - timedelta(days=today.weekday())).strftime("%Y-%m-%d")
+    eastern_now = new_york_now()
+    ranking_status_file = os.path.join(DATA_DIR, "wta_ranking_refresh_status.json")
+    try:
+        with open(ranking_status_file, encoding="utf-8-sig") as source:
+            ranking_status = json.load(source)
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        ranking_status = {}
+    if not isinstance(ranking_status, dict):
+        ranking_status = {}
+    ranking_monday = effective_wta_ranking_date(eastern_now, ranking_status).isoformat()
 
     all_wta_players, wta_status = get_wta_rankings_cached(ranking_monday, nationality=None, with_status=True)
     normalize_country_overrides(all_wta_players, "Player", "Country")

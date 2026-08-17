@@ -133,11 +133,37 @@ def test_ranking_display_name_removes_only_identity_disambiguators():
 
 def test_new_ranking_week_is_streamed_into_atomic_csv(tmp_path, monkeypatch):
     path = tmp_path / "wta_rankings_20_29.csv"
+    player_table = tmp_path / "player_aliases_wta_itf.json"
     _write_rankings(
         path,
         ["2026-07-13,1,1,900,Existing Player,ARG,2000-01-01\n"],
     )
+    player_table.write_text(
+        json.dumps(
+            [
+                {
+                    "player_key": "wta:1",
+                    "display_name": "Existing Player",
+                    "presentation_name": "",
+                    "country": "ARG",
+                    "dob": "2000-01-01",
+                    "wta_id": "1",
+                    "wta_name": "Existing Player",
+                    "itf_id": "",
+                    "itf_name": "",
+                    "bjkc_id": "",
+                    "bjkc_name": "",
+                    "aliases": [],
+                    "additional_wta_ids": [],
+                    "additional_itf_ids": [],
+                    "additional_bjkc_ids": [],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
     monkeypatch.setattr(wta, "WTA_RANKINGS_CSV", str(path))
+    monkeypatch.setattr(wta, "PLAYER_ALIASES_WTA_ITF_FILE", str(player_table))
 
     wta._save_wta_csv_date(
         "2026-07-20",
@@ -156,4 +182,6 @@ def test_new_ranking_week_is_streamed_into_atomic_csv(tmp_path, monkeypatch):
     text = path.read_text(encoding="utf-8-sig")
     assert "2026-07-13,1,1,900,Existing Player,ARG,2000-01-01" in text
     assert "2026-07-20,2,1,1000,New Player,ARG,2001-02-02" in text
+    identities = json.loads(player_table.read_text(encoding="utf-8"))
+    assert {row["wta_id"] for row in identities} == {"1", "2"}
     assert not list(tmp_path.glob("*.tmp"))

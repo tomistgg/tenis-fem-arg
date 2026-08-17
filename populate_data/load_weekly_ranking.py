@@ -3,7 +3,7 @@ import hashlib
 import json
 import os
 import sys
-from datetime import date, datetime, time, timedelta
+from datetime import date, timedelta
 from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -11,6 +11,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from canonical_data import sync_wta_players
 from config import PLAYER_ALIASES_WTA_ITF_FILE, WTA_RANKINGS_CSV
 from pipeline_errors import PipelineError
+from ranking_publication import (
+    PUBLICATION_CUTOFF_LABEL,
+    publication_window_is_open,
+)
 from run_state import report_run_issue
 from runtime_logging import get_logger
 from time_utils import new_york_now, new_york_today
@@ -24,8 +28,6 @@ CSV_FIELDNAMES = ["week_date", "id", "rank", "points", "player", "country", "dob
 RANKING_SIGNATURE_FIELDS = ("id", "rank", "points")
 MIN_CURRENT_WEEK_ROWS = 1000
 RANKING_STATUS_FILE = os.path.join(os.path.dirname(RANKINGS_CSV), "wta_ranking_refresh_status.json")
-PUBLICATION_CUTOFF = time(12, 0)
-PUBLICATION_CUTOFF_LABEL = "Monday 12:00 America/New_York"
 
 
 def to_title_case(name):
@@ -106,17 +108,6 @@ def save_status(status):
 
 def now_eastern():
     return new_york_now()
-
-
-def publication_cutoff_at(eastern_now):
-    """Return this week's Monday-noon WTA publication boundary in New York."""
-    monday = eastern_now.date() - timedelta(days=eastern_now.weekday())
-    return datetime.combine(monday, PUBLICATION_CUTOFF, tzinfo=eastern_now.tzinfo)
-
-
-def publication_window_is_open(eastern_now):
-    """Allow the week's first ranking check at or after Monday noon Eastern."""
-    return eastern_now >= publication_cutoff_at(eastern_now)
 
 
 def rewrite_csv(by_date):
