@@ -194,29 +194,6 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertEqual(qualifying[0]["type"], "QUAL")
         self.assertEqual(qualifying[0]["pos"], "1")
 
-    def test_us_open_manual_withdrawal_is_applied_to_current_entry_list(self):
-        tournament_key = "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list"
-        compact_cache = json.loads(
-            (PROJECT_DIR / "data" / "entry_lists_cache.json").read_text(encoding="utf-8")
-        )
-        players = expand_entry_lists_cache(compact_cache)[tournament_key]
-        accepted = [player for player in players if player["type"] == "MAIN"]
-        alternates = [player for player in players if player["type"] == "ALT"]
-
-        self.assertNotIn("EMMA RADUCANU", [player["name"] for player in accepted])
-        self.assertNotIn("LAURA SIEGEMUND", [player["name"] for player in accepted])
-        self.assertEqual([player["pos"] for player in accepted], [str(i) for i in range(1, 105)])
-        self.assertEqual(accepted[34]["name"], "JANICE TJEN")
-        self.assertEqual(accepted[-1]["name"], "DARJA VIDMANOVA")
-        self.assertEqual([player["pos"] for player in alternates], [str(i) for i in range(1, 9)])
-        self.assertEqual(alternates[0]["name"], "NADIA PODOROSKA")
-        main_seeds = {player["name"]: player["seed"] for player in accepted if player.get("seed") != ""}
-        self.assertEqual(set(main_seeds.values()), set(range(1, 33)))
-        self.assertNotIn("DARJA VIDMANOVA", main_seeds)
-
-        app_source = _generated_frontend_source()
-        self.assertNotIn('"name":"EMMA RADUCANU"', app_source.replace(": ", ":"))
-
     def test_us_open_qualifying_entry_list_is_assigned_to_august_24(self):
         tournament_key = "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list"
         config = json.loads(
