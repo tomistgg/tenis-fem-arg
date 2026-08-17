@@ -1839,15 +1839,19 @@ def build_all_tournament_groups(driver):
     current_monday = today - timedelta(days=today.weekday())
     current_monday_str = current_monday.strftime("%Y-%m-%d")
     current_monday_label = format_week_label(current_monday)
-    if today.weekday() <= 1 and current_monday_label in tournament_groups and tournament_groups[current_monday_label]:
+    next_monday_str = (current_monday + timedelta(days=7)).strftime("%Y-%m-%d")
+    itf_items = get_dynamic_itf_calendar(driver, num_weeks=3)
+    has_current_wta = bool(tournament_groups.get(current_monday_label))
+    has_current_itf = any(
+        current_monday_str <= str(item.get("startDate") or "")[:10] < next_monday_str for item in itf_items
+    )
+    if today.weekday() <= 1 and (has_current_wta or has_current_itf):
         m_keys = list(monday_map.keys())
         monday_map = {k: monday_map[k] for k in m_keys[:-1]}
         monday_map = {current_monday_str: current_monday_label, **monday_map}
         itf_keys = list(itf_monday_map.keys())
         itf_monday_map = {k: itf_monday_map[k] for k in itf_keys[:-1]}
         itf_monday_map = {current_monday_str: current_monday_label, **itf_monday_map}
-
-    itf_items = get_dynamic_itf_calendar(driver, num_weeks=3)
 
     for label in monday_map.values():
         if label not in tournament_groups:

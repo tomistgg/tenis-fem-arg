@@ -91,6 +91,35 @@ def test_current_week_itf_tournaments_remain_grouped_on_tuesday(monkeypatch):
     assert "w-itf-arg-2026-006" in grouped[current_week]
 
 
+def test_current_week_itf_tournaments_remain_grouped_without_current_wta(monkeypatch):
+    current_week = "Week of August 17"
+    future_weeks = {
+        "2026-08-24": "Week of August 24",
+        "2026-08-31": "Week of August 31",
+        "2026-09-07": "Week of September 7",
+        "2026-09-14": "Week of September 14",
+    }
+    current_itf = {
+        "tournamentName": "W15 Campos do Jordao",
+        "tournamentKey": "W-ITF-BRA-2026-011",
+        "surfaceDesc": "Hard",
+        "hostNationCode": "BRA",
+        "startDate": "2026-08-17T00:00:00",
+        "endDate": "2026-08-23T00:00:00",
+    }
+
+    monkeypatch.setattr(main, "build_tournament_groups", lambda: {})
+    monkeypatch.setattr(main, "generate_dynamic_monday_map", lambda num_weeks: dict(future_weeks))
+    monkeypatch.setattr(main, "madrid_now", lambda: datetime(2026, 8, 17, 12, 0))
+    monkeypatch.setattr(main, "get_dynamic_itf_calendar", lambda driver, num_weeks: [current_itf])
+    monkeypatch.setattr(main, "save_json_file", lambda *args, **kwargs: None)
+
+    grouped, monday_map = main.build_all_tournament_groups(driver=None)
+
+    assert list(monday_map) == ["2026-08-17", "2026-08-24", "2026-08-31", "2026-09-07"]
+    assert "w-itf-bra-2026-011" in grouped[current_week]
+
+
 def test_current_week_acceptance_is_refetched_and_withdrawal_removed(monkeypatch):
     tournament_key = "w-itf-bra-2026-010"
     week = "Week of August 10"
