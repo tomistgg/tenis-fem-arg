@@ -6,6 +6,7 @@ ANTALYA_URL = (
     "https://www.wtatennis.com/tournaments/1173/"
     "antalya-125-atik/2026/player-list"
 )
+CINCINNATI_URL = "https://www.wtatennis.com/tournaments/1017/cincinnati/2026/player-list"
 
 
 def _antalya_tournament():
@@ -21,6 +22,22 @@ def _antalya_tournament():
         "surface": "Clay",
         "startDate": "2026-09-07",
         "endDate": "2026-09-13",
+    }
+
+
+def _cincinnati_tournament():
+    return {
+        "tournamentGroup": {
+            "id": 1017,
+            "name": "CINCINNATI",
+        },
+        "year": 2026,
+        "level": "WTA 1000",
+        "city": "CINCINNATI",
+        "country": "USA",
+        "surface": "Hard",
+        "startDate": "2026-08-13",
+        "endDate": "2026-08-23",
     }
 
 
@@ -57,3 +74,21 @@ def test_draw_groups_use_normalized_parenthetical_slug(monkeypatch):
     groups = wta.get_draws_tournament_list()
 
     assert ANTALYA_URL in groups["Week of September 7"]
+
+
+def test_draw_groups_keep_ongoing_tournament_from_previous_week(monkeypatch):
+    monkeypatch.setattr(wta, "madrid_today", lambda: date(2026, 8, 17))
+    monkeypatch.setattr(wta, "_fetch_wta_tournaments_raw", lambda: [_cincinnati_tournament()])
+
+    groups = wta.get_draws_tournament_list()
+
+    assert CINCINNATI_URL in groups["Week of August 10"]
+
+
+def test_draw_groups_drop_tournament_after_end_date(monkeypatch):
+    monkeypatch.setattr(wta, "madrid_today", lambda: date(2026, 8, 24))
+    monkeypatch.setattr(wta, "_fetch_wta_tournaments_raw", lambda: [_cincinnati_tournament()])
+
+    groups = wta.get_draws_tournament_list()
+
+    assert groups == {}

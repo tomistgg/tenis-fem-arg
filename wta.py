@@ -5,7 +5,7 @@ import re
 import time
 from collections import OrderedDict
 from collections.abc import MutableMapping
-from datetime import timedelta
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -268,34 +268,13 @@ def build_tournament_groups():
     return tournament_groups
 
 
-_WTA_TWO_WEEK_NAMES = [
-    "Australian Open",
-    "Roland Garros",
-    "Wimbledon",
-    "US Open",
-    "Indian Wells",
-    "Miami",
-    "Madrid",
-    "Rome",
-    "Internazionali",
-]
-
-
-def _is_two_week_wta(level, raw_name, city, display_name):
-    if level.lower().replace(" ", "") == "grandslam":
-        return True
-    hay = " ".join([raw_name or "", city or "", display_name or ""]).lower()
-    return any(n.lower() in hay for n in _WTA_TWO_WEEK_NAMES)
-
-
 def get_draws_tournament_list():
     """Get WTA tournaments for the draws page.
 
-    Show current + next week. Only include last week if the event is a 2-week tournament.
+    Show ongoing tournaments plus tournaments starting this week or next week.
     """
     today = madrid_today()
     current_monday = today - timedelta(days=today.weekday())
-    past_monday = current_monday - timedelta(weeks=1)
     two_weeks_later = current_monday + timedelta(weeks=2)
 
     raw_tournaments = _fetch_wta_tournaments_raw()
@@ -322,10 +301,13 @@ def get_draws_tournament_list():
         else:
             display_name = f"{level} {city}{suffix}"
         display_name = fix_display_name(display_name)
-        is_two_week = _is_two_week_wta(level, raw_name, city, display_name)
 
         if monday < current_monday:
-            if not (monday == past_monday and is_two_week):
+            try:
+                event_end = date.fromisoformat(str(end_date)[:10])
+            except (TypeError, ValueError):
+                continue
+            if event_end < today:
                 continue
         else:
             if not (monday < two_weeks_later):
