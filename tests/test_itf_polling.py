@@ -50,7 +50,7 @@ def test_next_week_tournaments_become_eligible_on_saturday():
     assert skipped == 0
 
 
-def test_current_week_itf_tournaments_remain_grouped_on_tuesday(monkeypatch):
+def test_current_week_itf_tournaments_are_removed_on_tuesday(monkeypatch):
     current_week = "Week of August 3"
     future_weeks = {
         "2026-08-10": "Week of August 10",
@@ -87,8 +87,28 @@ def test_current_week_itf_tournaments_remain_grouped_on_tuesday(monkeypatch):
 
     grouped, monday_map = main.build_all_tournament_groups(driver=None)
 
-    assert "2026-08-03" in monday_map
-    assert "w-itf-arg-2026-006" in grouped[current_week]
+    assert "2026-08-03" not in monday_map
+    assert "w-itf-arg-2026-006" not in grouped[current_week]
+
+
+def test_dynamic_itf_calendar_excludes_current_week_on_tuesday(monkeypatch):
+    current_itf = {
+        "tournamentName": "W35 Chacabuco",
+        "tournamentKey": "W-ITF-ARG-2026-006",
+        "startDate": "2026-08-03T00:00:00",
+    }
+    next_itf = {
+        "tournamentName": "W15 Campos do Jordao",
+        "tournamentKey": "W-ITF-BRA-2026-011",
+        "startDate": "2026-08-10T00:00:00",
+    }
+    monkeypatch.setattr(itf, "madrid_today", lambda: date(2026, 8, 4))
+    monkeypatch.setattr(itf, "get_next_monday", lambda: date(2026, 8, 10))
+    monkeypatch.setattr(itf, "_fetch_itf_calendar_raw", lambda driver: [current_itf, next_itf])
+
+    tournaments = itf.get_dynamic_itf_calendar(driver=None, num_weeks=3)
+
+    assert [item["tournamentKey"] for item in tournaments] == ["W-ITF-BRA-2026-011"]
 
 
 def test_current_week_itf_tournaments_remain_grouped_without_current_wta(monkeypatch):

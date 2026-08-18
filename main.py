@@ -1832,9 +1832,8 @@ def build_all_tournament_groups(driver):
     monday_map = generate_dynamic_monday_map(num_weeks=4)
     itf_monday_map = generate_dynamic_monday_map(num_weeks=3)
 
-    # Add current week's Monday only on Monday/Tuesday when current-week
-    # tournaments are intentionally included, dropping the last future week to
-    # keep total at 4.
+    # Add the current week's Monday only on Monday, dropping the last future
+    # week to keep the total at 4.
     today = madrid_now()
     current_monday = today - timedelta(days=today.weekday())
     current_monday_str = current_monday.strftime("%Y-%m-%d")
@@ -1845,7 +1844,7 @@ def build_all_tournament_groups(driver):
     has_current_itf = any(
         current_monday_str <= str(item.get("startDate") or "")[:10] < next_monday_str for item in itf_items
     )
-    if today.weekday() <= 1 and (has_current_wta or has_current_itf):
+    if today.weekday() == 0 and (has_current_wta or has_current_itf):
         m_keys = list(monday_map.keys())
         monday_map = {k: monday_map[k] for k in m_keys[:-1]}
         monday_map = {current_monday_str: current_monday_label, **monday_map}

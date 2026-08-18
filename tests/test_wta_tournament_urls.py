@@ -67,6 +67,16 @@ def test_entry_list_groups_use_normalized_parenthetical_slug(monkeypatch):
     assert ANTALYA_URL in groups["Week of September 7"]
 
 
+def test_entry_list_groups_drop_current_week_on_tuesday(monkeypatch):
+    monkeypatch.setattr(wta, "madrid_today", lambda: date(2026, 8, 18))
+    monkeypatch.setattr(wta, "get_next_monday", lambda: date(2026, 8, 24))
+    monkeypatch.setattr(wta, "_fetch_wta_tournaments_raw", lambda: [_cincinnati_tournament()])
+
+    groups = wta.build_tournament_groups()
+
+    assert groups == {}
+
+
 def test_draw_groups_use_normalized_parenthetical_slug(monkeypatch):
     monkeypatch.setattr(wta, "madrid_today", lambda: date(2026, 9, 1))
     monkeypatch.setattr(wta, "_fetch_wta_tournaments_raw", lambda: [_antalya_tournament()])
