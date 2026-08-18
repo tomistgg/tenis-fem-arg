@@ -21599,10 +21599,10 @@
                       "roundDesc": "3rd Round", "roundNumber": 3,
                       "matches": [
                           {
-                            "matchId": 1183662257, "playStatusCode": "TP",
+                            "matchId": 1183662257, "playStatusCode": "NP", "resultStatusDesc": "Walkover", "resultStatusCode": "WO",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "WC",
+                                  "scores": [], "isWinner": true, "entryStatus": "WC",
                                   "player": {"playerId":800696212,"nationality":"ESP","givenName":"Luisa Maria","familyName":"Oprescu"}
                                 },
                                 {
@@ -21612,7 +21612,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183662258, "playStatusCode": "TP",
+                            "matchId": 1183662258, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "seeding": 2, "entryStatus": "DA",
@@ -21625,7 +21625,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183662259, "playStatusCode": "TP",
+                            "matchId": 1183662259, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "DA",
@@ -21651,33 +21651,33 @@
                             ]
                           },
                           {
-                            "matchId": 1183662261, "playStatusCode": "TP",
+                            "matchId": 1183662261, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "entryStatus": "DA",
                                   "player": {"playerId":800457831,"nationality":"EST","givenName":"Anet Angelika","familyName":"Koskel"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [0,2], "isWinner": false, "entryStatus": "DA",
                                   "player": {"playerId":800663403,"nationality":"ESP","givenName":"Valeria","familyName":"Martin Lopez"}
                                 }
                             ]
                           },
                           {
-                            "matchId": 1183662262, "playStatusCode": "TP",
+                            "matchId": 1183662262, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 6, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "seeding": 6, "entryStatus": "DA",
                                   "player": {"playerId":800552106,"nationality":"CHN","givenName":"Zi Ying","familyName":"Ruan"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [3,3], "isWinner": false, "entryStatus": "DA",
                                   "player": {"playerId":800853692,"nationality":"ESP","givenName":"Ariadna","familyName":"Perez Lerchundi"}
                                 }
                             ]
                           },
                           {
-                            "matchId": 1183662263, "playStatusCode": "TP",
+                            "matchId": 1183662263, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "seeding": 7, "entryStatus": "DA",
