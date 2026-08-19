@@ -116,7 +116,7 @@ def wta_fetch_tournaments(from_date, to_date):
 
 
 def wta_count_qualifying_players(tournament_id, year):
-    url = f"https://api.wtatennis.com/tennis/tournaments/{tournament_id}/{year}/matches?states=L%2C+C"
+    url = f"https://api.wtatennis.com/tennis/tournaments/{tournament_id}/{year}/matches?states=C"
     try:
         r = get_with_retry(
             url,

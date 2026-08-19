@@ -107,6 +107,16 @@ def test_refresh_runs_complete_quality_gate_before_updating_or_deploying():
     assert workflow.index("Snapshot validated quality baseline") < overlay_index
 
 
+def test_push_overlay_recovers_data_changes_from_an_earlier_failed_run():
+    workflow = (WORKFLOW_DIR / "hourly-update.yml").read_text(encoding="utf-8")
+
+    assert "id: restore_data_state" in workflow
+    assert "Source revision:" in workflow
+    assert "DATA_STATE_SOURCE_SHA: ${{ steps.restore_data_state.outputs.source_sha }}" in workflow
+    assert 'overlay_base="$DATA_STATE_SOURCE_SHA"' in workflow
+    assert 'git diff --name-only -z "$overlay_base" "$GITHUB_SHA" -- data' in workflow
+
+
 def test_update_notification_is_finalized_after_pages_deployment():
     workflow = (WORKFLOW_DIR / "hourly-update.yml").read_text(encoding="utf-8")
 

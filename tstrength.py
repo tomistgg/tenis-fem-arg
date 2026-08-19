@@ -274,8 +274,8 @@ def _fetch_tournaments_range(year, from_date, to_date):
 
 
 def _fetch_tournament_matches(tournament_id, year="2025"):
-    """Fetch tournament matches from WTA API (includes main draw + qualifying)."""
-    url = f"https://api.wtatennis.com/tennis/tournaments/{tournament_id}/{year}/matches"
+    """Fetch completed tournament matches from WTA API (main draw + qualifying)."""
+    url = f"https://api.wtatennis.com/tennis/tournaments/{tournament_id}/{year}/matches?states=C"
     try:
         r = get_with_retry(
             url,

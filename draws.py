@@ -2,12 +2,14 @@
 
 import re
 import time
+from datetime import date
 
 import fitz  # type: ignore[import-untyped]
 import requests
 
 from itf_drawsheet_cache import get_cached_drawsheet, save_drawsheet
 from runtime_logging import get_logger
+from time_utils import madrid_today
 from utils import normalize_player_name
 
 logger = get_logger("draws")
@@ -722,9 +724,30 @@ def _fetch_draw_from_wta_api(tournament_id, year):
     }
 
 
-def fetch_tournament_draws(tournament_url, year):
+def _wta_tournament_has_started(start_date, *, today=None):
+    """Return whether a WTA matches-API draw fallback is eligible to run."""
+    try:
+        tournament_start = date.fromisoformat(str(start_date or "")[:10])
+    except (TypeError, ValueError):
+        return False
+    return tournament_start <= (today or madrid_today())
+
+
+def wta_draw_polling_open(start_date, *, today=None):
+    """Return whether WTA draw PDFs should be polled (start date is within two days)."""
+    try:
+        tournament_start = date.fromisoformat(str(start_date or "")[:10])
+    except (TypeError, ValueError):
+        return False
+    return (tournament_start - (today or madrid_today())).days <= 2
+
+
+def fetch_tournament_draws(tournament_url, year, start_date=None):
     tid = _extract_tournament_id(tournament_url)
     if not tid:
+        return {}
+    if not wta_draw_polling_open(start_date):
+        logger.debug(f"  [WTA PDF] Skipping draw polling for {tid} until two days before start ({start_date})")
         return {}
 
     draws = {}
@@ -737,8 +760,9 @@ def fetch_tournament_draws(tournament_url, year):
             except Exception as e:
                 logger.error(f"Error parsing {dtype_label} draw for {tid}: {e}")
 
-    # If no main draw players from PDF, try the WTA matches API as fallback
-    if not draws.get("MDS", {}).get("players"):
+    # Before an event starts, keep polling the official draw PDFs but do not
+    # query the matches endpoint: there cannot be completed matches yet.
+    if not draws.get("MDS", {}).get("players") and _wta_tournament_has_started(start_date):
         api_draw = _fetch_draw_from_wta_api(tid, year)
         if api_draw and api_draw.get("players"):
             logger.debug(
@@ -746,6 +770,8 @@ def fetch_tournament_draws(tournament_url, year):
                 f"({api_draw['draw_size']}-draw, {len(api_draw['matches'])} results)"
             )
             draws["MDS"] = api_draw
+    elif not draws.get("MDS", {}).get("players"):
+        logger.debug(f"  [WTA API] Skipping matches fallback for {tid} before tournament start ({start_date})")
 
     return draws
 

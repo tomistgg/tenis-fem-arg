@@ -32,14 +32,22 @@ jobs:
           fetch-depth: 1
 
       - name: Restore latest validated data state
+        id: restore_data_state
         run: |
           state_ref=$(git ls-remote --heads origin refs/heads/data-state)
           if [ -n "$state_ref" ]; then
             git fetch --no-tags --depth=1 origin "refs/heads/data-state:refs/remotes/origin/data-state"
+            state_source_sha=$(
+              git log -1 --format=%B refs/remotes/origin/data-state |
+                sed -n 's/^Source revision: \([0-9a-f]\{40\}\)$/\1/p' |
+                tail -n 1
+            )
+            echo "source_sha=$state_source_sha" >> "$GITHUB_OUTPUT"
             rm -rf "$GITHUB_WORKSPACE/data"
             git archive refs/remotes/origin/data-state data | tar -x -C "$GITHUB_WORKSPACE"
             test -d "$GITHUB_WORKSPACE/data"
           else
+            echo "source_sha=" >> "$GITHUB_OUTPUT"
             echo "data-state branch does not exist yet; bootstrapping from main"
           fi
 
@@ -59,22 +67,36 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           BEFORE_SHA: ${{ github.event.before }}
+          DATA_STATE_SOURCE_SHA: ${{ steps.restore_data_state.outputs.source_sha }}
         run: |
           # The validated data-state branch is the baseline for scheduled
-          # refreshes, but a push must not discard data files changed by that
-          # push.
+          # refreshes, but a push must not discard data files changed since the
+          # source revision that last produced a validated snapshot. Using that
+          # revision also recovers data from an earlier push whose checks failed.
 
           if [ "$EVENT_NAME" != "push" ] || [ -z "$BEFORE_SHA" ] || [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
             echo "No push-specific data overlay to apply"
             exit 0
           fi
 
-          if ! git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null; then
-            if ! git fetch --no-tags --depth=1 origin "$BEFORE_SHA"; then
+          overlay_base="$BEFORE_SHA"
+          if [ -n "$DATA_STATE_SOURCE_SHA" ]; then
+            if git cat-file -e "$DATA_STATE_SOURCE_SHA^{commit}" 2>/dev/null || \
+              git fetch --no-tags --depth=1 origin "$DATA_STATE_SOURCE_SHA"; then
+              overlay_base="$DATA_STATE_SOURCE_SHA"
+            else
+              echo "Validated source revision is unavailable; falling back to the previous push revision"
+            fi
+          fi
+
+          if ! git cat-file -e "$overlay_base^{commit}" 2>/dev/null; then
+            if ! git fetch --no-tags --depth=1 origin "$overlay_base"; then
               echo "Previous push revision is unavailable; current data files are already present"
               exit 0
             fi
           fi
+
+          echo "Overlaying data changes from $overlay_base through $GITHUB_SHA"
 
           while IFS= read -r -d '' relative; do
             case "$relative" in
@@ -87,7 +109,7 @@ jobs:
                 fi
                 ;;
             esac
-          done < <(git diff --name-only -z "$BEFORE_SHA" "$GITHUB_SHA" -- data)
+          done < <(git diff --name-only -z "$overlay_base" "$GITHUB_SHA" -- data)
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7

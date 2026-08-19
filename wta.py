@@ -799,7 +799,7 @@ def get_wta_rankings_cached(date_str, nationality=None, *, with_status=False):
 
 def fetch_player_info(player_id):
     url = f"https://api.wtatennis.com/tennis/players/{player_id}/matches"
-    params = {"page": 0, "pageSize": 1, "sort": "desc"}
+    params = {"page": 0, "pageSize": 1, "sort": "desc", "states": "C"}
     headers = {
         "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "

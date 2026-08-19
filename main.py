@@ -59,7 +59,7 @@ from config import (
     resolve_player_display_name,
     resolve_player_presentation_name,
 )
-from draws import _draw_is_complete, fetch_itf_tournament_draws, fetch_tournament_draws
+from draws import _draw_is_complete, fetch_itf_tournament_draws, fetch_tournament_draws, wta_draw_polling_open
 from itf import (
     _load_itf_event_filters_cache,
     get_draws_itf_tournament_list,
@@ -2958,6 +2958,12 @@ def main():
             if is_draw_completed(store_key):
                 logger.debug(f"  Skipping completed WTA draw: {t_info.get('name', '')}")
                 continue
+            if not wta_draw_polling_open(t_info.get("startDate"), today=today.date()):
+                logger.debug(
+                    f"  Skipping WTA draw until two days before start: {t_info.get('name', '')} "
+                    f"({t_info.get('startDate', '')})"
+                )
+                continue
             active_draw_keys.add(store_key)
             wta_draw_jobs.append((week, t_key, t_info))
 
@@ -2966,7 +2972,12 @@ def main():
 
     def _fetch_wta_draw_job(job):
         week, t_key, t_info = job
-        return week, t_key, t_info, fetch_tournament_draws(t_key, current_year) or {}
+        return (
+            week,
+            t_key,
+            t_info,
+            fetch_tournament_draws(t_key, current_year, start_date=t_info.get("startDate")) or {},
+        )
 
     from concurrent.futures import ThreadPoolExecutor, as_completed
 

@@ -30,7 +30,7 @@ from utils import (
 
 logger = get_logger("wta-loader")
 
-MATCHES_URL = "https://api.wtatennis.com/tennis/tournaments/{tournament_id}/{year}/matches?states=L%2C+C"
+MATCHES_URL = "https://api.wtatennis.com/tennis/tournaments/{tournament_id}/{year}/matches?states=C"
 CALENDAR_URL = "https://api.wtatennis.com/tennis/tournaments/?page={page}&pageSize=100&excludeLevels=ITF%2C+Grand%20Slam&from={from_date}&to={to_date}"
 
 HEADERS = {
