@@ -180,6 +180,59 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertEqual(qualifying[0]["type"], "QUAL")
         self.assertEqual(qualifying[0]["pos"], "1")
 
+    def test_manual_entry_list_additions_are_appended_in_ranking_order(self):
+        main_players = [
+            {"name": "Direct Acceptance", "type": "MAIN"},
+            {"name": "Already Promoted", "type": "MAIN", "rank": "120"},
+        ]
+        alt_players = [
+            {"name": "Lower Ranked Addition", "type": "ALT"},
+            {"name": "Remaining Alternate", "type": "ALT"},
+        ]
+        additions = [
+            {"name": "Lower Ranked Addition", "rank": "300", "entry": "WC"},
+            {"name": "Already Promoted", "rank": "100"},
+            {"name": "Middle Addition", "rank": "200", "entry": "WC"},
+        ]
+
+        updated_main, updated_alt = main_module._apply_manual_entry_list_additions(
+            main_players,
+            alt_players,
+            additions,
+        )
+
+        self.assertEqual(
+            [player["name"] for player in updated_main],
+            ["Direct Acceptance", "Already Promoted", "Middle Addition", "Lower Ranked Addition"],
+        )
+        self.assertEqual([player["pos"] for player in updated_main], ["1", "2", "3", "4"])
+        self.assertEqual([player["name"] for player in updated_alt], ["Remaining Alternate"])
+
+    def test_cached_manual_overrides_promote_alternates_and_reseed_qualifying(self):
+        tournament_key = "https://example.test/tournament"
+        qualifying_key = tournament_key + "#qual"
+        entry_cache = {
+            qualifying_key: [
+                {"name": "Moved Player", "type": "QUAL", "seed_rank": 10},
+                {"name": "Remaining Qualifier", "type": "QUAL", "seed_rank": 30},
+                {"name": "Promoted Alternate", "type": "ALT", "seed_rank": 20},
+                {"name": "Remaining Alternate", "type": "ALT", "seed_rank": 40},
+            ]
+        }
+        config = {tournament_key: {"qual": {"withdrawals": ["Moved Player"]}}}
+
+        main_module._apply_cached_manual_entry_list_overrides(entry_cache, config)
+
+        qualifying = entry_cache[qualifying_key]
+        self.assertEqual(
+            [(player["name"], player["type"], player.get("seed")) for player in qualifying],
+            [
+                ("Remaining Qualifier", "QUAL", 2),
+                ("Promoted Alternate", "QUAL", 1),
+                ("Remaining Alternate", "ALT", None),
+            ],
+        )
+
     def test_metadata_only_qualifying_list_is_injected_into_its_configured_week(self):
         tournament_key = "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list"
         qualifying_key = tournament_key + "#qual"

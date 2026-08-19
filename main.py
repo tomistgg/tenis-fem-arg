@@ -1135,30 +1135,37 @@ def _apply_manual_entry_list_withdrawals(main_players, alt_players, withdrawals,
 
 
 def _apply_manual_entry_list_additions(main_players, alt_players, additions, main_type="MAIN"):
-    """Add configured players, remove them from alternates, and renumber both lists."""
+    """Append configured players by ranking, remove them from alternates, and renumber."""
     configured = []
-    for addition in additions or []:
+    for config_index, addition in enumerate(additions or []):
         if not isinstance(addition, dict):
             continue
         name = str(addition.get("name") or "").strip()
         if not name:
             continue
-        configured.append((name.casefold(), addition))
+        rank_match = re.search(r"\d+", str(addition.get("rank") or ""))
+        rank = int(rank_match.group()) if rank_match else float("inf")
+        configured.append((rank, config_index, name.casefold(), addition))
 
     if not configured:
         return main_players, alt_players
 
+    configured.sort(key=lambda item: (item[0], item[1]))
     main_by_name = {str(player.get("name") or "").strip().casefold(): player for player in main_players}
-    configured_names = {name_key for name_key, _ in configured}
+    configured_names = {name_key for _, _, name_key, _ in configured}
+    # Configured additions belong together at the end of the list. Removing
+    # an already-promoted player here also makes the ordering deterministic.
+    main_players = [
+        player for player in main_players if str(player.get("name") or "").strip().casefold() not in configured_names
+    ]
     remaining_alt = [
         player for player in alt_players if str(player.get("name") or "").strip().casefold() not in configured_names
     ]
 
-    for name_key, addition in configured:
+    for _, _, name_key, addition in configured:
         player = main_by_name.get(name_key)
         if player is None:
             player = {"name": str(addition["name"]).strip()}
-            main_players.append(player)
             main_by_name[name_key] = player
         for field in ("name", "country", "rank", "priority", "entry", "player_id"):
             if field in addition:
@@ -1167,6 +1174,7 @@ def _apply_manual_entry_list_additions(main_players, alt_players, additions, mai
         player.setdefault("rank", "")
         player.setdefault("priority", "")
         player.setdefault("entry", "")
+        main_players.append(player)
 
     for pos_num, player in enumerate(main_players, 1):
         player["type"] = main_type
@@ -1178,6 +1186,53 @@ def _apply_manual_entry_list_additions(main_players, alt_players, additions, mai
         player["pos_num"] = pos_num
 
     return main_players, remaining_alt
+
+
+def _apply_cached_manual_entry_list_overrides(entry_cache, pdf_urls):
+    """Apply configured withdrawals/additions without refreshing external sources."""
+    for cache_key, url_config in (pdf_urls or {}).items():
+        if not isinstance(url_config, dict):
+            continue
+        for draw_type, draw_meta in url_config.items():
+            if not isinstance(draw_meta, dict):
+                continue
+            if not draw_meta.get("withdrawals") and not draw_meta.get("additions"):
+                continue
+
+            target_key = cache_key + "#qual" if draw_type == "qual" else cache_key
+            cached_players = copy.deepcopy(entry_cache.get(target_key) or [])
+            if not cached_players:
+                continue
+
+            main_type = "QUAL" if draw_type == "qual" else "MAIN"
+            main_players = [player for player in cached_players if player.get("type") == main_type]
+            alt_players = [player for player in cached_players if player.get("type") == "ALT"]
+            main_players, alt_players = _apply_manual_entry_list_withdrawals(
+                main_players,
+                alt_players,
+                draw_meta.get("withdrawals"),
+                main_type=main_type,
+            )
+            main_players, alt_players = _apply_manual_entry_list_additions(
+                main_players,
+                alt_players,
+                draw_meta.get("additions"),
+                main_type=main_type,
+            )
+
+            seed_candidates = []
+            for player in main_players:
+                seed_rank = player.get("seed_rank")
+                if isinstance(seed_rank, int):
+                    seed_candidates.append((seed_rank, str(player.get("name") or "")))
+            seed_candidates.sort()
+            seed_map = {name: seed for seed, (_, name) in enumerate(seed_candidates[:32], 1)}
+            for player in main_players:
+                player["seed"] = seed_map.get(str(player.get("name") or ""), "")
+
+            entry_cache[target_key] = main_players + alt_players
+
+    return entry_cache
 
 
 def _refresh_entry_lists_from_pdfs(
@@ -2798,11 +2853,25 @@ def main():
         action="store_true",
         help="Fetch available ITF acceptance lists except tournaments whose main draw is already published.",
     )
+    parser.add_argument(
+        "--entry-lists-only",
+        action="store_true",
+        help="Apply manual entry-list overrides from cached data and rebuild without external refreshes.",
+    )
     args = parser.parse_args()
 
     if args.verbose:
         os.environ["WTARG_VERBOSE"] = "1"
     configure_logging(verbose=True if args.verbose else None)
+
+    if args.entry_lists_only:
+        with open(GS_PDF_URLS_FILE, encoding="utf-8") as source:
+            pdf_urls = json.load(source)
+        entry_cache = expand_entry_lists_cache(load_cache(ENTRY_LISTS_CACHE_FILE))
+        _apply_cached_manual_entry_list_overrides(entry_cache, pdf_urls)
+        save_cache(ENTRY_LISTS_CACHE_FILE, entry_cache, formatter=dumps_entry_lists_cache)
+        logger.info("Applied cached manual entry-list overrides.")
+        return
 
     if not args.fast:
         _run_hourly_preflight()
