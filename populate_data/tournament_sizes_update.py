@@ -1,14 +1,17 @@
 """
 Incremental update for tournament draw sizes.
-- Fetches WTA and ITF tournaments from the current + next week
-- Appends new entries to data/tournament_draw_sizes.json
+- Scans WTA and ITF tournaments from the previous, current, and next week
+- Reuses every valid draw size already saved instead of polling it again
+- Adds newly published sizes and resolves earlier zero-size placeholders
 - Removes entries older than 55 weeks
 """
 
 import json
 import os
+import re
 import sys
 import time
+import unicodedata
 from datetime import datetime, timedelta
 
 from selenium import webdriver
@@ -68,6 +71,81 @@ def save_results(data):
         OUTPUT_PATH,
         compress_tournament_draw_sizes(data),
     )
+
+
+def _normalized_tournament_name(value):
+    normalized = unicodedata.normalize("NFKD", str(value or ""))
+    ascii_name = "".join(char for char in normalized if not unicodedata.combining(char))
+    return re.sub(r"[^a-z0-9]+", " ", ascii_name.casefold()).strip()
+
+
+def _has_valid_draw_size(entry):
+    """Return whether an entry contains a published main-draw size."""
+    try:
+        return int(entry.get("mainDrawSize") or 0) > 0
+    except (AttributeError, TypeError, ValueError):
+        return False
+
+
+def _tournament_aliases(entry):
+    """Return durable identities for old and new compact draw-size rows."""
+    source = str(entry.get("source") or "").upper()
+    date = str(entry.get("date") or "")
+    aliases = set()
+
+    if source == "WTA":
+        tournament_id = str(entry.get("tournamentId") or "").strip()
+        if tournament_id:
+            aliases.add(("WTA_ID", tournament_id, date))
+    elif source == "ITF":
+        # Older compact rows did not retain tournamentKey. New rows also store
+        # it in the shared tournamentId slot, while the name alias keeps those
+        # legacy rows cacheable without a data migration.
+        tournament_key = str(entry.get("tournamentKey") or entry.get("tournamentId") or "").strip().casefold()
+        if tournament_key:
+            aliases.add(("ITF_KEY", tournament_key, date))
+
+    name = _normalized_tournament_name(entry.get("tournamentName"))
+    if name and (source != "WTA" or not aliases):
+        aliases.add((f"{source}_NAME", name, date))
+    return aliases
+
+
+def _valid_draw_size_aliases(entries):
+    aliases = set()
+    for entry in entries:
+        if _has_valid_draw_size(entry):
+            aliases.update(_tournament_aliases(entry))
+    return aliases
+
+
+def _draw_size_is_saved(entry, saved_aliases):
+    return bool(saved_aliases and _tournament_aliases(entry) & saved_aliases)
+
+
+def _merge_draw_size_updates(existing, updates):
+    """Append missing sizes and replace matching unresolved legacy rows."""
+    added = 0
+    updated = 0
+    for candidate in updates:
+        if not _has_valid_draw_size(candidate):
+            continue
+
+        aliases = _tournament_aliases(candidate)
+        matching_indexes = [
+            index
+            for index, entry in enumerate(existing)
+            if aliases & _tournament_aliases(entry)
+        ]
+        if any(_has_valid_draw_size(existing[index]) for index in matching_indexes):
+            continue
+        if matching_indexes:
+            existing[matching_indexes[0]] = candidate
+            updated += 1
+        else:
+            existing.append(candidate)
+            added += 1
+    return added, updated
 
 
 # ── WTA ────────────────────────────────────────────────────────────────────────
@@ -185,8 +263,9 @@ def _load_wta_calendar_cache(from_date, to_date):
         return None
 
 
-def fetch_wta_updates(from_date, to_date, desc_set):
+def fetch_wta_updates(from_date, to_date, desc_set, saved_size_aliases=None):
     logger.info("Fetching WTA tournaments...")
+    saved_size_aliases = saved_size_aliases or set()
     cached = _load_wta_calendar_cache(from_date, to_date)
     if cached is not None:
         tournaments = cached
@@ -206,6 +285,16 @@ def fetch_wta_updates(from_date, to_date, desc_set):
 
         name = wta_build_tournament_name(t)
         date = get_monday(start_date)
+
+        identity = {
+            "source": "WTA",
+            "date": date,
+            "tournamentName": name,
+            "tournamentId": str(t_id) if t_id else "",
+        }
+        if _draw_size_is_saved(identity, saved_size_aliases):
+            logger.debug(f"  {name}: using permanently saved draw size")
+            continue
 
         qual_size = 0
         if level == "WTA 125" and t_id:
@@ -537,9 +626,10 @@ def _fetch_itf_via_selenium(from_date, to_date):
         driver.quit()
 
 
-def fetch_itf_updates(from_date, to_date, itf_descs):
+def fetch_itf_updates(from_date, to_date, itf_descs, saved_size_aliases=None):
     """Fetch ITF tournaments for the given date range, preferring persistent caches."""
     logger.info("Fetching ITF tournaments...")
+    saved_size_aliases = saved_size_aliases or set()
 
     # Try calendar cache first — year-wide cache written by main.py is authoritative.
     cached_items = _load_itf_calendar_cache(from_date, to_date)
@@ -574,15 +664,40 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
                     "tournamentId": t_id,
                 }
             )
-        missing_ids = [t for t in tournaments if not t["tournamentId"]]
-        if missing_ids:
-            logger.warning(f"  {len(missing_ids)} tournament(s) missing IDs from cache; fetching via Selenium.")
-            _fill_ids_via_selenium(missing_ids)
     else:
         logger.warning("  No calendar cache found; falling back to live Selenium fetch.")
         tournaments = _fetch_itf_via_selenium(from_date, to_date)
         if tournaments is None:
             return results
+
+    pending_tournaments = []
+    saved_count = 0
+    for tournament in tournaments:
+        if tournament.get("isMultiweek"):
+            pending_tournaments.append(tournament)
+            continue
+        identity = {
+            "source": "ITF",
+            "date": get_monday(tournament.get("startDate")),
+            "tournamentName": tournament.get("tournamentName"),
+            "tournamentId": tournament.get("tournamentKey"),
+            "tournamentKey": tournament.get("tournamentKey"),
+        }
+        if _draw_size_is_saved(identity, saved_size_aliases):
+            saved_count += 1
+            continue
+        pending_tournaments.append(tournament)
+    tournaments = pending_tournaments
+    if saved_count:
+        logger.info(f"  Reusing {saved_count} permanently saved ITF draw size(s).")
+
+    # The cache path may still need IDs for newly discovered tournaments. The
+    # full Selenium fallback has already attempted those lookups itself.
+    if cached_items is not None:
+        missing_ids = [t for t in tournaments if not t["tournamentId"]]
+        if missing_ids:
+            logger.warning(f"  {len(missing_ids)} tournament(s) missing IDs from cache; fetching via Selenium.")
+            _fill_ids_via_selenium(missing_ids)
 
     # Fetch drawsheets for each tournament
     for t in tournaments:
@@ -597,16 +712,6 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
         if t.get("isMultiweek"):
             week = 1
             while True:
-                m_data = itf_fetch_drawsheet(t_id, "M", week_number=week)
-                if not m_data or not m_data.get("koGroups"):
-                    break
-
-                main_size = itf_count_draw_size(m_data)
-                time.sleep(0.2)
-                q_data = itf_fetch_drawsheet(t_id, "Q", week_number=week)
-                qual_size = itf_count_draw_size(q_data)
-                time.sleep(0.2)
-
                 base_date = t["startDate"]
                 if base_date and "T" in base_date:
                     base_date = base_date.split("T")[0]
@@ -618,6 +723,30 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
                     date = None
 
                 week_name = f"{name} (Week {week})"
+                identity = {
+                    "source": "ITF",
+                    "date": date,
+                    "tournamentName": week_name,
+                    "tournamentId": t["tournamentKey"],
+                    "tournamentKey": t["tournamentKey"],
+                }
+                if _draw_size_is_saved(identity, saved_size_aliases):
+                    logger.debug(f"  {week_name}: using permanently saved draw size")
+                    week += 1
+                    if week > 10:
+                        break
+                    continue
+
+                m_data = itf_fetch_drawsheet(t_id, "M", week_number=week)
+                if not m_data or not m_data.get("koGroups"):
+                    break
+
+                main_size = itf_count_draw_size(m_data)
+                time.sleep(0.2)
+                q_data = itf_fetch_drawsheet(t_id, "Q", week_number=week)
+                qual_size = itf_count_draw_size(q_data)
+                time.sleep(0.2)
+
                 desc = itf_find_description(cat, main_size, qual_size, itf_descs)
 
                 results.append(
@@ -625,6 +754,7 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
                         "source": "ITF",
                         "date": date,
                         "tournamentName": week_name,
+                        "tournamentId": t["tournamentKey"],
                         "tournamentKey": t["tournamentKey"],
                         "category": cat,
                         "mainDrawSize": main_size,
@@ -653,6 +783,7 @@ def fetch_itf_updates(from_date, to_date, itf_descs):
                     "source": "ITF",
                     "date": date,
                     "tournamentName": name,
+                    "tournamentId": t["tournamentKey"],
                     "tournamentKey": t["tournamentKey"],
                     "category": cat,
                     "mainDrawSize": main_size,
@@ -677,7 +808,6 @@ def main():
 
     today = madrid_today()
     week_start = today - timedelta(days=today.weekday())  # Monday of current week
-    next_monday = (week_start + timedelta(days=7)).strftime("%Y-%m-%d")
     cutoff = (today - timedelta(weeks=55)).strftime("%Y-%m-%d")
 
     # Load existing data
@@ -692,49 +822,31 @@ def main():
         logger.info(f"Pruned {pruned} entries older than {cutoff}")
         save_results(existing)
 
-    # Check if next week's tournaments are already present
-    next_week_entries = [t for t in existing if t.get("date") == next_monday]
-    if next_week_entries:
-        logger.info(f"Next week ({next_monday}) already has {len(next_week_entries)} entries, skipping fetch.")
-        logger.info(f"Total: {len(existing)} entries")
-        return
-
     # Fetch range: prev week through next week
     from_date = (week_start - timedelta(days=7)).strftime("%Y-%m-%d")
     to_date = (week_start + timedelta(days=13)).strftime("%Y-%m-%d")
     logger.info(f"Fetching tournaments from {from_date} to {to_date}")
 
-    # Build dedup keys for existing entries
-    existing_keys = set()
-    for t in existing:
-        if t.get("source") == "WTA":
-            existing_keys.add(("WTA", t.get("tournamentId", ""), t.get("date", "")))
-        else:
-            existing_keys.add(("ITF", t.get("tournamentKey", ""), t.get("date", "")))
+    # A published draw size is immutable. Keep its aliases independently from
+    # the short-lived response caches so later runs only poll missing events.
+    saved_size_aliases = _valid_draw_size_aliases(existing)
 
     # Fetch new WTA tournaments
-    wta_new = fetch_wta_updates(from_date, to_date, desc_set)
+    wta_new = fetch_wta_updates(from_date, to_date, desc_set, saved_size_aliases)
 
     # Fetch new ITF tournaments
-    itf_new = fetch_itf_updates(from_date, to_date, itf_descs)
+    itf_new = fetch_itf_updates(from_date, to_date, itf_descs, saved_size_aliases)
 
-    # Merge: add only entries not already present
-    added = 0
-    for t in wta_new + itf_new:
-        if t.get("source") == "WTA":
-            key = ("WTA", t.get("tournamentId", ""), t.get("date", ""))
-        else:
-            key = ("ITF", t.get("tournamentKey", ""), t.get("date", ""))
-
-        if key not in existing_keys:
-            existing.append(t)
-            existing_keys.add(key)
-            added += 1
+    # Merge only valid sizes. A newly published size replaces an unresolved
+    # zero-size row instead of creating another entry for the same tournament.
+    added, updated = _merge_draw_size_updates(existing, wta_new + itf_new)
 
     # Save
     save_results(existing)
 
     logger.info(f"Added {added} new entries")
+    if updated:
+        logger.info(f"Resolved {updated} previously missing draw size(s)")
     logger.info(f"Total: {len(existing)} entries saved")
 
 
