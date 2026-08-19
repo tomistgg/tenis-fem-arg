@@ -16,7 +16,6 @@ from calendar_builder import format_week_label, get_monday_from_date, get_next_m
 from canonical_data import sync_wta_players
 from config import (
     API_URL,
-    DATA_DIR,
     HEADERS,
     NAME_LOOKUP,
     PLAYER_ALIASES_WTA_ITF_FILE,
@@ -34,21 +33,16 @@ from runtime_logging import get_logger
 from time_utils import madrid_today
 from transactional_io import atomic_write_csv
 from utils import (
-    dumps_wta_full_calendar_cache,
-    expand_wta_calendar_cache,
     fix_display_name,
     fix_encoding,
     format_player_name,
     make_data_status,
-    save_json_file,
-    set_cache_file_meta,
     utc_now_iso,
 )
+from wta_calendar_cache import get_shared_wta_calendar
 
 logger = get_logger("wta")
 _wta_tournaments_raw: list[dict[str, Any]] | None = None
-_WTA_FULL_CALENDAR_CACHE_FILE = _os.path.join(DATA_DIR, "wta_full_calendar_cache.json")
-_WTA_FULL_CALENDAR_TTL = 3 * 60 * 60  # 3 hours
 _REQUESTS_SESSION = requests.Session()
 
 _WTA_MAX_ATTEMPTS = 8
@@ -105,107 +99,13 @@ class WtaApiPartialData(RuntimeError):
     pass
 
 
-def _load_cached_wta_tournaments_raw():
-    """Load the last saved WTA tournament snapshot from disk."""
-    try:
-        with open(_WTA_FULL_CALENDAR_CACHE_FILE, encoding="utf-8") as f:
-            cached = json.load(f)
-    except FileNotFoundError:
-        return []
-    except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
-        report_run_issue(
-            "wta",
-            "load calendar cache",
-            exc,
-            severity="degraded",
-            context={"path": _WTA_FULL_CALENDAR_CACHE_FILE},
-        )
-        return []
-    cached = expand_wta_calendar_cache(cached)
-    items = cached.get("items", cached) if isinstance(cached, dict) else cached
-    return items if isinstance(items, list) else []
-
-
 def _fetch_wta_tournaments_raw():
-    """Fetch all WTA tournaments from 1 week ago to end of year (single API call)."""
+    """Load the one shared WTA calendar used by the full pipeline run."""
     global _wta_tournaments_raw
     if _wta_tournaments_raw is not None:
         return _wta_tournaments_raw
 
-    today = madrid_today()
-    next_monday = get_next_monday()
-    from_date = (next_monday - timedelta(days=7)).strftime("%Y-%m-%d")
-    to_date = f"{today.year}-12-31"
-
-    url = "https://api.wtatennis.com/tennis/tournaments/"
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
-        ),
-        "referer": "https://www.wtatennis.com/",
-        "account": "wta",
-    }
-    params = {"page": 0, "pageSize": 200, "excludeLevels": "ITF", "from": from_date, "to": to_date}
-
-    try:
-        response = get_with_retry(
-            url,
-            component="wta",
-            attempts=4,
-            headers=headers,
-            params=params,
-            timeout=(10, 20),
-            failure_status="degraded",
-        )
-        data = response.json()
-        items = data.get("content", [])
-        if not items:
-            cached_items = _load_cached_wta_tournaments_raw()
-            if cached_items:
-                logger.info("Using cached WTA tournaments (live API returned no items)")
-                _wta_tournaments_raw = cached_items
-                return _wta_tournaments_raw
-        _wta_tournaments_raw = items
-        if items:
-            save_json_file(
-                _WTA_FULL_CALENDAR_CACHE_FILE,
-                {
-                    "from": from_date,
-                    "to": to_date,
-                    "items": _wta_tournaments_raw,
-                },
-                formatter=dumps_wta_full_calendar_cache,
-            )
-            set_cache_file_meta(
-                _WTA_FULL_CALENDAR_CACHE_FILE,
-                fetchedAt=utc_now_iso(),
-                **{"from": from_date, "to": to_date},
-            )
-    except Exception as e:
-        logger.debug(f"Error fetching WTA tournaments: {e}")
-        cached_items = _load_cached_wta_tournaments_raw()
-        if cached_items:
-            if not isinstance(e, PipelineError):
-                report_run_issue(
-                    "wta",
-                    "fetch calendar",
-                    e,
-                    severity="degraded",
-                    context={"fallback": "cached calendar"},
-                )
-            logger.warning("Using cached WTA tournaments after live fetch failure")
-            _wta_tournaments_raw = cached_items
-        else:
-            report_run_issue(
-                "wta",
-                "fetch calendar",
-                e,
-                severity="partial",
-                context={"fallback": None},
-            )
-            _wta_tournaments_raw = []
-
+    _wta_tournaments_raw = get_shared_wta_calendar(component="wta")
     return _wta_tournaments_raw
 
 

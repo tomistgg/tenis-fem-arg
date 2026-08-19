@@ -29,7 +29,7 @@ from http_client import get_with_retry
 from itf_drawsheet_cache import get_cached_drawsheet, save_drawsheet
 from runtime_logging import get_logger
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
-from time_utils import madrid_today, parse_utc_timestamp, utc_now
+from time_utils import madrid_today
 
 DATA_DIR = str(RUNTIME_DATA_DIR)
 from utils import (
@@ -37,10 +37,9 @@ from utils import (
     expand_itf_calendar_cache,
     expand_points_distribution,
     expand_tournament_draw_sizes,
-    expand_wta_calendar_cache,
-    get_cache_timestamp,
     save_json_array_one_line_per_item,
 )
+from wta_calendar_cache import get_shared_wta_calendar
 
 logger = get_logger("draw-sizes")
 POINTS_DIST_PATH = os.path.join(DATA_DIR, "points_distribution.json")
@@ -163,36 +162,6 @@ WTA_HEADERS = {
 }
 
 
-def wta_fetch_tournaments(from_date, to_date):
-    all_tournaments = []
-    page = 0
-    while True:
-        params = {
-            "page": page,
-            "pageSize": 100,
-            "excludeLevels": "ITF,Grand Slam",
-            "from": from_date,
-            "to": to_date,
-        }
-        try:
-            r = get_with_retry(
-                "https://api.wtatennis.com/tennis/tournaments/",
-                component="draw-sizes-wta-calendar",
-                headers=WTA_HEADERS,
-                params=params,
-            )
-            data = r.json()
-            page_content = data.get("content", [])
-            all_tournaments.extend(page_content)
-            if len(page_content) < 100:
-                break
-            page += 1
-        except Exception as e:
-            logger.warning(f"  Error fetching WTA page {page}: {e}")
-            break
-    return all_tournaments
-
-
 def wta_count_qualifying_players(tournament_id, year):
     url = f"https://api.wtatennis.com/tennis/tournaments/{tournament_id}/{year}/matches?states=C"
     try:
@@ -245,33 +214,20 @@ def wta_build_tournament_name(tournament):
 
 
 def _load_wta_calendar_cache(from_date, to_date):
-    """Return cached WTA tournament list if fresh and covers the requested range."""
-    try:
-        with open(WTA_CALENDAR_CACHE_FILE, encoding="utf-8") as f:
-            data = expand_wta_calendar_cache(json.load(f))
-        fetched_at_str = get_cache_timestamp(WTA_CALENDAR_CACHE_FILE, payload=data)
-        if not fetched_at_str:
-            return None
-        fetched_at = parse_utc_timestamp(fetched_at_str)
-        age = (utc_now() - fetched_at).total_seconds()
-        if age > _WTA_CALENDAR_CACHE_TTL:
-            return None
-        if data.get("from", "") > from_date or data.get("to", "") < to_date:
-            return None
-        return data.get("items") or None
-    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError):
-        return None
+    """Return this consumer's window from the one shared WTA calendar."""
+    return get_shared_wta_calendar(
+        from_date,
+        to_date,
+        exclude_levels={"Grand Slam"},
+        component="draw-sizes-wta-calendar",
+    )
 
 
 def fetch_wta_updates(from_date, to_date, desc_set, saved_size_aliases=None):
     logger.info("Fetching WTA tournaments...")
     saved_size_aliases = saved_size_aliases or set()
-    cached = _load_wta_calendar_cache(from_date, to_date)
-    if cached is not None:
-        tournaments = cached
-        logger.debug(f"  Using WTA calendar cache ({len(tournaments)} tournaments).")
-    else:
-        tournaments = wta_fetch_tournaments(from_date, to_date)
+    tournaments = _load_wta_calendar_cache(from_date, to_date)
+    logger.debug(f"  Using shared WTA calendar ({len(tournaments)} tournaments).")
     logger.info(f"  Found {len(tournaments)} WTA tournaments in range")
 
     today = madrid_today()
@@ -465,8 +421,6 @@ def itf_find_description(category, actual_main, actual_qual, descriptions):
 
 ITF_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "itf_calendar_cache.json")
 ITF_EVENT_FILTERS_CACHE_FILE = os.path.join(DATA_DIR, "itf_event_filters_cache.json")
-WTA_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "wta_calendar_cache.json")
-_WTA_CALENDAR_CACHE_TTL = 3 * 60 * 60  # 3 hours — covers the gap between scripts in one cron run
 
 
 def _is_cancelled_itf_calendar_item(item):

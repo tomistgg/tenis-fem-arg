@@ -15,23 +15,15 @@ if _REPO_ROOT not in sys.path:
 from canonical_data import source_match_key, sync_itf_players, sync_wta_match_players
 from http_client import get_with_retry
 from pipeline_errors import PipelineError
-from run_state import report_run_issue
 from runtime_logging import get_logger
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
-from time_utils import madrid_today, parse_utc_timestamp, utc_now, utc_timestamp
+from time_utils import madrid_today
 from transactional_io import atomic_write_csv
-from utils import (
-    dumps_wta_full_calendar_cache,
-    expand_wta_calendar_cache,
-    get_cache_timestamp,
-    save_json_file,
-    set_cache_file_meta,
-)
+from wta_calendar_cache import get_shared_wta_calendar
 
 logger = get_logger("wta-loader")
 
 MATCHES_URL = "https://api.wtatennis.com/tennis/tournaments/{tournament_id}/{year}/matches?states=C"
-CALENDAR_URL = "https://api.wtatennis.com/tennis/tournaments/?page={page}&pageSize=100&excludeLevels=ITF%2C+Grand%20Slam&from={from_date}&to={to_date}"
 
 HEADERS = {
     "accept": "*/*",
@@ -48,75 +40,6 @@ HEADERS = {
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = str(RUNTIME_DATA_DIR)
 OUTPUT_FILE = os.path.join(DATA_DIR, "wta_matches_arg.csv")
-WTA_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "wta_calendar_cache.json")
-_WTA_FULL_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "wta_full_calendar_cache.json")
-_WTA_FULL_CALENDAR_TTL = 3 * 60 * 60  # 3 hours
-
-
-def _load_from_full_calendar_cache(from_date, to_date):
-    """Read the year-wide cache written by main.py/wta.py, filtered to the needed window.
-
-    Grand Slams are excluded here since wta_load_new.py handles only WTA-circuit matches.
-    Returns a list of tournament dicts, or None if cache is missing/stale.
-    """
-    try:
-        with open(_WTA_FULL_CALENDAR_CACHE_FILE, encoding="utf-8") as f:
-            data = expand_wta_calendar_cache(json.load(f))
-        fetched_at_str = get_cache_timestamp(_WTA_FULL_CALENDAR_CACHE_FILE, payload=data)
-        if not fetched_at_str:
-            return None
-        fetched_at = parse_utc_timestamp(fetched_at_str)
-        if (utc_now() - fetched_at).total_seconds() > _WTA_FULL_CALENDAR_TTL:
-            return None
-        if data.get("from", "") > from_date or data.get("to", "") < to_date:
-            return None
-        return [
-            t
-            for t in (data.get("items") or [])
-            if from_date <= (t.get("startDate") or "")[:10] <= to_date and t.get("level") != "Grand Slam"
-        ]
-    except FileNotFoundError:
-        return None
-    except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
-        report_run_issue(
-            "wta-loader",
-            "load full calendar cache",
-            exc,
-            severity="degraded",
-            context={"path": _WTA_FULL_CALENDAR_CACHE_FILE},
-        )
-        return None
-
-
-def _load_from_window_calendar_cache(from_date, to_date):
-    """Read the exact window cache written by this script, if it is still fresh."""
-    try:
-        with open(WTA_CALENDAR_CACHE_FILE, encoding="utf-8") as f:
-            data = expand_wta_calendar_cache(json.load(f))
-        fetched_at_str = get_cache_timestamp(WTA_CALENDAR_CACHE_FILE, payload=data)
-        if not fetched_at_str:
-            return None
-        fetched_at = parse_utc_timestamp(fetched_at_str)
-        if (utc_now() - fetched_at).total_seconds() > _WTA_FULL_CALENDAR_TTL:
-            return None
-        if data.get("from", "") > from_date or data.get("to", "") < to_date:
-            return None
-        return [
-            t
-            for t in (data.get("items") or [])
-            if from_date <= (t.get("startDate") or "")[:10] <= to_date and t.get("level") != "Grand Slam"
-        ]
-    except FileNotFoundError:
-        return None
-    except (OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
-        report_run_issue(
-            "wta-loader",
-            "load window calendar cache",
-            exc,
-            severity="degraded",
-            context={"path": WTA_CALENDAR_CACHE_FILE},
-        )
-        return None
 
 
 CSV_COLUMNS = [
@@ -202,22 +125,6 @@ def get_week_boundaries(today=None):
     prev_week_start = week_start - timedelta(days=7)
     next_week_end = week_start + timedelta(days=13)  # Sunday of next week
     return prev_week_start, next_week_end
-
-
-def fetch_tournaments_for_range(from_date, to_date):
-    all_tournaments = []
-    page = 0
-    while True:
-        url = CALENDAR_URL.format(page=page, from_date=from_date, to_date=to_date)
-        data = fetch_json(url)
-        page_content = data.get("content", [])
-        all_tournaments.extend(page_content)
-
-        if data.get("last", True) or not page_content:
-            break
-        page += 1
-
-    return all_tournaments
 
 
 def build_meta(t):
@@ -371,13 +278,13 @@ if __name__ == "__main__":
 
     from_date_str = range_start.strftime("%Y-%m-%d")
     to_date_str = range_end.strftime("%Y-%m-%d")
-    tournaments = _load_from_window_calendar_cache(from_date_str, to_date_str)
-    if tournaments is None:
-        tournaments = _load_from_full_calendar_cache(from_date_str, to_date_str)
-    if tournaments is not None:
-        logger.debug(f"  Using WTA calendar cache ({len(tournaments)} tournaments in window).")
-    else:
-        tournaments = fetch_tournaments_for_range(from_date_str, to_date_str)
+    tournaments = get_shared_wta_calendar(
+        from_date_str,
+        to_date_str,
+        exclude_levels={"Grand Slam"},
+        component="wta-loader",
+    )
+    logger.debug(f"  Using shared WTA calendar ({len(tournaments)} tournaments in window).")
 
     if not tournaments:
         raise PipelineError(
@@ -386,21 +293,6 @@ if __name__ == "__main__":
             message="WTA tournament source returned no rows",
             context={"from": from_date_str, "to": to_date_str},
         )
-
-    save_json_file(
-        WTA_CALENDAR_CACHE_FILE,
-        {
-            "from": from_date_str,
-            "to": to_date_str,
-            "items": tournaments,
-        },
-        formatter=dumps_wta_full_calendar_cache,
-    )
-    set_cache_file_meta(
-        WTA_CALENDAR_CACHE_FILE,
-        fetchedAt=utc_timestamp(),
-        **{"from": from_date_str, "to": to_date_str},
-    )
 
     existing_ids = load_existing_match_ids(OUTPUT_FILE)
     new_rows = []

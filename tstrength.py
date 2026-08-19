@@ -20,6 +20,7 @@ from utils import (
     normalize_player_name,
     save_json_file,
 )
+from wta_calendar_cache import get_shared_wta_calendar
 
 logger = get_logger("tstrength")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -205,70 +206,47 @@ def _load_rankings_index():
 
 
 def _fetch_tournaments_range(year, from_date, to_date):
-    """Fetch WTA tournaments (WTA 125+) within a date range from API."""
-    url = "https://api.wtatennis.com/tennis/tournaments/"
+    """Filter WTA 125+ tournaments from the pipeline's shared calendar."""
     valid_levels = {"WTA 1000", "WTA 500", "WTA 250", "WTA 125"}
     result = []
-    page = 0
-    while True:
-        params = {
-            "page": page,
-            "pageSize": 100,
-            "excludeLevels": "ITF",
-            "from": from_date,
-            "to": to_date,
-        }
+    tournaments = get_shared_wta_calendar(
+        from_date,
+        to_date,
+        component="tstrength",
+    )
+    for t in tournaments:
         try:
-            r = get_with_retry(
-                url,
-                component="tstrength",
-                attempts=3,
-                headers=_WTA_API_HEADERS,
-                params=params,
-                timeout=(10, 20),
-                failure_status="degraded",
+            level = t.get("level", "")
+            if level not in valid_levels:
+                continue
+            tid = t["tournamentGroup"]["id"]
+            raw_name = t["tournamentGroup"]["name"]
+            if _is_ignored_tournament(raw_name):
+                continue
+            city = t.get("city", "")
+            start_date = t.get("startDate", "")[:10]
+            surface = t.get("surface") or t.get("surfaceType") or t.get("surfaceCode") or ""
+            country = t.get("countryCode") or t.get("country") or t.get("hostCountryCode") or ""
+            result.append(
+                {
+                    "id": str(tid),
+                    "name": raw_name,
+                    "city": city,
+                    "level": level,
+                    "startDate": start_date,
+                    "surface": surface,
+                    "country": country,
+                    "year": str(year),
+                }
             )
-            data = r.json()
-            tournaments = data.get("content", [])
-            if not tournaments:
-                break
-            for t in tournaments:
-                level = t.get("level", "")
-                if level not in valid_levels:
-                    continue
-                tid = t["tournamentGroup"]["id"]
-                raw_name = t["tournamentGroup"]["name"]
-                if _is_ignored_tournament(raw_name):
-                    continue
-                city = t.get("city", "")
-                start_date = t.get("startDate", "")[:10]
-                surface = t.get("surface") or t.get("surfaceType") or t.get("surfaceCode") or ""
-                country = t.get("countryCode") or t.get("country") or t.get("hostCountryCode") or ""
-                result.append(
-                    {
-                        "id": str(tid),
-                        "name": raw_name,
-                        "city": city,
-                        "level": level,
-                        "startDate": start_date,
-                        "surface": surface,
-                        "country": country,
-                        "year": str(year),
-                    }
-                )
-            page += 1
-        except PipelineError as e:
-            logger.error(f"Error fetching tournaments ({from_date} to {to_date}, page {page}): {e}")
-            return []
-        except Exception as e:
+        except (AttributeError, KeyError, TypeError, ValueError) as exc:
             report_run_issue(
                 "tstrength",
-                "parse tournament page",
-                e,
+                "parse shared calendar tournament",
+                exc,
                 severity="degraded",
-                context={"from": from_date, "to": to_date, "page": page},
+                context={"from": from_date, "to": to_date},
             )
-            return []
     result.sort(key=lambda x: x["startDate"])
     return result
 
