@@ -8,17 +8,7 @@
       "surface": "Hard",
       "country": "USA",
       "alt_limit": 10,
-      "withdrawals": ["Emma Raducanu", "Laura Siegemund", "Jil Teichmann"],
-      "additions": [
-        {"name": "Julia Grabher", "country": "AUT", "rank": "107", "entry": "", "player_id": "320316"},
-        {"name": "Carol Young Suh Lee", "country": "USA", "rank": "179", "entry": "WC", "player_id": "329383"},
-        {"name": "Leolia Jeanjean", "country": "FRA", "rank": "112", "entry": "WC", "player_id": "320313"},
-        {"name": "Venus Williams", "country": "USA", "rank": "469", "entry": "WC", "player_id": "230220"},
-        {"name": "Sloane Stephens", "country": "USA", "rank": "313", "entry": "WC", "player_id": "315683"},
-        {"name": "Reese Brantmeier", "country": "USA", "rank": "489", "entry": "WC", "player_id": "329512"},
-        {"name": "Thea Frodin", "country": "USA", "rank": "586", "entry": "WC", "player_id": "333641"},
-        {"name": "Taylah Preston", "country": "AUS", "rank": "118", "entry": "WC", "player_id": "330291"}
-      ]
+      "withdrawals": ["Emma Raducanu", "Laura Siegemund"]
     },
     "qual": {
       "manual": true,
@@ -27,8 +17,7 @@
       "level": "Grand Slam",
       "surface": "Hard",
       "country": "USA",
-      "alt_limit": 20,
-      "withdrawals": ["Julia Grabher", "Carol Young Suh Lee", "Leolia Jeanjean", "Taylah Preston"]
+      "alt_limit": 20
     }
   }
 }
