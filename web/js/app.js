@@ -2038,6 +2038,9 @@
                 const qual = sortEL(players.filter(p => p.type === 'QUAL'));
                 const alt = sortEL(players.filter(p => p.type === 'ALT'));
                 const cols = (isITF ? 5 : 4) + (showSeed ? 1 : 0);
+                const qualifyingDivider = key.endsWith('#qual')
+                    ? ''
+                    : `<tr class="divider-row"><td colspan="${cols}">QUALIFYING</td></tr>`;
                 let displayMain = main;
                 let displayQual = qual;
                 let displayAlt = alt;
@@ -2084,7 +2087,7 @@
                     displayAlt  = remainingPool.slice(qual.length);
                     html += renderRows(displayMain, true, isITF, true, showSeed, prioSeedMap);
                     if (displayQual.length > 0) {
-                        html += `<tr class="divider-row"><td colspan="${cols}">QUALIFYING</td></tr>`;
+                        html += qualifyingDivider;
                         html += renderRows(displayQual, false, isITF, true, showSeed);
                     }
                     if (displayAlt.length > 0) {
@@ -2094,7 +2097,7 @@
                 } else {
                     html += renderRows(displayMain, true, isITF, false, showSeed);
                     if (qual.length > 0) {
-                        html += `<tr class="divider-row"><td colspan="${cols}">QUALIFYING</td></tr>`;
+                        html += qualifyingDivider;
                         html += renderRows(qual, false, isITF, false, showSeed);
                     }
                     if (alt.length > 0) {
