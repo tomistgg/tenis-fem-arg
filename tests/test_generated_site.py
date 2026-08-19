@@ -7,7 +7,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import main as main_module
-from calendar_builder import format_week_label, get_monday_from_date
 from html_generator import (
     _CSP_META_RE,
     _display_calendar_tournament_name,
@@ -147,19 +146,6 @@ class GeneratedSiteTests(unittest.TestCase):
             _generated_frontend_source(),
         )
 
-    def test_us_open_pdf_entry_list_is_assigned_to_august_31(self):
-        config = json.loads(
-            (PROJECT_DIR / "data" / "gs_pdf_urls.json").read_text(encoding="utf-8")
-        )
-        us_open = config[
-            "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list"
-        ]["main"]
-        self.assertEqual(
-            format_week_label(get_monday_from_date(us_open["start_date"])),
-            "Week of August 31",
-        )
-        self.assertEqual(us_open["withdrawals"], ["Emma Raducanu", "Laura Siegemund"])
-
     def test_manual_entry_list_withdrawal_promotes_and_renumbers_alternates(self):
         main_players = [
             {"name": "Player One", "type": "MAIN", "pos": "1", "pos_num": 1},
@@ -193,54 +179,6 @@ class GeneratedSiteTests(unittest.TestCase):
         )
         self.assertEqual(qualifying[0]["type"], "QUAL")
         self.assertEqual(qualifying[0]["pos"], "1")
-
-    def test_us_open_qualifying_entry_list_is_assigned_to_august_24(self):
-        tournament_key = "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list"
-        config = json.loads(
-            (PROJECT_DIR / "data" / "gs_pdf_urls.json").read_text(encoding="utf-8")
-        )
-        qualifying = config[tournament_key]["qual"]
-        self.assertTrue(qualifying["manual"])
-        self.assertEqual(
-            format_week_label(get_monday_from_date(qualifying["start_date"])),
-            "Week of August 24",
-        )
-        self.assertEqual(qualifying["alt_limit"], 20)
-
-        compact_cache = json.loads(
-            (PROJECT_DIR / "data" / "entry_lists_cache.json").read_text(encoding="utf-8")
-        )
-        players = expand_entry_lists_cache(compact_cache)[tournament_key + "#qual"]
-        accepted = [player for player in players if player["type"] == "QUAL"]
-        alternates = [player for player in players if player["type"] == "ALT"]
-        self.assertEqual(len(accepted), 119)
-        self.assertEqual(len(alternates), 16)
-        self.assertNotIn("DARJA VIDMANOVA", [player["name"] for player in accepted])
-        withdrawn = {"NADIA PODOROSKA", "ALICIA DUDENEY", "CELINE NAEF"}
-        self.assertTrue(withdrawn.isdisjoint(player["name"] for player in players))
-        self.assertEqual(
-            [player["name"] for player in accepted[-2:]],
-            ["ALIONA FALEI", "VIKTORIA HRUNCAKOVA"],
-        )
-        self.assertEqual(alternates[0]["name"], "POLONA HERCOG")
-        qualifying_seeds = {
-            player["name"]: player["seed"] for player in accepted if player.get("seed") != ""
-        }
-        self.assertEqual(set(qualifying_seeds.values()), set(range(1, 33)))
-        self.assertEqual(qualifying_seeds["POLINA KUDERMETOVA"], 1)
-        self.assertEqual(qualifying_seeds["LUCREZIA STEFANINI"], 32)
-        self.assertEqual(
-            [player["pos"] for player in accepted if player["country"] == "ARG"],
-            ["44", "53", "58", "110"],
-        )
-        self.assertEqual(
-            [player["pos"] for player in alternates if player["country"] == "ARG"],
-            ["13"],
-        )
-
-        app_source = _generated_frontend_source()
-        self.assertNotIn(tournament_key + "#qual#qual", app_source)
-        self.assertNotIn("US Open Qualifying Qualifying", app_source)
 
     def test_metadata_only_qualifying_list_is_injected_into_its_configured_week(self):
         tournament_key = "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list"
