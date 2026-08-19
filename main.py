@@ -1133,6 +1133,52 @@ def _apply_manual_entry_list_withdrawals(main_players, alt_players, withdrawals,
     return updated_main, remaining_alt
 
 
+def _apply_manual_entry_list_additions(main_players, alt_players, additions, main_type="MAIN"):
+    """Add configured players, remove them from alternates, and renumber both lists."""
+    configured = []
+    for addition in additions or []:
+        if not isinstance(addition, dict):
+            continue
+        name = str(addition.get("name") or "").strip()
+        if not name:
+            continue
+        configured.append((name.casefold(), addition))
+
+    if not configured:
+        return main_players, alt_players
+
+    main_by_name = {str(player.get("name") or "").strip().casefold(): player for player in main_players}
+    configured_names = {name_key for name_key, _ in configured}
+    remaining_alt = [
+        player for player in alt_players if str(player.get("name") or "").strip().casefold() not in configured_names
+    ]
+
+    for name_key, addition in configured:
+        player = main_by_name.get(name_key)
+        if player is None:
+            player = {"name": str(addition["name"]).strip()}
+            main_players.append(player)
+            main_by_name[name_key] = player
+        for field in ("name", "country", "rank", "priority", "entry", "player_id"):
+            if field in addition:
+                player[field] = addition[field]
+        player.setdefault("country", "")
+        player.setdefault("rank", "")
+        player.setdefault("priority", "")
+        player.setdefault("entry", "")
+
+    for pos_num, player in enumerate(main_players, 1):
+        player["type"] = main_type
+        player["pos"] = str(pos_num)
+        player["pos_num"] = pos_num
+    for pos_num, player in enumerate(remaining_alt, 1):
+        player["type"] = "ALT"
+        player["pos"] = str(pos_num)
+        player["pos_num"] = pos_num
+
+    return main_players, remaining_alt
+
+
 def _refresh_entry_lists_from_pdfs(
     entry_cache,
     tournament_store,
@@ -1237,6 +1283,28 @@ def _refresh_entry_lists_from_pdfs(
             # Metadata-only entries register manually maintained cached lists in
             # the correct week without attempting an external PDF download.
             if not pdf_url:
+                if draw_meta.get("manual") and target_key in entry_cache:
+                    manual_players = copy.deepcopy(entry_cache[target_key])
+                    main_type = "QUAL" if draw_type == "qual" else "MAIN"
+                    manual_main = [player for player in manual_players if player.get("type") == main_type]
+                    manual_alt = [player for player in manual_players if player.get("type") == "ALT"]
+                    manual_main, manual_alt = _apply_manual_entry_list_withdrawals(
+                        manual_main,
+                        manual_alt,
+                        draw_meta.get("withdrawals"),
+                        main_type=main_type,
+                    )
+                    manual_main, manual_alt = _apply_manual_entry_list_additions(
+                        manual_main,
+                        manual_alt,
+                        draw_meta.get("additions"),
+                        main_type=main_type,
+                    )
+                    manual_players = manual_main + manual_alt
+                    _canonicalize_player_names(manual_players, source="wta")
+                    _fill_missing_countries(manual_players, entry_cache)
+                    entry_cache[target_key] = manual_players
+                    tournament_store[target_key] = manual_players
                 continue
             if not _is_active(target_key):
                 continue
@@ -1280,6 +1348,12 @@ def _refresh_entry_lists_from_pdfs(
                     draw_meta.get("withdrawals"),
                     main_type="QUAL",
                 )
+                draw_main, draw_alt = _apply_manual_entry_list_additions(
+                    draw_main,
+                    draw_alt,
+                    draw_meta.get("additions"),
+                    main_type="QUAL",
+                )
                 qual_players = draw_main + draw_alt
                 qual_key = cache_key + "#qual"
                 _fill_missing_countries(qual_players, entry_cache)
@@ -1293,6 +1367,12 @@ def _refresh_entry_lists_from_pdfs(
                     draw_alt,
                     draw_meta.get("withdrawals"),
                 )
+                draw_main, draw_alt = _apply_manual_entry_list_additions(
+                    draw_main,
+                    draw_alt,
+                    draw_meta.get("additions"),
+                )
+                _canonicalize_player_names(draw_main, source="wta")
                 main_players.extend(draw_main + draw_alt)
 
         if main_players:
