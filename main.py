@@ -74,6 +74,7 @@ from itf_drawsheet_cache import (
     tournament_draw_codes_with_definitive_no_nationality,
     tournament_ids_with_published_main_draw,
 )
+from lazy_browser import LazyBrowserSession
 from tournament_snapshot import (
     TournamentSnapshotRecord,
     dumps_tournament_snapshot,
@@ -1443,7 +1444,7 @@ def _itf_empty_draw_counts_toward_backoff(acceptance_players, cached_draw_entry)
 
 
 def _itf_requested_draw_types(prev_draws):
-    """Return the draw types we still need to fetch for this tournament."""
+    """Return incomplete draw types, for both WTA and ITF polling."""
     requested = []
     if not _draw_is_complete((prev_draws or {}).get("MDS")):
         requested.append("MDS")
@@ -2808,15 +2809,18 @@ def main():
 
     skip_draws_fetch = os.getenv("SKIP_DRAWS_FETCH", "").strip().lower() in {"1", "true", "yes", "on"}
 
-    driver = create_driver()
+    # Calendar and drawsheet APIs have direct HTTP/cache paths. Keep Chrome
+    # dormant unless an ITF acceptance-list request actually needs browser
+    # functionality later in process_tournaments().
+    driver = LazyBrowserSession(create_driver)
     itf_draws_tournaments = {}
     prefetched_itf_draws = {}
     try:
         # 1. Fetch full-year ITF calendar first (populates cache for dynamic subset)
-        full_itf = get_full_itf_calendar(driver)
+        full_itf = get_full_itf_calendar(None)
 
         # 2. Build tournament groups (WTA + ITF) — uses cached ITF data
-        tournament_groups, monday_map = build_all_tournament_groups(driver)
+        tournament_groups, monday_map = build_all_tournament_groups(None)
 
         # 2b. Fetch ITF draws tournament list and prefetch draw payloads before
         # heavier ITF traffic later in the run.
@@ -2825,7 +2829,7 @@ def main():
             itf_draws_tournaments = {}
         else:
             logger.info("Fetching ITF draws tournament list...")
-            itf_draws_tournaments = get_draws_itf_tournament_list(driver)
+            itf_draws_tournaments = get_draws_itf_tournament_list(None)
         if ENABLE_ITF_DRAWS_PREFETCH and not skip_draws_fetch:
             itf_prefetch_jobs = []
             for week, tourneys in (itf_draws_tournaments or {}).items():
@@ -2842,11 +2846,7 @@ def main():
                 logger.debug(f"Prefetching ITF Draws ({i}/{total_itf_prefetch})")
                 tid = t_info.get("tournamentId")
                 is_multiweek = t_info.get("is_multiweek", False)
-                dvr = create_driver()
-                try:
-                    t_draws = fetch_itf_tournament_draws(tid, is_multiweek=is_multiweek, driver=dvr) or {}
-                finally:
-                    _quit_driver(dvr, "quit ITF prefetch browser")
+                t_draws = fetch_itf_tournament_draws(tid, is_multiweek=is_multiweek) or {}
                 if t_draws:
                     prefetched_itf_draws[_canonical_draw_store_key(t_key)] = t_draws
 
@@ -2964,19 +2964,30 @@ def main():
                     f"({t_info.get('startDate', '')})"
                 )
                 continue
+            cached_entry = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
+            requested_draw_types = _itf_requested_draw_types((cached_entry or {}).get("draws") or {})
+            if not requested_draw_types:
+                logger.debug(f"  Skipping completed WTA draw types: {t_info.get('name', '')}")
+                continue
             active_draw_keys.add(store_key)
-            wta_draw_jobs.append((week, t_key, t_info))
+            wta_draw_jobs.append((week, t_key, t_info, requested_draw_types))
 
     total_wta_draws = len(wta_draw_jobs) or 1
     logger.info(f"Fetching WTA Draws (0/{total_wta_draws}) — parallel")
 
     def _fetch_wta_draw_job(job):
-        week, t_key, t_info = job
+        week, t_key, t_info, requested_draw_types = job
         return (
             week,
             t_key,
             t_info,
-            fetch_tournament_draws(t_key, current_year, start_date=t_info.get("startDate")) or {},
+            fetch_tournament_draws(
+                t_key,
+                current_year,
+                start_date=t_info.get("startDate"),
+                draw_types=requested_draw_types,
+            )
+            or {},
         )
 
     from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -2988,7 +2999,7 @@ def main():
             try:
                 week, t_key, t_info, t_draws = fut.result()
             except Exception as e:
-                week, t_key, t_info = futures[fut]
+                week, t_key, t_info, _requested_draw_types = futures[fut]
                 t_draws = {}
                 logger.warning(f"  [!] WTA draw fetch failed for {t_info.get('name', '')}: {e}")
             wta_draw_results[_canonical_draw_store_key(t_key)] = (week, t_key, t_info, t_draws)
@@ -3317,8 +3328,7 @@ def main():
                         f"ARG-relevant empty {draw_noun} - refreshing session."
                     )
                     time.sleep(ITF_CONSECUTIVE_EMPTY_BACKOFF_SEC)
-                    _quit_driver(driver, "recycle empty ITF browser")
-                    driver = create_driver()
+                    driver.reset()
                     itf_consecutive_empty = 0
 
     # Write draw fetch errors for this run (always overwrite so stale errors are cleared).

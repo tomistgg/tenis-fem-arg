@@ -141,3 +141,30 @@ def test_started_wta_draw_can_use_completed_matches_fallback(monkeypatch):
 
     assert result["MDS"] == api_draw
     assert api_requests == [("1017", 2026)]
+
+
+def test_wta_draw_only_polls_requested_incomplete_type(monkeypatch):
+    pdf_requests = []
+    api_requests = []
+    monkeypatch.setattr(
+        draws,
+        "fetch_draw_pdf_bytes",
+        lambda tournament_id, year, draw_type: pdf_requests.append((tournament_id, year, draw_type)) or None,
+    )
+    monkeypatch.setattr(
+        draws,
+        "_fetch_draw_from_wta_api",
+        lambda tournament_id, year: api_requests.append((tournament_id, year)) or None,
+    )
+    monkeypatch.setattr(draws, "madrid_today", lambda: date(2026, 8, 19))
+
+    result = draws.fetch_tournament_draws(
+        "https://www.wtatennis.com/tournaments/1017/cincinnati/2026/player-list",
+        2026,
+        start_date="2026-08-13",
+        draw_types=["QS"],
+    )
+
+    assert result == {}
+    assert pdf_requests == [("1017", 2026, "QS")]
+    assert api_requests == []

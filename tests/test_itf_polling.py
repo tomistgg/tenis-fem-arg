@@ -687,6 +687,37 @@ def test_uncached_blocked_draw_retries_without_poisoning_browser_session(monkeyp
     assert {kwargs.get("severity") for _, kwargs in recorded_issues} == {"degraded"}
 
 
+def test_completed_itf_draw_type_uses_stale_cache_without_live_poll(monkeypatch):
+    qualifying = {"koGroups": [{"rounds": []}], "draw": "qualifying"}
+    main_draw = {"koGroups": [{"rounds": []}], "draw": "main"}
+    live_codes = []
+
+    def cached_drawsheet(tournament_id, code, week_number, allow_stale=False):
+        if code == "Q" and allow_stale:
+            return qualifying
+        return None
+
+    def fetch_api_data(tournament_id, code, **kwargs):
+        live_codes.append(code)
+        return main_draw
+
+    monkeypatch.setattr(itf_load_new, "get_cached_drawsheet", cached_drawsheet)
+    monkeypatch.setattr(itf_load_new, "fetch_api_data", fetch_api_data)
+    monkeypatch.setattr(itf_load_new.time, "sleep", lambda seconds: None)
+
+    result = itf_load_new.fetch_tournament_draw_data(
+        456,
+        "Partly Complete Event",
+        ["Q", "M"],
+        max_attempts=1,
+        external_driver=object(),
+        skip_live_codes={"Q"},
+    )
+
+    assert result == {"Q": qualifying, "M": main_draw}
+    assert live_codes == ["M"]
+
+
 def test_drawsheet_block_recovers_after_quiet_period_without_browser_cookies(monkeypatch):
     payload = {"koGroups": [{"rounds": []}]}
     responses = iter([

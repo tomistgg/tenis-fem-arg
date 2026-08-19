@@ -17,6 +17,7 @@ if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
 from canonical_data import source_match_key, sync_itf_players
+from draws import _draw_is_complete
 from http_client import get_with_retry
 from itf_drawsheet_cache import (
     get_cached_drawsheet,
@@ -24,12 +25,13 @@ from itf_drawsheet_cache import (
     tournament_draw_codes_with_definitive_no_nationality,
     tournament_ids_with_definitive_no_nationality,
 )
+from lazy_browser import LazyBrowserSession
 from pipeline_errors import DataValidationError, PipelineError
 from run_state import record_run_issue, report_run_issue
 from runtime_logging import get_logger
 from time_utils import madrid_today
 from transactional_io import atomic_write_dataframe
-from utils import expand_itf_calendar_cache, is_draw_completed, save_json_file
+from utils import expand_draws_store_cache, expand_itf_calendar_cache, is_draw_completed, load_cache, save_json_file
 
 # `uc.Chrome.__del__` can raise WinError 6 on Windows after we already call
 # `quit()` explicitly. We manage shutdown ourselves, so disable the destructor
@@ -47,6 +49,7 @@ TOURNAMENT_LINK_PREFIX = "/en/tournament/"
 ITF_EVENT_FILTERS_CACHE_FILE = os.path.join(DATA_DIR, "itf_event_filters_cache.json")
 ITF_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "itf_calendar_cache.json")
 ITF_BLOCKED_RESPONSES_FILE = os.path.join(DATA_DIR, "itf_blocked_responses.json")
+DRAWS_STORE_CACHE_FILE = os.path.join(DATA_DIR, "draws_store_cache.json")
 
 ITF_BLOCKED_RESPONSES = []
 _ITF_FETCH_BLOCKED = object()
@@ -710,7 +713,13 @@ def fetch_api_data(tId, classification, week_number=0, driver=None, tournament_n
 
 
 def fetch_tournament_draw_data(
-    tournament_id, tournament_name, codes, week_number=0, max_attempts=2, external_driver=None
+    tournament_id,
+    tournament_name,
+    codes,
+    week_number=0,
+    max_attempts=2,
+    external_driver=None,
+    skip_live_codes=None,
 ):
     """Fetch draw data for one tournament.
 
@@ -720,9 +729,21 @@ def fetch_tournament_draw_data(
     """
     tournament_id = int(tournament_id)
 
-    # If every requested draw is already in the shared cache, skip the browser entirely.
-    cached_results = {code: get_cached_drawsheet(tournament_id, code, week_number) for code in codes}
-    if all(v is not None for v in cached_results.values()):
+    # Completed draw types may use stale raw data forever: their payload cannot
+    # change again. Other types retain the normal freshness policy.
+    skip_live_codes = set(skip_live_codes or ())
+    cached_results = {
+        code: get_cached_drawsheet(
+            tournament_id,
+            code,
+            week_number,
+            allow_stale=code in skip_live_codes,
+        )
+        for code in codes
+    }
+    cached_results = {code: payload for code, payload in cached_results.items() if payload is not None}
+    live_codes = [code for code in codes if code not in cached_results and code not in skip_live_codes]
+    if not live_codes:
         return cached_results
 
     def _fetch_codes(session_driver, requested_codes):
@@ -748,16 +769,16 @@ def fetch_tournament_draw_data(
             # The canonical API request is centrally paced. Do not navigate to
             # the print page here: that browser context reproduced the Imperva
             # block and made the immediate retry ineffective.
-            results, blocked_codes = _fetch_codes(external_driver, codes)
+            results, blocked_codes = _fetch_codes(external_driver, live_codes)
             if blocked_codes:
                 logger.error(
                     f"  [!] ITF draw still blocked for {tournament_name} "
                     f"after throttled retry: {', '.join(blocked_codes)}"
                 )
-            return results
+            return {**cached_results, **results}
         except Exception as e:
             logger.warning(f"  [!] Draw fetch failed for {tournament_name} (shared session): {e}")
-        return {}
+        return cached_results
 
     # Fallback for callers without a shared driver. The HTTP helper already
     # performs its own paced retry, so no browser session is needed here.
@@ -767,10 +788,10 @@ def fetch_tournament_draw_data(
         results = {}
         blocked_codes = []
         try:
-            results, blocked_codes = _fetch_codes(None, codes)
+            results, blocked_codes = _fetch_codes(None, live_codes)
             best_results.update(results)
             if any(best_results.values()) and not blocked_codes:
-                return best_results
+                return {**cached_results, **best_results}
         except Exception as e:
             logger.warning(f"  [!] Draw fetch failed for {tournament_name} (attempt {attempt}): {e}")
 
@@ -799,7 +820,7 @@ def fetch_tournament_draw_data(
 
         break
 
-    return best_results
+    return {**cached_results, **best_results}
 
 
 def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
@@ -1147,8 +1168,9 @@ if __name__ == "__main__":
         window_end = week_end + timedelta(days=7)
         window_label = "this+next week"
 
-    # Single driver kept alive through the full run (calendar → IDs → drawsheets)
-    driver = create_driver()
+    # Most runs are fully served by disk caches and direct HTTP. Keep Chrome
+    # dormant unless a future browser fallback actually accesses it.
+    driver = LazyBrowserSession(create_driver)
     try:
         # ITF tournaments in the window are scheduled well in advance, so the
         # year-wide calendar that main.py refreshed on the previous cron run is
@@ -1231,15 +1253,6 @@ if __name__ == "__main__":
 
         keys_list = tournaments_df["tournamentKey"].dropna().unique().tolist()
 
-        # Warm up browser on ITF BEFORE any API calls so Incapsula session is valid
-        logger.debug("  Warming up browser session...")
-        try:
-            driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
-            time.sleep(4)
-            logger.debug("  Browser session ready.")
-        except Exception as e:
-            report_run_issue("itf-loader", "warm browser", e, severity="degraded")
-
         json_ids_string = fetch_itf_ids_to_json(keys_list, driver=driver)
 
         final_df = merge_ids_with_pandas(tournaments_df, json_ids_string)
@@ -1281,6 +1294,10 @@ if __name__ == "__main__":
             regular_ids,
             "ARG",
         )
+        draws_store = expand_draws_store_cache(load_cache(DRAWS_STORE_CACHE_FILE)) or {}
+        draws_store = {
+            _canonical_draw_store_key(key): value for key, value in draws_store.items() if isinstance(value, dict)
+        }
 
         all_matches = []
         active_count = 0
@@ -1321,6 +1338,18 @@ if __name__ == "__main__":
                 is_multiweek = tCategory == "ITF Womens Multi-Week Circuit"
 
                 requested_codes = ["Q", "M"]
+                completed_codes = set()
+                if not is_multiweek:
+                    cached_draw_entry = draws_store.get(_canonical_draw_store_key(tourney.get("tournamentKey"))) or {}
+                    cached_draws = cached_draw_entry.get("draws") if isinstance(cached_draw_entry, dict) else {}
+                    if _draw_is_complete((cached_draws or {}).get("QS"), is_qualifying=True):
+                        completed_codes.add("Q")
+                    if _draw_is_complete((cached_draws or {}).get("MDS")):
+                        completed_codes.add("M")
+                    if completed_codes:
+                        logger.debug(
+                            f"  Reusing completed {', '.join(sorted(completed_codes))} draw cache for {tName}"
+                        )
                 if not is_multiweek:
                     excluded_codes = no_arg_draw_codes.get(str(tId), set())
                     requested_codes = [code for code in requested_codes if code not in excluded_codes]
@@ -1343,6 +1372,7 @@ if __name__ == "__main__":
                             week_number=week,
                             max_attempts=1,
                             external_driver=driver,
+                            skip_live_codes=completed_codes,
                         )
 
                         for code in requested_codes:
@@ -1370,6 +1400,7 @@ if __name__ == "__main__":
                         week_number=0,
                         max_attempts=1,
                         external_driver=driver,
+                        skip_live_codes=completed_codes,
                     )
 
                     for code in requested_codes:
@@ -1393,20 +1424,7 @@ if __name__ == "__main__":
                         logger.warning(
                             f"  [!] {consecutive_empty} consecutive empty results — refreshing browser session."
                         )
-                        _quit_driver(driver, "recycle empty-results browser")
-                        driver = create_driver()
-                        try:
-                            driver.get(
-                                "https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/"
-                            )
-                            time.sleep(3)
-                        except Exception as exc:
-                            report_run_issue(
-                                "itf-loader",
-                                "warm recycled browser",
-                                exc,
-                                severity="partial",
-                            )
+                        driver.reset()
                         consecutive_empty = 0
 
                 time.sleep(random.uniform(5.0, 10.0))
