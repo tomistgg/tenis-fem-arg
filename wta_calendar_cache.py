@@ -6,11 +6,11 @@ import json
 import os
 from datetime import date, timedelta
 
+from config import EXCLUDED_WTA_CALENDAR_TOURNAMENT_IDS
 from http_client import get_with_retry
 from pipeline_errors import PipelineError
 from run_state import report_run_issue
 from runtime_logging import get_logger
-from config import EXCLUDED_WTA_CALENDAR_TOURNAMENT_IDS
 from runtime_paths import DATA_DIR
 from time_utils import madrid_today, parse_utc_timestamp, utc_now, utc_timestamp
 from utils import (
