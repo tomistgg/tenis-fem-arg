@@ -1,6 +1,10 @@
 from datetime import date
 
-from html_generator import _apply_special_gs_cutoff_overrides, _roll_forward_passed_gs_cutoffs
+from html_generator import (
+    _apply_special_gs_cutoff_overrides,
+    _build_gs_cutoff_boxes,
+    _roll_forward_passed_gs_cutoffs,
+)
 
 
 def _us_open_2026():
@@ -46,3 +50,12 @@ def test_australian_open_uses_november_15_cutoff():
 
     assert q_cutoff == "2026-11-15"
     assert md_cutoff == "2026-11-15"
+
+
+def test_australian_open_2027_cutoff_box_is_on_november_9_calendar_week():
+    boxes = _build_gs_cutoff_boxes(
+        [{"name": "Australian Open", "year": 2027, "mdCutoff": "N/A"}],
+        set(),
+    )
+
+    assert boxes["2026-11-09"] == [(0, "Last week for AO MD/Q")]

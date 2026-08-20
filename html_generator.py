@@ -192,13 +192,15 @@ def _calendar_week_label_for_date(date_value):
 
 
 def _register_cutoff_box(boxes, date_value, sort_key, label):
-    """Store a cutoff box under both the date and visible week-label keys."""
+    """Store a cutoff box under date, Monday, and visible week-label keys."""
     if date_value in (None, "", "N/A"):
         return
 
     iso_key = str(date_value)[:10]
+    cutoff_dt = datetime.strptime(iso_key, "%Y-%m-%d")
+    monday_key = (cutoff_dt - timedelta(days=cutoff_dt.weekday())).strftime("%Y-%m-%d")
     label_key = _calendar_week_label_for_date(iso_key)
-    for key in {iso_key, label_key}:
+    for key in {iso_key, monday_key, label_key}:
         if key:
             boxes.setdefault(key, []).append((sort_key, label))
 
@@ -216,7 +218,8 @@ def _build_gs_cutoff_boxes(gs_data, frozen_mondays):
         )
 
         if gs.get("name") == "Australian Open":
-            ao_dt = datetime.strptime(f"{gs.get('year', datetime.now().year) - 1}-11-09", "%Y-%m-%d")
+            default_year = gs.get("year") or madrid_today().year
+            ao_dt = datetime.strptime(f"{default_year - 1}-11-09", "%Y-%m-%d")
             _register_cutoff_box(boxes, ao_dt.strftime("%Y-%m-%d"), gi * 3, "Last week for AO MD/Q")
             continue
 
@@ -1432,7 +1435,10 @@ def generate_html(
                         flag_prefix = f"{flag} " if flag else ""
                         display_name = escape(_display_calendar_tournament_name(t["name"]))
                         calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-surface="{sk}">{flag_prefix}{display_name}</span>'
-                for _, _box_label in sorted(_gs_cutoff_boxes.get(week["monday_date"], [])):
+                _week_cutoff_boxes = _gs_cutoff_boxes.get(week["monday_date"], [])
+                if not _week_cutoff_boxes:
+                    _week_cutoff_boxes = _gs_cutoff_boxes.get(week["week_label"], [])
+                for _, _box_label in sorted(_week_cutoff_boxes):
                     calendar_html += f'<span class="cal-cutoff-box">{_box_label}</span>'
                 calendar_html += "</td>"
             calendar_html += "</tr>"
