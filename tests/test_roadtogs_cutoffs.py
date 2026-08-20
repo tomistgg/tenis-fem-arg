@@ -1,6 +1,6 @@
 from datetime import date
 
-from html_generator import _apply_special_gs_cutoff_overrides, _build_gs_cutoff_boxes, _roll_forward_passed_gs_cutoffs
+from html_generator import _apply_special_gs_cutoff_overrides, _roll_forward_passed_gs_cutoffs
 
 
 def _us_open_2026():
