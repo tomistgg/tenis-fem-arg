@@ -260,6 +260,10 @@ ITF_BLOCKED_RESPONSES_FILE = os.path.join(DATA_DIR, "itf_blocked_responses.json"
 GS_PDF_URLS_FILE = os.path.join(DATA_DIR, "gs_pdf_urls.json")
 EXCLUDED_ENTRY_LIST_TOURNAMENT_IDS = {"903"}  # Roland Garros
 EXCLUDED_DRAWS_TOURNAMENT_IDS = {"903", "904"}  # Roland Garros, Wimbledon
+# Entry lists maintained manually by the project owner. These tournaments stay
+# visible, but their cached player lists must not be replaced or merged with
+# live WTA data during a refresh.
+MANUAL_ENTRY_LIST_TOURNAMENT_IDS = {"1166"}  # Philadelphia 125
 
 
 def _is_excluded_entry_list_tournament(t_key, t_info=None):
@@ -269,6 +273,12 @@ def _is_excluded_entry_list_tournament(t_key, t_info=None):
     if any(f"/tournaments/{tid}/" in key_text for tid in EXCLUDED_ENTRY_LIST_TOURNAMENT_IDS):
         return True
     return "roland garros" in name_text
+
+
+def _is_manual_entry_list_tournament(t_key):
+    """Return True when an entry list is frozen and maintained in the cache."""
+    key_text = str(t_key or "").lower()
+    return any(f"/tournaments/{tid}/" in key_text for tid in MANUAL_ENTRY_LIST_TOURNAMENT_IDS)
 
 
 def _is_excluded_draw_tournament(t_key, t_info=None):
@@ -2282,8 +2292,24 @@ def process_tournaments(
                 cached_players = entry_cache.get(key, [])
                 if not isinstance(cached_players, list):
                     cached_players = []
+                is_manual_entry = _is_manual_entry_list_tournament(key)
                 is_pdf_entry = key in _get_pdf_cache_keys()
-                if is_pdf_entry and cached_players:
+                if is_manual_entry:
+                    t_list = copy.deepcopy(cached_players)
+                    status_dict = {}
+                    for _p in t_list:
+                        _p_name = str(_p.get("name") or "").strip().upper()
+                        if not _p_name:
+                            continue
+                        _p_type = str(_p.get("type") or "").upper()
+                        if _p_type == "MAIN":
+                            status_dict[_p_name] = ""
+                        elif _p_type == "QUAL":
+                            status_dict[_p_name] = " (Q)"
+                        else:
+                            _p_pos = str(_p.get("pos") or "").strip()
+                            status_dict[_p_name] = f" (ALT {_p_pos})" if _p_pos else " (ALT)"
+                elif is_pdf_entry and cached_players:
                     t_list = copy.deepcopy(cached_players)
                     status_dict = {}
                     for _p in t_list:
@@ -2306,8 +2332,9 @@ def process_tournaments(
                         cached_players,
                     )
                     t_list = merge_entry_list(cached_players, t_list)
-                _canonicalize_player_names(t_list, source="wta", names_only=True)
-                normalize_country_overrides(t_list, "name", "country")
+                if not is_manual_entry:
+                    _canonicalize_player_names(t_list, source="wta", names_only=True)
+                    normalize_country_overrides(t_list, "name", "country")
                 entry_cache[key] = t_list
                 tournament_store[key] = t_list
                 if is_pdf_entry and not str(key).endswith("#qual"):
