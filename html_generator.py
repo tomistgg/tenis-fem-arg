@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from html import escape, unescape
 from pathlib import Path
 
+from calendar_builder import format_week_label
 from config import (
     CONTINENT_KEYS,
     CONTINENT_LABELS,
@@ -170,6 +171,79 @@ def _roll_forward_passed_gs_cutoffs(gs_data, today):
         gs["mdCutoff"] = (datetime.strptime(gs["mdCutoff"], "%Y-%m-%d") + timedelta(weeks=52)).strftime("%Y-%m-%d")
         if isinstance(gs.get("year"), int):
             gs["year"] += 1
+
+
+def _apply_special_gs_cutoff_overrides(gs_name, gs_year, q_cutoff, md_cutoff):
+    """Keep the Australian Open fixed at the Nov 15 entry cutoff."""
+
+    if gs_name == "Australian Open" and isinstance(gs_year, int):
+        fixed_cutoff = datetime(gs_year - 1, 11, 15).strftime("%Y-%m-%d")
+        return fixed_cutoff, fixed_cutoff
+    return q_cutoff, md_cutoff
+
+
+def _calendar_week_label_for_date(date_value):
+    """Return the visible calendar week label for a cutoff date."""
+    if date_value in (None, "", "N/A"):
+        return ""
+    dt = datetime.strptime(str(date_value)[:10], "%Y-%m-%d")
+    week_start = dt - timedelta(days=dt.weekday())
+    return format_week_label(week_start)
+
+
+def _register_cutoff_box(boxes, date_value, sort_key, label):
+    """Store a cutoff box under both the date and visible week-label keys."""
+    if date_value in (None, "", "N/A"):
+        return
+
+    iso_key = str(date_value)[:10]
+    label_key = _calendar_week_label_for_date(iso_key)
+    for key in {iso_key, label_key}:
+        if key:
+            boxes.setdefault(key, []).append((sort_key, label))
+
+
+def _build_gs_cutoff_boxes(gs_data, frozen_mondays):
+    """Summarize calendar cutoff labels for each GS by last valid points week."""
+
+    boxes = {}
+    for gi, gs in enumerate(gs_data):
+        if gs.get("mdCutoff") in ("N/A", "") and gs.get("name") != "Australian Open":
+            continue
+
+        gs_label = {"Australian Open": "AO", "Roland Garros": "RG", "Wimbledon": "WMB", "US Open": "USO"}.get(
+            gs.get("name"), gs.get("name")
+        )
+
+        if gs.get("name") == "Australian Open":
+            ao_dt = datetime.strptime(f"{gs.get('year', datetime.now().year) - 1}-11-09", "%Y-%m-%d")
+            _register_cutoff_box(boxes, ao_dt.strftime("%Y-%m-%d"), gi * 3, "Last week for AO MD/Q")
+            continue
+
+        start_dt = datetime.strptime(gs["mdCutoff"], "%Y-%m-%d") + timedelta(weeks=6)
+        for di, (draw_type, wks) in enumerate([("MD", 6), ("Q", 4)]):
+            cutoff_dt = start_dt - timedelta(weeks=wks)
+            cutoff_str = cutoff_dt.strftime("%Y-%m-%d")
+            last_dt = (
+                (cutoff_dt - timedelta(weeks=2))
+                if cutoff_str in frozen_mondays
+                else (cutoff_dt - timedelta(weeks=1))
+            )
+            _register_cutoff_box(
+                boxes,
+                last_dt.strftime("%Y-%m-%d"),
+                gi * 3 + di * 2,
+                f"Last week for {gs_label} {draw_type}{' in W50+' if draw_type == 'Q' else ''}",
+            )
+            if draw_type == "Q":
+                w1535_dt = last_dt - timedelta(weeks=1)
+                _register_cutoff_box(
+                    boxes,
+                    w1535_dt.strftime("%Y-%m-%d"),
+                    gi * 3 + di * 2 + 1,
+                    f"Last week for {gs_label} Q in W15/W35",
+                )
+    return boxes
 
 
 def _html_for_csp_hashing(html_text):
@@ -1168,6 +1242,7 @@ def generate_html(
             else:
                 md_cutoff = "N/A"
                 q_cutoff = "N/A"
+        q_cutoff, md_cutoff = _apply_special_gs_cutoff_overrides(gs_name, gs_year, q_cutoff, md_cutoff)
         gs_data.append(
             {
                 "id": gs_id,
@@ -1240,30 +1315,7 @@ def generate_html(
             _frozen_mondays.add(sorted(_mons)[1])
 
     # Map each monday_date -> list of (sort_key, label) cutoff boxes
-    _gs_cutoff_boxes = {}
-    for _gi, _gs in enumerate(gs_data):
-        if _gs["mdCutoff"] in ("N/A", ""):
-            continue
-        _gslabel = _GS_DISPLAY.get(_gs["name"], _gs["name"])
-        _start_dt = datetime.strptime(_gs["mdCutoff"], "%Y-%m-%d") + timedelta(weeks=6)
-        for _di, (_draw_type, _wks) in enumerate([("MD", 6), ("Q", 4)]):
-            _cutoff_dt = _start_dt - timedelta(weeks=_wks)
-            _cutoff_str = _cutoff_dt.strftime("%Y-%m-%d")
-            # Last week to add points = 1 week before the cutoff (plus 1 more if cutoff week is frozen)
-            _last_dt = (
-                (_cutoff_dt - timedelta(weeks=2))
-                if _cutoff_str in _frozen_mondays
-                else (_cutoff_dt - timedelta(weeks=1))
-            )
-            _gs_cutoff_boxes.setdefault(_last_dt.strftime("%Y-%m-%d"), []).append(
-                (_gi * 3 + _di * 2, f"Last week for {_gslabel} {_draw_type}{' in W50+' if _draw_type == 'Q' else ''}")
-            )
-            # W15/W35 have a 1-week processing delay, so their last week is 1 earlier â€” Q only
-            if _draw_type == "Q":
-                _w1535_dt = _last_dt - timedelta(weeks=1)
-                _gs_cutoff_boxes.setdefault(_w1535_dt.strftime("%Y-%m-%d"), []).append(
-                    (_gi * 3 + _di * 2 + 1, f"Last week for {_gslabel} Q in W15/W35")
-                )
+    _gs_cutoff_boxes = _build_gs_cutoff_boxes(gs_data, _frozen_mondays)
 
     # Build calendar HTML
     def get_calendar_filter_key(level):
