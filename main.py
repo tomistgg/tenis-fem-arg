@@ -2294,7 +2294,7 @@ def process_tournaments(
                     cached_players = []
                 is_manual_entry = _is_manual_entry_list_tournament(key)
                 is_pdf_entry = key in _get_pdf_cache_keys()
-                if is_manual_entry:
+                if is_manual_entry or (is_pdf_entry and cached_players):
                     t_list = copy.deepcopy(cached_players)
                     status_dict = {}
                     for _p in t_list:
