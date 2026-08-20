@@ -12755,20 +12755,20 @@
                       "roundDesc": "Quarter-finals", "roundNumber": 3,
                       "matches": [
                           {
-                            "matchId": 1183663198, "playStatusCode": "TP",
+                            "matchId": 1183663198, "playStatusCode": "PC",
                             "teams": [
                                 {
                                   "player": {"playerId":800651631,"nationality":"POL","givenName":"Oriana","familyName":"Gniewkowska"},
-                                  "scores": [], "isWinner": false, "entryStatus": "WC"
+                                  "scores": [2,0], "isWinner": false, "entryStatus": "WC"
                                 },
                                 {
                                   "player": {"playerId":800542996,"nationality":"POL","givenName":"Zuzanna","familyName":"Pawlikowska"},
-                                  "scores": [], "isWinner": false, "seeding": 7, "entryStatus": "DA"
+                                  "scores": [6,6], "isWinner": true, "seeding": 7, "entryStatus": "DA"
                                 }
                             ]
                           },
                           {
-                            "matchId": 1183663199, "playStatusCode": "TP",
+                            "matchId": 1183663199, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "player": {"playerId":800632241,"nationality":"POL","givenName":"Anna","familyName":"Kmiecik"},
@@ -12794,7 +12794,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183663201, "playStatusCode": "TP",
+                            "matchId": 1183663201, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "player": {"playerId":800497843,"nationality":"ESP","givenName":"Ariana","familyName":"Geerlings"},
@@ -12816,7 +12816,8 @@
                             "matchId": 1183663196, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "player": {"playerId":800542996,"nationality":"POL","givenName":"Zuzanna","familyName":"Pawlikowska"},
+                                  "scores": [], "isWinner": false, "seeding": 7, "entryStatus": "DA"
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": null
