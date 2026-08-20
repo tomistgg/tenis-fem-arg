@@ -1,6 +1,7 @@
 """
 Incremental update for tournament draw sizes.
-- Scans WTA and ITF tournaments from the previous, current, and next week
+- Scans a weekday-specific draw window: Monday includes last and current week,
+  Tuesday-Saturday current week only, and Sunday includes current and next week
 - Reuses every valid draw size already saved instead of polling it again
 - Adds newly published sizes and resolves earlier zero-size placeholders
 - Removes entries older than 55 weeks
@@ -56,6 +57,27 @@ def get_monday(date_str):
     dt = datetime.strptime(date_str, "%Y-%m-%d")
     monday = dt - timedelta(days=dt.weekday())
     return monday.strftime("%Y-%m-%d")
+
+
+def get_draw_lookup_range(today=None):
+    """Return the draw lookup window for the current Madrid weekday.
+
+    Monday keeps the previous week in scope for late results. Tuesday through
+    Saturday only need the current week. Sunday also looks ahead one week so
+    newly published draws are available before Monday's run.
+    """
+    today = today or madrid_today()
+    week_start = today - timedelta(days=today.weekday())
+    if today.weekday() == 0:  # Monday: last + current week
+        start = week_start - timedelta(days=7)
+        end = week_start + timedelta(days=6)
+    elif today.weekday() == 6:  # Sunday: current + next week
+        start = week_start
+        end = week_start + timedelta(days=13)
+    else:  # Tuesday-Saturday: current week
+        start = week_start
+        end = week_start + timedelta(days=6)
+    return start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
 
 
 def load_existing():
@@ -761,7 +783,6 @@ def main():
     itf_descs = itf_parse_descriptions(points_dist)
 
     today = madrid_today()
-    week_start = today - timedelta(days=today.weekday())  # Monday of current week
     cutoff = (today - timedelta(weeks=55)).strftime("%Y-%m-%d")
 
     # Load existing data
@@ -776,9 +797,7 @@ def main():
         logger.info(f"Pruned {pruned} entries older than {cutoff}")
         save_results(existing)
 
-    # Fetch range: prev week through next week
-    from_date = (week_start - timedelta(days=7)).strftime("%Y-%m-%d")
-    to_date = (week_start + timedelta(days=13)).strftime("%Y-%m-%d")
+    from_date, to_date = get_draw_lookup_range(today)
     logger.info(f"Fetching tournaments from {from_date} to {to_date}")
 
     # A published draw size is immutable. Keep its aliases independently from

@@ -4,6 +4,28 @@ from datetime import date
 from populate_data import tournament_sizes_update
 
 
+def test_draw_lookup_range_is_last_and_current_week_on_monday():
+    assert tournament_sizes_update.get_draw_lookup_range(date(2026, 8, 17)) == (
+        "2026-08-10",
+        "2026-08-23",
+    )
+
+
+def test_draw_lookup_range_is_current_week_tuesday_through_saturday():
+    for day in (18, 19, 20, 21, 22):
+        assert tournament_sizes_update.get_draw_lookup_range(date(2026, 8, day)) == (
+            "2026-08-17",
+            "2026-08-23",
+        )
+
+
+def test_draw_lookup_range_is_current_and_next_week_on_sunday():
+    assert tournament_sizes_update.get_draw_lookup_range(date(2026, 8, 23)) == (
+        "2026-08-17",
+        "2026-08-30",
+    )
+
+
 def _wta_tournament(tournament_id, title):
     return {
         "tournamentGroup": {"id": tournament_id},

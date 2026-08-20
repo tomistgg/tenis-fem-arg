@@ -2309,21 +2309,6 @@ def process_tournaments(
                         else:
                             _p_pos = str(_p.get("pos") or "").strip()
                             status_dict[_p_name] = f" (ALT {_p_pos})" if _p_pos else " (ALT)"
-                elif is_pdf_entry and cached_players:
-                    t_list = copy.deepcopy(cached_players)
-                    status_dict = {}
-                    for _p in t_list:
-                        _p_name = str(_p.get("name") or "").strip().upper()
-                        if not _p_name:
-                            continue
-                        _p_type = str(_p.get("type") or "").upper()
-                        if _p_type == "MAIN":
-                            status_dict[_p_name] = ""
-                        elif _p_type == "QUAL":
-                            status_dict[_p_name] = " (Q)"
-                        else:
-                            _p_pos = str(_p.get("pos") or "").strip()
-                            status_dict[_p_name] = f" (ALT {_p_pos})" if _p_pos else " (ALT)"
                 else:
                     t_list, status_dict = scrape_tournament_players(
                         key,
