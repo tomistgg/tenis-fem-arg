@@ -276,6 +276,11 @@ ITF_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "itf_calendar_cache.json")
 ENTRY_LISTS_CACHE_FILE = os.path.join(DATA_DIR, "entry_lists_cache.json")
 ITF_ACCEPTANCE_STATE_FILE = os.path.join(DATA_DIR, "itf_acceptance_state.json")
 
+# WTA calendar events that have been withdrawn and must not be resurrected by
+# an older API/cache response.  Keep this keyed by the stable WTA tournament ID
+# rather than by display name, which can change between API responses.
+EXCLUDED_WTA_CALENDAR_TOURNAMENT_IDS = {"1150"}  # Rio de Janeiro 125
+
 API_URL = "https://api.wtatennis.com/tennis/players/ranked"
 HEADERS = {
     "User-Agent": (

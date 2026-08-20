@@ -99,13 +99,16 @@ class WtaApiPartialData(RuntimeError):
     pass
 
 
-def _fetch_wta_tournaments_raw():
+def _fetch_wta_tournaments_raw(*, force_refresh=False):
     """Load the one shared WTA calendar used by the full pipeline run."""
     global _wta_tournaments_raw
-    if _wta_tournaments_raw is not None:
+    if _wta_tournaments_raw is not None and not force_refresh:
         return _wta_tournaments_raw
 
-    _wta_tournaments_raw = get_shared_wta_calendar(component="wta")
+    if force_refresh:
+        _wta_tournaments_raw = get_shared_wta_calendar(component="wta", force_refresh=True)
+    else:
+        _wta_tournaments_raw = get_shared_wta_calendar(component="wta")
     return _wta_tournaments_raw
 
 
@@ -226,7 +229,10 @@ def get_full_wta_calendar():
     today = madrid_today()
     today_str = today.strftime("%Y-%m-%d")
 
-    raw_tournaments = _fetch_wta_tournaments_raw()
+    # Calendar is the authoritative future schedule. Refresh it once per build
+    # so tournaments removed from the WTA calendar disappear promptly instead
+    # of surviving inside the TTL-based cache.
+    raw_tournaments = _fetch_wta_tournaments_raw(force_refresh=True)
 
     tournaments = []
     for t in raw_tournaments:

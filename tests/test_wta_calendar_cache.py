@@ -66,6 +66,7 @@ def test_shared_calendar_is_fetched_once_and_filtered_for_each_consumer(monkeypa
         _tournament(2, "2026-08-24"),
         _tournament(3, "2026-08-24", level="Grand Slam"),
         _tournament(4, "2026-10-05"),
+        _tournament(1150, "2026-10-19"),
     ]
 
     def fake_get(url, **kwargs):
@@ -119,6 +120,27 @@ def test_fresh_disk_calendar_is_used_before_any_live_request(monkeypatch, tmp_pa
     )
 
     assert wta_calendar_cache.get_shared_wta_calendar(component="wta") == payload["items"]
+
+
+def test_force_refresh_ignores_fresh_disk_calendar(monkeypatch, tmp_path):
+    cache_file = _isolate_cache(monkeypatch, tmp_path)
+    payload = {
+        "from": "2026-07-22",
+        "to": "2026-12-31",
+        "fetchedAt": "2026-08-19T15:30:00Z",
+        "items": [_tournament(1150, "2026-10-19")],
+    }
+    cache_file.write_text(json.dumps(payload), encoding="utf-8")
+    replacement = [_tournament(1174, "2026-10-26")]
+    monkeypatch.setattr(
+        wta_calendar_cache,
+        "get_with_retry",
+        lambda *_args, **_kwargs: FakeResponse({"content": replacement, "last": True}),
+    )
+
+    result = wta_calendar_cache.get_shared_wta_calendar(component="wta", force_refresh=True)
+
+    assert [item["tournamentGroup"]["id"] for item in result] == [1174]
 
 
 def test_shared_range_expands_when_tournament_strength_needs_catch_up(monkeypatch, tmp_path):
