@@ -455,7 +455,7 @@ fetch(url, { credentials: "include", signal: controller.signal, cache: "no-store
         return ""
 
 
-def _fetch_itf_json(driver, url, timeout_ms=12000, retries=2):
+def _fetch_itf_json(driver, url, timeout_ms=12000, retries=2, *, failure_severity="partial"):
     is_calendar_endpoint = "TournamentApi/GetCalendar" in str(url)
     _ensure_itf_session(driver, force_navigation=not _itf_session_warmed and is_calendar_endpoint)
 
@@ -511,6 +511,7 @@ def _fetch_itf_json(driver, url, timeout_ms=12000, retries=2):
         timeout=max(8, int(timeout_ms / 1000)),
         retries=1,
         cookies=browser_cookies,
+        failure_severity=failure_severity,
     )
     return req_data if isinstance(req_data, dict) else None
 
@@ -552,7 +553,14 @@ def _fetch_itf_json_via_navigation(driver, url, settle_seconds=1.0):
         return None
 
 
-def _fetch_itf_json_via_requests(url, timeout=10, retries=2, cookies=None):
+def _fetch_itf_json_via_requests(
+    url,
+    timeout=10,
+    retries=2,
+    cookies=None,
+    *,
+    failure_severity="partial",
+):
     """Fallback fetch path: direct HTTP request outside browser session."""
     headers = {
         "User-Agent": (
@@ -598,7 +606,7 @@ def _fetch_itf_json_via_requests(url, timeout=10, retries=2, cookies=None):
         context={"url": str(url), "attempts": retries, "cause": str(last_error or "empty or blocked response")},
         retryable=True,
     )
-    report_run_issue("itf", "fetch JSON via requests", error, severity="partial")
+    report_run_issue("itf", "fetch JSON via requests", error, severity=failure_severity)
     return None
 
 
@@ -782,7 +790,16 @@ def _merge_itf_calendar_items(*collections):
     )
 
 
-def _fetch_itf_calendar_range(driver, date_from, date_to, *, take=250, ascending=True, max_pages=None):
+def _fetch_itf_calendar_range(
+    driver,
+    date_from,
+    date_to,
+    *,
+    take=250,
+    ascending=True,
+    max_pages=None,
+    failure_severity="partial",
+):
     """Fetch one ITF calendar range with pagination and browser-backed JSON fetches."""
     all_items = []
     expected_total = 0
@@ -801,7 +818,13 @@ def _fetch_itf_calendar_range(driver, date_from, date_to, *, take=250, ascending
             f"&isOrderAscending={order_ascending}&orderField=startDate"
         )
         try:
-            data = _fetch_itf_json(driver, url, timeout_ms=12000, retries=3)
+            data = _fetch_itf_json(
+                driver,
+                url,
+                timeout_ms=12000,
+                retries=3,
+                failure_severity=failure_severity,
+            )
             if not isinstance(data, dict):
                 break
 
@@ -830,7 +853,7 @@ def _fetch_itf_calendar_range(driver, date_from, date_to, *, take=250, ascending
                 "itf",
                 "parse calendar page",
                 exc,
-                severity="partial",
+                severity=failure_severity,
                 context={"skip": skip, "take": take},
             )
             break
@@ -864,6 +887,7 @@ def _fetch_itf_calendar_raw(driver):
             take=250,
             ascending=True,
             max_pages=2,
+            failure_severity="degraded",
         )
         if live_items:
             merged_items = _merge_itf_calendar_items(fresh_items, live_items)
@@ -871,6 +895,10 @@ def _fetch_itf_calendar_raw(driver):
                 _itf_calendar_raw = merged_items
                 _save_itf_calendar_disk_cache(merged_items, current_year)
                 return _itf_calendar_raw
+        logger.warning(
+            "ITF calendar live refresh unavailable; using fresh disk cache (%d items).",
+            len(fresh_items),
+        )
         _itf_calendar_raw = fresh_items
         return _itf_calendar_raw
 
@@ -880,6 +908,7 @@ def _fetch_itf_calendar_raw(driver):
         date_to,
         take=250,
         ascending=True,
+        failure_severity="degraded" if cached_items else "partial",
     )
     if fetch_complete:
         _itf_calendar_raw = all_items
@@ -909,6 +938,7 @@ def _fetch_itf_calendar_raw(driver):
         take=250,
         ascending=False,
         max_pages=4,
+        failure_severity="degraded" if cached_items else "partial",
     )
     if future_items and not future_complete and future_total:
         logger.warning(

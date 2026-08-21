@@ -629,6 +629,27 @@ def test_itf_navigation_transport_timeout_falls_back_to_http(monkeypatch):
     assert calls == {"navigation": 1, "http": 1}
 
 
+def test_itf_calendar_refresh_uses_cached_items_as_degraded_fallback(monkeypatch):
+    cached_items = [{"tournamentKey": "cached-event", "startDate": "2026-08-24"}]
+    refresh_calls = []
+
+    monkeypatch.setattr(itf, "_itf_calendar_raw", None)
+    monkeypatch.setattr(
+        itf,
+        "_load_itf_calendar_disk_cache",
+        lambda target_year, max_age_seconds=None: cached_items,
+    )
+
+    def failed_refresh(*args, **kwargs):
+        refresh_calls.append(kwargs)
+        return [], 0, False
+
+    monkeypatch.setattr(itf, "_fetch_itf_calendar_range", failed_refresh)
+
+    assert itf._fetch_itf_calendar_raw(None) == cached_items
+    assert refresh_calls[0]["failure_severity"] == "degraded"
+
+
 def test_uncached_blocked_draw_retries_without_poisoning_browser_session(monkeypatch):
     navigations = []
     recorded_issues = []
