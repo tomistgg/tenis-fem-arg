@@ -412,7 +412,11 @@ class GeneratedSiteTests(unittest.TestCase):
                 self.assertEqual(_display_calendar_tournament_name(source_name), display_name)
 
         app_source = _generated_frontend_source()
-        self.assertIn('data-cal-filter="wta_tour" data-cal-continent="north_central_america" data-cal-surface="hard"', app_source)
+        self.assertIn(
+            'data-cal-filter="wta_tour" data-cal-continent="north_central_america" '
+            'data-cal-surface="hard"',
+            app_source,
+        )
         self.assertIn("WTA Finals", app_source)
 
         app_source = _generated_frontend_source()
