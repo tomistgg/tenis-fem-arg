@@ -70,7 +70,7 @@ def test_generated_app_loads_data_before_static_application_scripts(offline_gene
     positions = [app.index(f'src="{script}"') for script in expected_scripts]
 
     assert positions == sorted(positions)
-    assert 'href="assets/app.css"' in app
+    assert re.search(r'href="assets/app\.css(?:\?[^"]*)?"', app)
     assert "<style>" not in app
     inline_scripts = re.findall(
         r"<script\b(?![^>]*\bsrc\s*=)[^>]*>(.*?)</script>",

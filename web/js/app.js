@@ -1361,6 +1361,7 @@
                         (item.additional_itf_ids || []).forEach(id => registerSourceId('itf', id, canonical));
                         (item.additional_bjkc_ids || []).forEach(id => registerSourceId('bjkc', id, canonical));
                         registerName(canonical, canonical);
+                        registerName(canonical, item.display_name);
                         registerName(canonical, item.wta_name);
                         registerName(canonical, item.itf_name);
                         registerName(canonical, item.bjkc_name);
@@ -1966,11 +1967,11 @@
             }
 
             function renderRows(list, isMain, isITF, renumber, showSeed, seedMap = null) {
-                const prioCell = p => isITF ? `<td>${p.priority||''}</td>` : '';
+                const prioCell = p => isITF ? `<td class="entry-pr-col">${p.priority||''}</td>` : '';
                 const seedCell = p => {
                     if (!showSeed) return '';
-                    if (seedMap && seedMap.has(p)) return `<td>${seedMap.get(p)}</td>`;
-                    return `<td>${Number.isInteger(p.seed) ? p.seed : '-'}</td>`;
+                    if (seedMap && seedMap.has(p)) return `<td class="entry-seed-col">${seedMap.get(p)}</td>`;
+                    return `<td class="entry-seed-col">${Number.isInteger(p.seed) ? p.seed : '-'}</td>`;
                 };
                 let html = '';
                 list.forEach((p, i) => {
@@ -1978,7 +1979,7 @@
                     const bold = isMain ? 'font-weight:bold;' : '';
                     const flag = (p.country && p.country !== '-') ? countryFlag(p.country, false) + ' ' : '';
                     const nameDisplay = p.name.startsWith('(') ? p.name : getDisplayName(p.name.toUpperCase());
-                    html += `<tr><td>${displayPos}</td><td style="text-align:left;${bold}">${flag}${nameDisplay}</td>${seedCell(p)}<td>${p.rank}</td>${prioCell(p)}</tr>`;
+                    html += `<tr><td class="entry-pos-col">${displayPos}</td><td class="entry-player-col" style="text-align:left;${bold}">${flag}${nameDisplay}</td>${seedCell(p)}<td class="entry-rank-col">${p.rank}</td>${prioCell(p)}</tr>`;
                 });
                 return html;
             }

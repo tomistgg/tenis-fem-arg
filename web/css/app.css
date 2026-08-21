@@ -489,6 +489,7 @@
             td { padding: 8px 12px; border-bottom: 1px solid var(--c-border); text-align: center; font-size: 13px; border-right: 1px solid var(--c-border); }
             #view-entrylists td { font-size: 12px; padding: 6px 10px; }
             #view-entrylists table { table-layout: auto; }
+            #entrylists-table .entry-pr-mobile-label { display: none; }
             #view-entrylists .entry-content { align-items: flex-start; }
             #view-entrylists .content-card { width: 100%; max-width: 760px; margin: 0; }
 
@@ -1321,9 +1322,49 @@
                 #view-upcoming .col-week, #view-upcoming td.col-week { width: auto !important; min-width: 0 !important; max-width: none !important; }
 
                 /* Entry Lists: compact mode */
-                #view-entrylists table { min-width: 0; table-layout: auto; }
+                #view-entrylists table {
+                    width: 100% !important;
+                    min-width: 100% !important;
+                    max-width: 100% !important;
+                    table-layout: auto;
+                }
                 #view-entrylists th { font-size: 10px; padding: 3px 4px; }
                 #view-entrylists td { font-size: 10px; padding: 4px 4px; }
+                #entrylists-table .entry-pos-col {
+                    box-sizing: border-box;
+                    width: 32px !important;
+                    min-width: 32px !important;
+                    max-width: 32px !important;
+                    padding-left: 3px;
+                    padding-right: 3px;
+                    white-space: nowrap;
+                }
+                #entrylists-table .entry-pr-col {
+                    box-sizing: border-box;
+                    width: 28px !important;
+                    min-width: 28px !important;
+                    max-width: 28px !important;
+                    padding-left: 3px;
+                    padding-right: 3px;
+                    white-space: nowrap;
+                }
+                #entrylists-table .entry-seed-col {
+                    box-sizing: border-box;
+                    width: 40px !important;
+                    min-width: 40px !important;
+                    max-width: 40px !important;
+                    white-space: nowrap;
+                }
+                #entrylists-table .entry-rank-col {
+                    box-sizing: border-box;
+                    width: 70px !important;
+                    min-width: 70px !important;
+                    max-width: 70px !important;
+                    white-space: nowrap;
+                }
+                #entrylists-table .entry-player-col { width: 100% !important; }
+                #entrylists-table .entry-pr-desktop-label { display: none; }
+                #entrylists-table .entry-pr-mobile-label { display: inline; }
                 #view-entrylists .entry-content .header-row {
                     margin-bottom: 8px;
                     flex-direction: row !important;

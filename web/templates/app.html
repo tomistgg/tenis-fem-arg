@@ -16,7 +16,7 @@
         <link href="assets/vendor/select2-4.1.0-rc.0.min.css" rel="stylesheet" />
         <script src="assets/vendor/jquery-3.6.0.min.js"></script>
         <script src="assets/vendor/select2-4.1.0-rc.0.min.js"></script>
-        <link rel="stylesheet" href="assets/app.css">
+        <link rel="stylesheet" href="assets/app.css?v=20260821-entrylists-mobile-3">
     </head>
     <body class="home-mode" onload="renderHistoryTable(); renderMilestonesTable();">
         <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">\u2630</button>
@@ -124,11 +124,11 @@
                                 <table id="entrylists-table">
                                     <thead>
                                         <tr>
-                                            <th style="width:35px;min-width:35px">#</th>
-                                            <th>PLAYER</th>
-                                            <th id="entry-seed-header" style="width:35px;display:none">SEED</th>
-                                            <th style="width:70px">E-Rank</th>
-                                            <th id="entry-prio-header" style="width:35px;display:none">PRIO</th>
+                                            <th class="entry-pos-col" style="width:35px;min-width:35px">#</th>
+                                            <th class="entry-player-col">PLAYER</th>
+                                            <th id="entry-seed-header" class="entry-seed-col" style="width:35px;display:none">SEED</th>
+                                            <th class="entry-rank-col" style="width:70px">E-Rank</th>
+                                            <th id="entry-prio-header" class="entry-pr-col" style="width:35px;display:none"><span class="entry-pr-desktop-label">PRIO</span><span class="entry-pr-mobile-label">PR</span></th>
                                         </tr>
                                     </thead>
                                     <tbody id="entry-body"></tbody>

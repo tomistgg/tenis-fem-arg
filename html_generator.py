@@ -921,9 +921,7 @@ def generate_html(
             player_mapping_bundle = [
                 {
                     **identity,
-                    "display_name": (
-                        identity.get("presentation_name") or player_name_only(identity.get("display_name"))
-                    ),
+                    "display_name": player_name_only(identity.get("display_name")),
                 }
                 if isinstance(identity, dict)
                 else identity
