@@ -83,6 +83,7 @@ from tournament_snapshot import (
 )
 from tstrength import build_tstrength_data
 from utils import (
+    compact_tournament_name,
     compress_calendar_snapshot,
     compress_draws_snapshot,
     compress_tournament_snapshot,
@@ -1043,7 +1044,7 @@ def _schedule_tournament_name(cache_key, tournament_name):
     name = str(tournament_name or "").strip()
     if str(cache_key or "").endswith("#qual"):
         name = re.sub(r"\s+Qualifying\s*$", "", name, flags=re.IGNORECASE)
-    return name
+    return compact_tournament_name(name)
 
 
 def _apply_pdf_schedule_entries(

@@ -79,6 +79,34 @@ def test_entry_list_player_id_round_trip():
     assert_round_trip(payload, compress_entry_lists_cache, expand_entry_lists_cache)
 
 
+def test_entry_list_expansion_does_not_use_seed_rank_as_entry_rank():
+    payload = {
+        "fields": [
+            "pos",
+            "name",
+            "country",
+            "rank",
+            "priority",
+            "pos_num",
+            "entry",
+            "seed_rank",
+            "seed",
+            "player_id",
+        ],
+        "w-itf-bra-2026-012": {
+            "MAIN": [
+                ["17", "Victoria Luiza Barros", "BRA", "JE", "1", 17, "JA", 998, "", "800655335"],
+                ["18", "Unranked Junior", "BRA", "JE", "1", 18, "JR", "", "", "800000000"],
+            ]
+        },
+    }
+
+    players = expand_entry_lists_cache(payload)["w-itf-bra-2026-012"]
+
+    assert players[0]["rank"] == "JA (-)"
+    assert players[1]["rank"] == "JR (-)"
+
+
 def test_calendar_cache_round_trips():
     wta = {"items": [{"title": "Fixture Open", "startDate": "2026-07-20", "level": "WTA 125"}]}
     itf = {"items": [{"tournamentName": "W75 Fixture", "tournamentKey": "w-itf-arg-2026-001"}]}

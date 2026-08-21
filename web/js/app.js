@@ -1772,8 +1772,15 @@
                 if (rank === null || rank === undefined) return 2000;
                 const text = String(rank).trim();
                 if (!text || text === '-') return 2000;
+                // Special/non-DA entries display their WTA rank in parentheses,
+                // for example "CA (431)" or "JA (365)". Use that WTA rank in GM.
+                const specialRank = text.match(/^[A-Z][A-Z0-9-]*\s*\((\d+(?:\.\d+)?)\)$/i);
+                if (specialRank) {
+                    const value = parseFloat(specialRank[1]);
+                    return Number.isFinite(value) && value > 0 ? value : 2000;
+                }
                 // Only a plain numeric value is a WTA ranking. Values such as
-                // "ITF 285", "WTN 17.08", and "JE" use incompatible scales.
+                // "ITF 285", "WTN 17.08", and "JE (-)" use incompatible scales.
                 if (!/^\d+(?:\.\d+)?$/.test(text)) return 2000;
                 const value = parseFloat(text);
                 return Number.isFinite(value) && value > 0 ? value : 2000;

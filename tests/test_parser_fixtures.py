@@ -79,6 +79,73 @@ def test_itf_acceptance_parser_preserves_id_for_ambiguous_name():
     assert parsed[0]["name"] == "Camila Romero"
 
 
+def test_itf_acceptance_parser_formats_special_entries_and_suppresses_filled_placeholders():
+    parsed = parse_itf_entry_list([
+        {
+            "entryClassificationCode": "MDA",
+            "entries": [
+                {"positionDisplay": "17", "isExemption": True, "players": []},
+                {"positionDisplay": "18", "isExemption": True, "players": []},
+            ],
+        },
+        {
+            "entryClassificationCode": "JA",
+            "entries": [{
+                "positionDisplay": "17",
+                "priority": 1,
+                "players": [{
+                    "playerId": "800631038",
+                    "givenName": "Hannah",
+                    "familyName": "Klugman",
+                    "nationalityCode": "",
+                    "atpWtaRank": 365,
+                    "itfBTRank": 1,
+                }],
+            }],
+        },
+        {
+            "entryClassificationCode": "CA",
+            "entries": [{
+                "positionDisplay": "18",
+                "priority": 1,
+                "players": [{
+                    "playerId": "800537726",
+                    "givenName": "Reese",
+                    "familyName": "Brantmeier",
+                    "nationalityCode": None,
+                    "atpWtaRank": 431,
+                    "worldRating": 12.3,
+                }],
+            }],
+        },
+    ])
+
+    assert [(row["pos"], row["name"], row["country"], row["rank"], row["entry"]) for row in parsed] == [
+        ("17", "Hannah Klugman", "GBR", "JA (365)", "JA"),
+        ("18", "Reese Brantmeier", "USA", "CA (431)", "CA"),
+    ]
+
+
+def test_itf_acceptance_parser_special_entry_without_wta_rank_uses_dash():
+    for class_code in ("JR", "JE", "SE", "WC"):
+        parsed = parse_itf_entry_list([{
+            "entryClassificationCode": class_code,
+            "entries": [{
+                "positionDisplay": "1",
+                "players": [{
+                    "givenName": "No",
+                    "familyName": "WTA Rank",
+                    "nationalityCode": "ARG",
+                    "itfBTRank": 12,
+                    "worldRating": 18.2,
+                }],
+            }],
+        }])
+
+        assert parsed[0]["rank"] == f"{class_code} (-)"
+        assert parsed[0]["entry"] == class_code
+
+
 def test_us_open_parser_removes_withdrawals_and_promotes_alternates(monkeypatch):
     def word(text, x0, top, width=20):
         return {

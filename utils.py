@@ -30,6 +30,36 @@ def format_player_name(text):
     return text.title()
 
 
+_COMPACT_TOURNAMENT_NAME_REPLACEMENTS = {
+    "Alcala de Henares": "Alcala de H.",
+    "Campos do Jordao": "Campos do J.",
+    "Campos do JordÃ£o": "Campos do J.",
+    "Campos do Jord\uFFFDo": "Campos do J.",
+    "Campos do Jord\u00e3o": "Campos do J.",
+    "Cherbourg-en-Cotentin": "Cherbourg",
+    "Grodzisk Mazowiecki": "Grodzisk M.",
+    "Kursumlijska Banja": "K. Banja",
+    "Saint-Palais-sur-Mer": "Saint-Palais",
+    "Santa Margherita di Pula": "St. Marg. di Pula",
+    "Sharm ElSheikh": "Sharm ES.",
+    "Caldas Da Rainha": "Caldas Da R.",
+}
+
+
+def compact_tournament_name(name):
+    """Return the compact tournament label shared by Calendar and Schedule."""
+    display_name = re.sub(
+        r"\s*\(\s*moved\s+from\b[^)]*\)",
+        "",
+        str(name or ""),
+        flags=re.IGNORECASE,
+    ).strip()
+    display_name = re.sub(r"\s+\d+\s*$", "", display_name)
+    for full_name, short_name in _COMPACT_TOURNAMENT_NAME_REPLACEMENTS.items():
+        display_name = display_name.replace(full_name, short_name)
+    return display_name.strip()
+
+
 # Common UTF-8-decoded-as-Latin-1 mojibake indicators
 _MOJIBAKE_MARKERS = ("\u00c3", "\u00c3\u00a1", "\u00c3\u00a9", "\u00c3\u00ad", "\u00c3\u00b3", "\u00c3\u00ba")
 
@@ -830,6 +860,19 @@ def compress_entry_lists_cache(payload):
     return compressed
 
 
+def _normalize_legacy_special_entry_rank(player):
+    """Upgrade old junior-entry rows without confusing seed and entry ranks."""
+    entry_code = str(player.get("entry") or "").strip().upper()
+    rank = str(player.get("rank") or "").strip().upper()
+    if rank != "JE" or entry_code not in {"JR", "JA", "JE"}:
+        return player
+
+    # The old parser discarded atpWtaRank. seed_rank is a separate, later
+    # ranking used for seed calculations, so it cannot recover E-RANK.
+    player["rank"] = f"{entry_code} (-)"
+    return player
+
+
 def expand_entry_lists_cache(payload):
     """Expand compact entry list caches back into the original player dict shape."""
     if not isinstance(payload, dict):
@@ -854,12 +897,17 @@ def expand_entry_lists_cache(payload):
                         player = dict(zip(_ENTRY_LISTS_CACHE_PLAYER_FIELDS, row, strict=False))
                     else:
                         continue
+                    _normalize_legacy_special_entry_rank(player)
                     player["type"] = section
                     players.append(player)
             expanded[tournament_key] = players
         elif isinstance(tournament_value, list):
             # Backward-compatible flat list of player dicts.
-            expanded[tournament_key] = [dict(row) for row in tournament_value if isinstance(row, dict)]
+            expanded[tournament_key] = [
+                _normalize_legacy_special_entry_rank(dict(row))
+                for row in tournament_value
+                if isinstance(row, dict)
+            ]
         else:
             # Normalize empty / malformed cache entries to the same list shape
             # the rest of the code expects.

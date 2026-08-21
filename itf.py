@@ -17,6 +17,7 @@ from config import (
     ITF_CACHE_FILE,
     ITF_CALENDAR_CACHE_FILE,
     NAME_LOOKUP,
+    PLAYER_IDENTITY_INDEX,
     resolve_player_display_name,
 )
 from pipeline_errors import DataValidationError, SourceRequestError
@@ -163,10 +164,12 @@ def _number_duplicate_itf_names(items, *, source_field, target_field, sort_key=N
 def parse_itf_entry_list(itf_entries):
     """Parse raw ITF acceptance list classifications into a sorted player list."""
     players = []
+    main_entry_codes = {"MDA", "DA", "CA", "JR", "JA", "JE", "SE", "WC"}
+    direct_acceptance_codes = {"MDA", "DA"}
     for classification in itf_entries:
         class_code = classification.get("entryClassificationCode", "")
-        # ITF may use CA/MDA for main acceptance and JR/JA for junior acceptance entries.
-        if class_code in ["MDA", "CA", "JR", "JA"]:
+        # ITF may use CA/MDA for main acceptance and JR/JA/JE for junior entries.
+        if class_code in main_entry_codes:
             section_type = "MAIN"
         elif class_code == "Q":
             section_type = "QUAL"
@@ -218,8 +221,9 @@ def parse_itf_entry_list(itf_entries):
             itf_rank = p_node.get("itfBTRank")
             wtn = p_node.get("worldRating", "")
 
-            if class_code in {"JR", "JA"}:
-                erank_str = "JE"
+            if section_type == "MAIN" and class_code not in direct_acceptance_codes:
+                wta_rank = str(wta).strip() if wta is not None else ""
+                erank_str = f"{class_code} ({wta_rank or '-'})"
             else:
                 erank_str = "-"
                 if wta and str(wta).strip() != "":
@@ -229,23 +233,42 @@ def parse_itf_entry_list(itf_entries):
                 elif wtn and str(wtn).strip() != "":
                     erank_str = f"WTN {wtn}"
 
+            country = str(p_node.get("nationalityCode") or "").strip().upper()
+            if not country or country == "-":
+                identity = PLAYER_IDENTITY_INDEX.resolve("itf", player_id=player_id, name=raw_f_name)
+                if identity and identity.country:
+                    country = identity.country
+
             players.append(
                 {
                     "pos": pos,
                     "name": display_name,
-                    "country": p_node.get("nationalityCode", "-"),
+                    "country": country or "-",
                     "rank": erank_str,
                     "priority": priority,
                     "type": section_type,
                     "pos_num": pos_num,
-                    "entry": class_code if class_code in {"JR", "JA"} else "",
+                    "entry": class_code if section_type == "MAIN" and class_code not in direct_acceptance_codes else "",
                     "player_id": player_id,
                 }
             )
 
-    # Keep MAIN placeholders at the end of occupied MAIN positions so JR/MDA merges don't duplicate slots.
+    # A special classification may occupy the same position as a placeholder
+    # emitted by MDA. Keep the player and suppress the now-obsolete placeholder.
     placeholder_names = {"(Available Slot)", "(Special Exempt)"}
     real_main = [p for p in players if p["type"] == "MAIN" and p["name"] not in placeholder_names]
+    occupied_main_positions = {p["pos_num"] for p in real_main}
+    players = [
+        p
+        for p in players
+        if not (
+            p["type"] == "MAIN"
+            and p["name"] in placeholder_names
+            and p["pos_num"] in occupied_main_positions
+        )
+    ]
+
+    # Keep any genuinely unfilled MAIN placeholders after occupied positions.
     main_placeholders = [p for p in players if p["type"] == "MAIN" and p["name"] in placeholder_names]
     if real_main and main_placeholders:
         next_pos = max(p["pos_num"] for p in real_main) + 1

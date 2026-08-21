@@ -29,6 +29,7 @@ from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
 from runtime_paths import SITE_ROOT as RUNTIME_SITE_ROOT
 from time_utils import madrid_today
 from utils import (
+    compact_tournament_name,
     compress_history_data,
     dumps_history_data,
     dumps_readable,
@@ -123,10 +124,7 @@ _CALENDAR_TOURNAMENT_NAME_REPLACEMENTS = {
 
 def _display_calendar_tournament_name(name):
     """Return the compact Calendar-only label without edition numbers."""
-    display_name = re.sub(r"\s+\d+\s*$", "", _display_tournament_name(name))
-    for full_name, short_name in _CALENDAR_TOURNAMENT_NAME_REPLACEMENTS.items():
-        display_name = display_name.replace(full_name, short_name)
-    return display_name.strip()
+    return compact_tournament_name(name)
 
 
 _INLINE_SCRIPT_RE = re.compile(
