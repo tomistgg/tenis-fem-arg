@@ -41,6 +41,19 @@ def _cincinnati_tournament():
     }
 
 
+def _wta_finals_tournament():
+    return {
+        "tournamentGroup": {"id": 808, "name": "WTA FINALS"},
+        "year": 2026,
+        "level": "Finals",
+        "city": "INDIAN WELLS",
+        "country": "USA",
+        "surface": "Hard",
+        "startDate": "2026-11-08",
+        "endDate": "2026-11-15",
+    }
+
+
 def test_wta_parenthetical_tournament_name_uses_public_site_slug():
     clean_name, suffix, url_slug = wta._wta_tournament_name_parts("ANTALYA 125 (ATIK)")
 
@@ -65,6 +78,15 @@ def test_entry_list_groups_use_normalized_parenthetical_slug(monkeypatch):
     groups = wta.build_tournament_groups()
 
     assert ANTALYA_URL in groups["Week of September 7"]
+
+
+def test_full_wta_calendar_uses_official_finals_name(monkeypatch):
+    monkeypatch.setattr(wta, "madrid_today", lambda: date(2026, 8, 21))
+    monkeypatch.setattr(wta, "_fetch_wta_tournaments_raw", lambda **kwargs: [_wta_finals_tournament()])
+
+    calendar = wta.get_full_wta_calendar()
+
+    assert calendar[0]["name"] == "WTA Finals"
 
 
 def test_entry_list_groups_drop_current_week_on_tuesday(monkeypatch):

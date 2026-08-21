@@ -151,6 +151,8 @@ def build_tournament_groups():
         t_url = f"https://www.wtatennis.com/tournaments/{tournament_id}/{url_slug}/{year}/player-list"
         if level.lower().replace(" ", "") == "grandslam":
             display_name = f"Grand Slam {city}{suffix}"
+        elif level.lower().replace(" ", "") in ("finals", "wtafinals"):
+            display_name = "WTA Finals"
         else:
             display_name = f"{level} {city}{suffix}"
         display_name = fix_display_name(display_name)
@@ -201,6 +203,8 @@ def get_draws_tournament_list():
         t_url = f"https://www.wtatennis.com/tournaments/{tournament_id}/{url_slug}/{year}/player-list"
         if level.lower().replace(" ", "") == "grandslam":
             display_name = f"Grand Slam {city}{suffix}"
+        elif level.lower().replace(" ", "") in ("finals", "wtafinals"):
+            display_name = "WTA Finals"
         else:
             display_name = f"{level} {city}{suffix}"
         display_name = fix_display_name(display_name)
@@ -254,6 +258,8 @@ def get_full_wta_calendar():
 
         if level.lower().replace(" ", "") == "grandslam":
             display_name = f"Grand Slam {city}{suffix}"
+        elif level.lower().replace(" ", "") in ("finals", "wtafinals"):
+            display_name = "WTA Finals"
         else:
             display_name = f"{level} {city}{suffix}"
         display_name = fix_display_name(display_name)

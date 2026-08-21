@@ -969,6 +969,11 @@ def generate_html(
         if not _n or not _s:
             return
         _name_to_surface[_n.lower()] = _s
+        # Schedule labels use compact names (and remove relocation notes), so
+        # register the same canonical form used by _schedule_tournament_base_name.
+        _compact_n = compact_tournament_name(_n)
+        if _compact_n:
+            _name_to_surface.setdefault(_compact_n.lower(), _s)
         _base_n = re.sub(r"\s+\d+$", "", _n).strip()
         if _base_n != _n:
             _name_to_surface.setdefault(_base_n.lower(), _s)
@@ -1323,6 +1328,8 @@ def generate_html(
             return "gs"
         if "wta125" in lvl or lvl == "125" or lvl.endswith("wta125"):
             return "wta125"
+        if lvl in {"finals", "wtafinals"}:
+            return "wta_tour"
         if lvl.startswith("wta"):
             if "125" in lvl:
                 return "wta125"
