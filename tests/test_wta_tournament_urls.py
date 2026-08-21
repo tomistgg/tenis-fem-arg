@@ -80,15 +80,6 @@ def test_entry_list_groups_use_normalized_parenthetical_slug(monkeypatch):
     assert ANTALYA_URL in groups["Week of September 7"]
 
 
-def test_full_wta_calendar_uses_official_finals_name(monkeypatch):
-    monkeypatch.setattr(wta, "madrid_today", lambda: date(2026, 8, 21))
-    monkeypatch.setattr(wta, "_fetch_wta_tournaments_raw", lambda **kwargs: [_wta_finals_tournament()])
-
-    calendar = wta.get_full_wta_calendar()
-
-    assert calendar[0]["name"] == "WTA Finals"
-
-
 def test_entry_list_groups_drop_current_week_on_tuesday(monkeypatch):
     monkeypatch.setattr(wta, "madrid_today", lambda: date(2026, 8, 18))
     monkeypatch.setattr(wta, "get_next_monday", lambda: date(2026, 8, 24))

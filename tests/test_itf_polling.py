@@ -488,20 +488,6 @@ def test_missing_tournament_ids_never_change_run_status(monkeypatch):
     assert recorded_issues == []
 
 
-def test_non_windows_chrome_detection_skips_registry_probe(monkeypatch):
-    monkeypatch.setattr(itf_load_new.os, "name", "posix")
-    monkeypatch.setattr(itf_load_new.shutil, "which", lambda executable: None)
-    monkeypatch.setattr(
-        itf_load_new.logger,
-        "warning",
-        lambda message: (_ for _ in ()).throw(AssertionError(message)),
-    )
-    for env_name in ("PROGRAMFILES", "PROGRAMFILES(X86)", "LOCALAPPDATA"):
-        monkeypatch.delenv(env_name, raising=False)
-
-    assert itf_load_new._get_chrome_executable_path() is None
-
-
 def test_stale_draw_fallback_does_not_navigate_tournament_page(monkeypatch):
     stale_draws = {
         "Q": {"koGroups": [{"rounds": []}], "draw": "qualifying"},

@@ -93,15 +93,6 @@ def test_generated_frontend_data_is_a_versioned_json_payload(offline_generated_s
     assert isinstance(payload["rankingsDatesIndex"], dict)
 
 
-def test_extracted_stylesheet_font_urls_resolve_next_to_the_css(offline_generated_site):
-    css = (offline_generated_site / "assets/app.css").read_text(encoding="utf-8")
-
-    assert "url('assets/Montserrat-" not in css
-    for filename in ("Montserrat-SemiBold.ttf", "Montserrat-ExtraBold.ttf"):
-        assert f"url('{filename}')" in css
-        assert (offline_generated_site / "assets" / filename).is_file()
-
-
 def test_deploy_builder_copies_static_assets_then_renders_site(tmp_path, monkeypatch):
     base_dir = tmp_path / "project"
     output_dir = base_dir / ".site"

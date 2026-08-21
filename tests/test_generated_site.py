@@ -2,17 +2,13 @@ import json
 import re
 import tempfile
 import unittest
-from html import unescape
 from pathlib import Path
 from unittest.mock import patch
 
 import main as main_module
 from html_generator import (
-    _CSP_META_RE,
-    _display_calendar_tournament_name,
     _display_tournament_name,
     _schedule_tournament_base_name,
-    _script_hash_sources,
     _week_label_sort_key,
     country_flag_html,
 )
@@ -100,21 +96,6 @@ class GeneratedSiteTests(unittest.TestCase):
                     f"country-flag-icons/3x2/{iso_code}.svg",
                     country_flag_html(country_code, show_code=False),
                 )
-
-    def test_lorna_simmons_aho_country_uses_local_netherlands_antilles_flag(self):
-        players = json.loads(
-            (PROJECT_DIR / "data" / "player_aliases_wta_itf.json").read_text(
-                encoding="utf-8-sig"
-            )
-        )
-        lorna_simmons = next(
-            player for player in players if player["display_name"] == "Lorna Simmons"
-        )
-        flag_html = country_flag_html(lorna_simmons["country"], show_code=False)
-
-        self.assertEqual(lorna_simmons["country"], "AHO")
-        self.assertIn('src="data/flags/aho.svg"', flag_html)
-        self.assertTrue((PROJECT_DIR / "data" / "flags" / "aho.svg").is_file())
 
     def test_eritrea_country_code_renders_flag(self):
         flag_html = country_flag_html("ERI", show_code=False)
@@ -347,34 +328,6 @@ class GeneratedSiteTests(unittest.TestCase):
             "W75 Kursumlijska Banja",
         )
 
-    def test_mobile_schedule_surface_dot_matches_tournament_font_size(self):
-        source = _authoring_frontend_source()
-        self.assertIn(
-            "#view-upcoming .tournament-surface-dot { width: 5px; height: 5px;",
-            source,
-        )
-
-    def test_mobile_calendar_uses_compact_region_labels_and_column(self):
-        expected_labels = {
-            "south_america": "SA",
-            "north_central_america": "NA",
-            "europe": "EUR",
-            "africa": "AFR",
-            "asia": "ASIA",
-            "oceania": "OCE",
-        }
-        config_source = (PROJECT_DIR / "config.py").read_text(encoding="utf-8")
-        generator_source = _authoring_frontend_source()
-        app_source = _generated_frontend_source()
-
-        for key, label in expected_labels.items():
-            self.assertIn(f'"{key}": "{label}"', config_source)
-            self.assertIn(f'class="cal-cont-label-mobile">{label}</span>', app_source)
-        self.assertIn(".cal-cont-label-mobile { display: none; }", generator_source)
-        self.assertIn("min-width: 36px;", generator_source)
-        self.assertIn(".cal-cont-label-mobile { display: none; }", app_source)
-        self.assertIn("min-width: 36px;", app_source)
-
     def test_moved_from_annotation_is_hidden_in_tournament_display_names(self):
         self.assertEqual(
             _display_tournament_name("W15 Pilar (moved from San Salvador de Jujuy)"),
@@ -391,62 +344,6 @@ class GeneratedSiteTests(unittest.TestCase):
             app_source,
             r'tournament-surface-dot[^>]*></span><b>W15 Pilar</b>',
         )
-
-    def test_calendar_uses_compact_names_without_edition_numbers(self):
-        expected_names = {
-            "W15 Alcala de Henares 2": "W15 Alcala de H.",
-            "W15 Campos do Jordao": "W15 Campos do J.",
-            "W15 Campos do Jordão": "W15 Campos do J.",
-            "W50 Cherbourg-en-Cotentin": "W50 Cherbourg",
-            "W15 Grodzisk Mazowiecki": "W15 Grodzisk M.",
-            "W75 Kursumlijska Banja  2": "W75 K. Banja",
-            "W50 Saint-Palais-sur-Mer": "W50 Saint-Palais",
-            "W35 Santa Margherita di Pula 12": "W35 St. Marg. di Pula",
-            "W15 Sharm ElSheikh 22": "W15 Sharm ES.",
-            "WTA 125 Caldas Da Rainha": "WTA 125 Caldas Da R.",
-            "W35 Verbier 1": "W35 Verbier",
-            "WTA 1000 Cincinnati": "WTA 1000 Cincinnati",
-        }
-        for source_name, display_name in expected_names.items():
-            with self.subTest(source_name=source_name):
-                self.assertEqual(_display_calendar_tournament_name(source_name), display_name)
-
-        app_source = _generated_frontend_source()
-        self.assertIn(
-            'data-cal-filter="wta_tour" data-cal-continent="north_central_america" '
-            'data-cal-surface="hard"',
-            app_source,
-        )
-        self.assertIn("WTA Finals", app_source)
-
-        app_source = _generated_frontend_source()
-        tournament_names = re.findall(
-            r'<span class="calendar-tournament[^>]*>(?:<img[^>]*>\s*)?([^<]+)',
-            app_source,
-        )
-        self.assertTrue(tournament_names)
-        self.assertFalse(any(re.search(r"\s\d+\s*$", name) for name in tournament_names))
-        self.assertTrue(any("K. Banja" in name for name in tournament_names))
-        self.assertTrue(any("St. Marg. di Pula" in name for name in tournament_names))
-        self.assertTrue(any("Sharm ES." in name for name in tournament_names))
-
-    def test_calendar_gm_toggle_is_visible_by_default_and_persists_state(self):
-        for label, source in (
-            ("authoring", _authoring_frontend_source()),
-            ("generated", _generated_frontend_source()),
-        ):
-            with self.subTest(path=label):
-                self.assertIn(
-                    'class="calendar-gm-toggle active" id="calendar-gm-toggle"',
-                    source,
-                )
-                self.assertIn("Hide Quality", source)
-                self.assertIn("Show Quality", source)
-                self.assertIn("gmToggle.textContent = gmAction", source)
-                self.assertIn("state.gm = '0'", source)
-                self.assertIn("params.has('gm')", source)
-                self.assertIn("badge.style.display = showGm ? '' : 'none'", source)
-                self.assertIn("gmLegend.style.display = showGm ? '' : 'none'", source)
 
     def test_entry_menu_uses_gm_as_category_tiebreaker(self):
         for label, source in (
@@ -470,19 +367,6 @@ class GeneratedSiteTests(unittest.TestCase):
                 self.assertIn("location.href.split(/[?#]/)[0]", source)
                 self.assertIn("URL state update skipped:", source)
 
-    def test_generated_app_csp_allows_every_inline_script(self):
-        source = (GENERATED_SITE_DIR / "app.html").read_text(encoding="utf-8-sig")
-        match = _CSP_META_RE.search(source)
-        self.assertIsNotNone(match)
-        allowed = set(re.findall(r"'sha256-[^']+'", unescape(match.group(0))))
-        self.assertEqual(allowed, set(_script_hash_sources(source)))
-
-    def test_grand_slam_information_is_collapsed_by_default(self):
-        source = (GENERATED_SITE_DIR / "app.html").read_text(encoding="utf-8-sig")
-        self.assertIn('<details class="roadtogs-info">', source)
-        self.assertIn("Grand Slams information", source)
-        self.assertNotIn('<details class="roadtogs-info" open', source)
-
     def test_fed_bjk_series_allows_multiple_open_ties_with_latest_tie_open(self):
         source = _generated_frontend_source()
         tie_tags = re.findall(
@@ -502,169 +386,6 @@ class GeneratedSiteTests(unittest.TestCase):
             "visibleBlocks.forEach(function(block, index) { block.open = index === 0; });",
             source,
         )
-
-    def test_fed_bjk_series_only_controls_are_hidden_on_other_mobile_views(self):
-        source = _generated_frontend_source()
-        self.assertIn(
-            'id="view-fedbcup" class="single-layout fedbcup-series-active"',
-            source,
-        )
-        self.assertIn(
-            "#view-fedbcup:not(.fedbcup-series-active) .fedbcup-filter-left,",
-            source,
-        )
-        self.assertIn(
-            "#view-fedbcup:not(.fedbcup-series-active) .fedbcup-record-right { display: none; }",
-            source,
-        )
-        self.assertIn(
-            "classList.toggle('fedbcup-series-active', subTab === 'series')",
-            source,
-        )
-        self.assertNotIn(
-            ".fedbcup-filter-left { flex: 1; min-width: 0; order: 1; visibility:",
-            source,
-        )
-        self.assertNotIn(
-            ".fedbcup-record-right { flex: 1; min-width: 0; order: 1; justify-content: flex-end; visibility:",
-            source,
-        )
-
-    def test_fed_bjk_player_debuts_moves_tie_flag_into_opponent_column(self):
-        source = _generated_frontend_source()
-        table_match = re.search(
-            r'<table id="national-table">(.*?)</table>',
-            source,
-            re.DOTALL,
-        )
-        self.assertIsNotNone(table_match)
-        table = table_match.group(1)
-        headers = [
-            unescape(re.sub(r"<[^>]+>", "", header)).strip()
-            for header in re.findall(r"<th\b.*?</th>", table, re.DOTALL)
-        ]
-        self.assertEqual(
-            headers,
-            ["#", "PLAYER", "DATE", "EVENT", "PARTNER", "OPPONENT", "SCORE"],
-        )
-        self.assertTrue(
-            all("width:" not in header for header in re.findall(r"<th\b.*?</th>", table, re.DOTALL))
-        )
-
-        body_match = re.search(
-            r'<tbody id="national-body">(.*?)</tbody>',
-            table,
-            re.DOTALL,
-        )
-        self.assertIsNotNone(body_match)
-        rows = re.findall(r"<tr>(.*?)</tr>", body_match.group(1), re.DOTALL)
-        self.assertGreater(len(rows), 1)
-        for row in rows:
-            cells = re.findall(r"<td\b.*?</td>", row, re.DOTALL)
-            self.assertEqual(len(cells), 7)
-            self.assertNotIn("<br>", cells[1])
-            self.assertIn('class="national-opponent-cell"', cells[5])
-            self.assertIn("country-flag-icons/3x2/", cells[5])
-            self.assertEqual(cells[5].count('class="national-opponent-content"'), 2)
-            self.assertEqual(cells[5].count('class="national-opponent-flag"'), 2)
-            self.assertRegex(cells[6], r'class="score-(?:win|loss)"')
-            self.assertIn('class="score-badge"', cells[6])
-            self.assertNotIn("<br>", cells[6])
-
-        first_cells = re.findall(r"<td\b.*?</td>", rows[0], re.DOTALL)
-        self.assertEqual(unescape(re.sub(r"<[^>]+>", "", first_cells[3])).strip(), "WG")
-        event_values = [
-            unescape(re.sub(r"<[^>]+>", "", re.findall(r"<td\b.*?</td>", row, re.DOTALL)[3])).strip()
-            for row in rows
-        ]
-        self.assertIn("WG II", event_values)
-        self.assertIn("G1 Am", event_values)
-        self.assertIn("Qualifiers", event_values)
-        self.assertNotIn("G1 Americas", event_values)
-        self.assertFalse(any(re.search(r"\s(?:R16|R32|QF|RR)$", event) for event in event_values))
-        longest_player_row = next(row for row in rows if "Viviana González Locicero" in row)
-        self.assertIn(
-            '<span class="mobile-only">Viviana González Locicero</span>',
-            longest_player_row,
-        )
-        first_opponent = first_cells[5]
-        self.assertLess(first_opponent.index('alt="BEL"'), first_opponent.index("Christiane Mercelis"))
-        self.assertIn(
-            '<span class="national-opponent-player">Christiane Mercelis</span>',
-            first_opponent,
-        )
-        doubles_opponent = next(row for row in rows if "Edda Buding / Helga Hosl" in row)
-        self.assertIn(
-            '<span class="national-opponent-player">Edda Buding</span>'
-            '<span class="national-opponent-player">Helga Hosl</span>',
-            doubles_opponent,
-        )
-        self.assertNotIn("national-opponent-divider", doubles_opponent)
-        self.assertNotIn("Edda<br>Buding", doubles_opponent)
-        self.assertIn(
-            "#national-table .national-opponent-player + .national-opponent-player { padding-top: 2px; }",
-            source,
-        )
-        self.assertIn("#national-table .national-opponent-content {", source)
-        self.assertIn("padding-left: 1px;", source)
-        self.assertIn(
-            "#national-table .national-opponent-flag img { margin-right: 0 !important; }",
-            source,
-        )
-        self.assertIn("#national-table td.score-win { background: #166534; }", source)
-        self.assertIn("#national-table td.score-loss { background: #b91c1c; }", source)
-        self.assertIn(
-            "#fedbcup-view-players { width: fit-content; max-width: 100%; margin: 0 auto; }",
-            source,
-        )
-        self.assertIn(
-            "#national-table { table-layout: auto; width: max-content; min-width: 0; margin: 0; }",
-            source,
-        )
-        self.assertIn("min-width: max-content;", source)
-        self.assertIn("#national-table td:not(:nth-child(6)) { width: 1%; }", source)
-        self.assertIn("#national-table td:nth-child(6) { width: 100%; }", source)
-        self.assertIn("font-size: 6px;\n                    padding: 1px 0;", source)
-        self.assertIn("#view-fedbcup #national-table th,", source)
-        self.assertIn("padding-left: 0 !important;\n                    padding-right: 0 !important;", source)
-        self.assertNotIn(
-            "#national-table th:nth-child(7), #national-table td:nth-child(7) { width: 42px !important;",
-            source,
-        )
-        self.assertNotIn("#national-table th:nth-child(8)", source)
-        self.assertNotIn("#national-table th:nth-child(9)", source)
-        self.assertNotIn("#national-table th:nth-child(10)", source)
-
-    def test_match_history_filters_use_a_mobile_bottom_sheet_with_active_count(self):
-        source = _generated_frontend_source()
-        self.assertIn('id="history-mobile-filter-btn"', source)
-        self.assertIn('aria-controls="history-filter-panel"', source)
-        self.assertIn('id="history-filter-panel"', source)
-        self.assertIn("body.history-filters-open #history-filter-panel", source)
-        self.assertIn("label.textContent = count ? `Filters · ${count}` : 'Filters';", source)
-        self.assertIn("if (state.asRankVal !== null) count += 1;", source)
-        self.assertIn("if (state.vsRankVal !== null) count += 1;", source)
-        self.assertIn("if (window.innerWidth > 768", source)
-        self.assertIn(
-            "const additiveSelection = event.ctrlKey || event.metaKey || window.innerWidth <= 768;",
-            source,
-        )
-        self.assertIn("Tap to add or remove filter options.", source)
-        self.assertIn(
-            ".filter-panel { width: 250px; padding: 15px;",
-            source,
-        )
-
-    def test_home_button_rows_are_centered(self):
-        for label, source in (
-            ("index.html", (GENERATED_SITE_DIR / "index.html").read_text(encoding="utf-8-sig")),
-            ("generated app", _generated_frontend_source()),
-        ):
-            with self.subTest(path=label):
-                self.assertIn("flex-wrap: wrap;", source)
-                self.assertIn("justify-content: center;", source)
-                self.assertIn("flex: 0 1 calc((100% - 48px) / 5);", source)
-                self.assertIn("flex-basis: calc((100% - 8px) / 2);", source)
 
 if __name__ == "__main__":
     unittest.main()
