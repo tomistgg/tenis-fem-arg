@@ -206,6 +206,7 @@ def parse_itf_entry_list(itf_entries):
                         "priority": priority,
                         "type": section_type,
                         "pos_num": pos_num,
+                        "entry": "",
                     }
                 )
                 continue
@@ -253,22 +254,10 @@ def parse_itf_entry_list(itf_entries):
                 }
             )
 
-    # A special classification may occupy the same position as a placeholder
-    # emitted by MDA. Keep the player and suppress the now-obsolete placeholder.
+    # Special classifications may reuse the positions assigned to placeholders
+    # by MDA. Keep every reserved slot and move placeholders after real players.
     placeholder_names = {"(Available Slot)", "(Special Exempt)"}
     real_main = [p for p in players if p["type"] == "MAIN" and p["name"] not in placeholder_names]
-    occupied_main_positions = {p["pos_num"] for p in real_main}
-    players = [
-        p
-        for p in players
-        if not (
-            p["type"] == "MAIN"
-            and p["name"] in placeholder_names
-            and p["pos_num"] in occupied_main_positions
-        )
-    ]
-
-    # Keep any genuinely unfilled MAIN placeholders after occupied positions.
     main_placeholders = [p for p in players if p["type"] == "MAIN" and p["name"] in placeholder_names]
     if real_main and main_placeholders:
         next_pos = max(p["pos_num"] for p in real_main) + 1

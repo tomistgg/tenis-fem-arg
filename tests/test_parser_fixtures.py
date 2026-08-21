@@ -79,7 +79,7 @@ def test_itf_acceptance_parser_preserves_id_for_ambiguous_name():
     assert parsed[0]["name"] == "Camila Romero"
 
 
-def test_itf_acceptance_parser_formats_special_entries_and_suppresses_filled_placeholders():
+def test_itf_acceptance_parser_formats_special_entries_and_repositions_placeholders():
     parsed = parse_itf_entry_list([
         {
             "entryClassificationCode": "MDA",
@@ -123,6 +123,8 @@ def test_itf_acceptance_parser_formats_special_entries_and_suppresses_filled_pla
     assert [(row["pos"], row["name"], row["country"], row["rank"], row["entry"]) for row in parsed] == [
         ("17", "Hannah Klugman", "GBR", "JA (365)", "JA"),
         ("18", "Reese Brantmeier", "USA", "CA (431)", "CA"),
+        ("19", "(Special Exempt)", "-", "-", ""),
+        ("20", "(Special Exempt)", "-", "-", ""),
     ]
 
 
