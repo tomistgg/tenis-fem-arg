@@ -712,5 +712,53 @@
         "num_rounds": 5
       }
     }
+  },
+  "https://www.wtatennis.com/tournaments/1039/monterrey/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 500 Monterrey",
+      "level": "WTA 500",
+      "week": "Week of August 24",
+      "startDate": "2026-08-23",
+      "endDate": "2026-08-29",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "Abierto GNP Seguros",
+        "location": "MONTERREY, MEX",
+        "dates": "August 23-29 2026",
+        "prize": "$ 1,206,446",
+        "surface": "Hard, Laykold",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 16,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "JOINT, Maya", "country": "AUS"},
+          {"pos": 2, "entry": "WC", "name": "HINOJOSA GOMEZ, Jessica", "country": "MEX"},
+          {"pos": 3, "name": "RODRIGUEZ, Victoria", "country": "MEX"},
+          {"pos": 4, "seed": "5", "name": "PUTINTSEVA, Yulia", "country": "KAZ"},
+          {"pos": 5, "seed": "2", "name": "BONDAR, Anna", "country": "HUN"},
+          {"pos": 6, "name": "JACQUEMOT, Elsa", "country": "FRA"},
+          {"pos": 7, "name": "LIANG, En-Shuo", "country": "TPE"},
+          {"pos": 8, "seed": "7", "name": "KRAUS, Sinja", "country": "AUT"},
+          {"pos": 9, "seed": "3", "name": "UDVARDY, Panna", "country": "HUN"},
+          {"pos": 10, "name": "ARANGO, Emiliana", "country": "COL"},
+          {"pos": 11, "name": "WERNER, Caroline", "country": "GER"},
+          {"pos": 12, "seed": "8", "name": "VIDMANOVA, Darja", "country": "CZE"},
+          {"pos": 13, "seed": "4", "name": "TARARUDEE, Lanlana", "country": "THA"},
+          {"pos": 14, "name": "TIMOFEEVA, Maria", "country": "UZB"},
+          {"pos": 15, "name": "JEANJEAN, Leolia", "country": "FRA"},
+          {"pos": 16, "seed": "6", "name": "RAKHIMOVA, Kamilla", "country": "UZB"}
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
+      }
+    }
   }
 }
