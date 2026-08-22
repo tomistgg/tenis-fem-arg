@@ -93,6 +93,14 @@ def test_generated_frontend_data_is_a_versioned_json_payload(offline_generated_s
     assert isinstance(payload["rankingsDatesIndex"], dict)
 
 
+def test_history_filter_options_use_csp_safe_delegated_clicks(offline_generated_site):
+    app_js = (offline_generated_site / "assets/js/app.js").read_text(encoding="utf-8")
+
+    assert 'onclick="toggleFilterOption(event, this)"' not in app_js
+    assert "historyFilterPanel.addEventListener('click'" in app_js
+    assert "toggleFilterOption(event, element);" in app_js
+
+
 def test_deploy_builder_copies_static_assets_then_renders_site(tmp_path, monkeypatch):
     base_dir = tmp_path / "project"
     output_dir = base_dir / ".site"

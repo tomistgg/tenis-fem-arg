@@ -2873,7 +2873,7 @@
                     if (value) {
                         const selectedClass = selectedSet.has(value) ? ' selected' : '';
                         const pressed = selectedSet.has(value) ? 'true' : 'false';
-                        html += `<button type="button" class="filter-option${selectedClass}" data-value="${escapeHtml(value)}" aria-pressed="${pressed}" onclick="toggleFilterOption(event, this)">${escapeHtml(value)}</button>`;
+                        html += `<button type="button" class="filter-option${selectedClass}" data-value="${escapeHtml(value)}" aria-pressed="${pressed}">${escapeHtml(value)}</button>`;
                     }
                 });
                 container.innerHTML = html || '<div style="padding: 5px; color: #94a3b8; font-size: 11px;">No options</div>';
@@ -2979,6 +2979,15 @@
 
                 // Auto-apply filters
                 applyHistoryFilters();
+            }
+
+            const historyFilterPanel = document.getElementById('history-filter-panel');
+            if (historyFilterPanel) {
+                historyFilterPanel.addEventListener('click', function(event) {
+                    const element = event.target.closest ? event.target.closest('.filter-option') : null;
+                    if (!element || !historyFilterPanel.contains(element)) return;
+                    toggleFilterOption(event, element);
+                });
             }
 
             function getSelectedFilterValues(filterId) {
