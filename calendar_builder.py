@@ -2,7 +2,11 @@ from datetime import date, timedelta
 
 import pandas as pd
 
-from config import CONTINENT_KEYS, EXCLUDED_WTA_CALENDAR_TOURNAMENT_IDS
+from config import (
+    CALENDAR_END_DATE_OVERRIDES,
+    CONTINENT_KEYS,
+    EXCLUDED_WTA_CALENDAR_TOURNAMENT_IDS,
+)
 from time_utils import madrid_today
 from utils import get_calendar_column, get_continent, get_tournament_sort_order
 
@@ -129,7 +133,7 @@ def build_calendar_data(tournaments):
             continue
         seen.add(calendar_key)
         start = pd.to_datetime(t.get("startDate"))
-        end_str = t.get("endDate")
+        end_str = CALENDAR_END_DATE_OVERRIDES.get(calendar_key, t.get("endDate"))
         end = pd.to_datetime(end_str) if end_str else start + timedelta(days=6)
         continent = get_continent(t.get("country", ""))
         parsed.append(

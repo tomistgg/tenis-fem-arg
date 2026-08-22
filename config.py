@@ -281,6 +281,12 @@ ITF_ACCEPTANCE_STATE_FILE = os.path.join(DATA_DIR, "itf_acceptance_state.json")
 # rather than by display name, which can change between API responses.
 EXCLUDED_WTA_CALENDAR_TOURNAMENT_IDS = {"1150"}  # Rio de Janeiro 125
 
+# Provider calendar correction for regular one-week events whose published
+# date range would otherwise make them appear in two calendar weeks.
+CALENDAR_END_DATE_OVERRIDES = {
+    "itf:w-itf-bra-2026-014": "2026-11-22",  # W35 Sao Paulo
+}
+
 API_URL = "https://api.wtatennis.com/tennis/players/ranked"
 HEADERS = {
     "User-Agent": (
