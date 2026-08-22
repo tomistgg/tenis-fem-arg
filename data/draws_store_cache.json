@@ -703,7 +703,8 @@
           {"round": 3, "match_num": 1, "winner_name": "L. Fullana", "score": "76(1) 64"},
           {"round": 3, "match_num": 2, "winner_name": "C. Bohrer Martins", "score": "61 63"},
           {"round": 3, "match_num": 3, "winner_name": "V. Barros", "score": "63 64"},
-          {"round": 4, "match_num": 0, "winner_name": "L. Fullana", "score": "63 64"}
+          {"round": 4, "match_num": 0, "winner_name": "L. Fullana", "score": "63 64"},
+          {"round": 4, "match_num": 1, "winner_name": "C. Bohrer Martins", "score": "64 36 62"}
         ],
         "round_labels": [
           "Round of 32",
@@ -910,6 +911,99 @@
           "Round of 16"
         ],
         "num_rounds": 2
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/1166/philadelphia-125/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 125 Philadelphia",
+      "level": "WTA 125",
+      "week": "Week of August 24",
+      "startDate": "2026-08-23",
+      "endDate": "2026-08-29",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "MDS":
+      {
+        "tournament_name": "Ennoble Care Philly Open",
+        "location": "PHILADELPHIA, USA",
+        "dates": "August 23-29 2026",
+        "prize": "$ 115,000",
+        "surface": "Hard",
+        "draw_type": "SINGLES MAIN DRAW",
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "SAMSONOVA, Liudmila"},
+          {"pos": 2, "name": "PRESTON, Taylah", "country": "AUS"},
+          {"pos": 3, "name": "BOISSON, Lois", "country": "FRA"},
+          {"pos": 4, "name": "SELEKHMETEVA, Oksana", "country": "ESP"},
+          {"pos": 5, "name": "WANG, Xiyu", "country": "CHN"},
+          {"pos": 6, "name": "KOIKE, Ena", "country": "JPN"},
+          {"pos": 8, "seed": "7", "name": "BOUZAS MANEIRO, Jessica", "country": "ESP"},
+          {"pos": 9, "seed": "4", "name": "GIBSON, Talia", "country": "AUS"},
+          {"pos": 10, "name": "CABRERA, Lizette", "country": "AUS"},
+          {"pos": 11, "name": "SAWANGKAEW, Mananchaya", "country": "THA"},
+          {"pos": 12, "entry": "WC", "name": "STEPHENS, Sloane", "country": "USA"},
+          {"pos": 13, "name": "POHANKOVA, Mia", "country": "SVK"},
+          {"pos": 14, "name": "REASCO GONZALEZ, Mell", "country": "ECU"},
+          {"pos": 15, "name": "WONG, Hong Yi Cody", "country": "HKG"},
+          {"pos": 16, "seed": "6", "name": "VOLYNETS, Katie", "country": "USA"},
+          {"pos": 17, "seed": "8", "name": "ZAKHAROVA, Anastasia"},
+          {"pos": 18, "name": "BLINKOVA, Anna"},
+          {"pos": 20, "name": "COLLINS, Kylie", "country": "USA"},
+          {"pos": 21, "name": "TIAN, Fangran", "country": "CHN"},
+          {"pos": 22, "entry": "WC", "name": "PEREZ ALARCON, Lucciana", "country": "PER"},
+          {"pos": 24, "seed": "3", "name": "VALENTOVA, Tereza", "country": "CZE"},
+          {"pos": 25, "seed": "5", "name": "WALTERT, Simona", "country": "SUI"},
+          {"pos": 26, "name": "CRAWLEY, Fiona", "country": "USA"},
+          {"pos": 28, "name": "QUEVEDO, Kaitlin", "country": "ESP"},
+          {"pos": 29, "name": "ERJAVEC, Veronika", "country": "SLO"},
+          {"pos": 30, "entry": "WC", "name": "GRABHER, Julia", "country": "AUT"},
+          {"pos": 31, "entry": "WC", "name": "FREY, Anna", "country": "USA"},
+          {"pos": 32, "seed": "2", "name": "KRUEGER, Ashlyn", "country": "USA"}
+        ],
+        "qualifiers": [
+          7,
+          19,
+          23,
+          27
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
+      },
+      "QS":
+      {
+        "tournament_name": "Ennoble Care Philly Open",
+        "location": "PHILADELPHIA, USA",
+        "dates": "August 23-29 2026",
+        "prize": "$ 115,000",
+        "surface": "Hard",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 8,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "SEIDEL, Ella", "country": "GER"},
+          {"pos": 2, "entry": "WC", "name": "JAUFFRET, Capucine", "country": "USA"},
+          {"pos": 3, "seed": "2", "name": "ARSENEAULT, Ariana", "country": "CAN"},
+          {"pos": 4, "name": "OSBORNE, Alexandra", "country": "AUS"},
+          {"pos": 5, "seed": "3", "name": "OVCHARENKO, Ekaterina"},
+          {"pos": 6, "entry": "WC", "name": "VELAGA, Esha", "country": "USA"},
+          {"pos": 7, "seed": "4", "name": "DANIEL, Jaeda", "country": "USA"},
+          {"pos": 8, "name": "DANG, Yiming", "country": "CHN"}
+        ],
+        "round_labels": [
+          "Q1"
+        ],
+        "num_rounds": 1
       }
     }
   }
