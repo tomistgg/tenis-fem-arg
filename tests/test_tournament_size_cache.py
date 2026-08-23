@@ -127,6 +127,41 @@ def test_saved_legacy_itf_size_skips_id_and_drawsheet_endpoints(monkeypatch):
     assert result == []
 
 
+def test_itf_id_cache_drops_legacy_none_and_non_positive_values(monkeypatch, tmp_path):
+    cache_path = tmp_path / "event-filters.json"
+    cache_path.write_text(
+        json.dumps(
+            {
+                "W-VALID": "123",
+                "w-none-string": "None",
+                "w-null": None,
+                "w-zero": 0,
+                "w-negative": -1,
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        tournament_sizes_update,
+        "ITF_EVENT_FILTERS_CACHE_FILE",
+        str(cache_path),
+    )
+
+    assert tournament_sizes_update._load_itf_id_cache() == {"w-valid": "123"}
+
+
+def test_itf_drawsheet_skips_request_for_legacy_none_id(monkeypatch):
+    monkeypatch.setattr(
+        tournament_sizes_update,
+        "get_with_retry",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("invalid tournament ID reached the ITF endpoint")
+        ),
+    )
+
+    assert tournament_sizes_update.itf_fetch_drawsheet("None", "M") is None
+
+
 def test_new_itf_tournament_is_fetched_while_saved_neighbor_is_skipped(monkeypatch):
     known_key = "w-itf-bra-2026-001"
     new_key = "w-itf-arg-2026-002"

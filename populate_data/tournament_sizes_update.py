@@ -322,6 +322,11 @@ def get_itf_level(name):
 
 
 def itf_fetch_drawsheet(t_id, classification, week_number=0):
+    t_id = _normalize_itf_tournament_id(t_id)
+    if t_id is None:
+        logger.debug("  Skipping ITF drawsheet fetch with no valid tournament ID")
+        return None
+
     cached = get_cached_drawsheet(t_id, classification, week_number)
     if cached is not None:
         return cached
@@ -496,9 +501,25 @@ def _load_itf_id_cache():
     try:
         with open(ITF_EVENT_FILTERS_CACHE_FILE, encoding="utf-8") as f:
             data = json.load(f)
-        return {k.lower(): str(v) for k, v in data.items() if v} if isinstance(data, dict) else {}
+        if not isinstance(data, dict):
+            return {}
+        normalized = {}
+        for key, value in data.items():
+            tournament_id = _normalize_itf_tournament_id(value)
+            if tournament_id is not None:
+                normalized[str(key).lower()] = tournament_id
+        return normalized
     except (OSError, UnicodeError, json.JSONDecodeError, AttributeError, TypeError, ValueError):
         return {}
+
+
+def _normalize_itf_tournament_id(value):
+    """Return a positive numeric ITF ID, rejecting legacy ``"None"`` values."""
+    try:
+        tournament_id = int(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+    return str(tournament_id) if tournament_id > 0 else None
 
 
 def _make_itf_driver():
@@ -531,7 +552,9 @@ def _fill_ids_via_selenium(tournaments):
             time.sleep(1)
             try:
                 raw = driver.find_element("tag name", "body").text.strip()
-                t["tournamentId"] = json.loads(raw).get("tournamentId")
+                t["tournamentId"] = _normalize_itf_tournament_id(
+                    json.loads(raw).get("tournamentId")
+                )
             except (WebDriverException, json.JSONDecodeError, AttributeError, KeyError, TypeError, ValueError):
                 t["tournamentId"] = None
     except (WebDriverException, json.JSONDecodeError, AttributeError, KeyError, TypeError, ValueError) as e:
@@ -590,7 +613,9 @@ def _fetch_itf_via_selenium(from_date, to_date):
             time.sleep(1)
             try:
                 raw = driver.find_element("tag name", "body").text.strip()
-                t["tournamentId"] = json.loads(raw).get("tournamentId")
+                t["tournamentId"] = _normalize_itf_tournament_id(
+                    json.loads(raw).get("tournamentId")
+                )
             except (WebDriverException, json.JSONDecodeError, AttributeError, KeyError, TypeError, ValueError):
                 t["tournamentId"] = None
 
