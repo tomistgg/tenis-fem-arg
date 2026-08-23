@@ -3,10 +3,10 @@
     "wta_full_calendar_cache.json": {
       "from": "2026-07-26",
       "to": "2026-12-31",
-      "fetchedAt": "2026-08-23T16:40:00Z",
-      "lastAttemptAt": "2026-08-23T16:40:00Z",
-      "fetchedRunId": "20260823T162106Z-2f0504ba00",
-      "lastAttemptRunId": "20260823T162106Z-2f0504ba00"
+      "fetchedAt": "2026-08-23T18:40:19Z",
+      "lastAttemptAt": "2026-08-23T18:40:19Z",
+      "fetchedRunId": "20260823T182322Z-e62f355aca",
+      "lastAttemptRunId": "20260823T182322Z-e62f355aca"
     },
     "wta_calendar_cache.json": {
       "from": "2026-08-10",
@@ -16,7 +16,7 @@
     "itf_calendar_cache.json": {
       "year": 2026,
       "count": 578,
-      "fetchedAt": "2026-08-23T16:27:25Z"
+      "fetchedAt": "2026-08-23T18:29:15Z"
     }
   },
   "entries": {
@@ -233,6 +233,12 @@
       },
       "1100204615_M_0": {
         "fetchedAt": "2026-08-22T20:21:28Z"
+      },
+      "1100204560_Q_0": {
+        "fetchedAt": "2026-08-23T18:24:50Z"
+      },
+      "1100204560_M_0": {
+        "fetchedAt": "2026-08-23T18:25:03Z"
       }
     },
     "draws_store_cache.json": {
@@ -602,7 +608,7 @@
         "completedAt": "2026-08-17T08:50:19Z"
       },
       "https://www.wtatennis.com/tournaments/1017/cincinnati/2026/player-list": {
-        "fetchedAt": "2026-08-23T16:29:11Z"
+        "fetchedAt": "2026-08-23T18:30:01Z"
       },
       "w-itf-esp-2026-016": {
         "fetchedAt": "2026-08-18T12:43:54Z"
@@ -611,19 +617,20 @@
         "fetchedAt": "2026-08-17T14:32:58Z"
       },
       "w-itf-bra-2026-011": {
-        "fetchedAt": "2026-08-23T16:29:11Z"
+        "fetchedAt": "2026-08-23T18:30:02Z",
+        "completedAt": "2026-08-23T18:30:02Z"
       },
       "https://www.wtatennis.com/tournaments/1039/monterrey/2026/player-list": {
-        "fetchedAt": "2026-08-23T16:29:11Z"
+        "fetchedAt": "2026-08-23T18:30:01Z"
       },
       "w-itf-rou-2026-009": {
-        "fetchedAt": "2026-08-23T16:32:15Z"
+        "fetchedAt": "2026-08-23T18:33:03Z"
       },
       "w-itf-ita-2026-026": {
-        "fetchedAt": "2026-08-23T16:37:04Z"
+        "fetchedAt": "2026-08-23T18:37:43Z"
       },
       "https://www.wtatennis.com/tournaments/1166/philadelphia-125/2026/player-list": {
-        "fetchedAt": "2026-08-23T16:29:11Z"
+        "fetchedAt": "2026-08-23T18:30:01Z"
       }
     }
   }
