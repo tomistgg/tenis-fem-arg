@@ -1278,9 +1278,11 @@
                 const roundText = (round || '').toString().trim();
                 const roundUpper = roundText.toUpperCase();
                 if (roundUpper.startsWith('ROUND ROBIN')) return 'RR';
-                // Qualifying draw: convert ordinal names to Q1/Q2/Q3
+                const qualifyingRound = roundUpper.match(/^Q(?:R)?(\d+)$/);
+                if (qualifyingRound) return 'QR' + qualifyingRound[1];
+                // Qualifying draw: keep one canonical QR1/QR2/QR3 notation.
                 if (draw === 'Q') {
-                    const _qMap = {'1st Round':'Q1','2nd Round':'Q2','3rd Round':'Q3','4th Round':'Q4'};
+                    const _qMap = {'1st Round':'QR1','2nd Round':'QR2','3rd Round':'QR3','4th Round':'QR4'};
                     return _qMap[roundText] || roundText;
                 }
                 // Team/non-individual draws: normalize round names
@@ -2840,7 +2842,7 @@
 
                 populateFilterOptions('filter-surface', Array.from(new Set(surfaces)).sort((a, b) => a.localeCompare(b)), selectionState.surfaces);
                 const roundOrderForFilter = {
-                    'Q1': 1, 'Q2': 2, 'Q3': 3, 'Q4': 4,
+                    'QR1': 1, 'QR2': 2, 'QR3': 3, 'QR4': 4,
                     'R128': 5, 'R64': 6, 'R32': 7, 'R16': 8,
                     'QF': 9, 'SF': 10, 'F': 11,
                     'Team - RR': 12, 'Team - R32': 13, 'Team - R16': 14,

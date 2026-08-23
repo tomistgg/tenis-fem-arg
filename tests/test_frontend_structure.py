@@ -101,6 +101,14 @@ def test_history_filter_options_use_csp_safe_delegated_clicks(offline_generated_
     assert "toggleFilterOption(event, element);" in app_js
 
 
+def test_history_frontend_uses_canonical_qualifying_round_labels(offline_generated_site):
+    app_js = (offline_generated_site / "assets/js/app.js").read_text(encoding="utf-8")
+
+    assert "if (qualifyingRound) return 'QR' + qualifyingRound[1];" in app_js
+    assert "'1st Round':'QR1'" in app_js
+    assert "'QR1': 1, 'QR2': 2, 'QR3': 3, 'QR4': 4" in app_js
+
+
 def test_deploy_builder_copies_static_assets_then_renders_site(tmp_path, monkeypatch):
     base_dir = tmp_path / "project"
     output_dir = base_dir / ".site"

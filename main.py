@@ -2672,6 +2672,34 @@ def process_tournaments(
     return schedule_map, tournament_store, entry_cache, unranked_schedule
 
 
+def normalize_history_round(raw_round, draw_type):
+    """Return the canonical match-history label for qualifying rounds."""
+    round_name = str(raw_round or "").strip()
+    compact = round_name.upper().replace(" ", "")
+    qualifying_match = re.fullmatch(r"Q(?:R)?(\d+)", compact)
+    if qualifying_match:
+        return f"QR{qualifying_match.group(1)}"
+
+    draw_name = str(draw_type or "").strip().upper()
+    if draw_name != "Q" and "QUAL" not in draw_name:
+        return round_name
+
+    return {
+        "1st Round": "QR1",
+        "2nd Round": "QR2",
+        "3rd Round": "QR3",
+        "4th Round": "QR4",
+    }.get(round_name, round_name)
+
+
+def normalize_history_category(raw_category):
+    """Return the canonical match-history tournament category label."""
+    category = str(raw_category or "").strip()
+    if re.fullmatch(r"Tier\s*2", category, flags=re.IGNORECASE):
+        return "Tier II"
+    return category
+
+
 def load_match_history(data_dir=None):
     """Read all match CSV files and return raw + cleaned/normalized rows."""
     source_data_dir = os.fspath(data_dir or DATA_DIR)
@@ -2730,15 +2758,15 @@ def load_match_history(data_dir=None):
         raw_round = m.get("roundName") or m.get("round_name") or m.get("RoundName") or ""
         draw_type = m.get("draw") or m.get("Draw") or m.get("DRAW") or ""
         match_type_value = (m.get("matchType") or m.get("MatchType") or m.get("MATCH_TYPE") or "").strip()
-        tournament_category_value = (
+        tournament_category_value = normalize_history_category(
             m.get("tournamentCategory") or m.get("tournament_category") or m.get("TournamentCategory") or ""
-        ).strip()
+        )
         tournament_name_value = (
             m.get("tournamentName") or m.get("tournament_name") or m.get("TournamentName") or ""
         ).strip()
         identity_source = _history_identity_source(match_type_value)
 
-        final_round = raw_round
+        final_round = normalize_history_round(raw_round, draw_type)
 
         raw_surface = m.get("surface") or m.get("Surface") or ""
         in_or_outdoor = m.get("inOrOutdoor") or m.get("InOrOutdoor") or ""

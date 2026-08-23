@@ -97,6 +97,38 @@ class GeneratedSiteTests(unittest.TestCase):
                     country_flag_html(country_code, show_code=False),
                 )
 
+    def test_history_qualifying_rounds_use_qr_prefix(self):
+        cases = {
+            "Q1": "QR1",
+            "Q2": "QR2",
+            "Q3": "QR3",
+            "QR1": "QR1",
+            "1st Round": "QR1",
+            "2nd Round": "QR2",
+            "3rd Round": "QR3",
+        }
+
+        for source_round, expected in cases.items():
+            with self.subTest(source_round=source_round):
+                self.assertEqual(
+                    main_module.normalize_history_round(
+                        source_round,
+                        "" if source_round.startswith("Q") else "Q",
+                    ),
+                    expected,
+                )
+
+        self.assertEqual(
+            main_module.normalize_history_round("1st Round", "M"),
+            "1st Round",
+        )
+
+    def test_history_tier_2_category_uses_roman_numeral(self):
+        self.assertEqual(main_module.normalize_history_category("Tier 2"), "Tier II")
+        self.assertEqual(main_module.normalize_history_category(" tier 2 "), "Tier II")
+        self.assertEqual(main_module.normalize_history_category("Tier II"), "Tier II")
+        self.assertEqual(main_module.normalize_history_category("WTA 500"), "WTA 500")
+
     def test_eritrea_country_code_renders_flag(self):
         flag_html = country_flag_html("ERI", show_code=False)
 
