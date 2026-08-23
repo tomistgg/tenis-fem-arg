@@ -762,6 +762,68 @@
           "Q2"
         ],
         "num_rounds": 2
+      },
+      "MDS":
+      {
+        "tournament_name": "Abierto GNP Seguros",
+        "location": "MONTERREY, MEX",
+        "dates": "August 23-29 2026",
+        "prize": "$ 1,206,446",
+        "surface": "Hard, Laykold",
+        "draw_type": "SINGLES MAIN DRAW",
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "ALEXANDROVA, Ekaterina"},
+          {"pos": 3, "name": "TAUSON, Clara", "country": "DEN"},
+          {"pos": 4, "entry": "WC", "name": "ZARAZUA, Renata", "country": "MEX"},
+          {"pos": 5, "name": "SHERIF, Mayar", "country": "EGY"},
+          {"pos": 6, "name": "OLIYNYKOVA, Oleksandra", "country": "UKR"},
+          {"pos": 7, "name": "PARRY, Diane", "country": "FRA"},
+          {"pos": 8, "seed": "6", "name": "VEKIC, Donna", "country": "CRO"},
+          {"pos": 9, "seed": "3", "name": "CHWALINSKA, Maja", "country": "POL"},
+          {"pos": 11, "entry": "WC", "name": "PARKS, Alycia", "country": "USA"},
+          {"pos": 12, "name": "MARCINKO, Petra", "country": "CRO"},
+          {"pos": 13, "name": "ZHANG, Shuai", "country": "CHN"},
+          {"pos": 15, "name": "OSORIO, Camila", "country": "COL"},
+          {"pos": 16, "seed": "5", "name": "LI, Ann", "country": "USA"},
+          {"pos": 17, "seed": "8", "name": "BUCSA, Cristina", "country": "ESP"},
+          {"pos": 20, "name": "BIRRELL, Kimberly", "country": "AUS"},
+          {"pos": 21, "name": "RUZIC, Antonia", "country": "CRO"},
+          {"pos": 22, "name": "BARTUNKOVA, Nikola", "country": "CZE"},
+          {"pos": 24, "seed": "4", "name": "POTAPOVA, Anastasia", "country": "AUT"},
+          {"pos": 25, "seed": "7", "name": "TJEN, Janice", "country": "INA"},
+          {"pos": 26, "entry": "WC", "name": "YASTREMSKA, Dayana", "country": "UKR"},
+          {"pos": 27, "name": "TAGGER, Lilli", "country": "AUT"},
+          {"pos": 28, "name": "STARODUBTSEVA, Yuliia", "country": "UKR"},
+          {"pos": 29, "name": "KALININA, Anhelina", "country": "UKR"},
+          {"pos": 32, "seed": "2", "name": "MERTENS, Elise", "country": "BEL"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "E. Alexandrova"},
+          {"round": 1, "match_num": 4, "winner_name": "M. Chwalinska"},
+          {"round": 1, "match_num": 11, "winner_name": "A. Potapova"},
+          {"round": 1, "match_num": 15, "winner_name": "E. Mertens"}
+        ],
+        "byes": [
+          2,
+          10,
+          23,
+          31
+        ],
+        "qualifiers": [
+          14,
+          18,
+          19,
+          30
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
       }
     }
   },
