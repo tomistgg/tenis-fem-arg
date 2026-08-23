@@ -524,9 +524,14 @@ def fetch_itf_ids_to_json(keys_list, driver=None):
                 if response.status_code == 200 and raw and not raw.startswith("<"):
                     data = response.json()
                     if isinstance(data, dict) and "tournamentId" in data:
-                        tid = data["tournamentId"]
+                        try:
+                            tid = int(str(data["tournamentId"]).strip())
+                        except (TypeError, ValueError):
+                            continue
+                        if tid <= 0:
+                            continue
                         results.append({"tournamentKey": key, "tournamentId": tid})
-                        newly_fetched[key.lower()] = str(tid)
+                        newly_fetched[key.lower()] = tid
             except PipelineError:
                 continue
             except Exception as e:

@@ -1,3 +1,4 @@
+import json
 import subprocess
 from datetime import UTC, date, datetime
 from types import SimpleNamespace
@@ -9,6 +10,7 @@ import draws
 import itf
 import itf_drawsheet_cache
 import main
+from lazy_browser import LazyBrowserSession
 from populate_data import itf_load_new, tournament_sizes_update
 
 
@@ -627,6 +629,113 @@ def test_itf_navigation_transport_timeout_falls_back_to_http(monkeypatch):
 
     assert result == {"items": [{"tournamentKey": "w-test"}], "totalItems": 1}
     assert calls == {"navigation": 1, "http": 1}
+
+
+def test_itf_lazy_browser_stays_dormant_when_direct_json_succeeds(monkeypatch):
+    browser_starts = []
+    lazy_driver = LazyBrowserSession(lambda: browser_starts.append(True))
+
+    monkeypatch.setattr(
+        itf,
+        "_fetch_itf_json_via_requests",
+        lambda *args, **kwargs: {"items": [{"tournamentKey": "w-test"}], "totalItems": 1},
+    )
+
+    result = itf._fetch_itf_json(
+        lazy_driver,
+        "https://example.test/TournamentApi/GetCalendar",
+        retries=1,
+    )
+
+    assert result["totalItems"] == 1
+    assert browser_starts == []
+    assert lazy_driver.started is False
+
+
+def test_itf_lazy_browser_starts_after_direct_request_is_blocked(monkeypatch):
+    browser_starts = []
+    navigations = []
+    request_options = []
+
+    class Browser:
+        def get(self, url):
+            navigations.append(url)
+
+        def execute_async_script(self, *args):
+            return {"ok": True, "status": 200, "text": '{"tournamentId":123}'}
+
+    def create_browser():
+        browser_starts.append(True)
+        return Browser()
+
+    def blocked_direct_request(*args, **kwargs):
+        request_options.append(kwargs)
+        return None
+
+    lazy_driver = LazyBrowserSession(create_browser)
+    monkeypatch.setattr(itf, "_itf_browser_unavailable", False)
+    monkeypatch.setattr(itf, "_itf_session_warmed", False)
+    monkeypatch.setattr(itf, "_itf_wait_for_rate_limit", lambda: None)
+    monkeypatch.setattr(itf.time, "sleep", lambda seconds: None)
+    monkeypatch.setattr(itf, "_fetch_itf_json_via_requests", blocked_direct_request)
+
+    result = itf._fetch_itf_json(
+        lazy_driver,
+        "https://example.test/TournamentApi/GetEventFilters",
+        retries=1,
+    )
+
+    assert result == {"tournamentId": 123}
+    assert browser_starts == [True]
+    assert navigations == [itf.ITF_CALENDAR_PAGE_URL]
+    assert request_options[0]["report_failure"] is False
+
+
+def test_itf_blocked_request_reports_response_details(monkeypatch):
+    recorded = []
+    response = SimpleNamespace(
+        status_code=200,
+        text="<html><script src='/_Incapsula_Resource'></script></html>",
+        headers={"content-type": "text/html"},
+    )
+
+    monkeypatch.setattr(itf, "_itf_wait_for_rate_limit", lambda: None)
+    monkeypatch.setattr(itf.requests, "get", lambda *args, **kwargs: response)
+    monkeypatch.setattr(itf, "report_run_issue", lambda *args, **kwargs: recorded.append((args, kwargs)))
+
+    assert itf._fetch_itf_json_via_requests("https://example.test/api", retries=1) is None
+
+    error = recorded[0][0][2]
+    assert error.context["cause"] == "Incapsula HTML challenge"
+    assert error.context["status_code"] == 200
+    assert error.context["content_type"] == "text/html"
+    assert error.context["response_bytes"] > 0
+
+
+def test_itf_event_filter_cache_normalizes_ids_and_drops_invalid_values(monkeypatch, tmp_path):
+    cache_path = tmp_path / "event-filters.json"
+    cache_path.write_text(
+        json.dumps({"W-VALID": "123", "w-none": "None", "w-zero": 0}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(itf, "_ITF_EVENT_FILTERS_CACHE_FILE", str(cache_path))
+    monkeypatch.setattr(itf, "_itf_event_filters_cache", None)
+
+    assert itf._load_itf_event_filters_cache() == {"w-valid": 123}
+
+
+def test_itf_id_loader_does_not_cache_null_tournament_id(monkeypatch, tmp_path):
+    cache_path = tmp_path / "event-filters.json"
+    response = SimpleNamespace(
+        status_code=200,
+        text='{"tournamentId":null}',
+        json=lambda: {"tournamentId": None},
+    )
+    monkeypatch.setattr(itf_load_new, "ITF_EVENT_FILTERS_CACHE_FILE", str(cache_path))
+    monkeypatch.setattr(itf_load_new, "get_with_retry", lambda *args, **kwargs: response)
+
+    assert json.loads(itf_load_new.fetch_itf_ids_to_json(["w-null"])) == []
+    assert not cache_path.exists()
 
 
 def test_itf_calendar_refresh_uses_cached_items_as_degraded_fallback(monkeypatch):

@@ -2899,10 +2899,10 @@ def main():
     prefetched_itf_draws = {}
     try:
         # 1. Fetch full-year ITF calendar first (populates cache for dynamic subset)
-        full_itf = get_full_itf_calendar(None)
+        full_itf = get_full_itf_calendar(driver)
 
         # 2. Build tournament groups (WTA + ITF) — uses cached ITF data
-        tournament_groups, monday_map = build_all_tournament_groups(None)
+        tournament_groups, monday_map = build_all_tournament_groups(driver)
 
         # 2b. Fetch ITF draws tournament list and prefetch draw payloads before
         # heavier ITF traffic later in the run.
@@ -2911,7 +2911,7 @@ def main():
             itf_draws_tournaments = {}
         else:
             logger.info("Fetching ITF draws tournament list...")
-            itf_draws_tournaments = get_draws_itf_tournament_list(None)
+            itf_draws_tournaments = get_draws_itf_tournament_list(driver)
         if ENABLE_ITF_DRAWS_PREFETCH and not skip_draws_fetch:
             itf_prefetch_jobs = []
             for week, tourneys in (itf_draws_tournaments or {}).items():

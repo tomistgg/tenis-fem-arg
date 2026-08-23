@@ -20,6 +20,7 @@ from config import (
     PLAYER_IDENTITY_INDEX,
     resolve_player_display_name,
 )
+from lazy_browser import LazyBrowserSession
 from pipeline_errors import DataValidationError, SourceRequestError
 from run_state import report_run_issue
 from runtime_logging import get_logger
@@ -343,7 +344,15 @@ def _load_itf_event_filters_cache():
     try:
         with open(_ITF_EVENT_FILTERS_CACHE_FILE, encoding="utf-8") as f:
             raw = json.load(f)
-        _itf_event_filters_cache = raw if isinstance(raw, dict) else {}
+        _itf_event_filters_cache = {}
+        if isinstance(raw, dict):
+            for key, value in raw.items():
+                try:
+                    tournament_id = int(str(value).strip())
+                except (TypeError, ValueError):
+                    continue
+                if tournament_id > 0:
+                    _itf_event_filters_cache[str(key).lower()] = tournament_id
     except (OSError, json.JSONDecodeError) as exc:
         raise DataValidationError(
             component="itf",
@@ -384,6 +393,20 @@ def _is_blocked_or_html_response(raw_text):
     if "incapsula" in low or "request unsuccessful" in low:
         return True
     return low.startswith("<html") or low.startswith("<!doctype html")
+
+
+def _blocked_response_cause(raw_text):
+    raw = (raw_text or "").strip()
+    if not raw:
+        return "empty response"
+    low = raw.lower()
+    if "incapsula" in low:
+        return "Incapsula HTML challenge"
+    if "request unsuccessful" in low:
+        return "blocked response"
+    if low.startswith("<html") or low.startswith("<!doctype html"):
+        return "unexpected HTML response"
+    return "invalid JSON response"
 
 
 def _is_invalid_browser_session(exc):
@@ -457,6 +480,20 @@ fetch(url, { credentials: "include", signal: controller.signal, cache: "no-store
 
 def _fetch_itf_json(driver, url, timeout_ms=12000, retries=2, *, failure_severity="partial"):
     is_calendar_endpoint = "TournamentApi/GetCalendar" in str(url)
+
+    # Try direct JSON before starting a lazy Chrome session. If ITF serves its
+    # Incapsula challenge, continue through the browser-backed paths below.
+    if isinstance(driver, LazyBrowserSession) and not driver.started:
+        req_data = _fetch_itf_json_via_requests(
+            url,
+            timeout=max(8, int(timeout_ms / 1000)),
+            retries=1,
+            failure_severity=failure_severity,
+            report_failure=False,
+        )
+        if isinstance(req_data, (dict, list)):
+            return req_data
+
     _ensure_itf_session(driver, force_navigation=not _itf_session_warmed and is_calendar_endpoint)
 
     blocked_seen = False
@@ -513,7 +550,7 @@ def _fetch_itf_json(driver, url, timeout_ms=12000, retries=2, *, failure_severit
         cookies=browser_cookies,
         failure_severity=failure_severity,
     )
-    return req_data if isinstance(req_data, dict) else None
+    return req_data if isinstance(req_data, (dict, list)) else None
 
 
 def _fetch_itf_json_via_navigation(driver, url, settle_seconds=1.0):
@@ -560,6 +597,7 @@ def _fetch_itf_json_via_requests(
     cookies=None,
     *,
     failure_severity="partial",
+    report_failure=True,
 ):
     """Fallback fetch path: direct HTTP request outside browser session."""
     headers = {
@@ -572,12 +610,19 @@ def _fetch_itf_json_via_requests(
         "Referer": ITF_CALENDAR_PAGE_URL,
     }
     last_error: Exception | None = None
+    response_context: dict[str, Any] = {}
     for attempt in range(retries):
         try:
             _itf_wait_for_rate_limit()
             resp = requests.get(url, headers=headers, timeout=timeout, cookies=cookies)
             raw = (resp.text or "").strip()
+            response_context = {
+                "status_code": getattr(resp, "status_code", None),
+                "content_type": (getattr(resp, "headers", {}) or {}).get("content-type"),
+                "response_bytes": len(raw.encode("utf-8")),
+            }
             if not raw or _is_blocked_or_html_response(raw):
+                response_context["block_type"] = _blocked_response_cause(raw)
                 if raw:
                     _itf_note_blocked_response()
                 if attempt < retries - 1:
@@ -599,11 +644,18 @@ def _fetch_itf_json_via_requests(
             last_error = exc
         if attempt < retries - 1:
             time.sleep(random.uniform(0.6, 1.2))
+    if not report_failure:
+        return None
     error = SourceRequestError(
         component="itf",
         operation="fetch JSON via requests",
         message=f"ITF request failed after {retries} attempts",
-        context={"url": str(url), "attempts": retries, "cause": str(last_error or "empty or blocked response")},
+        context={
+            "url": str(url),
+            "attempts": retries,
+            "cause": str(last_error or response_context.get("block_type") or "empty or blocked response"),
+            **response_context,
+        },
         retryable=True,
     )
     report_run_issue("itf", "fetch JSON via requests", error, severity=failure_severity)
