@@ -287,6 +287,15 @@ CALENDAR_END_DATE_OVERRIDES = {
     "itf:w-itf-bra-2026-014": "2026-11-22",  # W35 Sao Paulo
 }
 
+# Published 2027 Grand Slam main-draw start dates used while the WTA calendar
+# does not yet contain the next season.  These prevent the 52-week projection
+# from shifting a Slam when its week moves between seasons.
+GRAND_SLAM_START_DATE_OVERRIDES = {
+    ("Roland Garros", 2027): "2027-05-24",
+    ("Wimbledon", 2027): "2027-06-28",
+    ("US Open", 2027): "2027-08-30",
+}
+
 API_URL = "https://api.wtatennis.com/tennis/players/ranked"
 HEADERS = {
     "User-Agent": (

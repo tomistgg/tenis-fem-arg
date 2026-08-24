@@ -13,6 +13,7 @@ from calendar_builder import format_week_label
 from config import (
     CONTINENT_KEYS,
     CONTINENT_LABELS,
+    GRAND_SLAM_START_DATE_OVERRIDES,
     MOBILE_CONTINENT_LABELS,
     NAME_LOOKUP,
     PLAYER_IDENTITIES,
@@ -169,6 +170,18 @@ def _roll_forward_passed_gs_cutoffs(gs_data, today):
         gs["mdCutoff"] = (datetime.strptime(gs["mdCutoff"], "%Y-%m-%d") + timedelta(weeks=52)).strftime("%Y-%m-%d")
         if isinstance(gs.get("year"), int):
             gs["year"] += 1
+
+
+def _apply_gs_start_date_overrides(gs_data):
+    """Use published future Slam dates when calendar projection is stale."""
+
+    for gs in gs_data:
+        start_date = GRAND_SLAM_START_DATE_OVERRIDES.get((gs.get("name"), gs.get("year")))
+        if not start_date:
+            continue
+        gs_dt = datetime.strptime(start_date, "%Y-%m-%d")
+        gs["mdCutoff"] = (gs_dt - timedelta(weeks=6)).strftime("%Y-%m-%d")
+        gs["qCutoff"] = (gs_dt - timedelta(weeks=4)).strftime("%Y-%m-%d")
 
 
 def _apply_special_gs_cutoff_overrides(gs_name, gs_year, q_cutoff, md_cutoff):
@@ -1260,6 +1273,7 @@ def generate_html(
 
     # Keep the current edition visible through its qualifying cutoff date.
     _roll_forward_passed_gs_cutoffs(gs_data, madrid_today())
+    _apply_gs_start_date_overrides(gs_data)
 
     # Sort: soonest upcoming GS first (by qCutoff ascending); N/A last
     gs_data.sort(key=lambda g: g["qCutoff"] if g["qCutoff"] != "N/A" else "9999-99-99")
