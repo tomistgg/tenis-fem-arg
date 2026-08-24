@@ -2695,6 +2695,8 @@ def normalize_history_round(raw_round, draw_type):
 def normalize_history_category(raw_category):
     """Return the canonical match-history tournament category label."""
     category = str(raw_category or "").strip()
+    if category.upper() == "WT":
+        return "World Tour"
     if re.fullmatch(r"Tier\s*2", category, flags=re.IGNORECASE):
         return "Tier II"
     return category

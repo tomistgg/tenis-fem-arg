@@ -2274,11 +2274,11 @@
                 if (body.children.length) return;
                 const filterHtml = defs.map(def => (
                     `<label class="milestones-filter-chip" for="${def.id}">
-                        <input type="checkbox" id="${def.id}" checked onchange="applyMilestonesFilters()">
+                        <input type="checkbox" id="${def.id}" checked>
                         <span>${escapeHtml(def.label)}</span>
                     </label>`
                 )).join('');
-                body.innerHTML = `${filterHtml}<label class="milestones-filter-chip" for="milestones-filter-qualy"><input type="checkbox" id="milestones-filter-qualy" checked onchange="applyMilestonesFilters()"><span>Include Qualy</span></label>`;
+                body.innerHTML = `${filterHtml}<label class="milestones-filter-chip" for="milestones-filter-qualy"><input type="checkbox" id="milestones-filter-qualy" checked><span>Include Qualy</span></label>`;
             }
 
             function getHistoryPlayerUniverse() {
@@ -2478,6 +2478,14 @@
                 renderMilestonesPage().then(() => syncUrlStateForTab('history'));
             }
 
+            const milestonesFilterBody = document.getElementById('milestones-filter-body');
+            if (milestonesFilterBody) {
+                milestonesFilterBody.addEventListener('change', function(event) {
+                    if (!event.target.matches('input[type="checkbox"]')) return;
+                    applyMilestonesFilters();
+                });
+            }
+
             function syncHistorySubpageVisibility() {
                 const historyLayout = document.querySelector('#view-history .history-layout');
                 const filterPanel = historyLayout ? historyLayout.querySelector('.filter-panel') : null;
@@ -2653,12 +2661,13 @@
             function _formatTournName(name, category) {
                 if (!name) return '';
                 if (name.toUpperCase().includes('MALLORCA')) return 'WTA 125 Mallorca';
+                const displayCategory = category && category.toUpperCase() === 'WT' ? 'World Tour' : category;
                 const sep = name.lastIndexOf(' - ');
                 if (sep === -1) return name;
                 let city = name.slice(sep + 3);
                 const comma = city.indexOf(',');
                 if (comma !== -1) city = city.slice(0, comma).trim();
-                return category ? category + ' ' + city : city;
+                return displayCategory ? displayCategory + ' ' + city : city;
             }
 
             function getRoundFilterLabel(row) {

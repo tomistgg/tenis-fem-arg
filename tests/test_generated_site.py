@@ -123,7 +123,9 @@ class GeneratedSiteTests(unittest.TestCase):
             "1st Round",
         )
 
-    def test_history_tier_2_category_uses_roman_numeral(self):
+    def test_history_category_uses_canonical_label(self):
+        self.assertEqual(main_module.normalize_history_category("WT"), "World Tour")
+        self.assertEqual(main_module.normalize_history_category(" wt "), "World Tour")
         self.assertEqual(main_module.normalize_history_category("Tier 2"), "Tier II")
         self.assertEqual(main_module.normalize_history_category(" tier 2 "), "Tier II")
         self.assertEqual(main_module.normalize_history_category("Tier II"), "Tier II")

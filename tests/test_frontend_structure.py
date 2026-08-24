@@ -101,6 +101,14 @@ def test_history_filter_options_use_csp_safe_delegated_clicks(offline_generated_
     assert "toggleFilterOption(event, element);" in app_js
 
 
+def test_milestones_filters_use_csp_safe_delegated_changes(offline_generated_site):
+    app_js = (offline_generated_site / "assets/js/app.js").read_text(encoding="utf-8")
+
+    assert 'onchange="applyMilestonesFilters()"' not in app_js
+    assert "milestonesFilterBody.addEventListener('change'" in app_js
+    assert "applyMilestonesFilters();" in app_js
+
+
 def test_history_frontend_uses_canonical_qualifying_round_labels(offline_generated_site):
     app_js = (offline_generated_site / "assets/js/app.js").read_text(encoding="utf-8")
 
