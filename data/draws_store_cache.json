@@ -336,6 +336,7 @@
           {"round": 2, "match_num": 0, "winner_name": "S. Triquart", "score": "75 36 10-5"},
           {"round": 2, "match_num": 1, "winner_name": "P. Ormaechea", "score": "60 62"},
           {"round": 2, "match_num": 2, "winner_name": "M. Mariani", "score": "36 64 10-5"},
+          {"round": 2, "match_num": 3, "winner_name": "E. Alvisi", "score": "60 63"},
           {"round": 2, "match_num": 4, "winner_name": "M. Argyrokastriti", "score": "64 46 10-6"},
           {"round": 2, "match_num": 5, "winner_name": "D. Mpetshi Perricard", "score": "36 63 10-8"},
           {"round": 2, "match_num": 6, "winner_name": "S. Biolay", "score": "60 62"},
@@ -463,7 +464,7 @@
       "week": "Week of August 24",
       "startDate": "2026-08-24T00:00:00",
       "endDate": "2026-08-30T00:00:00",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":true,"has_arg_any":true}
     },
     "draws":
     {
@@ -501,6 +502,10 @@
           {"pos": 31, "name": "CRUZ, Ana", "country": "BRA"},
           {"pos": 32, "seed": "15", "name": "CROCKER, Virginia", "country": "USA"}
         ],
+        "matches": [
+          {"round": 1, "match_num": 6, "winner_name": "A. Danilova", "score": "63 22 RET"},
+          {"round": 1, "match_num": 9, "winner_name": "A. Soto Neira", "score": "61 60"}
+        ],
         "byes": [
           2,
           6,
@@ -511,6 +516,44 @@
           "Round of 16"
         ],
         "num_rounds": 2
+      },
+      "MDS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "CAPURRO TABORDA, Martina", "country": "ARG"},
+          {"pos": 2, "name": "LARON, Maayan", "country": "ISR"},
+          {"pos": 4, "name": "BARROS, Victoria Luiza", "country": "BRA"},
+          {"pos": 7, "name": "LEME DA SILVA, Nauhany Vitoria", "country": "BRA"},
+          {"pos": 8, "seed": "8", "name": "CABEZAS DOMINGUEZ, Sofia Elena", "country": "VEN"},
+          {"pos": 9, "seed": "3", "name": "BRACE, Cadence", "country": "CAN"},
+          {"pos": 10, "name": "KONISHI CAMARGO SILVA, Julia", "country": "BRA"},
+          {"pos": 11, "name": "NAVARRO, Maria Fernanda", "country": "MEX"},
+          {"pos": 12, "name": "FULLANA, Luiza", "country": "BRA"},
+          {"pos": 13, "name": "ROMERO, Camila", "country": "ECU"},
+          {"pos": 14, "name": "BOHRER MARTINS, Carolina", "country": "BRA"},
+          {"pos": 15, "name": "SOUSA SALAZAR, Natalia", "country": "MEX"},
+          {"pos": 16, "seed": "6", "name": "CANDIOTTO, Ana", "country": "BRA"},
+          {"pos": 17, "seed": "7", "name": "MI, Lan", "country": "CHN"},
+          {"pos": 19, "name": "BARRERA AGUIRRE, Isabella", "country": "USA"},
+          {"pos": 21, "entry": "WC", "name": "GOMES FERREIRA, Giulia", "country": "BRA"},
+          {"pos": 24, "seed": "4", "name": "ALVES, Carolina", "country": "BRA"},
+          {"pos": 25, "seed": "5", "name": "SANCHEZ, Ana Sofia", "country": "MEX"},
+          {"pos": 26, "entry": "WC", "name": "COHEN PEROVANI, Sofia", "country": "BRA"},
+          {"pos": 27, "entry": "WC", "name": "GOMES, Eduarda", "country": "BRA"},
+          {"pos": 28, "entry": "WC", "name": "CARBONE DOS SANTOS, Maria Eduarda", "country": "BRA"},
+          {"pos": 30, "name": "MEDIORREAL ARIAS, Valentina", "country": "COL"},
+          {"pos": 31, "name": "SOUZA, Marjorie", "country": "BRA"},
+          {"pos": 32, "seed": "2", "name": "ANSARI, Carolyn", "country": "USA"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
       }
     }
   }
