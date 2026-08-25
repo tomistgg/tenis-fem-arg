@@ -1347,31 +1347,7 @@ def _refresh_entry_lists_from_pdfs(
 
             target_key = cache_key if draw_type != "qual" else cache_key + "#qual"
             _inject_group(cache_key, draw_type, draw_meta)
-            # Metadata-only entries register manually maintained cached lists in
-            # the correct week without attempting an external PDF download.
             if not pdf_url:
-                if draw_meta.get("manual") and target_key in entry_cache:
-                    manual_players = copy.deepcopy(entry_cache[target_key])
-                    main_type = "QUAL" if draw_type == "qual" else "MAIN"
-                    manual_main = [player for player in manual_players if player.get("type") == main_type]
-                    manual_alt = [player for player in manual_players if player.get("type") == "ALT"]
-                    manual_main, manual_alt = _apply_manual_entry_list_withdrawals(
-                        manual_main,
-                        manual_alt,
-                        draw_meta.get("withdrawals"),
-                        main_type=main_type,
-                    )
-                    manual_main, manual_alt = _apply_manual_entry_list_additions(
-                        manual_main,
-                        manual_alt,
-                        draw_meta.get("additions"),
-                        main_type=main_type,
-                    )
-                    manual_players = manual_main + manual_alt
-                    _canonicalize_player_names(manual_players, source="wta")
-                    _fill_missing_countries(manual_players, entry_cache)
-                    entry_cache[target_key] = manual_players
-                    tournament_store[target_key] = manual_players
                 continue
             if not _is_active(target_key):
                 continue

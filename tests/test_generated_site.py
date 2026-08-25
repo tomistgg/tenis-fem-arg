@@ -3,7 +3,6 @@ import re
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
 import main as main_module
 from html_generator import (
@@ -248,102 +247,20 @@ class GeneratedSiteTests(unittest.TestCase):
             ],
         )
 
-    def test_metadata_only_qualifying_list_is_injected_into_its_configured_week(self):
+    def test_us_open_entry_lists_keep_main_draw_without_qualifying(self):
         tournament_key = "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list"
-        qualifying_key = tournament_key + "#qual"
-        config = {
-            tournament_key: {
-                "qual": {
-                    "manual": True,
-                    "start_date": "2026-08-24",
-                    "display_name": "US Open Qualifying",
-                    "level": "Grand Slam",
-                    "surface": "Hard",
-                    "country": "USA",
-                }
-            }
-        }
-        tournament_groups = {
-            "Week of August 31": {
-                tournament_key: {
-                    "name": "US Open",
-                    "level": "Grand Slam",
-                    "surface": "Hard",
-                    "country": "USA",
-                }
-            }
-        }
+        source = _generated_frontend_source()
 
-        with tempfile.TemporaryDirectory() as temp_dir:
-            config_path = Path(temp_dir) / "gs_pdf_urls.json"
-            config_path.write_text(json.dumps(config), encoding="utf-8")
-            with patch.object(main_module, "GS_PDF_URLS_FILE", str(config_path)):
-                main_module._refresh_entry_lists_from_pdfs(
-                    {qualifying_key: [{"name": "Nadia Podoroska", "type": "QUAL"}]},
-                    {},
-                    tournament_groups,
-                    {"2026-08-24": "Week of August 24"},
-                )
+        self.assertIn(f'data-key="{tournament_key}"', source)
+        self.assertNotIn(f'data-key="{tournament_key}#qual"', source)
+        self.assertNotIn("US Open Qualifying", source)
+        self.assertNotIn("US Open (Q)", source)
 
-        self.assertIn(qualifying_key, tournament_groups["Week of August 24"])
-        self.assertEqual(
-            tournament_groups["Week of August 24"][qualifying_key]["name"],
-            "US Open Qualifying",
-        )
+    def test_manually_added_us_open_qualifying_matches_are_preserved(self):
+        manual_matches = (PROJECT_DIR / "data" / "manually_added_matches.csv").read_text(encoding="utf-8")
 
-    def test_separate_qualifying_list_does_not_create_a_nested_qualifying_list(self):
-        tournament_key = "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list"
-        qualifying_key = tournament_key + "#qual"
-        tournament_groups = {
-            "Week of August 24": {
-                qualifying_key: {
-                    "name": "US Open Qualifying",
-                    "level": "Grand Slam",
-                    "surface": "Hard",
-                    "country": "USA",
-                    "startDate": "2026-08-24",
-                }
-            },
-            "Week of August 31": {
-                tournament_key: {
-                    "name": "US Open",
-                    "level": "Grand Slam",
-                    "surface": "Hard",
-                    "country": "USA",
-                    "startDate": "2026-08-30",
-                }
-            },
-        }
-        entry_cache = {
-            tournament_key: [
-                {"name": "SOLANA SIERRA", "country": "ARG", "type": "MAIN", "pos": "1", "pos_num": 1}
-            ],
-            qualifying_key: [
-                {"name": "NADIA PODOROSKA", "country": "ARG", "type": "QUAL", "pos": "1", "pos_num": 1},
-                {"name": "NAO HIBINO", "country": "JPN", "type": "ALT", "pos": "1", "pos_num": 1},
-            ],
-        }
-        rankings = [
-            {"Player": "SOLANA SIERRA", "Country": "ARG", "Rank": 86},
-            {"Player": "NADIA PODOROSKA", "Country": "ARG", "Rank": 514},
-            {"Player": "NAO HIBINO", "Country": "JPN", "Rank": 224},
-        ]
-
-        with (
-            patch.object(main_module, "get_wta_rankings_cached", return_value=rankings),
-            patch.object(main_module, "_load_acceptance_state", return_value={}),
-        ):
-            schedule, _, updated_cache, _ = main_module.process_tournaments(
-                None,
-                tournament_groups,
-                {"2026-08-24": "Week of August 24", "2026-08-31": "Week of August 31"},
-                {"SOLANA SIERRA", "NADIA PODOROSKA"},
-                entry_cache,
-            )
-
-        self.assertNotIn(qualifying_key + "#qual", updated_cache)
-        self.assertNotIn(qualifying_key + "#qual", tournament_groups["Week of August 24"])
-        self.assertEqual(schedule["NADIA PODOROSKA"]["Week of August 24"], "US Open (Q)")
+        self.assertIn('"9000000012","2026-08-24","W-SL-USA-2026-001","US Open","GS"', manual_matches)
+        self.assertIn('"9000000013","2026-08-24","W-SL-USA-2026-001","US Open","GS"', manual_matches)
 
     def test_week_labels_sort_chronologically(self):
         labels = ["Week of August 24", "Week of September 7", "Week of August 17"]

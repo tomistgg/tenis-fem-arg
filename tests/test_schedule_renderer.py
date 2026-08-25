@@ -73,13 +73,6 @@ def test_schedule_shows_four_chronological_unique_weeks(tmp_path: Path):
                         "surface": "Hard",
                         "country": "USA",
                     },
-                    "qual": {
-                        "start_date": "2026-08-24",
-                        "display_name": "US Open Qualifying",
-                        "level": "Grand Slam",
-                        "surface": "Hard",
-                        "country": "USA",
-                    },
                 }
             }
         ),
@@ -90,8 +83,10 @@ def test_schedule_shows_four_chronological_unique_weeks(tmp_path: Path):
     visible_map = _visible_schedule_monday_map(monday_map)
 
     qualifying_key = "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list#qual"
-    assert qualifying_key in tournament_groups["Week of August 24"]
-    assert tournament_groups["Week of August 24"][qualifying_key]["name"] == "US Open Qualifying"
+    main_key = qualifying_key.removesuffix("#qual")
+    assert all(qualifying_key not in tournaments for tournaments in tournament_groups.values())
+    assert main_key in tournament_groups["Week of August 31"]
+    assert tournament_groups["Week of August 31"][main_key]["name"] == "US Open"
 
     assert list(visible_map.items()) == [
         ("2026-08-17", "Week of August 17"),
