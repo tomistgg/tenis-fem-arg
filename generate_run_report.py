@@ -259,16 +259,6 @@ def normalize_rank_key(value):
     return s
 
 
-def name_variants(value):
-    base = normalize_rank_key(value)
-    if not base:
-        return set()
-    out = {base}
-    if "-" in base:
-        out.add(" ".join(base.replace("-", " ").split()))
-    return out
-
-
 def monday_from_date_str(value):
     s = (value or "").strip()
     if not s:

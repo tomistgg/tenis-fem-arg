@@ -609,7 +609,6 @@ def run_refresh_transaction(
             "WTARG_RUN_STATUS_PATH": str(run_state_path),
             "WTARG_DATA_DIR": str(staging_data),
             "WTARG_SITE_ROOT": str(staging_site),
-            "WTARG_DEPLOY_SITE_DIR": str(staging_deploy),
             "PYTHONIOENCODING": "utf-8",
             "PYTHONUTF8": "1",
         }

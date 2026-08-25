@@ -1450,19 +1450,6 @@ def dumps_itf_drawsheets_cache(payload, *, ensure_ascii=False, indent=2):
 
 
 _DRAWS_STORE_META_FIELDS = ("name", "level", "week", "startDate", "endDate", "fetchedAt", "arg_visibility")
-_DRAWS_STORE_DRAW_DEFAULT_KEYS = {
-    "tournament_name",
-    "location",
-    "dates",
-    "prize",
-    "surface",
-    "draw_type",
-    "players",
-    "matches",
-    "byes",
-    "qualifiers",
-    "round_labels",
-}
 _DRAWS_STORE_PLAYER_DEFAULTS = {
     "pos": "",
     "seed": "",
@@ -1837,12 +1824,6 @@ def dumps_calendar_snapshot(payload, *, ensure_ascii=False, indent=2):
     return "\n".join(lines)
 
 
-_DRAWS_SNAPSHOT_FIELDS = (
-    "name",
-    "types",
-)
-
-
 def compress_draws_snapshot(payload):
     """Convert draws snapshot entries into compact positional rows."""
     if not isinstance(payload, dict):
@@ -1988,17 +1969,6 @@ def compress_tournament_draw_sizes(payload):
 def expand_tournament_draw_sizes(payload):
     """Expand compact draw-size rows back into dict entries."""
     return expand_row_list_cache(payload, _TOURNAMENT_DRAW_SIZE_FIELDS)
-
-
-_WTA_MISSING_TOURNAMENT_FIELDS = (
-    "tournamentName",
-    "tournamentLink",
-    "tourCode",
-    "dates",
-    "location",
-    "surfaceDesc",
-    "surfaceCode",
-)
 
 
 _TSTRENGTH_CACHE_FIELDS = (

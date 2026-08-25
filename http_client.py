@@ -70,7 +70,3 @@ def request_with_retry(
 
 def get_with_retry(url: str, **kwargs: Any) -> requests.Response:
     return request_with_retry("GET", url, **kwargs)
-
-
-def post_with_retry(url: str, **kwargs: Any) -> requests.Response:
-    return request_with_retry("POST", url, **kwargs)

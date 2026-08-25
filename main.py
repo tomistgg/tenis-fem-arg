@@ -139,11 +139,6 @@ def _subprocess_env():
     return env
 
 
-def _natural_sort_key(value):
-    parts = re.split(r"(\d+)", str(value))
-    return [int(part) if part.isdigit() else part.lower() for part in parts]
-
-
 def _find_local_chromedriver():
     """Return a cached chromedriver.exe path if one exists locally."""
     base_dir = os.path.join(os.path.expanduser("~"), ".wdm", "drivers", "chromedriver", "win64")
@@ -1045,64 +1040,6 @@ def _schedule_tournament_name(cache_key, tournament_name):
     if str(cache_key or "").endswith("#qual"):
         name = re.sub(r"\s+Qualifying\s*$", "", name, flags=re.IGNORECASE)
     return compact_tournament_name(name)
-
-
-def _apply_pdf_schedule_entries(
-    tournament_store, tournament_groups, arg_names_set, schedule_map, unranked_schedule, players_data
-):
-    """Add MAIN/QUAL draw players from PDF-sourced entry lists to schedule_map for ARG players.
-
-    Uses NAME_LOOKUP from config for alias resolution (e.g. 'Jazmin Ortenzi' -> 'Jazmín Ortenzi').
-    Qualifying players appear under the '#qual' key which is already in tournament_groups with
-    the correct week (May 18) and display name ('Roland Garros (Q)').
-    """
-    from config import NAME_LOOKUP, _lookup_keys
-
-    url_to_week = {}
-    for week_label, tourneys in tournament_groups.items():
-        for t_url, t_info in tourneys.items():
-            if _is_excluded_entry_list_tournament(t_url, t_info):
-                continue
-            url_to_week[t_url] = (week_label, t_info["name"])
-
-    existing_player_keys = {p["Player"] for p in players_data}
-    added = 0
-    for cache_key, (week_label, t_name) in url_to_week.items():
-        players = tournament_store.get(cache_key)
-        if not players:
-            continue
-        # Only process PDF-sourced entries (main or #qual)
-        is_pdf_key = cache_key in _get_pdf_cache_keys()
-        if not is_pdf_key:
-            continue
-        schedule_name = _schedule_tournament_name(cache_key, t_name)
-        for player in players:
-            p_type = player.get("type", "MAIN")
-            if p_type not in ("MAIN", "QUAL"):
-                continue
-            raw_name = player.get("name", "")
-            p_upper = raw_name.upper()
-            # Resolve through alias lookup
-            for key in _lookup_keys(raw_name):
-                canonical = NAME_LOOKUP.get(key)
-                if canonical:
-                    p_upper = canonical
-                    break
-            p_country = player.get("country", "")
-            for target_map, condition in [
-                (schedule_map, p_upper in arg_names_set),
-                (unranked_schedule, p_country == "ARG" and p_upper not in arg_names_set),
-            ]:
-                if not condition:
-                    continue
-                inserted = _append_schedule_label(target_map, p_upper, week_label, schedule_name, style="prepend_br")
-                if target_map is unranked_schedule and p_upper not in existing_player_keys:
-                    players_data.append({"Player": p_upper, "Key": p_upper, "Rank": "-"})
-                    existing_player_keys.add(p_upper)
-                if inserted:
-                    added += 1
-    if added:
-        logger.info(f"[PDF] Added {added} schedule entries from PDF entry lists")
 
 
 def _get_pdf_cache_keys():

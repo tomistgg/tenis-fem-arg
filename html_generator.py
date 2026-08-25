@@ -109,20 +109,6 @@ def _display_tournament_name(name):
     ).strip()
 
 
-_CALENDAR_TOURNAMENT_NAME_REPLACEMENTS = {
-    "Alcala de Henares": "Alcala de H.",
-    "Campos do Jordao": "Campos do J.",
-    "Campos do Jordão": "Campos do J.",
-    "Cherbourg-en-Cotentin": "Cherbourg",
-    "Grodzisk Mazowiecki": "Grodzisk M.",
-    "Kursumlijska Banja": "K. Banja",
-    "Saint-Palais-sur-Mer": "Saint-Palais",
-    "Santa Margherita di Pula": "St. Marg. di Pula",
-    "Sharm ElSheikh": "Sharm ES.",
-    "Caldas Da Rainha": "Caldas Da R.",
-}
-
-
 def _display_calendar_tournament_name(name):
     """Return the compact Calendar-only label without edition numbers."""
     return compact_tournament_name(name)

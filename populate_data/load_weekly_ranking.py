@@ -17,7 +17,7 @@ from ranking_publication import (
 )
 from run_state import report_run_issue
 from runtime_logging import get_logger
-from time_utils import new_york_now, new_york_today
+from time_utils import new_york_now
 from transactional_io import atomic_write_csv
 from utils import save_json_file
 from wta import get_rankings
@@ -32,11 +32,6 @@ RANKING_STATUS_FILE = os.path.join(os.path.dirname(RANKINGS_CSV), "wta_ranking_r
 
 def to_title_case(name):
     return name.title() if name else ""
-
-
-def get_this_weeks_monday():
-    today = new_york_today()
-    return today - timedelta(days=today.weekday())
 
 
 def load_csv_by_date():

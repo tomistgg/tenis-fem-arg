@@ -219,12 +219,6 @@ WTA_ID_TO_DISPLAY = {
     player_id: player_name_only(record.display_name).upper()
     for player_id, record in PLAYER_IDENTITY_INDEX.by_wta_id.items()
 }
-ITF_ID_TO_DISPLAY = {
-    player_id: player_name_only(record.display_name).upper()
-    for player_id, record in PLAYER_IDENTITY_INDEX.by_itf_id.items()
-}
-WTA_ID_TO_PLAYER_KEY = {player_id: record.player_key for player_id, record in PLAYER_IDENTITY_INDEX.by_wta_id.items()}
-ITF_ID_TO_PLAYER_KEY = {player_id: record.player_key for player_id, record in PLAYER_IDENTITY_INDEX.by_itf_id.items()}
 
 
 def resolve_player_display_name(source, *, player_id="", name=""):

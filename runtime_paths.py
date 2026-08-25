@@ -20,9 +20,7 @@ def _runtime_path(variable: str, default: Path) -> Path:
 
 DATA_DIR = _runtime_path("WTARG_DATA_DIR", PROJECT_ROOT / "data")
 SITE_ROOT = _runtime_path("WTARG_SITE_ROOT", PROJECT_ROOT)
-DEPLOY_SITE_DIR = _runtime_path("WTARG_DEPLOY_SITE_DIR", PROJECT_ROOT / ".site")
 
 
 def data_path(*parts: str) -> Path:
     return DATA_DIR.joinpath(*parts)
-
