@@ -13801,7 +13801,7 @@
                       "roundDesc": "3rd Round", "roundNumber": 3,
                       "matches": [
                           {
-                            "matchId": 1183669967, "playStatusCode": "TP",
+                            "matchId": 1183669967, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "DA",
@@ -13827,7 +13827,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183669969, "playStatusCode": "TP",
+                            "matchId": 1183669969, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "seeding": 3, "entryStatus": "DA",
@@ -13879,7 +13879,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183669973, "playStatusCode": "TP",
+                            "matchId": 1183669973, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "seeding": 7, "entryStatus": "DA",
@@ -13892,7 +13892,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183669974, "playStatusCode": "TP",
+                            "matchId": 1183669974, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "seeding": 8, "entryStatus": "DA",
@@ -14105,8 +14105,7 @@
                                   "player": {"playerId":800644916,"nationality":"ROU","givenName":"Anastasia","familyName":"Preda"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "WC",
-                                  "player": {"playerId":800638959,"nationality":"ROU","givenName":"Ana Maria","familyName":"Capeti"}
+                                  "scores": [], "isWinner": false, "entryStatus": null
                                 }
                             ]
                           },
