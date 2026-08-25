@@ -139,7 +139,7 @@
       "week": "Week of August 24",
       "startDate": "2026-08-24T00:00:00",
       "endDate": "2026-08-30T00:00:00",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":true,"has_arg_any":true}
     },
     "draws":
     {
@@ -261,6 +261,12 @@
           {"round": 2, "match_num": 13, "winner_name": "K. Blackbeard", "score": "60 62"},
           {"round": 2, "match_num": 14, "winner_name": "T. Marcu", "score": "62 60"},
           {"round": 2, "match_num": 15, "winner_name": "N. Andronicou", "score": "62 64"},
+          {"round": 3, "match_num": 0, "winner_name": "V. Proietti", "score": "64 60"},
+          {"round": 3, "match_num": 1, "winner_name": "B. Nica", "score": "76(4) 76"},
+          {"round": 3, "match_num": 2, "winner_name": "I. Sandru", "score": "26 63 10-6"},
+          {"round": 3, "match_num": 3, "winner_name": "G. Russo", "score": "64 76(4)"},
+          {"round": 3, "match_num": 4, "winner_name": "I. Sanduleasa", "score": "61 63"},
+          {"round": 3, "match_num": 5, "winner_name": "S. Cucu", "score": "16 75 10-6"},
           {"round": 3, "match_num": 6, "winner_name": "A. Iancu", "score": "60 16 10-6"},
           {"round": 3, "match_num": 7, "winner_name": "N. Andronicou", "score": "61 60"}
         ],
@@ -270,6 +276,56 @@
           "Round of 16"
         ],
         "num_rounds": 3
+      },
+      "MDS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "POPA, Maria Sara", "country": "ROU"},
+          {"pos": 2, "name": "GAILIS, Rachel", "country": "USA"},
+          {"pos": 3, "entry": "LL", "name": "BRUNO, Valentina Abril", "country": "ARG"},
+          {"pos": 4, "name": "OGESCU, Simona", "country": "ROU"},
+          {"pos": 5, "name": "LUCIANO, Lavinia", "country": "ITA"},
+          {"pos": 6, "entry": "Q", "name": "ANDRONICOU, Nina", "country": "CYP"},
+          {"pos": 7, "name": "CRACIUN, Georgia Andreea", "country": "ROU"},
+          {"pos": 8, "seed": "7", "name": "STAMATOVA, Julia", "country": "BUL"},
+          {"pos": 9, "seed": "3", "name": "RAGGI, Angelica", "country": "ITA"},
+          {"pos": 10, "entry": "LL", "name": "MARINESCU, Alessia", "country": "ROU"},
+          {"pos": 11, "entry": "SE", "name": "MIRON, Teodora", "country": "ROU"},
+          {"pos": 12, "entry": "Q", "name": "NICA, Bianca", "country": "ROU"},
+          {"pos": 13, "entry": "Q", "name": "PROIETTI, Virginia", "country": "ITA"},
+          {"pos": 14, "entry": "Q", "name": "RUSSO, Giulia", "country": "ITA"},
+          {"pos": 15, "entry": "WC", "name": "BOYDEN, Melissa", "country": "GBR"},
+          {"pos": 16, "seed": "5", "name": "AMARIEI, Ilinca Dalina", "country": "ROU"},
+          {"pos": 17, "seed": "6", "name": "BALAN, Sara Victoria", "country": "ROU"},
+          {"pos": 18, "entry": "Q", "name": "SANDULEASA, Ingrid Ioana", "country": "ROU"},
+          {"pos": 19, "entry": "WC", "name": "ROSCA, Eva Elena", "country": "ROU"},
+          {"pos": 20, "name": "TODONI, Cristiana Nicoleta", "country": "ROU"},
+          {"pos": 21, "name": "STEVIC, Helena", "country": "FRA"},
+          {"pos": 22, "name": "SAGMAR, Ilinca", "country": "ROU"},
+          {"pos": 23, "name": "GOINA, Patricia Georgiana", "country": "ROU"},
+          {"pos": 24, "seed": "4", "name": "DIAZ ADROVER, Cristina", "country": "ESP"},
+          {"pos": 25, "seed": "8", "name": "LAHEY, Ashley", "country": "USA"},
+          {"pos": 26, "entry": "Q", "name": "CUCU, Simona", "country": "ROU"},
+          {"pos": 27, "name": "BOJICA, Stefania", "country": "ROU"},
+          {"pos": 28, "entry": "Q", "name": "IANCU, Alexia-Shara", "country": "ROU"},
+          {"pos": 29, "entry": "WC", "name": "PREDA, Anastasia", "country": "ROU"},
+          {"pos": 30, "entry": "Q", "name": "SANDRU, Ioana Maria", "country": "ROU"},
+          {"pos": 31, "entry": "JR", "name": "BUCULEI, Iulia Maria", "country": "ROU"},
+          {"pos": 32, "seed": "2", "name": "BARBULESCU, Bianca Elena", "country": "ROU"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 7, "winner_name": "I. Amariei", "score": "60 60"},
+          {"round": 1, "match_num": 9, "winner_name": "C. Todoni", "score": "30 RET"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
       }
     }
   },
