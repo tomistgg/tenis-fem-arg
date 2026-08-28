@@ -14249,7 +14249,7 @@
                       "roundDesc": "Quarter-finals", "roundNumber": 3,
                       "matches": [
                           {
-                            "matchId": 1183669939, "playStatusCode": "TP",
+                            "matchId": 1183669939, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "player": {"playerId":800495699,"nationality":"ROU","givenName":"Maria Sara","familyName":"Popa"},
@@ -14262,41 +14262,41 @@
                             ]
                           },
                           {
-                            "matchId": 1183669940, "playStatusCode": "TP",
+                            "matchId": 1183669940, "playStatusCode": "PC",
                             "teams": [
                                 {
                                   "player": {"playerId":800643332,"nationality":"ROU","givenName":"Teodora","familyName":"Miron"},
-                                  "scores": [], "isWinner": false, "entryStatus": "SE"
+                                  "scores": [4,4], "isWinner": false, "entryStatus": "SE"
                                 },
                                 {
                                   "player": {"playerId":800426771,"nationality":"ROU","givenName":"Ilinca Dalina","familyName":"Amariei"},
-                                  "scores": [], "isWinner": false, "seeding": 5, "entryStatus": "DA"
+                                  "scores": [6,6], "isWinner": true, "seeding": 5, "entryStatus": "DA"
                                 }
                             ]
                           },
                           {
-                            "matchId": 1183669941, "playStatusCode": "TP",
+                            "matchId": 1183669941, "playStatusCode": "PC",
                             "teams": [
                                 {
                                   "player": {"playerId":800544953,"nationality":"ROU","givenName":"Cristiana Nicoleta","familyName":"Todoni"},
-                                  "scores": [], "isWinner": false, "entryStatus": "DA"
+                                  "scores": [6,6], "isWinner": true, "entryStatus": "DA"
                                 },
                                 {
                                   "player": {"playerId":800543088,"nationality":"ROU","givenName":"Patricia Georgiana","familyName":"Goina"},
-                                  "scores": [], "isWinner": false, "entryStatus": "DA"
+                                  "scores": [0,2], "isWinner": false, "entryStatus": "DA"
                                 }
                             ]
                           },
                           {
-                            "matchId": 1183669942, "playStatusCode": "TP",
+                            "matchId": 1183669942, "playStatusCode": "PC",
                             "teams": [
                                 {
                                   "player": {"playerId":800409566,"nationality":"USA","givenName":"Ashley","familyName":"Lahey"},
-                                  "scores": [], "isWinner": false, "seeding": 8, "entryStatus": "DA"
+                                  "scores": [6,6], "isWinner": true, "seeding": 8, "entryStatus": "DA"
                                 },
                                 {
                                   "player": {"playerId":800488761,"nationality":"ROU","givenName":"Bianca Elena","familyName":"Barbulescu"},
-                                  "scores": [], "isWinner": false, "seeding": 2, "entryStatus": "DA"
+                                  "scores": [3,3], "isWinner": false, "seeding": 2, "entryStatus": "DA"
                                 }
                             ]
                           }
@@ -14313,7 +14313,8 @@
                                   "scores": [], "isWinner": false, "entryStatus": null
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "player": {"playerId":800426771,"nationality":"ROU","givenName":"Ilinca Dalina","familyName":"Amariei"},
+                                  "scores": [], "isWinner": false, "seeding": 5, "entryStatus": "DA"
                                 }
                             ]
                           },
@@ -14321,10 +14322,12 @@
                             "matchId": 1183669938, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "player": {"playerId":800544953,"nationality":"ROU","givenName":"Cristiana Nicoleta","familyName":"Todoni"},
+                                  "scores": [], "isWinner": false, "entryStatus": "DA"
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "player": {"playerId":800409566,"nationality":"USA","givenName":"Ashley","familyName":"Lahey"},
+                                  "scores": [], "isWinner": false, "seeding": 8, "entryStatus": "DA"
                                 }
                             ]
                           }
@@ -15099,7 +15102,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183671692, "playStatusCode": "TP",
+                            "matchId": 1183671692, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "seeding": 4, "entryStatus": "DA",
