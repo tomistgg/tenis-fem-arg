@@ -532,11 +532,17 @@
                     <div class="roadtogs-cutoffs">
                         @@WTARG_GS_TABLES_HTML@@
                     </div>
-                    <details class="roadtogs-info">
-                        <summary class="roadtogs-info-summary">
+                    <div class="roadtogs-breakdown-controls">
+                        <button type="button" class="roadtogs-info-summary" aria-expanded="false" aria-controls="roadtogs-info-panel">
                             <span class="roadtogs-info-summary-label"><span class="roadtogs-info-icon" aria-hidden="true">i</span>Grand Slams information</span>
-                        </summary>
-                        <div class="roadtogs-info-panel">
+                        </button>
+                        <div class="roadtogs-cutoff-select-wrap">
+                            <label class="roadtogs-cutoff-label" for="roadtogs-cutoff-select">Points breakdown date</label>
+                            <select id="roadtogs-cutoff-select" class="roadtogs-cutoff-select">
+                                @@WTARG_ROADTOGS_CUTOFF_OPTIONS@@
+                            </select>
+                        </div>
+                        <div id="roadtogs-info-panel" class="roadtogs-info-panel" hidden>
                             <div class="roadtogs-info-col roadtogs-info-legend">
                                 <div class="roadtogs-info-line"><span class="roadtogs-info-term">ACC. PTS</span><span>Points accumulated that count towards the ranking as of the cutoff date.</span></div>
                                 <div class="roadtogs-info-line"><span class="roadtogs-info-term">EST. NEED</span><span>Estimated points needed to qualify for the Grand Slam: @@WTARG_GS_THRESHOLD_Q@@ for Q, @@WTARG_GS_THRESHOLD_MD@@ for MD.</span></div>
@@ -546,7 +552,7 @@
                                 <div>Cutoffs 2026 (Q/MD) = <span style="color:#0066B3;font-weight:700;">AO 308/754</span> - <span style="color:#C8602A;font-weight:700;">RG 283/786</span> - <span style="color:#3D7A3D;font-weight:700;">WB 315/736</span> - <span style="color:#003087;font-weight:700;">US 330/736</span></div>
                             </div>
                         </div>
-                    </details>
+                    </div>
                     <div class="content-card">
                         <div class="table-wrapper">
                             <table id="roadtogs-table">

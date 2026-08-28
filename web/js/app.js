@@ -338,10 +338,18 @@
 
             function collectRoadToGSUrlState() {
                 const selectedPlayer = getNormalizedPlayerSelection('roadtogsPlayerSelect');
-                return selectedPlayer ? { player: selectedPlayer } : {};
+                const state = selectedPlayer ? { player: selectedPlayer } : {};
+                const cutoffSelect = document.getElementById('roadtogs-cutoff-select');
+                if (cutoffSelect && cutoffSelect.value && cutoffSelect.value !== 'live') {
+                    state.cutoff = cutoffSelect.value;
+                }
+                return state;
             }
 
             function restoreRoadToGSUrlState(params) {
+                const cutoffSelect = document.getElementById('roadtogs-cutoff-select');
+                const cutoff = params.get('cutoff') || 'live';
+                if (cutoffSelect) setSelectValueFromSlug(cutoffSelect, cutoff);
                 if (!params.has('player')) return;
                 const select = document.getElementById('roadtogsPlayerSelect');
                 if (!select || !setSelectValueFromSlug(select, params.get('player'))) return;

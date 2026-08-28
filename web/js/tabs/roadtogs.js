@@ -183,9 +183,13 @@
                 return round;
             }
 
-            function computeBest18(selectedPlayer, windowEndStr) {
+            function _rtgsEmptyBreakdown() {
+                return { countable: [], nonCountable: [], totalPoints: 0 };
+            }
+
+            function _rtgsComputeBreakdown(selectedPlayer, windowEndStr) {
                 _rtgs_initLookups();
-                if (!Array.isArray(historyData)) return 0;
+                if (!Array.isArray(historyData)) return _rtgsEmptyBreakdown();
                 const windowEnd = new Date(windowEndStr);
                 const windowStart = new Date(windowEnd);
                 windowStart.setDate(windowStart.getDate() - 385); // 55 weeks: wide enough for W15/W35 +7 effective date shift
@@ -200,7 +204,7 @@
                     const md = new Date(ds);
                     return md>=windowStart && md<=windowEnd;
                 });
-                if (!matches.length) return 0;
+                if (!matches.length) return _rtgsEmptyBreakdown();
 
                 const tMap = new Map();
                 matches.forEach(row => {
@@ -246,12 +250,13 @@
                     if (effectiveDateStr > windowEndStr) return false;
                     return dropDate > windowEnd;
                 });
-                if (!ts.length) return 0;
+                if (!ts.length) return _rtgsEmptyBreakdown();
 
                 const wtaCats=['WTA 1000','WTA 500','WTA 250','WTA 125','125K','125K Series'];
                 ts.forEach(t => {
                     if (t.isUnitedCup) {
                         const uc=_rtgs_pointsLookup['United Cup']; t.points=0;
+                        t.roundDisplay=t.ucWins+'W-'+(t.ucTotal-t.ucWins)+'L';
                         if (uc) { const w=t.ucWins,ko=t.ucHasKnockout;
                             if(w>=5)t.points=uc['5W']; else if(w===4)t.points=uc['4W']; else if(w===3)t.points=uc['3W'];
                             else if(w===2&&ko)t.points=uc['2W_KO']; else if(w===2)t.points=uc['2W_RR'];
@@ -283,7 +288,29 @@
                                 else { const k=_rtgs_qKey(t.bestQualRound,t.bestQualResult,!!t.bestMainRound,pt); if(k&&pt[k]!=null)t.points+=pt[k]; }
                             }
                         }
+
+                        const finalQualRound=pt?(pt['QR3']!=null?'QR3':(pt['QR2']!=null?'QR2':'QR1')):null;
+                        const wonFinalQualRound=!!t.bestQualRound&&t.bestQualResult==='W'&&!t.bestMainRound&&t.bestQualRound===finalQualRound;
+                        const qualified=(!!t.bestQualRound&&!!t.bestMainRound&&t.bestQualResult!=='L')||wonFinalQualRound;
+                        const nextQualRound={'QR1':'QR2','QR2':'QR3'};
+                        const advancedQual=!!t.bestQualRound&&t.bestQualResult==='W'&&!t.bestMainRound&&!wonFinalQualRound;
+                        const qualDisplay=qualified?'QLFR':(advancedQual?(nextQualRound[t.bestQualRound]||t.bestQualRound):t.bestQualRound);
+                        let mainDisplay=t.bestMainRound;
+                        if(t.bestMainRound==='Final'&&t.bestMainResult==='W') mainDisplay='WINNER';
+                        t.roundDisplay=t.bestMainRound&&t.bestQualRound
+                            ? abbrevRound(mainDisplay)+' + '+qualDisplay
+                            : abbrevRound(mainDisplay||qualDisplay||'');
+                        if(t.bestMainResult==='W'&&t.bestMainRound&&t.bestMainRound!=='Final') {
+                            const next32={'1st Round':'2nd Round','2nd Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'};
+                            const next64={'1st Round':'2nd Round','2nd Round':'3rd Round','3rd Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'};
+                            const next128={'1st Round':'2nd Round','2nd Round':'3rd Round','3rd Round':'4th Round','4th Round':'Quarter-finals','Quarter-finals':'Semi-finals','Semi-finals':'Final'};
+                            const nextMap=drawSize>=128?next128:(drawSize>=64?next64:next32);
+                            const nextRound=nextMap[t.bestMainRound];
+                            if(nextRound) t.roundDisplay=t.bestQualRound?abbrevRound(nextRound)+' + '+qualDisplay:abbrevRound(nextRound);
+                        }
                     }
+                    const { dropDate }=_rtgs_computeDropDate(t);
+                    t.dropDate=dropDate.toISOString().slice(0,10);
                 });
 
                 const mGS=[],m1000=[],opt=[],rest=[];
@@ -296,11 +323,23 @@
                 });
                 m1000.sort((a,b)=>b.points-a.points); opt.sort((a,b)=>b.points-a.points); rest.sort((a,b)=>b.points-a.points);
                 const c1000=m1000.slice(0,6), cOpt=opt.slice(0,1);
-                const mandatory=[...mGS,...c1000,...cOpt];
+                mGS.sort((a,b)=>b.points-a.points);
+                const mandatory1000=[...c1000,...cOpt].sort((a,b)=>b.points-a.points);
+                const mandatory=[...mGS,...mandatory1000];
                 const fillPool=[...m1000.slice(6),...opt.slice(1),...rest];
                 fillPool.sort((a,b)=>b.points-a.points);
-                const countable=[...mandatory,...fillPool.slice(0,Math.max(0,18-mandatory.length))];
-                return countable.reduce((s,t)=>s+t.points,0);
+                const filledCountable=fillPool.slice(0,Math.max(0,18-mandatory.length));
+                const countable=[...mandatory,...filledCountable];
+                const nonCountable=fillPool.slice(filledCountable.length);
+                return {
+                    countable,
+                    nonCountable,
+                    totalPoints: countable.reduce((sum,t)=>sum+t.points,0)
+                };
+            }
+
+            function computeBest18(selectedPlayer, windowEndStr) {
+                return _rtgsComputeBreakdown(selectedPlayer, windowEndStr).totalPoints;
             }
 
             function updateGSCutoffTables(selectedPlayer) {
@@ -334,6 +373,101 @@
                     .replace('1st Round', '1st');
             }
 
+            function _rtgsSelectedCutoff() {
+                const select = document.getElementById('roadtogs-cutoff-select');
+                const value = select ? select.value : 'live';
+                if (!value || value === 'live') return null;
+                const separator = value.lastIndexOf('-');
+                if (separator < 1) return null;
+                const gsId = value.slice(0, separator);
+                const drawType = value.slice(separator + 1);
+                const gs = gsCutoffs.find(item => item.id.toLowerCase() === gsId.toLowerCase());
+                if (!gs || (drawType !== 'md' && drawType !== 'q')) return null;
+                const cutoff = drawType === 'md' ? gs.mdCutoff : gs.qCutoff;
+                if (!cutoff || cutoff === 'N/A') return null;
+                return { cutoff, drawType, gs };
+            }
+
+            function _rtgsDropClass(dropDateStr) {
+                if (!dropDateStr) return '';
+                const today = new Date();
+                today.setUTCHours(0,0,0,0);
+                const in14 = new Date(today);
+                in14.setUTCDate(today.getUTCDate() + 14);
+                const in28 = new Date(today);
+                in28.setUTCDate(today.getUTCDate() + 28);
+                const dropDate = new Date(dropDateStr);
+                if (dropDate <= in14) return ' class="rtgs-warn-14d"';
+                if (dropDate <= in28) return ' class="rtgs-warn-28d"';
+                return '';
+            }
+
+            function _rtgsCategoryKey(t) {
+                if (t.isGS || t.category === 'GS') return 'GS';
+                if (t.category === 'WTA 1000') return 'WTA 1000';
+                if (t.category === 'WTA 500') return 'WTA 500';
+                if (t.category === 'WTA 250') return 'WTA 250';
+                if (t.category === 'WTA 125' || t.category === '125K' || t.category === '125K Series') return 'WTA 125';
+                if (_RTGS_ITF_CATS_ALL.includes(t.category)) return 'ITF';
+                return 'OTHER';
+            }
+
+            function _rtgsCategoryLabel(key) {
+                if (key === 'GS') return 'Grand Slams';
+                if (key === 'WTA 1000') return 'WTA 1000';
+                if (key === 'WTA 500') return 'WTA 500';
+                if (key === 'WTA 250') return 'WTA 250';
+                if (key === 'WTA 125') return 'WTA 125';
+                if (key === 'ITF') return 'ITF';
+                return 'Other';
+            }
+
+            function _rtgsIsLocked(t) {
+                const hasMainDraw = !!t.bestMainRound;
+                return (t.isGS && hasMainDraw) || (t.category === 'WTA 1000' && hasMainDraw);
+            }
+
+            function _rtgsTournamentLabel(t) {
+                const name = _formatTournName(t.tournament, t.category);
+                if (!name) return '';
+                if (!_rtgsIsLocked(t)) return name;
+                return `${name} <span class="rtgs-lock" title="Locked tournament" aria-label="Locked tournament">&#128274;&#65038;</span>`;
+            }
+
+            function _rtgsAppendCategories(parts, list) {
+                const order = ['GS', 'WTA 1000', 'WTA 500', 'WTA 250', 'WTA 125', 'ITF', 'OTHER'];
+                const groups = new Map();
+                list.forEach(t => {
+                    const key = _rtgsCategoryKey(t);
+                    if (!groups.has(key)) groups.set(key, []);
+                    groups.get(key).push(t);
+                });
+                order.forEach(key => {
+                    const rows = groups.get(key) || [];
+                    if (!rows.length) return;
+                    parts.push(`<tr class="roadtogs-category-separator"><td colspan="5">${_rtgsCategoryLabel(key)}</td></tr>`);
+                    rows.forEach(t => {
+                        parts.push(`<tr><td>${t.date}</td><td>${_rtgsTournamentLabel(t)}</td><td>${t.roundDisplay}</td><td>${t.points}</td><td${_rtgsDropClass(t.dropDate)}>${t.dropDate}</td></tr>`);
+                    });
+                });
+            }
+
+            function _rtgsRenderBreakdown(tbody, breakdown, includeNonCountable) {
+                if (!breakdown.countable.length) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="cell-state-info">No countable tournaments found for this cutoff.</td></tr>';
+                    return;
+                }
+                const parts = [];
+                _rtgsAppendCategories(parts, breakdown.countable);
+                if (includeNonCountable && breakdown.nonCountable.length) {
+                    parts.push('<tr class="roadtogs-separator"><td colspan="5">NON-COUNTABLE TOURNAMENTS</td></tr>');
+                    breakdown.nonCountable.forEach(t => {
+                        parts.push(`<tr><td>${t.date}</td><td>${_rtgsTournamentLabel(t)}</td><td>${t.roundDisplay}</td><td>${t.points}</td><td${_rtgsDropClass(t.dropDate)}>${t.dropDate}</td></tr>`);
+                    });
+                }
+                tbody.innerHTML = parts.join('');
+            }
+
             function initRoadToGS() {
                 const select = document.getElementById('roadtogsPlayerSelect');
                 if (!select) return;
@@ -341,6 +475,20 @@
                 select.dataset.rtgsInit = '1';
                 $(select).select2({ placeholder: 'Select Player...', allowClear: true, width: '100%' });
                 $(select).on('change', renderRoadToGS);
+                const cutoffSelect = document.getElementById('roadtogs-cutoff-select');
+                if (cutoffSelect) {
+                    $(cutoffSelect).select2({ minimumResultsForSearch: Infinity, width: '100%' });
+                    $(cutoffSelect).on('change', renderRoadToGS);
+                }
+                const infoButton = document.querySelector('#view-roadtogs .roadtogs-info-summary');
+                const infoPanel = document.getElementById('roadtogs-info-panel');
+                if (infoButton && infoPanel) {
+                    infoButton.addEventListener('click', () => {
+                        const expanded = infoButton.getAttribute('aria-expanded') === 'true';
+                        infoButton.setAttribute('aria-expanded', String(!expanded));
+                        infoPanel.hidden = expanded;
+                    });
+                }
             }
 
             async function renderRoadToGS() {
@@ -367,6 +515,16 @@
                     return;
                 }
                 _rtgs_initLookups();
+
+                const selectedCutoff = _rtgsSelectedCutoff();
+                if (selectedCutoff) {
+                    const breakdown = _rtgsComputeBreakdown(selectedPlayer, selectedCutoff.cutoff);
+                    document.getElementById('roadtogs-points-total').textContent = 'Points: ' + breakdown.totalPoints;
+                    updateGSCutoffTables(selectedPlayer);
+                    _rtgsRenderBreakdown(tbody, breakdown, true);
+                    syncUrlStateForTab('roadtogs');
+                    return;
+                }
 
                 // Get current date and a wide prefilter window start.
                 // We keep this wider than 52 weeks so W15/W35 tournaments (effective +7d)
@@ -803,72 +961,7 @@
                 document.getElementById('roadtogs-points-total').textContent = 'Points: ' + totalPoints;
                 updateGSCutoffTables(selectedPlayer);
 
-                // Render table
-                const _today = new Date(); _today.setUTCHours(0,0,0,0);
-                const _in14 = new Date(_today); _in14.setUTCDate(_today.getUTCDate() + 14);
-                const _in28 = new Date(_today); _in28.setUTCDate(_today.getUTCDate() + 28);
-                function _dropClass(dropDateStr) {
-                    if (!dropDateStr) return '';
-                    const d = new Date(dropDateStr);
-                    if (d <= _in14) return ' class="rtgs-warn-14d"';
-                    if (d <= _in28) return ' class="rtgs-warn-28d"';
-                    return '';
-                }
-                function _rtgsCategoryKey(t) {
-                    if (t.isGS || t.category === 'GS') return 'GS';
-                    if (t.category === 'WTA 1000') return 'WTA 1000';
-                    if (t.category === 'WTA 500') return 'WTA 500';
-                    if (t.category === 'WTA 250') return 'WTA 250';
-                    if (t.category === 'WTA 125' || t.category === '125K' || t.category === '125K Series') return 'WTA 125';
-                    if (_RTGS_ITF_CATS_ALL.includes(t.category)) return 'ITF';
-                    return 'OTHER';
-                }
-                function _rtgsCategoryLabel(key) {
-                    if (key === 'GS') return 'Grand Slams';
-                    if (key === 'WTA 1000') return 'WTA 1000';
-                    if (key === 'WTA 500') return 'WTA 500';
-                    if (key === 'WTA 250') return 'WTA 250';
-                    if (key === 'WTA 125') return 'WTA 125';
-                    if (key === 'ITF') return 'ITF';
-                    return 'Other';
-                }
-                function _rtgsIsLocked(t) {
-                    const hasMainDraw = !!t.bestMainRound;
-                    return (t.isGS && hasMainDraw) || (t.category === 'WTA 1000' && hasMainDraw);
-                }
-                function _rtgsTournamentLabel(t) {
-                    const name = _formatTournName(t.tournament, t.category);
-                    if (!name) return '';
-                    if (!_rtgsIsLocked(t)) return name;
-                    return `${name} <span class="rtgs-lock" title="Locked tournament" aria-label="Locked tournament">&#128274;&#65038;</span>`;
-                }
-                function _appendRoadToGSCategories(parts, list) {
-                    const order = ['GS', 'WTA 1000', 'WTA 500', 'WTA 250', 'WTA 125', 'ITF', 'OTHER'];
-                    const groups = new Map();
-                    list.forEach(t => {
-                        const key = _rtgsCategoryKey(t);
-                        if (!groups.has(key)) groups.set(key, []);
-                        groups.get(key).push(t);
-                    });
-                    order.forEach(key => {
-                        const rows = groups.get(key) || [];
-                        if (!rows.length) return;
-                        parts.push(`<tr class="roadtogs-category-separator"><td colspan="5">${_rtgsCategoryLabel(key)}</td></tr>`);
-                        rows.forEach(t => {
-                            parts.push(`<tr><td>${t.date}</td><td>${_rtgsTournamentLabel(t)}</td><td>${t.roundDisplay}</td><td>${t.points}</td><td${_dropClass(t.dropDate)}>${t.dropDate}</td></tr>`);
-                        });
-                    });
-                }
-                const parts = [];
-                _appendRoadToGSCategories(parts, countable);
-                if (nonCountable.length > 0) {
-                    parts.push('<tr class="roadtogs-separator"><td colspan="5">NON-COUNTABLE TOURNAMENTS</td></tr>');
-                    nonCountable.forEach(t => {
-                        parts.push(`<tr><td>${t.date}</td><td>${_rtgsTournamentLabel(t)}</td><td>${t.roundDisplay}</td><td>${t.points}</td><td${_dropClass(t.dropDate)}>${t.dropDate}</td></tr>`);
-                    });
-                }
-
-                tbody.innerHTML = parts.join('');
+                _rtgsRenderBreakdown(tbody, { countable, nonCountable, totalPoints }, true);
                 syncUrlStateForTab('roadtogs');
             }
 

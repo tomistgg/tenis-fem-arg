@@ -1274,6 +1274,7 @@ def generate_html(
         return f"{cutoff_dt.strftime('%b')} {cutoff_dt.day}"
 
     gs_tables_html = ""
+    gs_cutoff_options_html = '<option value="live">Live</option>'
     for gs in gs_data:
         gs_id = gs["id"]
         gs_name = gs["name"]
@@ -1299,6 +1300,13 @@ def generate_html(
             f"</tbody>"
             f"</table>"
         )
+        for draw_type, draw_label in (("md", "MD"), ("q", "Q")):
+            cutoff_value = md_cutoff if draw_type == "md" else q_cutoff
+            if cutoff_value == "N/A":
+                continue
+            option_value = escape(f"{gs_id.lower()}-{draw_type}", quote=True)
+            option_label = escape(f"{gs_name} {draw_label}")
+            gs_cutoff_options_html += f'<option value="{option_value}">{option_label}</option>'
 
     # Build GS "last week to get points" boxes for the calendar GS row
     _GS_DISPLAY = {"Australian Open": "AO", "Roland Garros": "RG", "Wimbledon": "WMB", "US Open": "USO"}
@@ -1938,6 +1946,7 @@ def generate_html(
             f'<option value="{escape(name, quote=True)}">{escape(name)}</option>' for name in roadtogs_players_sorted
         ),
         "GS_TABLES_HTML": gs_tables_html,
+        "ROADTOGS_CUTOFF_OPTIONS": gs_cutoff_options_html,
         "GS_THRESHOLD_Q": GS_THRESHOLD_Q,
         "GS_THRESHOLD_MD": GS_THRESHOLD_MD,
         "DRAWS_DROPDOWN_HTML": draws_dropdown_html,

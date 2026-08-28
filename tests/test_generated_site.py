@@ -96,6 +96,39 @@ class GeneratedSiteTests(unittest.TestCase):
                     country_flag_html(country_code, show_code=False),
                 )
 
+    def test_points_breakdown_has_live_and_grand_slam_cutoff_views(self):
+        app = (GENERATED_SITE_DIR / "app.html").read_text(encoding="utf-8-sig")
+        roadtogs_js = (GENERATED_SITE_DIR / "assets/js/tabs/roadtogs.js").read_text(
+            encoding="utf-8-sig"
+        )
+        app_js = (GENERATED_SITE_DIR / "assets/js/app.js").read_text(encoding="utf-8-sig")
+
+        selector = re.search(
+            r'<select id="roadtogs-cutoff-select"[^>]*>(.*?)</select>',
+            app,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(selector)
+        options = re.findall(r'<option value="([^"]+)">([^<]+)</option>', selector.group(1))
+        self.assertEqual(options[0], ("live", "Live"))
+        self.assertEqual(
+            set(options[1:]),
+            {
+                ("ao-md", "Australian Open MD"),
+                ("ao-q", "Australian Open Q"),
+                ("rg-md", "Roland Garros MD"),
+                ("rg-q", "Roland Garros Q"),
+                ("wim-md", "Wimbledon MD"),
+                ("wim-q", "Wimbledon Q"),
+                ("uso-md", "US Open MD"),
+                ("uso-q", "US Open Q"),
+            },
+        )
+        self.assertIn("_rtgsComputeBreakdown(selectedPlayer, selectedCutoff.cutoff)", roadtogs_js)
+        self.assertIn("_rtgsRenderBreakdown(tbody, breakdown, true)", roadtogs_js)
+        self.assertIn("minimumResultsForSearch: Infinity", roadtogs_js)
+        self.assertIn("state.cutoff = cutoffSelect.value", app_js)
+
     def test_history_qualifying_rounds_use_qr_prefix(self):
         cases = {
             "Q1": "QR1",
