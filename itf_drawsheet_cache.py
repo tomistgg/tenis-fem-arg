@@ -201,6 +201,16 @@ def tournament_draw_codes_with_definitive_no_nationality(
 
 def tournament_ids_with_published_main_draw(tournament_ids):
     """Return tournament IDs whose main-draw opening round is published."""
+    return tournament_ids_with_published_draw(tournament_ids, "M")
+
+
+def tournament_ids_with_published_qualifying_draw(tournament_ids):
+    """Return tournament IDs whose qualifying opening round is published."""
+    return tournament_ids_with_published_draw(tournament_ids, "Q")
+
+
+def tournament_ids_with_published_draw(tournament_ids, classification):
+    """Return tournament IDs whose requested opening round is published."""
     wanted_ids = {
         str(tournament_id).strip()
         for tournament_id in tournament_ids or []
@@ -209,10 +219,14 @@ def tournament_ids_with_published_main_draw(tournament_ids):
     if not wanted_ids:
         return set()
 
+    draw_code = str(classification or "").strip().upper()
+    if draw_code not in {"M", "Q"}:
+        raise ValueError(f"Unsupported ITF draw classification: {classification!r}")
+
     cache = _load_raw_cache()
     published_ids = set()
     for tournament_id in wanted_ids:
-        key_prefix = f"{tournament_id}_M_"
+        key_prefix = f"{tournament_id}_{draw_code}_"
         for cache_key, entry in cache.items():
             if not str(cache_key).startswith(key_prefix):
                 continue

@@ -31,7 +31,14 @@ from run_state import record_run_issue, report_run_issue
 from runtime_logging import get_logger
 from time_utils import madrid_today
 from transactional_io import atomic_write_dataframe
-from utils import expand_draws_store_cache, expand_itf_calendar_cache, is_draw_completed, load_cache, save_json_file
+from utils import (
+    expand_draws_store_cache,
+    expand_entry_lists_cache,
+    expand_itf_calendar_cache,
+    is_draw_completed,
+    load_cache,
+    save_json_file,
+)
 
 # `uc.Chrome.__del__` can raise WinError 6 on Windows after we already call
 # `quit()` explicitly. We manage shutdown ourselves, so disable the destructor
@@ -50,6 +57,7 @@ ITF_EVENT_FILTERS_CACHE_FILE = os.path.join(DATA_DIR, "itf_event_filters_cache.j
 ITF_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "itf_calendar_cache.json")
 ITF_BLOCKED_RESPONSES_FILE = os.path.join(DATA_DIR, "itf_blocked_responses.json")
 DRAWS_STORE_CACHE_FILE = os.path.join(DATA_DIR, "draws_store_cache.json")
+ENTRY_LISTS_CACHE_FILE = os.path.join(DATA_DIR, "entry_lists_cache.json")
 
 ITF_BLOCKED_RESPONSES = []
 _ITF_FETCH_BLOCKED = object()
@@ -222,6 +230,31 @@ def _filter_tournaments_for_polling(tournaments_df, today=None):
         today = madrid_today()
     polling_mask = tournaments_df["startDate"].map(lambda start_date: _itf_draw_polling_open(start_date, today=today))
     return tournaments_df.loc[polling_mask].copy(), int((~polling_mask).sum())
+
+
+def _filter_tournaments_with_arg_entry_lists(tournaments_df, entry_cache):
+    """Drop tournaments whose real Entry List contains no ARG players."""
+    if tournaments_df is None or tournaments_df.empty or not isinstance(entry_cache, dict):
+        return tournaments_df, 0
+
+    normalized_cache = {
+        str(key or "").strip().lower(): players
+        for key, players in entry_cache.items()
+        if isinstance(players, list)
+    }
+
+    def _should_keep(tournament_key):
+        players = normalized_cache.get(str(tournament_key or "").strip().lower())
+        if not players:
+            return True
+        return any(
+            isinstance(player, dict)
+            and str(player.get("country") or "").strip().upper() == "ARG"
+            for player in players
+        )
+
+    keep_mask = tournaments_df["tournamentKey"].map(_should_keep)
+    return tournaments_df.loc[keep_mask].copy(), int((~keep_mask).sum())
 
 
 def _filter_tournaments_with_possible_arg_draws(tournaments_df, cached_ids):
@@ -1215,6 +1248,21 @@ if __name__ == "__main__":
         if tournaments_df is None or tournaments_df.empty:
             logger.info("  No eligible ITF tournaments remain after calendar normalization.")
             raise SystemExit(0)
+
+        entry_cache = expand_entry_lists_cache(load_cache(ENTRY_LISTS_CACHE_FILE)) or {}
+        tournaments_df, skipped_argless_entries = _filter_tournaments_with_arg_entry_lists(
+            tournaments_df,
+            entry_cache,
+        )
+        if skipped_argless_entries:
+            logger.debug(
+                f"  Skipping {skipped_argless_entries} tournament(s): "
+                "published Entry List contains no ARG players."
+            )
+        if tournaments_df.empty:
+            logger.info("  No ITF tournaments with possible ARG participation remain.")
+            raise SystemExit(0)
+
         completed_mask = tournaments_df["tournamentKey"].map(
             lambda key: bool(key and is_draw_completed(_canonical_draw_store_key(key)))
         )

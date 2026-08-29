@@ -73,6 +73,7 @@ from itf import (
 from itf_drawsheet_cache import (
     tournament_draw_codes_with_definitive_no_nationality,
     tournament_ids_with_published_main_draw,
+    tournament_ids_with_published_qualifying_draw,
 )
 from lazy_browser import LazyBrowserSession
 from tournament_snapshot import (
@@ -1379,19 +1380,27 @@ def _itf_entry_has_arg(players):
     return False
 
 
-def _itf_main_draw_has_content(draw_data):
-    """Return True once a parsed ITF main draw contains published players."""
+def _entry_list_proves_no_arg(players):
+    """Return True only for a real, non-empty Entry List with no ARG players."""
+    return bool(players) and not _itf_entry_has_arg(players)
+
+
+def _published_draw_has_content(draw_data):
+    """Return True once a parsed draw contains published players."""
     if not isinstance(draw_data, dict):
         return False
     return bool(draw_data.get("players"))
 
 
-def _itf_keys_with_published_main_draw(
+def _keys_with_published_itf_draw(
     itf_draws_tournaments,
     cached_draws_store,
     prefetched_itf_draws,
+    *,
+    draw_code,
+    draw_type,
 ):
-    """Map published main draws from raw and parsed caches back to tournament keys."""
+    """Map a published ITF draw from raw and parsed caches to tournament keys."""
     keys_by_id = {}
     for tourneys in (itf_draws_tournaments or {}).values():
         for tournament_key, tournament_info in (tourneys or {}).items():
@@ -1400,7 +1409,12 @@ def _itf_keys_with_published_main_draw(
                 continue
             keys_by_id.setdefault(tournament_id, set()).add(_canonical_draw_store_key(tournament_key))
 
-    published_ids = tournament_ids_with_published_main_draw(keys_by_id)
+    published_id_loader = (
+        tournament_ids_with_published_main_draw
+        if draw_code == "M"
+        else tournament_ids_with_published_qualifying_draw
+    )
+    published_ids = published_id_loader(keys_by_id)
     published_keys = {
         tournament_key for tournament_id in published_ids for tournament_key in keys_by_id.get(tournament_id, ())
     }
@@ -1410,9 +1424,39 @@ def _itf_keys_with_published_main_draw(
             draws = entry.get("draws") if isinstance(entry, dict) else None
             if not isinstance(draws, dict):
                 draws = entry if isinstance(entry, dict) else {}
-            if _itf_main_draw_has_content(draws.get("MDS")):
+            if _published_draw_has_content(draws.get(draw_type)):
                 published_keys.add(_canonical_draw_store_key(tournament_key))
     return published_keys
+
+
+def _itf_keys_with_published_main_draw(
+    itf_draws_tournaments,
+    cached_draws_store,
+    prefetched_itf_draws,
+):
+    """Return entry-list keys whose main draw has been published."""
+    return _keys_with_published_itf_draw(
+        itf_draws_tournaments,
+        cached_draws_store,
+        prefetched_itf_draws,
+        draw_code="M",
+        draw_type="MDS",
+    )
+
+
+def _itf_keys_with_published_qualifying_draw(
+    itf_draws_tournaments,
+    cached_draws_store,
+    prefetched_itf_draws,
+):
+    """Return entry-list keys whose qualifying draw has been published."""
+    return _keys_with_published_itf_draw(
+        itf_draws_tournaments,
+        cached_draws_store,
+        prefetched_itf_draws,
+        draw_code="Q",
+        draw_type="QS",
+    )
 
 
 def _itf_empty_draw_counts_toward_backoff(acceptance_players, cached_draw_entry):
@@ -1519,6 +1563,11 @@ def _itf_draw_skip_reason(
     if is_draw_completed(store_key) and mds_complete:
         return "tournament already completed"
 
+    # A real Entry List with no ARG players makes the tournament irrelevant to
+    # the Draws page. Do not poll either draw merely to track publication.
+    if _entry_list_proves_no_arg(acceptance_players):
+        return "published acceptance list contains no ARG players"
+
     # For next-week ITF events, only start draw polling on the Saturday/Sunday
     # immediately before the event, or once the tournament week itself begins.
     if start_dt:
@@ -1536,12 +1585,6 @@ def _itf_draw_skip_reason(
 
     if _itf_entry_has_arg(acceptance_players):
         return None
-
-    # Only use a real acceptance list as evidence that the event has no ARG
-    # players. An empty value can also mean the acceptance fetch was unavailable;
-    # in that case fetch the draw and let its player countries decide visibility.
-    if acceptance_players and start_dt and today.date() > start_dt.date():
-        return "event already started and no ARG in acceptance list"
 
     if end_dt and today.date() > end_dt.date():
         return "event already ended"
@@ -2061,6 +2104,34 @@ def _save_acceptance_state(state):
         logger.warning(f"Warning: could not save ITF acceptance state: {e}")
 
 
+def _record_entry_draw_availability(
+    qualifying_draw_keys=None,
+    main_draw_keys=None,
+    *,
+    observed_date=None,
+):
+    """Persist draw publication milestones that close entry-list polling."""
+    state = _load_acceptance_state()
+    changed = False
+    date_text = str(observed_date or madrid_today().isoformat())
+    milestones = (
+        (qualifying_draw_keys or (), "qualifying_draw_available_date"),
+        (main_draw_keys or (), "main_draw_available_date"),
+    )
+    for keys, field in milestones:
+        for raw_key in keys:
+            key = _canonical_draw_store_key(raw_key)
+            if not key:
+                continue
+            entry = state.setdefault(key, {})
+            if not entry.get(field):
+                entry[field] = date_text
+                changed = True
+    if changed:
+        _save_acceptance_state(state)
+    return state
+
+
 def process_tournaments(
     driver,
     tournament_groups,
@@ -2068,6 +2139,8 @@ def process_tournaments(
     arg_names_set,
     entry_cache,
     force_itf_acceptance=False,
+    qualifying_draw_available_keys=None,
+    main_draw_available_keys=None,
     itf_main_draw_available_keys=None,
 ):
     """Process WTA & ITF tournaments: scrape entry lists, build schedule map."""
@@ -2091,7 +2164,12 @@ def process_tournaments(
     current_monday_str = (_now - timedelta(days=_now.weekday())).strftime("%Y-%m-%d")
     acceptance_state = _load_acceptance_state()
     acceptance_state_dirty = False
-    itf_main_draw_available_keys = {_canonical_draw_store_key(key) for key in (itf_main_draw_available_keys or set())}
+    qualifying_draw_available_keys = {
+        _canonical_draw_store_key(key) for key in (qualifying_draw_available_keys or set())
+    }
+    supplied_main_draw_keys = set(main_draw_available_keys or ())
+    supplied_main_draw_keys.update(itf_main_draw_available_keys or ())
+    main_draw_available_keys = {_canonical_draw_store_key(key) for key in supplied_main_draw_keys}
     if force_itf_acceptance:
         logger.info("Forcing refresh of all open ITF acceptance lists.")
 
@@ -2168,6 +2246,21 @@ def process_tournaments(
                 else:
                     target_map[p_key][week_label] = formatted
 
+    def _apply_argless_itf_entry_policy(store_key, players, week_monday):
+        nonlocal acceptance_state_dirty
+        if not _entry_list_proves_no_arg(players):
+            return
+        state_entry = acceptance_state.setdefault(_canonical_draw_store_key(store_key), {})
+        # Draw publication must never control a confirmed no-ARG list.
+        for field in ("qualifying_draw_available_date", "main_draw_available_date"):
+            if state_entry.pop(field, None):
+                acceptance_state_dirty = True
+        if _now.weekday() != 0 or week_monday != current_monday_str:
+            return
+        if not state_entry.get("argless_entry_list_removed_date"):
+            state_entry["argless_entry_list_removed_date"] = today_str
+            acceptance_state_dirty = True
+
     mondays = sorted(monday_map.keys())
     total_weeks = len(mondays) or 4
 
@@ -2203,12 +2296,30 @@ def process_tournaments(
             if key.startswith("http"):
                 if _is_excluded_entry_list_tournament(key, t_info):
                     continue
+                store_key = _canonical_draw_store_key(key)
                 cached_players = entry_cache.get(key, [])
                 if not isinstance(cached_players, list):
                     cached_players = []
+                state_entry = acceptance_state.get(store_key, {}) or {}
+                qualifying_draw_available = bool(state_entry.get("qualifying_draw_available_date"))
+                main_draw_available = bool(state_entry.get("main_draw_available_date"))
+                if not qualifying_draw_available and store_key in qualifying_draw_available_keys:
+                    state_entry = acceptance_state.setdefault(store_key, {})
+                    state_entry["qualifying_draw_available_date"] = today_str
+                    acceptance_state_dirty = True
+                    qualifying_draw_available = True
+                if not main_draw_available and store_key in main_draw_available_keys:
+                    state_entry = acceptance_state.setdefault(store_key, {})
+                    state_entry["main_draw_available_date"] = today_str
+                    acceptance_state_dirty = True
+                    main_draw_available = True
                 is_manual_entry = _is_manual_entry_list_tournament(key)
                 is_pdf_entry = key in _get_pdf_cache_keys()
-                if is_manual_entry or (is_pdf_entry and cached_players):
+                entry_refresh_closed = qualifying_draw_available or main_draw_available
+                if is_manual_entry or (is_pdf_entry and cached_players) or entry_refresh_closed:
+                    if entry_refresh_closed:
+                        draw_name = "main" if main_draw_available else "qualifying"
+                        logger.debug(f"  WTA {draw_name} draw published, entry list closed: {t_name}")
                     t_list = copy.deepcopy(cached_players)
                     status_dict = {}
                     for _p in t_list:
@@ -2352,10 +2463,22 @@ def process_tournaments(
                 if not isinstance(cached_players, list):
                     cached_players = []
 
-                state_entry = acceptance_state.get(key, {}) or {}
-                main_draw_available = bool(state_entry.get("main_draw_available_date"))
-                if not main_draw_available and _canonical_draw_store_key(key) in itf_main_draw_available_keys:
-                    state_entry = acceptance_state.setdefault(key, {})
+                store_key = _canonical_draw_store_key(key)
+                cached_list_has_no_arg = _entry_list_proves_no_arg(cached_players)
+                state_entry = acceptance_state.get(store_key, {}) or {}
+                qualifying_draw_available = bool(state_entry.get("qualifying_draw_available_date")) and not cached_list_has_no_arg
+                main_draw_available = bool(state_entry.get("main_draw_available_date")) and not cached_list_has_no_arg
+                if (
+                    not cached_list_has_no_arg
+                    and not qualifying_draw_available
+                    and store_key in qualifying_draw_available_keys
+                ):
+                    state_entry = acceptance_state.setdefault(store_key, {})
+                    state_entry["qualifying_draw_available_date"] = today_str
+                    acceptance_state_dirty = True
+                    qualifying_draw_available = True
+                if not cached_list_has_no_arg and not main_draw_available and store_key in main_draw_available_keys:
+                    state_entry = acceptance_state.setdefault(store_key, {})
                     state_entry["main_draw_available_date"] = today_str
                     acceptance_state_dirty = True
                     main_draw_available = True
@@ -2372,6 +2495,12 @@ def process_tournaments(
                     # The published main draw is the final roster boundary.
                     # Never fetch this tournament's acceptance list again.
                     logger.debug(f"  ITF main draw published, acceptance list closed: {t_name}")
+                    tourney_players_list = list(cached_players)
+                    itf_name_map = {}
+                elif qualifying_draw_available:
+                    # Qualifying publication freezes the acceptance list. Keep
+                    # showing the last cached list until the main draw replaces it.
+                    logger.debug(f"  ITF qualifying draw published, acceptance list closed: {t_name}")
                     tourney_players_list = list(cached_players)
                     itf_name_map = {}
                 elif already_updated_today and not force_itf_acceptance:
@@ -2401,7 +2530,7 @@ def process_tournaments(
                     fresh_players = parse_itf_entry_list(itf_entries)
                     # Record the fetch attempt (success or failure) so we can
                     # stop retrying after noon UTC when nothing's changed.
-                    state_entry = acceptance_state.setdefault(key, {})
+                    state_entry = acceptance_state.setdefault(store_key, {})
                     if state_entry.get("last_fetched_date") != today_str:
                         state_entry["last_fetched_date"] = today_str
                         acceptance_state_dirty = True
@@ -2441,6 +2570,7 @@ def process_tournaments(
                 if fresh_players or tourney_players_list != cached_players:
                     entry_cache[key] = tourney_players_list
                 tournament_store[key] = tourney_players_list
+                _apply_argless_itf_entry_policy(store_key, tourney_players_list, week_monday)
 
                 # Compute seeds for ITF main draws using WTA ranking one week before.
                 # ≤24 MAIN entries → 32-draw (8 seeds); >24 → 64-draw (16 seeds).
@@ -2890,6 +3020,11 @@ def main():
             original_entry_cache=entry_cache_before_pdf_override,
         )
         cached_draws_for_acceptance = expand_draws_store_cache(load_cache(DRAWS_STORE_CACHE_FILE)) or {}
+        qualifying_draw_available_keys = _itf_keys_with_published_qualifying_draw(
+            itf_draws_tournaments,
+            _normalize_draws_store_keys(cached_draws_for_acceptance),
+            prefetched_itf_draws,
+        )
         main_draw_available_keys = _itf_keys_with_published_main_draw(
             itf_draws_tournaments,
             _normalize_draws_store_keys(cached_draws_for_acceptance),
@@ -2902,7 +3037,8 @@ def main():
             arg_names_set,
             entry_cache,
             force_itf_acceptance=args.force_itf_acceptance,
-            itf_main_draw_available_keys=main_draw_available_keys,
+            qualifying_draw_available_keys=qualifying_draw_available_keys,
+            main_draw_available_keys=main_draw_available_keys,
         )
 
         # Persist the refreshed entry lists after the tournament pass.
@@ -3386,6 +3522,44 @@ def main():
     ]
     for t_key in excluded_draw_keys:
         draws_store.pop(t_key, None)
+
+    # Capture draw publication for every WTA Entry List and ARG-relevant ITF
+    # lists. Confirmed no-ARG ITF lists use the Monday-removal rule instead.
+    qualifying_draw_available_keys = _itf_keys_with_published_qualifying_draw(
+        itf_draws_tournaments,
+        draws_store,
+        prefetched_itf_draws,
+    )
+    main_draw_available_keys = _itf_keys_with_published_main_draw(
+        itf_draws_tournaments,
+        draws_store,
+        prefetched_itf_draws,
+    )
+    qualifying_draw_available_keys = {
+        key
+        for key in qualifying_draw_available_keys
+        if not (
+            str(key).lower().startswith("w-itf-")
+            and _entry_list_proves_no_arg(
+                entry_cache.get(key) or tournament_store.get(key) or []
+            )
+        )
+    }
+    main_draw_available_keys = {
+        key
+        for key in main_draw_available_keys
+        if not (
+            str(key).lower().startswith("w-itf-")
+            and _entry_list_proves_no_arg(
+                entry_cache.get(key) or tournament_store.get(key) or []
+            )
+        )
+    }
+    _record_entry_draw_availability(
+        qualifying_draw_available_keys,
+        main_draw_available_keys,
+        observed_date=today.isoformat(),
+    )
 
     # Remove any ITF draw entries that do not contain ARG players.
     argless_draw_keys = [

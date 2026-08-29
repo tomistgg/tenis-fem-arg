@@ -10,6 +10,7 @@ import draws
 import itf
 import itf_drawsheet_cache
 import main
+import site_renderer
 from lazy_browser import LazyBrowserSession
 from populate_data import itf_load_new, tournament_sizes_update
 
@@ -50,6 +51,20 @@ def test_next_week_tournaments_become_eligible_on_saturday():
 
     assert eligible["tournamentKey"].tolist() == ["current-week", "next-week"]
     assert skipped == 0
+
+
+def test_match_loader_never_polls_tournament_with_argless_entry_list():
+    tournaments = _tournaments()
+    filtered, skipped = itf_load_new._filter_tournaments_with_arg_entry_lists(
+        tournaments,
+        {
+            "current-week": [{"name": "Player One", "country": "ESP", "type": "MAIN"}],
+            "next-week": [{"name": "Player Two", "country": "ARG", "type": "ALT"}],
+        },
+    )
+
+    assert filtered["tournamentKey"].tolist() == ["next-week"]
+    assert skipped == 1
 
 
 def test_current_week_itf_tournaments_are_removed_on_tuesday(monkeypatch):
@@ -266,6 +281,157 @@ def test_published_main_draw_permanently_closes_acceptance_refresh(monkeypatch):
     )
 
 
+def test_published_qualifying_draw_closes_acceptance_but_keeps_cached_list(monkeypatch):
+    tournament_key = "w-itf-bra-2026-010"
+    week = "Week of August 10"
+    acceptance_state = {}
+    cached_players = [
+        {
+            "pos": "1",
+            "name": "Carla Markus",
+            "country": "ARG",
+            "type": "MAIN",
+            "pos_num": 1,
+        }
+    ]
+    monkeypatch.setattr(main, "utc_now", lambda: datetime(2026, 8, 8, 10, 0, tzinfo=UTC))
+    monkeypatch.setattr(main, "_load_acceptance_state", lambda: acceptance_state)
+    monkeypatch.setattr(main, "_save_acceptance_state", lambda state: None)
+    monkeypatch.setattr(main, "get_wta_rankings_cached", lambda *args, **kwargs: [])
+    monkeypatch.setattr(
+        main,
+        "get_itf_players",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("acceptance list was fetched after qualifying publication")
+        ),
+    )
+
+    _, tournament_store, updated_cache, _ = main.process_tournaments(
+        driver=None,
+        tournament_groups={
+            week: {
+                tournament_key: {
+                    "name": "W50 Example",
+                    "level": "W50",
+                    "surface": "Hard",
+                    "country": "BRA",
+                    "startDate": "2026-08-10T00:00:00",
+                    "endDate": "2026-08-16T00:00:00",
+                }
+            }
+        },
+        monday_map={"2026-08-10": week},
+        arg_names_set={"CARLA MARKUS"},
+        entry_cache={tournament_key: cached_players},
+        force_itf_acceptance=True,
+        qualifying_draw_available_keys={tournament_key},
+    )
+
+    assert acceptance_state[tournament_key]["qualifying_draw_available_date"] == "2026-08-08"
+    assert tournament_store[tournament_key]
+    assert updated_cache[tournament_key]
+
+
+def test_argless_entry_list_is_marked_for_removal_on_start_monday(monkeypatch):
+    tournament_key = "w-itf-bra-2026-010"
+    week = "Week of August 10"
+    acceptance_state = {
+        tournament_key: {
+            "qualifying_draw_available_date": "2026-08-08",
+            "main_draw_available_date": "2026-08-09",
+        }
+    }
+    players = [
+        {
+            "pos": "1",
+            "name": "Lan Mi",
+            "country": "CHN",
+            "type": "MAIN",
+            "pos_num": 1,
+        }
+    ]
+    monkeypatch.setattr(main, "utc_now", lambda: datetime(2026, 8, 10, 10, 0, tzinfo=UTC))
+    monkeypatch.setattr(main, "_load_acceptance_state", lambda: acceptance_state)
+    monkeypatch.setattr(main, "_save_acceptance_state", lambda state: None)
+    monkeypatch.setattr(main, "get_wta_rankings_cached", lambda *args, **kwargs: [])
+    monkeypatch.setattr(main, "get_itf_players", lambda *args, **kwargs: ([], {}))
+
+    _, tournament_store, _, _ = main.process_tournaments(
+        driver=None,
+        tournament_groups={
+            week: {
+                tournament_key: {
+                    "name": "W50 Example",
+                    "level": "W50",
+                    "surface": "Hard",
+                    "country": "BRA",
+                    "startDate": "2026-08-10T00:00:00",
+                    "endDate": "2026-08-16T00:00:00",
+                }
+            }
+        },
+        monday_map={"2026-08-10": week},
+        arg_names_set=set(),
+        entry_cache={tournament_key: players},
+        qualifying_draw_available_keys={tournament_key},
+        main_draw_available_keys={tournament_key},
+    )
+
+    assert tournament_store[tournament_key]
+    assert acceptance_state[tournament_key]["argless_entry_list_removed_date"] == "2026-08-10"
+    assert "qualifying_draw_available_date" not in acceptance_state[tournament_key]
+    assert "main_draw_available_date" not in acceptance_state[tournament_key]
+
+
+def test_wta_argless_list_still_refreshes_until_qualifying_draw(monkeypatch):
+    tournament_key = "https://www.wtatennis.com/tournaments/1000/example/2026/player-list"
+    week = "Week of August 10"
+    acceptance_state = {}
+    cached_players = [
+        {
+            "pos": "1",
+            "name": "Lan Mi",
+            "country": "CHN",
+            "type": "MAIN",
+            "pos_num": 1,
+        }
+    ]
+    monkeypatch.setattr(main, "utc_now", lambda: datetime(2026, 8, 8, 10, 0, tzinfo=UTC))
+    monkeypatch.setattr(main, "_load_acceptance_state", lambda: acceptance_state)
+    monkeypatch.setattr(main, "_save_acceptance_state", lambda state: None)
+    monkeypatch.setattr(main, "get_wta_rankings_cached", lambda *args, **kwargs: [])
+    monkeypatch.setattr(
+        main,
+        "scrape_tournament_players",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("WTA player list was fetched after qualifying publication")
+        ),
+    )
+
+    _, tournament_store, _, _ = main.process_tournaments(
+        driver=None,
+        tournament_groups={
+            week: {
+                tournament_key: {
+                    "name": "WTA 125 Example",
+                    "level": "WTA 125",
+                    "surface": "Hard",
+                    "country": "USA",
+                    "startDate": "2026-08-10",
+                    "endDate": "2026-08-16",
+                }
+            }
+        },
+        monday_map={"2026-08-10": week},
+        arg_names_set=set(),
+        entry_cache={tournament_key: cached_players},
+        qualifying_draw_available_keys={tournament_key},
+    )
+
+    assert acceptance_state[tournament_key]["qualifying_draw_available_date"] == "2026-08-08"
+    assert tournament_store[tournament_key]
+
+
 def test_published_main_draw_sources_map_to_canonical_itf_keys(monkeypatch):
     monkeypatch.setattr(
         main,
@@ -301,6 +467,45 @@ def test_published_main_draw_sources_map_to_canonical_itf_keys(monkeypatch):
     }
 
 
+def test_published_argless_qualifying_draw_maps_to_entry_list_key(monkeypatch):
+    monkeypatch.setattr(
+        main,
+        "tournament_ids_with_published_qualifying_draw",
+        lambda tournament_ids: {"101"},
+    )
+
+    result = main._itf_keys_with_published_qualifying_draw(
+        {
+            "Week of August 10": {
+                "W-ITF-BRA-2026-010": {"tournamentId": 101},
+            }
+        },
+        {},
+        {},
+    )
+
+    assert result == {"w-itf-bra-2026-010"}
+
+
+def test_main_draw_state_hides_entry_list_from_renderer(tmp_path):
+    state_path = tmp_path / "itf_acceptance_state.json"
+    state_path.write_text(
+        json.dumps(
+            {
+                "w-itf-bra-2026-010": {"main_draw_available_date": "2026-08-09"},
+                "w-itf-esp-2026-020": {"qualifying_draw_available_date": "2026-08-08"},
+                "w-itf-usa-2026-030": {"argless_entry_list_removed_date": "2026-08-10"},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert site_renderer._entry_list_hidden_keys(tmp_path) == {
+        "w-itf-bra-2026-010",
+        "w-itf-usa-2026-030",
+    }
+
+
 def test_missing_acceptance_data_does_not_suppress_started_itf_draw():
     tournament = {
         "startDate": "2026-08-03T00:00:00",
@@ -318,7 +523,7 @@ def test_missing_acceptance_data_does_not_suppress_started_itf_draw():
     assert reason is None
 
 
-def test_real_acceptance_list_without_arg_still_skips_started_itf_draw():
+def test_real_acceptance_list_without_arg_never_polls_itf_draw():
     tournament = {
         "startDate": "2026-08-03T00:00:00",
         "endDate": "2026-08-09T00:00:00",
@@ -333,7 +538,7 @@ def test_real_acceptance_list_without_arg_still_skips_started_itf_draw():
         today=datetime(2026, 8, 4, 12, 0),
     )
 
-    assert reason == "event already started and no ARG in acceptance list"
+    assert reason == "published acceptance list contains no ARG players"
 
 
 def _published_draw(nationalities):
@@ -397,9 +602,13 @@ def test_published_qualifying_and_main_draws_can_prove_no_arg(monkeypatch):
     published_main_draws = itf_drawsheet_cache.tournament_ids_with_published_main_draw(
         [123, 456, 789, 999],
     )
+    published_qualifying_draws = itf_drawsheet_cache.tournament_ids_with_published_qualifying_draw(
+        [123, 456, 789, 999],
+    )
 
     assert result == {"123"}
     assert published_main_draws == {"123", "456"}
+    assert published_qualifying_draws == {"123", "456", "789"}
 
     draw_codes = (
         itf_drawsheet_cache.tournament_draw_codes_with_definitive_no_nationality(

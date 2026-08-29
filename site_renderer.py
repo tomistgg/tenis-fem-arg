@@ -180,6 +180,22 @@ def _entry_inputs(
     return tournament_store, schedule_map, unranked_arg_names
 
 
+def _entry_list_hidden_keys(data_dir: Path) -> set[str]:
+    """Return tournaments whose main draw has replaced their Entry List."""
+    state = _load_json(data_dir / "itf_acceptance_state.json", {})
+    if not isinstance(state, dict):
+        return set()
+    return {
+        str(key)
+        for key, entry in state.items()
+        if isinstance(entry, dict)
+        and (
+            entry.get("main_draw_available_date")
+            or entry.get("argless_entry_list_removed_date")
+        )
+    }
+
+
 def _ranking_inputs(
     data_dir: Path,
     entry_arg_names: set[str],
@@ -278,6 +294,7 @@ def render_site_from_data(data_dir: str | Path, site_root: str | Path) -> None:
         draws_data=_filter_itf_draws_for_website(draws_store),
         tstrength_data=tstrength_data,
         monday_map=monday_map,
+        entry_list_hidden_keys=_entry_list_hidden_keys(data_dir),
         data_dir=data_dir,
         site_root=site_root,
     )

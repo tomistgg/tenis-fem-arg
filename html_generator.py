@@ -815,6 +815,7 @@ def generate_html(
     draws_data=None,
     tstrength_data=None,
     monday_map=None,
+    entry_list_hidden_keys=None,
     *,
     data_dir=None,
     site_root=None,
@@ -1032,9 +1033,11 @@ def generate_html(
             return _normalize_entry_country(parts[2])
         return ""
 
+    hidden_entry_list_keys = {str(key) for key in (entry_list_hidden_keys or ())}
+
     def _hide_entry_list_menu_key(t_key):
         key = str(t_key or "")
-        return "wimbledon/2026/player-list#qual" in key
+        return key in hidden_entry_list_keys or "wimbledon/2026/player-list#qual" in key
 
     def _sched_dot(entry):
         base = _schedule_tournament_base_name(entry)
@@ -1050,7 +1053,11 @@ def generate_html(
     for week, tourneys in sorted(tournament_groups.items(), key=lambda item: _week_label_sort_key(item[0])):
         week_has_data = False
         for t_key in tourneys:
-            if t_key in tournament_store and tournament_store[t_key]:
+            if (
+                not _hide_entry_list_menu_key(t_key)
+                and t_key in tournament_store
+                and tournament_store[t_key]
+            ):
                 week_has_data = True
                 break
         if not week_has_data:
