@@ -596,7 +596,8 @@
           {"round": 3, "match_num": 2, "winner_name": "T. Valentova", "score": "61 62"},
           {"round": 3, "match_num": 3, "winner_name": "J. Grabher", "score": "64 63"},
           {"round": 4, "match_num": 0, "winner_name": "K. Volynets", "score": "63 76(6)"},
-          {"round": 4, "match_num": 1, "winner_name": "T. Valentova", "score": "63 61"}
+          {"round": 4, "match_num": 1, "winner_name": "T. Valentova", "score": "63 61"},
+          {"round": 5, "match_num": 0, "winner_name": "K. Volynets", "score": "63 75"}
         ],
         "round_labels": [
           "Round of 32",
@@ -786,6 +787,7 @@
           {"round": 3, "match_num": 1, "winner_name": "C. Brace", "score": "63 64"},
           {"round": 3, "match_num": 2, "winner_name": "L. Mi", "score": "61 64"},
           {"round": 3, "match_num": 3, "winner_name": "A. Sanchez", "score": "64 16 64"},
+          {"round": 4, "match_num": 0, "winner_name": "C. Brace", "score": "63 76(2)"},
           {"round": 4, "match_num": 1, "winner_name": "L. Mi", "score": "75 75"}
         ],
         "round_labels": [
@@ -982,7 +984,6 @@
           {"pos": 16, "seed": "14", "name": "RODRIGUEZ CARRETERO, Patricia", "country": "ESP"},
           {"pos": 17, "seed": "3", "name": "KUCIKOVA, Kiara Nina", "country": "SVK"},
           {"pos": 19, "name": "SAMARDZIC, Kristina", "country": "GER"},
-          {"pos": 20, "name": "IVANOVA, Nikol", "country": "BUL"},
           {"pos": 21, "name": "KOLAS, Maryia", "country": "BLR"},
           {"pos": 22, "name": "JIMENEZ PEREZ, Maria", "country": "ESP"},
           {"pos": 24, "seed": "10", "name": "CASSANI, Sonia", "country": "ITA"},
@@ -1026,6 +1027,7 @@
           5,
           10,
           18,
+          20,
           23,
           26,
           34,
@@ -1033,6 +1035,99 @@
           42,
           50,
           58
+        ],
+        "round_labels": [
+          "Round of 64",
+          "Round of 32",
+          "Round of 16"
+        ],
+        "num_rounds": 3
+      }
+    }
+  },
+  "w-itf-arg-2026-009":
+  {
+    "meta":
+    {
+      "name": "W15 Luján",
+      "level": "W15",
+      "week": "Week of August 31",
+      "startDate": "2026-08-31T00:00:00",
+      "endDate": "2026-09-06T00:00:00",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "draw_size": 64,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "MONTELEONE, Giulia Alessia", "country": "ITA"},
+          {"pos": 3, "name": "BARRETO SCHOLZ, Sofia Magali", "country": "PAR"},
+          {"pos": 4, "name": "SEGOVIA VALDES, Josefa Antonia", "country": "CHI"},
+          {"pos": 6, "name": "NUNEZ, Maria Ines", "country": "ARG"},
+          {"pos": 8, "seed": "12", "name": "SIMON PADROS, Sofia", "country": "ARG"},
+          {"pos": 9, "seed": "2", "name": "MORON, Florencia Belen", "country": "ARG"},
+          {"pos": 11, "name": "FERNANDEZ, Mishely", "country": "BOL"},
+          {"pos": 12, "name": "MOTTA, Agostina", "country": "ARG"},
+          {"pos": 13, "name": "Milagros", "country": "ARG"},
+          {"pos": 14, "name": "TORRES, Lara", "country": "ARG"},
+          {"pos": 16, "seed": "13", "name": "ROSSI, Valentina", "country": "ARG"},
+          {"pos": 17, "seed": "3", "name": "CORBALAN MIRANDA, Ambar", "country": "ARG"},
+          {"pos": 19, "name": "CUTRI, Valentina", "country": "ARG"},
+          {"pos": 20, "name": "URIBE ALVARADO, Amanda Victoria", "country": "VEN"},
+          {"pos": 21, "name": "BERTOLINI, Camila", "country": "ARG"},
+          {"pos": 22, "name": "GABOTTO LOREDO, Katia", "country": "ARG"},
+          {"pos": 24, "seed": "16", "name": "SFILIO, Tania", "country": "ARG"},
+          {"pos": 25, "seed": "4", "name": "VEGA GUDINO, CAIRA DELFINA", "country": "ARG"},
+          {"pos": 27, "name": "CALANDRINO, Candela", "country": "ARG"},
+          {"pos": 28, "name": "SIMON PADROS, Felicitas", "country": "ARG"},
+          {"pos": 29, "name": "MADRID ROCCA, Maria Sofia", "country": "ARG"},
+          {"pos": 30, "name": "GARAY, Maiten", "country": "ARG"},
+          {"pos": 32, "seed": "9", "name": "VIVAS, Sofia", "country": "ARG"},
+          {"pos": 33, "seed": "5", "name": "LOPEZ OCAMPOS, Ana Julieta", "country": "PAR"},
+          {"pos": 35, "name": "RONDINONI, Guadalupe", "country": "ARG"},
+          {"pos": 36, "name": "DELLEPIANE, Pia", "country": "ARG"},
+          {"pos": 37, "name": "ALVAREZ, Micaela Rocio", "country": "ARG"},
+          {"pos": 38, "name": "ESCOBAR GONZALEZ, Maria Jose", "country": "ARG"},
+          {"pos": 40, "seed": "15", "name": "PAJELLO, Abril", "country": "ARG"},
+          {"pos": 41, "seed": "6", "name": "E'HALLI OBEID, Mia", "country": "ARG"},
+          {"pos": 43, "name": "GRINBERG, Lucia", "country": "ARG"},
+          {"pos": 44, "name": "FINCHELSTEIN, Sofia", "country": "ARG"},
+          {"pos": 45, "name": "MONDATI, Ornela Luisana", "country": "ARG"},
+          {"pos": 46, "name": "SISCA, Lara Viviana", "country": "ARG"},
+          {"pos": 48, "seed": "14", "name": "CRISTOBAL, Milagros", "country": "ARG"},
+          {"pos": 49, "seed": "7", "name": "CASTRO ZUNINO, Michela", "country": "PER"},
+          {"pos": 51, "name": "ALVAREZ BIRON, Bianca", "country": "ARG"},
+          {"pos": 52, "name": "RASO MONTES, Angeles", "country": "ARG"},
+          {"pos": 53, "name": "GIACCAGLIA, Pilar", "country": "ARG"},
+          {"pos": 54, "name": "TARANTOLA, Agustina", "country": "ARG"},
+          {"pos": 56, "seed": "11", "name": "ARCE GONZALEZ, Mayra", "country": "PAR"},
+          {"pos": 57, "seed": "8", "name": "MARMORSTEIN, Jessica", "country": "USA"},
+          {"pos": 59, "name": "TASSONE, Claudia Yanina", "country": "ARG"},
+          {"pos": 60, "name": "Emilia", "country": "ARG"},
+          {"pos": 61, "name": "NAPPI, Sofia Nahiara", "country": "ARG"},
+          {"pos": 62, "name": "DOLDAN, Zoe", "country": "PAR"},
+          {"pos": 64, "seed": "10", "name": "DOLDAN, Heydi", "country": "PAR"}
+        ],
+        "byes": [
+          2,
+          5,
+          7,
+          10,
+          15,
+          18,
+          23,
+          26,
+          31,
+          34,
+          39,
+          42,
+          47,
+          50,
+          55,
+          58,
+          63
         ],
         "round_labels": [
           "Round of 64",
