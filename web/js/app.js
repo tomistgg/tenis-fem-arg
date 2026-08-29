@@ -1900,6 +1900,27 @@
                 });
             }
 
+            function balanceEntryMenuRows() {
+                const balanceClasses = ['entry-row-size-1', 'entry-row-size-2', 'entry-row-size-3'];
+                document.querySelectorAll('#view-entrylists .entry-menu-week').forEach(weekHeader => {
+                    const items = [];
+                    let nextItem = weekHeader.nextElementSibling;
+                    while (nextItem && nextItem.classList.contains('entry-menu-item')) {
+                        items.push(nextItem);
+                        nextItem = nextItem.nextElementSibling;
+                    }
+                    items.forEach(item => item.classList.remove(...balanceClasses));
+                    const count = items.length;
+                    const remainder = count % 4;
+                    if (remainder === 1 && count >= 5) {
+                        items.slice(0, 2).forEach(item => item.classList.add('entry-row-size-2'));
+                        items.slice(2, 5).forEach(item => item.classList.add('entry-row-size-3'));
+                    } else if (remainder) {
+                        items.slice(0, remainder).forEach(item => item.classList.add(`entry-row-size-${remainder}`));
+                    }
+                });
+            }
+
             function updateEntryMenuLabels() {
                 const items = Array.from(document.querySelectorAll('#view-entrylists .entry-menu-item'));
                 const rows = [];
@@ -1924,6 +1945,7 @@
                     gmEl.style.color = '#1a1a1a';
                 });
                 sortEntryMenuByCategoryThenGm(rows);
+                balanceEntryMenuRows();
                 const headerGm = document.querySelector('#entry-strength');
                 if (headerGm) {
                     const headerText = headerGm.querySelector('.entry-gm-value');

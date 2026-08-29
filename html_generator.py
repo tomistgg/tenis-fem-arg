@@ -1063,32 +1063,50 @@ def generate_html(
         if not week_has_data:
             continue
 
-        entry_menu_html += f'<div class="entry-menu-week">{week.upper()}</div>'
         sorted_tourneys = sorted(tourneys.items(), key=lambda x: get_tournament_sort_order(x[1]["level"]))
+        visible_tourneys = [
+            (t_key, t_info)
+            for t_key, t_info in sorted_tourneys
+            if not _hide_entry_list_menu_key(t_key)
+            and t_key in tournament_store
+            and tournament_store[t_key]
+        ]
+        entry_menu_html += f'<div class="entry-menu-week">{week.upper()}</div>'
 
-        for t_key, t_info in sorted_tourneys:
-            if _hide_entry_list_menu_key(t_key):
-                continue
-            if t_key in tournament_store and tournament_store[t_key]:
-                t_source_name = t_info["name"]
-                t_name = _display_tournament_name(t_source_name)
-                t_level = escape(str(t_info.get("level", "") or ""))
-                t_country = _entry_country_from_key(t_key, t_info)
-                t_flag = country_flag_html(t_country, show_code=False) if t_country else ""
-                t_flag_html = f'<span class="entry-menu-flag">{t_flag}</span>' if t_flag else ""
-                t_dot = _sched_dot(t_source_name)
-                active = " active" if first_key is None else ""
-                if first_key is None:
-                    first_key = t_key
-                entry_menu_html += (
-                    f'<div class="entry-menu-item{active}" data-key="{t_key}" data-country="{escape(t_country)}" '
-                    f'data-level="{t_level}" onclick="selectEntryTournament(this)">'
-                    f'<div class="entry-menu-top">{t_dot}<span class="entry-menu-level">{t_level}</span>'
-                    f"{t_flag_html}"
-                    f'<span class="entry-menu-gm"><span class="entry-menu-gm-value">-</span></span>'
-                    f"</div>"
-                    f'<div class="entry-menu-name">{escape(t_name)}</div></div>'
-                )
+        def _entry_menu_balance_class(index):
+            count = len(visible_tourneys)
+            remainder = count % 4
+            if remainder == 1 and count >= 5:
+                if index < 2:
+                    return " entry-row-size-2"
+                if index < 5:
+                    return " entry-row-size-3"
+            elif remainder and index < remainder:
+                return f" entry-row-size-{remainder}"
+            return ""
+
+        for index, (t_key, t_info) in enumerate(visible_tourneys):
+            t_source_name = t_info["name"]
+            t_name = compact_tournament_name(t_source_name)
+            t_level = escape(str(t_info.get("level", "") or ""))
+            t_country = _entry_country_from_key(t_key, t_info)
+            t_flag = country_flag_html(t_country, show_code=False) if t_country else ""
+            t_flag_html = f'<span class="entry-menu-flag">{t_flag}</span>' if t_flag else ""
+            t_dot = _sched_dot(t_source_name)
+            active = " active" if first_key is None else ""
+            balance = _entry_menu_balance_class(index)
+            if first_key is None:
+                first_key = t_key
+            entry_menu_html += (
+                f'<div class="entry-menu-item{active}{balance}" data-key="{t_key}" '
+                f'data-country="{escape(t_country)}" data-level="{t_level}" '
+                f'onclick="selectEntryTournament(this)">'
+                f'<div class="entry-menu-top">{t_dot}<span class="entry-menu-level">{t_level}</span>'
+                f"{t_flag_html}"
+                f'<span class="entry-menu-gm"><span class="entry-menu-gm-value">-</span></span>'
+                f"</div>"
+                f'<div class="entry-menu-name">{escape(t_name)}</div></div>'
+            )
 
     if entry_menu_html:
         entry_menu_html = legend_html + entry_menu_html
