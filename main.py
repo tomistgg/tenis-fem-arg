@@ -2466,7 +2466,9 @@ def process_tournaments(
                 store_key = _canonical_draw_store_key(key)
                 cached_list_has_no_arg = _entry_list_proves_no_arg(cached_players)
                 state_entry = acceptance_state.get(store_key, {}) or {}
-                qualifying_draw_available = bool(state_entry.get("qualifying_draw_available_date")) and not cached_list_has_no_arg
+                qualifying_draw_available = (
+                    bool(state_entry.get("qualifying_draw_available_date")) and not cached_list_has_no_arg
+                )
                 main_draw_available = bool(state_entry.get("main_draw_available_date")) and not cached_list_has_no_arg
                 if (
                     not cached_list_has_no_arg

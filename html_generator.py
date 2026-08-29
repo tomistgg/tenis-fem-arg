@@ -1073,8 +1073,7 @@ def generate_html(
         ]
         entry_menu_html += f'<div class="entry-menu-week">{week.upper()}</div>'
 
-        def _entry_menu_balance_class(index):
-            count = len(visible_tourneys)
+        def _entry_menu_balance_class(index, count):
             remainder = count % 4
             if remainder == 1 and count >= 5:
                 if index < 2:
@@ -1094,7 +1093,7 @@ def generate_html(
             t_flag_html = f'<span class="entry-menu-flag">{t_flag}</span>' if t_flag else ""
             t_dot = _sched_dot(t_source_name)
             active = " active" if first_key is None else ""
-            balance = _entry_menu_balance_class(index)
+            balance = _entry_menu_balance_class(index, len(visible_tourneys))
             if first_key is None:
                 first_key = t_key
             entry_menu_html += (
