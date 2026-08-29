@@ -119,3 +119,44 @@ def test_new_snapshot_fields_do_not_make_legacy_rows_look_changed():
     assert added == []
     assert changed == []
     assert cancelled == []
+
+
+def test_email_alerts_when_category_free_tournament_name_newly_exceeds_15_characters(tmp_path):
+    before_dir = tmp_path / "before"
+    after_dir = tmp_path / "after"
+    before_dir.mkdir()
+    after_dir.mkdir()
+
+    before = [
+        _calendar_row("itf:unchanged-long", "W15 unchangedlongname"),
+        _calendar_row("itf:renamed-long", "W15 Cordoba"),
+    ]
+    after = [
+        _calendar_row("itf:unchanged-long", "W15 unchangedlongname"),
+        _calendar_row("itf:renamed-long", "W15 abcdefghijklmnopqr"),
+        _calendar_row("itf:added-long", "WTA 125 abcdefghijklmnop", level="WTA125"),
+        _calendar_row("itf:exact-limit", "W50 abcdefghijklmno", level="W50"),
+        _calendar_row("itf:already-compact", "W50 Saint-Palais-sur-Mer", level="W50"),
+    ]
+    (before_dir / "calendar_snapshot.json").write_text(json.dumps(before), encoding="utf-8")
+    (after_dir / "calendar_snapshot.json").write_text(json.dumps(after), encoding="utf-8")
+
+    report = compute_report(str(before_dir), str(after_dir))
+
+    alerts = report["long_tournament_name_alerts"]
+    assert {item["name"] for item in alerts} == {
+        "W15 abcdefghijklmnopqr",
+        "WTA 125 abcdefghijklmnop",
+    }
+    assert {item["name_without_category"] for item in alerts} == {
+        "abcdefghijklmnopqr",
+        "abcdefghijklmnop",
+    }
+    assert {item["character_count"] for item in alerts} == {16, 18}
+
+    markdown = render_email_markdown(report)
+    assert "## 9) Tournament Names Over 15 Characters" in markdown
+    assert "16 characters without counting the category" in markdown
+    alert_section = markdown.split("## 9) Tournament Names Over 15 Characters", 1)[1]
+    assert "W15 unchangedlongname" not in alert_section
+    assert "Saint-Palais-sur-Mer" not in alert_section

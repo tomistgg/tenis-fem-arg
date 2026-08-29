@@ -23,6 +23,7 @@ from html_generator import country_flag_html
 from runtime_logging import get_logger
 from time_utils import madrid_today, parse_utc_timestamp, utc_now
 from utils import (
+    compact_tournament_name,
     expand_calendar_snapshot,
     expand_draws_snapshot,
     expand_draws_store_cache,
@@ -43,6 +44,7 @@ RANKINGS_CSV_FILES = [
     "wta_rankings_20_29.csv",
 ]
 ALIASES_JSON_FILE = "player_aliases_wta_itf.json"
+TOURNAMENT_NAME_CHARACTER_LIMIT = 15
 
 
 def load_json(path):
@@ -228,6 +230,64 @@ def diff_calendar_tournaments(before_rows, after_rows, *, today=None):
     return added, changed, cancelled
 
 
+def _tournament_name_without_category(row):
+    """Return the compact displayed name with a leading category removed."""
+    display_name = compact_tournament_name(repair_name_text(row.get("name") or ""))
+    category = " ".join(repair_name_text(row.get("level") or "").strip().split())
+    if not category:
+        return display_name
+
+    category_variants = {
+        category,
+        category.replace(" ", ""),
+        re.sub(r"(?<=[A-Za-z])(?=\d)", " ", category),
+    }
+    for variant in sorted(category_variants, key=len, reverse=True):
+        if not variant:
+            continue
+        flexible_prefix = re.escape(variant).replace(r"\ ", r"\s*")
+        match = re.match(rf"^{flexible_prefix}(?:\s+|$)", display_name, flags=re.IGNORECASE)
+        if match:
+            return display_name[match.end() :].strip()
+    return display_name
+
+
+def find_long_tournament_name_alerts(before_rows, after_rows):
+    """Return tournaments whose compact, category-free name newly exceeds the limit."""
+    before_by_id = _calendar_rows_by_identity(before_rows)
+    after_by_id = _calendar_rows_by_identity(after_rows)
+    before_names = {
+        key: _tournament_name_without_category(_calendar_representative(rows))
+        for key, rows in before_by_id.items()
+    }
+
+    alerts = []
+    for key, rows in after_by_id.items():
+        row = _calendar_representative(rows)
+        name_without_category = _tournament_name_without_category(row)
+        if len(name_without_category) <= TOURNAMENT_NAME_CHARACTER_LIMIT:
+            continue
+        if before_names.get(key) == name_without_category:
+            continue
+        alerts.append(
+            {
+                "name": repair_name_text(row.get("name") or "").strip(),
+                "name_without_category": name_without_category,
+                "character_count": len(name_without_category),
+                "level": repair_name_text(row.get("level") or "").strip(),
+                "startDate": row.get("startDate") or "",
+            }
+        )
+
+    alerts.sort(
+        key=lambda item: (
+            str(item.get("startDate") or ""),
+            normalize_exact_name(item.get("name", "")),
+        )
+    )
+    return alerts
+
+
 def normalize_country(value):
     return (value or "").strip().upper()
 
@@ -409,6 +469,7 @@ def compute_report(before_dir, after_dir):
         "added_calendar_tournaments": [],
         "changed_calendar_tournaments": [],
         "cancelled_calendar_tournaments": [],
+        "long_tournament_name_alerts": [],
         "flagless_player_countries": [],
         "wta_ranking_status": {},
     }
@@ -632,6 +693,11 @@ def compute_report(before_dir, after_dir):
 
     before_calendar = load_json(os.path.join(before_dir, "calendar_snapshot.json")) or []
     after_calendar = load_json(os.path.join(after_dir, "calendar_snapshot.json")) or []
+
+    report["long_tournament_name_alerts"] = find_long_tournament_name_alerts(
+        before_calendar,
+        after_calendar,
+    )
 
     if before_calendar and after_calendar:
         added, changed, cancelled = diff_calendar_tournaments(before_calendar, after_calendar)
@@ -876,6 +942,7 @@ def render_email_markdown(report):
             bool(report.get("added_calendar_tournaments")),
             bool(report.get("changed_calendar_tournaments")),
             bool(report.get("cancelled_calendar_tournaments")),
+            bool(report.get("long_tournament_name_alerts")),
             bool(report.get("failed_draw_fetches")),
             bool(report.get("blocked_itf_responses")),
             bool(report.get("bad_draw_scores")),
@@ -977,8 +1044,17 @@ def render_email_markdown(report):
             lines.append(f"- {item.get('country', '')}: {players}")
         lines.append("")
 
+    if report.get("long_tournament_name_alerts"):
+        lines.append("## 9) Tournament Names Over 15 Characters")
+        for item in report["long_tournament_name_alerts"]:
+            lines.append(
+                f"- {item['name']}: {item['name_without_category']} has "
+                f"{item['character_count']} characters without counting the category."
+            )
+        lines.append("")
+
     for csv_name, payload in (report.get("added_matches") or {}).items():
-        lines.append(f"## 9) Matches Added ({csv_name})")
+        lines.append(f"## 10) Matches Added ({csv_name})")
         for item in payload.get("items") or []:
             match_line = item.get("line") if isinstance(item, dict) else str(item)
             lines.append(f"- {match_line}")
@@ -990,7 +1066,7 @@ def render_email_markdown(report):
         lines.append("")
 
     if report.get("failed_draw_fetches"):
-        lines.append("## 10) Draw Fetch Failures")
+        lines.append("## 11) Draw Fetch Failures")
         for item in report["failed_draw_fetches"]:
             name = item.get("name") or item.get("key", "")
             key = item.get("key", "")
@@ -1001,7 +1077,7 @@ def render_email_markdown(report):
         lines.append("")
 
     if report.get("blocked_itf_responses"):
-        lines.append("## 11) ITF Blocked Responses")
+        lines.append("## 12) ITF Blocked Responses")
         grouped_blocks = {}
         for item in report["blocked_itf_responses"]:
             endpoint = item.get("endpoint") or "itf"
@@ -1045,7 +1121,7 @@ def render_email_markdown(report):
         lines.append("")
 
     if report.get("bad_draw_scores"):
-        lines.append("## 12) Draw Matches with Invalid Scores")
+        lines.append("## 13) Draw Matches with Invalid Scores")
         for item in report["bad_draw_scores"]:
             lines.append(
                 f"- {item['tournament_name']} ({item['draw_label']}) "
@@ -1123,6 +1199,15 @@ def render_markdown(report):
         for item in report["flagless_player_countries"]:
             players = "; ".join(item.get("players") or [])
             lines.append(f"- {item.get('country', '')}: {players}")
+        lines.append("")
+
+    if report.get("long_tournament_name_alerts"):
+        lines.append("## 9) Tournament Names Over 15 Characters")
+        for item in report["long_tournament_name_alerts"]:
+            lines.append(
+                f"- {item['name']}: {item['name_without_category']} has "
+                f"{item['character_count']} characters without counting the category."
+            )
         lines.append("")
 
     return "\n".join(lines)

@@ -12,7 +12,7 @@ from html_generator import (
     country_flag_html,
 )
 from site_renderer import render_site_from_data
-from utils import expand_entry_lists_cache
+from utils import compact_tournament_name, expand_entry_lists_cache
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 GENERATED_SITE_DIR = PROJECT_DIR
@@ -321,6 +321,19 @@ class GeneratedSiteTests(unittest.TestCase):
             _display_tournament_name("W25 Ibague (MOVED from 10 Oct)"),
             "W25 Ibague",
         )
+
+    def test_requested_long_tournament_names_use_compact_labels(self):
+        cases = {
+            "W15 Viserba di Rimini": "W15 Viserba",
+            "W35 Santa Margherita di Pula 7": "W35 Santa Marg.",
+            "W35 Villeneuve d'Ascq": "W35 Villeneuve",
+            "W100 New Braunfels, TX": "W100 N. Braunfels, TX",
+            "W15 Hilton Head Island, SC": "W15 Hilton H.I., SC",
+            "W15 Feira de Santana": "W15 F. de Santana",
+        }
+        for source_name, expected_name in cases.items():
+            with self.subTest(source_name=source_name):
+                self.assertEqual(compact_tournament_name(source_name), expected_name)
 
     def test_schedule_shows_surface_dot_for_moved_itf_tournament(self):
         app_source = _generated_frontend_source()
