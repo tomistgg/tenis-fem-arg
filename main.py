@@ -251,7 +251,7 @@ ITF_CONSECUTIVE_BLOCKED_THRESHOLD = 3
 
 ITF_BLOCKED_RESPONSES_FILE = os.path.join(DATA_DIR, "itf_blocked_responses.json")
 EXCLUDED_ENTRY_LIST_TOURNAMENT_IDS = {"903", "905"}  # Roland Garros, US Open
-EXCLUDED_DRAWS_TOURNAMENT_IDS = {"903", "904"}  # Roland Garros, Wimbledon
+EXCLUDED_DRAWS_TOURNAMENT_IDS = {"903", "904", "905"}  # Roland Garros, Wimbledon, US Open
 # Entry lists maintained manually by the project owner. These tournaments stay
 # visible, but their cached player lists must not be replaced or merged with
 # live WTA data during a refresh.
@@ -279,7 +279,7 @@ def _is_excluded_draw_tournament(t_key, t_info=None):
     name_text = str((t_info or {}).get("name") or "").lower()
     if any(f"/tournaments/{tid}/" in key_text for tid in EXCLUDED_DRAWS_TOURNAMENT_IDS):
         return True
-    return bool("roland garros" in name_text or "wimbledon" in name_text)
+    return bool("roland garros" in name_text or "wimbledon" in name_text or "us open" in name_text)
 
 
 def _canonicalize_player_names(players, source="", names_only=False):

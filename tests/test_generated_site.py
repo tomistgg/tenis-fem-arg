@@ -74,6 +74,19 @@ class GeneratedSiteTests(unittest.TestCase):
         GENERATED_SITE_DIR = PROJECT_DIR
         cls._generated_site_temp.cleanup()
 
+    def test_us_open_is_excluded_from_draws(self):
+        self.assertTrue(
+            main_module._is_excluded_draw_tournament(
+                "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list"
+            )
+        )
+        self.assertTrue(
+            main_module._is_excluded_draw_tournament(
+                "905-us-open-2026",
+                {"name": "US Open"},
+            )
+        )
+
     def test_legacy_wta_country_codes_render_flags(self):
         players = json.loads(
             (PROJECT_DIR / "data" / "player_aliases_wta_itf.json").read_text(

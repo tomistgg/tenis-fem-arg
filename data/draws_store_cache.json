@@ -924,48 +924,5 @@
         "num_rounds": 3
       }
     }
-  },
-  "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list":
-  {
-    "meta":
-    {
-      "name": "US Open",
-      "level": "Grand Slam",
-      "week": "Week of August 31",
-      "startDate": "2026-08-30",
-      "endDate": "2026-09-13",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
-    },
-    "draws":
-    {
-      "MDS":
-      {
-        "surface": "Hard",
-        "draw_type": "SINGLES MAIN DRAW",
-        "draw_size": 8,
-        "players": [
-          {"pos": 14032013, "seed": "19", "name": "PAOLINI, Jasmine", "country": "ITA"},
-          {"pos": 14032014, "name": "ERJAVEC, Veronika", "country": "SVN"},
-          {"pos": 14032029, "seed": "3", "name": "PEGULA, Jessica", "country": "USA"},
-          {"pos": 14032030, "name": "RUSE, Elena-Gabriela", "country": "ROU"},
-          {"pos": 14032037, "name": "GIBSON, Talia", "country": "AUS"},
-          {"pos": 14032038, "name": "VEKIC, Donna", "country": "HRV"},
-          {"pos": 14032073, "name": "RAKHIMOVA, Kamilla", "country": "UZB"},
-          {"pos": 14032074, "seed": "27", "name": "KREJCIKOVA, Barbora", "country": "CZE"}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 7016006, "winner_name": "J. Paolini", "score": "63 36 64"},
-          {"round": 1, "match_num": 7016014, "winner_name": "J. Pegula", "score": "63 62"},
-          {"round": 1, "match_num": 7016018, "winner_name": "D. Vekic", "score": "26 64 36"},
-          {"round": 1, "match_num": 7016036, "winner_name": "K. Rakhimova", "score": "76(7) 62"}
-        ],
-        "round_labels": [
-          "Quarterfinals",
-          "Semifinals",
-          "Final"
-        ],
-        "num_rounds": 3
-      }
-    }
   }
 }
