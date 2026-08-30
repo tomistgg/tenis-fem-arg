@@ -508,7 +508,8 @@
           {"round": 3, "match_num": 2, "winner_name": "L. Mi", "score": "61 64"},
           {"round": 3, "match_num": 3, "winner_name": "A. Sanchez", "score": "64 16 64"},
           {"round": 4, "match_num": 0, "winner_name": "C. Brace", "score": "63 76(2)"},
-          {"round": 4, "match_num": 1, "winner_name": "L. Mi", "score": "75 75"}
+          {"round": 4, "match_num": 1, "winner_name": "L. Mi", "score": "75 75"},
+          {"round": 5, "match_num": 0, "winner_name": "C. Brace", "score": "16 75 63"}
         ],
         "round_labels": [
           "Round of 32",
@@ -575,6 +576,7 @@
           {"round": 1, "match_num": 0, "winner_name": "M. Toma", "score": "36 63 76(1)"},
           {"round": 1, "match_num": 1, "winner_name": "R. Munk Mortensen", "score": "76(3) 61"},
           {"round": 1, "match_num": 4, "winner_name": "S. Johnson", "score": "46 60 62"},
+          {"round": 1, "match_num": 5, "winner_name": "J. Chan", "score": "60 60"},
           {"round": 1, "match_num": 6, "winner_name": "V. Ivanov", "score": "62 60"},
           {"round": 1, "match_num": 7, "winner_name": "G. Da Silva Fick", "score": "63 61"},
           {"round": 1, "match_num": 8, "winner_name": "M. Martinez Vaquero", "score": "60 64"},
@@ -700,6 +702,7 @@
           {"round": 1, "match_num": 25, "winner_name": "K. Capuzu", "score": "63 63"},
           {"round": 1, "match_num": 26, "winner_name": "B. Nica", "score": "64 61"},
           {"round": 1, "match_num": 27, "winner_name": "V. Proietti", "score": "60 62"},
+          {"round": 1, "match_num": 28, "winner_name": "S. Paris", "score": "26 63 19-17"},
           {"round": 1, "match_num": 30, "winner_name": "M. Pana", "score": "W/O"},
           {"round": 1, "match_num": 31, "winner_name": "S. Butuc Cerchez", "score": "61 62"}
         ],
@@ -897,6 +900,23 @@
           {"pos": 62, "name": "DOLDAN, Zoe", "country": "PAR"},
           {"pos": 64, "seed": "10", "name": "DOLDAN, Heydi", "country": "PAR"}
         ],
+        "matches": [
+          {"round": 1, "match_num": 1, "winner_name": "S. Barreto Scholz", "score": "62 61"},
+          {"round": 1, "match_num": 5, "winner_name": "M. Fernandez", "score": "62 64"},
+          {"round": 1, "match_num": 6, "winner_name": "L. Torres", "score": "61 62"},
+          {"round": 1, "match_num": 9, "winner_name": "A. Uribe Alvarado", "score": "64 60"},
+          {"round": 1, "match_num": 10, "winner_name": "K. Gabotto Loredo", "score": "62 60"},
+          {"round": 1, "match_num": 13, "winner_name": "F. Simon Padros", "score": "61 60"},
+          {"round": 1, "match_num": 14, "winner_name": "M. Madrid Rocca", "score": "62 62"},
+          {"round": 1, "match_num": 17, "winner_name": "G. Rondinoni", "score": "64 62"},
+          {"round": 1, "match_num": 18, "winner_name": "M. Escobar Gonzalez", "score": "61 62"},
+          {"round": 1, "match_num": 21, "winner_name": "L. Grinberg", "score": "60 26 12-10"},
+          {"round": 1, "match_num": 22, "winner_name": "O. Mondati", "score": "63 76(3)"},
+          {"round": 1, "match_num": 25, "winner_name": "B. Alvarez Biron", "score": "61 62"},
+          {"round": 1, "match_num": 26, "winner_name": "A. Tarantola", "score": "60 62"},
+          {"round": 1, "match_num": 29, "winner_name": "E. Gomez Zalazar", "score": "64 62"},
+          {"round": 1, "match_num": 30, "winner_name": "Z. Doldan", "score": "60 63"}
+        ],
         "byes": [
           2,
           5,
@@ -920,49 +940,6 @@
           "Round of 64",
           "Round of 32",
           "Round of 16"
-        ],
-        "num_rounds": 3
-      }
-    }
-  },
-  "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list":
-  {
-    "meta":
-    {
-      "name": "US Open",
-      "level": "Grand Slam",
-      "week": "Week of August 31",
-      "startDate": "2026-08-30",
-      "endDate": "2026-09-13",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
-    },
-    "draws":
-    {
-      "MDS":
-      {
-        "surface": "Hard",
-        "draw_type": "SINGLES MAIN DRAW",
-        "draw_size": 8,
-        "players": [
-          {"pos": 14032013, "seed": "19", "name": "PAOLINI, Jasmine", "country": "ITA"},
-          {"pos": 14032014, "name": "ERJAVEC, Veronika", "country": "SVN"},
-          {"pos": 14032029, "seed": "3", "name": "PEGULA, Jessica", "country": "USA"},
-          {"pos": 14032030, "name": "RUSE, Elena-Gabriela", "country": "ROU"},
-          {"pos": 14032037, "name": "GIBSON, Talia", "country": "AUS"},
-          {"pos": 14032038, "name": "VEKIC, Donna", "country": "HRV"},
-          {"pos": 14032073, "name": "RAKHIMOVA, Kamilla", "country": "UZB"},
-          {"pos": 14032074, "seed": "27", "name": "KREJCIKOVA, Barbora", "country": "CZE"}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 7016006, "winner_name": "J. Paolini", "score": "63 36 64"},
-          {"round": 1, "match_num": 7016014, "winner_name": "J. Pegula", "score": "63 62"},
-          {"round": 1, "match_num": 7016018, "winner_name": "D. Vekic", "score": "26 64 36"},
-          {"round": 1, "match_num": 7016036, "winner_name": "K. Rakhimova", "score": "76(7) 62"}
-        ],
-        "round_labels": [
-          "Quarterfinals",
-          "Semifinals",
-          "Final"
         ],
         "num_rounds": 3
       }
