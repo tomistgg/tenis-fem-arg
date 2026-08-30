@@ -117,17 +117,6 @@ def test_push_overlay_recovers_data_changes_from_an_earlier_failed_run():
     assert 'git diff --name-only -z "$overlay_base" "$GITHUB_SHA" -- data' in workflow
 
 
-def test_refresh_restores_repository_managed_entry_list_config_after_data_state():
-    workflow = (WORKFLOW_DIR / "hourly-update.yml").read_text(encoding="utf-8")
-
-    restore_state = workflow.index("Restore latest validated data state")
-    restore_config = workflow.index("Restore repository-managed data configuration")
-    quality_baseline = workflow.index("Snapshot validated quality baseline")
-    assert restore_state < restore_config < quality_baseline
-    assert "data/gs_pdf_urls.json" in workflow
-    assert 'git show "$GITHUB_SHA:$relative" > "$GITHUB_WORKSPACE/$relative"' in workflow
-
-
 def test_update_notification_is_finalized_after_pages_deployment():
     workflow = (WORKFLOW_DIR / "hourly-update.yml").read_text(encoding="utf-8")
 

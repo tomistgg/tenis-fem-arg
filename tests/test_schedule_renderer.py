@@ -6,15 +6,6 @@ from site_renderer import _tournament_inputs, _visible_schedule_monday_map
 
 def test_schedule_shows_four_chronological_unique_weeks(tmp_path: Path):
     snapshot = {
-        "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list": {
-            "name": "US Open",
-            "level": "Grand Slam",
-            "surface": "Hard",
-            "country": "USA",
-            "startDate": "2026-08-23",
-            "endDate": "2026-08-29",
-            "week": "Week of August 24",
-        },
         "w-itf-arg-2026-001": {
             "name": "ITF Example",
             "level": "W35",
@@ -62,31 +53,9 @@ def test_schedule_shows_four_chronological_unique_weeks(tmp_path: Path):
         },
     }
     (tmp_path / "tournament_snapshot.json").write_text(json.dumps(snapshot), encoding="utf-8")
-    (tmp_path / "gs_pdf_urls.json").write_text(
-        json.dumps(
-            {
-                "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list": {
-                    "main": {
-                        "start_date": "2026-08-30",
-                        "display_name": "US Open",
-                        "level": "Grand Slam",
-                        "surface": "Hard",
-                        "country": "USA",
-                    },
-                }
-            }
-        ),
-        encoding="utf-8",
-    )
 
-    tournament_groups, monday_map = _tournament_inputs(tmp_path)
+    _, monday_map = _tournament_inputs(tmp_path)
     visible_map = _visible_schedule_monday_map(monday_map)
-
-    qualifying_key = "https://www.wtatennis.com/tournaments/905/us-open/2026/player-list#qual"
-    main_key = qualifying_key.removesuffix("#qual")
-    assert all(qualifying_key not in tournaments for tournaments in tournament_groups.values())
-    assert main_key in tournament_groups["Week of August 31"]
-    assert tournament_groups["Week of August 31"][main_key]["name"] == "US Open"
 
     assert list(visible_map.items()) == [
         ("2026-08-17", "Week of August 17"),

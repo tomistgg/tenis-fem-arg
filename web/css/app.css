@@ -555,7 +555,7 @@
             .entry-menu-legend { width: 100%; background: var(--c-surface); color: var(--c-text-muted); font-size: var(--fs-xs); line-height: 1.35; text-align: center; padding: var(--sp-2) 10px; border-bottom: 1px solid var(--c-border); box-sizing: border-box; }
             .entry-menu-gm-sample { display: inline-block; font-size: 8px; font-weight: 700; padding: 0px 3px; border-radius: 2px; background: var(--c-arg-tint); color: #1a1a1a; line-height: 13px; margin: 0 2px; vertical-align: middle; }
             .entry-menu-week { width: 100%; background: var(--c-surface-sunk); font-size: var(--fs-sm); font-weight: bold; text-align: center; padding: var(--sp-2); color: var(--c-text-subtle); border-bottom: 1px solid var(--c-border); }
-            .entry-menu-item { flex: 0 0 25%; min-width: 0; padding: 8px 6px; font-size: var(--fs-xs); cursor: pointer; border-bottom: 1px solid var(--c-border-soft); border-right: 1px solid var(--c-border-soft); color: var(--c-text-secondary); transition: background 0.15s; text-align: center; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
+            .entry-menu-item { flex: 0 0 25%; min-width: 0; padding: 8px 2px; font-size: var(--fs-xs); cursor: pointer; border-bottom: 1px solid var(--c-border-soft); border-right: 1px solid var(--c-border-soft); color: var(--c-text-secondary); transition: background 0.15s; text-align: center; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
             .entry-menu-item.entry-row-size-1 { flex-basis: 100%; }
             .entry-menu-item.entry-row-size-2 { flex-basis: 50%; }
             .entry-menu-item.entry-row-size-3 { flex-basis: 33.333333%; }
@@ -1167,7 +1167,7 @@
                 .entry-menu-week {
                     width: 100%;
                     font-size: 9px;
-                    padding: 5px 6px;
+                    padding: 5px 2px;
                 }
                 .entry-menu-item {
                     width: auto;

@@ -51,18 +51,6 @@ jobs:
             echo "data-state branch does not exist yet; bootstrapping from main"
           fi
 
-      - name: Restore repository-managed data configuration
-        run: |
-          # These files are configuration, not refresh output. Always take
-          # them from the source revision so a stale data-state snapshot or a
-          # scheduled refresh cannot undo a manual entry-list override.
-          for relative in data/gs_pdf_urls.json; do
-            if git cat-file -e "$GITHUB_SHA:$relative" 2>/dev/null; then
-              mkdir -p "$GITHUB_WORKSPACE/$(dirname "$relative")"
-              git show "$GITHUB_SHA:$relative" > "$GITHUB_WORKSPACE/$relative"
-            fi
-          done
-
       - name: Remove legacy generated bundles from canonical data
         run: |
           rm -f data/history_data_bundle.js

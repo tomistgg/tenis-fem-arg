@@ -14,12 +14,13 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from calendar_builder import format_week_label, get_monday_from_date
+from calendar_builder import get_monday_from_date
 from config import CONTINENT_KEYS
 from html_generator import generate_html
 from main import (
     _append_schedule_label,
     _filter_itf_draws_for_website,
+    _is_excluded_entry_list_tournament,
     _schedule_tournament_name,
     enrich_history_with_wta_ranks,
     load_match_history,
@@ -55,47 +56,6 @@ def _monday_from_date(value: str) -> str:
     return (parsed - timedelta(days=parsed.weekday())).strftime("%Y-%m-%d")
 
 
-def _add_configured_entry_list_groups(data_dir: Path, tournament_groups: TournamentGroups) -> None:
-    """Restore separately configured main and qualifying lists to their draw weeks."""
-    configured_draws = _load_json(data_dir / "gs_pdf_urls.json", {})
-    for base_key, draw_config in configured_draws.items():
-        if not isinstance(draw_config, dict):
-            continue
-        for draw_type in ("main", "qual"):
-            draw = draw_config.get(draw_type)
-            if not isinstance(draw, dict):
-                continue
-            start_date = str(draw.get("start_date") or "")[:10]
-            try:
-                monday = get_monday_from_date(start_date)
-            except ValueError:
-                continue
-
-            target_key = base_key if draw_type == "main" else f"{base_key}#qual"
-            existing_info = next(
-                (
-                    tournaments.get(target_key) or tournaments.get(base_key) or {}
-                    for tournaments in tournament_groups.values()
-                    if target_key in tournaments or base_key in tournaments
-                ),
-                {},
-            )
-            default_name = str(existing_info.get("name") or "Grand Slam")
-            if draw_type == "qual":
-                default_name = f"{default_name} Qualifying"
-            for tournaments in tournament_groups.values():
-                tournaments.pop(target_key, None)
-            week = format_week_label(monday)
-            tournament_groups.setdefault(week, OrderedDict())[target_key] = {
-                "name": draw.get("display_name") or default_name,
-                "level": draw.get("level") or existing_info.get("level", "Grand Slam"),
-                "surface": draw.get("surface") or existing_info.get("surface", ""),
-                "country": draw.get("country") or existing_info.get("country", ""),
-                "startDate": start_date,
-                "endDate": draw.get("end_date") or existing_info.get("endDate"),
-            }
-
-
 def _tournament_inputs(data_dir: Path) -> tuple[TournamentGroups, OrderedDict[str, str]]:
     snapshot = expand_tournament_snapshot(_load_json(data_dir / "tournament_snapshot.json", {}))
     tournament_groups: TournamentGroups = OrderedDict()
@@ -105,7 +65,6 @@ def _tournament_inputs(data_dir: Path) -> tuple[TournamentGroups, OrderedDict[st
         if not week:
             continue
         tournament_groups.setdefault(week, OrderedDict())[tournament_key] = info
-    _add_configured_entry_list_groups(data_dir, tournament_groups)
 
     week_dates: dict[str, str] = {}
     for week, tournaments in tournament_groups.items():
@@ -130,7 +89,12 @@ def _entry_inputs(
     tournament_groups: TournamentGroups,
 ) -> tuple[dict[str, list[dict[str, Any]]], ScheduleMap, set[str]]:
     entry_cache = expand_entry_lists_cache(_load_json(data_dir / "entry_lists_cache.json", {})) or {}
-    active_keys = {key for tournaments in tournament_groups.values() for key in tournaments}
+    active_keys = {
+        key
+        for tournaments in tournament_groups.values()
+        for key, info in tournaments.items()
+        if not _is_excluded_entry_list_tournament(key, info)
+    }
     active_keys.update(f"{key}#qual" for key in tuple(active_keys))
     tournament_store = {
         key: players for key, players in entry_cache.items() if key in active_keys and isinstance(players, list)
