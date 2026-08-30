@@ -160,3 +160,92 @@ def test_email_alerts_when_category_free_tournament_name_newly_exceeds_15_charac
     alert_section = markdown.split("## 9) Tournament Names Over 15 Characters", 1)[1]
     assert "W15 unchangedlongname" not in alert_section
     assert "Saint-Palais-sur-Mer" not in alert_section
+
+
+def _player_row(player_key, display_name, *, country="", dob="", wta_id="", itf_id=""):
+    return {
+        "player_key": player_key,
+        "display_name": display_name,
+        "country": country,
+        "dob": dob,
+        "wta_id": wta_id,
+        "wta_name": display_name if wta_id else "",
+        "itf_id": itf_id,
+        "itf_name": display_name if itf_id else "",
+        "bjkc_id": "",
+        "bjkc_name": "",
+        "aliases": [],
+        "additional_wta_ids": [],
+        "additional_itf_ids": [],
+        "additional_bjkc_ids": [],
+    }
+
+
+def test_email_reports_player_identity_link(tmp_path):
+    before_dir = tmp_path / "before"
+    after_dir = tmp_path / "after"
+    before_dir.mkdir()
+    after_dir.mkdir()
+    before = [
+        _player_row("wta:123", "Same Name (WTA 123)", country="ARG", dob="2000-01-01", wta_id="123"),
+        _player_row("itf:800000001", "Same Name", country="ARG", dob="2000-01-01", itf_id="800000001"),
+    ]
+    before[0]["presentation_name"] = "Same Name"
+    after = [
+        {
+            **_player_row(
+                "wta:123",
+                "Same Name",
+                country="ARG",
+                dob="2000-01-01",
+                wta_id="123",
+                itf_id="800000001",
+            ),
+            "itf_name": "Same Name",
+        }
+    ]
+    (before_dir / "player_aliases_wta_itf.json").write_text(json.dumps(before), encoding="utf-8")
+    (after_dir / "player_aliases_wta_itf.json").write_text(json.dumps(after), encoding="utf-8")
+
+    report = compute_report(str(before_dir), str(after_dir))
+
+    assert report["player_identity_links"][0]["source_ids"] == ["ITF 800000001", "WTA 123"]
+    markdown = render_email_markdown(report)
+    assert "## Player Identities Linked Automatically" in markdown
+    assert "Same Name: ITF 800000001, WTA 123" in markdown
+
+
+def test_email_reports_similar_player_identity_for_review(tmp_path):
+    before_dir = tmp_path / "before"
+    after_dir = tmp_path / "after"
+    before_dir.mkdir()
+    after_dir.mkdir()
+    existing = _player_row(
+        "wta:310974",
+        "Laura Vallverdu-Zaira",
+        country="ESP",
+        dob="1987-04-22",
+        wta_id="310974",
+    )
+    candidate = _player_row(
+        "itf:800240123",
+        "Laura Vallverdu-Zafra",
+        country="VEN",
+        itf_id="800240123",
+    )
+    (before_dir / "player_aliases_wta_itf.json").write_text(json.dumps([existing]), encoding="utf-8")
+    (after_dir / "player_aliases_wta_itf.json").write_text(
+        json.dumps([existing, candidate]),
+        encoding="utf-8",
+    )
+
+    report = compute_report(str(before_dir), str(after_dir))
+
+    review = report["player_identity_review_candidates"]
+    assert len(review) == 1
+    assert review[0]["name_match"] == "similar"
+    assert review[0]["similarity"] >= 90
+    markdown = render_email_markdown(report)
+    assert "## Player Identity Candidates for Manual Review" in markdown
+    assert "Laura Vallverdu-Zafra" in markdown
+    assert "country conflicts (VEN vs ESP)" in markdown

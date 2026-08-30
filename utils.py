@@ -6,7 +6,7 @@ import re
 import tempfile
 import unicodedata
 
-from config import CITY_CASE_FIXES, COUNTRY_OVERRIDES, COUNTRY_TO_CONTINENT, TOURNAMENT_NAME_OVERRIDES
+from config import CITY_CASE_FIXES, COUNTRY_TO_CONTINENT, TOURNAMENT_NAME_OVERRIDES
 from runtime_logging import get_logger
 from runtime_paths import DATA_DIR
 from time_utils import utc_timestamp
@@ -2034,19 +2034,6 @@ def save_json_array_one_line_per_item(path, items, transform=None):
         lines.append("  " + json.dumps(transform(item) if transform else item, ensure_ascii=False) + comma)
     lines.append("]")
     write_text_if_changed(path, "\n".join(lines) + "\n", encoding="utf-8")
-
-
-def override_country_for_player(player_name, country_code):
-    key = (player_name or "").strip().upper()
-    if key in COUNTRY_OVERRIDES:
-        return COUNTRY_OVERRIDES[key]
-    return country_code
-
-
-def normalize_country_overrides(rows, name_key, country_key):
-    for row in rows or []:
-        row[country_key] = override_country_for_player(row.get(name_key, ""), row.get(country_key, ""))
-    return rows
 
 
 def load_csv_rows(file_path, delimiter=","):

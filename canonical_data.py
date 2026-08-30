@@ -553,8 +553,80 @@ def write_player_rows(path: Path, rows: Iterable[Mapping[str, object]]) -> None:
         temp_path.unlink(missing_ok=True)
 
 
+def _verified_exact_identity_row(
+    rows: list[dict],
+    *,
+    name: object,
+    country: object,
+    dob: object,
+) -> dict | None:
+    """Return one identity matching exact name, country, and full DOB.
+
+    A name match by itself is not enough to merge players. Missing metadata,
+    conflicting metadata, or more than one qualifying identity all require
+    manual review instead.
+    """
+    name_key = normalized_name(name)
+    country_key = compact_text(country).upper()
+    dob_key = compact_text(dob)[:10]
+    if not name_key or not country_key or not dob_key:
+        return None
+
+    matches = []
+    for row in rows:
+        record = PlayerRecord.from_mapping(row)
+        if record.country != country_key or record.dob != dob_key:
+            continue
+        if name_key not in {normalized_name(value) for value in record.names()}:
+            continue
+        matches.append(row)
+    return matches[0] if len(matches) == 1 else None
+
+
+def _append_unique(row: dict, field: str, value: str) -> None:
+    values = row.get(field)
+    normalized = list(values) if isinstance(values, list) else []
+    if value and value not in normalized:
+        normalized.append(value)
+    row[field] = normalized
+
+
+def _link_source_identity(
+    row: dict,
+    *,
+    source: str,
+    player_id: str,
+    source_name: str,
+    country: str,
+    dob: str,
+) -> None:
+    """Attach a newly observed source ID to a verified canonical identity."""
+    primary_field = f"{source}_id"
+    additional_field = f"additional_{source}_ids"
+    name_field = f"{source}_name"
+    current_primary = normalized_identifier(row.get(primary_field))
+    if current_primary:
+        if current_primary != player_id:
+            _append_unique(row, additional_field, player_id)
+    else:
+        row[primary_field] = player_id
+        if source == "wta":
+            row["player_key"] = f"wta:{player_id}"
+
+    current_source_name = compact_text(row.get(name_field))
+    if not current_source_name:
+        row[name_field] = source_name
+    elif source_name and normalized_name(source_name) != normalized_name(current_source_name):
+        _append_unique(row, "aliases", source_name)
+
+    if not compact_text(row.get("country")):
+        row["country"] = country
+    if not compact_text(row.get("dob")):
+        row["dob"] = dob
+
+
 def sync_wta_players(path: Path, ranking_rows: Iterable[Mapping[str, object]]) -> int:
-    """Add newly ranked WTA IDs without making name-based identity guesses."""
+    """Add new WTA IDs, linking only identities with fully matching metadata."""
     rows = load_player_rows(path)
     index = PlayerIdentityIndex(rows)
     added = 0
@@ -566,6 +638,26 @@ def sync_wta_players(path: Path, ranking_rows: Iterable[Mapping[str, object]]) -
             compact_text(ranking.get("player") or ranking.get("OfficialPlayer") or ranking.get("Player"))
             or f"WTA player {player_id}"
         )
+        country = compact_text(ranking.get("country") or ranking.get("Country")).upper()
+        dob = compact_text(ranking.get("dob") or ranking.get("DOB"))[:10]
+        verified_row = _verified_exact_identity_row(
+            rows,
+            name=display_name,
+            country=country,
+            dob=dob,
+        )
+        if verified_row is not None:
+            _link_source_identity(
+                verified_row,
+                source="wta",
+                player_id=player_id,
+                source_name=display_name,
+                country=country,
+                dob=dob,
+            )
+            index = PlayerIdentityIndex(rows)
+            added += 1
+            continue
         canonical_display = display_name
         presentation_name = ""
         if normalized_name(canonical_display) in index.by_display_name:
@@ -575,8 +667,8 @@ def sync_wta_players(path: Path, ranking_rows: Iterable[Mapping[str, object]]) -
             "player_key": f"wta:{player_id}",
             "display_name": canonical_display,
             "presentation_name": presentation_name,
-            "country": compact_text(ranking.get("country") or ranking.get("Country")).upper(),
-            "dob": compact_text(ranking.get("dob") or ranking.get("DOB"))[:10],
+            "country": country,
+            "dob": dob,
             "wta_id": player_id,
             "wta_name": display_name,
             "itf_id": "",
@@ -602,7 +694,7 @@ def sync_wta_players(path: Path, ranking_rows: Iterable[Mapping[str, object]]) -
 
 
 def sync_itf_players(path: Path, match_rows: Iterable[Mapping[str, object]]) -> int:
-    """Add newly observed ITF IDs without merging identities by name."""
+    """Add new ITF IDs, linking only identities with fully matching metadata."""
     rows = load_player_rows(path)
     index = PlayerIdentityIndex(rows)
     added = 0
@@ -616,6 +708,28 @@ def sync_itf_players(path: Path, match_rows: Iterable[Mapping[str, object]]) -> 
                 or normalized_name(source_name) in {"", "bye", "unknown"}
             ):
                 continue
+            country = compact_text(match.get(f"{side}Country")).upper()
+            dob = compact_text(
+                match.get(f"{side}Dob") or match.get(f"{side}DOB")
+            )[:10]
+            verified_row = _verified_exact_identity_row(
+                rows,
+                name=source_name,
+                country=country,
+                dob=dob,
+            )
+            if verified_row is not None:
+                _link_source_identity(
+                    verified_row,
+                    source="itf",
+                    player_id=player_id,
+                    source_name=source_name,
+                    country=country,
+                    dob=dob,
+                )
+                index = PlayerIdentityIndex(rows)
+                added += 1
+                continue
             canonical_display = source_name
             presentation_name = ""
             if normalized_name(canonical_display) in index.by_display_name:
@@ -625,8 +739,8 @@ def sync_itf_players(path: Path, match_rows: Iterable[Mapping[str, object]]) -> 
                 "player_key": f"itf:{player_id}",
                 "display_name": canonical_display,
                 "presentation_name": presentation_name,
-                "country": compact_text(match.get(f"{side}Country")).upper(),
-                "dob": "",
+                "country": country,
+                "dob": dob,
                 "wta_id": "",
                 "wta_name": "",
                 "itf_id": player_id,

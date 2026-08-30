@@ -96,18 +96,18 @@ def test_ranking_bundles_deduplicate_presented_player_identity(tmp_path):
             {
                 "Rank": 320,
                 "Points": 213,
-                "Player": "SLOANE STEPHENS",
-                "Id": "315683",
-                "Country": "USA",
-                "DOB": "1993-03-20",
+                "Player": "ANNE AALLONEN (WTA 10001)",
+                "Id": "10001",
+                "Country": "FIN",
+                "DOB": "1967-07-15",
             },
             {
                 "Rank": 1171,
                 "Points": 12,
-                "Player": "SLOANE STEPHENS (WTA 337674)",
-                "Id": "337674",
-                "Country": "USA",
-                "DOB": "1993-03-20",
+                "Player": "ANNE AALLONEN",
+                "Id": "800178944",
+                "Country": "FIN",
+                "DOB": "1967-07-15",
             },
         ],
     }
@@ -118,13 +118,13 @@ def test_ranking_bundles_deduplicate_presented_player_identity(tmp_path):
     match = re.search(r"const b = (\{.*?\n  \});", bundle, re.DOTALL)
     assert match is not None
     payload = json.loads(match.group(1))
-    assert payload["p"] == [["SLOANE STEPHENS", "USA", "1993-03-20"]]
+    assert payload["p"] == [["ANNE AALLONEN", "FIN", "1967-07-15"]]
     assert payload["d"]["2026-07-27"] == [[320, 213, 0]]
 
 
 def test_ranking_display_name_removes_only_identity_disambiguators():
     assert _ranking_display_name({"Id": "70300", "Player": "CAROLINA GARCÍA (ARG)"}) == "CAROLINA GARCÍA"
-    assert _ranking_display_name({"Id": "337674", "Player": "SLOANE STEPHENS (WTA 337674)"}) == "SLOANE STEPHENS"
+    assert _ranking_display_name({"Id": "10001", "Player": "ANNE AALLONEN (WTA 10001)"}) == "ANNE AALLONEN"
     assert (
         _ranking_display_name({"Id": "20006", "Player": "DIANNE FROMHOLTZ (BALESTRAT)"})
         == "DIANNE FROMHOLTZ (BALESTRAT)"

@@ -31,6 +31,24 @@ from canonical_data import (
 # they are identical, so a future exception cannot silently leak an internal
 # qualifier into the UI.
 NAME_OVERRIDE_BY_ITF_ID = {
+    "800673790": ("Alexandra-Nicole Aldea", "Alexandra-Nicole Aldea"),
+    "800714861": ("Amanda Uribe Alvarado", "Amanda Uribe Alvarado"),
+    "800651913": ("Beatriz Melo Rodrigues", "Beatriz Melo Rodrigues"),
+    "800650189": ("Cecilia Stella Ferrazzoli", "Cecilia Stella Ferrazzoli"),
+    "800853287": ("Farah Taysser Mahmoud", "Farah Taysser Mahmoud"),
+    "800690434": ("Giulia Maria Bonaccorso", "Giulia Maria Bonaccorso"),
+    "800878279": ("Josefa Segovia", "Josefa Segovia"),
+    "800555467": ("Kaniska Mallela", "Kaniska Mallela"),
+    "800775870": ("Laura Beatriz Travagin", "Laura Beatriz Travagin"),
+    "800571700": ("Lavinia Cacace Gismondi", "Lavinia Cacace Gismondi"),
+    "800774696": ("Lucia Fernandez-Trabadelo", "Lucia Fernandez-Trabadelo"),
+    "800774038": ("Malak haytham ismeil", "Malak haytham ismeil"),
+    "800703288": ("Maria Pares Bergnes", "Maria Pares Bergnes"),
+    "800671114": ("Marta Bieniecka Zawerthal", "Marta Bieniecka Zawerthal"),
+    "800841500": ("Serena Wilson Donizete", "Serena Wilson Donizete"),
+    "800567185": ("Tatiana Cantos Siemers", "Tatiana Cantos Siemers"),
+    "800832820": ("Valentina Laime Carrillo", "Valentina Laime Carrillo"),
+    "800635001": ("Vitoria Rodrigues Oliveira", "Vitoria Rodrigues Oliveira"),
     "800462974": ("Ana Luiza Cruz", "Ana Luiza Cruz"),
     "800201426": ("Carolina García (ARG)", "Carolina García"),
     "800534700": ("Carolina García (BRA)", "Carolina García"),
@@ -49,6 +67,11 @@ NAME_OVERRIDE_BY_ITF_ID = {
 }
 
 NAME_OVERRIDE_BY_WTA_ID = {
+    "310974": ("Laura Vallverdu", "Laura Vallverdu"),
+    "334568": ("Giovana Schincariol", "Giovana Schincariol"),
+    "335329": ("Laura Portela Borges", "Laura Portela Borges"),
+    "336666": ("Maria Eduarda Carbone", "Maria Eduarda Carbone"),
+    "334602": ("Nauhany Leme Da Silva", "Nauhany Leme Da Silva"),
     "325609": ("Barbora Matusova (SVK)", "Barbora Matusova"),
     "319854": ("Montserrat González (PAR)", "Montserrat González"),
     "311072": ("Montserrat González (MEX)", "Montserrat González"),
@@ -60,17 +83,10 @@ NAME_OVERRIDE_BY_WTA_ID = {
 # runtime presentation never has to infer meaning from parentheses.  Newly
 # discovered name collisions receive the same metadata automatically below.
 PRESENTATION_BY_PLAYER_KEY = {
-    "itf:800587892": "Daphnee Mpetshi Perricard",
     "wta:206952": "Ekaterina Kuznetsova",
     "wta:311604": "Ekaterina Makarova",
     "wta:315172": "Fernanda Sandoval",
     "wta:20054": "Katerina Bohmova",
-    "itf:800436364": "Kateryna Diatlova",
-    "itf:800506455": "Kim Chiarello",
-    "itf:800700710": "Lorena Schaedel",
-    "itf:800561777": "Polina Kaibekova",
-    "itf:800673210": "Rachael Smith",
-    "wta:337674": "Sloane Stephens",
 }
 
 PRIMARY_ITF_BY_WTA_ID = {
@@ -84,31 +100,67 @@ PRIMARY_ITF_BY_WTA_ID = {
 WTA_BY_ITF_ID = {
     "800536015": "332762",  # Alice Soulie
     "800221348": "130734",  # Andreea Matei
+    "800178944": "10001",   # Anne Aallonen
     "800513464": "331945",  # Barbora Michalkova
+    "800182267": "180081",  # Belkis Rodriguez
+    "800177048": "80039",   # Chiu-Mei Ho
+    "800587892": "333499",  # Daphnee Mpetshi Perricard
+    "800177871": "30020",   # Dyan Castillejo
     "800546838": "332098",  # Elena Ruxandra Bertea
     "800785739": "336029",  # Emery Combs
     "800643210": "335673",  # Gabriella Mikaul
     "800209063": "190727",  # Ivana Sokac
     "800237052": "190727",  # Ivana Sakac (second ITF profile)
     "800331402": "319280",  # Jasmine Paolini
+    "800179196": "250023",  # Jennifer Young (USA)
+    "800263174": "312770",  # Jennifer Young (GER)
+    "800646432": "337080",  # Jordyn Hazelitt
+    "800180089": "160056",  # Karin Ptaszek
+    "800436364": "326630",  # Kateryna Diatlova
     "800537641": "332103",  # Kelly Keller
+    "800506455": "335306",  # Kim Chiarello
     "800585059": "333539",  # Kiara Nina Kucikova
     "800178321": "190019",  # Larisa Neiland / Savchenko
+    "800240123": "310974",  # Laura Vallverdu-Zafra / Vallverdu-Zaira
+    "800700710": "332753",  # Lorena Schaedel
     "800543563": "330991",  # Lucie Pawlak
+    "800590927": "332229",  # Maayan Laron
     "800447468": "327643",  # Maddalena Giordano
+    "800586966": "334909",  # Manon Favier
     "800404328": "324743",  # Marina Benito
     "800275736": "314237",  # Misaki Doi
+    "800101514": "110124",  # Natasha Khan (AUS)
+    "800240168": "312278",  # Natasha Khan (GBR)
+    "800800767": "260014",  # Ni Zhong / Zhong Shen Ni
+    "800537809": "331009",  # Olga Bienzobas Fernandez Sancho
     "800435272": "330844",  # Olga Golas
+    "800561777": "333462",  # Polina Kaibekova
     "800279562": "314429",  # Qiang Wang
+    "800673210": "334210",  # Rachael Smith
+    "800179163": "190114",  # Reeka Szikszay
     "800572950": "331158",  # Romane Longueville
+    "800180479": "70022",   # Sabrina Giusto
     "800412854": "326799",  # Sara Dahlstrom
+    "800179171": "30082",   # Silvana Casaretto
     "800311509": "319000",  # Simone Pratt
+    "800192053": "100096",  # Stephanie Johnson (1971)
+    "800393420": "324984",  # Stephanie Johnson (younger profile)
     "800513617": "332130",  # Sun Min Ha
     "800319635": "327611",  # Venla Ahti
     "800693144": "337237",  # Yael Saffar
     "800525621": "334233",  # Yelyzaveta Chainykova
     "800726989": "333677",  # Yihan Qu
     "800186795": "30332",   # Young-Ja Choi
+}
+
+# Source names for externally verified ITF IDs that may not have appeared in
+# the locally stored match history yet. This lets the canonical crosswalk
+# survive a rebuild without inventing the ITF spelling from the WTA record.
+ITF_NAME_BY_ID = {
+    "800101514": "Natasha Khan",
+    "800179196": "Jennifer Young",
+    "800192053": "Stephanie Johnson",
+    "800800767": "Zhong Shen Ni",
 }
 
 
@@ -226,6 +278,34 @@ def _merge_legacy_players(data_dir: Path) -> tuple[list[dict], dict[str, int]]:
         elif normalized_identifier(row.get("wta_id")) == "Neiland":
             row["wta_id"] = "190019"
         rows.append(row)
+
+    present_itf_ids = {
+        value
+        for row in rows
+        for value in _source_ids(row, "itf")
+    }
+    for itf_id, wta_id in WTA_BY_ITF_ID.items():
+        if itf_id in present_itf_ids:
+            continue
+        owners = [row for row in rows if wta_id in _source_ids(row, "wta")]
+        if len(owners) > 1:
+            raise ValueError(f"multiple canonical owners for configured WTA ID {wta_id}")
+        if not owners:
+            continue
+        owner = owners[0]
+        current_itf_ids = _source_ids(owner, "itf")
+        if not current_itf_ids:
+            owner["itf_id"] = itf_id
+        else:
+            additional = owner.get("additional_itf_ids")
+            additional_ids = list(additional) if isinstance(additional, list) else []
+            if itf_id not in additional_ids:
+                additional_ids.append(itf_id)
+            owner["additional_itf_ids"] = additional_ids
+        itf_name = ITF_NAME_BY_ID.get(itf_id, "")
+        if itf_name and not compact_text(owner.get("itf_name")):
+            owner["itf_name"] = itf_name
+        present_itf_ids.add(itf_id)
 
     groups = DisjointSet(len(rows))
     source_owner: dict[tuple[str, str], int] = {}

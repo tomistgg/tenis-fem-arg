@@ -7,13 +7,16 @@ import json
 import os
 import re
 from datetime import datetime, timedelta
+from difflib import SequenceMatcher
 from pathlib import Path
 
 from canonical_data import (
     MATCH_SOURCES,
     PlayerIdentityIndex,
+    PlayerRecord,
     canonical_match_key,
     load_player_rows,
+    normalized_name,
     sync_itf_players,
     sync_wta_match_players,
 )
@@ -75,6 +78,140 @@ def normalize_name(value):
 
 def normalize_exact_name(value):
     return " ".join(repair_name_text(value).strip().upper().split())
+
+
+_SOURCE_ID_PLAYER_SUFFIX_RE = re.compile(r"\s+\((?:ITF|WTA)\s+\d+\)$", re.IGNORECASE)
+
+
+def _player_source_ids(row):
+    record = PlayerRecord.from_mapping(row)
+    return {
+        f"{source.upper()} {player_id}"
+        for source in ("wta", "itf", "bjkc")
+        for player_id in record.source_ids(source)
+    }
+
+
+def _player_alert_name(row):
+    record = PlayerRecord.from_mapping(row)
+    name = record.presentation_name or record.display_name
+    return _SOURCE_ID_PLAYER_SUFFIX_RE.sub("", name).strip()
+
+
+def _name_similarity(left, right):
+    left_key = normalized_name(left)
+    right_key = normalized_name(right)
+    if not left_key or not right_key:
+        return 0.0
+    direct = SequenceMatcher(None, left_key, right_key).ratio()
+    token_sorted_left = " ".join(sorted(left_key.split()))
+    token_sorted_right = " ".join(sorted(right_key.split()))
+    token_sorted = SequenceMatcher(None, token_sorted_left, token_sorted_right).ratio()
+    return max(direct, token_sorted)
+
+
+def find_player_identity_links(before_rows, after_rows):
+    """Describe source IDs newly combined into one canonical identity."""
+    before_owner = {}
+    before_by_key = {}
+    for row in before_rows or []:
+        if not isinstance(row, dict):
+            continue
+        record = PlayerRecord.from_mapping(row)
+        before_by_key[record.player_key] = row
+        for source_id in _player_source_ids(row):
+            before_owner[source_id] = record.player_key
+
+    links = []
+    for row in after_rows or []:
+        if not isinstance(row, dict):
+            continue
+        source_ids = _player_source_ids(row)
+        prior_keys = {before_owner[value] for value in source_ids if value in before_owner}
+        new_ids = sorted(value for value in source_ids if value not in before_owner)
+        if len(prior_keys) < 2 and not (prior_keys and new_ids):
+            continue
+        previous_names = sorted(
+            {
+                _player_alert_name(before_by_key[key])
+                for key in prior_keys
+                if key in before_by_key
+            }
+        )
+        links.append({
+            "name": _player_alert_name(row),
+            "source_ids": sorted(source_ids),
+            "new_source_ids": new_ids,
+            "previous_names": previous_names,
+        })
+    links.sort(key=lambda item: (item["name"].casefold(), item["source_ids"]))
+    return links
+
+
+def _metadata_comparison(label, left, right):
+    left_value = str(left or "").strip().upper()
+    right_value = str(right or "").strip().upper()
+    if not left_value or not right_value:
+        return f"{label} missing"
+    if left_value == right_value:
+        return f"{label} matches ({left_value})"
+    return f"{label} conflicts ({left_value} vs {right_value})"
+
+
+def find_player_identity_review_candidates(before_rows, after_rows, *, similarity_threshold=0.90):
+    """Find new exact/near-name identities that were not safe to auto-link."""
+    before_ids = {
+        source_id
+        for row in before_rows or []
+        if isinstance(row, dict)
+        for source_id in _player_source_ids(row)
+    }
+    after = [row for row in after_rows or [] if isinstance(row, dict)]
+    changed_indexes = {
+        index
+        for index, row in enumerate(after)
+        if _player_source_ids(row) - before_ids
+    }
+    candidates = []
+    seen_pairs = set()
+    for left_index in sorted(changed_indexes):
+        left = after[left_index]
+        left_ids = _player_source_ids(left)
+        left_name = _player_alert_name(left)
+        left_record = PlayerRecord.from_mapping(left)
+        for right_index, right in enumerate(after):
+            if right_index == left_index:
+                continue
+            right_ids = _player_source_ids(right)
+            if left_ids & right_ids:
+                continue
+            pair_key = tuple(sorted((left_record.player_key, PlayerRecord.from_mapping(right).player_key)))
+            if pair_key in seen_pairs:
+                continue
+            right_name = _player_alert_name(right)
+            similarity = _name_similarity(left_name, right_name)
+            if similarity < similarity_threshold:
+                continue
+            seen_pairs.add(pair_key)
+            right_record = PlayerRecord.from_mapping(right)
+            candidates.append({
+                "left_name": left_name,
+                "left_ids": sorted(left_ids),
+                "right_name": right_name,
+                "right_ids": sorted(right_ids),
+                "name_match": "exact" if normalized_name(left_name) == normalized_name(right_name) else "similar",
+                "similarity": round(similarity * 100),
+                "country": _metadata_comparison("country", left_record.country, right_record.country),
+                "dob": _metadata_comparison("DOB", left_record.dob, right_record.dob),
+            })
+    candidates.sort(
+        key=lambda item: (
+            -item["similarity"],
+            item["left_name"].casefold(),
+            item["right_name"].casefold(),
+        )
+    )
+    return candidates
 
 
 _ITF_CALENDAR_SEQUENCE_SUFFIX_RE = re.compile(r"\s+\d+$")
@@ -472,6 +609,8 @@ def compute_report(before_dir, after_dir):
         "long_tournament_name_alerts": [],
         "flagless_player_countries": [],
         "wta_ranking_status": {},
+        "player_identity_links": [],
+        "player_identity_review_candidates": [],
     }
 
     aliases_path = os.path.join(after_dir, ALIASES_JSON_FILE)
@@ -690,6 +829,14 @@ def compute_report(before_dir, after_dir):
                 "items": processed[:MAX_MATCH_LINES_PER_FILE],
                 "truncated": len(processed) > MAX_MATCH_LINES_PER_FILE,
             }
+
+    before_players = load_json(os.path.join(before_dir, ALIASES_JSON_FILE)) or []
+    after_players = load_json(aliases_path) or []
+    report["player_identity_links"] = find_player_identity_links(before_players, after_players)
+    report["player_identity_review_candidates"] = find_player_identity_review_candidates(
+        before_players,
+        after_players,
+    )
 
     before_calendar = load_json(os.path.join(before_dir, "calendar_snapshot.json")) or []
     after_calendar = load_json(os.path.join(after_dir, "calendar_snapshot.json")) or []
@@ -948,6 +1095,8 @@ def render_email_markdown(report):
             bool(report.get("bad_draw_scores")),
             bool(report.get("flagless_player_countries")),
             bool(report.get("wta_ranking_status")),
+            bool(report.get("player_identity_links")),
+            bool(report.get("player_identity_review_candidates")),
             status_name in {"failed", "partial", "degraded"},
         ]
     )
@@ -975,6 +1124,32 @@ def render_email_markdown(report):
             f"- {status.get('requested_date', 'current week')}: "
             f"{status.get('message', status.get('status', 'unknown'))}"
         )
+        lines.append("")
+
+    if report.get("player_identity_links"):
+        lines.append("## Player Identities Linked Automatically")
+        for item in report["player_identity_links"]:
+            source_ids = ", ".join(item.get("source_ids") or [])
+            new_ids = ", ".join(item.get("new_source_ids") or [])
+            new_note = f"; newly linked: {new_ids}" if new_ids else ""
+            lines.append(f"- {item.get('name', '')}: {source_ids}{new_note}")
+        lines.append("")
+
+    if report.get("player_identity_review_candidates"):
+        lines.append("## Player Identity Candidates for Manual Review")
+        for item in report["player_identity_review_candidates"]:
+            left_ids = ", ".join(item.get("left_ids") or [])
+            right_ids = ", ".join(item.get("right_ids") or [])
+            name_detail = (
+                "exact name"
+                if item.get("name_match") == "exact"
+                else f"similar name ({item.get('similarity', 0)}%)"
+            )
+            lines.append(
+                f"- {item.get('left_name', '')} [{left_ids}] and "
+                f"{item.get('right_name', '')} [{right_ids}]: {name_detail}; "
+                f"{item.get('country', 'country missing')}; {item.get('dob', 'DOB missing')}."
+            )
         lines.append("")
 
     if report.get("withdrawals"):

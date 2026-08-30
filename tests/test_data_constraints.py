@@ -37,6 +37,20 @@ class ProjectDataConstraintTests(unittest.TestCase):
     def test_known_identity_conflicts_are_resolved_by_id(self):
         self.assertEqual(self.index.by_wta_id["130374"].display_name, "Laura Montalvo")
         self.assertEqual(self.index.by_wta_id["130734"].display_name, "Andreea Matei")
+        self.assertEqual(
+            self.index.by_itf_id["800587892"].player_key,
+            self.index.by_wta_id["333499"].player_key,
+        )
+        self.assertNotIn("337674", self.index.by_wta_id)
+        self.assertEqual(self.index.by_wta_id["315683"].display_name, "Sloane Stephens")
+        self.assertNotEqual(
+            self.index.by_wta_id["110036"].player_key,
+            self.index.by_wta_id["110362"].player_key,
+        )
+        self.assertNotEqual(
+            self.index.by_wta_id["230169"].player_key,
+            self.index.by_wta_id["230190"].player_key,
+        )
         self.assertEqual(self.index.by_wta_id["190019"].itf_id, "800178321")
         self.assertEqual(self.index.by_wta_id["319280"].itf_id, "800331402")
         self.assertEqual(
@@ -75,6 +89,25 @@ class ProjectDataConstraintTests(unittest.TestCase):
         for wta_id, primary_itf_id in PRIMARY_ITF_BY_WTA_ID.items():
             self.assertEqual(self.index.by_wta_id[wta_id].itf_id, primary_itf_id)
 
+    def test_verified_homonym_crosswalks_remain_distinct(self):
+        expected = {
+            "10001": "800178944",
+            "260014": "800800767",
+            "250023": "800179196",
+            "312770": "800263174",
+            "110124": "800101514",
+            "312278": "800240168",
+            "30082": "800179171",
+            "100096": "800192053",
+            "324984": "800393420",
+        }
+        for wta_id, itf_id in expected.items():
+            self.assertEqual(self.index.by_wta_id[wta_id].itf_id, itf_id)
+        self.assertNotEqual(
+            self.index.by_wta_id["260014"].player_key,
+            self.index.by_itf_id["800178614"].player_key,
+        )
+
     def test_united_cup_duplicate_player_id_is_absent(self):
         with (DATA_DIR / "united_cup_matches_arg.csv").open(
             "r", encoding="utf-8-sig", newline=""
@@ -106,14 +139,14 @@ class ProjectDataConstraintTests(unittest.TestCase):
 
     def test_presented_player_names_do_not_include_source_ids(self):
         self.assertEqual(
-            player_name_only("Lorena Schaedel (ITF 800700710)"),
-            "Lorena Schaedel",
+            player_name_only("Anne Aallonen (WTA 10001)"),
+            "Anne Aallonen",
         )
         self.assertEqual(
             resolve_player_display_name(
-                "itf", player_id="800700710", name="Lorena Schaedel"
+                "wta", player_id="10001", name="Anne Aallonen"
             ),
-            "Lorena Schaedel",
+            "Anne Aallonen",
         )
         self.assertEqual(player_name_only("Example Player (WTA 123)"), "Example Player")
         self.assertEqual(player_name_only("Yue Yuan (1998)"), "Yue Yuan (1998)")

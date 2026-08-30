@@ -97,7 +97,6 @@ from utils import (
     load_cache,
     mark_draw_completed,
     merge_entry_list,
-    normalize_country_overrides,
     save_cache,
     save_json_file,
     set_cache_entry_meta,
@@ -1012,8 +1011,6 @@ def fetch_arg_players():
     ranking_monday = effective_wta_ranking_date(eastern_now, ranking_status).isoformat()
 
     all_wta_players, wta_status = get_wta_rankings_cached(ranking_monday, nationality=None, with_status=True)
-    normalize_country_overrides(all_wta_players, "Player", "Country")
-
     wta_players_arg = [p for p in all_wta_players if p["Country"] == "ARG"]
     itf_players_arg, itf_status = get_itf_rankings_cached(ranking_monday, nationality="ARG", with_status=True)
 
@@ -1282,9 +1279,6 @@ def process_tournaments(
             ranking_cache[md_date] = get_wta_rankings_cached(md_date, nationality=None)
         if q_date not in ranking_cache:
             ranking_cache[q_date] = get_wta_rankings_cached(q_date, nationality=None)
-        normalize_country_overrides(ranking_cache[md_date], "Player", "Country")
-        normalize_country_overrides(ranking_cache[q_date], "Player", "Country")
-
         # WTA tournaments
         for key, t_info in list(tourneys.items()):
             t_name = t_info["name"]
@@ -1339,7 +1333,6 @@ def process_tournaments(
                     t_list = merge_entry_list(cached_players, t_list)
                 if not is_manual_entry:
                     _canonicalize_player_names(t_list, source="wta", names_only=True)
-                    normalize_country_overrides(t_list, "name", "country")
                 entry_cache[key] = t_list
                 tournament_store[key] = t_list
                 # If the live WTA page disappears or only partially loads, rebuild
@@ -1541,7 +1534,6 @@ def process_tournaments(
 
                 _canonicalize_player_names(tourney_players_list, source="itf", names_only=True)
 
-                normalize_country_overrides(tourney_players_list, "name", "country")
                 if fresh_players or tourney_players_list != cached_players:
                     entry_cache[key] = tourney_players_list
                 tournament_store[key] = tourney_players_list
