@@ -1,154 +1,4 @@
 {
-  "https://www.wtatennis.com/tournaments/1039/monterrey/2026/player-list":
-  {
-    "meta":
-    {
-      "name": "WTA 500 Monterrey",
-      "level": "WTA 500",
-      "week": "Week of August 24",
-      "startDate": "2026-08-23",
-      "endDate": "2026-08-29",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
-    },
-    "draws":
-    {
-      "QS":
-      {
-        "tournament_name": "Abierto GNP Seguros",
-        "location": "MONTERREY, MEX",
-        "dates": "August 23-29 2026",
-        "prize": "$ 1,206,446",
-        "surface": "Hard, Laykold",
-        "draw_type": "SINGLES QUALIFYING DRAW",
-        "draw_size": 16,
-        "players": [
-          {"pos": 1, "seed": "1", "name": "JOINT, Maya", "country": "AUS"},
-          {"pos": 2, "entry": "WC", "name": "HINOJOSA GOMEZ, Jessica", "country": "MEX"},
-          {"pos": 3, "name": "RODRIGUEZ, Victoria", "country": "MEX"},
-          {"pos": 4, "seed": "5", "name": "PUTINTSEVA, Yulia", "country": "KAZ"},
-          {"pos": 5, "seed": "2", "name": "BONDAR, Anna", "country": "HUN"},
-          {"pos": 6, "name": "JACQUEMOT, Elsa", "country": "FRA"},
-          {"pos": 7, "name": "LIANG, En-Shuo", "country": "TPE"},
-          {"pos": 8, "seed": "7", "name": "KRAUS, Sinja", "country": "AUT"},
-          {"pos": 9, "seed": "3", "name": "UDVARDY, Panna", "country": "HUN"},
-          {"pos": 10, "name": "ARANGO, Emiliana", "country": "COL"},
-          {"pos": 11, "name": "WERNER, Caroline", "country": "GER"},
-          {"pos": 12, "seed": "8", "name": "VIDMANOVA, Darja", "country": "CZE"},
-          {"pos": 13, "seed": "4", "name": "TARARUDEE, Lanlana", "country": "THA"},
-          {"pos": 14, "name": "TIMOFEEVA, Maria", "country": "UZB"},
-          {"pos": 15, "name": "JEANJEAN, Leolia", "country": "FRA"},
-          {"pos": 16, "seed": "6", "name": "RAKHIMOVA, Kamilla", "country": "UZB"}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 0, "winner_name": "M. Joint", "score": "64 62"},
-          {"round": 1, "match_num": 1, "winner_name": "Y. Putintseva", "score": "64 63"},
-          {"round": 1, "match_num": 2, "winner_name": "A. Bondar", "score": "63 63"},
-          {"round": 1, "match_num": 3, "winner_name": "E. Liang", "score": "75 57 64"},
-          {"round": 1, "match_num": 4, "winner_name": "P. Udvardy", "score": "63 16 76(5)"},
-          {"round": 1, "match_num": 5, "winner_name": "D. Vidmanova", "score": "75 64"},
-          {"round": 1, "match_num": 6, "winner_name": "M. Timofeeva", "score": "76(5) 26 76(4)"},
-          {"round": 1, "match_num": 7, "winner_name": "K. Rakhimova", "score": "64 46 62"},
-          {"round": 2, "match_num": 0, "winner_name": "M. Joint", "score": "06 63 61"},
-          {"round": 2, "match_num": 1, "winner_name": "A. Bondar", "score": "63 46 61"},
-          {"round": 2, "match_num": 2, "winner_name": "D. Vidmanova", "score": "63 36 63"},
-          {"round": 2, "match_num": 3, "winner_name": "M. Timofeeva", "score": "36 63 76(1)"}
-        ],
-        "round_labels": [
-          "Q1",
-          "Q2",
-          "Qualifier"
-        ],
-        "num_rounds": 3
-      },
-      "MDS":
-      {
-        "tournament_name": "Abierto GNP Seguros",
-        "location": "MONTERREY, MEX",
-        "dates": "August 23-29 2026",
-        "prize": "$ 1,206,446",
-        "surface": "Hard, Laykold",
-        "draw_type": "SINGLES MAIN DRAW",
-        "draw_size": 32,
-        "players": [
-          {"pos": 1, "seed": "1", "name": "ALEXANDROVA, Ekaterina"},
-          {"pos": 3, "name": "TAUSON, Clara", "country": "DEN"},
-          {"pos": 4, "entry": "WC", "name": "ZARAZUA, Renata", "country": "MEX"},
-          {"pos": 5, "name": "SHERIF, Mayar", "country": "EGY"},
-          {"pos": 6, "name": "OLIYNYKOVA, Oleksandra", "country": "UKR"},
-          {"pos": 7, "name": "PARRY, Diane", "country": "FRA"},
-          {"pos": 8, "seed": "6", "name": "VEKIC, Donna", "country": "CRO"},
-          {"pos": 9, "seed": "3", "name": "CHWALINSKA, Maja", "country": "POL"},
-          {"pos": 11, "entry": "WC", "name": "PARKS, Alycia", "country": "USA"},
-          {"pos": 12, "name": "MARCINKO, Petra", "country": "CRO"},
-          {"pos": 13, "name": "ZHANG, Shuai", "country": "CHN"},
-          {"pos": 14, "entry": "Q", "name": "TIMOFEEVA, Maria", "country": "UZB"},
-          {"pos": 15, "name": "OSORIO, Camila", "country": "COL"},
-          {"pos": 16, "seed": "5", "name": "LI, Ann", "country": "USA"},
-          {"pos": 17, "seed": "8", "name": "BUCSA, Cristina", "country": "ESP"},
-          {"pos": 18, "entry": "Q", "name": "BONDAR, Anna", "country": "HUN"},
-          {"pos": 19, "entry": "Q", "name": "VIDMANOVA, Darja", "country": "CZE"},
-          {"pos": 20, "name": "BIRRELL, Kimberly", "country": "AUS"},
-          {"pos": 21, "name": "RUZIC, Antonia", "country": "CRO"},
-          {"pos": 22, "name": "BARTUNKOVA, Nikola", "country": "CZE"},
-          {"pos": 24, "entry": "LL", "name": "LIANG, En-Shuo", "country": "TPE"},
-          {"pos": 25, "seed": "7", "name": "TJEN, Janice", "country": "INA"},
-          {"pos": 26, "entry": "WC", "name": "YASTREMSKA, Dayana", "country": "UKR"},
-          {"pos": 27, "name": "TAGGER, Lilli", "country": "AUT"},
-          {"pos": 28, "name": "STARODUBTSEVA, Yuliia", "country": "UKR"},
-          {"pos": 29, "entry": "LL", "name": "UDVARDY, Panna", "country": "HUN"},
-          {"pos": 30, "entry": "Q", "name": "JOINT, Maya", "country": "AUS"},
-          {"pos": 32, "seed": "2", "name": "MERTENS, Elise", "country": "BEL"}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 0, "winner_name": "E. Alexandrova"},
-          {"round": 1, "match_num": 1, "winner_name": "C. Tauson", "score": "36 63 60"},
-          {"round": 1, "match_num": 2, "winner_name": "O. Oliynykova", "score": "63 64"},
-          {"round": 1, "match_num": 3, "winner_name": "D. Parry", "score": "67(5) 64 61"},
-          {"round": 1, "match_num": 4, "winner_name": "M. Chwalinska"},
-          {"round": 1, "match_num": 5, "winner_name": "A. Parks", "score": "26 64 64"},
-          {"round": 1, "match_num": 6, "winner_name": "M. Timofeeva", "score": "61 63"},
-          {"round": 1, "match_num": 7, "winner_name": "A. Li", "score": "61 62"},
-          {"round": 1, "match_num": 8, "winner_name": "C. Bucsa", "score": "64 63"},
-          {"round": 1, "match_num": 9, "winner_name": "D. Vidmanova", "score": "76(2) 63"},
-          {"round": 1, "match_num": 10, "winner_name": "N. Bartunkova", "score": "64 63"},
-          {"round": 1, "match_num": 11, "winner_name": "E. Liang"},
-          {"round": 1, "match_num": 12, "winner_name": "J. Tjen", "score": "26 63 76(5)"},
-          {"round": 1, "match_num": 13, "winner_name": "Y. Starodubtseva", "score": "63 64"},
-          {"round": 1, "match_num": 14, "winner_name": "P. Udvardy", "score": "76(5) 61"},
-          {"round": 1, "match_num": 15, "winner_name": "E. Mertens"},
-          {"round": 2, "match_num": 0, "winner_name": "C. Tauson", "score": "76(6) 46 63"},
-          {"round": 2, "match_num": 1, "winner_name": "D. Parry", "score": "64 76(3)"},
-          {"round": 2, "match_num": 2, "winner_name": "A. Parks", "score": "36 62 62"},
-          {"round": 2, "match_num": 3, "winner_name": "A. Li", "score": "WO"},
-          {"round": 2, "match_num": 4, "winner_name": "D. Vidmanova", "score": "64 75"},
-          {"round": 2, "match_num": 5, "winner_name": "N. Bartunkova", "score": "67(4) 75 64"},
-          {"round": 2, "match_num": 6, "winner_name": "Y. Starodubtseva", "score": "64 63"},
-          {"round": 2, "match_num": 7, "winner_name": "E. Mertens", "score": "61 46 63"},
-          {"round": 3, "match_num": 0, "winner_name": "D. Parry", "score": "63 75"},
-          {"round": 3, "match_num": 1, "winner_name": "A. Li", "score": "62 63"},
-          {"round": 3, "match_num": 2, "winner_name": "N. Bartunkova", "score": "64 67(3) 63"},
-          {"round": 3, "match_num": 3, "winner_name": "E. Mertens", "score": "61 64"},
-          {"round": 4, "match_num": 0, "winner_name": "D. Parry", "score": "76(7) 64"},
-          {"round": 4, "match_num": 1, "winner_name": "E. Mertens", "score": "16 64 62"},
-          {"round": 5, "match_num": 0, "winner_name": "D. Parry", "score": "64 06 63"}
-        ],
-        "byes": [
-          2,
-          10,
-          23,
-          31
-        ],
-        "round_labels": [
-          "Round of 32",
-          "Round of 16",
-          "Quarterfinals",
-          "Semifinals",
-          "Final"
-        ],
-        "num_rounds": 5
-      }
-    }
-  },
   "w-itf-rou-2026-009":
   {
     "meta":
@@ -940,7 +790,7 @@
           {"pos": 9, "seed": "2", "name": "MORON, Florencia Belen", "country": "ARG"},
           {"pos": 11, "name": "FERNANDEZ, Mishely", "country": "BOL"},
           {"pos": 12, "name": "MOTTA, Agostina", "country": "ARG"},
-          {"pos": 13, "name": "Milagros", "country": "ARG"},
+          {"pos": 13, "name": "ROMITO SILVA, Milagros", "country": "ARG"},
           {"pos": 14, "name": "TORRES, Lara", "country": "ARG"},
           {"pos": 16, "seed": "13", "name": "ROSSI, Valentina", "country": "ARG"},
           {"pos": 17, "seed": "3", "name": "CORBALAN MIRANDA, Ambar", "country": "ARG"},
@@ -975,7 +825,7 @@
           {"pos": 56, "seed": "11", "name": "ARCE GONZALEZ, Mayra", "country": "PAR"},
           {"pos": 57, "seed": "8", "name": "MARMORSTEIN, Jessica", "country": "USA"},
           {"pos": 59, "name": "TASSONE, Claudia Yanina", "country": "ARG"},
-          {"pos": 60, "name": "Emilia", "country": "ARG"},
+          {"pos": 60, "name": "GOMEZ ZALAZAR, Emilia", "country": "ARG"},
           {"pos": 61, "name": "NAPPI, Sofia Nahiara", "country": "ARG"},
           {"pos": 62, "name": "DOLDAN, Zoe", "country": "PAR"},
           {"pos": 64, "seed": "10", "name": "DOLDAN, Heydi", "country": "PAR"}
