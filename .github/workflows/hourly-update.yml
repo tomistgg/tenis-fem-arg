@@ -63,37 +63,41 @@ jobs:
           mkdir -p .quality-baseline/data
           cp -a data/. .quality-baseline/data/
 
-      - name: Preserve pushed data files
+      - name: Preserve committed data files
         env:
           EVENT_NAME: ${{ github.event_name }}
           BEFORE_SHA: ${{ github.event.before }}
           DATA_STATE_SOURCE_SHA: ${{ steps.restore_data_state.outputs.source_sha }}
         run: |
-          # The validated data-state branch is the baseline for scheduled
-          # refreshes, but a push must not discard data files changed since the
-          # source revision that last produced a validated snapshot. Using that
-          # revision also recovers data from an earlier push whose checks failed.
+          # The validated data-state branch is the refresh baseline, but every
+          # event must retain data files committed after the source revision
+          # that produced that snapshot. This also recovers changes whose
+          # earlier refresh run failed or was cancelled.
 
-          if [ "$EVENT_NAME" != "push" ] || [ -z "$BEFORE_SHA" ] || [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
-            echo "No push-specific data overlay to apply"
-            exit 0
-          fi
-
-          overlay_base="$BEFORE_SHA"
+          overlay_base=""
           if [ -n "$DATA_STATE_SOURCE_SHA" ]; then
             if git cat-file -e "$DATA_STATE_SOURCE_SHA^{commit}" 2>/dev/null || \
               git fetch --no-tags --depth=1 origin "$DATA_STATE_SOURCE_SHA"; then
               overlay_base="$DATA_STATE_SOURCE_SHA"
             else
-              echo "Validated source revision is unavailable; falling back to the previous push revision"
+              echo "Validated source revision is unavailable"
             fi
           fi
 
-          if ! git cat-file -e "$overlay_base^{commit}" 2>/dev/null; then
-            if ! git fetch --no-tags --depth=1 origin "$overlay_base"; then
-              echo "Previous push revision is unavailable; current data files are already present"
+          if [ -z "$overlay_base" ] && [ "$EVENT_NAME" = "push" ] && \
+            [ -n "$BEFORE_SHA" ] && [[ ! "$BEFORE_SHA" =~ ^0+$ ]]; then
+            if git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null || \
+              git fetch --no-tags --depth=1 origin "$BEFORE_SHA"; then
+              overlay_base="$BEFORE_SHA"
+            else
+              echo "Previous push revision is unavailable"
               exit 0
             fi
+          fi
+
+          if [ -z "$overlay_base" ]; then
+            echo "No committed data overlay to apply"
+            exit 0
           fi
 
           echo "Overlaying data changes from $overlay_base through $GITHUB_SHA"

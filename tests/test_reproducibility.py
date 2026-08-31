@@ -85,7 +85,7 @@ def test_refresh_publishes_only_validated_data_to_main():
 
 def test_refresh_runs_complete_quality_gate_before_updating_or_deploying():
     workflow = (WORKFLOW_DIR / "hourly-update.yml").read_text(encoding="utf-8")
-    overlay_index = workflow.index("Preserve pushed data files")
+    overlay_index = workflow.index("Preserve committed data files")
     refresh_index = workflow.index("Extract, transform, validate, and build once")
     upload_index = workflow.index("Upload immutable Pages artifact")
     required_commands = [
@@ -107,7 +107,7 @@ def test_refresh_runs_complete_quality_gate_before_updating_or_deploying():
     assert workflow.index("Snapshot validated quality baseline") < overlay_index
 
 
-def test_push_overlay_recovers_data_changes_from_an_earlier_failed_run():
+def test_data_overlay_recovers_commits_for_every_refresh_event():
     workflow = (WORKFLOW_DIR / "hourly-update.yml").read_text(encoding="utf-8")
 
     assert "id: restore_data_state" in workflow
@@ -115,6 +115,8 @@ def test_push_overlay_recovers_data_changes_from_an_earlier_failed_run():
     assert "DATA_STATE_SOURCE_SHA: ${{ steps.restore_data_state.outputs.source_sha }}" in workflow
     assert 'overlay_base="$DATA_STATE_SOURCE_SHA"' in workflow
     assert 'git diff --name-only -z "$overlay_base" "$GITHUB_SHA" -- data' in workflow
+    assert 'if [ "$EVENT_NAME" != "push" ]' not in workflow
+    assert '[ -z "$overlay_base" ] && [ "$EVENT_NAME" = "push" ]' in workflow
 
 
 def test_update_notification_is_finalized_after_pages_deployment():
