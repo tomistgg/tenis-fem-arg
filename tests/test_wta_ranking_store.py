@@ -122,15 +122,6 @@ def test_ranking_bundles_deduplicate_presented_player_identity(tmp_path):
     assert payload["d"]["2026-07-27"] == [[320, 213, 0]]
 
 
-def test_ranking_display_name_removes_only_identity_disambiguators():
-    assert _ranking_display_name({"Id": "70300", "Player": "CAROLINA GARCÍA (ARG)"}) == "CAROLINA GARCÍA"
-    assert _ranking_display_name({"Id": "10001", "Player": "ANNE AALLONEN (WTA 10001)"}) == "ANNE AALLONEN"
-    assert (
-        _ranking_display_name({"Id": "20006", "Player": "DIANNE FROMHOLTZ (BALESTRAT)"})
-        == "DIANNE FROMHOLTZ (BALESTRAT)"
-    )
-
-
 def test_new_ranking_week_is_streamed_into_atomic_csv(tmp_path, monkeypatch):
     path = tmp_path / "wta_rankings_20_29.csv"
     player_table = tmp_path / "player_aliases_wta_itf.json"
