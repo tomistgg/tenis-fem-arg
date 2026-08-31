@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 
 import wta
-from html_generator import _ranking_display_name, _write_wta_ranking_bundles
+from html_generator import _write_wta_ranking_bundles
 from wta import WtaRankingsCsvStore
 
 HEADER = "week_date,id,rank,points,player,country,dob\n"
