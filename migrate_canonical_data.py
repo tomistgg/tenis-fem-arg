@@ -249,6 +249,7 @@ WTA_BY_ITF_ID = {
     "800275736": "314237",  # Misaki Doi
     "800101514": "110124",  # Natasha Khan (AUS)
     "800240168": "312278",  # Natasha Khan (GBR)
+    "800737949": "316823",  # Natasha Fourouclas / Fourouclas - De Castro
     "800800767": "260014",  # Ni Zhong / Zhong Shen Ni
     "800537809": "331009",  # Olga Bienzobas Fernandez Sancho
     "800435272": "330844",  # Olga Golas
