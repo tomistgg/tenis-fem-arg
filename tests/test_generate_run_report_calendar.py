@@ -162,6 +162,23 @@ def test_email_alerts_when_category_free_tournament_name_newly_exceeds_15_charac
     assert "Saint-Palais-sur-Mer" not in alert_section
 
 
+def test_email_does_not_report_che_as_a_country_without_a_flag(tmp_path):
+    before_dir = tmp_path / "before"
+    after_dir = tmp_path / "after"
+    before_dir.mkdir()
+    after_dir.mkdir()
+    (after_dir / "wta_rankings_20_29.csv").write_text(
+        "week_date,id,rank,points,player,country,dob\n"
+        "2026-08-31,335808,1433,5,Sofia Alekseeva,CHE,2007-11-20\n",
+        encoding="utf-8",
+    )
+
+    report = compute_report(str(before_dir), str(after_dir))
+
+    assert report["flagless_player_countries"] == []
+    assert "CHE: Sofia Alekseeva" not in render_email_markdown(report)
+
+
 def _player_row(player_key, display_name, *, country="", dob="", wta_id="", itf_id=""):
     return {
         "player_key": player_key,

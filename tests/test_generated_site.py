@@ -95,6 +95,7 @@ class GeneratedSiteTests(unittest.TestCase):
         )
         players_by_name = {player["display_name"]: player for player in players}
         expected = {
+            "Sofia Alekseeva": ("CHE", "CH"),
             "Irina Petru": ("CZS", "CZ"),
             "Jones Elizabeth": ("GRB", "GB"),
             "Yvette Flu": ("NET", "NL"),

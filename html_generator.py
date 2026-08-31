@@ -390,6 +390,7 @@ IOC_TO_ISO2 = {
     "CAL": "nc",
     "CAM": "kh",
     "CAN": "ca",
+    "CHE": "ch",
     "CHI": "cl",
     "CHL": "cl",
     "CHN": "cn",
