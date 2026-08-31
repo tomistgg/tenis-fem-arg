@@ -401,7 +401,7 @@
       "week": "Week of August 31",
       "startDate": "2026-08-31T00:00:00",
       "endDate": "2026-09-06T00:00:00",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":true,"has_arg_any":true}
     },
     "draws":
     {
@@ -472,7 +472,20 @@
           {"round": 1, "match_num": 25, "winner_name": "B. Alvarez Biron", "score": "61 62"},
           {"round": 1, "match_num": 26, "winner_name": "A. Tarantola", "score": "60 62"},
           {"round": 1, "match_num": 29, "winner_name": "E. Gomez Zalazar", "score": "64 62"},
-          {"round": 1, "match_num": 30, "winner_name": "Z. Doldan", "score": "60 63"}
+          {"round": 1, "match_num": 30, "winner_name": "Z. Doldan", "score": "60 63"},
+          {"round": 2, "match_num": 0, "winner_name": "S. Barreto Scholz", "score": "36 75 10-3"},
+          {"round": 2, "match_num": 1, "winner_name": "M. Nunez", "score": "64 64"},
+          {"round": 2, "match_num": 2, "winner_name": "F. Moron", "score": "61 61"},
+          {"round": 2, "match_num": 4, "winner_name": "A. Corbalan Miranda", "score": "61 61"},
+          {"round": 2, "match_num": 5, "winner_name": "K. Gabotto Loredo", "score": "61 64"},
+          {"round": 2, "match_num": 6, "winner_name": "C. VEGA GUDINO", "score": "63 63"},
+          {"round": 2, "match_num": 7, "winner_name": "M. Madrid Rocca", "score": "60 61"},
+          {"round": 2, "match_num": 8, "winner_name": "G. Rondinoni", "score": "64 46 10-6"},
+          {"round": 2, "match_num": 9, "winner_name": "A. Pajello", "score": "60 60"},
+          {"round": 2, "match_num": 10, "winner_name": "M. E'Halli Obeid", "score": "60 64"},
+          {"round": 2, "match_num": 12, "winner_name": "M. Castro Zunino", "score": "62 60"},
+          {"round": 2, "match_num": 13, "winner_name": "A. Tarantola", "score": "64 63"},
+          {"round": 2, "match_num": 15, "winner_name": "Z. Doldan", "score": "61 64"}
         ],
         "byes": [
           2,
@@ -499,6 +512,44 @@
           "Round of 16"
         ],
         "num_rounds": 3
+      },
+      "MDS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "BOSIO, Victoria", "country": "ARG"},
+          {"pos": 2, "name": "ARABARCO, Isabel", "country": "ARG"},
+          {"pos": 3, "name": "ZORNADA, Emily", "country": "ARG"},
+          {"pos": 6, "name": "ROMERO, Camila", "country": "ECU"},
+          {"pos": 7, "entry": "WC", "name": "BRAYOTTA, Mia", "country": "ARG"},
+          {"pos": 8, "seed": "6", "name": "NAVARRO, Maria Fernanda", "country": "MEX"},
+          {"pos": 9, "seed": "4", "name": "CABEZAS DOMINGUEZ, Sofia Elena", "country": "VEN"},
+          {"pos": 10, "name": "SOTO NEIRA, Agustina", "country": "CHI"},
+          {"pos": 11, "entry": "WC", "name": "DUARTE, Agustina Daniela", "country": "ARG"},
+          {"pos": 12, "name": "MARKUS, Camila", "country": "ARG"},
+          {"pos": 13, "name": "SOUSA SALAZAR, Natalia", "country": "MEX"},
+          {"pos": 14, "entry": "WC", "name": "SOSA, Carola Celina", "country": "ARG"},
+          {"pos": 15, "name": "GOBBI MONLLAU, Ana Victoria", "country": "ARG"},
+          {"pos": 16, "seed": "8", "name": "GERALD GONZALEZ, Jimar Geraldine", "country": "CHI"},
+          {"pos": 17, "seed": "7", "name": "BARRERA AGUIRRE, Isabella", "country": "USA"},
+          {"pos": 18, "name": "AYALA, Lourdes", "country": "ARG"},
+          {"pos": 23, "name": "ESTEVEZ, Josefina", "country": "ARG"},
+          {"pos": 24, "seed": "3", "name": "URRUTIA, Maria Florencia", "country": "ARG"},
+          {"pos": 25, "seed": "5", "name": "MOYANO, Luciana", "country": "ARG"},
+          {"pos": 27, "name": "LOPEZ, Paola", "country": "USA"},
+          {"pos": 28, "name": "MARUCA, Melina Maria", "country": "ARG"},
+          {"pos": 29, "entry": "WC", "name": "AGUDELO, Luciana", "country": "ARG"},
+          {"pos": 30, "name": "BULBARELLA, Marina", "country": "ARG"},
+          {"pos": 32, "seed": "2", "name": "LABRANA, Fernanda", "country": "CHI"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
       }
     }
   },
