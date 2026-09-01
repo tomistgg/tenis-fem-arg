@@ -208,7 +208,14 @@
           {"round": 2, "match_num": 13, "winner_name": "V. Proietti", "score": "62 64"},
           {"round": 2, "match_num": 14, "winner_name": "S. Paris", "score": "62 62"},
           {"round": 2, "match_num": 15, "winner_name": "S. Butuc Cerchez", "score": "60 60"},
-          {"round": 3, "match_num": 5, "winner_name": "A. Lungu", "score": "63 61"}
+          {"round": 3, "match_num": 0, "winner_name": "D. Lopatetska", "score": "60 63"},
+          {"round": 3, "match_num": 1, "winner_name": "A. Scuppa", "score": "61 57 12-10"},
+          {"round": 3, "match_num": 2, "winner_name": "Y. Trush", "score": "62 26 10-8"},
+          {"round": 3, "match_num": 3, "winner_name": "I. Sanduleasa", "score": "62 61"},
+          {"round": 3, "match_num": 4, "winner_name": "A. Varsa", "score": "60 64"},
+          {"round": 3, "match_num": 5, "winner_name": "A. Lungu", "score": "63 61"},
+          {"round": 3, "match_num": 6, "winner_name": "V. Proietti", "score": "76(8) 63"},
+          {"round": 3, "match_num": 7, "winner_name": "S. Paris", "score": "63 46 10-2"}
         ],
         "byes": [
           1,
@@ -330,7 +337,15 @@
           {"round": 2, "match_num": 12, "winner_name": "L. Fojcik", "score": "62 20 RET"},
           {"round": 2, "match_num": 13, "winner_name": "A. Teixido Garcia", "score": "75 64"},
           {"round": 2, "match_num": 14, "winner_name": "S. Montesinos Vilanova", "score": "63 62"},
-          {"round": 2, "match_num": 15, "winner_name": "C. Vila Salles", "score": "62 62"}
+          {"round": 2, "match_num": 15, "winner_name": "C. Vila Salles", "score": "62 62"},
+          {"round": 3, "match_num": 0, "winner_name": "N. Torner Sensano", "score": "62 60"},
+          {"round": 3, "match_num": 1, "winner_name": "B. Xu", "score": "63 63"},
+          {"round": 3, "match_num": 2, "winner_name": "K. Kucikova", "score": "64 57 10-7"},
+          {"round": 3, "match_num": 3, "winner_name": "A. Cabassers Morros", "score": "64 46 10-3"},
+          {"round": 3, "match_num": 4, "winner_name": "A. Monlleo Ramos", "score": "63 62"},
+          {"round": 3, "match_num": 5, "winner_name": "I. Cherny", "score": "61 46 10-8"},
+          {"round": 3, "match_num": 6, "winner_name": "L. Fojcik", "score": "46 76(4) 10-7"},
+          {"round": 3, "match_num": 7, "winner_name": "S. Montesinos Vilanova", "score": "57 60 15-13"}
         ],
         "byes": [
           2,
@@ -358,6 +373,8 @@
         "draw_size": 32,
         "players": [
           {"pos": 1, "seed": "1", "name": "MAIR, Laura", "country": "ITA"},
+          {"pos": 2, "entry": "Q", "name": "TORNER SENSANO, Neus", "country": "ESP"},
+          {"pos": 3, "entry": "Q", "name": "MONTESINOS VILANOVA, Sofia", "country": "ESP"},
           {"pos": 4, "name": "REVA, Aliesia", "country": "UKR"},
           {"pos": 5, "name": "CIRPANLI, Defne", "country": "TUR"},
           {"pos": 6, "entry": "WC", "name": "GIRALDI REQUENA, Ana", "country": "ESP"},
@@ -368,10 +385,14 @@
           {"pos": 11, "name": "LOPEZ ALCARAZ, Esther", "country": "ESP"},
           {"pos": 12, "name": "GREINER, Sophie", "country": "GER"},
           {"pos": 13, "entry": "WC", "name": "ORTEGA REDONDO, Paula", "country": "ESP"},
+          {"pos": 14, "entry": "Q", "name": "MONLLEO RAMOS, Adriana", "country": "ESP"},
           {"pos": 15, "entry": "WC", "name": "PAUN, Gabriela", "country": "ESP"},
           {"pos": 16, "seed": "6", "name": "ARGYROKASTRITI, Marianna", "country": "GRE"},
           {"pos": 17, "seed": "8", "name": "GARCIA-PEREZ, Georgina", "country": "ESP"},
           {"pos": 18, "name": "POZARENKO, Aleksandra", "country": "RUS"},
+          {"pos": 19, "entry": "Q", "name": "KUCIKOVA, Kiara Nina", "country": "SVK"},
+          {"pos": 20, "entry": "Q", "name": "CHERNY, Isabelle", "country": "GBR"},
+          {"pos": 21, "entry": "Q", "name": "XU, Baotong", "country": "CHN"},
           {"pos": 22, "name": "BRUNO, Valentina Abril", "country": "ARG"},
           {"pos": 23, "name": "LIU, Min", "country": "CHN"},
           {"pos": 24, "seed": "3", "name": "ROURA LLAVERIAS, Ruth", "country": "ESP"},
@@ -379,8 +400,13 @@
           {"pos": 26, "name": "CORTE, Carlota", "country": "ESP"},
           {"pos": 27, "name": "LAHEY, Ashley", "country": "USA"},
           {"pos": 28, "name": "NATAL, Lucia", "country": "ESP"},
+          {"pos": 29, "entry": "Q", "name": "FOJCIK, Lea", "country": "GER"},
           {"pos": 30, "name": "TEIXIDO GARCIA, Meritxell", "country": "ESP"},
+          {"pos": 31, "entry": "Q", "name": "CABASSERS MORROS, Anna", "country": "ESP"},
           {"pos": 32, "seed": "2", "name": "PRIMORAC PAVICIC, Iva", "country": "CRO"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 2, "winner_name": "A. Giraldi Requena", "score": "64 75"}
         ],
         "round_labels": [
           "Round of 32",
@@ -575,6 +601,7 @@
         "draw_size": 32,
         "players": [
           {"pos": 1, "seed": "1", "name": "FERRO, Fiona", "country": "FRA"},
+          {"pos": 2, "entry": "Q", "name": "CIROTTE, Astrid", "country": "FRA"},
           {"pos": 3, "name": "ZANTEDESCHI, Aurora", "country": "ITA"},
           {"pos": 4, "name": "MONNOT, Amandine", "country": "FRA"},
           {"pos": 5, "name": "CHERUBINI, Diletta", "country": "ITA"},
@@ -583,6 +610,7 @@
           {"pos": 8, "seed": "5", "name": "WOLFF, Vivian", "country": "USA"},
           {"pos": 9, "seed": "3", "name": "TUBELLO, Alice", "country": "FRA"},
           {"pos": 10, "entry": "WC", "name": "ILIEV, Sarah", "country": "FRA"},
+          {"pos": 11, "entry": "Q", "name": "EBELING KONING, Loes", "country": "NED"},
           {"pos": 12, "name": "KOVACKOVA, Alena", "country": "CZE"},
           {"pos": 13, "name": "HIETARANTA, Laura", "country": "FIN"},
           {"pos": 14, "name": "NGUYEN TAN, Lucie", "country": "FRA"},
@@ -590,14 +618,25 @@
           {"pos": 16, "seed": "6", "name": "NAHIMANA, Sada", "country": "BDI"},
           {"pos": 17, "seed": "7", "name": "ZOLOTAREVA, Anastasia", "country": "RUS"},
           {"pos": 18, "name": "HESSE, Amandine", "country": "FRA"},
+          {"pos": 19, "entry": "Q", "name": "MATTEL, Marie", "country": "FRA"},
           {"pos": 20, "entry": "WC", "name": "LENE, Emma", "country": "FRA"},
+          {"pos": 21, "entry": "Q", "name": "VAN EMST, Sarah", "country": "NED"},
           {"pos": 22, "name": "BUREL, Clara", "country": "FRA"},
+          {"pos": 23, "entry": "Q", "name": "BERECOECHEA, Nahia", "country": "FRA"},
           {"pos": 24, "seed": "4", "name": "MIKULSKYTE, Justina", "country": "LTU"},
           {"pos": 25, "seed": "8", "name": "URGESI, Federica", "country": "ITA"},
           {"pos": 26, "name": "KARATANCHEVA, Lia", "country": "BUL"},
           {"pos": 27, "entry": "WC", "name": "BABEL, Oceane", "country": "FRA"},
+          {"pos": 28, "entry": "Q", "name": "AIKAWA, Mayuka", "country": "JPN"},
           {"pos": 29, "name": "PAQUET, Chloe", "country": "FRA"},
+          {"pos": 30, "entry": "Q", "name": "STRAKHOVA, Valeriya", "country": "UKR"},
+          {"pos": 31, "entry": "Q", "name": "LOLLIA, Mathilde", "country": "FRA"},
           {"pos": 32, "seed": "2", "name": "CARLE, Maria Lourdes", "country": "ARG"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 1, "winner_name": "A. Zantedeschi", "score": "63 76(5)"},
+          {"round": 1, "match_num": 2, "winner_name": "D. Cherubini", "score": "64 61"},
+          {"round": 1, "match_num": 6, "winner_name": "L. Nguyen Tan", "score": "46 76(5) 61"}
         ],
         "round_labels": [
           "Round of 32",
@@ -659,6 +698,15 @@
           {"pos": 30, "name": "MILANESE, Sara", "country": "ITA"},
           {"pos": 31, "entry": "Q", "name": "MAIS, Gaia", "country": "ITA"},
           {"pos": 32, "seed": "2", "name": "VORACEK, Eva Marie", "country": "GER"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 4, "winner_name": "P. Ormaechea", "score": "64 62"},
+          {"round": 1, "match_num": 8, "winner_name": "N. Maines", "score": "63 57 76(5)"},
+          {"round": 1, "match_num": 9, "winner_name": "E. Alvisi", "score": "61 62"},
+          {"round": 1, "match_num": 10, "winner_name": "C. Gasparini", "score": "64 63"},
+          {"round": 1, "match_num": 11, "winner_name": "C. Giambelli", "score": "62 64"},
+          {"round": 1, "match_num": 14, "winner_name": "S. Milanese", "score": "64 61"},
+          {"round": 1, "match_num": 15, "winner_name": "E. Voracek", "score": "63 63"}
         ],
         "round_labels": [
           "Round of 32",
