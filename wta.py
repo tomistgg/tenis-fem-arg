@@ -26,7 +26,7 @@ from config import (
     WTA_RANKINGS_CSV_83_99,
     resolve_player_display_name,
 )
-from http_client import get_with_retry
+from http_client import SlidingWindowRateLimiter, get_with_retry
 from pipeline_errors import PipelineError
 from run_state import report_run_issue
 from runtime_logging import get_logger
@@ -48,6 +48,7 @@ _REQUESTS_SESSION = requests.Session()
 _WTA_MAX_ATTEMPTS = 8
 _WTA_BACKOFF_BASE_SEC = 5.0
 _WTA_BACKOFF_MAX_SEC = 120.0
+_WTA_PLAYER_LIST_RATE_LIMITER = SlidingWindowRateLimiter(max_calls=15, period_seconds=60.0)
 
 
 def _normalize_country_code(code):
@@ -758,6 +759,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
             headers=HEADERS,
             timeout=(10, 25),
             failure_status="degraded",
+            before_attempt=_WTA_PLAYER_LIST_RATE_LIMITER.wait,
         )
         soup = BeautifulSoup(r.text, "html.parser")
     except PipelineError as e:
