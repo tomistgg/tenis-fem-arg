@@ -43,7 +43,7 @@ class ProjectDataConstraintTests(unittest.TestCase):
         )
         self.assertNotIn("337674", self.index.by_wta_id)
         self.assertEqual(self.index.by_wta_id["315683"].display_name, "Sloane Stephens")
-        self.assertNotEqual(
+        self.assertEqual(
             self.index.by_wta_id["110036"].player_key,
             self.index.by_wta_id["110362"].player_key,
         )
@@ -53,6 +53,11 @@ class ProjectDataConstraintTests(unittest.TestCase):
         )
         self.assertEqual(self.index.by_wta_id["190019"].itf_id, "800178321")
         self.assertEqual(self.index.by_wta_id["319280"].itf_id, "800331402")
+        self.assertEqual(self.index.by_wta_id["180052"].itf_id, "800180377")
+        self.assertNotEqual(
+            self.index.by_itf_id["800180377"].player_key,
+            self.index.by_itf_id["800279440"].player_key,
+        )
         self.assertEqual(
             self.index.by_itf_id["800199860"].player_key,
             self.index.by_itf_id["800209131"].player_key,
@@ -88,6 +93,17 @@ class ProjectDataConstraintTests(unittest.TestCase):
             self.assertEqual(self.index.by_itf_id[itf_id].wta_id, wta_id)
         for wta_id, primary_itf_id in PRIMARY_ITF_BY_WTA_ID.items():
             self.assertEqual(self.index.by_wta_id[wta_id].itf_id, primary_itf_id)
+
+    def test_merged_secondary_wta_profiles_are_retained(self):
+        expected = {
+            "110036": ("110362", "Nora Koves"),
+            "110523": ("333540", "Zuzana Kucova"),
+        }
+        for primary_wta_id, (secondary_wta_id, display_name) in expected.items():
+            primary = self.index.by_wta_id[primary_wta_id]
+            secondary = self.index.by_wta_id[secondary_wta_id]
+            self.assertEqual(primary.player_key, secondary.player_key)
+            self.assertEqual(primary.display_name, display_name)
 
     def test_verified_homonym_crosswalks_remain_distinct(self):
         expected = {

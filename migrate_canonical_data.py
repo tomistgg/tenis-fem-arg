@@ -55,7 +55,6 @@ NAME_OVERRIDE_BY_ITF_ID = {
     "800343636": ("Barbora Matusova (CZE)", "Barbora Matusova"),
     "800169266": ("Elizabeth Smylie", "Elizabeth Smylie"),
     "800180377": ("Francesca Romano", "Francesca Romano"),
-    "800279440": ("Francesca Romano (1971)", "Francesca Romano"),
     "800199860": ("Laura Rossi", "Laura Rossi"),
     "800570615": ("María Josefina Andrade", "María Josefina Andrade"),
     "800636229": ("Maria Lazarenko", "Maria Lazarenko"),
@@ -177,6 +176,8 @@ NAME_OVERRIDE_BY_ITF_ID = {
 
 NAME_OVERRIDE_BY_WTA_ID = {
     "310974": ("Laura Vallverdu", "Laura Vallverdu"),
+    "110036": ("Nora Koves", "Nora Koves"),
+    "110523": ("Zuzana Kucova", "Zuzana Kucova"),
     "334568": ("Giovana Schincariol", "Giovana Schincariol"),
     "335329": ("Laura Portela Borges", "Laura Portela Borges"),
     "336666": ("Maria Eduarda Carbone", "Maria Eduarda Carbone"),
@@ -208,7 +209,15 @@ PRESENTATION_BY_PLAYER_KEY = {
 
 PRIMARY_ITF_BY_WTA_ID = {
     # Both IDs occur in the same player's contiguous ranking/match history.
+    "180052": "800180377",
     "180297": "800199860",
+    "180393": "800205007",
+}
+
+# Source IDs known to belong to a different same-name player despite having
+# been linked in the legacy alias file.
+SEPARATE_ITF_FROM_WTA = {
+    ("180052", "800279440"),  # Francesca Romano (2007 ITF match profile)
 }
 
 # Verified WTA/ITF crosswalks that were absent from the legacy aliases.  These
@@ -218,6 +227,7 @@ WTA_BY_ITF_ID = {
     "800536015": "332762",  # Alice Soulie
     "800221348": "130734",  # Andreea Matei
     "800178944": "10001",   # Anne Aallonen
+    "800180377": "180052",  # Francesca Romano (correct primary ITF profile)
     "800513464": "331945",  # Barbora Michalkova
     "800182267": "180081",  # Belkis Rodriguez
     "800177048": "80039",   # Chiu-Mei Ho
@@ -225,6 +235,7 @@ WTA_BY_ITF_ID = {
     "800177871": "30020",   # Dyan Castillejo
     "800546838": "332098",  # Elena Ruxandra Bertea
     "800785739": "336029",  # Emery Combs
+    "800176683": "180013",  # Emilse Raponi Longo / Rapponi-Longo
     "800643210": "335673",  # Gabriella Mikaul
     "800575336": "336655",  # Galatea Ferro
     "800209063": "190727",  # Ivana Sokac
@@ -246,6 +257,8 @@ WTA_BY_ITF_ID = {
     "800447468": "327643",  # Maddalena Giordano
     "800586966": "334909",  # Manon Favier
     "800404328": "324743",  # Marina Benito
+    "800201380": "30423",   # Maria Soledad Coppari / Soledad Coppari
+    "800577015": "329889",  # Martina Maria Bovio / Martina Bovio
     "800275736": "314237",  # Misaki Doi
     "800101514": "110124",  # Natasha Khan (AUS)
     "800240168": "312278",  # Natasha Khan (GBR)
@@ -271,6 +284,25 @@ WTA_BY_ITF_ID = {
     "800525621": "334233",  # Yelyzaveta Chainykova
     "800726989": "333677",  # Yihan Qu
     "800186795": "30332",   # Young-Ja Choi
+    "800190890": "40229",   # Cristina Lopez-De Subijana / Cristina De Subijana
+    "800347176": "323439",  # Evelyne Atticia Tiron / Evelyne Tiron
+    "800156057": "316573",  # Julianna Barbosa Bacelar / Julianna Bacelar
+    "800335769": "320566",  # Karola Patricia Bejenaru / Karola Bejenaru
+    "800401155": "325578",  # Lilly Elida Haseth / Lilly Haseth
+    "800158449": "319056",  # Marcela Alves Pereira Valle / Marcela Valle
+    "800485751": "324503",  # Maria Ignacia Yapur Lopez / Maria Yapur Lopez
+    "800246406": "312836",  # Maria-Jose Andres-Gomez / Marie Jose Andres Gomez
+    "800205552": "120411",  # Maria-Jose Lopez-Herrera / Marie Jose Lopez Herrera
+    "800243786": "311211",  # Marie-Perrine Baudouin / Marie-Perine Baudouin
+    "800214575": "120392",  # Nan-Nan Liu / Nannan Liu
+    "800210749": "180393",  # Natalia Rojas / Nataly Rojas (second ITF profile)
+    "800192938": "110036",  # Nora Koves / Nora Koeves (second WTA profile)
+    "800238203": "310984",  # Shan-Shan Song / Shanshan Song
+    "800199125": "190817",  # Tian-Tian Sun / Tiantian Sun
+    "800312263": "318251",  # Veronica M Corning / Veronica Corning
+    "800810572": "310799",  # Wenhao Wu / Wen-Hao Wu
+    "800219269": "310220",  # Yan-Ze Xie / Yanze Xie
+    "800732722": "110523",  # Zuzana Feltsan Kucova / Zuzana Kucova (second WTA profile)
 }
 
 # Source names for externally verified ITF IDs that may not have appeared in
@@ -389,12 +421,41 @@ def _merge_legacy_players(data_dir: Path) -> tuple[list[dict], dict[str, int]]:
         ):
             dropped_placeholders += 1
             continue
+        row_wta_ids = set(_source_ids(row, "wta"))
+        row_itf_ids = set(_source_ids(row, "itf"))
+        for wta_id, itf_id in SEPARATE_ITF_FROM_WTA:
+            if wta_id not in row_wta_ids or itf_id not in row_itf_ids:
+                continue
+            if wta_id == "180052":
+                row["display_name"] = "Francesca Romano"
+                raw_aliases = row.get("aliases")
+                if isinstance(raw_aliases, list):
+                    row["aliases"] = [
+                        value for value in raw_aliases
+                        if compact_text(value) != "Francesca Romano (1971)"
+                    ]
+            if normalized_identifier(row.get("itf_id")) == itf_id:
+                row["itf_id"] = ""
+                row["itf_name"] = ""
+            additional = row.get("additional_itf_ids")
+            if isinstance(additional, list):
+                row["additional_itf_ids"] = [
+                    value for value in additional if normalized_identifier(value) != itf_id
+                ]
         itf_ids = _source_ids(row, "itf")
         mapped_wta_ids = {WTA_BY_ITF_ID[value] for value in itf_ids if value in WTA_BY_ITF_ID}
         if len(mapped_wta_ids) > 1:
             raise ValueError(f"conflicting WTA crosswalk for ITF IDs {itf_ids}")
         if mapped_wta_ids:
-            row["wta_id"] = next(iter(mapped_wta_ids))
+            mapped_wta_id = next(iter(mapped_wta_ids))
+            current_wta_id = normalized_identifier(row.get("wta_id"))
+            if current_wta_id and current_wta_id != mapped_wta_id:
+                additional = row.get("additional_wta_ids")
+                additional_wta_ids = list(additional) if isinstance(additional, list) else []
+                if current_wta_id not in additional_wta_ids:
+                    additional_wta_ids.append(current_wta_id)
+                row["additional_wta_ids"] = additional_wta_ids
+            row["wta_id"] = mapped_wta_id
         elif normalized_identifier(row.get("wta_id")) == "Neiland":
             row["wta_id"] = "190019"
         rows.append(row)
