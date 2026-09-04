@@ -4,7 +4,7 @@
     'use strict';
 
     var PRIMARY_TABS = ['entrylists', 'roadtogs', 'calendar', 'upcoming'];
-    var SECONDARY_TABS = ['history', 'draws', 'rankings', 'tstrength', 'fedbcup'];
+    var SECONDARY_TABS = ['history', 'draws', 'rankings', 'tstrength', 'fedbcup', 'information'];
     var TAB_LABELS = {
         home: 'Home',
         entrylists: 'Entry Lists',
@@ -15,7 +15,8 @@
         draws: 'Draws',
         rankings: 'WTA Rankings',
         tstrength: 'WTA Tournament Strength',
-        fedbcup: 'Fed / BJK Cup'
+        fedbcup: 'Fed / BJK Cup',
+        information: 'Milestones'
     };
     var TAB_ICONS = {
         entrylists: 'assets/files.png',
@@ -26,7 +27,8 @@
         draws: 'assets/tournament.png',
         rankings: 'assets/list.png',
         tstrength: 'assets/score-board.png',
-        fedbcup: 'assets/argentina.png'
+        fedbcup: 'assets/argentina.png',
+        information: 'assets/files.png'
     };
 
     function tabButton(tab) {

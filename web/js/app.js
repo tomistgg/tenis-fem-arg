@@ -25,7 +25,7 @@
 
             const URL_STATE_TABS = new Set([
                 'home', 'upcoming', 'entrylists', 'draws', 'calendar', 'rankings',
-                'roadtogs', 'history', 'fedbcup', 'tstrength'
+                'roadtogs', 'history', 'fedbcup', 'tstrength', 'information'
             ]);
             let _currentTabName = 'home';
             let _urlStateApplying = false;
@@ -948,6 +948,93 @@
                 calendarFiltersInitialized = true;
                 applyCalendarFilters();
             }
+            function _milestonesCell(items) {
+                if (!Array.isArray(items) || !items.length) return '<span class="text-muted">—</span>';
+                return items.map(item => `<div class="milestones-achiever"><span class="milestones-position">${item.position}-</span> ${escapeHtml(item.name)} <span class="milestones-date">(${escapeHtml(item.date)})</span></div>`).join('');
+            }
+
+            function _milestonesRenderHistorical() {
+                const tbody = document.getElementById('milestones-historical-body');
+                if (!tbody) return;
+                const metricSelect = document.getElementById('milestones-historical-metric');
+                const metric = metricSelect ? metricSelect.value : 'ranked';
+                const rows = (window.WTARG_DATA.milestones || {}).historical || [];
+                tbody.innerHTML = rows.map(row => `<tr><th scope="row">${row.year}</th><td>${_milestonesCell(row[metric])}</td></tr>`).join('');
+            }
+
+            function _milestonesRenderPointRows(tbody, rows, emptyMessage, includeDropDate = true) {
+                if (!tbody) return;
+                const columnCount = includeDropDate ? 5 : 4;
+                if (!Array.isArray(rows) || !rows.length) {
+                    tbody.innerHTML = `<tr><td colspan="${columnCount}" class="cell-state-info">${escapeHtml(emptyMessage)}</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = rows.map(row => {
+                    const dropDateCell = includeDropDate ? `<td>${escapeHtml(row.dropDate)}</td>` : '';
+                    return `<tr><td>${escapeHtml(row.date)}</td><td>${escapeHtml(row.tournament)}</td><td>${escapeHtml(row.round)}</td><td>${row.points}</td>${dropDateCell}</tr>`;
+                }).join('');
+            }
+
+            function renderMilestonesPlayer() {
+                const select = document.getElementById('milestones-player-select');
+                const selected = select ? select.value : '';
+                const players = (window.WTARG_DATA.milestones || {}).active || [];
+                const player = players.find(item => item.name === selected);
+                const career = document.getElementById('milestones-career');
+                const expiredSection = document.getElementById('milestones-expired-section');
+                const liveTotal = document.getElementById('milestones-live-total');
+                if (!player) {
+                    if (career) career.hidden = true;
+                    if (expiredSection) expiredSection.hidden = true;
+                    if (liveTotal) liveTotal.textContent = 'Points: 0';
+                    _milestonesRenderPointRows(document.getElementById('milestones-live-body'), [], 'Select a player to view their results');
+                    return;
+                }
+                if (career) career.hidden = false;
+                if (liveTotal) liveTotal.textContent = `Points: ${player.livePoints}`;
+                _milestonesRenderPointRows(document.getElementById('milestones-live-body'), player.liveRows, 'No tournaments found in the current ranking window.');
+                const lastRanked = document.getElementById('milestones-last-ranked');
+                if (lastRanked) {
+                    lastRanked.hidden = !player.lastRankedWeek;
+                    lastRanked.textContent = player.lastRankedWeek ? `Last week with WTA ranking: ${player.lastRankedWeek}` : '';
+                }
+                const everTotal = document.getElementById('milestones-ever-total');
+                if (everTotal) everTotal.textContent = `Total ever WTA points earned: ${player.totalEverPoints}`;
+                const expiredRows = Array.isArray(player.expiredRows) ? player.expiredRows : [];
+                if (expiredSection) expiredSection.hidden = !expiredRows.length;
+                if (expiredRows.length) {
+                    _milestonesRenderPointRows(document.getElementById('milestones-expired-body'), expiredRows, '', false);
+                }
+            }
+
+            function switchMilestonesTab(tabName) {
+                const historical = tabName !== 'active';
+                const historicalPanel = document.getElementById('milestones-historical');
+                const activePanel = document.getElementById('milestones-active');
+                const historicalButton = document.getElementById('milestones-btn-historical');
+                const activeButton = document.getElementById('milestones-btn-active');
+                if (historicalPanel) historicalPanel.hidden = !historical;
+                if (activePanel) activePanel.hidden = historical;
+                if (historicalButton) {
+                    historicalButton.classList.toggle('active', historical);
+                    historicalButton.setAttribute('aria-selected', String(historical));
+                }
+                if (activeButton) {
+                    activeButton.classList.toggle('active', !historical);
+                    activeButton.setAttribute('aria-selected', String(!historical));
+                }
+                if (historical) _milestonesRenderHistorical();
+            }
+
+            function initInformationPage() {
+                _milestonesRenderHistorical();
+                const select = document.getElementById('milestones-player-select');
+                if (select && select.dataset.initialized !== '1') {
+                    select.dataset.initialized = '1';
+                    $(select).select2({ placeholder: 'Select Player...', allowClear: true, width: '100%' });
+                    $(select).on('change', renderMilestonesPlayer);
+                }
+            }
             function switchTab(tabName) {
                 if (tabName === 'home' && homeLocked) return;
                 if (tabName !== 'history') closeHistoryFilters(false);
@@ -988,6 +1075,7 @@
                 document.getElementById('view-roadtogs').style.display = (tabName === 'roadtogs') ? 'flex' : 'none';
                 document.getElementById('view-draws').style.display = (tabName === 'draws') ? 'block' : 'none';
                 document.getElementById('view-tstrength').style.display = (tabName === 'tstrength') ? 'flex' : 'none';
+                document.getElementById('view-information').style.display = (tabName === 'information') ? 'flex' : 'none';
                 if (tabName === 'history') setHistorySubpage(HISTORY_SUBPAGE_MATCH);
 
                 if (tabName === 'entrylists') {
@@ -999,6 +1087,7 @@
                 if (tabName === 'calendar') initCalendarFilters();
                 if (tabName === 'rankings') initRankingsIfEmpty();
                 if (tabName === 'roadtogs') initRoadToGS();
+                if (tabName === 'information') initInformationPage();
 
                 applyMobileHistoryLayout();
                 syncEntryMenuToggle();

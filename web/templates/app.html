@@ -16,7 +16,7 @@
         <link href="assets/vendor/select2-4.1.0-rc.0.min.css" rel="stylesheet" />
         <script src="assets/vendor/jquery-3.6.0.min.js"></script>
         <script src="assets/vendor/select2-4.1.0-rc.0.min.js"></script>
-        <link rel="stylesheet" href="assets/app.css?v=20260830-entrylists-cell-padding-2">
+        <link rel="stylesheet" href="assets/app.css?v=20260904-milestones-3">
     </head>
     <body class="home-mode" onload="renderHistoryTable(); renderMilestonesTable();">
         <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">\u2630</button>
@@ -35,6 +35,7 @@
                 <button type="button" class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</button>
                 <button type="button" class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</button>
                 <button type="button" class="menu-item" id="btn-tstrength" onclick="switchTab('tstrength')">WTA TRN STR</button>
+                <button type="button" class="menu-item" id="btn-information" onclick="switchTab('information')">Milestones</button>
             </nav>
 
             <div class="main-content">
@@ -77,6 +78,10 @@
                             <button class="home-btn" onclick="switchTab('tstrength')">
                                 <img class="home-icon-img" src="assets/score-board.png" alt="Analytics icon" />
                                 <span class="home-label">WTA Tournament Strength</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('information')">
+                                <img class="home-icon-img" src="assets/files.png" alt="Milestones icon" />
+                                <span class="home-label">Milestones</span>
                             </button>
                         </div>
                         <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()"><svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg><svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><span id="home-dark-label">Dark Mode</span></button>
@@ -578,6 +583,71 @@
                             </table>
                         </div>
                     </div>
+                </div>
+
+                <div id="view-information" class="single-layout" style="display: none;">
+                    <div class="header-row"><h1>Milestones</h1></div>
+                    <div class="milestones-tabs" role="tablist" aria-label="Milestones views">
+                        <button type="button" class="fedbcup-btn active" id="milestones-btn-historical" role="tab" aria-selected="true" onclick="switchMilestonesTab('historical')">Historical</button>
+                        <button type="button" class="fedbcup-btn" id="milestones-btn-active" role="tab" aria-selected="false" onclick="switchMilestonesTab('active')">Active</button>
+                    </div>
+
+                    <section id="milestones-historical" class="milestones-panel" role="tabpanel">
+                        <div class="content-card milestones-historical-card">
+                            <div class="table-wrapper" tabindex="0" aria-label="Argentine player milestones by birth year">
+                                <table class="milestones-historical-table">
+                                    <thead><tr>
+                                        <th>Born</th>
+                                        <th>
+                                            <select id="milestones-historical-metric" aria-label="Historical milestone" onchange="_milestonesRenderHistorical()">
+                                                <option value="ranked">First WTA ranking</option>
+                                                <option value="point">First WTA point</option>
+                                                <option value="mainDrawWin">First MD win</option>
+                                                <option value="proWin">First pro win</option>
+                                                <option value="qualified">First qualified</option>
+                                            </select>
+                                        </th>
+                                    </tr></thead>
+                                    <tbody id="milestones-historical-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="milestones-active" class="milestones-panel" role="tabpanel" hidden>
+                        <div class="milestones-active-controls">
+                            <div class="player-select-container">
+                                <select id="milestones-player-select">
+                                    <option value="">Select Player...</option>
+                                    @@WTARG_MILESTONES_ACTIVE_PLAYER_OPTIONS@@
+                                </select>
+                            </div>
+                            <div id="milestones-live-total">Points: 0</div>
+                        </div>
+                        <div class="content-card">
+                            <div class="table-wrapper">
+                                <table class="milestones-points-table">
+                                    <thead><tr><th>Date</th><th>Tournament</th><th>Round</th><th>PTS</th><th>Drop Date</th></tr></thead>
+                                    <tbody id="milestones-live-body"><tr><td colspan="5" class="cell-state-info">Select a player to view their results</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div id="milestones-career" class="milestones-career" hidden>
+                            <p id="milestones-last-ranked" hidden></p>
+                            <p id="milestones-ever-total"></p>
+                            <div id="milestones-expired-section" hidden>
+                                <h2>Expired WTA points</h2>
+                                <div class="content-card">
+                                    <div class="table-wrapper">
+                                        <table class="milestones-points-table milestones-expired-table">
+                                            <thead><tr><th>Date</th><th>Tournament</th><th>Round</th><th>PTS</th></tr></thead>
+                                            <tbody id="milestones-expired-body"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 </div>
 
                 <div id="view-draws" class="single-layout" style="display: none;">

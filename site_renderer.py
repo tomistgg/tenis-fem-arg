@@ -106,6 +106,7 @@ def _entry_inputs(
             key_to_week[key] = key_to_week.get(key[:-5], "")
 
     schedule_map: ScheduleMap = {}
+    schedule_entries: dict[str, dict[str, list[dict[str, Any]]]] = {}
     unranked_arg_names: set[str] = set()
     for tournament_key, players in tournament_store.items():
         week = key_to_week.get(tournament_key, "")
@@ -133,14 +134,39 @@ def _entry_inputs(
                 suffix = f" (ALT {position})" if position else " (ALT)"
             else:
                 suffix = ""
-            _append_schedule_label(
-                schedule_map,
-                player_key,
-                week,
-                f"{tournament_name}{suffix}",
-                style="append_br",
+            schedule_entries.setdefault(player_key, {}).setdefault(week, []).append(
+                {
+                    "label": f"{tournament_name}{suffix}",
+                    "priority": player.get("priority", ""),
+                    "entry_type": entry_type,
+                    "pos_num": player.get("pos_num", 9999),
+                }
             )
             unranked_arg_names.add(player_key)
+
+    def numeric_sort_value(value: Any) -> int:
+        text = str(value or "").strip()
+        return int(text) if text.isdigit() else 9999
+
+    entry_type_order = {"MAIN": 0, "QUAL": 1, "ALT": 2}
+    for player_key, weeks in schedule_entries.items():
+        for week, entries in weeks.items():
+            entries.sort(
+                key=lambda entry: (
+                    numeric_sort_value(entry["priority"]),
+                    entry_type_order.get(entry["entry_type"], 3),
+                    numeric_sort_value(entry["pos_num"]),
+                    entry["label"].lower(),
+                )
+            )
+            for entry in entries:
+                _append_schedule_label(
+                    schedule_map,
+                    player_key,
+                    week,
+                    entry["label"],
+                    style="append_br",
+                )
     return tournament_store, schedule_map, unranked_arg_names
 
 

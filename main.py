@@ -124,6 +124,7 @@ HOURLY_PREFLIGHT_SCRIPTS = (
     ("ITF loader", os.path.join(BASE_DIR, "populate_data", "itf_load_new.py")),
     ("WTA loader", os.path.join(BASE_DIR, "populate_data", "wta_load_new.py")),
     ("draw sizes updater", os.path.join(BASE_DIR, "populate_data", "tournament_sizes_update.py")),
+    ("ITF player details updater", os.path.join(BASE_DIR, "populate_data", "update_itf_player_details.py")),
 )
 
 

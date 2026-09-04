@@ -143,6 +143,50 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertIn("minimumResultsForSearch: Infinity", roadtogs_js)
         self.assertIn("state.cutoff = cutoffSelect.value", app_js)
 
+    def test_information_page_is_reworked_as_milestones(self):
+        app = (GENERATED_SITE_DIR / "app.html").read_text(encoding="utf-8-sig")
+        index = (GENERATED_SITE_DIR / "index.html").read_text(encoding="utf-8-sig")
+        app_js = (GENERATED_SITE_DIR / "assets/js/app.js").read_text(encoding="utf-8-sig")
+        router_js = (GENERATED_SITE_DIR / "assets/js/router.js").read_text(encoding="utf-8-sig")
+        app_shell_js = (PROJECT_DIR / "assets/app-shell.js").read_text(encoding="utf-8-sig")
+
+        self.assertIn('<h1>Milestones</h1>', app)
+        self.assertIn('id="milestones-btn-historical"', app)
+        self.assertIn('id="milestones-btn-active"', app)
+        self.assertIn('id="milestones-historical-body"', app)
+        self.assertIn('id="milestones-historical-metric"', app)
+        self.assertIn('<option value="proWin">First pro win</option>', app)
+        self.assertIn('id="milestones-player-select"', app)
+        self.assertIn('id="milestones-live-body"', app)
+        self.assertIn('id="milestones-expired-body"', app)
+        self.assertIn('>Expired WTA points</h2>', app)
+        expired_table = re.search(
+            r'<table class="milestones-points-table milestones-expired-table">(.*?)</table>',
+            app,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(expired_table)
+        self.assertNotIn("Drop Date", expired_table.group(1))
+        self.assertNotIn('<h1>Information</h1>', app)
+        self.assertIn('href="app.html#information"', index)
+        self.assertIn('>Milestones</span>', index)
+        information_route = (GENERATED_SITE_DIR / "information" / "index.html").read_text(encoding="utf-8-sig")
+        self.assertIn("#information", information_route)
+        self.assertIn("getElementById('view-information')", app_js)
+        self.assertIn("function switchMilestonesTab(tabName)", app_js)
+        self.assertIn("Total ever WTA points earned:", app_js)
+        self.assertIn("Last week with WTA ranking:", app_js)
+        self.assertIn("expiredRows, '', false", app_js)
+        self.assertIn("'information'", router_js)
+        self.assertIn("information: 'Milestones'", app_shell_js)
+
+        generated_data = (GENERATED_SITE_DIR / "assets/js/generated-data.js").read_text(encoding="utf-8-sig")
+        payload = json.loads(generated_data.split("=", 1)[1].strip().rstrip(";"))
+        marchesini = next(
+            player for player in payload["milestones"]["active"] if player["name"] == "Victoria Marchesini"
+        )
+        self.assertEqual(marchesini["lastRankedWeek"], "2025-11-24")
+
     def test_history_qualifying_rounds_use_qr_prefix(self):
         cases = {
             "Q1": "QR1",

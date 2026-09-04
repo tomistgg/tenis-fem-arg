@@ -23,6 +23,7 @@ from config import (
     resolve_player_display_name,
     resolve_player_presentation_name,
 )
+from milestones import build_milestones_data
 from pipeline_errors import DataValidationError
 from run_state import report_run_issue
 from runtime_logging import get_logger
@@ -1522,6 +1523,32 @@ def generate_html(
     _all_dates = sorted(_all_csv.keys())
     _latest_date = _all_dates[-1] if _all_dates else ""
 
+    _milestone_rankings = {
+        week: [
+            {
+                **player,
+                "Player": _player_display_name(_ranking_display_name(player)),
+            }
+            for player in rows
+        ]
+        for week, rows in _all_csv.items()
+    }
+    _current_arg_wta_names = {
+        _player_display_name(_ranking_display_name(player))
+        for player in _all_csv.get(_latest_date, [])
+        if str(player.get("Country", "")).upper() == "ARG"
+    }
+    _active_milestone_names = [_player_display_name(player.get("Player", "")) for player in players_data]
+    milestones_data = build_milestones_data(
+        history=cleaned_history,
+        ranking_weeks=_milestone_rankings,
+        active_names=_active_milestone_names,
+        current_wta_names=_current_arg_wta_names,
+        draw_sizes=all_draw_sizes,
+        data_dir=source_data_dir,
+        today=madrid_today(),
+    )
+
     # Build nested date index: year(str) -> month(int) -> [day(int), ...]
     _date_index = {}
     for _d in _all_dates:
@@ -1972,6 +1999,10 @@ def generate_html(
         ),
         "GS_TABLES_HTML": gs_tables_html,
         "ROADTOGS_CUTOFF_OPTIONS": gs_cutoff_options_html,
+        "MILESTONES_ACTIVE_PLAYER_OPTIONS": "".join(
+            f'<option value="{escape(player["name"], quote=True)}">{escape(player["name"])}</option>'
+            for player in milestones_data["active"]
+        ),
         "GS_THRESHOLD_Q": GS_THRESHOLD_Q,
         "GS_THRESHOLD_MD": GS_THRESHOLD_MD,
         "DRAWS_DROPDOWN_HTML": draws_dropdown_html,
@@ -1995,6 +2026,7 @@ def generate_html(
         "rankingsLatestDay": rankings_latest_day,
         "gsThresholdQ": GS_THRESHOLD_Q,
         "gsThresholdMd": GS_THRESHOLD_MD,
+        "milestones": milestones_data,
     }
     html_template = _render_frontend_source("templates/app.html", frontend_context)
     html_template = _apply_content_security_policy(html_template).rstrip() + "\n"
@@ -2066,6 +2098,7 @@ def generate_html(
         "history",
         "fedbcup",
         "tstrength",
+        "information",
     ]
     for tab in route_tabs:
         folder = os.path.join(site_root, tab)

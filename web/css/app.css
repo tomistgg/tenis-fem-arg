@@ -275,6 +275,7 @@
             #view-fedbcup { max-width: 1400px; margin: 0 auto; }
             #view-tstrength { width: 100%; margin: 0 auto; }
             #view-roadtogs { max-width: 1100px; margin: 0 auto; }
+            #view-information { max-width: 1100px; margin: 0 auto; }
             #view-draws { width: 100%; max-width: 100%; margin: 0; }
             .draws-layout { display: flex; flex-direction: column; width: 100%; }
             .draws-toolbar { display: flex; align-items: center; gap: 10px; padding: 6px 12px; flex-wrap: wrap; position: relative; }
@@ -439,6 +440,94 @@
                 transition: transform 0.15s ease;
             }
             .roadtogs-info-summary[aria-expanded="true"]::after { transform: translateY(-50%) rotate(225deg); }
+            #view-information .header-row { align-items: center; }
+            #view-information .header-row h1 { width: 100%; text-align: center; }
+            .milestones-tabs {
+                display: flex;
+                justify-content: center;
+                gap: 8px;
+                margin: 0 auto 10px;
+            }
+            .milestones-tabs .fedbcup-btn { min-width: 120px; }
+            .milestones-panel { width: 100%; }
+            .milestones-panel[hidden], .milestones-career[hidden] { display: none !important; }
+            .milestones-historical-card { width: 100%; max-width: 760px; margin-inline: auto; }
+            .milestones-historical-table { width: 100%; min-width: 0; table-layout: fixed; }
+            .milestones-historical-table th:first-child { width: 64px; }
+            .milestones-historical-table th:last-child { width: auto; }
+            #milestones-historical-metric {
+                width: min(100%, 250px);
+                min-height: 28px;
+                padding: 3px 30px;
+                border: 1px solid var(--c-border);
+                border-radius: 5px;
+                background-color: var(--c-surface);
+                background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+                background-repeat: no-repeat;
+                background-position: right 9px center;
+                color: var(--c-text-primary);
+                font: inherit;
+                font-weight: 700;
+                text-align: center;
+                text-align-last: center;
+            }
+            .milestones-historical-table td {
+                padding: 3px 8px;
+                text-align: left;
+                vertical-align: middle;
+                white-space: normal;
+            }
+            .milestones-historical-table tbody th { padding-block: 3px; vertical-align: middle; }
+            .milestones-achiever { margin: 0; font-size: 11px; font-weight: 700; line-height: 1.25; }
+            .milestones-position { display: inline-block; min-width: 20px; color: var(--c-text-secondary); }
+            .milestones-date { color: var(--c-text-muted); font-weight: 600; white-space: nowrap; }
+            .milestones-active-controls {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                margin: 0 auto 10px;
+            }
+            #milestones-live-total { padding-right: 12px; font-size: 16px; font-weight: 800; white-space: nowrap; }
+            .milestones-points-table { table-layout: fixed; }
+            .milestones-points-table th:nth-child(1), .milestones-points-table td:nth-child(1) { width: 92px; }
+            .milestones-points-table th:nth-child(2), .milestones-points-table td:nth-child(2) { width: auto; }
+            .milestones-points-table th:nth-child(3), .milestones-points-table td:nth-child(3) { width: 105px; }
+            .milestones-points-table th:nth-child(4), .milestones-points-table td:nth-child(4) { width: 58px; text-align: center; }
+            .milestones-points-table th:nth-child(5), .milestones-points-table td:nth-child(5) { width: 100px; }
+            .milestones-career { margin-top: 16px; }
+            .milestones-career > p { margin: 5px 2px; font-size: 13px; font-weight: 700; }
+            .milestones-career h2 { margin: 16px 2px 7px; font-size: 16px; }
+            #milestones-expired-section h2 { text-align: center; }
+            @media (max-width: 600px) {
+                .milestones-tabs { gap: 4px; }
+                .milestones-tabs .fedbcup-btn { min-width: 105px; }
+                .milestones-active-controls { align-items: stretch; gap: 6px; }
+                .milestones-active-controls .player-select-container { min-width: 0; flex: 0 1 68%; }
+                #milestones-live-total { align-self: center; margin-right: 12px; padding-right: 2px; font-size: 12px; }
+                .milestones-historical-table { min-width: 0; }
+                .milestones-historical-table th:first-child { width: 48px; }
+                #milestones-historical-metric { min-height: 24px; padding-block: 2px; font-size: 9px; }
+                .milestones-historical-table td,
+                .milestones-historical-table tbody th { padding: 2px 4px; }
+                .milestones-achiever { font-size: 10px; }
+                .milestones-points-table { min-width: 500px; }
+                .milestones-points-table th,
+                .milestones-points-table td {
+                    height: auto;
+                    padding: 3px 3px !important;
+                    font-size: 8px;
+                    line-height: 1.15;
+                }
+                .milestones-points-table th:nth-child(1), .milestones-points-table td:nth-child(1) { width: 72px; }
+                .milestones-points-table th:nth-child(3), .milestones-points-table td:nth-child(3) { width: 76px; }
+                .milestones-points-table th:nth-child(4), .milestones-points-table td:nth-child(4) { width: 38px; }
+                .milestones-points-table th:nth-child(5), .milestones-points-table td:nth-child(5) { width: 78px; }
+                .milestones-expired-table { min-width: 420px; }
+                .milestones-career { margin-top: 10px; }
+                .milestones-career > p { margin: 3px 2px; font-size: 10px; line-height: 1.2; }
+                .milestones-career h2 { margin: 9px 2px 4px; font-size: 11px; line-height: 1.2; }
+            }
             .roadtogs-info-panel {
                 grid-column: 1 / -1;
                 grid-row: 2;

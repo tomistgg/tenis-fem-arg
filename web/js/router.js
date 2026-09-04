@@ -10,6 +10,7 @@
                 'history',
                 'fedbcup',
                 'tstrength',
+                'information',
             ]);
 
             function normalizePath(path) {
