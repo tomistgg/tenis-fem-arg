@@ -28,7 +28,7 @@
         rankings: 'assets/list.png',
         tstrength: 'assets/score-board.png',
         fedbcup: 'assets/argentina.png',
-        information: 'assets/files.png'
+        information: 'assets/podium.png'
     };
 
     function tabButton(tab) {

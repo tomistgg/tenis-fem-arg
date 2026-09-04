@@ -170,6 +170,8 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertNotIn('<h1>Information</h1>', app)
         self.assertIn('href="app.html#information"', index)
         self.assertIn('>Milestones</span>', index)
+        self.assertIn('src="assets/podium.png" alt="Milestones icon"', index)
+        self.assertIn('src="assets/podium.png" alt="Milestones icon"', app)
         information_route = (GENERATED_SITE_DIR / "information" / "index.html").read_text(encoding="utf-8-sig")
         self.assertIn("#information", information_route)
         self.assertIn("getElementById('view-information')", app_js)
@@ -179,6 +181,7 @@ class GeneratedSiteTests(unittest.TestCase):
         self.assertIn("expiredRows, '', false", app_js)
         self.assertIn("'information'", router_js)
         self.assertIn("information: 'Milestones'", app_shell_js)
+        self.assertIn("information: 'assets/podium.png'", app_shell_js)
 
         generated_data = (GENERATED_SITE_DIR / "assets/js/generated-data.js").read_text(encoding="utf-8-sig")
         payload = json.loads(generated_data.split("=", 1)[1].strip().rstrip(";"))
@@ -186,6 +189,16 @@ class GeneratedSiteTests(unittest.TestCase):
             player for player in payload["milestones"]["active"] if player["name"] == "Victoria Marchesini"
         )
         self.assertEqual(marchesini["lastRankedWeek"], "2025-11-24")
+        cohort_2009 = next(row for row in payload["milestones"]["historical"] if row["year"] == 2009)
+        mia_point = next(player for player in cohort_2009["point"] if player["name"] == "Mía Brayotta")
+        self.assertEqual((mia_point["position"], mia_point["date"]), (1, "2025-09-15"))
+
+        for relative_path in (
+            "data/player_aliases_wta_itf.json",
+            "data/itf_player_details.json",
+            "data/itf_matches_arg.csv",
+        ):
+            self.assertNotIn("800715176", (PROJECT_DIR / relative_path).read_text(encoding="utf-8-sig"))
 
     def test_history_qualifying_rounds_use_qr_prefix(self):
         cases = {
