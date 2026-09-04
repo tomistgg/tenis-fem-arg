@@ -21981,7 +21981,7 @@
                       "roundDesc": "Quarter-finals", "roundNumber": 3,
                       "matches": [
                           {
-                            "matchId": 1183680381, "playStatusCode": "TP",
+                            "matchId": 1183680381, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "DA",
@@ -22020,14 +22020,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183680384, "playStatusCode": "IP",
+                            "matchId": 1183680384, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [4,6,4], "isWinner": false, "entryStatus": "DA",
                                   "player": {"playerId":800500748,"nationality":"USA","givenName":"Malaika","familyName":"Rapolu"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 2, "entryStatus": "DA",
+                                  "scores": [6,1,6], "isWinner": true, "seeding": 2, "entryStatus": "DA",
                                   "player": {"playerId":800485856,"nationality":"CZE","givenName":"Linda","familyName":"Fruhvirtova"}
                                 }
                             ]
@@ -22058,7 +22058,8 @@
                                   "player": {"playerId":800486846,"nationality":"GBR","givenName":"Sofia","familyName":"Johnson"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 2, "entryStatus": "DA",
+                                  "player": {"playerId":800485856,"nationality":"CZE","givenName":"Linda","familyName":"Fruhvirtova"}
                                 }
                             ]
                           }
