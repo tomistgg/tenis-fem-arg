@@ -553,29 +553,27 @@ def write_player_rows(path: Path, rows: Iterable[Mapping[str, object]]) -> None:
         temp_path.unlink(missing_ok=True)
 
 
-def _verified_exact_identity_row(
+def _verified_name_country_identity_row(
     rows: list[dict],
     *,
     name: object,
     country: object,
-    dob: object,
 ) -> dict | None:
-    """Return one identity matching exact name, country, and full DOB.
+    """Return the sole identity matching exact name and country.
 
-    A name match by itself is not enough to merge players. Missing metadata,
-    conflicting metadata, or more than one qualifying identity all require
-    manual review instead.
+    DOB is supplemental metadata and is not used to decide whether source
+    profiles represent the same player. Missing name/country metadata or more
+    than one qualifying identity still require manual review instead.
     """
     name_key = normalized_name(name)
     country_key = compact_text(country).upper()
-    dob_key = compact_text(dob)[:10]
-    if not name_key or not country_key or not dob_key:
+    if not name_key or not country_key:
         return None
 
     matches = []
     for row in rows:
         record = PlayerRecord.from_mapping(row)
-        if record.country != country_key or record.dob != dob_key:
+        if record.country != country_key:
             continue
         if name_key not in {normalized_name(value) for value in record.names()}:
             continue
@@ -626,7 +624,7 @@ def _link_source_identity(
 
 
 def sync_wta_players(path: Path, ranking_rows: Iterable[Mapping[str, object]]) -> int:
-    """Add new WTA IDs, linking only identities with fully matching metadata."""
+    """Add new WTA IDs, linking identities with matching name and country."""
     rows = load_player_rows(path)
     index = PlayerIdentityIndex(rows)
     added = 0
@@ -640,11 +638,10 @@ def sync_wta_players(path: Path, ranking_rows: Iterable[Mapping[str, object]]) -
         )
         country = compact_text(ranking.get("country") or ranking.get("Country")).upper()
         dob = compact_text(ranking.get("dob") or ranking.get("DOB"))[:10]
-        verified_row = _verified_exact_identity_row(
+        verified_row = _verified_name_country_identity_row(
             rows,
             name=display_name,
             country=country,
-            dob=dob,
         )
         if verified_row is not None:
             _link_source_identity(
@@ -694,7 +691,7 @@ def sync_wta_players(path: Path, ranking_rows: Iterable[Mapping[str, object]]) -
 
 
 def sync_itf_players(path: Path, match_rows: Iterable[Mapping[str, object]]) -> int:
-    """Add new ITF IDs, linking only identities with fully matching metadata."""
+    """Add new ITF IDs, linking identities with matching name and country."""
     rows = load_player_rows(path)
     index = PlayerIdentityIndex(rows)
     added = 0
@@ -712,11 +709,10 @@ def sync_itf_players(path: Path, match_rows: Iterable[Mapping[str, object]]) -> 
             dob = compact_text(
                 match.get(f"{side}Dob") or match.get(f"{side}DOB")
             )[:10]
-            verified_row = _verified_exact_identity_row(
+            verified_row = _verified_name_country_identity_row(
                 rows,
                 name=source_name,
                 country=country,
-                dob=dob,
             )
             if verified_row is not None:
                 _link_source_identity(

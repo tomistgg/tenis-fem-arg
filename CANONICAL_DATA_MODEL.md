@@ -46,8 +46,9 @@ python canonical_data.py validate --data-dir data
 All current loaders call the shared key builders. The scheduled workflow runs
 the regression suite and validates the full canonical model both before and
 after refreshing the site. Ranking and match loaders also register newly seen
-WTA/ITF IDs; a colliding name is qualified by its source ID instead of being
-merged automatically.
+WTA/ITF IDs. An exact normalized name and country match is linked automatically;
+DOB is retained as supplemental metadata but is not required to match. Other
+colliding names are qualified by source ID instead of being merged automatically.
 
 `migrate_canonical_data.py` is idempotent and can be used to upgrade an older
 snapshot. It merges the verified identity duplicates, fills missing displays,

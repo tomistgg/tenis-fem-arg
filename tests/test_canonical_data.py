@@ -73,7 +73,7 @@ class PlayerIdentityIndexTests(unittest.TestCase):
             self.assertEqual(index.by_wta_id["123"].presentation_name, "Same Name")
             self.assertIsNone(index.resolve("wta", name="Same Name"))
 
-    def test_exact_name_country_and_dob_link_new_wta_id(self):
+    def test_exact_name_and_country_link_new_wta_id(self):
         with TemporaryDirectory() as directory:
             path = Path(directory) / "players.json"
             existing = {
@@ -100,7 +100,7 @@ class PlayerIdentityIndexTests(unittest.TestCase):
             self.assertEqual(record.itf_id, "800000001")
             self.assertEqual(record.display_name, "Same Name")
 
-    def test_matching_name_and_country_without_dob_stays_separate(self):
+    def test_matching_name_and_country_without_dob_links(self):
         with TemporaryDirectory() as directory:
             path = Path(directory) / "players.json"
             existing = {
@@ -118,9 +118,36 @@ class PlayerIdentityIndexTests(unittest.TestCase):
             }])
 
             rows = json.loads(path.read_text(encoding="utf-8"))
-            self.assertEqual(len(rows), 2)
+            self.assertEqual(len(rows), 1)
             index = PlayerIdentityIndex(rows)
-            self.assertEqual(index.by_wta_id["123"].display_name, "Same Name (WTA 123)")
+            record = index.by_wta_id["123"]
+            self.assertEqual(record.itf_id, "800000001")
+            self.assertEqual(record.display_name, "Same Name")
+            self.assertEqual(record.dob, "2000-01-01")
+
+    def test_matching_name_and_country_links_despite_conflicting_dob(self):
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "players.json"
+            existing = {
+                **player("itf:800000001", "Same Name", itf_id="800000001"),
+                "country": "ARG",
+                "dob": "1999-01-01",
+                "itf_name": "Same Name",
+            }
+            write_player_rows(path, [existing])
+
+            sync_wta_players(path, [{
+                "id": "123",
+                "player": "Same Name",
+                "country": "ARG",
+                "dob": "2000-01-01",
+            }])
+
+            rows = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(len(rows), 1)
+            record = PlayerIdentityIndex(rows).by_wta_id["123"]
+            self.assertEqual(record.itf_id, "800000001")
+            self.assertEqual(record.dob, "1999-01-01")
 
     def test_new_itf_identity_is_synced_from_match_participants(self):
         with TemporaryDirectory() as directory:
