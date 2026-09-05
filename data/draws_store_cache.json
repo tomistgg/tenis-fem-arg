@@ -433,7 +433,9 @@
           {"round": 3, "match_num": 0, "winner_name": "L. Mair", "score": "61 63"},
           {"round": 3, "match_num": 1, "winner_name": "M. Argyrokastriti", "score": "63 62"},
           {"round": 3, "match_num": 2, "winner_name": "R. Roura Llaverias", "score": "63 62"},
-          {"round": 3, "match_num": 3, "winner_name": "A. Lahey", "score": "62 62"}
+          {"round": 3, "match_num": 3, "winner_name": "A. Lahey", "score": "62 62"},
+          {"round": 4, "match_num": 0, "winner_name": "M. Argyrokastriti", "score": "36 64 63"},
+          {"round": 4, "match_num": 1, "winner_name": "A. Lahey", "score": "46 64 62"}
         ],
         "round_labels": [
           "Round of 32",
@@ -825,7 +827,8 @@
           {"round": 3, "match_num": 0, "winner_name": "F. Gandolfi", "score": "64 61"},
           {"round": 3, "match_num": 1, "winner_name": "F. Trevisan", "score": "62 62"},
           {"round": 3, "match_num": 2, "winner_name": "N. Maines", "score": "62 26 75"},
-          {"round": 3, "match_num": 3, "winner_name": "A. Gentili", "score": "60 61"}
+          {"round": 3, "match_num": 3, "winner_name": "A. Gentili", "score": "60 61"},
+          {"round": 4, "match_num": 1, "winner_name": "N. Maines", "score": "57 64 61"}
         ],
         "round_labels": [
           "Round of 32",
@@ -835,6 +838,54 @@
           "Final"
         ],
         "num_rounds": 5
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/1173/antalya-125-atik/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 125 Antalya",
+      "level": "WTA 125",
+      "week": "Week of September 7",
+      "startDate": "2026-09-07",
+      "endDate": "2026-09-13",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "ATIK Antalya Open",
+        "location": "ANTALYA, TUR",
+        "dates": "September 6-13 2026",
+        "prize": "$ 115,000",
+        "surface": "Clay",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 16,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "DE STEFANO, Samira", "country": "ITA"},
+          {"pos": 2, "name": "NAGY, Adrienn", "country": "HUN"},
+          {"pos": 3, "name": "YORUK, Ilay", "country": "TUR"},
+          {"pos": 4, "seed": "7", "name": "SAMIR, Sandra", "country": "EGY"},
+          {"pos": 5, "seed": "2", "name": "DENCHEVA, Rositsa", "country": "BUL"},
+          {"pos": 6, "name": "LACINOVA, Adelina", "country": "LAT"},
+          {"pos": 7, "name": "GLUSHKOVA, Denislava", "country": "BUL"},
+          {"pos": 8, "seed": "6", "name": "TONA, Miriana", "country": "ITA"},
+          {"pos": 9, "seed": "3", "name": "ZOLOTAREVA, Rada"},
+          {"pos": 10, "name": "LABOUTKOVA, Aneta", "country": "CZE"},
+          {"pos": 11, "name": "OZ, Ipek", "country": "TUR"},
+          {"pos": 12, "seed": "5", "name": "JAKUPOVIC, Dalila", "country": "SLO"},
+          {"pos": 13, "seed": "4", "name": "SCHUNK, Nastasja", "country": "GER"},
+          {"pos": 14, "entry": "WC", "name": "OZ, Ceylin", "country": "TUR"},
+          {"pos": 15, "entry": "WC", "name": "AKAN, Aya", "country": "TUR"},
+          {"pos": 16, "seed": "8", "name": "LUKAS, Tena", "country": "CRO"}
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
       }
     }
   }
