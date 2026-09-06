@@ -47,6 +47,7 @@ from calendar_builder import (
     get_monday_offset,
     get_previous_monday,
 )
+from calendar_changes import update_calendar_change_history
 from config import (
     ENTRY_LISTS_CACHE_FILE,
     ITF_ACCEPTANCE_STATE_FILE,
@@ -87,6 +88,7 @@ from utils import (
     dumps_calendar_snapshot,
     dumps_draws_store_cache,
     dumps_entry_lists_cache,
+    expand_calendar_snapshot,
     expand_draws_store_cache,
     expand_entry_lists_cache,
     fix_encoding,
@@ -116,6 +118,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = str(RUNTIME_DATA_DIR)
 TOURNAMENT_SNAPSHOT_FILE = os.path.join(DATA_DIR, "tournament_snapshot.json")
 CALENDAR_SNAPSHOT_FILE = os.path.join(DATA_DIR, "calendar_snapshot.json")
+CALENDAR_CHANGE_HISTORY_FILE = os.path.join(DATA_DIR, "calendar_change_history.json")
 DRAWS_STORE_CACHE_FILE = os.path.join(DATA_DIR, "draws_store_cache.json")
 DRAW_FETCH_ERRORS_FILE = os.path.join(DATA_DIR, "draw_fetch_errors.json")
 ENABLE_ITF_DRAWS_PREFETCH = False
@@ -1888,6 +1891,7 @@ def build_calendar_snapshot(calendar_data):
         compress_calendar_snapshot(calendar_snapshot),
         formatter=dumps_calendar_snapshot,
     )
+    return calendar_snapshot
 
 
 def main():
@@ -2531,6 +2535,8 @@ def main():
     _quit_driver(driver)
 
     # 7. Build calendar — uses cached WTA data
+    previous_calendar_snapshot = expand_calendar_snapshot(load_cache(CALENDAR_SNAPSHOT_FILE)) or []
+    previous_calendar_change_history = load_cache(CALENDAR_CHANGE_HISTORY_FILE) or []
     full_wta = get_full_wta_calendar()
     _manual_entries_file = os.path.join(DATA_DIR, "manual_calendar_entries.json")
     if os.path.exists(_manual_entries_file):
@@ -2539,7 +2545,14 @@ def main():
     else:
         _manual_entries = []
     calendar_data = build_calendar_data(full_wta + full_itf + _manual_entries)
-    build_calendar_snapshot(calendar_data)
+    current_calendar_snapshot = build_calendar_snapshot(calendar_data)
+    calendar_change_history = update_calendar_change_history(
+        previous_calendar_change_history,
+        previous_calendar_snapshot,
+        current_calendar_snapshot,
+        detected_on=madrid_today(),
+    )
+    save_json_file(CALENDAR_CHANGE_HISTORY_FILE, calendar_change_history)
 
     # 7b. Build tournament strength data (cached)
     logger.info("Processing WTA Tournament Strength")

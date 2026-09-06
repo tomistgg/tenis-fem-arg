@@ -462,6 +462,7 @@
 
                 <div id="view-calendar" class="single-layout" style="display: none;">
                     <div class="calendar-toolbar" id="calendar-toolbar">
+                        <div class="calendar-filter-controls">
                         <div class="cal-dd" data-cal-dd="categories">
                             <button type="button" class="cal-dd-btn" data-cal-dd-btn aria-expanded="false">
                                 Categories
@@ -480,7 +481,7 @@
 
                         <div class="cal-dd" data-cal-dd="region">
                             <button type="button" class="cal-dd-btn" data-cal-dd-btn aria-expanded="false">
-                                Region
+                                Regions
                             </button>
                             <div class="cal-dd-panel" role="menu">
                                 <label class="cal-dd-item"><input type="checkbox" data-cal-continent-toggle="south_america" checked><span>S America</span></label>
@@ -503,15 +504,25 @@
                                 <label class="cal-dd-item"><input type="checkbox" data-cal-surface-toggle="carpet" checked><span>Carpet</span></label>
                             </div>
                         </div>
+                        </div>
 
                         <button type="button" class="calendar-gm-toggle active" id="calendar-gm-toggle"
                                 aria-pressed="true" aria-label="Hide draw quality" title="Hide draw quality">
                             Hide Quality
                         </button>
 
+                        <button type="button" class="cal-dd-btn calendar-changes-toggle" id="calendar-changes-toggle"
+                                aria-expanded="false" aria-controls="calendar-changes-panel">
+                            <span class="calendar-changes-alert" aria-hidden="true">!</span> Changes
+                        </button>
+
                         <div class="cal-gm-legend">
                             <span class="cal-gm-legend-badge">99.9</span> Draw quality from last year's edition of the tournament.
                         </div>
+                    </div>
+
+                    <div class="calendar-changes-panel" id="calendar-changes-panel" hidden>
+                        @@WTARG_CALENDAR_CHANGES_HTML@@
                     </div>
 
                     <div class="content-card calendar-container">

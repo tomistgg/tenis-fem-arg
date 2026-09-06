@@ -283,6 +283,8 @@
                 if (continents !== null) state.continent = continents;
                 if (surfaces !== null) state.surface = surfaces;
                 if (gmToggle && gmToggle.getAttribute('aria-pressed') === 'false') state.gm = '0';
+                const changesToggle = document.getElementById('calendar-changes-toggle');
+                if (changesToggle && changesToggle.getAttribute('aria-expanded') === 'true') state.changes = '1';
                 return state;
             }
 
@@ -295,6 +297,9 @@
                     const showGm = !['0', 'false', 'no', 'off'].includes((params.get('gm') || '').toLowerCase());
                     gmToggle.setAttribute('aria-pressed', showGm ? 'true' : 'false');
                 }
+                setCalendarChangesExpanded(
+                    ['1', 'true', 'yes', 'open'].includes((params.get('changes') || '').toLowerCase())
+                );
                 applyCalendarFilters();
             }
 
@@ -841,6 +846,24 @@
                 });
 
             }
+            function setCalendarChangesExpanded(expanded) {
+                const toggle = document.getElementById('calendar-changes-toggle');
+                const panel = document.getElementById('calendar-changes-panel');
+                if (!toggle || !panel) return;
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                panel.hidden = !expanded;
+            }
+            function initCalendarChangesPanel() {
+                const toggle = document.getElementById('calendar-changes-toggle');
+                const panel = document.getElementById('calendar-changes-panel');
+                if (!toggle || !panel || toggle.dataset.initialized === '1') return;
+                toggle.dataset.initialized = '1';
+                toggle.addEventListener('click', function() {
+                    const expanded = toggle.getAttribute('aria-expanded') !== 'true';
+                    setCalendarChangesExpanded(expanded);
+                    syncUrlStateForTab('calendar', { track: true });
+                });
+            }
             function syncCalendarRowspans() {
                 const table = document.querySelector('#view-calendar .calendar-table');
                 if (!table) return;
@@ -934,6 +957,7 @@
                 }
                 initCalendarDropdowns();
                 initCalendarHorizontalScroll();
+                initCalendarChangesPanel();
                 const toggles = document.querySelectorAll('[data-cal-filter-toggle], [data-cal-continent-toggle], [data-cal-surface-toggle]');
                 const gmToggle = document.getElementById('calendar-gm-toggle');
                 if (!toggles.length && !gmToggle) return;

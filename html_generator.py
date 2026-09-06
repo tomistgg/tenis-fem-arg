@@ -600,6 +600,44 @@ def country_flag_html(code, show_code=True):
     return f"{img}{code}" if show_code else img
 
 
+def _render_calendar_changes(change_history):
+    sections = []
+    for change_group in change_history or []:
+        if not isinstance(change_group, dict):
+            continue
+        date_text = str(change_group.get("date") or "").strip()[:10]
+        changes = [change for change in (change_group.get("changes") or []) if isinstance(change, dict)]
+        if not date_text or not changes:
+            continue
+
+        items = []
+        for change in changes:
+            actions = "; ".join(
+                escape(str(action).strip()) for action in (change.get("actions") or []) if str(action).strip()
+            )
+            if not actions:
+                continue
+            country = str(change.get("country") or "").strip().upper()
+            flag = country_flag_html(country, show_code=False) if country else ""
+            flag_html = f'<span class="calendar-change-flag">{flag}</span>' if flag else ""
+            name = escape(str(change.get("name") or "").strip())
+            start_date = escape(str(change.get("startDate") or "").strip()[:10])
+            date_html = f' <span class="calendar-change-start">({start_date})</span>' if start_date else ""
+            items.append(
+                f'<li class="calendar-change-item">{flag_html}'
+                f'<span><strong>{name}</strong>{date_html} '
+                f'<span class="calendar-change-arrow">&rarr;</span> {actions}</span></li>'
+            )
+        if items:
+            sections.append(
+                '<section class="calendar-change-group">'
+                f'<h3 class="calendar-change-date">{escape(date_text)}</h3>'
+                f'<ul>{"".join(items)}</ul></section>'
+            )
+
+    return "".join(sections) or '<p class="calendar-change-empty">No calendar changes in the last 3 days.</p>'
+
+
 def _bjkc_tie_country_code(value):
     raw = str(value or "").strip()
     if not raw:
@@ -815,6 +853,7 @@ def generate_html(
     national_team_data=None,
     captains_data=None,
     draws_data=None,
+    calendar_changes=None,
     tstrength_data=None,
     monday_map=None,
     entry_list_hidden_keys=None,
@@ -1361,6 +1400,8 @@ def generate_html(
     _gs_cutoff_boxes = _build_gs_cutoff_boxes(gs_data, _frozen_mondays)
 
     # Build calendar HTML
+    calendar_changes_html = _render_calendar_changes(calendar_changes)
+
     def get_calendar_filter_key(level):
         lvl = (level or "").strip().lower().replace(" ", "")
         if lvl == "grandslam":
@@ -1999,6 +2040,7 @@ def generate_html(
         "CAPTAINS_ROWS": captains_rows,
         "BJKC_SERIES_HTML": bjkc_series_html,
         "CALENDAR_HTML": calendar_html,
+        "CALENDAR_CHANGES_HTML": calendar_changes_html,
         "ROADTOGS_PLAYER_OPTIONS": "".join(
             f'<option value="{escape(name, quote=True)}">{escape(name)}</option>' for name in roadtogs_players_sorted
         ),

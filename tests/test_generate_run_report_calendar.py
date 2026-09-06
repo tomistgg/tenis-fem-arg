@@ -77,7 +77,6 @@ def test_calendar_report_detects_additions_changes_and_cancellations(monkeypatch
         "level",
         "surface",
         "startDate",
-        "endDate",
     }
 
     markdown = render_email_markdown(report)
@@ -97,6 +96,21 @@ def test_calendar_week_placement_change_is_not_a_tournament_change():
         before,
         after,
         today=date(2026, 8, 11),
+    )
+
+    assert added == []
+    assert changed == []
+    assert cancelled == []
+
+
+def test_calendar_end_date_change_is_not_a_tournament_change():
+    before = [_calendar_row("itf:end-date", "W50 Morelia", end_date="2026-10-24")]
+    after = [_calendar_row("itf:end-date", "W50 Morelia", end_date="2026-11-01")]
+
+    added, changed, cancelled = generate_run_report.diff_calendar_tournaments(
+        before,
+        after,
+        today=date(2026, 9, 6),
     )
 
     assert added == []

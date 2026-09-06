@@ -10,6 +10,13 @@ from datetime import datetime, timedelta
 from difflib import SequenceMatcher
 from pathlib import Path
 
+from calendar_changes import (
+    _calendar_representative,
+    _calendar_rows_by_identity,
+)
+from calendar_changes import (
+    diff_calendar_tournaments as _diff_calendar_tournaments,
+)
 from canonical_data import (
     MATCH_SOURCES,
     PlayerIdentityIndex,
@@ -214,157 +221,9 @@ def find_player_identity_review_candidates(before_rows, after_rows, *, similarit
     return candidates
 
 
-_ITF_CALENDAR_SEQUENCE_SUFFIX_RE = re.compile(r"\s+\d+$")
-
-
-def normalize_calendar_name(value, column=""):
-    """Normalize calendar names for diffing.
-
-    ITF display names are numbered during calendar assembly (for example
-    "W15 Monastir 19"), and that suffix can shift between runs when the
-    visible window changes. Strip the synthetic sequence number so calendar
-    diffs compare the underlying event instead of the run-dependent label.
-    """
-    name = normalize_exact_name(value)
-    if (column or "").strip().lower() == "itf":
-        name = _ITF_CALENDAR_SEQUENCE_SUFFIX_RE.sub("", name)
-    return name
-
-
-_CALENDAR_CHANGE_FIELDS = (
-    ("name", "Name"),
-    ("level", "Category"),
-    ("surface", "Surface"),
-    ("country", "Country"),
-    ("startDate", "Start date"),
-    ("endDate", "End date"),
-)
-
-
-def _calendar_identity_key(row):
-    """Return a provider-backed identity that survives calendar field changes."""
-    calendar_key = normalize_exact_name(row.get("calendarKey", ""))
-    if calendar_key:
-        return ("calendarKey", calendar_key)
-
-    source = normalize_exact_name(row.get("source", ""))
-    for field in ("tournamentId", "tournamentKey"):
-        identifier = normalize_exact_name(row.get(field, ""))
-        if identifier:
-            return (field, source, identifier)
-
-    # Legacy/manual rows have no provider ID. Their generated key is normally
-    # stored as calendarKey; this is only a compatibility fallback.
-    return (
-        "legacy",
-        source,
-        normalize_calendar_name(row.get("name", ""), row.get("column", "")),
-        normalize_exact_name(row.get("level", "")),
-        str(row.get("startDate") or row.get("week_label") or "")[:10],
-    )
-
-
-def _calendar_rows_by_identity(rows):
-    grouped = {}
-    for row in rows or []:
-        if not isinstance(row, dict):
-            continue
-        grouped.setdefault(_calendar_identity_key(row), []).append(row)
-    return grouped
-
-
-def _calendar_representative(rows):
-    return sorted(
-        rows,
-        key=lambda row: (
-            str(row.get("startDate") or ""),
-            str(row.get("week_label") or ""),
-            str(row.get("name") or ""),
-        ),
-    )[0]
-
-
-def _normalized_calendar_field(row, field):
-    value = row.get(field, "")
-    if field == "name":
-        return normalize_calendar_name(value, row.get("column", ""))
-    if field in {"startDate", "endDate"}:
-        return str(value or "").strip()[:10]
-    return normalize_exact_name(value)
-
-
-def _calendar_week_start(row, today):
-    start_date = str(row.get("startDate") or "").strip()[:10]
-    if start_date:
-        try:
-            return datetime.strptime(start_date, "%Y-%m-%d").date()
-        except ValueError:
-            pass
-
-    week_label = str(row.get("week_label") or "").strip()
-    if week_label.lower().startswith("week of "):
-        month_day = week_label[8:].strip()
-        try:
-            return datetime.strptime(f"{month_day} {today.year}", "%B %d %Y").date()
-        except ValueError:
-            pass
-    return None
-
-
 def diff_calendar_tournaments(before_rows, after_rows, *, today=None):
-    """Return added, changed, and cancelled tournaments from two snapshots.
-
-    A tournament can occupy more than one calendar week, so comparisons are
-    grouped by the provider identity instead of by an individual rendered row.
-    """
-    today = today or madrid_today()
-    before_by_id = _calendar_rows_by_identity(before_rows)
-    after_by_id = _calendar_rows_by_identity(after_rows)
-
-    added = [_calendar_representative(after_by_id[key]) for key in sorted(after_by_id.keys() - before_by_id.keys())]
-
-    changed = []
-    for key in sorted(before_by_id.keys() & after_by_id.keys()):
-        before = _calendar_representative(before_by_id[key])
-        after = _calendar_representative(after_by_id[key])
-        changes = []
-        for field, label in _CALENDAR_CHANGE_FIELDS:
-            # Older snapshots do not include country/dates. Do not turn the
-            # one-time snapshot schema upgrade into a calendar-change alert.
-            if field not in before or field not in after:
-                continue
-            if _normalized_calendar_field(before, field) == _normalized_calendar_field(after, field):
-                continue
-            changes.append(
-                {
-                    "field": field,
-                    "label": label,
-                    "before": before.get(field, ""),
-                    "after": after.get(field, ""),
-                }
-            )
-        if changes:
-            changed.append({"before": before, "after": after, "changes": changes})
-
-    cancelled = []
-    for key in sorted(before_by_id.keys() - after_by_id.keys()):
-        before = _calendar_representative(before_by_id[key])
-        start_date = _calendar_week_start(before, today)
-        # The calendar window advances automatically. A tournament that starts
-        # today (or has already started) disappeared because it aged out, not
-        # because the provider cancelled it.
-        if start_date is not None and start_date <= today:
-            continue
-        cancelled.append(before)
-
-    sort_key = lambda row: (  # noqa: E731 - compact shared ordering for report sections
-        str(row.get("startDate") or row.get("week_label") or ""),
-        normalize_exact_name(row.get("name", "")),
-    )
-    added.sort(key=sort_key)
-    changed.sort(key=lambda item: sort_key(item["after"]))
-    cancelled.sort(key=sort_key)
-    return added, changed, cancelled
+    """Report-facing wrapper that keeps the run date injectable in tests."""
+    return _diff_calendar_tournaments(before_rows, after_rows, today=today or madrid_today())
 
 
 def _tournament_name_without_category(row):

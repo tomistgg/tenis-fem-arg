@@ -311,6 +311,34 @@ class GeneratedSiteTests(unittest.TestCase):
             r'tournament-surface-dot[^>]*></span><b>W15 Pilar</b>',
         )
 
+    def test_calendar_has_collapsible_three_day_changes_panel(self):
+        app_source = _generated_frontend_source()
+        self.assertIn('id="calendar-changes-toggle"', app_source)
+        self.assertIn('aria-controls="calendar-changes-panel"', app_source)
+        self.assertIn('id="calendar-changes-panel" hidden', app_source)
+        self.assertIn("function initCalendarChangesPanel()", app_source)
+        self.assertIn("panel.hidden = !expanded;", app_source)
+        self.assertIn('class="calendar-changes-alert" aria-hidden="true">!</span> Changes', app_source)
+        self.assertIn("state.changes = '1';", app_source)
+        self.assertIn("syncUrlStateForTab('calendar', { track: true });", app_source)
+        self.assertIn("2026-09-04", app_source)
+        self.assertIn("W35 Marsa", app_source)
+        self.assertIn("Renamed to W35 Malta", app_source)
+        self.assertIn("2026-09-05", app_source)
+        self.assertIn("W50 Morelia", app_source)
+        self.assertIn("Moved to 2026-10-26", app_source)
+
+    def test_calendar_changes_mobile_toolbar_layout(self):
+        app_source = _generated_frontend_source()
+        self.assertIn('class="calendar-filter-controls"', app_source)
+        self.assertIn(".calendar-filter-controls { display: flex; order: 1; flex: 0 0 100%; width: 100%;", app_source)
+        self.assertIn(".calendar-filter-controls .cal-dd { flex: 1 1 0; min-width: 0; width: auto; }", app_source)
+        self.assertIn(".calendar-changes-toggle { order: 2; flex: 1 1 0;", app_source)
+        self.assertIn(".calendar-gm-toggle { order: 3; flex: 0 0 auto; }", app_source)
+        self.assertNotIn("toggle.classList.toggle('active', expanded);", app_source)
+        self.assertNotIn(".cal-dd.open .cal-dd-btn { background:", app_source)
+        self.assertNotIn('.calendar-changes-toggle[aria-expanded="true"]', app_source)
+
     def test_draws_dropdown_uses_compact_tournament_name(self):
         app_source = _generated_frontend_source()
         self.assertRegex(

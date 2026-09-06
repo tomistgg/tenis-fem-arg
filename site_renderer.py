@@ -268,6 +268,7 @@ def render_site_from_data(data_dir: str | Path, site_root: str | Path) -> None:
     match_history_data, cleaned_history = load_match_history(data_dir)
     enrich_history_with_wta_ranks(cleaned_history, data_dir)
     draws_store = expand_draws_store_cache(_load_json(data_dir / "draws_store_cache.json", {})) or {}
+    calendar_change_history = _load_json(data_dir / "calendar_change_history.json", []) or []
     tstrength_data = expand_tstrength_cache(_load_json(data_dir / "tstrength_cache.json", [])) or []
 
     generate_html(
@@ -282,6 +283,7 @@ def render_site_from_data(data_dir: str | Path, site_root: str | Path) -> None:
         national_team_data=load_csv_rows(data_dir / "national_team_order.csv", delimiter=";"),
         captains_data=load_csv_rows(data_dir / "captains.csv"),
         draws_data=_filter_itf_draws_for_website(draws_store),
+        calendar_changes=calendar_change_history,
         tstrength_data=tstrength_data,
         monday_map=monday_map,
         entry_list_hidden_keys=_entry_list_hidden_keys(data_dir),

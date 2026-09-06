@@ -197,9 +197,7 @@
             .rankings-toggle-btn:hover,
             .entry-menu-toggle-btn:hover,
             .history-nav-btn:not(:disabled):hover,
-            .cal-dd-btn:hover,
-            .calendar-gm-toggle:hover,
-            .cal-dd.open .cal-dd-btn { background: var(--c-surface-alt); }
+            .calendar-gm-toggle:hover { background: var(--c-surface-alt); }
             .rankings-toggle-btn:disabled,
             .history-nav-btn:disabled { opacity: 0.35; cursor: default; }
             .rankings-load-btn {
@@ -1140,16 +1138,30 @@
             #view-calendar { width: 100%; min-height: 0; }
             .calendar-container { width: 100%; min-width: 100%; min-height: 0; margin-bottom: 0; display: block; box-sizing: border-box; }
             .calendar-toolbar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; align-items: center; margin: 0 0 10px; position: sticky; top: 0; z-index: 50; background: var(--c-bg); border-bottom: 1px solid var(--c-border); padding: 10px 8px; box-sizing: border-box; }
+            .calendar-filter-controls { display: contents; }
             .cal-dd { position: relative; }
             .cal-dd-btn { justify-content: flex-start; padding: 0 32px 0 var(--sp-3); font-size: var(--fs-lg); user-select: none; background-color: var(--c-surface); background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
             .calendar-gm-toggle { min-width: 96px; padding: 0 12px; }
             .calendar-gm-toggle.active { background: var(--c-chrome-bg); border-color: var(--c-chrome-bg); color: #fff; }
+            .calendar-changes-alert { margin-right: 5px; color: var(--c-error); font-size: 1.25em; font-weight: 900; line-height: 1; }
             .cal-dd-panel { position: absolute; top: calc(100% + 6px); left: 0; width: max-content; min-width: 170px; max-width: min(320px, calc(100vw - 20px)); max-height: 280px; overflow: auto; background: var(--c-surface); border: 2px solid var(--c-border-strong); border-radius: 8px; padding: 6px; box-shadow: var(--shadow-lg); display: none; z-index: 60; }
             .cal-dd.open .cal-dd-panel { display: block; }
             .cal-dd-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; user-select: none; }
             .cal-dd-item:hover { background: transparent; }
             .cal-dd-item input { width: 14px; height: 14px; margin: 0; }
             .cal-dd-item span { font-size: 12px; font-weight: 700; color: var(--c-text-primary); }
+            .calendar-changes-panel { width: min(760px, calc(100% - 16px)); margin: 0 8px 12px; padding: 12px 14px; border: 1px solid var(--c-border); border-radius: 10px; background: var(--c-surface); box-shadow: var(--shadow-sm); box-sizing: border-box; }
+            .calendar-changes-panel[hidden] { display: none; }
+            .calendar-change-group + .calendar-change-group { margin-top: 14px; }
+            .calendar-change-date { margin: 0 0 7px; color: var(--c-text-primary); font-size: 12px; font-weight: 800; }
+            .calendar-change-group ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+            .calendar-change-item { display: flex; align-items: flex-start; gap: 7px; color: var(--c-text-secondary); font-size: 11px; line-height: 1.45; }
+            .calendar-change-item strong { color: var(--c-text-primary); }
+            .calendar-change-flag { display: inline-flex; width: 16px; min-width: 16px; padding-top: 2px; }
+            .calendar-change-flag img { display: block; width: 16px !important; height: 11px !important; margin-right: 0 !important; }
+            .calendar-change-start { color: var(--c-text-subtle); }
+            .calendar-change-arrow { color: var(--c-primary-hover); font-weight: 800; }
+            .calendar-change-empty { margin: 0; color: var(--c-text-subtle); font-size: 11px; }
             .calendar-container .table-wrapper { display: block; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; border-right: 1px solid var(--c-text-subtle); box-sizing: border-box; cursor: grab; overscroll-behavior-x: contain; }
             .calendar-container .table-wrapper.dragging { cursor: grabbing; }
             .calendar-table { border-collapse: separate; border-spacing: 0; width: max-content; min-width: max-content; table-layout: auto; border: 1px solid var(--c-border); overflow: visible !important; }
@@ -2128,13 +2140,22 @@
                 /* Calendar mobile */
                 .calendar-container .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
                 .calendar-toolbar { gap: 6px; margin-bottom: 8px; top: 0; }
-                .cal-gm-legend { font-size: 10px; padding: 3px 4px; gap: 4px; flex: none; width: 100%; }
+                .calendar-filter-controls { display: flex; order: 1; flex: 0 0 100%; width: 100%; min-width: 0; gap: 6px; }
+                .calendar-filter-controls .cal-dd { flex: 1 1 0; min-width: 0; width: auto; }
+                .calendar-filter-controls .cal-dd > .cal-dd-btn { width: 100%; }
+                .calendar-changes-toggle { order: 2; flex: 1 1 0; min-width: 0; width: auto; }
+                .calendar-gm-toggle { order: 3; flex: 0 0 auto; }
+                .cal-gm-legend { order: 4; font-size: 10px; padding: 3px 4px; gap: 4px; flex: 0 0 100%; width: 100%; }
                 .cal-cutoff-box { font-size: 7px; }
                 .cal-week-header { position: static; }
                 .cal-cat-header { top: unset; }
                 .cal-cont-header { top: unset; }
                 .cal-dd-btn { padding: 6px 24px 6px 8px; font-size: 11px; background-position: right 7px center; }
                 .calendar-gm-toggle { min-width: 82px; padding: 6px 7px; font-size: 10px; }
+                .calendar-changes-toggle { padding-top: 6px; padding-bottom: 6px; font-size: 10px; }
+                .calendar-changes-panel { width: calc(100% - 8px); margin: 0 4px 8px; padding: 10px; }
+                .calendar-change-date { font-size: 11px; }
+                .calendar-change-item { font-size: 10px; }
                 .cal-week-header { font-size: 7px; padding: 3px 3px; min-width: 80px; }
                 .cal-cat-header, .cal-cont-header { font-size: 7px; }
                 .calendar-tournament { font-size: 8px; padding: 2px 4px; }
@@ -2591,6 +2612,7 @@
             }
             [data-theme="dark"] .cal-dd-panel { background: var(--c-surface); border-color: var(--c-border-strong); box-shadow: var(--shadow-lg); }
             [data-theme="dark"] .cal-dd-item span { color: var(--c-text); }
+            [data-theme="dark"] .calendar-changes-panel { background: var(--c-surface); border-color: var(--c-border); }
 
             /* Calendar - cal-cat-label keeps chrome tone, but cal-cont-label
                flips to surface in dark */
