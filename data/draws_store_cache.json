@@ -855,7 +855,7 @@
       "week": "Week of September 7",
       "startDate": "2026-09-07",
       "endDate": "2026-09-13",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":false,"has_arg_any":true}
     },
     "draws":
     {
@@ -891,6 +891,60 @@
           "Q2"
         ],
         "num_rounds": 2
+      },
+      "MDS":
+      {
+        "tournament_name": "ATIK Antalya Open",
+        "location": "ANTALYA, TUR",
+        "dates": "September 6-13 2026",
+        "prize": "$ 115,000",
+        "surface": "Clay",
+        "draw_type": "SINGLES MAIN DRAW",
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "JONES, Francesca", "country": "GBR"},
+          {"pos": 2, "name": "SERBAN, Raluka", "country": "CYP"},
+          {"pos": 5, "name": "CARLE, Maria Lourdes", "country": "ARG"},
+          {"pos": 6, "name": "FEISTEL, Gina", "country": "POL"},
+          {"pos": 8, "seed": "8", "name": "VEDDER, Eva", "country": "NED"},
+          {"pos": 9, "seed": "3", "name": "BRONZETTI, Lucia", "country": "ITA"},
+          {"pos": 10, "name": "BURILLO, Irene", "country": "ESP"},
+          {"pos": 11, "name": "URGESI, Federica", "country": "ITA"},
+          {"pos": 12, "name": "BULGARU, Miriam", "country": "ROU"},
+          {"pos": 13, "name": "ZELNICKOVA, Radka", "country": "SVK"},
+          {"pos": 14, "name": "KULAMBAYEVA, Zhibek", "country": "KAZ"},
+          {"pos": 15, "name": "FALKOWSKA, Weronika", "country": "POL"},
+          {"pos": 16, "seed": "5", "name": "YANEVA, Elizara", "country": "BUL"},
+          {"pos": 17, "seed": "7", "name": "RISTIC, Mia", "country": "SRB"},
+          {"pos": 18, "name": "GJORCHESKA, Lina", "country": "MKD"},
+          {"pos": 19, "name": "LANSERE, Sofya"},
+          {"pos": 20, "name": "ZANTEDESCHI, Aurora", "country": "ITA"},
+          {"pos": 21, "name": "STRUPLOVA, Julie", "country": "CZE"},
+          {"pos": 22, "name": "IBRAGIMOVA, Alevtina"},
+          {"pos": 23, "name": "CENGIZ, Berfu", "country": "TUR"},
+          {"pos": 24, "seed": "4", "name": "ROMERO GORMAZ, Leyre", "country": "ESP"},
+          {"pos": 25, "seed": "6", "name": "PRIDANKINA, Elena"},
+          {"pos": 26, "name": "MINTEGI DEL OLMO, Ane", "country": "ESP"},
+          {"pos": 28, "name": "HERRERO LINANA, Alicia", "country": "ESP"},
+          {"pos": 29, "name": "KABBAJ, Yasmine", "country": "MAR"},
+          {"pos": 30, "entry": "WC", "name": "BUYUKAKCAY, Cagla", "country": "TUR"},
+          {"pos": 31, "name": "BENNEMANN, Eva", "country": "GER"},
+          {"pos": 32, "seed": "2", "name": "KAWA, Katarzyna", "country": "POL"}
+        ],
+        "qualifiers": [
+          3,
+          4,
+          7,
+          27
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
       }
     }
   },
