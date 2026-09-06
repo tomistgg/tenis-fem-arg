@@ -653,9 +653,16 @@
                 <div id="view-draws" class="single-layout" style="display: none;">
                     <div class="draws-layout">
                         <div class="draws-toolbar">
-                            <select id="draws-tournament-select" onchange="onDrawTournamentChange(this.value)">
-                                @@WTARG_DRAWS_DROPDOWN_HTML@@
-                            </select>
+                            <div class="draws-tournament-picker" id="draws-tournament-picker">
+                                <button class="draws-tournament-toggle" id="draws-tournament-toggle" type="button" aria-haspopup="listbox" aria-expanded="false">
+                                    <span class="draws-tournament-current" id="draws-tournament-current">Select tournament</span>
+                                    <span class="draws-tournament-chevron" aria-hidden="true"></span>
+                                </button>
+                                <div class="draws-tournament-menu" id="draws-tournament-menu" role="listbox" aria-label="Draw tournament" hidden></div>
+                                <select class="draws-tournament-native" id="draws-tournament-select" tabindex="-1" aria-hidden="true" onchange="onDrawTournamentChange(this.value)">
+                                    @@WTARG_DRAWS_DROPDOWN_HTML@@
+                                </select>
+                            </div>
                             <div class="draws-type-btns" id="draws-type-btns"></div>
                             <span style="font-size:9px;color:#94a3b8;">Click a round header to filter</span>
                             <span style="flex:1;"></span>

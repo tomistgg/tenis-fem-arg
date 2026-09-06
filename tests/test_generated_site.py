@@ -311,6 +311,18 @@ class GeneratedSiteTests(unittest.TestCase):
             r'tournament-surface-dot[^>]*></span><b>W15 Pilar</b>',
         )
 
+    def test_draws_dropdown_uses_compact_tournament_name(self):
+        app_source = _generated_frontend_source()
+        self.assertRegex(
+            app_source,
+            r'<option value="w-itf-arg-2026-008" data-country="ARG"[^>]*>W15 Pilar</option>',
+        )
+
+    def test_draws_tournament_picker_uses_image_flags(self):
+        app_source = _generated_frontend_source()
+        self.assertIn('class="draws-tournament-picker"', app_source)
+        self.assertIn("flagSlot.innerHTML = countryFlag(country, false);", app_source)
+
     def test_entry_menu_uses_gm_as_category_tiebreaker(self):
         for label, source in (
             ("authoring", _authoring_frontend_source()),

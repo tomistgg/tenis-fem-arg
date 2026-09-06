@@ -279,9 +279,22 @@
             #view-draws { width: 100%; max-width: 100%; margin: 0; }
             .draws-layout { display: flex; flex-direction: column; width: 100%; }
             .draws-toolbar { display: flex; align-items: center; gap: 10px; padding: 6px 12px; flex-wrap: wrap; position: relative; }
-            #draws-tournament-select { padding: 6px 24px 6px 8px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 12px; font-family: inherit; background: white; min-width: 200px; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; cursor: pointer; color: #1e293b; font-weight: 600; text-align: center; text-align-last: center; }
-            #draws-tournament-select optgroup { font-size: 10px; font-weight: bold; background: #e2e8f0; color: #475569; padding: 4px 0; }
-            #draws-tournament-select option { font-size: 11px; font-weight: normal; background: white; padding: 4px 8px; }
+            .draws-tournament-picker { position: relative; min-width: 200px; }
+            .draws-tournament-toggle { width: 100%; min-height: 33px; padding: 6px 8px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 12px; font-family: inherit; background: white; cursor: pointer; color: #1e293b; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+            .draws-tournament-toggle:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
+            .draws-tournament-current, .draws-tournament-option { display: flex; align-items: center; gap: 6px; }
+            .draws-tournament-flag { display: inline-flex; flex: 0 0 auto; }
+            .draws-tournament-flag img { display: block; margin-right: 0 !important; }
+            .draws-tournament-name { white-space: nowrap; }
+            .draws-tournament-chevron { width: 7px; height: 7px; flex: 0 0 auto; border-right: 2px solid #64748b; border-bottom: 2px solid #64748b; transform: rotate(45deg) translateY(-2px); transition: transform .15s ease; }
+            .draws-tournament-picker.open .draws-tournament-chevron { transform: rotate(225deg) translate(-2px, -2px); }
+            .draws-tournament-menu { position: absolute; z-index: 30; top: calc(100% + 4px); left: 0; min-width: 100%; width: max-content; max-width: min(360px, calc(100vw - 32px)); max-height: min(340px, calc(100vh - 140px)); overflow-y: auto; padding: 4px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; box-shadow: 0 10px 24px rgba(15,23,42,.18); }
+            .draws-tournament-menu[hidden] { display: none; }
+            .draws-tournament-week { padding: 7px 8px 4px; color: #64748b; background: #f1f5f9; font-size: 9px; font-weight: 700; letter-spacing: .3px; }
+            .draws-tournament-option { width: 100%; padding: 7px 8px; border: 0; border-radius: 5px; background: transparent; color: #1e293b; font-family: inherit; font-size: 11px; text-align: left; cursor: pointer; }
+            .draws-tournament-option:hover, .draws-tournament-option:focus-visible { background: #f1f5f9; outline: none; }
+            .draws-tournament-option.selected { background: #dbeafe; color: #1e40af; font-weight: 600; }
+            .draws-tournament-native { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; opacity: 0; pointer-events: none; }
             .draws-type-btns { display: flex; gap: 0; }
             .draw-type-btn { padding: 4px 10px; border: 1px solid #cbd5e1; background: white; font-family: inherit; font-size: 10px; font-weight: 600; color: #64748b; cursor: pointer; }
             .draw-type-btn:first-child { border-radius: 8px 0 0 8px; }
@@ -2397,7 +2410,8 @@
 
                 /* Draws mobile */
                 .draws-toolbar { padding: 4px 8px; gap: 6px; flex-wrap: wrap; justify-content: center; }
-                #draws-tournament-select { font-size: 10px; min-width: 0; width: 100%; padding: 5px 22px 5px 7px; }
+                .draws-tournament-picker { min-width: 0; width: 100%; }
+                .draws-tournament-toggle { width: 100%; padding: 5px 7px; font-size: 10px; }
                 .draws-toolbar > span[style*="font-size"] { display: none !important; }
                 .draw-type-btn { padding: 2px 7px; font-size: 8px; }
                 .draw-filter-reset { font-size: 8px; padding: 2px 7px; }
@@ -2563,7 +2577,13 @@
             [data-theme="dark"] .draw-match .draw-player.winner { background: #0f2d1a; }
             [data-theme="dark"] .draw-round-header { color: #94a3b8; }
             [data-theme="dark"] .draw-round-header:hover { color: #93c5fd; }
-            [data-theme="dark"] #draws-tournament-select optgroup { background: var(--c-surface-alt); color: var(--c-text-subtle); }
+            [data-theme="dark"] .draws-tournament-toggle,
+            [data-theme="dark"] .draws-tournament-menu { background: var(--c-surface); border-color: var(--c-border-strong); color: var(--c-text); }
+            [data-theme="dark"] .draws-tournament-week { background: var(--c-surface-alt); color: var(--c-text-subtle); }
+            [data-theme="dark"] .draws-tournament-option { color: var(--c-text); }
+            [data-theme="dark"] .draws-tournament-option:hover,
+            [data-theme="dark"] .draws-tournament-option:focus-visible { background: var(--c-surface-alt); }
+            [data-theme="dark"] .draws-tournament-option.selected { background: #1e3a5c; color: #bfdbfe; }
             [data-theme="dark"] #roadtogs-points-total { color: var(--c-text) !important; }
             [data-theme="dark"] .calendar-toolbar { background: var(--c-bg); border-bottom-color: var(--c-border); }
             [data-theme="dark"] .cal-dd-btn {
@@ -3348,7 +3368,7 @@
                     padding: 6px 4px;
                     gap: 6px;
                 }
-                #draws-tournament-select {
+                .draws-tournament-picker {
                     width: min(100%, 260px);
                     min-width: 0;
                 }
@@ -3692,10 +3712,12 @@
                     font-weight: 700;
                     letter-spacing: .5px;
                 }
-                #view-draws #draws-tournament-select {
+                #view-draws .draws-tournament-picker {
                     min-width: 200px;
-                    padding: 6px 24px 6px 8px;
-                    border-radius: 8px !important;
+                }
+                #view-draws .draws-tournament-toggle {
+                    padding: 6px 8px;
+                    border-radius: 8px;
                     font-size: 12px;
                     font-weight: 600;
                 }

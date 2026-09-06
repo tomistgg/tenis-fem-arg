@@ -1128,12 +1128,17 @@ def generate_html(
         items.sort(key=lambda x: get_tournament_sort_order(x[1].get("level", "")))
         draws_dropdown_html += f'<optgroup label="{week.upper()}">'
         for t_key, tdata in items:
-            t_name = tdata["name"]
+            t_name = compact_tournament_name(tdata["name"])
+            t_country = _entry_country_from_key(t_key, tdata)
             selected = ""
             if first_draw_tkey is None:
                 first_draw_tkey = t_key
                 selected = " selected"
-            draws_dropdown_html += f'<option value="{t_key}"{selected}>{t_name}</option>'
+            draws_dropdown_html += (
+                f'<option value="{escape(t_key, quote=True)}" '
+                f'data-country="{escape(t_country, quote=True)}"{selected}>'
+                f"{escape(t_name)}</option>"
+            )
         draws_dropdown_html += "</optgroup>"
 
     draws_tournament_info = {}

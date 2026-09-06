@@ -2,8 +2,128 @@
             let currentDrawTKey = '';
             let currentDrawType = 'MDS';
 
+            function setDrawTournamentPickerLabel(container, option) {
+                container.replaceChildren();
+                if (!option) return;
+
+                const country = (option.dataset.country || '').toUpperCase();
+                const flagSlot = document.createElement('span');
+                flagSlot.className = 'draws-tournament-flag';
+                flagSlot.innerHTML = countryFlag(country, false);
+                if (flagSlot.querySelector('img')) container.appendChild(flagSlot);
+
+                const text = document.createElement('span');
+                text.className = 'draws-tournament-name';
+                text.textContent = option.textContent.trim();
+                container.appendChild(text);
+            }
+
+            function syncDrawTournamentPicker() {
+                const select = document.getElementById('draws-tournament-select');
+                const current = document.getElementById('draws-tournament-current');
+                const menu = document.getElementById('draws-tournament-menu');
+                if (!select || !current || !menu) return;
+
+                const selected = select.selectedOptions[0] || null;
+                setDrawTournamentPickerLabel(current, selected);
+                menu.querySelectorAll('.draws-tournament-option').forEach(item => {
+                    const isSelected = !!selected && item._drawOption === selected;
+                    item.classList.toggle('selected', isSelected);
+                    item.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+                });
+            }
+
+            function initDrawTournamentPicker() {
+                const picker = document.getElementById('draws-tournament-picker');
+                const toggle = document.getElementById('draws-tournament-toggle');
+                const menu = document.getElementById('draws-tournament-menu');
+                const select = document.getElementById('draws-tournament-select');
+                if (!picker || !toggle || !menu || !select) return;
+                if (picker.dataset.initialized === '1') {
+                    syncDrawTournamentPicker();
+                    return;
+                }
+
+                function setOpen(open) {
+                    picker.classList.toggle('open', open);
+                    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    menu.hidden = !open;
+                }
+
+                function addOption(option) {
+                    const item = document.createElement('button');
+                    item.type = 'button';
+                    item.className = 'draws-tournament-option';
+                    item.setAttribute('role', 'option');
+                    item._drawOption = option;
+                    setDrawTournamentPickerLabel(item, option);
+                    item.addEventListener('click', () => {
+                        select.value = option.value;
+                        onDrawTournamentChange(option.value);
+                        setOpen(false);
+                        toggle.focus();
+                    });
+                    menu.appendChild(item);
+                }
+
+                Array.from(select.children).forEach(group => {
+                    if (group.tagName === 'OPTGROUP') {
+                        const heading = document.createElement('div');
+                        heading.className = 'draws-tournament-week';
+                        heading.textContent = group.label;
+                        menu.appendChild(heading);
+                        Array.from(group.children).forEach(addOption);
+                    } else if (group.tagName === 'OPTION') {
+                        addOption(group);
+                    }
+                });
+
+                toggle.addEventListener('click', () => {
+                    const willOpen = menu.hidden;
+                    setOpen(willOpen);
+                    if (willOpen) {
+                        const selected = menu.querySelector('.draws-tournament-option.selected');
+                        (selected || menu.querySelector('.draws-tournament-option'))?.focus();
+                    }
+                });
+                toggle.addEventListener('keydown', event => {
+                    if (event.key !== 'ArrowDown') return;
+                    event.preventDefault();
+                    setOpen(true);
+                    const selected = menu.querySelector('.draws-tournament-option.selected');
+                    (selected || menu.querySelector('.draws-tournament-option'))?.focus();
+                });
+                menu.addEventListener('keydown', event => {
+                    const options = Array.from(menu.querySelectorAll('.draws-tournament-option'));
+                    const index = options.indexOf(document.activeElement);
+                    if (event.key === 'Escape') {
+                        event.preventDefault();
+                        setOpen(false);
+                        toggle.focus();
+                    } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                        event.preventDefault();
+                        const offset = event.key === 'ArrowDown' ? 1 : -1;
+                        options[(index + offset + options.length) % options.length]?.focus();
+                    } else if (event.key === 'Home' || event.key === 'End') {
+                        event.preventDefault();
+                        options[event.key === 'Home' ? 0 : options.length - 1]?.focus();
+                    } else if (event.key === 'Tab') {
+                        setOpen(false);
+                    }
+                });
+                document.addEventListener('click', event => {
+                    if (!picker.contains(event.target)) setOpen(false);
+                });
+
+                picker.dataset.initialized = '1';
+                syncDrawTournamentPicker();
+            }
+
             function onDrawTournamentChange(tKey) {
                 currentDrawTKey = tKey;
+                const select = document.getElementById('draws-tournament-select');
+                if (select && select.value !== tKey) select.value = tKey;
+                syncDrawTournamentPicker();
                 const info = drawsTournamentInfo[tKey];
                 if (!info) return;
                 const types = info.types || [];
@@ -51,7 +171,9 @@
             }
 
             function updateDraw() {
+                initDrawTournamentPicker();
                 const sel = document.getElementById('draws-tournament-select');
+                if (!sel) return;
                 if (!currentDrawTKey && sel.value) {
                     onDrawTournamentChange(sel.value);
                 } else if (currentDrawTKey) {
@@ -473,6 +595,8 @@
 
                 container._drawRoundHeaderBound = true;
             })();
+
+            initDrawTournamentPicker();
 
             // Constrain draw scroll: prevent scrolling left past initial position (scrollLeft=0)
             (function() {
