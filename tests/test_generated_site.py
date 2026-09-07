@@ -212,6 +212,28 @@ class GeneratedSiteTests(unittest.TestCase):
         ):
             self.assertNotIn("800715176", (PROJECT_DIR / relative_path).read_text(encoding="utf-8-sig"))
 
+    def test_history_filters_use_mobile_specific_swapped_order(self):
+        app = (GENERATED_SITE_DIR / "app.html").read_text(encoding="utf-8-sig")
+        css = (GENERATED_SITE_DIR / "assets" / "app.css").read_text(encoding="utf-8-sig")
+
+        expected_mobile_order = (
+            "surface",
+            "round",
+            "result",
+            "year",
+            "match-type",
+            "category",
+            "seed",
+            "opponent-country",
+            "player-entry",
+            "opponent",
+            "tournament",
+        )
+        for position, filter_name in enumerate(expected_mobile_order, start=1):
+            with self.subTest(filter_name=filter_name):
+                self.assertIn(f"history-filter-{filter_name} collapsed", app)
+                self.assertIn(f".history-filter-{filter_name} {{ order: {position}; }}", css)
+
     def test_history_qualifying_rounds_use_qr_prefix(self):
         cases = {
             "Q1": "QR1",

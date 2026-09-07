@@ -1760,6 +1760,19 @@
                 .filter-option { font-size: 7px; padding: 2px 3px; margin-bottom: 1px; }
                 .filter-options.scrollable { max-height: 120px; }
 
+                /* Keep the longer select values together in the final two-item row. */
+                .history-filter-surface { order: 1; }
+                .history-filter-round { order: 2; }
+                .history-filter-result { order: 3; }
+                .history-filter-year { order: 4; }
+                .history-filter-match-type { order: 5; }
+                .history-filter-category { order: 6; }
+                .history-filter-seed { order: 7; }
+                .history-filter-opponent-country { order: 8; }
+                .history-filter-player-entry { order: 9; }
+                .history-filter-opponent { order: 10; }
+                .history-filter-tournament { order: 11; }
+
                 /* Rank filters: force last row with 2 half-width boxes */
                 .rank-filter-last-row {
                     width: 100%;
