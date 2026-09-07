@@ -1256,6 +1256,10 @@ def main():
     parser.add_argument("--run-status", help="Optional transactional run-state JSON file")
     args = parser.parse_args()
 
+    for label, directory in (("pre-run snapshot", args.before), ("post-run data", args.after)):
+        if not os.path.isdir(directory):
+            parser.error(f"{label} directory does not exist: {directory}")
+
     report = compute_report(args.before, args.after)
     report["run_status"] = load_json(args.run_status) if args.run_status else None
     markdown = render_markdown(report)

@@ -1,5 +1,8 @@
 import json
+import sys
 from datetime import date
+
+import pytest
 
 import generate_run_report
 from generate_run_report import compute_report, render_email_markdown
@@ -30,6 +33,31 @@ def _calendar_row(
         "tournamentKey": key.removeprefix("itf:"),
         "calendarKey": key,
     }
+
+
+def test_cli_rejects_a_missing_snapshot_before_scanning_data(monkeypatch, tmp_path, capsys):
+    after_dir = tmp_path / "after"
+    after_dir.mkdir()
+    missing_before = tmp_path / "missing-before"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "generate_run_report.py",
+            "--before",
+            str(missing_before),
+            "--after",
+            str(after_dir),
+            "--output",
+            str(tmp_path / "report.md"),
+        ],
+    )
+
+    with pytest.raises(SystemExit) as error:
+        generate_run_report.main()
+
+    assert error.value.code == 2
+    assert f"pre-run snapshot directory does not exist: {missing_before}" in capsys.readouterr().err
 
 
 def test_calendar_report_detects_additions_changes_and_cancellations(monkeypatch, tmp_path):

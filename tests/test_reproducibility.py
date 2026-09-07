@@ -129,6 +129,17 @@ def test_update_notification_is_finalized_after_pages_deployment():
     assert workflow.count("action-send-mail@") == 1
 
 
+def test_failed_preflight_renders_status_without_attempting_a_full_data_diff():
+    workflow = (WORKFLOW_DIR / "hourly-update.yml").read_text(encoding="utf-8")
+    report_step = workflow[workflow.index("- name: Build run report") : workflow.index("- name: Validate report-side")]
+
+    assert "if [ ! -d .run_snapshot/data ]; then" in report_step
+    assert report_step.index("if [ ! -d .run_snapshot/data ]; then") < report_step.index(
+        "python generate_run_report.py"
+    )
+    assert "execution_analysis.py render-status-email" in report_step
+
+
 def test_deployment_does_not_rebase_main_or_require_removed_secrets():
     workflows = "\n".join(
         path.read_text(encoding="utf-8") for path in WORKFLOW_DIR.glob("*.yml")
