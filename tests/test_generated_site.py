@@ -450,7 +450,8 @@ class GeneratedSiteTests(unittest.TestCase):
     def test_fed_bjk_series_uses_compact_desktop_and_balanced_mobile_columns(self):
         source = _generated_frontend_source()
         self.assertIn(
-            ".bjkc-series-block { width: var(--bjkc-series-width, fit-content); max-width: 100%; margin: 0 auto 13px; }",
+            ".bjkc-series-block { width: var(--bjkc-series-width, fit-content); "
+            "max-width: 100%; margin: 0 auto 13px; }",
             source,
         )
         self.assertIn(
