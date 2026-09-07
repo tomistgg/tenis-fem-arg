@@ -329,11 +329,13 @@ class GeneratedSiteTests(unittest.TestCase):
             app_source,
             'id="calendar-changes-toggle"',
             'aria-controls="calendar-changes-panel"',
-            'id="calendar-changes-panel" hidden',
+            'aria-expanded="true" aria-controls="calendar-changes-panel"',
+            'id="calendar-changes-panel">',
             "function initCalendarChangesPanel()",
             "panel.hidden = !expanded;",
-            'class="calendar-changes-alert" aria-hidden="true">!</span> Changes',
-            "state.changes = '1';",
+            'class="calendar-changes-alert" aria-hidden="true">!</span>',
+            '<span class="calendar-toggle-label">Changes</span>',
+            "state.changes = '0';",
             "syncUrlStateForTab('calendar', { track: true });",
         )
 
@@ -346,12 +348,27 @@ class GeneratedSiteTests(unittest.TestCase):
             ".calendar-filter-controls .cal-dd { flex: 1 1 0; min-width: 0; width: auto; }",
             ".calendar-changes-toggle { order: 2; flex: 1 1 0;",
             ".calendar-gm-toggle { order: 3; flex: 0 0 auto; }",
+            ".cal-dd.open > .cal-dd-btn .calendar-toggle-arrow,",
+            '.calendar-changes-toggle[aria-expanded="true"] .calendar-toggle-arrow,',
+            '.calendar-gm-toggle[aria-pressed="true"] .calendar-toggle-arrow',
         )
         _assert_source_excludes(
             app_source,
             "toggle.classList.toggle('active', expanded);",
             ".cal-dd.open .cal-dd-btn { background:",
-            '.calendar-changes-toggle[aria-expanded="true"]',
+        )
+
+    def test_calendar_defaults_to_changes_open_and_quality_hidden(self):
+        app_source = _generated_frontend_source()
+        _assert_source_fragments(
+            app_source,
+            'class="calendar-gm-toggle" id="calendar-gm-toggle"',
+            'aria-pressed="false" aria-label="Show draw quality values"',
+            '<span class="calendar-toggle-label">Show Quality</span>',
+            "state.gm = '1';",
+            "#view-calendar:not(.quality-visible) .cal-gm-badge,",
+            "calendarView.classList.toggle('quality-visible', showGm);",
+            "!params.has('changes')",
         )
 
     def test_draws_dropdown_uses_compact_tournament_name(self):

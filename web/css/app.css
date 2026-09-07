@@ -1140,10 +1140,15 @@
             .calendar-toolbar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; align-items: center; margin: 0 0 10px; position: sticky; top: 0; z-index: 50; background: var(--c-bg); border-bottom: 1px solid var(--c-border); padding: 10px 8px; box-sizing: border-box; }
             .calendar-filter-controls { display: contents; }
             .cal-dd { position: relative; }
-            .cal-dd-btn { justify-content: flex-start; padding: 0 32px 0 var(--sp-3); font-size: var(--fs-lg); user-select: none; background-color: var(--c-surface); background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
-            .calendar-gm-toggle { min-width: 96px; padding: 0 12px; }
+            .cal-dd-btn { justify-content: flex-start; gap: 8px; padding: 0 var(--sp-3); font-size: var(--fs-lg); user-select: none; background-color: var(--c-surface); }
+            .calendar-gm-toggle { min-width: 96px; gap: 8px; padding: 0 12px; }
             .calendar-gm-toggle.active { background: var(--c-chrome-bg); border-color: var(--c-chrome-bg); color: #fff; }
             .calendar-changes-alert { margin-right: 5px; color: var(--c-error); font-size: 1.25em; font-weight: 900; line-height: 1; }
+            .calendar-toggle-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+            .calendar-toggle-arrow { width: 6px; height: 6px; flex: 0 0 6px; margin: -3px 1px 0 auto; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform 0.15s, margin 0.15s; }
+            .cal-dd.open > .cal-dd-btn .calendar-toggle-arrow,
+            .calendar-changes-toggle[aria-expanded="true"] .calendar-toggle-arrow,
+            .calendar-gm-toggle[aria-pressed="true"] .calendar-toggle-arrow { margin-top: 3px; transform: rotate(225deg); }
             .cal-dd-panel { position: absolute; top: calc(100% + 6px); left: 0; width: max-content; min-width: 170px; max-width: min(320px, calc(100vw - 20px)); max-height: 280px; overflow: auto; background: var(--c-surface); border: 2px solid var(--c-border-strong); border-radius: 8px; padding: 6px; box-shadow: var(--shadow-lg); display: none; z-index: 60; }
             .cal-dd.open .cal-dd-panel { display: block; }
             .cal-dd-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; user-select: none; }
@@ -1182,6 +1187,8 @@
             .cal-gm-na { background: #94a3b8; color: #fff; }
             .cal-cutoff-box { display: block; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 2px; margin: 1px 0; background: #94a3b8; color: #fff; white-space: normal; line-height: 1.3; }
             .cal-gm-legend { font-size: 11px; color: #64748b; padding: 2px 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex: 1; }
+            #view-calendar:not(.quality-visible) .cal-gm-badge,
+            #view-calendar:not(.quality-visible) .cal-gm-legend { display: none; }
             .cal-gm-legend-badge { display: inline-block; font-size: 8px; font-weight: 700; padding: 0px 3px; border-radius: 2px; background: #e0f2fe; color: #1a1a1a; line-height: 13px; margin: 0 2px; vertical-align: middle; }
             .cal-clay { background: #e8a882; color: #5c2e0e; }
             .cal-hard { background: #88b4e8; color: #1a3a5c; }

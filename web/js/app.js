@@ -282,9 +282,9 @@
                 if (levels !== null) state.level = levels;
                 if (continents !== null) state.continent = continents;
                 if (surfaces !== null) state.surface = surfaces;
-                if (gmToggle && gmToggle.getAttribute('aria-pressed') === 'false') state.gm = '0';
+                if (gmToggle && gmToggle.getAttribute('aria-pressed') === 'true') state.gm = '1';
                 const changesToggle = document.getElementById('calendar-changes-toggle');
-                if (changesToggle && changesToggle.getAttribute('aria-expanded') === 'true') state.changes = '1';
+                if (changesToggle && changesToggle.getAttribute('aria-expanded') === 'false') state.changes = '0';
                 return state;
             }
 
@@ -293,12 +293,14 @@
                 restoreCheckboxGroupState(params, 'continent', '[data-cal-continent-toggle]', 'data-cal-continent-toggle');
                 restoreCheckboxGroupState(params, 'surface', '[data-cal-surface-toggle]', 'data-cal-surface-toggle');
                 const gmToggle = document.getElementById('calendar-gm-toggle');
-                if (gmToggle && params.has('gm')) {
-                    const showGm = !['0', 'false', 'no', 'off'].includes((params.get('gm') || '').toLowerCase());
+                if (gmToggle) {
+                    const showGm = params.has('gm')
+                        && ['1', 'true', 'yes', 'on'].includes((params.get('gm') || '').toLowerCase());
                     gmToggle.setAttribute('aria-pressed', showGm ? 'true' : 'false');
                 }
                 setCalendarChangesExpanded(
-                    ['1', 'true', 'yes', 'open'].includes((params.get('changes') || '').toLowerCase())
+                    !params.has('changes')
+                    || !['0', 'false', 'no', 'closed'].includes((params.get('changes') || '').toLowerCase())
                 );
                 applyCalendarFilters();
             }
@@ -939,10 +941,13 @@
                 if (gmToggle) {
                     const gmAction = showGm ? 'Hide Quality' : 'Show Quality';
                     gmToggle.classList.toggle('active', showGm);
-                    gmToggle.textContent = gmAction;
+                    const gmLabel = gmToggle.querySelector('.calendar-toggle-label');
+                    if (gmLabel) gmLabel.textContent = gmAction;
                     gmToggle.setAttribute('aria-label', gmAction + ' values');
                     gmToggle.title = gmAction + ' values';
                 }
+                const calendarView = document.getElementById('view-calendar');
+                if (calendarView) calendarView.classList.toggle('quality-visible', showGm);
                 document.querySelectorAll('#view-calendar .cal-gm-badge').forEach(badge => {
                     badge.style.display = showGm ? '' : 'none';
                 });

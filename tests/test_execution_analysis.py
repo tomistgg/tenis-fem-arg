@@ -72,6 +72,23 @@ def test_repeated_technical_errors_are_grouped_and_explained():
     assert summaries[0]["technical"][0]["count"] == 3
 
 
+def test_optional_player_profile_failure_is_an_email_warning_not_a_rejection():
+    issue = {
+        "component": "itf-player-profile",
+        "operation": "fetch player profile",
+        "message": "ITF request failed after 1 attempts",
+        "severity": "degraded",
+    }
+    state = completed_state("degraded", issues=[issue])
+
+    markdown = render_status_markdown(state)
+
+    assert "Update completed with warnings" in markdown
+    assert "Player information could not be downloaded from the provider." in markdown
+    assert "The affected information could not be refreshed." in markdown
+    assert "update was rejected" not in markdown
+
+
 def test_unfinished_final_status_is_not_trusted_or_promoted():
     state = {
         "status": "degraded",

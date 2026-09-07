@@ -74,6 +74,44 @@ def test_generated_site_loads_rankings_bundle_offline(offline_generated_site):
         assert "WTARG" in driver.title
         body_text = driver.find_element(By.TAG_NAME, "body").text
         assert "Failed to load local rankings data" not in body_text
+
+        driver.execute_script("switchTab('calendar')")
+        changes_toggle = wait.until(
+            expected_conditions.visibility_of_element_located((By.ID, "calendar-changes-toggle"))
+        )
+        changes_panel = driver.find_element(By.ID, "calendar-changes-panel")
+        changes_arrow = changes_toggle.find_element(By.CLASS_NAME, "calendar-toggle-arrow")
+        changes_open_transform = changes_arrow.value_of_css_property("transform")
+        assert changes_toggle.get_attribute("aria-expanded") == "true"
+        assert changes_panel.is_displayed()
+
+        changes_toggle.click()
+        wait.until(lambda _current: changes_toggle.get_attribute("aria-expanded") == "false")
+        assert not changes_panel.is_displayed()
+        wait.until(lambda _current: changes_arrow.value_of_css_property("transform") != changes_open_transform)
+
+        quality_toggle = driver.find_element(By.ID, "calendar-gm-toggle")
+        quality_legend = driver.find_element(By.CLASS_NAME, "cal-gm-legend")
+        quality_arrow = quality_toggle.find_element(By.CLASS_NAME, "calendar-toggle-arrow")
+        quality_closed_transform = quality_arrow.value_of_css_property("transform")
+        assert quality_toggle.get_attribute("aria-pressed") == "false"
+        assert not quality_legend.is_displayed()
+
+        quality_toggle.click()
+        wait.until(lambda _current: quality_toggle.get_attribute("aria-pressed") == "true")
+        assert quality_legend.is_displayed()
+        wait.until(lambda _current: quality_arrow.value_of_css_property("transform") != quality_closed_transform)
+
+        categories_toggle = driver.find_element(
+            By.CSS_SELECTOR,
+            '[data-cal-dd="categories"] [data-cal-dd-btn]',
+        )
+        categories_arrow = categories_toggle.find_element(By.CLASS_NAME, "calendar-toggle-arrow")
+        categories_closed_transform = categories_arrow.value_of_css_property("transform")
+        categories_toggle.click()
+        wait.until(lambda _current: categories_toggle.get_attribute("aria-expanded") == "true")
+        wait.until(lambda _current: categories_arrow.value_of_css_property("transform") != categories_closed_transform)
+
         messages = "\n".join(entry["message"] for entry in driver.get_log("browser"))
         assert "Uncaught" not in messages
     finally:

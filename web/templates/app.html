@@ -465,7 +465,8 @@
                         <div class="calendar-filter-controls">
                         <div class="cal-dd" data-cal-dd="categories">
                             <button type="button" class="cal-dd-btn" data-cal-dd-btn aria-expanded="false">
-                                Categories
+                                <span class="calendar-toggle-label">Categories</span>
+                                <span class="calendar-toggle-arrow" aria-hidden="true"></span>
                             </button>
                         <div class="cal-dd-panel" role="menu">
                             <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="gs" checked><span>GS</span></label>
@@ -481,7 +482,8 @@
 
                         <div class="cal-dd" data-cal-dd="region">
                             <button type="button" class="cal-dd-btn" data-cal-dd-btn aria-expanded="false">
-                                Regions
+                                <span class="calendar-toggle-label">Regions</span>
+                                <span class="calendar-toggle-arrow" aria-hidden="true"></span>
                             </button>
                             <div class="cal-dd-panel" role="menu">
                                 <label class="cal-dd-item"><input type="checkbox" data-cal-continent-toggle="south_america" checked><span>S America</span></label>
@@ -495,7 +497,8 @@
 
                         <div class="cal-dd" data-cal-dd="surface">
                             <button type="button" class="cal-dd-btn" data-cal-dd-btn aria-expanded="false">
-                                Surface
+                                <span class="calendar-toggle-label">Surface</span>
+                                <span class="calendar-toggle-arrow" aria-hidden="true"></span>
                             </button>
                             <div class="cal-dd-panel" role="menu">
                                 <label class="cal-dd-item"><input type="checkbox" data-cal-surface-toggle="hard" checked><span>Hard</span></label>
@@ -506,14 +509,17 @@
                         </div>
                         </div>
 
-                        <button type="button" class="calendar-gm-toggle active" id="calendar-gm-toggle"
-                                aria-pressed="true" aria-label="Hide draw quality" title="Hide draw quality">
-                            Hide Quality
+                        <button type="button" class="calendar-gm-toggle" id="calendar-gm-toggle"
+                                aria-pressed="false" aria-label="Show draw quality values" title="Show draw quality values">
+                            <span class="calendar-toggle-label">Show Quality</span>
+                            <span class="calendar-toggle-arrow" aria-hidden="true"></span>
                         </button>
 
                         <button type="button" class="cal-dd-btn calendar-changes-toggle" id="calendar-changes-toggle"
-                                aria-expanded="false" aria-controls="calendar-changes-panel">
-                            <span class="calendar-changes-alert" aria-hidden="true">!</span> Changes
+                                aria-expanded="true" aria-controls="calendar-changes-panel">
+                            <span class="calendar-changes-alert" aria-hidden="true">!</span>
+                            <span class="calendar-toggle-label">Changes</span>
+                            <span class="calendar-toggle-arrow" aria-hidden="true"></span>
                         </button>
 
                         <div class="cal-gm-legend">
@@ -521,7 +527,7 @@
                         </div>
                     </div>
 
-                    <div class="calendar-changes-panel" id="calendar-changes-panel" hidden>
+                    <div class="calendar-changes-panel" id="calendar-changes-panel">
                         @@WTARG_CALENDAR_CHANGES_HTML@@
                     </div>
 

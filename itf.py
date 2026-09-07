@@ -478,7 +478,16 @@ fetch(url, { credentials: "include", signal: controller.signal, cache: "no-store
         return ""
 
 
-def _fetch_itf_json(driver, url, timeout_ms=12000, retries=2, *, failure_severity="partial"):
+def _fetch_itf_json(
+    driver,
+    url,
+    timeout_ms=12000,
+    retries=2,
+    *,
+    failure_severity="partial",
+    failure_component="itf",
+    failure_operation="fetch JSON via requests",
+):
     is_calendar_endpoint = "TournamentApi/GetCalendar" in str(url)
 
     # Try direct JSON before starting a lazy Chrome session. If ITF serves its
@@ -489,6 +498,8 @@ def _fetch_itf_json(driver, url, timeout_ms=12000, retries=2, *, failure_severit
             timeout=max(8, int(timeout_ms / 1000)),
             retries=1,
             failure_severity=failure_severity,
+            failure_component=failure_component,
+            failure_operation=failure_operation,
             report_failure=False,
         )
         if isinstance(req_data, (dict, list)):
@@ -549,6 +560,8 @@ def _fetch_itf_json(driver, url, timeout_ms=12000, retries=2, *, failure_severit
         retries=1,
         cookies=browser_cookies,
         failure_severity=failure_severity,
+        failure_component=failure_component,
+        failure_operation=failure_operation,
     )
     return req_data if isinstance(req_data, (dict, list)) else None
 
@@ -597,6 +610,8 @@ def _fetch_itf_json_via_requests(
     cookies=None,
     *,
     failure_severity="partial",
+    failure_component="itf",
+    failure_operation="fetch JSON via requests",
     report_failure=True,
 ):
     """Fallback fetch path: direct HTTP request outside browser session."""
@@ -647,8 +662,8 @@ def _fetch_itf_json_via_requests(
     if not report_failure:
         return None
     error = SourceRequestError(
-        component="itf",
-        operation="fetch JSON via requests",
+        component=failure_component,
+        operation=failure_operation,
         message=f"ITF request failed after {retries} attempts",
         context={
             "url": str(url),
@@ -658,7 +673,7 @@ def _fetch_itf_json_via_requests(
         },
         retryable=True,
     )
-    report_run_issue("itf", "fetch JSON via requests", error, severity=failure_severity)
+    report_run_issue(failure_component, failure_operation, error, severity=failure_severity)
     return None
 
 
