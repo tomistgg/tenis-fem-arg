@@ -613,7 +613,8 @@ def _render_calendar_changes(change_history):
         items = []
         for change in changes:
             actions = "; ".join(
-                escape(str(action).strip()) for action in (change.get("actions") or []) if str(action).strip()
+                f'<span class="calendar-change-action">{escape(str(action).strip())}</span>'
+                for action in (change.get("actions") or []) if str(action).strip()
             )
             if not actions:
                 continue
@@ -1112,7 +1113,8 @@ def generate_html(
             and t_key in tournament_store
             and tournament_store[t_key]
         ]
-        entry_menu_html += f'<div class="entry-menu-week">{week.upper()}</div>'
+        entry_week_heading = re.sub(r"^Week of\s+", "", week, flags=re.IGNORECASE)
+        entry_menu_html += f'<div class="entry-menu-week">{entry_week_heading.upper()}</div>'
 
         def _entry_menu_balance_class(index, count):
             remainder = count % 4
@@ -1494,7 +1496,8 @@ def generate_html(
     calendar_html = '<table class="calendar-table"><thead><tr>'
     calendar_html += '<th class="cal-cat-header"></th><th class="cal-cont-header"></th>'
     for week in calendar_data:
-        calendar_html += f'<th class="cal-week-header">{week["week_label"]}</th>'
+        week_heading = re.sub(r"^Week of\s+", "", week["week_label"], flags=re.IGNORECASE)
+        calendar_html += f'<th class="cal-week-header">{week_heading}</th>'
     calendar_html += "</tr></thead><tbody>"
 
     for group in col_groups:
@@ -1731,7 +1734,8 @@ def generate_html(
                 )
             else:
                 display_value = escape(value)
-            national_rows += f"<td{cell_class}{cell_style}>{display_value}</td>"
+            translation_guard = ' translate="no"' if col in {"Player", "Partner", "Opponent", "Event"} else ""
+            national_rows += f"<td{translation_guard}{cell_class}{cell_style}>{display_value}</td>"
         national_rows += "</tr>"
 
     default_captains_columns = ["N", "Captain", "Year"]
@@ -1753,7 +1757,8 @@ def generate_html(
                 value = format_player_name(value)
                 cell_style = ' style="font-weight:bold;"'
 
-            captains_rows += f"<td{cell_style}>{escape(value)}</td>"
+            translation_guard = ' translate="no"' if col == "Captain" else ""
+            captains_rows += f"<td{translation_guard}{cell_style}>{escape(value)}</td>"
         captains_rows += "</tr>"
 
     # Build BJK Cup Series HTML

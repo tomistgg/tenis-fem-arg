@@ -301,7 +301,8 @@
                 if (player) name = formatDrawName(player.name);
                 else if (isBye) name = 'BYE';
                 else if (isQualifier) name = 'Qualifier';
-                const nameHtml = '<span class="name">' + name + '</span>';
+                const uiLabel = !player && (isBye || isQualifier) ? ' data-ui-label' : '';
+                const nameHtml = '<span class="name"' + uiLabel + '>' + name + '</span>';
                 let setsHtml = '';
                 if (scoreData && scoreData.sets && scoreData.sets.length > 0) {
                     const ss = scoreData.sets;
