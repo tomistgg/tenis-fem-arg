@@ -85,6 +85,7 @@ from utils import (
     compress_calendar_snapshot,
     compress_draws_snapshot,
     compress_tournament_snapshot,
+    display_tournament_name,
     dumps_calendar_snapshot,
     dumps_draws_store_cache,
     dumps_entry_lists_cache,
@@ -1800,7 +1801,7 @@ def load_match_history(data_dir=None):
         cleaned_history.append(
             {
                 "DATE": fecha,
-                "TOURNAMENT": fix_encoding(tournament_name_value),
+                "TOURNAMENT": display_tournament_name(fix_encoding(tournament_name_value)),
                 "TOURNAMENT_ID": tournament_id_value,
                 "CATEGORY": fix_encoding(tournament_category_value),
                 "SURFACE": formatted_surface,

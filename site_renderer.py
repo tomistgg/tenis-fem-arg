@@ -137,6 +137,7 @@ def _entry_inputs(
             schedule_entries.setdefault(player_key, {}).setdefault(week, []).append(
                 {
                     "label": f"{tournament_name}{suffix}",
+                    "tour_rank": 0 if tournament_key.startswith("http") else 1,
                     "priority": player.get("priority", ""),
                     "entry_type": entry_type,
                     "pos_num": player.get("pos_num", 9999),
@@ -153,6 +154,7 @@ def _entry_inputs(
         for week, entries in weeks.items():
             entries.sort(
                 key=lambda entry: (
+                    entry["tour_rank"],
                     numeric_sort_value(entry["priority"]),
                     entry_type_order.get(entry["entry_type"], 3),
                     numeric_sort_value(entry["pos_num"]),

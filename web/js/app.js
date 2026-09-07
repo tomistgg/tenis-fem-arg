@@ -2849,6 +2849,7 @@
 
             function _formatTournName(name, category) {
                 if (!name) return '';
+                name = name.replace(/\s*\(\s*moved\s+from\b[^)]*\)/gi, '').trim();
                 if (name.toUpperCase().includes('MALLORCA')) return 'WTA 125 Mallorca';
                 const displayCategory = category && category.toUpperCase() === 'WT' ? 'World Tour' : category;
                 const sep = name.lastIndexOf(' - ');

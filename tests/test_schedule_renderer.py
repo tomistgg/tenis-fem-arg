@@ -106,3 +106,56 @@ def test_schedule_orders_same_week_tournaments_by_player_priority(tmp_path: Path
     assert schedule_map["MARTINA CAPURRO"]["Week of September 21"] == (
         "W50 Berkeley, CA<br>W50 Plovdiv<br>W50 Yecla<br>W35 Santa Marg."
     )
+
+
+def test_schedule_places_wta_before_itf_regardless_of_player_priority(tmp_path: Path):
+    week = "Week of September 21"
+    ankara_key = "https://www.wtatennis.com/tournaments/1178/ankara-125/2026/player-list"
+    berkeley_key = "w-itf-usa-2026-043"
+    snapshot = {
+        ankara_key: {
+            "name": "WTA 125 Ankara",
+            "level": "WTA 125",
+            "surface": "Hard",
+            "country": "TUR",
+            "startDate": "2026-09-21",
+            "endDate": "2026-09-27",
+            "week": week,
+        },
+        berkeley_key: {
+            "name": "W50 Berkeley, CA",
+            "level": "W50",
+            "surface": "Hard",
+            "country": "USA",
+            "startDate": "2026-09-21",
+            "endDate": "2026-09-27",
+            "week": week,
+        },
+    }
+    entry_cache = {
+        ankara_key: [
+            {
+                "name": "Julia Riera",
+                "country": "ARG",
+                "priority": "2",
+                "pos_num": 17,
+                "type": "MAIN",
+            }
+        ],
+        berkeley_key: [
+            {
+                "name": "Julia Riera",
+                "country": "ARG",
+                "priority": "1",
+                "pos_num": 2,
+                "type": "MAIN",
+            }
+        ],
+    }
+    (tmp_path / "tournament_snapshot.json").write_text(json.dumps(snapshot), encoding="utf-8")
+    (tmp_path / "entry_lists_cache.json").write_text(json.dumps(entry_cache), encoding="utf-8")
+
+    tournament_groups, _ = _tournament_inputs(tmp_path)
+    _, schedule_map, _ = _entry_inputs(tmp_path, tournament_groups)
+
+    assert schedule_map["JULIA RIERA"][week] == "WTA 125 Ankara<br>W50 Berkeley, CA"

@@ -12,7 +12,7 @@ from html_generator import (
     country_flag_html,
 )
 from site_renderer import render_site_from_data
-from utils import compact_tournament_name, expand_entry_lists_cache
+from utils import compact_tournament_name, display_tournament_name, expand_entry_lists_cache
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 GENERATED_SITE_DIR = PROJECT_DIR
@@ -316,14 +316,26 @@ class GeneratedSiteTests(unittest.TestCase):
         )
 
     def test_moved_from_annotation_is_hidden_in_tournament_display_names(self):
-        self.assertEqual(
-            _display_tournament_name("W15 Pilar (moved from San Salvador de Jujuy)"),
-            "W15 Pilar",
+        cases = {
+            "W15 Pilar (moved from San Salvador de Jujuy)": "W15 Pilar",
+            "W25 Ibague (MOVED from 10 Oct)": "W25 Ibague",
+            "W15 Example ( moved   from Somewhere )": "W15 Example",
+        }
+        for source_name, expected_name in cases.items():
+            with self.subTest(source_name=source_name):
+                self.assertEqual(display_tournament_name(source_name), expected_name)
+                self.assertEqual(_display_tournament_name(source_name), expected_name)
+
+    def test_moved_from_annotation_is_absent_from_generated_website_data(self):
+        generated_files = (
+            GENERATED_SITE_DIR / "app.html",
+            GENERATED_SITE_DIR / "data" / "history_data_bundle.js",
+            GENERATED_SITE_DIR / "assets" / "js" / "generated-data.js",
         )
-        self.assertEqual(
-            _display_tournament_name("W25 Ibague (MOVED from 10 Oct)"),
-            "W25 Ibague",
-        )
+        for path in generated_files:
+            with self.subTest(path=path.name):
+                source = path.read_text(encoding="utf-8-sig")
+                self.assertIsNone(re.search(r"\(\s*moved\s+from\b", source, re.IGNORECASE))
 
     def test_requested_long_tournament_names_use_compact_labels(self):
         cases = {

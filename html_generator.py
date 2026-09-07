@@ -33,6 +33,7 @@ from time_utils import madrid_today
 from utils import (
     compact_tournament_name,
     compress_history_data,
+    display_tournament_name,
     dumps_history_data,
     dumps_readable,
     dumps_wta_rankings_bundle,
@@ -102,12 +103,7 @@ def _schedule_tournament_base_name(entry):
 
 def _display_tournament_name(name):
     """Hide source relocation notes while preserving the canonical name."""
-    return re.sub(
-        r"\s*\(\s*moved\s+from\b[^)]*\)",
-        "",
-        str(name or ""),
-        flags=re.IGNORECASE,
-    ).strip()
+    return display_tournament_name(name)
 
 
 def _display_calendar_tournament_name(name):
@@ -613,7 +609,7 @@ def _render_calendar_changes(change_history):
         items = []
         for change in changes:
             actions = "; ".join(
-                f'<span class="calendar-change-action">{escape(str(action).strip())}</span>'
+                f'<span class="calendar-change-action">{escape(display_tournament_name(action))}</span>'
                 for action in (change.get("actions") or []) if str(action).strip()
             )
             if not actions:
@@ -621,7 +617,7 @@ def _render_calendar_changes(change_history):
             country = str(change.get("country") or "").strip().upper()
             flag = country_flag_html(country, show_code=False) if country else ""
             flag_html = f'<span class="calendar-change-flag">{flag}</span>' if flag else ""
-            name = escape(str(change.get("name") or "").strip())
+            name = escape(display_tournament_name(change.get("name")))
             start_date = escape(str(change.get("startDate") or "").strip()[:10])
             date_html = f' <span class="calendar-change-start">({start_date})</span>' if start_date else ""
             items.append(
@@ -910,6 +906,9 @@ def generate_html(
         if not isinstance(row, dict):
             return row
         normalized = dict(row)
+        for field in ("TOURNAMENT", "tournamentName", "tournament_name", "TournamentName"):
+            if field in normalized:
+                normalized[field] = display_tournament_name(normalized.get(field))
         source = _history_identity_source(normalized.get("MATCH_TYPE"))
         for field in (
             "_winnerName",
@@ -991,6 +990,15 @@ def generate_html(
     except (OSError, json.JSONDecodeError) as e:
         logger.warning(f"[warn] could not load tournament_draw_sizes.json: {e}")
         all_draw_sizes = []
+    all_draw_sizes = [
+        {
+            **t,
+            "tournamentName": display_tournament_name(t.get("tournamentName")),
+        }
+        if isinstance(t, dict) and "tournamentName" in t
+        else t
+        for t in all_draw_sizes
+    ]
     itf_draw_sizes = [t for t in all_draw_sizes if t.get("source") == "ITF"]
     wta_draw_sizes = [t for t in all_draw_sizes if t.get("source") == "WTA"]
 
@@ -1195,7 +1203,10 @@ def generate_html(
     draws_tournament_info = {}
     for t_key, tdata in draws_data.items():
         draw_types = [dt for dt, di in tdata.get("draws", {}).items() if isinstance(di, dict) and di.get("players")]
-        draws_tournament_info[t_key] = {"name": tdata["name"], "types": draw_types}
+        draws_tournament_info[t_key] = {
+            "name": display_tournament_name(tdata["name"]),
+            "types": draw_types,
+        }
 
     draws_js_data = {}
     for t_key, tdata in draws_data.items():
@@ -1917,7 +1928,7 @@ def generate_html(
                     break
             _opp_name = _bjkc_iso_to_name.get(_opp_iso or "", _opp_iso or "?")
 
-            _t_name = str(_first.get("tournamentName", ""))
+            _t_name = display_tournament_name(_first.get("tournamentName", ""))
             _opp_flag = country_flag_html(_opp_iso or "", show_code=False)
             _header_text = _t_name if " vs " in _t_name.lower() else f"{_t_name} vs {_opp_name}"
 
@@ -2024,7 +2035,11 @@ def generate_html(
     # Build T-Strength data as JSON for JS rendering
     if tstrength_data is None:
         tstrength_data = []
-    tstrength_json_list = [t for t in tstrength_data if t.get("gm", 0) > 0]
+    tstrength_json_list = [
+        {**t, "name": display_tournament_name(t.get("name"))}
+        for t in tstrength_data
+        if t.get("gm", 0) > 0
+    ]
 
     # Generate the full HTML template
     frontend_context = {
