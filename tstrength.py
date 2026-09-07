@@ -36,6 +36,7 @@ _WTA_API_HEADERS = {
 }
 
 DEFAULT_RANK = 2000
+MIN_MAIN_DRAW_PLAYERS = 20
 
 _IGNORE_TOURNAMENT_NAMES = {
     "UNITED CUP",
@@ -321,10 +322,21 @@ def _geometric_mean(values):
     return math.exp(log_sum / len(values))
 
 
+def _has_valid_draw_player_count(draw, player_count):
+    try:
+        count = int(player_count or 0)
+    except (TypeError, ValueError):
+        return False
+    if count <= 0:
+        return False
+    normalized_draw = str(draw or "MD").strip().upper()
+    return normalized_draw not in {"MD", "M", "MAIN"} or count >= MIN_MAIN_DRAW_PLAYERS
+
+
 def _needs_refresh(cached_entry):
     if not cached_entry:
         return True
-    if cached_entry.get("playerCount", 0) <= 0:
+    if not _has_valid_draw_player_count(cached_entry.get("draw"), cached_entry.get("playerCount")):
         return True
     if cached_entry.get("gm", 0) <= 0 or cached_entry.get("hm", 0) <= 0:
         return True
@@ -478,7 +490,7 @@ def build_tstrength_data(from_year=None, full_backfill=False):
                 draw_level = "M" if draw == "MD" else "Q"
                 players, participants_locked = _extract_draw_players(matches, draw_level)
                 cache_key = f"{yr}_{tid}_{draw}"
-                if (not players) or (not participants_locked):
+                if (not participants_locked) or (not _has_valid_draw_player_count(draw, len(players))):
                     cache[cache_key] = {
                         "id": tid,
                         "name": t["name"],
@@ -556,7 +568,7 @@ def build_tstrength_data(from_year=None, full_backfill=False):
         e
         for e in cache.values()
         if (not _is_ignored_tournament(e.get("name", "")))
-        and e.get("playerCount", 0) > 0
+        and _has_valid_draw_player_count(e.get("draw"), e.get("playerCount"))
         and (e.get("participantsLocked") is not False)
     ]
     results.sort(key=lambda x: x["startDate"])

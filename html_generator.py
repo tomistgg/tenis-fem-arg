@@ -657,6 +657,16 @@ def _player_display_name(raw_name):
     return format_player_name(mapped)
 
 
+def _bjkc_player_display_name(raw_name):
+    """Resolve one BJK Cup player or a slash-separated doubles team for display."""
+    names = re.split(r"\s*/\s*", fix_encoding_keep_accents(str(raw_name or "")).strip())
+    return " / ".join(
+        format_player_name(resolve_player_display_name("bjkc", name=name))
+        for name in names
+        if name
+    )
+
+
 def _write_js_bundle_file(bundle_path, global_name, data, formatter=None):
     """Write a simple classic-script bundle that assigns data to a window global."""
     os.makedirs(os.path.dirname(bundle_path), exist_ok=True)
@@ -1367,8 +1377,8 @@ def generate_html(
             f"<tr><th>D</th><th>Cut Off</th><th>Acc. Pts</th><th>Est. Need</th></tr>"
             f"</thead>"
             f"<tbody>"
-            f'<tr><td>Q</td><td>{q_cutoff_display}</td><td id="gs-acc-q-{gs_id}">-</td><td id="gs-est-q-{gs_id}">-</td></tr>'
-            f'<tr><td>MD</td><td>{md_cutoff_display}</td><td id="gs-acc-md-{gs_id}">-</td><td id="gs-est-md-{gs_id}">-</td></tr>'
+            f'<tr><td>Q</td><td class="gs-cutoff-date">{q_cutoff_display}</td><td id="gs-acc-q-{gs_id}">-</td><td id="gs-est-q-{gs_id}">-</td></tr>'
+            f'<tr><td>MD</td><td class="gs-cutoff-date">{md_cutoff_display}</td><td id="gs-acc-md-{gs_id}">-</td><td id="gs-est-md-{gs_id}">-</td></tr>'
             f"</tbody>"
             f"</table>"
         )
@@ -1684,6 +1694,8 @@ def generate_html(
         opponent_flag = country_flag_html(opponent_country, show_code=False)
         for col in national_columns:
             value = str(row.get(col, "") or "")
+            if col in {"Player", "Partner", "Opponent"}:
+                value = _bjkc_player_display_name(value)
             if col == "Event":
                 value = "G1 Am" if value == "G1 Americas" else value
             cell_style = ""
@@ -1754,7 +1766,7 @@ def generate_html(
             cell_style = ""
 
             if col == "Captain":
-                value = format_player_name(value)
+                value = _bjkc_player_display_name(value)
                 cell_style = ' style="font-weight:bold;"'
 
             translation_guard = ' translate="no"' if col == "Captain" else ""
@@ -1847,24 +1859,9 @@ def generate_html(
             if not _manual_bjkc.empty:
                 _bjkc_df = _pd.concat([_bjkc_df, _manual_bjkc], ignore_index=True)
 
-        # Build alias reverse map: raw_name_upper -> display_name
-        _alias_reverse = {}
-        for _display_name, _raw_list in (PLAYER_MAPPING or {}).items():
-            if not isinstance(_display_name, str):
-                continue
-            _display_clean = _display_name.strip()
-            if not _display_clean:
-                continue
-            _alias_reverse[_display_clean.upper()] = _display_clean
-            if isinstance(_raw_list, list):
-                for _raw in _raw_list:
-                    if isinstance(_raw, str) and _raw.strip():
-                        _alias_reverse[_raw.strip().upper()] = _display_clean
-
         def _apply_alias(name_str):
-            """Apply alias lookup to a player name or 'P1 / P2' doubles string."""
-            parts = name_str.split(" / ")
-            return " / ".join(_alias_reverse.get(p.strip().upper(), p.strip()) for p in parts)
+            """Apply canonical display names to singles and doubles entries."""
+            return _bjkc_player_display_name(name_str)
 
         def _fmt_name(name_str):
             """Format player name; doubles get a desktop slash + mobile line-break."""
@@ -1963,24 +1960,23 @@ def generate_html(
                 _arg_won = str(_mr.get("winnerCountry", "")) == "ARG"
 
                 _arg_player = _apply_alias(str(_mr["winnerName"] if _arg_won else _mr["loserName"]))
-                _opp_player = str(_mr["loserName"] if _arg_won else _mr["winnerName"])
+                _opp_player = _apply_alias(str(_mr["loserName"] if _arg_won else _mr["winnerName"]))
 
                 if not _has_result:
                     _score_display = '<em class="text-muted">Not Played</em>'
-                    _res_label = "-"
-                    _res_class = "text-muted"
-                    _res_extra_style = "font-weight:bold;"
+                    _score_class = ""
                 else:
                     _score = _result_raw if _arg_won else _bjkc_flip_score(_result_raw)
                     _status = str(_mr.get("resultStatusDesc", "") or "")
-                    _score_display = escape(_score)
+                    _status_display = ""
                     if _status and _status.lower() != "nan":
-                        _score_display += (
-                            f' <span class="text-muted" style="font-size:0.85em;">({escape(_status)})</span>'
+                        _status_display = (
+                            f' <span class="bjkc-score-status">({escape(_status)})</span>'
                         )
-                    _res_label = "W" if _arg_won else "L"
-                    _res_class = "res-win" if _arg_won else "res-loss"
-                    _res_extra_style = ""
+                    _score_display = (
+                        f'<span class="score-badge">{escape(_score)}{_status_display}</span>'
+                    )
+                    _score_class = "score-win" if _arg_won else "score-loss"
 
                 _is_doubles = " / " in _arg_player
                 _data_type = "D" if _is_doubles else "S"
@@ -1998,8 +1994,7 @@ def generate_html(
 
                 _rows_html += f"""<tr data-player="{escape(_data_player)}" data-type="{_data_type}" data-result="{_data_result}">
                         <td style="font-weight:bold;white-space:nowrap;">{_fmt_name(_arg_player)}</td>
-                        <td class="{_res_class}" style="{_res_extra_style}text-align:center;">{_res_label}</td>
-                        <td style="white-space:nowrap;">{_score_display}</td>
+                        <td class="{_score_class}" style="white-space:nowrap;">{_score_display}</td>
                         <td style="white-space:nowrap;">{_fmt_name(_opp_player)}</td>
                     </tr>"""
 
@@ -2015,7 +2010,7 @@ def generate_html(
                     <div class="table-wrapper">
                         <table class="bjkc-series-table">
                             <thead><tr>
-                                <th>ARGENTINA</th><th>RES.</th><th>SCORE</th><th>OPPONENT</th>
+                                <th>ARGENTINA</th><th>SCORE</th><th>OPPONENT</th>
                             </tr></thead>
                             <tbody>{_rows_html}</tbody>
                         </table>

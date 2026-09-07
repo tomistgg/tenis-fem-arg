@@ -142,6 +142,8 @@ def test_generated_site_loads_rankings_bundle_offline(offline_generated_site):
                 + '<span id="round-result">1st + QR2</span><span class="draw-player">'
                 + '<span class="name" data-ui-label id="qualifier-label">Qualifier</span></span>'
                 + '<button id="seed-value" data-value="Yes">Yes</button>'
+                + '<span id="cutoff-date" class="gs-cutoff-date">Apr 26</span>'
+                + '<span id="may-cutoff-date" class="gs-cutoff-date">May 31</span>'
                 + '<select id="language-options"><option>Grass</option></select>';
             document.body.appendChild(fixture);
         ''')
@@ -160,6 +162,8 @@ def test_generated_site_loads_rankings_bundle_offline(offline_generated_site):
         assert driver.find_element(By.ID, 'qualifier-label').text == 'CLASIFICADA'
         assert driver.find_element(By.ID, 'seed-value').text == 'Si'
         assert driver.find_element(By.ID, 'seed-value').get_attribute('data-value') == 'Yes'
+        assert driver.find_element(By.ID, 'cutoff-date').text == 'Abr 26'
+        assert driver.find_element(By.ID, 'may-cutoff-date').text == 'May 31'
         driver.execute_script("document.getElementById('dynamic-ui').textContent = 'Points: 456'")
         wait.until(lambda current: current.find_element(By.ID, 'dynamic-ui').text == 'Puntos: 456')
         for source, translated in [
@@ -172,7 +176,7 @@ def test_generated_site_loads_rankings_bundle_offline(offline_generated_site):
             ('ACC. PTS', 'PTS ACU.'), ('Last week for AO MD/Q', 'Ult. Semana para AO MD/Q'),
             ('WTA Tournament Strength', 'Nivel Torneos WTA'), ('Yes', 'Si'), ('No', 'No'),
             ('Geometric Mean: Overall draw quality across all players.',
-             'Media geométrica: Nivel general del cuadro considerando a todas las jugadoras.'),
+             'Nivel general del cuadro considerando a todas las jugadoras.'),
         ]:
             assert driver.execute_script('return WTARG_I18N.translate(arguments[0])', source) == translated
         assert driver.execute_script(
@@ -186,6 +190,8 @@ def test_generated_site_loads_rankings_bundle_offline(offline_generated_site):
         assert driver.find_element(By.ID, 'round-result').text == '1st + QR2'
         assert driver.find_element(By.ID, 'qualifier-label').text == 'Qualifier'
         assert driver.find_element(By.ID, 'seed-value').text == 'Yes'
+        assert driver.find_element(By.ID, 'cutoff-date').text == 'Apr 26'
+        assert driver.find_element(By.ID, 'may-cutoff-date').text == 'May 31'
         driver.execute_script("WTARG_I18N.setLanguage('es')")
 
         # Reload in Spanish, then return to English from the mobile header.
@@ -194,10 +200,13 @@ def test_generated_site_loads_rankings_bundle_offline(offline_generated_site):
         driver.set_window_size(390, 844)
         assert driver.execute_script("""
             const filters = document.querySelector('#view-tstrength .ts-row2');
-            const surfaceHead = document.querySelector('#tstrength-table th:nth-child(7)');
+            const strengthHeaders = [...document.querySelectorAll('#tstrength-table th')]
+                .map(head => head.textContent.trim());
             const historySurfaceHead = document.querySelector('#history-table th:nth-child(3)');
             return getComputedStyle(filters).display === 'grid'
-                && getComputedStyle(surfaceHead, '::after').content === '"SUPERF."'
+                && strengthHeaders.length === 8
+                && !strengthHeaders.includes('SUPERFICIE')
+                && strengthHeaders[strengthHeaders.length - 1] === 'CUADRO'
                 && getComputedStyle(historySurfaceHead, '::after').content === '"SPF"';
         """)
         mobile_language = wait.until(expected_conditions.visibility_of_element_located(

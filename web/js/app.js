@@ -1117,6 +1117,7 @@
                 if (tabName === 'rankings') initRankingsIfEmpty();
                 if (tabName === 'roadtogs') initRoadToGS();
                 if (tabName === 'information') initInformationPage();
+                if (tabName === 'fedbcup') syncFedBjkSeriesWidths();
 
                 applyMobileHistoryLayout();
                 syncEntryMenuToggle();
@@ -1138,6 +1139,44 @@
             document.addEventListener('DOMContentLoaded', initCalendarFilters);
 
             const BJKC_PLAYERS = window.WTARG_DATA.bjkcPlayers;
+
+            let _fedBjkSeriesWidth = 0;
+            function syncFedBjkSeriesWidths() {
+                const view = document.getElementById('view-fedbcup');
+                const series = document.getElementById('fedbcup-view-series');
+                if (!view || !series) return;
+                if (window.innerWidth <= 768) {
+                    view.style.removeProperty('--bjkc-series-width');
+                    return;
+                }
+                if (_fedBjkSeriesWidth) {
+                    view.style.setProperty('--bjkc-series-width', _fedBjkSeriesWidth + 'px');
+                    return;
+                }
+                if (getComputedStyle(view).display === 'none' || getComputedStyle(series).display === 'none') return;
+
+                const blocks = Array.from(series.querySelectorAll('.bjkc-series-block'));
+                if (!blocks.length) return;
+                const openStates = blocks.map(function(block) { return block.open; });
+                view.style.removeProperty('--bjkc-series-width');
+                blocks.forEach(function(block) { block.open = true; });
+
+                _fedBjkSeriesWidth = Math.ceil(blocks.reduce(function(widest, block) {
+                    const header = block.querySelector('.bjkc-series-header');
+                    const table = block.querySelector('.bjkc-series-table');
+                    return Math.max(
+                        widest,
+                        block.scrollWidth,
+                        header ? header.scrollWidth : 0,
+                        table ? table.scrollWidth : 0
+                    );
+                }, 0));
+
+                blocks.forEach(function(block, index) { block.open = openStates[index]; });
+                if (_fedBjkSeriesWidth) {
+                    view.style.setProperty('--bjkc-series-width', _fedBjkSeriesWidth + 'px');
+                }
+            }
 
             (function() {
                 const sel = document.getElementById('fedbcup-player-filter');
@@ -1165,6 +1204,7 @@
                 const vis = (subTab === 'series') ? 'visible' : 'hidden';
                 if (filterLeft) filterLeft.style.visibility = vis;
                 if (recordRight) recordRight.style.visibility = vis;
+                if (subTab === 'series') syncFedBjkSeriesWidths();
                 syncUrlStateForTab('fedbcup');
             }
 
@@ -1625,6 +1665,7 @@
                         document.getElementById('sidebar').classList.add('mobile-hidden');
                     }
                     applyMobileHistoryLayout();
+                    syncFedBjkSeriesWidths();
                 });
             });
 

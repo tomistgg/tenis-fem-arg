@@ -71,6 +71,16 @@
         return text.replace(text.trim(), rendered);
     }
 
+    function translateCutoffDate(text) {
+        if (language === 'en') return text;
+        const source = text.trim();
+        const match = source.match(/^([A-Za-z]{3})\s+(\d{1,2})$/);
+        if (!match) return translate(text);
+        const candidate = (catalog[language] || {})[match[1]];
+        const month = candidate && candidate.length <= 3 ? candidate : match[1];
+        return text.replace(source, `${month} ${match[2]}`);
+    }
+
     function protectedText(element) {
         if (element.closest(protectedSelector)) return true;
         const option = element.closest('option');
@@ -95,8 +105,14 @@
         if (!node.parentElement || protectedText(node.parentElement) || !node.data.trim()) return;
         const previous = originals.get(node);
         const source = previous && node.data === previous.rendered ? previous.source : node.data;
-        const rendered = node.parentElement.closest('.cal-week-header, .entry-menu-week')
-            ? translateWeekHeader(source) : translate(source);
+        let rendered;
+        const keyedElement = node.parentElement.closest('[data-i18n-key]');
+        if (keyedElement && language !== 'en') {
+            const keyedValue = (catalog[language] || {})[keyedElement.dataset.i18nKey];
+            rendered = keyedValue === undefined ? source : source.replace(source.trim(), keyedValue);
+        } else if (node.parentElement.closest('.cal-week-header, .entry-menu-week')) rendered = translateWeekHeader(source);
+        else if (node.parentElement.closest('.gs-cutoff-date')) rendered = translateCutoffDate(source);
+        else rendered = translate(source);
         // An option without an explicit value derives its value from its label.
         const option = node.parentElement.closest('option');
         if (option && !option.hasAttribute('value')) option.setAttribute('value', option.value);

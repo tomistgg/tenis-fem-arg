@@ -30,7 +30,5 @@ html[lang="es"] #ts-filter-region { width: 130px; }
     html[lang="es"] #ts-filter-level { width: 120px; }
     html[lang="es"] #ts-filter-surface { width: 145px; }
     html[lang="es"] #ts-filter-region { width: 130px; grid-column: 1 / -1; justify-self: center; }
-    html[lang="es"] #tstrength-table th:nth-child(7) { font-size: 0 !important; }
-    html[lang="es"] #tstrength-table th:nth-child(7)::after { content: "SUPERF."; font-size: 7px; }
     html[lang="es"] #history-table th:nth-child(3)::after { content: "SPF"; }
 }

@@ -425,5 +425,76 @@ class GeneratedSiteTests(unittest.TestCase):
             source,
         )
 
+    def test_fed_bjk_series_colors_score_without_result_column(self):
+        source = _generated_frontend_source()
+        self.assertIn(
+            "<th>ARGENTINA</th><th>SCORE</th><th>OPPONENT</th>",
+            source,
+        )
+        self.assertNotIn("<th>RES.</th>", source)
+        self.assertIn('class="score-win" style="white-space:nowrap;"', source)
+        self.assertIn('class="score-loss" style="white-space:nowrap;"', source)
+        self.assertIn('#view-fedbcup .bjkc-series-table td.score-win { background: #166534; }', source)
+        self.assertIn('#view-fedbcup .bjkc-series-table td.score-loss { background: #b91c1c; }', source)
+
+    def test_tournament_strength_colors_name_and_omits_surface_column(self):
+        source = _generated_frontend_source()
+        self.assertIn(
+            "<th>#</th><th>GM</th><th>HM</th><th>Date</th><th>Tournament</th>"
+            '<th>Level</th><th>Region</th><th data-i18n-key="WTA Tournament Strength|Draw">Draw</th>',
+            source,
+        )
+        self.assertIn("'<td class=\"ts-name\" style=\"background:' + sc + '\">'", source)
+        self.assertNotIn("'<td style=\"background:' + sc + '\">' + t.surface", source)
+
+    def test_fed_bjk_series_uses_compact_desktop_and_balanced_mobile_columns(self):
+        source = _generated_frontend_source()
+        self.assertIn(
+            ".bjkc-series-block { width: var(--bjkc-series-width, fit-content); max-width: 100%; margin: 0 auto 13px; }",
+            source,
+        )
+        self.assertIn(
+            "width: var(--bjkc-series-width, fit-content);",
+            source,
+        )
+        self.assertIn(
+            "grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);",
+            source,
+        )
+        self.assertIn(
+            "#fedbcup-player-filter { width: 155px; min-width: 0; max-width: 100%;",
+            source,
+        )
+        self.assertIn("function syncFedBjkSeriesWidths()", source)
+        self.assertIn("view.style.setProperty('--bjkc-series-width', _fedBjkSeriesWidth + 'px');", source)
+        self.assertIn(
+            ".bjkc-series-table { table-layout: auto !important; width: 100% !important; min-width: max-content; }",
+            source,
+        )
+        self.assertIn(
+            ".bjkc-series-block { width: 100%; max-width: 100%; margin: 0 0 9px; }",
+            source,
+        )
+        self.assertIn(
+            ".bjkc-series-table th:nth-child(2), .bjkc-series-table td:nth-child(2) "
+            "{ width: 20%; white-space: nowrap !important; }",
+            source,
+        )
+        self.assertIn(
+            ".bjkc-series-table td:nth-child(1) { white-space: nowrap !important; }",
+            source,
+        )
+        self.assertNotIn(
+            ".bjkc-series-table td:nth-child(1) { white-space: nowrap !important; font-size: 8px !important; }",
+            source,
+        )
+
+    def test_fed_bjk_series_uses_display_names_for_opponents(self):
+        source = _generated_frontend_source()
+        self.assertIn("Mell Reasco Gonzalez", source)
+        self.assertIn("Yleymi Muelle Valdez", source)
+        self.assertNotIn("Mell Elizabeth Reasco Gonzalez", source)
+        self.assertNotIn("Yleymi Lugiana Muelle Valdez", source)
+
 if __name__ == "__main__":
     unittest.main()
