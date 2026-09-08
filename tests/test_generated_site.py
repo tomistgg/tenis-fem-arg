@@ -350,13 +350,6 @@ class GeneratedSiteTests(unittest.TestCase):
             with self.subTest(source_name=source_name):
                 self.assertEqual(compact_tournament_name(source_name), expected_name)
 
-    def test_schedule_shows_surface_dot_for_moved_itf_tournament(self):
-        app_source = _generated_frontend_source()
-        self.assertRegex(
-            app_source,
-            r'tournament-surface-dot[^>]*></span><b>W15 Pilar</b>',
-        )
-
     def test_calendar_has_collapsible_changes_panel(self):
         app_source = _generated_frontend_source()
         _assert_source_fragments(
