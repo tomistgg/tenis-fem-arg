@@ -163,7 +163,7 @@ class TablePolicyModel(BaseModel):
 
     kind: Literal["json_array", "rankings", "matches"]
     minimum_rows: int = Field(ge=0)
-    max_row_drop: LimitModel
+    max_row_drop: LimitModel | None = None
     freshness: FreshnessModel | None = None
 
 
@@ -406,7 +406,7 @@ def _validate_thresholds(
                 actual=current,
                 minimum=table_policy.minimum_rows,
             )
-        if baseline_dir is None:
+        if baseline_dir is None or table_policy.max_row_drop is None:
             continue
         baseline_path = baseline_dir / filename
         if not baseline_path.is_file():
