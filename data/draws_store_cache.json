@@ -426,7 +426,15 @@
           {"round": 2, "match_num": 12, "winner_name": "A. Lopez Ocampos", "score": "62 62"},
           {"round": 2, "match_num": 13, "winner_name": "F. Simon Padros", "score": "61 36 10-8"},
           {"round": 2, "match_num": 14, "winner_name": "M. Madrid Rocca", "score": "60 60"},
-          {"round": 2, "match_num": 15, "winner_name": "S. Finchelstein", "score": "76(4) 60"}
+          {"round": 2, "match_num": 15, "winner_name": "S. Finchelstein", "score": "76(4) 60"},
+          {"round": 3, "match_num": 0, "winner_name": "H. Doldan", "score": "64 46 10-6"},
+          {"round": 3, "match_num": 1, "winner_name": "A. Duarte", "score": "61 60"},
+          {"round": 3, "match_num": 2, "winner_name": "G. Kawano Cho", "score": "62 62"},
+          {"round": 3, "match_num": 3, "winner_name": "L. Morini", "score": "64 61"},
+          {"round": 3, "match_num": 4, "winner_name": "M. Castro Zunino", "score": "61 61"},
+          {"round": 3, "match_num": 5, "winner_name": "L. Agudelo", "score": "64 75"},
+          {"round": 3, "match_num": 6, "winner_name": "A. Lopez Ocampos", "score": "62 61"},
+          {"round": 3, "match_num": 7, "winner_name": "M. Madrid Rocca", "score": "63 64"}
         ],
         "byes": [
           2,
@@ -463,23 +471,37 @@
           {"pos": 4, "name": "ZORNADA, Emily", "country": "ARG"},
           {"pos": 5, "entry": "WC", "name": "PAJELLO, Abril", "country": "ARG"},
           {"pos": 6, "name": "ESTEVEZ, Josefina", "country": "ARG"},
+          {"pos": 7, "entry": "LL", "name": "SOTO NEIRA, Agustina", "country": "CHI"},
           {"pos": 8, "seed": "5", "name": "MOYANO, Luciana", "country": "ARG"},
           {"pos": 9, "seed": "4", "name": "CABEZAS DOMINGUEZ, Sofia Elena", "country": "VEN"},
           {"pos": 10, "entry": "WC", "name": "MARUCA, Melina Maria", "country": "ARG"},
+          {"pos": 11, "entry": "Q", "name": "KAWANO CHO, Gabriela", "country": "BRA"},
+          {"pos": 12, "entry": "Q", "name": "MADRID ROCCA, Maria Sofia", "country": "ARG"},
           {"pos": 13, "name": "GOBBI MONLLAU, Ana Victoria", "country": "ARG"},
           {"pos": 14, "entry": "WC", "name": "ARABARCO, Isabel", "country": "ARG"},
           {"pos": 15, "name": "BULBARELLA, Marina", "country": "ARG"},
           {"pos": 16, "seed": "8", "name": "BARRERA AGUIRRE, Isabella", "country": "USA"},
           {"pos": 17, "seed": "7", "name": "CINALLI, Luna Maria", "country": "ARG"},
           {"pos": 18, "entry": "WC", "name": "CORBALAN MIRANDA, Ambar", "country": "ARG"},
+          {"pos": 19, "entry": "Q", "name": "MORINI, Luna", "country": "ARG"},
           {"pos": 20, "name": "MARKUS, Camila", "country": "ARG"},
+          {"pos": 21, "entry": "Q", "name": "LOPEZ OCAMPOS, Ana Julieta", "country": "PAR"},
+          {"pos": 22, "entry": "Q", "name": "DUARTE, Agustina Daniela", "country": "ARG"},
           {"pos": 23, "name": "SOUSA SALAZAR, Natalia", "country": "MEX"},
           {"pos": 24, "seed": "3", "name": "URRUTIA, Maria Florencia", "country": "ARG"},
           {"pos": 25, "seed": "6", "name": "NAVARRO, Maria Fernanda", "country": "MEX"},
           {"pos": 26, "name": "BRITEZ RISSO, Leyla Fiorella", "country": "PAR"},
+          {"pos": 27, "entry": "Q", "name": "DOLDAN, Heydi", "country": "PAR"},
+          {"pos": 28, "entry": "Q", "name": "CASTRO ZUNINO, Michela", "country": "PER"},
           {"pos": 29, "name": "GERALD GONZALEZ, Jimar Geraldine", "country": "CHI"},
+          {"pos": 30, "entry": "Q", "name": "AGUDELO, Luciana", "country": "ARG"},
           {"pos": 31, "name": "AYALA, Lourdes", "country": "ARG"},
           {"pos": 32, "seed": "2", "name": "LABRANA, Fernanda", "country": "CHI"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 1, "winner_name": "C. Romero", "score": "75 63"},
+          {"round": 1, "match_num": 2, "winner_name": "J. Estevez", "score": "63 62"},
+          {"round": 1, "match_num": 4, "winner_name": "S. Cabezas Dominguez", "score": "60 61"}
         ],
         "round_labels": [
           "Round of 32",
@@ -649,15 +671,22 @@
           {"pos": 32, "seed": "2", "name": "TRAN, Demi", "country": "NED"}
         ],
         "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "G. Dittmann", "score": "76(7) 16 64"},
+          {"round": 1, "match_num": 1, "winner_name": "V. Van de Peer", "score": "62 61"},
           {"round": 1, "match_num": 2, "winner_name": "K. Lorrimer", "score": "61 75"},
           {"round": 1, "match_num": 3, "winner_name": "S. Iliev", "score": "63 76(3)"},
           {"round": 1, "match_num": 4, "winner_name": "W. Ait el Bachir", "score": "64 61"},
           {"round": 1, "match_num": 5, "winner_name": "D. Marcinkevica", "score": "60 46 61"},
           {"round": 1, "match_num": 6, "winner_name": "N. Carpentier", "score": "62 64"},
           {"round": 1, "match_num": 7, "winner_name": "M. Soriano Santiago", "score": "76(3) 61"},
+          {"round": 1, "match_num": 8, "winner_name": "L. Tran", "score": "62 62"},
           {"round": 1, "match_num": 9, "winner_name": "H. Bougouffa", "score": "62 64"},
+          {"round": 1, "match_num": 10, "winner_name": "F. Parcelli", "score": "64 61"},
+          {"round": 1, "match_num": 11, "winner_name": "M. Mattel", "score": "63 64"},
           {"round": 1, "match_num": 12, "winner_name": "S. Luescher", "score": "64 63"},
-          {"round": 1, "match_num": 13, "winner_name": "M. Lataste", "score": "26 61 62"}
+          {"round": 1, "match_num": 13, "winner_name": "M. Lataste", "score": "26 61 62"},
+          {"round": 1, "match_num": 14, "winner_name": "D. Mpetshi Perricard", "score": "63 62"},
+          {"round": 1, "match_num": 15, "winner_name": "D. Tran", "score": "61 76(1)"}
         ],
         "round_labels": [
           "Round of 32",
