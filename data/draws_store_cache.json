@@ -522,7 +522,7 @@
           {"pos": 5, "name": "JEANJEAN, Leolia", "country": "FRA"},
           {"pos": 6, "entry": "Q", "name": "ALVES, Carolina", "country": "BRA"},
           {"pos": 7, "name": "PAREJA, Julieta", "country": "USA"},
-          {"pos": 8, "seed": "8", "name": "STEFANINI, Lucrezia", "country": "ITA"},
+          {"pos": 8, "entry": "LL", "name": "CABRERA, Lizette", "country": "AUS"},
           {"pos": 9, "seed": "3", "name": "QUEVEDO, Kaitlin", "country": "ESP"},
           {"pos": 10, "entry": "Q", "name": "ROGERS, Anna", "country": "USA"},
           {"pos": 11, "name": "BRACE, Cadence", "country": "CAN"},
@@ -547,6 +547,14 @@
           {"pos": 30, "name": "PODOROSKA, Nadia", "country": "ARG"},
           {"pos": 31, "entry": "WC", "name": "MEDIORREAL ARIAS, Valentina", "country": "COL"},
           {"pos": 32, "seed": "2", "name": "BLINKOVA, Anna"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 1, "winner_name": "C. Y. S. Lee", "score": "63 76(5)"},
+          {"round": 1, "match_num": 3, "winner_name": "J. Pareja", "score": "75 62"},
+          {"round": 1, "match_num": 6, "winner_name": "V. Lepchenko", "score": "76(1) 61"},
+          {"round": 1, "match_num": 8, "winner_name": "K. Day", "score": "64 63"},
+          {"round": 1, "match_num": 10, "winner_name": "N. Hibino", "score": "64 61"},
+          {"round": 1, "match_num": 11, "winner_name": "A. Tikhonova", "score": "64 46 75"}
         ],
         "round_labels": [
           "Round of 32",
@@ -576,10 +584,17 @@
           {"pos": 7, "seed": "4", "name": "KOIKE, Ena", "country": "JPN"},
           {"pos": 8, "entry": "WC", "name": "VILLAMIL ARIAS, Laura Valentina", "country": "COL"}
         ],
-        "round_labels": [
-          "Q1"
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "E. Jacquemot", "score": "64 67(5) 61"},
+          {"round": 1, "match_num": 1, "winner_name": "A. Rogers", "score": "46 61 62"},
+          {"round": 1, "match_num": 2, "winner_name": "C. Alves", "score": "62 64"},
+          {"round": 1, "match_num": 3, "winner_name": "E. Koike", "score": "60 62"}
         ],
-        "num_rounds": 1
+        "round_labels": [
+          "Q1",
+          "Qualifier"
+        ],
+        "num_rounds": 2
       }
     }
   },
