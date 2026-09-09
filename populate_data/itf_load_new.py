@@ -1,3 +1,4 @@
+import contextlib
 import json
 import os
 import random
@@ -17,8 +18,11 @@ if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
 from canonical_data import source_match_key, sync_itf_players
-from draws import _draw_is_complete
+from config import ITF_CALENDAR_CACHE_FILE
+from draws import _draw_is_complete, _drawsheet_has_arg_in_round1
 from http_client import get_with_retry
+from itf import ITF_BASE_URL, ITF_CALENDAR_PAGE_URL
+from itf import _is_cancelled_itf_calendar_item as _is_cancelled_tournament
 from itf_drawsheet_cache import (
     get_cached_drawsheet,
     save_drawsheet,
@@ -45,16 +49,11 @@ from utils import (
 # to keep cleanup quiet and deterministic.
 uc.Chrome.__del__ = lambda self: None
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-import contextlib
-
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
 
 logger = get_logger("itf-loader")
 DATA_DIR = str(RUNTIME_DATA_DIR)
-TOURNAMENT_LINK_PREFIX = "/en/tournament/"
 ITF_EVENT_FILTERS_CACHE_FILE = os.path.join(DATA_DIR, "itf_event_filters_cache.json")
-ITF_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "itf_calendar_cache.json")
 ITF_BLOCKED_RESPONSES_FILE = os.path.join(DATA_DIR, "itf_blocked_responses.json")
 DRAWS_STORE_CACHE_FILE = os.path.join(DATA_DIR, "draws_store_cache.json")
 ENTRY_LISTS_CACHE_FILE = os.path.join(DATA_DIR, "entry_lists_cache.json")
@@ -75,30 +74,6 @@ def _quit_driver(driver, operation="quit browser"):
         driver.quit()
     except Exception as exc:
         report_run_issue("itf-loader", operation, exc, severity="degraded")
-
-
-def _is_cancelled_tournament(item):
-    status = (
-        " ".join(
-            str(item.get(field) or "")
-            for field in (
-                "status",
-                "tournamentStatus",
-                "statusDesc",
-                "tournamentStatusDesc",
-                "tourStatusCode",
-                "tourStatusDesc",
-            )
-        )
-        .strip()
-        .upper()
-    )
-    if status == "CN" or "CANCEL" in status:
-        return True
-    text = " ".join(
-        str(item.get(field) or "") for field in ("tournamentName", "name", "location", "tournamentLink")
-    ).lower()
-    return "cancel" in text
 
 
 def _canonical_draw_store_key(t_key):
@@ -124,30 +99,6 @@ def _wait_for_itf_drawsheet_request_slot():
     if wait_seconds > 0:
         time.sleep(wait_seconds)
     _LAST_ITF_DRAWSHEET_REQUEST_AT = time.monotonic()
-
-
-def _drawsheet_has_arg_in_round1(data):
-    """Return True when round 1 contains at least one ARG player.
-
-    If round 1 has no ARG player, the rest of the draw cannot introduce one
-    later. Qualifiers, wildcards, lucky losers, and byes all appear in the
-    opening round if they exist at all.
-    """
-    if not _is_valid_itf_draw_payload(data):
-        return False
-    ko_groups = data.get("koGroups") or []
-    if not ko_groups:
-        return False
-    rounds_data = ko_groups[0].get("rounds") or []
-    if not rounds_data:
-        return False
-
-    for match in rounds_data[0].get("matches") or []:
-        for team in match.get("teams") or []:
-            for player in team.get("players") or []:
-                if isinstance(player, dict) and str(player.get("nationality") or "").upper() == "ARG":
-                    return True
-    return False
 
 
 def _record_itf_block(tournament_id, code, week_number, tournament_name=""):
@@ -427,7 +378,7 @@ def create_driver():
 
 def get_itf_calendar_for_range(start_date, end_date, driver=None):
     api_url = (
-        f"https://www.itftennis.com/tennis/api/TournamentApi/GetCalendar?"
+        f"{ITF_BASE_URL}/tennis/api/TournamentApi/GetCalendar?"
         f"circuitCode=WT&searchString=&skip=0&take=1000&dateFrom={start_date}&dateTo={end_date}"
         f"&isOrderAscending=true&orderField=startDate"
     )
@@ -437,7 +388,7 @@ def get_itf_calendar_for_range(start_date, end_date, driver=None):
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
         ),
         "Accept": "application/json, text/plain, */*",
-        "Referer": "https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/",
+        "Referer": ITF_CALENDAR_PAGE_URL,
     }
 
     all_tournaments = []
@@ -496,9 +447,6 @@ def create_tournament_df(tournament_list):
 
     rows = []
     for item in tournament_list:
-        link = TOURNAMENT_LINK_PREFIX + item.get("tournamentLink", "")
-        t_key = link.rstrip("/").split("/")[-1] if link else None
-
         rows.append(
             {
                 "startDate": item.get("startDate"),
@@ -508,7 +456,7 @@ def create_tournament_df(tournament_list):
                 "category": item.get("category"),
                 "surfaceDesc": item.get("surfaceDesc"),
                 "indoorOrOutDoor": item.get("indoorOrOutDoor"),
-                "tournamentKey": t_key,
+                "tournamentKey": ("/en/tournament/" + item.get("tournamentLink", "")).rstrip("/").split("/")[-1],
             }
         )
 
@@ -538,13 +486,13 @@ def fetch_itf_ids_to_json(keys_list, driver=None):
                 "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
             ),
             "Accept": "application/json, text/plain, */*",
-            "Referer": "https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/",
+            "Referer": ITF_CALENDAR_PAGE_URL,
         }
         newly_fetched = {}
         for idx, key in enumerate(missing_keys):
             if idx > 0:
                 time.sleep(random.uniform(5.0, 10.0))
-            url = f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
+            url = f"{ITF_BASE_URL}/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
             try:
                 response = get_with_retry(
                     url,
@@ -594,8 +542,7 @@ def merge_ids_with_pandas(calendar_df, json_ids_string):
     try:
         ids_list = json.loads(json_ids_string)
         ids_df = pd.DataFrame(ids_list)
-        final_df = pd.merge(calendar_df, ids_df, on="tournamentKey", how="left")
-        return final_df
+        return pd.merge(calendar_df, ids_df, on="tournamentKey", how="left")
     except Exception as e:
         raise DataValidationError(
             component="itf-loader",
@@ -611,7 +558,7 @@ def fetch_api_data(tId, classification, week_number=0, driver=None, tournament_n
         return cached
     stale_cached = get_cached_drawsheet(tId, classification, week_number, allow_stale=True)
 
-    url = "https://www.itftennis.com/tennis/api/TournamentApi/GetDrawsheet"
+    url = f"{ITF_BASE_URL}/tennis/api/TournamentApi/GetDrawsheet"
     params = {
         "eventClassificationCode": classification,
         "matchTypeCode": "S",
@@ -625,8 +572,8 @@ def fetch_api_data(tId, classification, week_number=0, driver=None, tournament_n
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
         ),
-        "Referer": f"https://www.itftennis.com/en/tournament/draws-and-results/print/?tournamentId={tId}&circuitCode=WT",
-        "Origin": "https://www.itftennis.com",
+        "Referer": f"{ITF_BASE_URL}/en/tournament/draws-and-results/print/?tournamentId={tId}&circuitCode=WT",
+        "Origin": ITF_BASE_URL,
         "Accept": "application/json, text/plain, */*",
     }
 
@@ -906,12 +853,10 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
         )
 
     for group in ko_groups:
-        rounds = group.get("rounds", [])
-        for rnd in rounds:
+        for rnd in group.get("rounds", []):
             r_ds = rnd.get("roundDesc")
-            matches = rnd.get("matches", [])
             arg_survives_this_round = False
-            for match in matches:
+            for match in rnd.get("matches", []):
                 try:
                     teams = match.get("teams", [])
                     match_has_arg = False
@@ -934,10 +879,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
 
                     is_winner_0 = str(teams[0].get("isWinner")).lower() == "true"
 
-                    if is_winner_0:
-                        winner, loser = teams[0], teams[1]
-                    else:
-                        winner, loser = teams[1], teams[0]
+                    winner, loser = (teams[0], teams[1]) if is_winner_0 else (teams[1], teams[0])
 
                     w_id, w_n, w_c = get_p(winner)
                     l_id, l_n, l_c = get_p(loser)
@@ -1414,8 +1356,7 @@ if __name__ == "__main__":
                 tourney_matches_before = len(all_matches)
 
                 if is_multiweek:
-                    week = 1
-                    while True:
+                    for week in range(1, 11):
                         has_data_this_week = False
 
                         draw_payloads = fetch_tournament_draw_data(
@@ -1441,10 +1382,6 @@ if __name__ == "__main__":
 
                         if not has_data_this_week:
                             break
-
-                        week += 1
-                        if week > 10:
-                            break
                 else:
                     draw_payloads = fetch_tournament_draw_data(
                         tId,
@@ -1468,7 +1405,7 @@ if __name__ == "__main__":
                 added = len(all_matches) - tourney_matches_before
                 logger.debug(f"  {tName} (id={tId}): {added} ARG matches found")
 
-                got_any_draw = any(v for v in draw_payloads.values() if v)
+                got_any_draw = any(draw_payloads.values())
                 if got_any_draw:
                     consecutive_empty = 0
                 else:

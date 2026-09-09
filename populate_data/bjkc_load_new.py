@@ -48,27 +48,22 @@ def get_score_string(side1_sets, side2_sets, winner_is_s1):
     for s1, s2 in zip(s1_sorted, s2_sorted, strict=False):
         s1_s, s2_s = s1.get("setScore", 0), s2.get("setScore", 0)
         tb1, tb2 = s1.get("setTieBreakScore", 0), s2.get("setTieBreakScore", 0)
-        if winner_is_s1:
-            part = f"{s1_s}-{s2_s}"
-            if s1_s == 7 and s2_s == 6:
-                part += f"({tb2})"
-            elif s1_s == 6 and s2_s == 7:
-                part += f"({tb1})"
-        else:
-            part = f"{s2_s}-{s1_s}"
-            if s2_s == 7 and s1_s == 6:
-                part += f"({tb1})"
-            elif s2_s == 6 and s1_s == 7:
-                part += f"({tb2})"
+        first_score, second_score = (s1_s, s2_s) if winner_is_s1 else (s2_s, s1_s)
+        first_tb, second_tb = (tb1, tb2) if winner_is_s1 else (tb2, tb1)
+        part = f"{first_score}-{second_score}"
+        if first_score == 7 and second_score == 6:
+            part += f"({second_tb})"
+        elif first_score == 6 and second_score == 7:
+            part += f"({first_tb})"
         res_parts.append(part)
     return " ".join(res_parts)
 
 
 def check_nation(nation_obj, target_country="Argentina", target_iso="ARG"):
     """Helper to check a single nation object."""
-    if not nation_obj:
-        return False
-    return nation_obj.get("nation") == target_country or nation_obj.get("nationISO") == target_iso
+    return bool(nation_obj) and (
+        nation_obj.get("nation") == target_country or nation_obj.get("nationISO") == target_iso
+    )
 
 
 def is_target_involved(content, target_country="Argentina", target_iso="ARG"):

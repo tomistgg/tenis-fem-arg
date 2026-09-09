@@ -31,7 +31,7 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from canonical_data import sync_wta_players
+from canonical_data import compact_text, sync_wta_players
 from config import PLAYER_ALIASES_WTA_ITF_FILE, WTA_RANKINGS_CSV_83_99
 from http_client import get_with_retry
 from runtime_logging import get_logger
@@ -74,18 +74,13 @@ class MergeResult:
     unchanged: int
 
 
-def _compact(value: object) -> str:
-    return " ".join(str(value or "").split())
-
-
 def parse_player_id(value: str) -> str:
     """Return a numeric WTA player ID from an ID or player-profile URL."""
 
-    text = _compact(value)
+    text = compact_text(value)
     if text.isdigit():
         return text
-    match = PLAYER_ID_PATTERN.search(text)
-    if match:
+    if match := PLAYER_ID_PATTERN.search(text):
         return match.group(1)
     raise ValueError(f"cannot find a numeric WTA player ID in {value!r}")
 
@@ -103,17 +98,17 @@ def parse_weekly_singles_rankings(
     raw_player = payload.get("player")
     if not isinstance(raw_player, dict):
         raise ValueError("WTA player ranking response has no player metadata")
-    player_id = _compact(raw_player.get("id"))
-    name = _compact(raw_player.get("fullName"))
+    player_id = compact_text(raw_player.get("id"))
+    name = compact_text(raw_player.get("fullName"))
     if not name:
-        name = _compact(f"{raw_player.get('firstName', '')} {raw_player.get('lastName', '')}")
+        name = compact_text(f"{raw_player.get('firstName', '')} {raw_player.get('lastName', '')}")
     if not player_id or not name:
         raise ValueError("WTA player ranking response has incomplete player metadata")
     profile = PlayerProfile(
         player_id=player_id,
         name=name,
-        country=_compact(raw_player.get("countryCode")).upper(),
-        dob=_compact(raw_player.get("dateOfBirth"))[:10],
+        country=compact_text(raw_player.get("countryCode")).upper(),
+        dob=compact_text(raw_player.get("dateOfBirth"))[:10],
     )
 
     weekly_rankings = payload.get("weeklyRankings")
@@ -124,8 +119,8 @@ def parse_weekly_singles_rankings(
     for item in weekly_rankings:
         if not isinstance(item, dict):
             continue
-        date_text = _compact(item.get("rankedAt"))[:10]
-        rank_text = _compact(item.get("singlesRanking")).replace(",", "")
+        date_text = compact_text(item.get("rankedAt"))[:10]
+        rank_text = compact_text(item.get("singlesRanking")).replace(",", "")
         if not date_text or not rank_text.isdigit():
             continue
         parsed_rank = int(rank_text)
@@ -140,11 +135,10 @@ def parse_weekly_singles_rankings(
         if to_year is not None and week_date.year > to_year:
             continue
         date_key = week_date.isoformat()
-        rank = parsed_rank
         previous = rankings.get(date_key)
-        if previous is not None and previous != rank:
-            raise ValueError(f"WTA page contains two singles ranks for {date_key}: {previous} and {rank}")
-        rankings[date_key] = rank
+        if previous is not None and previous != parsed_rank:
+            raise ValueError(f"WTA page contains two singles ranks for {date_key}: {previous} and {parsed_rank}")
+        rankings[date_key] = parsed_rank
 
     return profile, sorted(rankings.items())
 
@@ -165,9 +159,7 @@ def fetch_player_ranking_rows(
     to_year: int,
     cache_dir: Path | None = None,
 ) -> list[dict[str, str]]:
-    cache_path = None
-    if cache_dir is not None:
-        cache_path = _player_cache_path(cache_dir, player_id, from_year, to_year)
+    cache_path = _player_cache_path(cache_dir, player_id, from_year, to_year) if cache_dir is not None else None
     if cache_path is not None and cache_path.exists():
         with cache_path.open("r", encoding="utf-8") as handle:
             payload = json.load(handle)
@@ -239,7 +231,7 @@ def load_ranking_rows(path: Path) -> list[dict[str, str]]:
         reader = csv.DictReader(handle)
         if reader.fieldnames != CSV_FIELDNAMES:
             raise ValueError(f"unexpected ranking CSV columns in {path}: {reader.fieldnames!r}")
-        return [{field: _compact(row.get(field)) for field in CSV_FIELDNAMES} for row in reader]
+        return [{field: compact_text(row.get(field)) for field in CSV_FIELDNAMES} for row in reader]
 
 
 def merge_ranking_rows(
@@ -250,7 +242,7 @@ def merge_ranking_rows(
 ) -> MergeResult:
     """Add absent player/weeks while reporting rank and date disagreements."""
 
-    existing = [{field: _compact(row.get(field)) for field in CSV_FIELDNAMES} for row in existing_rows]
+    existing = [{field: compact_text(row.get(field)) for field in CSV_FIELDNAMES} for row in existing_rows]
     by_key = {(row["week_date"], row["id"]): row for row in existing}
     if len(by_key) != len(existing):
         raise ValueError("ranking CSV contains duplicate (week_date, id) keys")
@@ -266,7 +258,7 @@ def merge_ranking_rows(
     unchanged = 0
     seen_incoming: dict[tuple[str, str], dict[str, str]] = {}
     for raw_row in incoming_rows:
-        row = {field: _compact(raw_row.get(field)) for field in CSV_FIELDNAMES}
+        row = {field: compact_text(raw_row.get(field)) for field in CSV_FIELDNAMES}
         key = (row["week_date"], row["id"])
         duplicate = seen_incoming.get(key)
         if duplicate is not None:
@@ -349,11 +341,7 @@ def _player_ids(args: argparse.Namespace) -> list[str]:
     values = [*(args.player_id or []), *(args.player_url or [])]
     if args.players_file:
         values.extend(_read_player_values(args.players_file))
-    player_ids = []
-    for value in values:
-        player_id = parse_player_id(value)
-        if player_id not in player_ids:
-            player_ids.append(player_id)
+    player_ids = list(dict.fromkeys(parse_player_id(value) for value in values))
     if not player_ids:
         raise ValueError("provide --player-id, --player-url, or --players-file")
     return player_ids

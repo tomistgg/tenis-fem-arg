@@ -37,7 +37,6 @@ HEADERS = {
     ),
 }
 
-_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = str(RUNTIME_DATA_DIR)
 OUTPUT_FILE = os.path.join(DATA_DIR, "wta_matches_arg.csv")
 
@@ -85,10 +84,7 @@ def _q_round_key(rnd):
     rnd = str(rnd)
     if rnd.isdigit():
         return int(rnd)
-    m = re.match(r"^Q(\d+)$", rnd)
-    if m:
-        return int(m.group(1))
-    m = re.match(r"^QR(\d+)$", rnd)
+    m = re.match(r"^QR?(\d+)$", rnd)
     if m:
         return int(m.group(1))
     text = {"1st Round": 1, "2nd Round": 2, "3rd Round": 3, "4th Round": 4}
@@ -102,13 +98,8 @@ def build_q_round_map(raw_matches):
         for m in raw_matches
         if m.get("DrawLevelType") == "Q" and m.get("DrawMatchType") == "S" and m.get("RoundID", "")
     }
-    if not q_rounds:
-        return {}
     sorted_rounds = sorted(q_rounds, key=_q_round_key)
-    result = {}
-    for i, rnd in enumerate(sorted_rounds):
-        result[rnd] = f"QR{i + 1}"
-    return result
+    return {rnd: f"QR{i + 1}" for i, rnd in enumerate(sorted_rounds)}
 
 
 def _map_round(raw_round, draw_level, q_map):
@@ -161,31 +152,23 @@ def get_status_desc(result):
     return ""
 
 
+def _player_fields(match, side):
+    first_name = match.get(f"PlayerNameFirst{side}", "")
+    last_name = match.get(f"PlayerNameLast{side}", "")
+    return (
+        match.get(f"PlayerID{side}", ""),
+        match.get(f"EntryType{side}", "").upper(),
+        match.get(f"Seed{side}", ""),
+        f"{first_name} {last_name}".strip(),
+        match.get(f"PlayerCountry{side}", ""),
+    )
+
+
 def parse_match(m, meta, q_map=None):
     winner = str(m.get("Winner", ""))
-
-    if winner in ("2", "4", "6"):
-        w_id = m.get("PlayerIDA", "")
-        w_entry = m.get("EntryTypeA", "").upper()
-        w_seed = m.get("SeedA", "")
-        w_name = f"{m.get('PlayerNameFirstA', '')} {m.get('PlayerNameLastA', '')}".strip()
-        w_country = m.get("PlayerCountryA", "")
-        l_id = m.get("PlayerIDB", "")
-        l_entry = m.get("EntryTypeB", "").upper()
-        l_seed = m.get("SeedB", "")
-        l_name = f"{m.get('PlayerNameFirstB', '')} {m.get('PlayerNameLastB', '')}".strip()
-        l_country = m.get("PlayerCountryB", "")
-    else:
-        w_id = m.get("PlayerIDB", "")
-        w_entry = m.get("EntryTypeB", "").upper()
-        w_seed = m.get("SeedB", "")
-        w_name = f"{m.get('PlayerNameFirstB', '')} {m.get('PlayerNameLastB', '')}".strip()
-        w_country = m.get("PlayerCountryB", "")
-        l_id = m.get("PlayerIDA", "")
-        l_entry = m.get("EntryTypeA", "").upper()
-        l_seed = m.get("SeedA", "")
-        l_name = f"{m.get('PlayerNameFirstA', '')} {m.get('PlayerNameLastA', '')}".strip()
-        l_country = m.get("PlayerCountryA", "")
+    winner_side, loser_side = ("A", "B") if winner in ("2", "4", "6") else ("B", "A")
+    w_id, w_entry, w_seed, w_name, w_country = _player_fields(m, winner_side)
+    l_id, l_entry, l_seed, l_name, l_country = _player_fields(m, loser_side)
 
     timestamp = m.get("MatchTimeStamp", "")
     date = timestamp[:10] if timestamp else ""
@@ -242,12 +225,8 @@ def fetch_json(url):
 def load_existing_match_ids(output_file):
     if not os.path.exists(output_file):
         return set()
-    ids = set()
     with open(output_file, encoding="utf-8-sig") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            ids.add(source_match_key(row, "wta"))
-    return ids
+        return {source_match_key(row, "wta") for row in csv.DictReader(f)}
 
 
 def append_to_csv(new_rows, output_file):
@@ -260,8 +239,7 @@ def append_to_csv(new_rows, output_file):
                 raise ValueError(f"WTA match CSV has no header: {output_file}")
             rows.extend(reader)
     keyed_rows = {source_match_key(row, "wta"): row for row in rows}
-    for row in new_rows:
-        keyed_rows[source_match_key(row, "wta")] = row
+    keyed_rows.update((source_match_key(row, "wta"), row) for row in new_rows)
     atomic_write_csv(output_file, CSV_COLUMNS, keyed_rows.values())
 
 
@@ -273,8 +251,6 @@ if __name__ == "__main__":
 
     today = madrid_today()
     range_start, range_end = get_week_boundaries(today)
-    week_start = today - timedelta(days=today.weekday())
-    week_end = week_start + timedelta(days=6)
 
     from_date_str = range_start.strftime("%Y-%m-%d")
     to_date_str = range_end.strftime("%Y-%m-%d")

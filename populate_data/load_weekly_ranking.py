@@ -30,10 +30,6 @@ MIN_CURRENT_WEEK_ROWS = 1000
 RANKING_STATUS_FILE = os.path.join(os.path.dirname(RANKINGS_CSV), "wta_ranking_refresh_status.json")
 
 
-def to_title_case(name):
-    return name.title() if name else ""
-
-
 def load_csv_by_date():
     """Load CSV into a dict: date_str -> list of row dicts."""
     by_date = {}
@@ -42,9 +38,7 @@ def load_csv_by_date():
     with open(RANKINGS_CSV, encoding="utf-8") as f:
         for row in csv.DictReader(f):
             d = row["week_date"]
-            if d not in by_date:
-                by_date[d] = []
-            by_date[d].append(row)
+            by_date.setdefault(d, []).append(row)
     return by_date
 
 
@@ -62,15 +56,14 @@ def csv_date_is_complete(rows):
 
 
 def csv_is_sorted(by_date):
-    return sorted(by_date.keys()) == list(by_date.keys())
+    return sorted(by_date) == list(by_date)
 
 
 def ranking_signature(rows):
     """Return a stable signature for the ranked players and their points."""
-    content = []
-    for row in rows or []:
-        content.append(tuple(str(row.get(field) or "").strip() for field in RANKING_SIGNATURE_FIELDS))
-    content.sort()
+    content = sorted(
+        tuple(str(row.get(field) or "").strip() for field in RANKING_SIGNATURE_FIELDS) for row in rows or []
+    )
     encoded = json.dumps(content, ensure_ascii=False, separators=(",", ":"))
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
@@ -108,7 +101,7 @@ def now_eastern():
 def rewrite_csv(by_date):
     """Rewrite the entire CSV sorted by (week_date, rank)."""
     output_rows = []
-    for d in sorted(by_date.keys()):
+    for d in sorted(by_date):
         rows = by_date[d]
         try:
             rows_sorted = sorted(rows, key=lambda r: int(r.get("rank") or 0))
@@ -159,7 +152,7 @@ def fetch_from_api(date_str):
             "id": p.get("Id", ""),
             "rank": p.get("Rank", ""),
             "points": p.get("Points", ""),
-            "player": (p.get("OfficialPlayer") or to_title_case(p.get("Player", "")) or "").strip(),
+            "player": (p.get("OfficialPlayer") or (p.get("Player", "") or "").title()).strip(),
             "country": p.get("Country", ""),
             "dob": p.get("DOB", ""),
         }
@@ -176,14 +169,14 @@ def main():
     needs_rewrite = False
 
     # Once a ranking is accepted, do not hit the API again on every 2-hour run.
-    accepted_status = {"confirmed_changed", "confirmed_frozen"}
     status_is_accepted = (
-        status_before.get("requested_date") == this_monday and status_before.get("status") in accepted_status
+        status_before.get("requested_date") == this_monday
+        and status_before.get("status") in {"confirmed_changed", "confirmed_frozen"}
     )
     publication_is_open = publication_window_is_open(eastern_now)
 
     # --- Step 1: re-fetch CSV dates missing points/dob ---
-    for date_str in sorted(by_date.keys()):
+    for date_str in sorted(by_date):
         # Step 2 exclusively owns an unaccepted current week so that the generic
         # repair pass cannot fetch or publish it before Monday noon Eastern.
         if date_str == this_monday and not status_is_accepted:
@@ -269,8 +262,7 @@ def main():
                 logger.info(status["message"])
         save_status(status)
     else:
-        status = status_before
-        logger.debug(f"This week's ranking already accepted as {status.get('status')}.")
+        logger.debug(f"This week's ranking already accepted as {status_before.get('status')}.")
 
     # --- Step 3: check CSV is sorted ---
     if not needs_rewrite and not csv_is_sorted(by_date):

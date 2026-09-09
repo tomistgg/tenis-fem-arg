@@ -26,7 +26,9 @@ _REPO_ROOT = os.path.dirname(BASE_DIR)
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
+from config import ITF_CALENDAR_CACHE_FILE
 from http_client import get_with_retry
+from itf import ITF_BASE_URL, ITF_CALENDAR_PAGE_URL, _is_cancelled_itf_calendar_item, get_itf_level
 from itf_drawsheet_cache import get_cached_drawsheet, save_drawsheet
 from runtime_logging import get_logger
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
@@ -305,22 +307,6 @@ def fetch_wta_updates(from_date, to_date, desc_set, saved_size_aliases=None):
 # ── ITF ────────────────────────────────────────────────────────────────────────
 
 
-def get_itf_level(name):
-    if "W100" in name or "100k" in name:
-        return "W100"
-    if "W75" in name or "75k" in name:
-        return "W75"
-    if "W60" in name or "60k" in name:
-        return "W60"
-    if "W50" in name or "50k" in name:
-        return "W50"
-    if "W35" in name or "35k" in name:
-        return "W35"
-    if "W25" in name or "25k" in name:
-        return "W25"
-    return "W15"
-
-
 def itf_fetch_drawsheet(t_id, classification, week_number=0):
     t_id = _normalize_itf_tournament_id(t_id)
     if t_id is None:
@@ -337,14 +323,14 @@ def itf_fetch_drawsheet(t_id, classification, week_number=0):
         allow_stale=True,
     )
 
-    url = "https://www.itftennis.com/tennis/api/TournamentApi/GetDrawsheet"
+    url = f"{ITF_BASE_URL}/tennis/api/TournamentApi/GetDrawsheet"
     headers = {
         "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
         ),
-        "Referer": f"https://www.itftennis.com/en/tournament/draws-and-results/print/?tournamentId={t_id}&circuitCode=WT",
-        "Origin": "https://www.itftennis.com",
+        "Referer": f"{ITF_BASE_URL}/en/tournament/draws-and-results/print/?tournamentId={t_id}&circuitCode=WT",
+        "Origin": ITF_BASE_URL,
         "Accept": "application/json, text/plain, */*",
     }
     params = {
@@ -417,10 +403,7 @@ def itf_parse_descriptions(points_dist):
 
 
 def itf_round_to_draw_size(actual, valid_sizes):
-    for size in sorted(valid_sizes):
-        if actual <= size:
-            return size
-    return None
+    return next((size for size in sorted(valid_sizes) if actual <= size), None)
 
 
 def itf_find_description(category, actual_main, actual_qual, descriptions):
@@ -446,32 +429,7 @@ def itf_find_description(category, actual_main, actual_qual, descriptions):
     return None
 
 
-ITF_CALENDAR_CACHE_FILE = os.path.join(DATA_DIR, "itf_calendar_cache.json")
 ITF_EVENT_FILTERS_CACHE_FILE = os.path.join(DATA_DIR, "itf_event_filters_cache.json")
-
-
-def _is_cancelled_itf_calendar_item(item):
-    status = (
-        " ".join(
-            str(item.get(field) or "")
-            for field in (
-                "status",
-                "tournamentStatus",
-                "statusDesc",
-                "tournamentStatusDesc",
-                "tourStatusCode",
-                "tourStatusDesc",
-            )
-        )
-        .strip()
-        .upper()
-    )
-    if status == "CN" or "CANCEL" in status:
-        return True
-    text = " ".join(
-        str(item.get(field) or "") for field in ("tournamentName", "name", "location", "tournamentLink")
-    ).lower()
-    return "cancel" in text
 
 
 def _load_itf_calendar_cache(from_date, to_date):
@@ -542,11 +500,11 @@ def _fill_ids_via_selenium(tournaments):
     """Fill missing tournamentId fields in-place using a short-lived Selenium session."""
     driver = _make_itf_driver()
     try:
-        driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
+        driver.get(ITF_CALENDAR_PAGE_URL)
         time.sleep(5)
         for t in tournaments:
             url = (
-                f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={t['tournamentKey']}"
+                f"{ITF_BASE_URL}/tennis/api/TournamentApi/GetEventFilters?tournamentKey={t['tournamentKey']}"
             )
             driver.get(url)
             time.sleep(1)
@@ -567,10 +525,10 @@ def _fetch_itf_via_selenium(from_date, to_date):
     """Full Selenium fallback: GetCalendar + GetEventFilters. Returns tournament list or None."""
     driver = _make_itf_driver()
     try:
-        driver.get("https://www.itftennis.com/en/tournament-calendar/womens-world-tennis-tour-calendar/")
+        driver.get(ITF_CALENDAR_PAGE_URL)
         time.sleep(5)
         api_url = (
-            f"https://www.itftennis.com/tennis/api/TournamentApi/GetCalendar?"
+            f"{ITF_BASE_URL}/tennis/api/TournamentApi/GetCalendar?"
             f"circuitCode=WT&searchString=&skip=0&take=500"
             f"&dateFrom={from_date}&dateTo={to_date}"
             f"&isOrderAscending=true&orderField=startDate"
@@ -607,7 +565,7 @@ def _fetch_itf_via_selenium(from_date, to_date):
 
         for t in tournaments:
             url = (
-                f"https://www.itftennis.com/tennis/api/TournamentApi/GetEventFilters?tournamentKey={t['tournamentKey']}"
+                f"{ITF_BASE_URL}/tennis/api/TournamentApi/GetEventFilters?tournamentKey={t['tournamentKey']}"
             )
             driver.get(url)
             time.sleep(1)
@@ -711,8 +669,7 @@ def fetch_itf_updates(from_date, to_date, itf_descs, saved_size_aliases=None):
         cat = get_itf_level(name)
 
         if t.get("isMultiweek"):
-            week = 1
-            while True:
+            for week in range(1, 11):
                 base_date = t["startDate"]
                 if base_date and "T" in base_date:
                     base_date = base_date.split("T")[0]
@@ -733,9 +690,6 @@ def fetch_itf_updates(from_date, to_date, itf_descs, saved_size_aliases=None):
                 }
                 if _draw_size_is_saved(identity, saved_size_aliases):
                     logger.debug(f"  {week_name}: using permanently saved draw size")
-                    week += 1
-                    if week > 10:
-                        break
                     continue
 
                 m_data = itf_fetch_drawsheet(t_id, "M", week_number=week)
@@ -764,10 +718,6 @@ def fetch_itf_updates(from_date, to_date, itf_descs, saved_size_aliases=None):
                     }
                 )
                 logger.debug(f"  {week_name}: {main_size}M, {qual_size}Q -> {desc or 'NO MATCH'}")
-
-                week += 1
-                if week > 10:
-                    break
         else:
             m_data = itf_fetch_drawsheet(t_id, "M")
             main_size = itf_count_draw_size(m_data)

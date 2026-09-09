@@ -22,15 +22,12 @@ from http_client import get_with_retry
 from pipeline_errors import DataValidationError, PipelineError
 from run_state import report_run_issue
 from runtime_logging import get_logger
+from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
 from transactional_io import atomic_write_dataframe
 from utils import expand_gs_calendar_cache
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
-
 logger = get_logger("olympics-loader")
 DATA_DIR = str(RUNTIME_DATA_DIR)
-TOURNAMENT_LINK_PREFIX = "/en/tournament/"
 
 
 def create_tournament_df(tournament_list):
@@ -41,9 +38,7 @@ def create_tournament_df(tournament_list):
 
     rows = []
     for item in tournament_list:
-        link = TOURNAMENT_LINK_PREFIX + item.get("tournamentLink", "")
-        t_key = link.rstrip("/").split("/")[-1] if link else None
-
+        link = "/en/tournament/" + item.get("tournamentLink", "")
         rows.append(
             {
                 "startDate": item.get("startDate"),
@@ -52,7 +47,7 @@ def create_tournament_df(tournament_list):
                 "category": item.get("category"),
                 "surfaceDesc": item.get("surfaceDesc"),
                 "indoorOrOutDoor": item.get("indoorOrOutDoor"),
-                "tournamentKey": t_key,
+                "tournamentKey": link.rstrip("/").split("/")[-1],
             }
         )
 
@@ -110,8 +105,7 @@ def merge_ids_with_pandas(calendar_df, json_ids_string):
     try:
         ids_list = json.loads(json_ids_string)
         ids_df = pd.DataFrame(ids_list)
-        final_df = pd.merge(calendar_df, ids_df, on="tournamentKey", how="left")
-        return final_df
+        return pd.merge(calendar_df, ids_df, on="tournamentKey", how="left")
     except Exception as e:
         raise DataValidationError(
             component="olympics-loader",
@@ -181,8 +175,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     if base_date and week_offset != 0:
         try:
             date_obj = datetime.strptime(base_date, "%Y-%m-%d")
-            adjusted_date_obj = date_obj + timedelta(days=7 * week_offset)
-            t_date = adjusted_date_obj.strftime("%Y-%m-%d")
+            t_date = (date_obj + timedelta(days=7 * week_offset)).strftime("%Y-%m-%d")
         except Exception as e:
             raise DataValidationError(
                 component="olympics-loader",
@@ -205,11 +198,9 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
         q_map = {rd: f"QR{i + 1}" for i, (rd, _) in enumerate(sorted(seen_q.items(), key=lambda x: x[1]))}
 
     for group in ko_groups:
-        rounds = group.get("rounds", [])
-        for rnd in rounds:
+        for rnd in group.get("rounds", []):
             r_ds = rnd.get("roundDesc")
-            matches = rnd.get("matches", [])
-            for match in matches:
+            for match in rnd.get("matches", []):
                 try:
                     if match.get("playStatusCode") != "PC" and match.get("resultStatusCode") not in ("WO", "BYE"):
                         continue
@@ -221,10 +212,7 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
 
                     is_winner_0 = str(teams[0].get("isWinner")).lower() == "true"
 
-                    if is_winner_0:
-                        winner, loser = teams[0], teams[1]
-                    else:
-                        winner, loser = teams[1], teams[0]
+                    winner, loser = (teams[0], teams[1]) if is_winner_0 else (teams[1], teams[0])
 
                     def get_p(t):
                         ps = t.get("players", [])
@@ -356,9 +344,7 @@ if __name__ == "__main__":
 
         logger.info(f"Step 4: Fetching Match Details for {len(final_df)} tournaments...")
 
-        tournaments_list = final_df.to_dict("records")
-
-        for tourney in tournaments_list:
+        for tourney in final_df.to_dict("records"):
             tId = tourney.get("tournamentId")
             tName = tourney.get("tournamentName")
             tCategory = tourney.get("category", "")
@@ -377,8 +363,7 @@ if __name__ == "__main__":
                 json_data = fetch_api_data(int(tId), code, week_number=0)
 
                 if json_data:
-                    offset = -1 if code == "Q" else 0
-                    parsed = parse_drawsheet(json_data, tourney, code, week_offset=offset)
+                    parsed = parse_drawsheet(json_data, tourney, code, week_offset=-1 if code == "Q" else 0)
                     all_matches.extend(parsed)
                     logger.debug(f"   -> {code}: Found {len(parsed)} ARG matches")
 

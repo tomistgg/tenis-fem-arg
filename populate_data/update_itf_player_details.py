@@ -29,7 +29,7 @@ ALIASES_PATH = DATA_DIR / "player_aliases_wta_itf.json"
 OUTPUT_PATH = DATA_DIR / "itf_player_details.json"
 MATCH_START_DATE = "2014-01-01"
 DETAILS_URL = (
-    "https://www.itftennis.com/tennis/api/PlayerApi/"
+    f"{itf.ITF_BASE_URL}/tennis/api/PlayerApi/"
     "GetHeadToHeadPlayerDetails?circuitCode=WT&playerId={player_id}"
 )
 
@@ -56,16 +56,16 @@ def _arg_identity_indexes() -> tuple[dict[str, str], dict[str, str]]:
                 by_id[player_id] = display_name
         for field in ("additional_wta_ids", "additional_itf_ids", "additional_bjkc_ids"):
             for player_id in identity.get(field) or []:
-                if str(player_id).strip():
-                    by_id[str(player_id).strip()] = display_name
-        names = [
+                player_id = str(player_id).strip()
+                if player_id:
+                    by_id[player_id] = display_name
+        for name in (
             identity.get("display_name"),
             identity.get("wta_name"),
             identity.get("itf_name"),
             identity.get("bjkc_name"),
             *(identity.get("aliases") or []),
-        ]
-        for name in names:
+        ):
             key = normalize_player_name(str(name or ""))
             if key:
                 by_name[key] = display_name
@@ -93,11 +93,10 @@ def players_with_recent_matches() -> list[tuple[str, str]]:
                     if not player_id.startswith("800") or (country != "ARG" and not canonical_name):
                         continue
                     players[player_id] = canonical_name or raw_name
-    roster = sorted(
+    return sorted(
         ((display_name, player_id) for player_id, display_name in players.items()),
         key=lambda item: (normalize_player_name(item[0]), item[1]),
     )
-    return roster
 
 
 def _save_profiles(existing: dict[str, dict[str, Any]]) -> None:
