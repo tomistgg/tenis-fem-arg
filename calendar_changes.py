@@ -209,6 +209,19 @@ def summarize_calendar_change(item):
     }
 
 
+def summarize_calendar_addition(item):
+    """Convert a newly added tournament into the website presentation model."""
+    name = repair_name_text(str(item.get("name") or "")).strip()
+    if str(item.get("column") or "").strip().lower() == "itf":
+        name = _ITF_CALENDAR_SEQUENCE_SUFFIX_RE.sub("", name)
+    return {
+        "country": str(item.get("country") or "").strip().upper(),
+        "name": name,
+        "startDate": str(item.get("startDate") or "").strip()[:10],
+        "actions": ["Added to calendar"],
+    }
+
+
 def update_calendar_change_history(existing_history, before_rows, after_rows, *, detected_on=None):
     """Merge newly detected changes and retain the current day plus two prior days."""
     detected_on = detected_on or madrid_today()
@@ -229,8 +242,12 @@ def update_calendar_change_history(existing_history, before_rows, after_rows, *,
         if changes:
             groups.setdefault(date_text, []).extend(changes)
 
-    _, raw_changes, _ = diff_calendar_tournaments(before_rows, after_rows, today=detected_on)
+    added, raw_changes, _ = diff_calendar_tournaments(before_rows, after_rows, today=detected_on)
     new_changes = [summary for item in raw_changes if (summary := summarize_calendar_change(item))]
+    # An empty previous snapshot means the feature is being initialized, not
+    # that every tournament on the current calendar was just added.
+    if before_rows:
+        new_changes.extend(summarize_calendar_addition(item) for item in added)
     new_changes.sort(key=lambda change: (change.get("startDate", ""), normalize_exact_name(change.get("name", ""))))
     if new_changes:
         current = groups.setdefault(detected_on.isoformat(), [])

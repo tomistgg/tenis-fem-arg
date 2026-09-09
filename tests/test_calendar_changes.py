@@ -104,3 +104,46 @@ def test_calendar_change_history_keeps_three_calendar_days():
 
     assert [group["date"] for group in on_september_6] == ["2026-09-04", "2026-09-05"]
     assert [group["date"] for group in on_september_7] == ["2026-09-05"]
+
+
+def test_calendar_change_history_includes_additions_but_not_initial_snapshot():
+    existing = _calendar_row(
+        "existing",
+        "W35 Existing",
+        level="W35",
+        country="ARG",
+        start_date="2026-10-19",
+    )
+    added = _calendar_row(
+        "added",
+        "W15 Monastir 31",
+        level="W15",
+        country="TUN",
+        start_date="2026-11-02",
+    )
+
+    history = update_calendar_change_history(
+        [],
+        [existing],
+        [existing, added],
+        detected_on=date(2026, 9, 9),
+    )
+
+    assert history == [
+        {
+            "date": "2026-09-09",
+            "changes": [
+                {
+                    "country": "TUN",
+                    "name": "W15 Monastir",
+                    "startDate": "2026-11-02",
+                    "actions": ["Added to calendar"],
+                }
+            ],
+        }
+    ]
+    rendered = _render_calendar_changes(history)
+    assert "W15 Monastir</strong>" in rendered
+    assert "W15 Monastir 31" not in rendered
+    assert "Added to calendar" in rendered
+    assert update_calendar_change_history([], [], [added], detected_on=date(2026, 9, 9)) == []

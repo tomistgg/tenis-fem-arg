@@ -121,6 +121,7 @@ window.WTARG_TRANSLATIONS = {
         "Calendar table": "Tabla del calendario",
         "Draw quality from last year's edition of the tournament.": "Nivel del cuadro de la edición del año anterior del torneo.",
         "No calendar changes in the last 3 days.": "No hubo cambios en el calendario en los últimos 3 días.",
+        "Added to calendar": "Añadido al calendario",
         "Start date removed": "Fecha de inicio eliminada",
         "Moved to {value}": "Trasladado al {value}",
         "Renamed to {value}": "Renombrado a {value}",
