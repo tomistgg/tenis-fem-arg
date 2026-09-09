@@ -12,7 +12,7 @@ from html_generator import (
     country_flag_html,
 )
 from site_renderer import render_site_from_data
-from utils import compact_tournament_name, expand_entry_lists_cache
+from utils import compact_tournament_name, display_tournament_name, expand_entry_lists_cache
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 GENERATED_SITE_DIR = PROJECT_DIR
@@ -55,6 +55,18 @@ def _generated_frontend_source():
         (GENERATED_SITE_DIR / relative_path).read_text(encoding="utf-8-sig")
         for relative_path in GENERATED_FRONTEND_FILES
     )
+
+
+def _assert_source_fragments(source, *expected_fragments):
+    missing = [fragment for fragment in expected_fragments if fragment not in source]
+    if missing:
+        raise AssertionError(f"Generated frontend is missing expected fragments: {missing!r}")
+
+
+def _assert_source_excludes(source, *unexpected_fragments):
+    present = [fragment for fragment in unexpected_fragments if fragment in source]
+    if present:
+        raise AssertionError(f"Generated frontend contains unexpected fragments: {present!r}")
 
 
 class GeneratedSiteTests(unittest.TestCase):
@@ -200,6 +212,28 @@ class GeneratedSiteTests(unittest.TestCase):
         ):
             self.assertNotIn("800715176", (PROJECT_DIR / relative_path).read_text(encoding="utf-8-sig"))
 
+    def test_history_filters_use_mobile_specific_swapped_order(self):
+        app = (GENERATED_SITE_DIR / "app.html").read_text(encoding="utf-8-sig")
+        css = (GENERATED_SITE_DIR / "assets" / "app.css").read_text(encoding="utf-8-sig")
+
+        expected_mobile_order = (
+            "surface",
+            "round",
+            "result",
+            "year",
+            "match-type",
+            "category",
+            "seed",
+            "opponent-country",
+            "player-entry",
+            "opponent",
+            "tournament",
+        )
+        for position, filter_name in enumerate(expected_mobile_order, start=1):
+            with self.subTest(filter_name=filter_name):
+                self.assertIn(f"history-filter-{filter_name} collapsed", app)
+                self.assertIn(f".history-filter-{filter_name} {{ order: {position}; }}", css)
+
     def test_history_qualifying_rounds_use_qr_prefix(self):
         cases = {
             "Q1": "QR1",
@@ -282,14 +316,26 @@ class GeneratedSiteTests(unittest.TestCase):
         )
 
     def test_moved_from_annotation_is_hidden_in_tournament_display_names(self):
-        self.assertEqual(
-            _display_tournament_name("W15 Pilar (moved from San Salvador de Jujuy)"),
-            "W15 Pilar",
+        cases = {
+            "W15 Pilar (moved from San Salvador de Jujuy)": "W15 Pilar",
+            "W25 Ibague (MOVED from 10 Oct)": "W25 Ibague",
+            "W15 Example ( moved   from Somewhere )": "W15 Example",
+        }
+        for source_name, expected_name in cases.items():
+            with self.subTest(source_name=source_name):
+                self.assertEqual(display_tournament_name(source_name), expected_name)
+                self.assertEqual(_display_tournament_name(source_name), expected_name)
+
+    def test_moved_from_annotation_is_absent_from_generated_website_data(self):
+        generated_files = (
+            GENERATED_SITE_DIR / "app.html",
+            GENERATED_SITE_DIR / "data" / "history_data_bundle.js",
+            GENERATED_SITE_DIR / "assets" / "js" / "generated-data.js",
         )
-        self.assertEqual(
-            _display_tournament_name("W25 Ibague (MOVED from 10 Oct)"),
-            "W25 Ibague",
-        )
+        for path in generated_files:
+            with self.subTest(path=path.name):
+                source = path.read_text(encoding="utf-8-sig")
+                self.assertIsNone(re.search(r"\(\s*moved\s+from\b", source, re.IGNORECASE))
 
     def test_requested_long_tournament_names_use_compact_labels(self):
         cases = {
@@ -304,12 +350,65 @@ class GeneratedSiteTests(unittest.TestCase):
             with self.subTest(source_name=source_name):
                 self.assertEqual(compact_tournament_name(source_name), expected_name)
 
-    def test_schedule_shows_surface_dot_for_moved_itf_tournament(self):
+    def test_calendar_has_collapsible_changes_panel(self):
+        app_source = _generated_frontend_source()
+        _assert_source_fragments(
+            app_source,
+            'id="calendar-changes-toggle"',
+            'aria-controls="calendar-changes-panel"',
+            'aria-expanded="true" aria-controls="calendar-changes-panel"',
+            'id="calendar-changes-panel">',
+            "function initCalendarChangesPanel()",
+            "panel.hidden = !expanded;",
+            'class="calendar-changes-alert" aria-hidden="true">!</span>',
+            '<span class="calendar-toggle-label">Changes</span>',
+            "state.changes = '0';",
+            "syncUrlStateForTab('calendar', { track: true });",
+        )
+
+    def test_calendar_changes_mobile_toolbar_layout(self):
+        app_source = _generated_frontend_source()
+        _assert_source_fragments(
+            app_source,
+            'class="calendar-filter-controls"',
+            ".calendar-filter-controls { display: flex; order: 1; flex: 0 0 100%; width: 100%;",
+            ".calendar-filter-controls .cal-dd { flex: 1 1 0; min-width: 0; width: auto; }",
+            ".calendar-changes-toggle { order: 2; flex: 1 1 0;",
+            ".calendar-gm-toggle { order: 3; flex: 0 0 auto; }",
+            ".cal-dd.open > .cal-dd-btn .calendar-toggle-arrow,",
+            '.calendar-changes-toggle[aria-expanded="true"] .calendar-toggle-arrow,',
+            '.calendar-gm-toggle[aria-pressed="true"] .calendar-toggle-arrow',
+        )
+        _assert_source_excludes(
+            app_source,
+            "toggle.classList.toggle('active', expanded);",
+            ".cal-dd.open .cal-dd-btn { background:",
+        )
+
+    def test_calendar_defaults_to_changes_open_and_quality_hidden(self):
+        app_source = _generated_frontend_source()
+        _assert_source_fragments(
+            app_source,
+            'class="calendar-gm-toggle" id="calendar-gm-toggle"',
+            'aria-pressed="false" aria-label="Show draw quality values"',
+            '<span class="calendar-toggle-label">Show Quality</span>',
+            "state.gm = '1';",
+            "#view-calendar:not(.quality-visible) .cal-gm-badge,",
+            "calendarView.classList.toggle('quality-visible', showGm);",
+            "!params.has('changes')",
+        )
+
+    def test_draws_dropdown_uses_compact_tournament_name(self):
         app_source = _generated_frontend_source()
         self.assertRegex(
             app_source,
-            r'tournament-surface-dot[^>]*></span><b>W15 Pilar</b>',
+            r'<option value="w-itf-arg-2026-008" data-country="ARG"[^>]*>W15 Pilar</option>',
         )
+
+    def test_draws_tournament_picker_uses_image_flags(self):
+        app_source = _generated_frontend_source()
+        self.assertIn('class="draws-tournament-picker"', app_source)
+        self.assertIn("flagSlot.innerHTML = countryFlag(country, false);", app_source)
 
     def test_entry_menu_uses_gm_as_category_tiebreaker(self):
         for label, source in (
@@ -352,6 +451,78 @@ class GeneratedSiteTests(unittest.TestCase):
             "visibleBlocks.forEach(function(block, index) { block.open = index === 0; });",
             source,
         )
+
+    def test_fed_bjk_series_colors_score_without_result_column(self):
+        source = _generated_frontend_source()
+        self.assertIn(
+            "<th>ARGENTINA</th><th>SCORE</th><th>OPPONENT</th>",
+            source,
+        )
+        self.assertNotIn("<th>RES.</th>", source)
+        self.assertIn('class="score-win" style="white-space:nowrap;"', source)
+        self.assertIn('class="score-loss" style="white-space:nowrap;"', source)
+        self.assertIn('#view-fedbcup .bjkc-series-table td.score-win { background: #166534; }', source)
+        self.assertIn('#view-fedbcup .bjkc-series-table td.score-loss { background: #b91c1c; }', source)
+
+    def test_tournament_strength_colors_name_and_omits_surface_column(self):
+        source = _generated_frontend_source()
+        self.assertIn(
+            "<th>#</th><th>GM</th><th>HM</th><th>Date</th><th>Tournament</th>"
+            '<th>Level</th><th>Region</th><th data-i18n-key="WTA Tournament Strength|Draw">Draw</th>',
+            source,
+        )
+        self.assertIn("'<td class=\"ts-name\" style=\"background:' + sc + '\">'", source)
+        self.assertNotIn("'<td style=\"background:' + sc + '\">' + t.surface", source)
+
+    def test_fed_bjk_series_uses_compact_desktop_and_balanced_mobile_columns(self):
+        source = _generated_frontend_source()
+        self.assertIn(
+            ".bjkc-series-block { width: var(--bjkc-series-width, fit-content); "
+            "max-width: 100%; margin: 0 auto 13px; }",
+            source,
+        )
+        self.assertIn(
+            "width: var(--bjkc-series-width, fit-content);",
+            source,
+        )
+        self.assertIn(
+            "grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);",
+            source,
+        )
+        self.assertIn(
+            "#fedbcup-player-filter { width: 155px; min-width: 0; max-width: 100%;",
+            source,
+        )
+        self.assertIn("function syncFedBjkSeriesWidths()", source)
+        self.assertIn("view.style.setProperty('--bjkc-series-width', _fedBjkSeriesWidth + 'px');", source)
+        self.assertIn(
+            ".bjkc-series-table { table-layout: auto !important; width: 100% !important; min-width: max-content; }",
+            source,
+        )
+        self.assertIn(
+            ".bjkc-series-block { width: 100%; max-width: 100%; margin: 0 0 9px; }",
+            source,
+        )
+        self.assertIn(
+            ".bjkc-series-table th:nth-child(2), .bjkc-series-table td:nth-child(2) "
+            "{ width: 20%; white-space: nowrap !important; }",
+            source,
+        )
+        self.assertIn(
+            ".bjkc-series-table td:nth-child(1) { white-space: nowrap !important; }",
+            source,
+        )
+        self.assertNotIn(
+            ".bjkc-series-table td:nth-child(1) { white-space: nowrap !important; font-size: 8px !important; }",
+            source,
+        )
+
+    def test_fed_bjk_series_uses_display_names_for_opponents(self):
+        source = _generated_frontend_source()
+        self.assertIn("Mell Reasco Gonzalez", source)
+        self.assertIn("Yleymi Muelle Valdez", source)
+        self.assertNotIn("Mell Elizabeth Reasco Gonzalez", source)
+        self.assertNotIn("Yleymi Lugiana Muelle Valdez", source)
 
 if __name__ == "__main__":
     unittest.main()

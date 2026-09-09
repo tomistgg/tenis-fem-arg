@@ -224,7 +224,10 @@ jobs:
       - name: Build run report
         if: always()
         run: |
-          if ! python generate_run_report.py --before .run_snapshot/data --after data --run-status .run_state/latest.json --output .run_snapshot/run_report.md --email-output .run_snapshot/email_report.md; then
+          if [ ! -d .run_snapshot/data ]; then
+            echo "::notice::The pre-refresh snapshot was not created; rendering the run status without a data diff."
+            python execution_analysis.py render-status-email --run-status .run_state/latest.json --output .run_snapshot/email_report.md
+          elif ! python generate_run_report.py --before .run_snapshot/data --after data --run-status .run_state/latest.json --output .run_snapshot/run_report.md --email-output .run_snapshot/email_report.md; then
             python execution_analysis.py render-status-email --run-status .run_state/latest.json --output .run_snapshot/email_report.md
           fi
 

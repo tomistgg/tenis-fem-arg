@@ -128,9 +128,8 @@
                                 html += '<td class="ts-gm" style="background:' + gmBg + '">' + t.gm + '</td>';
                                 html += '<td class="ts-hm" style="background:' + hmBg + '">' + t.hm + '</td>';
                                 html += '<td>' + dateStr + '</td>';
-                                html += '<td class="ts-name">' + nameStr + '</td>';
+                                html += '<td class="ts-name" style="background:' + sc + '">' + nameStr + '</td>';
                                 html += '<td style="background:' + lc + '">' + levelStr + '</td>';
-                                html += '<td style="background:' + sc + '">' + t.surface + '</td>';
                                 html += '<td style="background:' + rc + '">' + regionStr + '</td>';
                                 html += '<td>' + t.playerCount + '</td>';
                                 html += '</tr>';

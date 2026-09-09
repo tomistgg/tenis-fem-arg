@@ -1,5 +1,8 @@
 import json
+import sys
 from datetime import date
+
+import pytest
 
 import generate_run_report
 from generate_run_report import compute_report, render_email_markdown
@@ -30,6 +33,31 @@ def _calendar_row(
         "tournamentKey": key.removeprefix("itf:"),
         "calendarKey": key,
     }
+
+
+def test_cli_rejects_a_missing_snapshot_before_scanning_data(monkeypatch, tmp_path, capsys):
+    after_dir = tmp_path / "after"
+    after_dir.mkdir()
+    missing_before = tmp_path / "missing-before"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "generate_run_report.py",
+            "--before",
+            str(missing_before),
+            "--after",
+            str(after_dir),
+            "--output",
+            str(tmp_path / "report.md"),
+        ],
+    )
+
+    with pytest.raises(SystemExit) as error:
+        generate_run_report.main()
+
+    assert error.value.code == 2
+    assert f"pre-run snapshot directory does not exist: {missing_before}" in capsys.readouterr().err
 
 
 def test_calendar_report_detects_additions_changes_and_cancellations(monkeypatch, tmp_path):
@@ -77,7 +105,6 @@ def test_calendar_report_detects_additions_changes_and_cancellations(monkeypatch
         "level",
         "surface",
         "startDate",
-        "endDate",
     }
 
     markdown = render_email_markdown(report)
@@ -97,6 +124,21 @@ def test_calendar_week_placement_change_is_not_a_tournament_change():
         before,
         after,
         today=date(2026, 8, 11),
+    )
+
+    assert added == []
+    assert changed == []
+    assert cancelled == []
+
+
+def test_calendar_end_date_change_is_not_a_tournament_change():
+    before = [_calendar_row("itf:end-date", "W50 Morelia", end_date="2026-10-24")]
+    after = [_calendar_row("itf:end-date", "W50 Morelia", end_date="2026-11-01")]
+
+    added, changed, cancelled = generate_run_report.diff_calendar_tournaments(
+        before,
+        after,
+        today=date(2026, 9, 6),
     )
 
     assert added == []

@@ -110,7 +110,9 @@ def _profile_row(browser: LazyBrowserSession, player_id: str, fallback_name: str
         DETAILS_URL.format(player_id=player_id),
         timeout_ms=20_000,
         retries=2,
-        failure_severity="partial",
+        failure_severity="degraded",
+        failure_component="itf-player-profile",
+        failure_operation="fetch player profile",
     )
     if not isinstance(payload, dict):
         raise ValueError(f"Unexpected ITF profile response for {player_id}")

@@ -17,6 +17,7 @@
         <script src="assets/vendor/jquery-3.6.0.min.js"></script>
         <script src="assets/vendor/select2-4.1.0-rc.0.min.js"></script>
         <link rel="stylesheet" href="assets/app.css?v=20260904-milestones-3">
+        <link rel="stylesheet" href="assets/language.css">
     </head>
     <body class="home-mode" onload="renderHistoryTable(); renderMilestonesTable();">
         <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">\u2630</button>
@@ -189,35 +190,35 @@
                                 <button type="button" class="history-filter-sheet-close" aria-label="Close filters" onclick="closeHistoryFilters()">&times;</button>
                             </div>
 
-                            <div class="filter-group collapsed">
+                            <div class="filter-group history-filter-surface collapsed">
                                 <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-surface" onclick="toggleFilterGroup(this)">
                                     Surface <span class="collapse-icon" aria-hidden="true"></span>
                                 </button>
                                 <div class="filter-options" id="filter-surface"></div>
                             </div>
 
-                            <div class="filter-group collapsed">
+                            <div class="filter-group history-filter-round collapsed">
                                 <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-round" onclick="toggleFilterGroup(this)">
                                     Round <span class="collapse-icon" aria-hidden="true"></span>
                                 </button>
                                 <div class="filter-options" id="filter-round"></div>
                             </div>
 
-                            <div class="filter-group collapsed">
+                            <div class="filter-group history-filter-result collapsed">
                                 <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-result" onclick="toggleFilterGroup(this)">
                                     Result <span class="collapse-icon" aria-hidden="true"></span>
                                 </button>
                                 <div class="filter-options" id="filter-result"></div>
                             </div>
 
-                            <div class="filter-group collapsed">
+                            <div class="filter-group history-filter-year collapsed">
                                 <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-year" onclick="toggleFilterGroup(this)">
                                     Year <span class="collapse-icon" aria-hidden="true"></span>
                                 </button>
                                 <div class="filter-options" id="filter-year"></div>
                             </div>
 
-                            <div class="filter-group collapsed">
+                            <div class="filter-group history-filter-tournament collapsed">
                                 <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-tournament-container" onclick="toggleFilterGroup(this)">
                                     Tournament <span class="collapse-icon" aria-hidden="true"></span>
                                 </button>
@@ -228,14 +229,14 @@
                                 </div>
                             </div>
 
-                            <div class="filter-group collapsed">
+                            <div class="filter-group history-filter-category collapsed">
                                 <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-category" onclick="toggleFilterGroup(this)">
                                     Category <span class="collapse-icon" aria-hidden="true"></span>
                                 </button>
                                 <div class="filter-options scrollable" id="filter-category"></div>
                             </div>
 
-                            <div class="filter-group collapsed">
+                            <div class="filter-group history-filter-opponent collapsed">
                                 <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-opponent-container" onclick="toggleFilterGroup(this)">
                                     Opponent <span class="collapse-icon" aria-hidden="true"></span>
                                 </button>
@@ -246,28 +247,28 @@
                                 </div>
                             </div>
 
-                            <div class="filter-group collapsed">
+                            <div class="filter-group history-filter-opponent-country collapsed">
                                 <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-opponent-country" onclick="toggleFilterGroup(this)">
                                     Opp. Country <span class="collapse-icon" aria-hidden="true"></span>
                                 </button>
                                 <div class="filter-options" id="filter-opponent-country"></div>
                             </div>
 
-                            <div class="filter-group collapsed">
+                            <div class="filter-group history-filter-player-entry collapsed">
                                 <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-player-entry" onclick="toggleFilterGroup(this)">
                                     Player Entry <span class="collapse-icon" aria-hidden="true"></span>
                                 </button>
                                 <div class="filter-options" id="filter-player-entry"></div>
                             </div>
 
-                            <div class="filter-group collapsed">
+                            <div class="filter-group history-filter-seed collapsed">
                                 <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-seed" onclick="toggleFilterGroup(this)">
                                     Seed <span class="collapse-icon" aria-hidden="true"></span>
                                 </button>
                                 <div class="filter-options" id="filter-seed"></div>
                             </div>
 
-                            <div class="filter-group collapsed">
+                            <div class="filter-group history-filter-match-type collapsed">
                                 <button type="button" class="filter-group-title" aria-expanded="false" aria-controls="filter-match-type" onclick="toggleFilterGroup(this)">
                                     Match Type <span class="collapse-icon" aria-hidden="true"></span>
                                 </button>
@@ -454,7 +455,7 @@
                     </div>
                     <div class="tstrength-wrapper">
                         <table id="tstrength-table">
-                            <thead><tr><th>#</th><th>GM</th><th>HM</th><th>Date</th><th>Tournament</th><th>Level</th><th>Surface</th><th>Region</th><th>Draw</th></tr></thead>
+                            <thead><tr><th>#</th><th>GM</th><th>HM</th><th>Date</th><th>Tournament</th><th>Level</th><th>Region</th><th data-i18n-key="WTA Tournament Strength|Draw">Draw</th></tr></thead>
                             <tbody id="tstrength-tbody"></tbody>
                         </table>
                     </div>
@@ -462,9 +463,11 @@
 
                 <div id="view-calendar" class="single-layout" style="display: none;">
                     <div class="calendar-toolbar" id="calendar-toolbar">
+                        <div class="calendar-filter-controls">
                         <div class="cal-dd" data-cal-dd="categories">
                             <button type="button" class="cal-dd-btn" data-cal-dd-btn aria-expanded="false">
-                                Categories
+                                <span class="calendar-toggle-label">Categories</span>
+                                <span class="calendar-toggle-arrow" aria-hidden="true"></span>
                             </button>
                         <div class="cal-dd-panel" role="menu">
                             <label class="cal-dd-item"><input type="checkbox" data-cal-filter-toggle="gs" checked><span>GS</span></label>
@@ -480,7 +483,8 @@
 
                         <div class="cal-dd" data-cal-dd="region">
                             <button type="button" class="cal-dd-btn" data-cal-dd-btn aria-expanded="false">
-                                Region
+                                <span class="calendar-toggle-label">Regions</span>
+                                <span class="calendar-toggle-arrow" aria-hidden="true"></span>
                             </button>
                             <div class="cal-dd-panel" role="menu">
                                 <label class="cal-dd-item"><input type="checkbox" data-cal-continent-toggle="south_america" checked><span>S America</span></label>
@@ -494,7 +498,8 @@
 
                         <div class="cal-dd" data-cal-dd="surface">
                             <button type="button" class="cal-dd-btn" data-cal-dd-btn aria-expanded="false">
-                                Surface
+                                <span class="calendar-toggle-label">Surface</span>
+                                <span class="calendar-toggle-arrow" aria-hidden="true"></span>
                             </button>
                             <div class="cal-dd-panel" role="menu">
                                 <label class="cal-dd-item"><input type="checkbox" data-cal-surface-toggle="hard" checked><span>Hard</span></label>
@@ -503,15 +508,28 @@
                                 <label class="cal-dd-item"><input type="checkbox" data-cal-surface-toggle="carpet" checked><span>Carpet</span></label>
                             </div>
                         </div>
+                        </div>
 
-                        <button type="button" class="calendar-gm-toggle active" id="calendar-gm-toggle"
-                                aria-pressed="true" aria-label="Hide draw quality" title="Hide draw quality">
-                            Hide Quality
+                        <button type="button" class="calendar-gm-toggle" id="calendar-gm-toggle"
+                                aria-pressed="false" aria-label="Show draw quality values" title="Show draw quality values">
+                            <span class="calendar-toggle-label">Show Quality</span>
+                            <span class="calendar-toggle-arrow" aria-hidden="true"></span>
+                        </button>
+
+                        <button type="button" class="cal-dd-btn calendar-changes-toggle" id="calendar-changes-toggle"
+                                aria-expanded="true" aria-controls="calendar-changes-panel">
+                            <span class="calendar-changes-alert" aria-hidden="true">!</span>
+                            <span class="calendar-toggle-label">Changes</span>
+                            <span class="calendar-toggle-arrow" aria-hidden="true"></span>
                         </button>
 
                         <div class="cal-gm-legend">
                             <span class="cal-gm-legend-badge">99.9</span> Draw quality from last year's edition of the tournament.
                         </div>
+                    </div>
+
+                    <div class="calendar-changes-panel" id="calendar-changes-panel">
+                        @@WTARG_CALENDAR_CHANGES_HTML@@
                     </div>
 
                     <div class="content-card calendar-container">
@@ -653,9 +671,16 @@
                 <div id="view-draws" class="single-layout" style="display: none;">
                     <div class="draws-layout">
                         <div class="draws-toolbar">
-                            <select id="draws-tournament-select" onchange="onDrawTournamentChange(this.value)">
-                                @@WTARG_DRAWS_DROPDOWN_HTML@@
-                            </select>
+                            <div class="draws-tournament-picker" id="draws-tournament-picker">
+                                <button class="draws-tournament-toggle" id="draws-tournament-toggle" type="button" aria-haspopup="listbox" aria-expanded="false">
+                                    <span class="draws-tournament-current" id="draws-tournament-current">Select tournament</span>
+                                    <span class="draws-tournament-chevron" aria-hidden="true"></span>
+                                </button>
+                                <div class="draws-tournament-menu" id="draws-tournament-menu" role="listbox" aria-label="Draw tournament" hidden></div>
+                                <select class="draws-tournament-native" id="draws-tournament-select" tabindex="-1" aria-hidden="true" onchange="onDrawTournamentChange(this.value)">
+                                    @@WTARG_DRAWS_DROPDOWN_HTML@@
+                                </select>
+                            </div>
                             <div class="draws-type-btns" id="draws-type-btns"></div>
                             <span style="font-size:9px;color:#94a3b8;">Click a round header to filter</span>
                             <span style="flex:1;"></span>
@@ -679,6 +704,8 @@
         <script src="assets/anonymous-analytics.js"></script>
     <script src="assets/js/router.js"></script>
     <script src="assets/app-shell.js"></script>
+    <script src="assets/translations.js"></script>
+    <script src="assets/language.js"></script>
     </body>
     </html>
     

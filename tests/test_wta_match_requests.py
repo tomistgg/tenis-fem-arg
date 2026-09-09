@@ -48,6 +48,23 @@ def test_tournament_strength_requests_completed_matches_only(monkeypatch):
     assert requested == ["https://api.wtatennis.com/tennis/tournaments/1017/2026/matches?states=C"]
 
 
+def test_tournament_strength_retries_partial_main_draw_but_accepts_small_qualifying_draw():
+    partial_main = {
+        "draw": "MD",
+        "playerCount": 12,
+        "participantsLocked": True,
+        "rankings": [10, 20, 30],
+        "gm": 20,
+        "hm": 16,
+    }
+    complete_main = {**partial_main, "playerCount": 20}
+    complete_qualifying = {**partial_main, "draw": "Q", "playerCount": 8}
+
+    assert tstrength._needs_refresh(partial_main)
+    assert not tstrength._needs_refresh(complete_main)
+    assert not tstrength._needs_refresh(complete_qualifying)
+
+
 def test_wta_player_metadata_lookup_requests_completed_matches_only(monkeypatch):
     requested = []
 

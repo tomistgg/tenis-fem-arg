@@ -51,14 +51,19 @@ _COMPACT_TOURNAMENT_NAME_REPLACEMENTS = {
 }
 
 
-def compact_tournament_name(name):
-    """Return the compact tournament label shared by Calendar and Schedule."""
-    display_name = re.sub(
+def display_tournament_name(name):
+    """Return a public tournament name without provider relocation notes."""
+    return re.sub(
         r"\s*\(\s*moved\s+from\b[^)]*\)",
         "",
         str(name or ""),
         flags=re.IGNORECASE,
     ).strip()
+
+
+def compact_tournament_name(name):
+    """Return the compact tournament label shared by Calendar and Schedule."""
+    display_name = display_tournament_name(name)
     display_name = re.sub(r"\s+\d+\s*$", "", display_name)
     for full_name, short_name in _COMPACT_TOURNAMENT_NAME_REPLACEMENTS.items():
         display_name = display_name.replace(full_name, short_name)

@@ -47,6 +47,7 @@ wtarg-quality-gate = "data_quality:main"
 py-modules = [
     "build_deploy_site",
     "calendar_builder",
+    "calendar_changes",
     "canonical_data",
     "config",
     "data_quality",

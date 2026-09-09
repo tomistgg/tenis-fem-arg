@@ -197,9 +197,7 @@
             .rankings-toggle-btn:hover,
             .entry-menu-toggle-btn:hover,
             .history-nav-btn:not(:disabled):hover,
-            .cal-dd-btn:hover,
-            .calendar-gm-toggle:hover,
-            .cal-dd.open .cal-dd-btn { background: var(--c-surface-alt); }
+            .calendar-gm-toggle:hover { background: var(--c-surface-alt); }
             .rankings-toggle-btn:disabled,
             .history-nav-btn:disabled { opacity: 0.35; cursor: default; }
             .rankings-load-btn {
@@ -279,9 +277,22 @@
             #view-draws { width: 100%; max-width: 100%; margin: 0; }
             .draws-layout { display: flex; flex-direction: column; width: 100%; }
             .draws-toolbar { display: flex; align-items: center; gap: 10px; padding: 6px 12px; flex-wrap: wrap; position: relative; }
-            #draws-tournament-select { padding: 6px 24px 6px 8px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 12px; font-family: inherit; background: white; min-width: 200px; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; cursor: pointer; color: #1e293b; font-weight: 600; text-align: center; text-align-last: center; }
-            #draws-tournament-select optgroup { font-size: 10px; font-weight: bold; background: #e2e8f0; color: #475569; padding: 4px 0; }
-            #draws-tournament-select option { font-size: 11px; font-weight: normal; background: white; padding: 4px 8px; }
+            .draws-tournament-picker { position: relative; min-width: 200px; }
+            .draws-tournament-toggle { width: 100%; min-height: 33px; padding: 6px 8px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 12px; font-family: inherit; background: white; cursor: pointer; color: #1e293b; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+            .draws-tournament-toggle:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
+            .draws-tournament-current, .draws-tournament-option { display: flex; align-items: center; gap: 6px; }
+            .draws-tournament-flag { display: inline-flex; flex: 0 0 auto; }
+            .draws-tournament-flag img { display: block; margin-right: 0 !important; }
+            .draws-tournament-name { white-space: nowrap; }
+            .draws-tournament-chevron { width: 7px; height: 7px; flex: 0 0 auto; border-right: 2px solid #64748b; border-bottom: 2px solid #64748b; transform: rotate(45deg) translateY(-2px); transition: transform .15s ease; }
+            .draws-tournament-picker.open .draws-tournament-chevron { transform: rotate(225deg) translate(-2px, -2px); }
+            .draws-tournament-menu { position: absolute; z-index: 30; top: calc(100% + 4px); left: 0; min-width: 100%; width: max-content; max-width: min(360px, calc(100vw - 32px)); max-height: min(340px, calc(100vh - 140px)); overflow-y: auto; padding: 4px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; box-shadow: 0 10px 24px rgba(15,23,42,.18); }
+            .draws-tournament-menu[hidden] { display: none; }
+            .draws-tournament-week { padding: 7px 8px 4px; color: #64748b; background: #f1f5f9; font-size: 9px; font-weight: 700; letter-spacing: .3px; }
+            .draws-tournament-option { width: 100%; padding: 7px 8px; border: 0; border-radius: 5px; background: transparent; color: #1e293b; font-family: inherit; font-size: 11px; text-align: left; cursor: pointer; }
+            .draws-tournament-option:hover, .draws-tournament-option:focus-visible { background: #f1f5f9; outline: none; }
+            .draws-tournament-option.selected { background: #dbeafe; color: #1e40af; font-weight: 600; }
+            .draws-tournament-native { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; opacity: 0; pointer-events: none; }
             .draws-type-btns { display: flex; gap: 0; }
             .draw-type-btn { padding: 4px 10px; border: 1px solid #cbd5e1; background: white; font-family: inherit; font-size: 10px; font-weight: 600; color: #64748b; cursor: pointer; }
             .draw-type-btn:first-child { border-radius: 8px 0 0 8px; }
@@ -733,12 +744,17 @@
 
             /* Fed/BJK Cup toggle buttons */
             .fedbcup-header-controls {
-                display: flex;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
                 align-items: center;
-                margin-bottom: 12px;
+                width: var(--bjkc-series-width, fit-content);
+                max-width: 100%;
+                margin: 0 auto 12px;
+                box-sizing: border-box;
             }
             .fedbcup-filter-left {
                 flex: 1;
+                min-width: 0;
                 display: flex;
                 align-items: center;
             }
@@ -749,6 +765,7 @@
             }
             .fedbcup-record-right {
                 flex: 1;
+                min-width: 0;
                 display: flex;
                 align-items: center;
                 justify-content: flex-end;
@@ -880,21 +897,22 @@
                 #tstrength-table th:nth-child(1), #tstrength-table td:nth-child(1) { width: 5%; }
                 #tstrength-table th:nth-child(2), #tstrength-table td:nth-child(2) { width: 8%; }
                 #tstrength-table th:nth-child(3), #tstrength-table td:nth-child(3) { width: 8%; }
-                #tstrength-table th:nth-child(4), #tstrength-table td:nth-child(4) { width: 11%; }
-                #tstrength-table th:nth-child(5), #tstrength-table td:nth-child(5) { width: 27%; }
-                #tstrength-table th:nth-child(6), #tstrength-table td:nth-child(6) { width: 9%; }
+                #tstrength-table th:nth-child(4), #tstrength-table td:nth-child(4) { width: 12%; }
+                #tstrength-table th:nth-child(5), #tstrength-table td:nth-child(5) { width: 35%; }
+                #tstrength-table th:nth-child(6), #tstrength-table td:nth-child(6) { width: 11%; }
                 #tstrength-table th:nth-child(7), #tstrength-table td:nth-child(7) { width: 12%; }
                 #tstrength-table th:nth-child(8), #tstrength-table td:nth-child(8) { width: 9%; }
-                #tstrength-table th:nth-child(9), #tstrength-table td:nth-child(9) { width: 8%; }
             }
 
             /* Series view */
             #fedbcup-view-series { width: 100%; }
             .fedbcup-series-toolbar { display: flex; align-items: center; gap: 10px; }
-            #fedbcup-player-filter { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 12px; background: white; min-width: 180px; }
+            #fedbcup-player-filter { width: 155px; min-width: 0; max-width: 100%; padding: 5px 7px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 11px; background: white; }
             .fedbcup-record-text { font-size: 13px; font-weight: bold; color: #475569; white-space: nowrap; }
-            .bjkc-series-block { margin-bottom: 13px; }
+            .bjkc-series-block { width: var(--bjkc-series-width, fit-content); max-width: 100%; margin: 0 auto 13px; }
             .bjkc-series-header {
+                width: 100%;
+                box-sizing: border-box;
                 min-height: 39px;
                 display: grid;
                 grid-template-columns: minmax(92px, auto) minmax(0, 1fr) auto 18px;
@@ -913,7 +931,8 @@
             .bjkc-series-header::-webkit-details-marker { display: none; }
             .bjkc-series-header:focus-visible { outline: 2px solid var(--c-primary); outline-offset: 2px; }
             .bjkc-series-block[open] .bjkc-series-header { border-radius: 8px 8px 0 0; }
-            .bjkc-series-block > .content-card { margin: 0; border-top: 0; border-radius: 0 0 12px 12px; }
+            .bjkc-series-block > .content-card { width: 100%; max-width: 100%; margin: 0; border-top: 0; border-radius: 0 0 12px 12px; }
+            .bjkc-series-block .table-wrapper { width: 100%; box-sizing: border-box; }
             .bjkc-header-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; text-align: center; white-space: nowrap; }
             .bjkc-header-date { text-align: left; white-space: nowrap; font-size: 11px; opacity: 0.85; }
             .bjkc-header-side { text-align: right; }
@@ -934,8 +953,9 @@
                 transition: transform 0.15s ease;
             }
             .bjkc-series-block[open] .bjkc-header-arrow::after { transform: translate(-50%, -30%) rotate(225deg); }
-            .bjkc-series-table { table-layout: auto !important; width: max-content !important; min-width: 100%; }
-            .bjkc-series-table th:nth-child(2), .bjkc-series-table td:nth-child(2) { width: 44px; text-align: center; }
+            .bjkc-series-table { table-layout: auto !important; width: 100% !important; min-width: max-content; }
+            .bjkc-series-table th, .bjkc-series-table td { white-space: nowrap; }
+            .bjkc-series-table th:nth-child(2), .bjkc-series-table td:nth-child(2) { width: 88px; text-align: center; }
             .doubles-br { display: none; }
 
             #history-table th { background: var(--c-chrome-bg) !important; position: sticky; top: 0; z-index: 10; }
@@ -983,18 +1003,23 @@
             #history-table td.score-win,
             #history-table td.score-loss,
             #national-table td.score-win,
-            #national-table td.score-loss {
+            #national-table td.score-loss,
+            .bjkc-series-table td.score-win,
+            .bjkc-series-table td.score-loss {
                 text-align: center;
                 font-weight: 800;
                 padding-left: 4px;
                 padding-right: 4px;
             }
             #history-table td.score-win,
-            #national-table td.score-win { background: #166534; }
+            #national-table td.score-win,
+            #view-fedbcup .bjkc-series-table td.score-win { background: #166534; }
             #history-table td.score-loss,
-            #national-table td.score-loss { background: #b91c1c; }
+            #national-table td.score-loss,
+            #view-fedbcup .bjkc-series-table td.score-loss { background: #b91c1c; }
             #history-table .score-badge,
-            #national-table .score-badge {
+            #national-table .score-badge,
+            .bjkc-series-table .score-badge {
                 display: inline-block;
                 color: #fff;
                 padding: 0 4px;
@@ -1003,6 +1028,7 @@
                 background: transparent;
                 box-sizing: border-box;
             }
+            .bjkc-score-status { opacity: 0.85; font-size: 0.85em; }
 
             /* Filter Panel Styles */
             .history-layout { display: flex; gap: 20px; width: 100%; align-items: flex-start; }
@@ -1127,16 +1153,35 @@
             #view-calendar { width: 100%; min-height: 0; }
             .calendar-container { width: 100%; min-width: 100%; min-height: 0; margin-bottom: 0; display: block; box-sizing: border-box; }
             .calendar-toolbar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; align-items: center; margin: 0 0 10px; position: sticky; top: 0; z-index: 50; background: var(--c-bg); border-bottom: 1px solid var(--c-border); padding: 10px 8px; box-sizing: border-box; }
+            .calendar-filter-controls { display: contents; }
             .cal-dd { position: relative; }
-            .cal-dd-btn { justify-content: flex-start; padding: 0 32px 0 var(--sp-3); font-size: var(--fs-lg); user-select: none; background-color: var(--c-surface); background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
-            .calendar-gm-toggle { min-width: 96px; padding: 0 12px; }
+            .cal-dd-btn { justify-content: flex-start; gap: 8px; padding: 0 var(--sp-3); font-size: var(--fs-lg); user-select: none; background-color: var(--c-surface); }
+            .calendar-gm-toggle { min-width: 96px; gap: 8px; padding: 0 12px; }
             .calendar-gm-toggle.active { background: var(--c-chrome-bg); border-color: var(--c-chrome-bg); color: #fff; }
+            .calendar-changes-alert { margin-right: 5px; color: var(--c-error); font-size: 1.25em; font-weight: 900; line-height: 1; }
+            .calendar-toggle-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+            .calendar-toggle-arrow { width: 6px; height: 6px; flex: 0 0 6px; margin: -3px 1px 0 auto; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform 0.15s, margin 0.15s; }
+            .cal-dd.open > .cal-dd-btn .calendar-toggle-arrow,
+            .calendar-changes-toggle[aria-expanded="true"] .calendar-toggle-arrow,
+            .calendar-gm-toggle[aria-pressed="true"] .calendar-toggle-arrow { margin-top: 3px; transform: rotate(225deg); }
             .cal-dd-panel { position: absolute; top: calc(100% + 6px); left: 0; width: max-content; min-width: 170px; max-width: min(320px, calc(100vw - 20px)); max-height: 280px; overflow: auto; background: var(--c-surface); border: 2px solid var(--c-border-strong); border-radius: 8px; padding: 6px; box-shadow: var(--shadow-lg); display: none; z-index: 60; }
             .cal-dd.open .cal-dd-panel { display: block; }
             .cal-dd-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; user-select: none; }
             .cal-dd-item:hover { background: transparent; }
             .cal-dd-item input { width: 14px; height: 14px; margin: 0; }
             .cal-dd-item span { font-size: 12px; font-weight: 700; color: var(--c-text-primary); }
+            .calendar-changes-panel { width: min(760px, calc(100% - 16px)); margin: 0 8px 12px; padding: 12px 14px; border: 1px solid var(--c-border); border-radius: 10px; background: var(--c-surface); box-shadow: var(--shadow-sm); box-sizing: border-box; }
+            .calendar-changes-panel[hidden] { display: none; }
+            .calendar-change-group + .calendar-change-group { margin-top: 14px; }
+            .calendar-change-date { margin: 0 0 7px; color: var(--c-text-primary); font-size: 12px; font-weight: 800; }
+            .calendar-change-group ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+            .calendar-change-item { display: flex; align-items: flex-start; gap: 7px; color: var(--c-text-secondary); font-size: 11px; line-height: 1.45; }
+            .calendar-change-item strong { color: var(--c-text-primary); }
+            .calendar-change-flag { display: inline-flex; width: 16px; min-width: 16px; padding-top: 2px; }
+            .calendar-change-flag img { display: block; width: 16px !important; height: 11px !important; margin-right: 0 !important; }
+            .calendar-change-start { color: var(--c-text-subtle); }
+            .calendar-change-arrow { color: var(--c-primary-hover); font-weight: 800; }
+            .calendar-change-empty { margin: 0; color: var(--c-text-subtle); font-size: 11px; }
             .calendar-container .table-wrapper { display: block; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; border-right: 1px solid var(--c-text-subtle); box-sizing: border-box; cursor: grab; overscroll-behavior-x: contain; }
             .calendar-container .table-wrapper.dragging { cursor: grabbing; }
             .calendar-table { border-collapse: separate; border-spacing: 0; width: max-content; min-width: max-content; table-layout: auto; border: 1px solid var(--c-border); overflow: visible !important; }
@@ -1157,6 +1202,8 @@
             .cal-gm-na { background: #94a3b8; color: #fff; }
             .cal-cutoff-box { display: block; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 2px; margin: 1px 0; background: #94a3b8; color: #fff; white-space: normal; line-height: 1.3; }
             .cal-gm-legend { font-size: 11px; color: #64748b; padding: 2px 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex: 1; }
+            #view-calendar:not(.quality-visible) .cal-gm-badge,
+            #view-calendar:not(.quality-visible) .cal-gm-legend { display: none; }
             .cal-gm-legend-badge { display: inline-block; font-size: 8px; font-weight: 700; padding: 0px 3px; border-radius: 2px; background: #e0f2fe; color: #1a1a1a; line-height: 13px; margin: 0 2px; vertical-align: middle; }
             .cal-clay { background: #e8a882; color: #5c2e0e; }
             .cal-hard { background: #88b4e8; color: #1a3a5c; }
@@ -1713,6 +1760,19 @@
                 .filter-option { font-size: 7px; padding: 2px 3px; margin-bottom: 1px; }
                 .filter-options.scrollable { max-height: 120px; }
 
+                /* Keep the longer select values together in the final two-item row. */
+                .history-filter-surface { order: 1; }
+                .history-filter-round { order: 2; }
+                .history-filter-result { order: 3; }
+                .history-filter-year { order: 4; }
+                .history-filter-match-type { order: 5; }
+                .history-filter-category { order: 6; }
+                .history-filter-seed { order: 7; }
+                .history-filter-opponent-country { order: 8; }
+                .history-filter-player-entry { order: 9; }
+                .history-filter-opponent { order: 10; }
+                .history-filter-tournament { order: 11; }
+
                 /* Rank filters: force last row with 2 half-width boxes */
                 .rank-filter-last-row {
                     width: 100%;
@@ -2030,7 +2090,7 @@
                 #history-table th:nth-child(4)::after { content: 'RD'; }
 
                 /* Fed/BJK Cup toggle buttons mobile */
-                .fedbcup-header-controls { flex-direction: row; flex-wrap: wrap; gap: 6px; align-items: center; }
+                .fedbcup-header-controls { display: flex; width: 100%; flex-direction: row; flex-wrap: wrap; gap: 6px; align-items: center; }
                 .fedbcup-filter-left { flex: 1; min-width: 0; order: 1; }
                 .fedbcup-filter-left select { font-size: 11px; padding: 4px 4px; max-width: 120px; }
                 .fedbcup-record-right { flex: 1; min-width: 0; order: 1; justify-content: flex-end; }
@@ -2090,7 +2150,7 @@
                 #captains-table th:nth-child(3), #captains-table td:nth-child(3) { width: 30%; }
 
                 /* Series mobile */
-                .bjkc-series-block { margin-bottom: 9px; }
+                .bjkc-series-block { width: 100%; max-width: 100%; margin: 0 0 9px; }
                 .bjkc-series-header {
                     min-height: 36px;
                     grid-template-columns: 72px minmax(0, 1fr) auto 16px;
@@ -2100,28 +2160,39 @@
                     font-size: 8px;
                 }
                 .bjkc-series-block[open] .bjkc-series-header { border-radius: 6px 6px 0 0; }
-                .bjkc-series-block > .content-card { border-radius: 0 0 8px 8px; }
+                .bjkc-series-block > .content-card { width: 100%; max-width: 100%; margin: 0; border-radius: 0 0 8px 8px; }
                 .bjkc-header-date { font-size: 8px; }
                 .bjkc-tie-score { min-width: 40px; padding: 3px 6px; font-size: 12px; }
                 .bjkc-header-arrow { width: 16px; height: 16px; }
-                .bjkc-series-table { width: 100% !important; min-width: unset !important; }
+                .bjkc-series-table { width: 100% !important; min-width: unset !important; table-layout: fixed !important; }
                 .bjkc-series-table th { font-size: 8px !important; padding: 3px 4px !important; }
                 .bjkc-series-table td { font-size: 9px !important; padding: 3px 4px !important; white-space: normal !important; }
-                .bjkc-series-table td:nth-child(2) { white-space: nowrap !important; }
-                .bjkc-series-table td:nth-child(3) { white-space: nowrap !important; }
+                .bjkc-series-table th:nth-child(1), .bjkc-series-table td:nth-child(1) { width: 40%; }
+                .bjkc-series-table th:nth-child(2), .bjkc-series-table td:nth-child(2) { width: 20%; white-space: nowrap !important; }
+                .bjkc-series-table th:nth-child(3), .bjkc-series-table td:nth-child(3) { width: 40%; }
+                .bjkc-series-table td:nth-child(1) { white-space: nowrap !important; }
                 .doubles-br { display: inline; }
                 .doubles-slash { display: none; }
 
                 /* Calendar mobile */
                 .calendar-container .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
                 .calendar-toolbar { gap: 6px; margin-bottom: 8px; top: 0; }
-                .cal-gm-legend { font-size: 10px; padding: 3px 4px; gap: 4px; flex: none; width: 100%; }
+                .calendar-filter-controls { display: flex; order: 1; flex: 0 0 100%; width: 100%; min-width: 0; gap: 6px; }
+                .calendar-filter-controls .cal-dd { flex: 1 1 0; min-width: 0; width: auto; }
+                .calendar-filter-controls .cal-dd > .cal-dd-btn { width: 100%; }
+                .calendar-changes-toggle { order: 2; flex: 1 1 0; min-width: 0; width: auto; }
+                .calendar-gm-toggle { order: 3; flex: 0 0 auto; }
+                .cal-gm-legend { order: 4; font-size: 10px; padding: 3px 4px; gap: 4px; flex: 0 0 100%; width: 100%; }
                 .cal-cutoff-box { font-size: 7px; }
                 .cal-week-header { position: static; }
                 .cal-cat-header { top: unset; }
                 .cal-cont-header { top: unset; }
                 .cal-dd-btn { padding: 6px 24px 6px 8px; font-size: 11px; background-position: right 7px center; }
                 .calendar-gm-toggle { min-width: 82px; padding: 6px 7px; font-size: 10px; }
+                .calendar-changes-toggle { padding-top: 6px; padding-bottom: 6px; font-size: 10px; }
+                .calendar-changes-panel { width: calc(100% - 8px); margin: 0 4px 8px; padding: 10px; }
+                .calendar-change-date { font-size: 11px; }
+                .calendar-change-item { font-size: 10px; }
                 .cal-week-header { font-size: 7px; padding: 3px 3px; min-width: 80px; }
                 .cal-cat-header, .cal-cont-header { font-size: 7px; }
                 .calendar-tournament { font-size: 8px; padding: 2px 4px; }
@@ -2397,7 +2468,8 @@
 
                 /* Draws mobile */
                 .draws-toolbar { padding: 4px 8px; gap: 6px; flex-wrap: wrap; justify-content: center; }
-                #draws-tournament-select { font-size: 10px; min-width: 0; width: 100%; padding: 5px 22px 5px 7px; }
+                .draws-tournament-picker { min-width: 0; width: 100%; }
+                .draws-tournament-toggle { width: 100%; padding: 5px 7px; font-size: 10px; }
                 .draws-toolbar > span[style*="font-size"] { display: none !important; }
                 .draw-type-btn { padding: 2px 7px; font-size: 8px; }
                 .draw-filter-reset { font-size: 8px; padding: 2px 7px; }
@@ -2563,7 +2635,13 @@
             [data-theme="dark"] .draw-match .draw-player.winner { background: #0f2d1a; }
             [data-theme="dark"] .draw-round-header { color: #94a3b8; }
             [data-theme="dark"] .draw-round-header:hover { color: #93c5fd; }
-            [data-theme="dark"] #draws-tournament-select optgroup { background: var(--c-surface-alt); color: var(--c-text-subtle); }
+            [data-theme="dark"] .draws-tournament-toggle,
+            [data-theme="dark"] .draws-tournament-menu { background: var(--c-surface); border-color: var(--c-border-strong); color: var(--c-text); }
+            [data-theme="dark"] .draws-tournament-week { background: var(--c-surface-alt); color: var(--c-text-subtle); }
+            [data-theme="dark"] .draws-tournament-option { color: var(--c-text); }
+            [data-theme="dark"] .draws-tournament-option:hover,
+            [data-theme="dark"] .draws-tournament-option:focus-visible { background: var(--c-surface-alt); }
+            [data-theme="dark"] .draws-tournament-option.selected { background: #1e3a5c; color: #bfdbfe; }
             [data-theme="dark"] #roadtogs-points-total { color: var(--c-text) !important; }
             [data-theme="dark"] .calendar-toolbar { background: var(--c-bg); border-bottom-color: var(--c-border); }
             [data-theme="dark"] .cal-dd-btn {
@@ -2571,6 +2649,7 @@
             }
             [data-theme="dark"] .cal-dd-panel { background: var(--c-surface); border-color: var(--c-border-strong); box-shadow: var(--shadow-lg); }
             [data-theme="dark"] .cal-dd-item span { color: var(--c-text); }
+            [data-theme="dark"] .calendar-changes-panel { background: var(--c-surface); border-color: var(--c-border); }
 
             /* Calendar - cal-cat-label keeps chrome tone, but cal-cont-label
                flips to surface in dark */
@@ -3348,7 +3427,7 @@
                     padding: 6px 4px;
                     gap: 6px;
                 }
-                #draws-tournament-select {
+                .draws-tournament-picker {
                     width: min(100%, 260px);
                     min-width: 0;
                 }
@@ -3692,10 +3771,12 @@
                     font-weight: 700;
                     letter-spacing: .5px;
                 }
-                #view-draws #draws-tournament-select {
+                #view-draws .draws-tournament-picker {
                     min-width: 200px;
-                    padding: 6px 24px 6px 8px;
-                    border-radius: 8px !important;
+                }
+                #view-draws .draws-tournament-toggle {
+                    padding: 6px 8px;
+                    border-radius: 8px;
                     font-size: 12px;
                     font-weight: 600;
                 }
@@ -3724,8 +3805,6 @@
                 }
 
                 #view-fedbcup .bjkc-series-table td:nth-child(1),
-                #view-fedbcup .bjkc-series-table th:nth-child(2),
-                #view-fedbcup .bjkc-series-table td:nth-child(2),
                 #view-fedbcup #national-table td:nth-child(2),
                 #view-fedbcup #captains-table td:nth-child(2) {
                     font-weight: 400 !important;
@@ -3898,8 +3977,6 @@
                 }
 
                 #view-fedbcup .bjkc-series-table td:nth-child(1),
-                #view-fedbcup .bjkc-series-table th:nth-child(2),
-                #view-fedbcup .bjkc-series-table td:nth-child(2),
                 #view-fedbcup #national-table td:nth-child(2),
                 #view-fedbcup #captains-table td:nth-child(2) {
                     font-weight: 400 !important;

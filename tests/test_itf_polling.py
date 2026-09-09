@@ -912,9 +912,22 @@ def test_itf_blocked_request_reports_response_details(monkeypatch):
     monkeypatch.setattr(itf.requests, "get", lambda *args, **kwargs: response)
     monkeypatch.setattr(itf, "report_run_issue", lambda *args, **kwargs: recorded.append((args, kwargs)))
 
-    assert itf._fetch_itf_json_via_requests("https://example.test/api", retries=1) is None
+    assert (
+        itf._fetch_itf_json_via_requests(
+            "https://example.test/api",
+            retries=1,
+            failure_severity="degraded",
+            failure_component="itf-player-profile",
+            failure_operation="fetch player profile",
+        )
+        is None
+    )
 
+    assert recorded[0][0][:2] == ("itf-player-profile", "fetch player profile")
+    assert recorded[0][1]["severity"] == "degraded"
     error = recorded[0][0][2]
+    assert error.component == "itf-player-profile"
+    assert error.operation == "fetch player profile"
     assert error.context["cause"] == "Incapsula HTML challenge"
     assert error.context["status_code"] == 200
     assert error.context["content_type"] == "text/html"

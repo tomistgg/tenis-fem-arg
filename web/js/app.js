@@ -282,7 +282,9 @@
                 if (levels !== null) state.level = levels;
                 if (continents !== null) state.continent = continents;
                 if (surfaces !== null) state.surface = surfaces;
-                if (gmToggle && gmToggle.getAttribute('aria-pressed') === 'false') state.gm = '0';
+                if (gmToggle && gmToggle.getAttribute('aria-pressed') === 'true') state.gm = '1';
+                const changesToggle = document.getElementById('calendar-changes-toggle');
+                if (changesToggle && changesToggle.getAttribute('aria-expanded') === 'false') state.changes = '0';
                 return state;
             }
 
@@ -291,10 +293,15 @@
                 restoreCheckboxGroupState(params, 'continent', '[data-cal-continent-toggle]', 'data-cal-continent-toggle');
                 restoreCheckboxGroupState(params, 'surface', '[data-cal-surface-toggle]', 'data-cal-surface-toggle');
                 const gmToggle = document.getElementById('calendar-gm-toggle');
-                if (gmToggle && params.has('gm')) {
-                    const showGm = !['0', 'false', 'no', 'off'].includes((params.get('gm') || '').toLowerCase());
+                if (gmToggle) {
+                    const showGm = params.has('gm')
+                        && ['1', 'true', 'yes', 'on'].includes((params.get('gm') || '').toLowerCase());
                     gmToggle.setAttribute('aria-pressed', showGm ? 'true' : 'false');
                 }
+                setCalendarChangesExpanded(
+                    !params.has('changes')
+                    || !['0', 'false', 'no', 'closed'].includes((params.get('changes') || '').toLowerCase())
+                );
                 applyCalendarFilters();
             }
 
@@ -841,6 +848,24 @@
                 });
 
             }
+            function setCalendarChangesExpanded(expanded) {
+                const toggle = document.getElementById('calendar-changes-toggle');
+                const panel = document.getElementById('calendar-changes-panel');
+                if (!toggle || !panel) return;
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                panel.hidden = !expanded;
+            }
+            function initCalendarChangesPanel() {
+                const toggle = document.getElementById('calendar-changes-toggle');
+                const panel = document.getElementById('calendar-changes-panel');
+                if (!toggle || !panel || toggle.dataset.initialized === '1') return;
+                toggle.dataset.initialized = '1';
+                toggle.addEventListener('click', function() {
+                    const expanded = toggle.getAttribute('aria-expanded') !== 'true';
+                    setCalendarChangesExpanded(expanded);
+                    syncUrlStateForTab('calendar', { track: true });
+                });
+            }
             function syncCalendarRowspans() {
                 const table = document.querySelector('#view-calendar .calendar-table');
                 if (!table) return;
@@ -916,10 +941,13 @@
                 if (gmToggle) {
                     const gmAction = showGm ? 'Hide Quality' : 'Show Quality';
                     gmToggle.classList.toggle('active', showGm);
-                    gmToggle.textContent = gmAction;
+                    const gmLabel = gmToggle.querySelector('.calendar-toggle-label');
+                    if (gmLabel) gmLabel.textContent = gmAction;
                     gmToggle.setAttribute('aria-label', gmAction + ' values');
                     gmToggle.title = gmAction + ' values';
                 }
+                const calendarView = document.getElementById('view-calendar');
+                if (calendarView) calendarView.classList.toggle('quality-visible', showGm);
                 document.querySelectorAll('#view-calendar .cal-gm-badge').forEach(badge => {
                     badge.style.display = showGm ? '' : 'none';
                 });
@@ -934,6 +962,7 @@
                 }
                 initCalendarDropdowns();
                 initCalendarHorizontalScroll();
+                initCalendarChangesPanel();
                 const toggles = document.querySelectorAll('[data-cal-filter-toggle], [data-cal-continent-toggle], [data-cal-surface-toggle]');
                 const gmToggle = document.getElementById('calendar-gm-toggle');
                 if (!toggles.length && !gmToggle) return;
@@ -1088,6 +1117,7 @@
                 if (tabName === 'rankings') initRankingsIfEmpty();
                 if (tabName === 'roadtogs') initRoadToGS();
                 if (tabName === 'information') initInformationPage();
+                if (tabName === 'fedbcup') syncFedBjkSeriesWidths();
 
                 applyMobileHistoryLayout();
                 syncEntryMenuToggle();
@@ -1109,6 +1139,44 @@
             document.addEventListener('DOMContentLoaded', initCalendarFilters);
 
             const BJKC_PLAYERS = window.WTARG_DATA.bjkcPlayers;
+
+            let _fedBjkSeriesWidth = 0;
+            function syncFedBjkSeriesWidths() {
+                const view = document.getElementById('view-fedbcup');
+                const series = document.getElementById('fedbcup-view-series');
+                if (!view || !series) return;
+                if (window.innerWidth <= 768) {
+                    view.style.removeProperty('--bjkc-series-width');
+                    return;
+                }
+                if (_fedBjkSeriesWidth) {
+                    view.style.setProperty('--bjkc-series-width', _fedBjkSeriesWidth + 'px');
+                    return;
+                }
+                if (getComputedStyle(view).display === 'none' || getComputedStyle(series).display === 'none') return;
+
+                const blocks = Array.from(series.querySelectorAll('.bjkc-series-block'));
+                if (!blocks.length) return;
+                const openStates = blocks.map(function(block) { return block.open; });
+                view.style.removeProperty('--bjkc-series-width');
+                blocks.forEach(function(block) { block.open = true; });
+
+                _fedBjkSeriesWidth = Math.ceil(blocks.reduce(function(widest, block) {
+                    const header = block.querySelector('.bjkc-series-header');
+                    const table = block.querySelector('.bjkc-series-table');
+                    return Math.max(
+                        widest,
+                        block.scrollWidth,
+                        header ? header.scrollWidth : 0,
+                        table ? table.scrollWidth : 0
+                    );
+                }, 0));
+
+                blocks.forEach(function(block, index) { block.open = openStates[index]; });
+                if (_fedBjkSeriesWidth) {
+                    view.style.setProperty('--bjkc-series-width', _fedBjkSeriesWidth + 'px');
+                }
+            }
 
             (function() {
                 const sel = document.getElementById('fedbcup-player-filter');
@@ -1136,6 +1204,7 @@
                 const vis = (subTab === 'series') ? 'visible' : 'hidden';
                 if (filterLeft) filterLeft.style.visibility = vis;
                 if (recordRight) recordRight.style.visibility = vis;
+                if (subTab === 'series') syncFedBjkSeriesWidths();
                 syncUrlStateForTab('fedbcup');
             }
 
@@ -1596,6 +1665,7 @@
                         document.getElementById('sidebar').classList.add('mobile-hidden');
                     }
                     applyMobileHistoryLayout();
+                    syncFedBjkSeriesWidths();
                 });
             });
 
@@ -2779,6 +2849,7 @@
 
             function _formatTournName(name, category) {
                 if (!name) return '';
+                name = name.replace(/\s*\(\s*moved\s+from\b[^)]*\)/gi, '').trim();
                 if (name.toUpperCase().includes('MALLORCA')) return 'WTA 125 Mallorca';
                 const displayCategory = category && category.toUpperCase() === 'WT' ? 'World Tour' : (category && category.toUpperCase() === 'OG' ? '' : category);
                 const sep = name.lastIndexOf(' - ');
