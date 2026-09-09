@@ -214,7 +214,8 @@ def _build_gs_cutoff_boxes(gs_data, frozen_mondays):
         if gs.get("name") == "Australian Open":
             default_year = gs.get("year") or madrid_today().year
             ao_dt = datetime.strptime(f"{default_year - 1}-11-09", "%Y-%m-%d")
-            _register_cutoff_box(boxes, ao_dt.strftime("%Y-%m-%d"), gi * 3, "Last week for AO MD/Q")
+            _register_cutoff_box(boxes, (ao_dt - timedelta(weeks=1)).strftime("%Y-%m-%d"), gi * 3, "Last week for AO MD/Q in W15/35")
+            _register_cutoff_box(boxes, ao_dt.strftime("%Y-%m-%d"), gi * 3, "Last week for AO MD/Q in W50+")
             continue
 
         start_dt = datetime.strptime(gs["mdCutoff"], "%Y-%m-%d") + timedelta(weeks=6)

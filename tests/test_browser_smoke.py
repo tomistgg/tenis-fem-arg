@@ -173,7 +173,7 @@ def test_generated_site_loads_rankings_bundle_offline(offline_generated_site):
             ('Round of 32', 'Dieciseisavos'), ('I.clay', 'Arcilla (cubierta)'),
             ('Draw', 'DRAW'), ('Drop Date', 'Vence'), ('Seed', 'Seed'),
             ('Cut Off', 'CORTE'), ('Acc. Pts', 'PTS ACU.'), ('Est. Need', 'EST. NEC.'),
-            ('ACC. PTS', 'PTS ACU.'), ('Last week for AO MD/Q', 'Ult. Semana para AO MD/Q'),
+            ('ACC. PTS', 'PTS ACU.'),
             ('WTA Tournament Strength', 'Nivel Torneos WTA'), ('Yes', 'Si'), ('No', 'No'),
             ('Geometric Mean: Overall draw quality across all players.',
              'Nivel general del cuadro considerando a todas las jugadoras.'),
