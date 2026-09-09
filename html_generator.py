@@ -101,11 +101,6 @@ def _schedule_tournament_base_name(entry):
     ).strip()
 
 
-def _display_tournament_name(name):
-    """Hide source relocation notes while preserving the canonical name."""
-    return display_tournament_name(name)
-
-
 def _display_calendar_tournament_name(name):
     """Return the compact Calendar-only label without edition numbers."""
     return compact_tournament_name(name)
@@ -1228,9 +1223,8 @@ def generate_html(
         rank = p["Rank"]
         if isinstance(rank, int):
             return (0, rank)
-        else:
-            itf_rank = int(rank.replace("ITF ", "")) if isinstance(rank, str) and "ITF" in rank else 999999
-            return (1, itf_rank)
+        itf_rank = int(rank.replace("ITF ", "")) if isinstance(rank, str) and "ITF" in rank else 999999
+        return (1, itf_rank)
 
     for p_name in sorted([p["Player"] for p in players_data], key=get_sort_key):
         p = next(item for item in players_data if item["Player"] == p_name)
@@ -1280,7 +1274,7 @@ def generate_html(
                 display_name = NAME_LOOKUP.get(name_upper, name_upper)
                 history_arg_players.add(format_player_name(display_name))
 
-    history_players_sorted = sorted(list(history_arg_players))
+    history_players_sorted = sorted(history_arg_players)
 
     # Build roadtogs player list: only players present in the WTA rankings, sorted by rank
     wta_rank_lookup = {
@@ -1591,7 +1585,7 @@ def generate_html(
 
     # Build cascading year/month/day selects for ranking week picker
     _all_csv = _load_wta_csv(source_data_dir)
-    _all_dates = sorted(_all_csv.keys())
+    _all_dates = sorted(_all_csv)
     _latest_date = _all_dates[-1] if _all_dates else ""
 
     _milestone_rankings = {
@@ -1682,7 +1676,7 @@ def generate_html(
         rankings_rows += f'<tr data-country="{country_code.upper()}"><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{country_flag_html(country_code, show_code=False)} {name}</td><td>{p.get("Points", "")}</td><td>{dob}</td></tr>'
 
     default_national_columns = ["N", "Player", "Date", "Event", "Partner", "Opponent", "Score"]
-    source_national_columns = list(national_team_data[0].keys()) if national_team_data else default_national_columns
+    source_national_columns = list(national_team_data[0]) if national_team_data else default_national_columns
     national_columns = [col for col in source_national_columns if col not in ("Tie", "Result", "Round")]
 
     header_label_map = {"N": "#"}
@@ -1763,7 +1757,7 @@ def generate_html(
         national_rows += "</tr>"
 
     default_captains_columns = ["N", "Captain", "Year"]
-    captains_columns = list(captains_data[0].keys()) if captains_data else default_captains_columns
+    captains_columns = list(captains_data[0]) if captains_data else default_captains_columns
 
     captains_header_html = "".join(
         f"<th{header_style_map.get(col, '')}>{escape(header_label_map.get(col, col.upper()))}</th>"

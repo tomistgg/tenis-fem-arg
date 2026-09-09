@@ -464,7 +464,7 @@ def build_tstrength_data(from_year=None, full_backfill=False):
         # Load rankings only if we have new tournaments
         logger.debug("Loading rankings for T-Strength...")
         rankings_index = _load_rankings_index()
-        available_weeks = sorted(rankings_index.keys())
+        available_weeks = sorted(rankings_index)
         unranked_players = {}
 
         for t in new_tournaments:

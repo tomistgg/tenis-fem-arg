@@ -392,7 +392,7 @@ def _is_blocked_or_html_response(raw_text):
     low = raw.lower()
     if "incapsula" in low or "request unsuccessful" in low:
         return True
-    return low.startswith("<html") or low.startswith("<!doctype html")
+    return low.startswith(("<html", "<!doctype html"))
 
 
 def _blocked_response_cause(raw_text):
@@ -404,7 +404,7 @@ def _blocked_response_cause(raw_text):
         return "Incapsula HTML challenge"
     if "request unsuccessful" in low:
         return "blocked response"
-    if low.startswith("<html") or low.startswith("<!doctype html"):
+    if low.startswith(("<html", "<!doctype html")):
         return "unexpected HTML response"
     return "invalid JSON response"
 
@@ -1059,9 +1059,7 @@ def get_full_itf_calendar(driver):
 
     # Only return future tournaments
     today_str = today.strftime("%Y-%m-%d")
-    tournaments = [t for t in tournaments if (t.get("endDate") or t.get("startDate") or "") >= today_str]
-
-    return tournaments
+    return [t for t in tournaments if (t.get("endDate") or t.get("startDate") or "") >= today_str]
 
 
 def get_itf_players(tournament_key, driver):
@@ -1422,7 +1420,7 @@ def get_itf_rankings_cached(date_str, nationality="ARG", *, with_status=False):
         )
 
     if cache:
-        latest_key = sorted(cache.keys())[-1]
+        latest_key = max(cache)
         players = cache.get(latest_key, [])
         reason = (
             "Live rankings refresh failed; showing latest cached rankings."

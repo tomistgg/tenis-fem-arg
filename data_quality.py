@@ -354,7 +354,7 @@ def _validate_tabular_file(path: Path, kind: str) -> int:
             keep_default_na=False,
             chunksize=100_000,
         )
-        for _chunk_number, chunk in enumerate(chunks, 1):
+        for chunk in chunks:
             schema.validate(chunk, lazy=True)
             total += len(chunk)
     except (OSError, UnicodeError, pd.errors.ParserError, pa.errors.SchemaError, pa.errors.SchemaErrors) as exc:

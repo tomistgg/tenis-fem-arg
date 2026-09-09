@@ -110,7 +110,7 @@ def _entry_inputs(
     unranked_arg_names: set[str] = set()
     for tournament_key, players in tournament_store.items():
         week = key_to_week.get(tournament_key, "")
-        base_key = tournament_key[:-5] if tournament_key.endswith("#qual") else tournament_key
+        base_key = tournament_key.removesuffix("#qual")
         tournament_info: TournamentInfo = next(
             (
                 tournaments.get(tournament_key) or tournaments.get(base_key) or {}

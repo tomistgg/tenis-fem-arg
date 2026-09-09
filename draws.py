@@ -235,7 +235,7 @@ def _parse_page(text):
             continue
 
         # Footer detection
-        if line.startswith("WTA Supervisor") or line.startswith("Seeded players"):
+        if line.startswith(("WTA Supervisor", "Seeded players")):
             in_footer = True
             continue
 

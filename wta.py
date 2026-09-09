@@ -672,7 +672,7 @@ def get_wta_rankings_cached(date_str, nationality=None, *, with_status=False):
 
     # Fallback: use the latest available date in the CSV
     if csv_data:
-        latest_key = sorted(csv_data.keys())[-1]
+        latest_key = max(csv_data)
         players = _filter(csv_data.get(latest_key, []))
         reason = (
             "Live rankings refresh failed; showing latest cached rankings."
@@ -1018,7 +1018,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
 
     final_tourney_list = md_list + qual_list
 
-    suffix_map = {p: "" for p in main_draw_names}
-    suffix_map.update({p: " (Q)" for p in qualifying_names})
+    suffix_map = dict.fromkeys(main_draw_names, "")
+    suffix_map.update(dict.fromkeys(qualifying_names, " (Q)"))
 
     return final_tourney_list, suffix_map

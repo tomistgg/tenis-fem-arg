@@ -310,9 +310,7 @@ def strip_accents(text):
 
 
 def normalize_rank_key(value):
-    s = strip_accents(value).upper()
-    s = " ".join(s.split())
-    return s
+    return " ".join(strip_accents(value).upper().split())
 
 
 def monday_from_date_str(value):
@@ -529,7 +527,7 @@ def compute_report(before_dir, after_dir):
         for country, entry in sorted(flagless_player_countries.items())
     ]
 
-    for t_key in sorted(set(before_entry.keys()) | set(after_entry.keys())):
+    for t_key in sorted(before_entry.keys() | after_entry.keys()):
         old_entries = before_entry.get(t_key, [])
         new_entries = after_entry.get(t_key, [])
 
@@ -1022,8 +1020,10 @@ def render_email_markdown(report):
 
     if report.get("new_entry_lists"):
         lines.append("## 2) Tournaments that now have an Entry List")
-        for item in report["new_entry_lists"]:
-            lines.append(f"- {item['tournament_name']} ({item['entries_count']} entries)")
+        lines.extend(
+            f"- {item['tournament_name']} ({item['entries_count']} entries)"
+            for item in report["new_entry_lists"]
+        )
         lines.append("")
 
     if report.get("itf_seed_missing_rankings"):
@@ -1055,20 +1055,17 @@ def render_email_markdown(report):
 
     if report.get("added_calendar_tournaments"):
         lines.append("## 5) Tournaments Added to Calendar")
-        for item in report["added_calendar_tournaments"]:
-            lines.append(f"- {_format_calendar_row(item)}")
+        lines.extend(f"- {_format_calendar_row(item)}" for item in report["added_calendar_tournaments"])
         lines.append("")
 
     if report.get("changed_calendar_tournaments"):
         lines.append("## 6) Tournaments Changed on Calendar")
-        for item in report["changed_calendar_tournaments"]:
-            lines.append(f"- {_format_calendar_change(item)}")
+        lines.extend(f"- {_format_calendar_change(item)}" for item in report["changed_calendar_tournaments"])
         lines.append("")
 
     if report.get("cancelled_calendar_tournaments"):
         lines.append("## 7) Tournaments Cancelled")
-        for item in report["cancelled_calendar_tournaments"]:
-            lines.append(f"- {_format_calendar_row(item)}")
+        lines.extend(f"- {_format_calendar_row(item)}" for item in report["cancelled_calendar_tournaments"])
         lines.append("")
 
     if report.get("flagless_player_countries"):
@@ -1185,8 +1182,10 @@ def render_markdown(report):
 
     if report["new_entry_lists"]:
         lines.append("## 2) Tournaments that now have an Entry List")
-        for item in report["new_entry_lists"]:
-            lines.append(f"- {item['tournament_name']} ({item['entries_count']} entries)")
+        lines.extend(
+            f"- {item['tournament_name']} ({item['entries_count']} entries)"
+            for item in report["new_entry_lists"]
+        )
         lines.append("")
 
     if report["added_matches"]:
@@ -1212,20 +1211,17 @@ def render_markdown(report):
 
     if report["added_calendar_tournaments"]:
         lines.append("## 5) Tournaments Added to Calendar")
-        for item in report["added_calendar_tournaments"]:
-            lines.append(f"- {_format_calendar_row(item)}")
+        lines.extend(f"- {_format_calendar_row(item)}" for item in report["added_calendar_tournaments"])
         lines.append("")
 
     if report.get("changed_calendar_tournaments"):
         lines.append("## 6) Tournaments Changed on Calendar")
-        for item in report["changed_calendar_tournaments"]:
-            lines.append(f"- {_format_calendar_change(item)}")
+        lines.extend(f"- {_format_calendar_change(item)}" for item in report["changed_calendar_tournaments"])
         lines.append("")
 
     if report.get("cancelled_calendar_tournaments"):
         lines.append("## 7) Tournaments Cancelled")
-        for item in report["cancelled_calendar_tournaments"]:
-            lines.append(f"- {_format_calendar_row(item)}")
+        lines.extend(f"- {_format_calendar_row(item)}" for item in report["cancelled_calendar_tournaments"])
         lines.append("")
 
     if report.get("flagless_player_countries"):

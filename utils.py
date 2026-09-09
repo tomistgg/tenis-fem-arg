@@ -326,9 +326,7 @@ def make_data_status(
         "rowCount": row_count,
         "reason": reason,
     }
-    for key, value in optional.items():
-        if value is not None:
-            payload[key] = value
+    payload.update({key: value for key, value in optional.items() if value is not None})
     return payload
 
 
@@ -402,9 +400,9 @@ def merge_entry_list(cached_players, new_players):
     cached_main = [p for p in cached_players if p.get("type") == "MAIN"]
     cached_qual = [p for p in cached_players if p.get("type") == "QUAL"]
     cached_alt = [p for p in cached_players if p.get("type") == "ALT"]
-    final_main = new_main if new_main else cached_main
-    final_qual = new_qual if new_qual else cached_qual
-    final_alt = new_alt if new_alt else cached_alt
+    final_main = new_main or cached_main
+    final_qual = new_qual or cached_qual
+    final_alt = new_alt or cached_alt
     return final_main + final_qual + final_alt
 
 
@@ -455,7 +453,7 @@ def get_calendar_column(level):
         return "gs"
     if lv in ("wta1000", "wta500", "wta250", "finals", "wtafinals"):
         return "wta_tour"
-    if lv in ("wta125",):
+    if lv == "wta125":
         return "wta_125"
     return "itf"
 
@@ -465,12 +463,11 @@ def get_surface_class(surface):
     s = (surface or "").lower()
     if "clay" in s:
         return "cal-clay"
-    elif "carpet" in s:
+    if "carpet" in s:
         return "cal-carpet"
-    elif "grass" in s:
+    if "grass" in s:
         return "cal-grass"
-    else:
-        return "cal-hard"
+    return "cal-hard"
 
 
 def dumps_readable(payload, *, ensure_ascii=False, indent=2, list_item_indent=2, dict_item_indent=2):
@@ -507,7 +504,7 @@ def compress_wta_rankings_bundle(payload):
     """Compress WTA rankings into shared player + per-date index rows."""
     if not isinstance(payload, dict):
         return payload
-    if set(payload.keys()) <= {"p", "d"} and isinstance(payload.get("p"), list) and isinstance(payload.get("d"), dict):
+    if payload.keys() <= {"p", "d"} and isinstance(payload.get("p"), list) and isinstance(payload.get("d"), dict):
         return payload
 
     players = []
@@ -1122,8 +1119,7 @@ def expand_wta_calendar_cache(payload):
     def _expand_item(item):
         if not isinstance(item, dict):
             return item
-        expanded = dict(item)
-        return expanded
+        return dict(item)
 
     expanded = dict(payload)
     items = expanded.get("items")
@@ -1179,8 +1175,7 @@ def expand_itf_calendar_cache(payload):
     def _expand_item(item):
         if not isinstance(item, dict):
             return item
-        expanded = dict(item)
-        return expanded
+        return dict(item)
 
     expanded = dict(payload)
     items = expanded.get("items")
@@ -1235,9 +1230,9 @@ def compress_history_data(rows):
         if not bucket:
             continue
         shared_keys = []
-        key_set = set(bucket[0].keys())
+        key_set = set(bucket[0])
         for row in bucket[1:]:
-            key_set &= set(row.keys())
+            key_set &= row.keys()
         for key in bucket[0]:
             if key in _HISTORY_ALWAYS_EMPTY_FIELDS:
                 continue
@@ -1343,7 +1338,7 @@ def dumps_itf_drawsheets_cache(payload, *, ensure_ascii=False, indent=2):
             return False
         if not all(_is_primitive(v) for v in value.values()):
             return False
-        keys = set(value.keys())
+        keys = set(value)
         return any(keys.issubset(set(group)) for group in inline_groups)
 
     def _append_comma(lines):
@@ -1429,7 +1424,7 @@ def dumps_itf_drawsheets_cache(payload, *, ensure_ascii=False, indent=2):
         if not value:
             return [pad + "{}"]
         lines = [pad + "{"]
-        keys = list(value.keys())
+        keys = list(value)
         rendered = set()
         entries = []
         for key in keys:
@@ -2045,9 +2040,7 @@ def load_csv_rows(file_path, delimiter=","):
     rows = []
     try:
         with open(file_path, encoding="utf-8-sig") as f:
-            reader = csv.DictReader(f, delimiter=delimiter)
-            for row in reader:
-                rows.append(row)
+            rows.extend(csv.DictReader(f, delimiter=delimiter))
     except Exception as e:
         logger.error(f"Error reading {file_path}: {e}")
     return rows

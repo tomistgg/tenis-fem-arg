@@ -6,7 +6,6 @@ from pathlib import Path
 
 import main as main_module
 from html_generator import (
-    _display_tournament_name,
     _schedule_tournament_base_name,
     _week_label_sort_key,
     country_flag_html,
@@ -290,7 +289,6 @@ class GeneratedSiteTests(unittest.TestCase):
         for source_name, expected_name in cases.items():
             with self.subTest(source_name=source_name):
                 self.assertEqual(display_tournament_name(source_name), expected_name)
-                self.assertEqual(_display_tournament_name(source_name), expected_name)
 
     def test_moved_from_annotation_is_absent_from_generated_website_data(self):
         generated_files = (

@@ -8,7 +8,6 @@ from datetime import UTC, date, datetime, tzinfo
 from typing import Any
 from zoneinfo import ZoneInfo
 
-UTC = UTC
 MADRID = ZoneInfo("Europe/Madrid")
 NEW_YORK = ZoneInfo("America/New_York")
 

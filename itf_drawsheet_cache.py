@@ -288,6 +288,6 @@ def save_drawsheet(tournament_id, classification, week_number, data):
         ts_str = get_cache_timestamp(_CACHE_FILE, k, v)
         if ts_str:
             set_cache_entry_meta(_CACHE_FILE, k, fetchedAt=ts_str)
-    for k in set(cache.keys()) - set(fresh.keys()):
+    for k in cache.keys() - fresh.keys():
         remove_cache_entry_meta(_CACHE_FILE, k)
     _save_raw_cache(fresh)

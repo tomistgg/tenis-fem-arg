@@ -12,7 +12,7 @@ from utils import get_calendar_column, get_continent, get_tournament_sort_order
 
 
 def _collapse_calendar_text(value):
-    return " ".join(str(value or "").split()).strip()
+    return " ".join(str(value or "").split())
 
 
 def get_calendar_tournament_key(tournament):

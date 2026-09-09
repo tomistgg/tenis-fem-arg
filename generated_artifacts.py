@@ -23,7 +23,7 @@ def remove_generated_data_artifacts(data_dir: str | Path) -> list[Path]:
             if path.is_file() and path.parent.resolve() == data_dir:
                 path.unlink()
                 removed.append(path)
-    return sorted(set(removed))
+    return sorted(removed)
 
 
 def main() -> None:

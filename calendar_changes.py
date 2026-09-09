@@ -65,14 +65,14 @@ def _calendar_rows_by_identity(rows):
 
 
 def _calendar_representative(rows):
-    return sorted(
+    return min(
         rows,
         key=lambda row: (
             str(row.get("startDate") or ""),
             str(row.get("week_label") or ""),
             str(row.get("name") or ""),
         ),
-    )[0]
+    )
 
 
 def _normalized_calendar_field(row, field):

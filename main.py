@@ -948,10 +948,10 @@ def build_all_tournament_groups(driver):
         current_monday_str <= str(item.get("startDate") or "")[:10] < next_monday_str for item in itf_items
     )
     if today.weekday() == 0 and (has_current_wta or has_current_itf):
-        m_keys = list(monday_map.keys())
+        m_keys = list(monday_map)
         monday_map = {k: monday_map[k] for k in m_keys[:-1]}
         monday_map = {current_monday_str: current_monday_label, **monday_map}
-        itf_keys = list(itf_monday_map.keys())
+        itf_keys = list(itf_monday_map)
         itf_monday_map = {k: itf_monday_map[k] for k in itf_keys[:-1]}
         itf_monday_map = {current_monday_str: current_monday_label, **itf_monday_map}
 
@@ -1733,9 +1733,7 @@ def load_match_history(data_dir=None):
     for file_path in matches_files:
         try:
             with open(file_path, encoding="utf-8-sig") as file_obj:
-                reader = csv.DictReader(file_obj, delimiter=",")
-                for row in reader:
-                    match_history_data.append(row)
+                match_history_data.extend(csv.DictReader(file_obj, delimiter=","))
         except (OSError, UnicodeError, csv.Error) as e:
             logger.error(f"Error reading matches data from {file_path}: {e}")
 
@@ -2368,7 +2366,7 @@ def main():
         # has already had its quiet-period retry; an immediate gap-fill burst
         # only extends Imperva's block.
         expected_draw_types = set(requested_draw_types)
-        if not expected_draw_types.issubset(merged_draws.keys()) and not fetch_had_block:
+        if not expected_draw_types.issubset(merged_draws) and not fetch_had_block:
             for _ in range(2):
                 extra_draws, meta = _fetch_itf_draws_with_meta(
                     tid,
@@ -2380,7 +2378,7 @@ def main():
                 fetch_had_block = fetch_had_block or bool((meta or {}).get("blocked_responses"))
                 if isinstance(extra_draws, dict):
                     merged_draws.update(extra_draws)
-                if expected_draw_types.issubset(merged_draws.keys()):
+                if expected_draw_types.issubset(merged_draws):
                     break
         if merged_draws:
             itf_consecutive_empty = 0
@@ -2529,7 +2527,7 @@ def main():
     for t_key, tdata in draws_store.items():
         draws_snapshot[t_key] = {
             "name": tdata["name"],
-            "types": list(tdata.get("draws", {}).keys()),
+            "types": list(tdata.get("draws", {})),
         }
     save_json_file(os.path.join(DATA_DIR, "draws_snapshot.json"), compress_draws_snapshot(draws_snapshot))
 
