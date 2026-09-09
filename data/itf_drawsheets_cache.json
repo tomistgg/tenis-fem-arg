@@ -18538,14 +18538,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183689564, "playStatusCode": "IP",
+                            "matchId": 1183689564, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "entryStatus": "DA",
                                   "player": {"playerId":800446335,"nationality":"CHI","givenName":"Jimar Geraldine","familyName":"Gerald Gonzalez"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "scores": [4,3], "isWinner": false, "entryStatus": "Q",
                                   "player": {"playerId":800692785,"nationality":"ARG","givenName":"Luciana","familyName":"Agudelo"}
                                 }
                             ]
@@ -18664,7 +18664,8 @@
                             "matchId": 1183689549, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "player": {"playerId":800446335,"nationality":"CHI","givenName":"Jimar Geraldine","familyName":"Gerald Gonzalez"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "DA",
