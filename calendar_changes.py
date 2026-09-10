@@ -222,6 +222,13 @@ def summarize_calendar_addition(item):
     }
 
 
+def summarize_calendar_cancellation(item):
+    """Convert a cancelled tournament into the website presentation model."""
+    summary = summarize_calendar_addition(item)
+    summary["actions"] = ["Cancelled"]
+    return summary
+
+
 def update_calendar_change_history(existing_history, before_rows, after_rows, *, detected_on=None):
     """Merge newly detected changes and retain the current day plus two prior days."""
     detected_on = detected_on or madrid_today()
@@ -242,12 +249,13 @@ def update_calendar_change_history(existing_history, before_rows, after_rows, *,
         if changes:
             groups.setdefault(date_text, []).extend(changes)
 
-    added, raw_changes, _ = diff_calendar_tournaments(before_rows, after_rows, today=detected_on)
+    added, raw_changes, cancelled = diff_calendar_tournaments(before_rows, after_rows, today=detected_on)
     new_changes = [summary for item in raw_changes if (summary := summarize_calendar_change(item))]
     # An empty previous snapshot means the feature is being initialized, not
     # that every tournament on the current calendar was just added.
     if before_rows:
         new_changes.extend(summarize_calendar_addition(item) for item in added)
+        new_changes.extend(summarize_calendar_cancellation(item) for item in cancelled)
     new_changes.sort(key=lambda change: (change.get("startDate", ""), normalize_exact_name(change.get("name", ""))))
     if new_changes:
         current = groups.setdefault(detected_on.isoformat(), [])

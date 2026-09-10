@@ -209,8 +209,8 @@ def _build_gs_cutoff_boxes(gs_data, frozen_mondays):
         if gs.get("name") == "Australian Open":
             default_year = gs.get("year") or madrid_today().year
             ao_dt = datetime.strptime(f"{default_year - 1}-11-09", "%Y-%m-%d")
-            _register_cutoff_box(boxes, (ao_dt - timedelta(weeks=1)).strftime("%Y-%m-%d"), gi * 3, "Last week for AO MD/Q in W15/35")
-            _register_cutoff_box(boxes, ao_dt.strftime("%Y-%m-%d"), gi * 3, "Last week for AO MD/Q in W50+")
+            _register_cutoff_box(boxes, (ao_dt - timedelta(weeks=1)).strftime("%Y-%m-%d"), gi * 3, "Last week for AO in W15/35")
+            _register_cutoff_box(boxes, ao_dt.strftime("%Y-%m-%d"), gi * 3, "Last week for AO in W50+")
             continue
 
         start_dt = datetime.strptime(gs["mdCutoff"], "%Y-%m-%d") + timedelta(weeks=6)
@@ -1537,9 +1537,9 @@ def generate_html(
                         flag_prefix = f"{flag} " if flag else ""
                         display_name = escape(_display_calendar_tournament_name(t["name"]))
                         calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-surface="{sk}">{flag_prefix}{display_name}</span>'
-                _week_cutoff_boxes = _gs_cutoff_boxes.get(week["monday_date"], [])
+                _week_cutoff_boxes = _gs_cutoff_boxes.get(week["week_label"], [])
                 if not _week_cutoff_boxes:
-                    _week_cutoff_boxes = _gs_cutoff_boxes.get(week["week_label"], [])
+                    _week_cutoff_boxes = _gs_cutoff_boxes.get(week["monday_date"], [])
                 for _, _box_label in sorted(_week_cutoff_boxes):
                     calendar_html += f'<span class="cal-cutoff-box">{_box_label}</span>'
                 calendar_html += "</td>"
