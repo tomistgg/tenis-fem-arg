@@ -423,6 +423,7 @@ IOC_TO_ISO2 = {
     "GUA": "gt",
     "HAI": "ht",
     "HKG": "hk",
+    "HON": "hn",
     "HRV": "hr",
     "HUN": "hu",
     "INA": "id",
