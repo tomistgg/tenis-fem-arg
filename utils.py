@@ -406,6 +406,47 @@ def merge_entry_list(cached_players, new_players):
     return final_main + final_qual + final_alt
 
 
+def deduplicate_entry_list(players):
+    """Keep each real player once, preferring MAIN, then QUAL, then ALT."""
+    section_rank = {"MAIN": 0, "QUAL": 1, "ALT": 2}
+    rows = [p for p in (players or []) if isinstance(p, dict)]
+
+    def player_key(row):
+        name = " ".join(str(row.get("name") or "").split())
+        if not name or name.startswith("("):
+            return None
+        player_id = str(row.get("player_id") or row.get("itf_id") or row.get("wta_id") or "").strip()
+        return ("id", player_id) if player_id else ("name", name.casefold())
+
+    preferred = {}
+    for row in rows:
+        key = player_key(row)
+        if key is not None:
+            preferred[key] = min(preferred.get(key, 99), section_rank.get(row.get("type"), 99))
+
+    seen = set()
+    duplicates = []
+    result = []
+    for row in rows:
+        key = player_key(row)
+        row_rank = section_rank.get(row.get("type"), 99)
+        if key is None or (row_rank == preferred[key] and key not in seen):
+            result.append(row)
+            if key is not None:
+                seen.add(key)
+            continue
+        duplicates.append(
+            {
+                "name": row.get("name", ""),
+                "kept_type": next(
+                    (section for section, rank in section_rank.items() if rank == preferred[key]), ""
+                ),
+                "removed_type": row.get("type", ""),
+            }
+        )
+    return result, duplicates
+
+
 def fix_display_name(name):
     """Apply tournament name overrides and city casing fixes."""
     base = name.split(" Qualifying")[0]

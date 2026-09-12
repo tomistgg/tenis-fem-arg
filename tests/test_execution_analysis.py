@@ -89,6 +89,21 @@ def test_optional_player_profile_failure_is_an_email_warning_not_a_rejection():
     assert "update was rejected" not in markdown
 
 
+def test_duplicate_entry_players_are_explained_as_removed_in_the_email():
+    issue = {
+        "component": "entry-list",
+        "operation": "remove duplicate players",
+        "message": "Duplicate players removed from Sao Luis: Example Player (QUAL / ALT)",
+        "severity": "degraded",
+    }
+
+    markdown = render_status_markdown(completed_state("degraded", issues=[issue]))
+
+    assert "The provider listed players more than once in an Entry List." in markdown
+    assert "The duplicates were removed before publishing." in markdown
+    assert "Example Player (QUAL / ALT)" in markdown
+
+
 def test_unfinished_final_status_is_not_trusted_or_promoted():
     state = {
         "status": "degraded",

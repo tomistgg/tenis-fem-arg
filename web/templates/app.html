@@ -676,14 +676,19 @@
                                     <span class="draws-tournament-current" id="draws-tournament-current">Select tournament</span>
                                     <span class="draws-tournament-chevron" aria-hidden="true"></span>
                                 </button>
-                                <div class="draws-tournament-menu" id="draws-tournament-menu" role="listbox" aria-label="Draw tournament" hidden></div>
+                                <div class="draws-tournament-menu" id="draws-tournament-menu" role="listbox" aria-label="Draw tournament" hidden>
+                                    <div class="draws-tournament-note" translate="no">
+                                        <span class="draws-tournament-note-en">Only Draws with <img src="assets/argentina.png" alt="ARG"> players are shown</span>
+                                        <span class="draws-tournament-note-es">Solo se muestran cuadros con jugadoras <img src="assets/argentina.png" alt="ARG"></span>
+                                    </div>
+                                </div>
                                 <select class="draws-tournament-native" id="draws-tournament-select" tabindex="-1" aria-hidden="true" onchange="onDrawTournamentChange(this.value)">
                                     @@WTARG_DRAWS_DROPDOWN_HTML@@
                                 </select>
                             </div>
                             <div class="draws-type-btns" id="draws-type-btns"></div>
                             <span style="font-size:9px;color:#94a3b8;">Click a round header to filter</span>
-                            <span style="flex:1;"></span>
+                            <span class="draws-toolbar-spacer"></span>
                             <button class="draw-filter-reset" id="draw-filter-reset" onclick="resetDrawFilter()">Show Full Draw</button>
                         </div>
                         <div class="draw-bracket-wrapper" id="draw-bracket-wrapper">

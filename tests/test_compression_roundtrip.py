@@ -17,6 +17,7 @@ from utils import (
     compress_tournament_snapshot,
     compress_tstrength_cache,
     compress_wta_calendar_cache,
+    deduplicate_entry_list,
     expand_calendar_snapshot,
     expand_draws_snapshot,
     expand_draws_store_cache,
@@ -32,6 +33,24 @@ from utils import (
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
+
+
+def test_entry_list_deduplication_prefers_qualifying_over_alternates():
+    players = [
+        {"name": "Unique Main", "player_id": "1", "type": "MAIN"},
+        {"name": "Repeated Player", "player_id": "2", "type": "QUAL"},
+        {"name": "Repeated Player", "player_id": "2", "type": "ALT"},
+    ]
+
+    cleaned, duplicates = deduplicate_entry_list(players)
+
+    assert [(row["name"], row["type"]) for row in cleaned] == [
+        ("Unique Main", "MAIN"),
+        ("Repeated Player", "QUAL"),
+    ]
+    assert duplicates == [
+        {"name": "Repeated Player", "kept_type": "QUAL", "removed_type": "ALT"}
+    ]
 
 
 def assert_round_trip(payload, compress, expand):

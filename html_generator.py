@@ -1106,7 +1106,7 @@ def generate_html(
     # Build tournament side menu HTML for Entry Lists
     entry_menu_html = ""
     first_key = None
-    legend_html = '<div class="entry-menu-legend"><span class="entry-menu-gm-sample">99.9</span> Geometric Mean: Overall draw quality across all players.</div>'
+    legend_html = '<div class="entry-menu-legend"><span class="entry-menu-gm-sample">99.9</span> Overall draw quality across all players.</div>'
     for week, tourneys in sorted(tournament_groups.items(), key=lambda item: _week_label_sort_key(item[0])):
         week_has_data = False
         for t_key in tourneys:

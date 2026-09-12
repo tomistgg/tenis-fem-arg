@@ -137,7 +137,7 @@ def test_calendar_change_history_includes_additions_but_not_initial_snapshot():
                     "country": "TUN",
                     "name": "W15 Monastir",
                     "startDate": "2026-11-02",
-                    "actions": ["Added to calendar"],
+                    "actions": ["Added"],
                 }
             ],
         }
@@ -145,5 +145,5 @@ def test_calendar_change_history_includes_additions_but_not_initial_snapshot():
     rendered = _render_calendar_changes(history)
     assert "W15 Monastir</strong>" in rendered
     assert "W15 Monastir 31" not in rendered
-    assert "Added to calendar" in rendered
+    assert "Added" in rendered
     assert update_calendar_change_history([], [], [added], detected_on=date(2026, 9, 9)) == []

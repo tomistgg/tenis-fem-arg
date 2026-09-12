@@ -50,6 +50,8 @@
                     value = translate(value);
                 } else if (template === 'Surface changed to {value}') {
                     value = dictionary[value] || value;
+                } else if (template === 'Last week for {value}') {
+                    value = value.replace(/\bin\b/g, 'en');
                 }
                 match[1] = value;
                 result = dictionary[template].replace(/\{\w+\}/g, field => match[fields.indexOf(field) + 1] || field);

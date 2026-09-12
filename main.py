@@ -85,6 +85,7 @@ from utils import (
     compress_calendar_snapshot,
     compress_draws_snapshot,
     compress_tournament_snapshot,
+    deduplicate_entry_list,
     display_tournament_name,
     dumps_calendar_snapshot,
     dumps_draws_store_cache,
@@ -310,6 +311,24 @@ def _canonicalize_player_names(players, source="", names_only=False):
     if changed:
         logger.info(f"[Alias] Canonicalized {changed} player names")
     return players
+
+
+def _remove_duplicate_entry_players(players, tournament_key, tournament_name):
+    cleaned, duplicates = deduplicate_entry_list(players)
+    if duplicates:
+        details = ", ".join(
+            f"{item['name']} ({item['kept_type']} / {item['removed_type']})" for item in duplicates
+        )
+        message = f"Duplicate players removed from {tournament_name} [{tournament_key}]: {details}"
+        logger.warning(message)
+        report_run_issue(
+            "entry-list",
+            "remove duplicate players",
+            ValueError(message),
+            severity="degraded",
+            context={"tournament_key": tournament_key, "duplicates": duplicates},
+        )
+    return cleaned
 
 
 def _normalize_schedule_text(text):
@@ -1338,6 +1357,7 @@ def process_tournaments(
                     t_list = merge_entry_list(cached_players, t_list)
                 if not is_manual_entry:
                     _canonicalize_player_names(t_list, source="wta", names_only=True)
+                t_list = _remove_duplicate_entry_players(t_list, key, t_name)
                 entry_cache[key] = t_list
                 tournament_store[key] = t_list
                 # If the live WTA page disappears or only partially loads, rebuild
@@ -1538,6 +1558,7 @@ def process_tournaments(
                     tourney_players_list = merge_entry_list(tourney_players_list, fresh_players)
 
                 _canonicalize_player_names(tourney_players_list, source="itf", names_only=True)
+                tourney_players_list = _remove_duplicate_entry_players(tourney_players_list, key, t_name)
 
                 if fresh_players or tourney_players_list != cached_players:
                     entry_cache[key] = tourney_players_list

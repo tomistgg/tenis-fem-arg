@@ -218,7 +218,7 @@ def summarize_calendar_addition(item):
         "country": str(item.get("country") or "").strip().upper(),
         "name": name,
         "startDate": str(item.get("startDate") or "").strip()[:10],
-        "actions": ["Added to calendar"],
+        "actions": ["Added"],
     }
 
 
