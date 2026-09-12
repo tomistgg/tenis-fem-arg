@@ -75,11 +75,15 @@ def _subject_for_issue(issue: dict[str, Any]) -> str:
 
 def _friendly_issue(issue: dict[str, Any]) -> tuple[str, str]:
     subject = _subject_for_issue(issue)
+    component = _clean(issue.get("component")).lower()
     message = _clean(issue.get("message") or issue.get("type")).lower()
     operation = _clean(issue.get("operation")).lower()
     severity = _clean(issue.get("severity")).lower()
 
-    if "stale" in message or "previously saved" in message:
+    if "duplicate" in message and ("entry-list" in component or "player list" in operation):
+        reason = "The provider listed players more than once in an Entry List."
+        impact = "The duplicates were removed before publishing."
+    elif "stale" in message or "previously saved" in message:
         reason = f"Fresh {subject} could not be downloaded, so previously saved information was used."
         impact = "The affected information may be out of date."
     elif "no cached fallback" in message or "no saved" in message:
