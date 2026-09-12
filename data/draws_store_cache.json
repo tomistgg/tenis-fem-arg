@@ -804,5 +804,99 @@
         "num_rounds": 5
       }
     }
+  },
+  "https://www.wtatennis.com/tournaments/1139/sao-paulo/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 250 Sao Paulo",
+      "level": "WTA 250",
+      "week": "Week of September 14",
+      "startDate": "2026-09-14",
+      "endDate": "2026-09-20",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "SP Open",
+        "location": "SAO PAULO, BRA",
+        "dates": "September 14-20 2026",
+        "prize": "$ 283,347",
+        "surface": "Hard",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 16,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "YOU, Xiaodi", "country": "CHN"},
+          {"pos": 2, "entry": "WC", "name": "FULLANA, Luiza", "country": "BRA"},
+          {"pos": 3, "name": "BOSIO, Victoria", "country": "ARG"},
+          {"pos": 4, "seed": "8", "name": "CABRERA, Lizette", "country": "AUS"},
+          {"pos": 5, "seed": "2", "name": "KINOSHITA, Hayu", "country": "JPN"},
+          {"pos": 6, "name": "RODRIGUEZ, Victoria", "country": "MEX"},
+          {"pos": 7, "entry": "WC", "name": "CANDIOTTO, Ana", "country": "BRA"},
+          {"pos": 8, "seed": "6", "name": "BRACE, Cadence", "country": "CAN"},
+          {"pos": 9, "seed": "3", "name": "MIKULSKYTE, Justina", "country": "LTU"},
+          {"pos": 10, "name": "VERGARA RIVERA, Antonia", "country": "CHI"},
+          {"pos": 11, "name": "PAQUET, Chloe", "country": "FRA"},
+          {"pos": 12, "seed": "5", "name": "CAPURRO TABORDA, Martina", "country": "ARG"},
+          {"pos": 13, "seed": "4", "name": "OSUIGWE, Whitney", "country": "USA"},
+          {"pos": 14, "name": "LABRANA, Fernanda", "country": "CHI"},
+          {"pos": 15, "name": "SMITH, Alana", "country": "USA"},
+          {"pos": 16, "seed": "7", "name": "TIKHONOVA, Anastasia"}
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/2075/guadalajara-500/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 500 Guadalajara",
+      "level": "WTA 500",
+      "week": "Week of September 14",
+      "startDate": "2026-09-13",
+      "endDate": "2026-09-19",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "Guadalajara Open presentado por",
+        "location": "Santander",
+        "dates": "GUADALAJARA, MEX",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 16,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "LEPCHENKO, Varvara", "country": "USA"},
+          {"pos": 2, "name": "MELICHAR-MARTINEZ, Nicole", "country": "USA"},
+          {"pos": 3, "entry": "WC", "name": "BIELINSKA, Sofi a", "country": "UKR"},
+          {"pos": 4, "seed": "5", "name": "HIBINO, Nao", "country": "JPN"},
+          {"pos": 5, "seed": "2", "name": "SHYMANOVICH, Iryna"},
+          {"pos": 6, "name": "SÁNCHEZ, Ana Sofia", "country": "MEX"},
+          {"pos": 7, "name": "MA, Lea", "country": "USA"},
+          {"pos": 8, "seed": "7", "name": "ZAVATSKA, Katarina", "country": "UKR"},
+          {"pos": 9, "seed": "3", "name": "MONNET, Carole", "country": "FRA"},
+          {"pos": 10, "entry": "WC", "name": "GARCIA RUIZ, Julia", "country": "MEX"},
+          {"pos": 11, "name": "PANOVA, Alexandra"},
+          {"pos": 12, "seed": "6", "name": "SCOTT, Katrina", "country": "USA"},
+          {"pos": 13, "seed": "4", "name": "SORRIBES TORMO, Sara", "country": "ESP"},
+          {"pos": 14, "name": "KOIKE, Ena", "country": "JPN"},
+          {"pos": 15, "name": "XU, Mimi", "country": "GBR"},
+          {"pos": 16, "seed": "8", "name": "DOLEHIDE, Caroline", "country": "USA"}
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
+      }
+    }
   }
 }
