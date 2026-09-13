@@ -13093,14 +13093,13 @@
                             ]
                           },
                           {
-                            "matchId": 1183696594, "playStatusCode": "TP",
+                            "matchId": 1183696594, "playStatusCode": "NP", "resultStatusDesc": "BYE", "resultStatusCode": "BYE",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
-                                  "player": {"playerId":800581600,"nationality":"IND","givenName":"Aarushi Mahendra","familyName":"Raval"}
+                                  "scores": [], "isWinner": false, "entryStatus": null
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [], "isWinner": true, "entryStatus": "DA",
                                   "player": {"playerId":800523708,"nationality":"AUT","givenName":"Viktoria","familyName":"Kurz"}
                                 }
                             ]
@@ -13392,7 +13391,8 @@
                                   "player": {"playerId":800436364,"nationality":"UKR","givenName":"Kateryna","familyName":"Diatlova"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "player": {"playerId":800523708,"nationality":"AUT","givenName":"Viktoria","familyName":"Kurz"}
                                 }
                             ]
                           },
