@@ -133,7 +133,8 @@
           {"round": 3, "match_num": 2, "winner_name": "A. Ibragimova", "score": "62 63"},
           {"round": 3, "match_num": 3, "winner_name": "A. Herrero Linana", "score": "63 62"},
           {"round": 4, "match_num": 0, "winner_name": "R. Dencheva", "score": "46 64 64"},
-          {"round": 4, "match_num": 1, "winner_name": "A. Ibragimova", "score": "46 62 63"}
+          {"round": 4, "match_num": 1, "winner_name": "A. Ibragimova", "score": "46 62 63"},
+          {"round": 5, "match_num": 0, "winner_name": "R. Dencheva", "score": "75 64"}
         ],
         "round_labels": [
           "Round of 32",
@@ -232,7 +233,8 @@
           {"round": 3, "match_num": 2, "winner_name": "N. Noha Akugue", "score": "61 76(7)"},
           {"round": 3, "match_num": 3, "winner_name": "G. Maristany Zulet...", "score": "63 16 61"},
           {"round": 4, "match_num": 0, "winner_name": "F. Ferro", "score": "61 26 60"},
-          {"round": 4, "match_num": 1, "winner_name": "N. Noha Akugue", "score": "76(2) 63"}
+          {"round": 4, "match_num": 1, "winner_name": "N. Noha Akugue", "score": "76(2) 63"},
+          {"round": 5, "match_num": 0, "winner_name": "F. Ferro", "score": "61 62"}
         ],
         "round_labels": [
           "Round of 32",
@@ -964,7 +966,7 @@
         "tournament_name": "Caldas da Rainha Ladies Open",
         "location": "CALDAS DA RAINHA, POR",
         "dates": "September 14-20 2026",
-        "prize": "€ 10,000",
+        "prize": "€ 100,000",
         "surface": "Hard",
         "draw_type": "SINGLES QUALIFYING DRAW",
         "draw_size": 16,
@@ -986,11 +988,22 @@
           {"pos": 15, "name": "GARCIA PEREZ, Georgina", "country": "ESP"},
           {"pos": 16, "seed": "7", "name": "ARSENEAULT, Ariana", "country": "CAN"}
         ],
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "E. Malygina", "score": "60 62"},
+          {"round": 1, "match_num": 1, "winner_name": "G. Da Silva Fick", "score": "64 67(5) 63"},
+          {"round": 1, "match_num": 2, "winner_name": "R. Brantmeier", "score": "64 57 64"},
+          {"round": 1, "match_num": 3, "winner_name": "K. Collins", "score": "62 62"},
+          {"round": 1, "match_num": 4, "winner_name": "S. Johnson", "score": "64 62"},
+          {"round": 1, "match_num": 5, "winner_name": "M. Rapolu", "score": "63 62"},
+          {"round": 1, "match_num": 6, "winner_name": "A. Voloshchuk", "score": "62 63"},
+          {"round": 1, "match_num": 7, "winner_name": "A. Arseneault", "score": "62 63"}
+        ],
         "round_labels": [
           "Q1",
-          "Q2"
+          "Q2",
+          "Qualifier"
         ],
-        "num_rounds": 2
+        "num_rounds": 3
       },
       "MDS":
       {
@@ -1088,11 +1101,22 @@
           {"pos": 15, "name": "CHERUBINI, Diletta", "country": "ITA"},
           {"pos": 16, "seed": "7", "name": "SHINIKOVA, Isabella", "country": "BUL"}
         ],
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "N. Schunk", "score": "62 15 RET"},
+          {"round": 1, "match_num": 1, "winner_name": "D. Jakupovic", "score": "62 63"},
+          {"round": 1, "match_num": 2, "winner_name": "R. Roura Llaverias", "score": "64 60"},
+          {"round": 1, "match_num": 3, "winner_name": "M. Sieg", "score": "63 64"},
+          {"round": 1, "match_num": 4, "winner_name": "J. Steur", "score": "63 61"},
+          {"round": 1, "match_num": 5, "winner_name": "D. Spiteri", "score": "64 06 61"},
+          {"round": 1, "match_num": 6, "winner_name": "A. Teixido Garcia", "score": "26 75 62"},
+          {"round": 1, "match_num": 7, "winner_name": "D. Cherubini", "score": "46 64 64"}
+        ],
         "round_labels": [
           "Q1",
-          "Q2"
+          "Q2",
+          "Qualifier"
         ],
-        "num_rounds": 2
+        "num_rounds": 3
       },
       "MDS":
       {
@@ -1203,19 +1227,119 @@
         "matches": [
           {"round": 1, "match_num": 0, "winner_name": "G. Dittmann", "score": "36 63 75"},
           {"round": 1, "match_num": 1, "winner_name": "S. Pushkar", "score": "67 62 64"},
+          {"round": 1, "match_num": 2, "winner_name": "A. Firman", "score": "62 60"},
+          {"round": 1, "match_num": 3, "winner_name": "G. Lee", "score": "26 76(2) 60"},
           {"round": 1, "match_num": 4, "winner_name": "C. Tanguilig", "score": "62 62"},
           {"round": 1, "match_num": 5, "winner_name": "C. Raschdorf", "score": "64 61"},
+          {"round": 1, "match_num": 6, "winner_name": "S. Vickery", "score": "60 62"},
+          {"round": 1, "match_num": 7, "winner_name": "C. Lopez Martinez", "score": "62 61"},
+          {"round": 1, "match_num": 8, "winner_name": "M. Lollia", "score": "63 62"},
           {"round": 1, "match_num": 9, "winner_name": "M. Szostak", "score": "57 62 61"},
           {"round": 1, "match_num": 10, "winner_name": "S. Baslilar", "score": "63 64"},
           {"round": 1, "match_num": 11, "winner_name": "P. Cembranos", "score": "62 62"},
           {"round": 1, "match_num": 12, "winner_name": "C. Vlasselaer", "score": "75 61"},
-          {"round": 1, "match_num": 13, "winner_name": "L. Tran", "score": "76(4) 61"}
+          {"round": 1, "match_num": 13, "winner_name": "L. Tran", "score": "76(4) 61"},
+          {"round": 1, "match_num": 14, "winner_name": "D. Tran", "score": "61 63"},
+          {"round": 1, "match_num": 15, "winner_name": "K. Chiarello", "score": "61 63"}
         ],
         "round_labels": [
           "Round of 32",
           "Round of 16"
         ],
         "num_rounds": 2
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/2044/ljubljana-125/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 125 Ljubljana",
+      "level": "WTA 125",
+      "week": "Week of September 14",
+      "startDate": "2026-09-14",
+      "endDate": "2026-09-20",
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":false,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "MDS":
+      {
+        "tournament_name": "Zavarovalnica Triglav Ljubljana",
+        "location": "LJUBLJANA, SLO",
+        "dates": "September 14-20 2026",
+        "prize": "€ 100,000",
+        "surface": "Clay",
+        "draw_type": "SINGLES MAIN DRAW",
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "JONES, Francesca", "country": "GBR"},
+          {"pos": 2, "entry": "WC", "name": "SENICA, Alja", "country": "SLO"},
+          {"pos": 3, "name": "BARTHEL, Mona", "country": "GER"},
+          {"pos": 5, "name": "BULGARU, Miriam", "country": "ROU"},
+          {"pos": 6, "name": "GJORCHESKA, Lina", "country": "MKD"},
+          {"pos": 8, "seed": "7", "name": "RISTIC, Mia", "country": "SRB"},
+          {"pos": 9, "seed": "3", "name": "RADIVOJEVIC, Lola", "country": "SRB"},
+          {"pos": 10, "name": "BASILETTI, Noemi", "country": "ITA"},
+          {"pos": 11, "name": "HERCOG, Polona", "country": "SLO"},
+          {"pos": 12, "name": "STRUPLOVA, Julie", "country": "CZE"},
+          {"pos": 13, "name": "HAVLICKOVA, Lucie", "country": "CZE"},
+          {"pos": 14, "name": "ZANTEDESCHI, Aurora", "country": "ITA"},
+          {"pos": 15, "name": "CARLE, Maria Lourdes", "country": "ARG"},
+          {"pos": 16, "seed": "5", "name": "GORGODZE, Ekaterine", "country": "GEO"},
+          {"pos": 17, "seed": "8", "name": "PALICOVA, Barbora", "country": "CZE"},
+          {"pos": 18, "name": "FEISTEL, Gina", "country": "POL"},
+          {"pos": 19, "name": "RUS, Arantxa", "country": "NED"},
+          {"pos": 20, "name": "DE STEFANO, Samira", "country": "ITA"},
+          {"pos": 21, "name": "TUBELLO, Alice", "country": "FRA"},
+          {"pos": 22, "name": "WOLFF, Vivian", "country": "USA"},
+          {"pos": 23, "entry": "WC", "name": "LOVRIC, Pia", "country": "SLO"},
+          {"pos": 24, "seed": "4", "name": "GALFI, Dalma", "country": "HUN"},
+          {"pos": 25, "seed": "6", "name": "SOBOLIEVA, Anastasiia", "country": "UKR"},
+          {"pos": 27, "name": "PEDONE, Giorgia", "country": "ITA"},
+          {"pos": 28, "entry": "WC", "name": "ZOLDAKOVA, Denisa", "country": "CZE"},
+          {"pos": 29, "name": "FALKOWSKA, Weronika", "country": "POL"},
+          {"pos": 30, "entry": "WC", "name": "NOVAK, Kristina", "country": "SLO"},
+          {"pos": 32, "seed": "2", "name": "SAMSON, Laura", "country": "CZE"}
+        ],
+        "qualifiers": [
+          4,
+          7,
+          26,
+          31
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
+      },
+      "QS":
+      {
+        "tournament_name": "Zavarovalnica Triglav Ljubljana",
+        "location": "LJUBLJANA, SLO",
+        "dates": "September 14-20 2026",
+        "prize": "€ 100,000",
+        "surface": "Clay",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 8,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "CHIESA, Deborah", "country": "ITA"},
+          {"pos": 2, "name": "CIRIC BAGARIC, Lucija", "country": "CRO"},
+          {"pos": 3, "seed": "2", "name": "BOSKOVIC, Lea", "country": "CRO"},
+          {"pos": 4, "name": "SERBAN, Raluka", "country": "CYP"},
+          {"pos": 5, "seed": "3", "name": "ZELNICKOVA, Radka", "country": "SVK"},
+          {"pos": 6, "entry": "WC", "name": "NAJZER, Kaja", "country": "SLO"},
+          {"pos": 7, "seed": "4", "name": "COLMEGNA, Martina", "country": "ITA"},
+          {"pos": 8, "entry": "WC", "name": "PRICE, Gabriella", "country": "USA"}
+        ],
+        "round_labels": [
+          "Q1"
+        ],
+        "num_rounds": 1
       }
     }
   }
