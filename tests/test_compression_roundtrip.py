@@ -53,6 +53,22 @@ def test_entry_list_deduplication_prefers_qualifying_over_alternates():
     ]
 
 
+def test_entry_list_deduplication_renumbers_the_section_with_the_removed_player():
+    players = [
+        {"pos": "75", "pos_num": 75, "name": "Repeated Player", "player_id": "1", "type": "MAIN"},
+        {"pos": "1", "pos_num": 1, "name": "Repeated Player", "player_id": "1", "type": "QUAL"},
+        {"pos": "2", "pos_num": 2, "name": "First Qualifier", "player_id": "2", "type": "QUAL"},
+        {"pos": "3", "pos_num": 3, "name": "Second Qualifier", "player_id": "3", "type": "QUAL"},
+    ]
+
+    cleaned, _ = deduplicate_entry_list(players)
+
+    assert [(row["name"], row["pos"], row["pos_num"]) for row in cleaned if row["type"] == "QUAL"] == [
+        ("First Qualifier", "1", 1),
+        ("Second Qualifier", "2", 2),
+    ]
+
+
 def assert_round_trip(payload, compress, expand):
     assert expand(compress(payload)) == payload
 

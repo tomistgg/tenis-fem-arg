@@ -407,7 +407,7 @@ def merge_entry_list(cached_players, new_players):
 
 
 def deduplicate_entry_list(players):
-    """Keep each real player once, preferring MAIN, then QUAL, then ALT."""
+    """Keep each player once, prefer MAIN/QUAL/ALT, and close affected position gaps."""
     section_rank = {"MAIN": 0, "QUAL": 1, "ALT": 2}
     rows = [p for p in (players or []) if isinstance(p, dict)]
 
@@ -444,6 +444,21 @@ def deduplicate_entry_list(players):
                 "removed_type": row.get("type", ""),
             }
         )
+
+    affected_sections = {item["removed_type"] for item in duplicates}
+    section_positions = {section: 0 for section in affected_sections}
+    for index, row in enumerate(result):
+        section = row.get("type")
+        if section not in affected_sections:
+            continue
+        section_positions[section] += 1
+        position = section_positions[section]
+        updated_row = dict(row)
+        if "pos" in updated_row:
+            updated_row["pos"] = str(position) if isinstance(updated_row["pos"], str) else position
+        if "pos_num" in updated_row:
+            updated_row["pos_num"] = position
+        result[index] = updated_row
     return result, duplicates
 
 
