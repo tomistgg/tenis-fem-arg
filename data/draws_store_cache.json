@@ -311,12 +311,14 @@
           {"pos": 2, "name": "POHANKOVA, Mia", "country": "SVK"},
           {"pos": 3, "name": "JORGE, Matilde", "country": "POR"},
           {"pos": 4, "name": "GASANOVA, Anastasia"},
+          {"pos": 5, "entry": "Q", "name": "COLLINS, Kylie", "country": "USA"},
           {"pos": 6, "name": "SWAN, Katie", "country": "GBR"},
           {"pos": 7, "entry": "WC", "name": "NOZDRACHOVA, Mariia", "country": "UKR"},
           {"pos": 8, "seed": "7", "name": "CROSS, Kayla", "country": "CAN"},
           {"pos": 9, "seed": "4", "name": "NOHA AKUGUE, Noma", "country": "GER"},
           {"pos": 10, "name": "AKLI, Ayana", "country": "USA"},
           {"pos": 11, "name": "WERNER, Caroline", "country": "GER"},
+          {"pos": 12, "entry": "Q", "name": "RAPOLU, Malaika", "country": "USA"},
           {"pos": 13, "name": "MICIC, Elena", "country": "AUS"},
           {"pos": 14, "name": "KOEVERMANS, Anouk", "country": "NED"},
           {"pos": 15, "name": "ITO, Aoi", "country": "JPN"},
@@ -326,21 +328,17 @@
           {"pos": 19, "name": "ANDREEVA, Erika"},
           {"pos": 20, "name": "HRUNCAKOVA, Viktoria", "country": "SVK"},
           {"pos": 21, "name": "RINALDO PERSSON, Kajsa", "country": "SWE"},
+          {"pos": 22, "entry": "Q", "name": "VOLOSHCHUK, Angelina", "country": "POR"},
           {"pos": 23, "entry": "WC", "name": "GARAKANI, Sana", "country": "POR"},
           {"pos": 24, "seed": "3", "name": "PIGATO, Lisa", "country": "ITA"},
           {"pos": 25, "seed": "5", "name": "VANDROMME, Jeline", "country": "BEL"},
           {"pos": 26, "entry": "WC", "name": "TOMAI, Carla", "country": "POR"},
           {"pos": 27, "name": "AKSU, Ayla", "country": "TUR"},
+          {"pos": 28, "entry": "Q", "name": "MALYGINA, Elena", "country": "EST"},
           {"pos": 29, "name": "JORGE, Francisca", "country": "POR"},
           {"pos": 30, "name": "GAO, Xinyu", "country": "CHN"},
           {"pos": 31, "name": "SEBOV, Katherine", "country": "CAN"},
           {"pos": 32, "seed": "2", "name": "JIMENEZ KASINTSEVA, Victoria", "country": "AND"}
-        ],
-        "qualifiers": [
-          5,
-          12,
-          22,
-          28
         ],
         "round_labels": [
           "Round of 32",
@@ -401,7 +399,11 @@
           {"round": 1, "match_num": 4, "winner_name": "J. Steur", "score": "63 61"},
           {"round": 1, "match_num": 5, "winner_name": "D. Spiteri", "score": "64 06 61"},
           {"round": 1, "match_num": 6, "winner_name": "A. Teixido Garcia", "score": "26 75 62"},
-          {"round": 1, "match_num": 7, "winner_name": "D. Cherubini", "score": "46 64 64"}
+          {"round": 1, "match_num": 7, "winner_name": "D. Cherubini", "score": "46 64 64"},
+          {"round": 2, "match_num": 0, "winner_name": "N. Schunk", "score": "76(3) 75"},
+          {"round": 2, "match_num": 1, "winner_name": "M. Sieg", "score": "75 62"},
+          {"round": 2, "match_num": 2, "winner_name": "J. Steur", "score": "61 76(0)"},
+          {"round": 2, "match_num": 3, "winner_name": "A. Teixido Garcia", "score": "64 60"}
         ],
         "round_labels": [
           "Q1",
@@ -421,6 +423,8 @@
         "draw_size": 32,
         "players": [
           {"pos": 1, "seed": "1", "name": "SELEKHMETEVA, Oksana", "country": "ESP"},
+          {"pos": 2, "entry": "Q", "name": "SCHUNK, Nastasja", "country": "GER"},
+          {"pos": 3, "entry": "Q", "name": "SIEG, Madison", "country": "USA"},
           {"pos": 4, "name": "BURILLO, Irene", "country": "ESP"},
           {"pos": 5, "name": "HERRERO LINANA, Alicia", "country": "ESP"},
           {"pos": 6, "entry": "WC", "name": "CORTEZ LLORCA, Lucia", "country": "ESP"},
@@ -437,6 +441,7 @@
           {"pos": 17, "seed": "6", "name": "ROMERO GORMAZ, Leyre", "country": "ESP"},
           {"pos": 18, "name": "TREVISAN, Martina", "country": "ITA"},
           {"pos": 19, "name": "BUREL, Clara", "country": "FRA"},
+          {"pos": 20, "entry": "Q", "name": "TEIXIDO GARCIA, Aran", "country": "ESP"},
           {"pos": 21, "name": "CENGIZ, Berfu", "country": "TUR"},
           {"pos": 22, "name": "MARISTANY ZULETA DE REALES, Guiomar", "country": "ESP"},
           {"pos": 23, "name": "BENNEMANN, Eva", "country": "GER"},
@@ -445,15 +450,13 @@
           {"pos": 26, "entry": "WC", "name": "MARTINEZ CIREZ, Carlota", "country": "ESP"},
           {"pos": 27, "name": "MINTEGI DEL OLMO, Ane", "country": "ESP"},
           {"pos": 28, "name": "GEERLINGS, Ariana", "country": "ESP"},
+          {"pos": 29, "entry": "Q", "name": "STEUR, Joelle", "country": "GER"},
           {"pos": 30, "entry": "WC", "name": "ESQUIVA BANULS, Charo", "country": "ESP"},
           {"pos": 31, "name": "CURMI, Francesca", "country": "MLT"},
           {"pos": 32, "seed": "2", "name": "ERJAVEC, Veronika", "country": "SLO"}
         ],
-        "qualifiers": [
-          2,
-          3,
-          20,
-          29
+        "matches": [
+          {"round": 1, "match_num": 4, "winner_name": "M. Garcia Cid", "score": "63 63"}
         ],
         "round_labels": [
           "Round of 32",
@@ -532,7 +535,12 @@
           {"round": 1, "match_num": 12, "winner_name": "C. Vlasselaer", "score": "75 61"},
           {"round": 1, "match_num": 13, "winner_name": "L. Tran", "score": "76(4) 61"},
           {"round": 1, "match_num": 14, "winner_name": "D. Tran", "score": "61 63"},
-          {"round": 1, "match_num": 15, "winner_name": "K. Chiarello", "score": "61 63"}
+          {"round": 1, "match_num": 15, "winner_name": "K. Chiarello", "score": "61 63"},
+          {"round": 2, "match_num": 0, "winner_name": "G. Dittmann", "score": "61 60"},
+          {"round": 2, "match_num": 2, "winner_name": "C. Tanguilig", "score": "60 61"},
+          {"round": 2, "match_num": 5, "winner_name": "S. Baslilar", "score": "75 63"},
+          {"round": 2, "match_num": 6, "winner_name": "C. Vlasselaer", "score": "36 64 75"},
+          {"round": 2, "match_num": 7, "winner_name": "D. Tran", "score": "64 76(4)"}
         ],
         "round_labels": [
           "Round of 32",
@@ -568,8 +576,10 @@
           {"pos": 1, "seed": "1", "name": "JONES, Francesca", "country": "GBR"},
           {"pos": 2, "entry": "WC", "name": "SENICA, Alja", "country": "SLO"},
           {"pos": 3, "name": "BARTHEL, Mona", "country": "GER"},
+          {"pos": 4, "entry": "Q", "name": "ZELNICKOVA, Radka", "country": "SVK"},
           {"pos": 5, "name": "BULGARU, Miriam", "country": "ROU"},
           {"pos": 6, "name": "GJORCHESKA, Lina", "country": "MKD"},
+          {"pos": 7, "entry": "Q", "name": "COLMEGNA, Martina", "country": "ITA"},
           {"pos": 8, "seed": "7", "name": "RISTIC, Mia", "country": "SRB"},
           {"pos": 9, "seed": "3", "name": "RADIVOJEVIC, Lola", "country": "SRB"},
           {"pos": 10, "name": "BASILETTI, Noemi", "country": "ITA"},
@@ -588,17 +598,19 @@
           {"pos": 23, "entry": "WC", "name": "LOVRIC, Pia", "country": "SLO"},
           {"pos": 24, "seed": "4", "name": "GALFI, Dalma", "country": "HUN"},
           {"pos": 25, "seed": "6", "name": "SOBOLIEVA, Anastasiia", "country": "UKR"},
+          {"pos": 26, "entry": "Q", "name": "BOSKOVIC, Lea", "country": "CRO"},
           {"pos": 27, "name": "PEDONE, Giorgia", "country": "ITA"},
           {"pos": 28, "entry": "WC", "name": "ZOLDAKOVA, Denisa", "country": "CZE"},
           {"pos": 29, "name": "FALKOWSKA, Weronika", "country": "POL"},
           {"pos": 30, "entry": "WC", "name": "NOVAK, Kristina", "country": "SLO"},
+          {"pos": 31, "entry": "Q", "name": "CIRIC BAGARIC, Lucija", "country": "CRO"},
           {"pos": 32, "seed": "2", "name": "SAMSON, Laura", "country": "CZE"}
         ],
-        "qualifiers": [
-          4,
-          7,
-          26,
-          31
+        "matches": [
+          {"round": 1, "match_num": 4, "winner_name": "N. Basiletti", "score": "76(7) 64"},
+          {"round": 1, "match_num": 5, "winner_name": "J. Struplova", "score": "76(5) 62"},
+          {"round": 1, "match_num": 8, "winner_name": "B. Palicova", "score": "75 61"},
+          {"round": 1, "match_num": 9, "winner_name": "S. De Stefano", "score": "16 63 63"}
         ],
         "round_labels": [
           "Round of 32",
