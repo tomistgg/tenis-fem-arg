@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from data_quality import (
+    CacheStateModel,
     FreshnessModel,
     LimitModel,
     PlayerAliasModel,
@@ -19,6 +20,24 @@ from data_quality import (
 from pipeline_errors import DataValidationError
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_duplicate_player_alert_metadata_passes_both_cache_state_validators(tmp_path):
+    payload = {
+        "files": {},
+        "entries": {
+            "entry_lists_cache.json": {
+                "https://www.wtatennis.com/tournaments/1000/example/2026/player-list": {
+                    "duplicatePlayersAlerted": ["Repeated Player"]
+                }
+            }
+        },
+    }
+    data_path = tmp_path / "cache_state.json"
+    data_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    CacheStateModel.model_validate(payload)
+    _validate_json_schema(payload, PROJECT_ROOT / "schemas" / "cache_state.schema.json", data_path)
 
 
 def test_pydantic_player_model_rejects_blank_canonical_name():

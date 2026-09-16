@@ -117,11 +117,23 @@ class CacheMetadataModel(BaseModel):
 
     fetchedAt: AwareDatetime | None = None
     completedAt: AwareDatetime | None = None
+    duplicatePlayersAlerted: list[str] | None = None
+
+    @field_validator("duplicatePlayersAlerted")
+    @classmethod
+    def duplicate_player_names_must_be_unique_and_nonempty(cls, values: list[str] | None) -> list[str] | None:
+        if values is None:
+            return values
+        if any(not value or value != value.strip() for value in values):
+            raise ValueError("duplicate player names must be nonempty and trimmed")
+        if len(values) != len(set(values)):
+            raise ValueError("duplicate player names must be unique")
+        return values
 
     @model_validator(mode="after")
-    def has_timestamp(self) -> CacheMetadataModel:
-        if self.fetchedAt is None and self.completedAt is None:
-            raise ValueError("cache metadata must contain fetchedAt or completedAt")
+    def has_supported_metadata(self) -> CacheMetadataModel:
+        if self.fetchedAt is None and self.completedAt is None and not self.duplicatePlayersAlerted:
+            raise ValueError("cache metadata must contain fetchedAt, completedAt, or duplicatePlayersAlerted")
         return self
 
 
