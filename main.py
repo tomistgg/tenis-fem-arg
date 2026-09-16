@@ -96,6 +96,7 @@ from utils import (
     fix_encoding,
     fix_encoding_keep_accents,
     format_player_name,
+    get_cache_entry_meta,
     get_cache_timestamp,
     is_draw_completed,
     load_cache,
@@ -315,9 +316,34 @@ def _canonicalize_player_names(players, source="", names_only=False):
 
 def _remove_duplicate_entry_players(players, tournament_key, tournament_name):
     cleaned, duplicates = deduplicate_entry_list(players)
-    if duplicates:
+    if not duplicates:
+        return cleaned
+
+    cache_meta = get_cache_entry_meta(ENTRY_LISTS_CACHE_FILE, tournament_key)
+    alerted_names = [
+        " ".join(str(name or "").split())
+        for name in cache_meta.get("duplicatePlayersAlerted", [])
+        if str(name or "").strip()
+    ]
+    alerted_keys = {name.casefold() for name in alerted_names}
+    new_duplicates = []
+    for item in duplicates:
+        player_name = " ".join(str(item.get("name") or "").split())
+        player_key = player_name.casefold()
+        if not player_key or player_key in alerted_keys:
+            continue
+        new_duplicates.append(item)
+        alerted_names.append(player_name)
+        alerted_keys.add(player_key)
+
+    if new_duplicates:
+        set_cache_entry_meta(
+            ENTRY_LISTS_CACHE_FILE,
+            tournament_key,
+            duplicatePlayersAlerted=alerted_names,
+        )
         details = ", ".join(
-            f"{item['name']} ({item['kept_type']} / {item['removed_type']})" for item in duplicates
+            f"{item['name']} ({item['kept_type']} / {item['removed_type']})" for item in new_duplicates
         )
         message = f"Duplicate players removed from {tournament_name} [{tournament_key}]: {details}"
         logger.warning(message)
@@ -326,7 +352,11 @@ def _remove_duplicate_entry_players(players, tournament_key, tournament_name):
             "remove duplicate players",
             ValueError(message),
             severity="degraded",
-            context={"tournament_key": tournament_key, "duplicates": duplicates},
+            context={"tournament_key": tournament_key, "duplicates": new_duplicates},
+        )
+    else:
+        logger.debug(
+            f"Removed {len(duplicates)} previously reported duplicate player row(s) from {tournament_name}"
         )
     return cleaned
 
