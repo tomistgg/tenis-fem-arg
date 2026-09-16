@@ -3,18 +3,34 @@
     "wta_full_calendar_cache.json": {
       "from": "2026-08-19",
       "to": "2026-12-31",
-      "fetchedAt": "2026-09-16T09:04:40Z",
-      "lastAttemptAt": "2026-09-16T09:04:40Z",
-      "fetchedRunId": "20260916T090253Z-b55d9368da",
-      "lastAttemptRunId": "20260916T090253Z-b55d9368da"
+      "fetchedAt": "2026-09-16T09:46:58Z",
+      "lastAttemptAt": "2026-09-16T09:46:58Z",
+      "fetchedRunId": "20260916T094519Z-3a7c1d8f23",
+      "lastAttemptRunId": "20260916T094519Z-3a7c1d8f23"
     },
     "itf_calendar_cache.json": {
       "year": 2026,
       "count": 592,
-      "fetchedAt": "2026-09-16T09:03:39Z"
+      "fetchedAt": "2026-09-16T09:46:01Z"
     }
   },
   "entries": {
+    "entry_lists_cache.json": {
+      "https://www.wtatennis.com/tournaments/1024/seoul/2026/player-list": {
+        "duplicatePlayersAlerted": [
+          "Alina Charaeva",
+          "Sofia Kenin",
+          "Elvina Kalieva"
+        ]
+      },
+      "https://www.wtatennis.com/tournaments/1152/singapore/2026/player-list": {
+        "duplicatePlayersAlerted": [
+          "Aliaksandra Sasnovich",
+          "Sofia Costoulas",
+          "Tatiana Prozorova"
+        ]
+      }
+    },
     "itf_drawsheets_cache.json": {
       "1100203268_M_0": {
         "fetchedAt": "2026-06-29T09:53:35Z"
@@ -667,25 +683,25 @@
         "completedAt": "2026-09-12T23:54:37Z"
       },
       "https://www.wtatennis.com/tournaments/1139/sao-paulo/2026/player-list": {
-        "fetchedAt": "2026-09-16T09:03:53Z"
+        "fetchedAt": "2026-09-16T09:46:12Z"
       },
       "https://www.wtatennis.com/tournaments/2075/guadalajara-500/2026/player-list": {
-        "fetchedAt": "2026-09-16T09:03:53Z"
+        "fetchedAt": "2026-09-16T09:46:12Z"
       },
       "https://www.wtatennis.com/tournaments/1136/caldas-da-rainha-125/2026/player-list": {
-        "fetchedAt": "2026-09-16T09:03:53Z"
+        "fetchedAt": "2026-09-16T09:46:12Z"
       },
       "https://www.wtatennis.com/tournaments/2061/valencia-125/2026/player-list": {
-        "fetchedAt": "2026-09-16T09:03:53Z"
+        "fetchedAt": "2026-09-16T09:46:12Z"
       },
       "w-itf-fra-2026-020": {
         "fetchedAt": "2026-09-14T20:15:10Z"
       },
       "https://www.wtatennis.com/tournaments/2044/ljubljana-125/2026/player-list": {
-        "fetchedAt": "2026-09-16T09:03:53Z"
+        "fetchedAt": "2026-09-16T09:46:12Z"
       },
       "w-itf-bra-2026-007": {
-        "fetchedAt": "2026-09-16T09:03:53Z"
+        "fetchedAt": "2026-09-16T09:46:12Z"
       }
     }
   }
