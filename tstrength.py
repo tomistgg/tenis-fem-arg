@@ -342,6 +342,8 @@ def _needs_refresh(cached_entry):
         return True
     if cached_entry.get("participantsLocked") is False:
         return True
+    if cached_entry.get("draw") == "Q" and cached_entry.get("drawComplete") is not True:
+        return True
     rankings = cached_entry.get("rankings")
     if isinstance(rankings, list) and len(rankings) == 0:
         return True
@@ -489,8 +491,9 @@ def build_tstrength_data(from_year=None, full_backfill=False):
                 week_rankings = rankings_index.get(ranking_week, {})
                 draw_level = "M" if draw == "MD" else "Q"
                 players, participants_locked = _extract_draw_players(matches, draw_level)
+                draw_complete = draw != "Q" or today > datetime.strptime(t["startDate"], "%Y-%m-%d").date()
                 cache_key = f"{yr}_{tid}_{draw}"
-                if (not participants_locked) or (not _has_valid_draw_player_count(draw, len(players))):
+                if (not participants_locked) or (not draw_complete) or (not _has_valid_draw_player_count(draw, len(players))):
                     cache[cache_key] = {
                         "id": tid,
                         "name": t["name"],
@@ -502,6 +505,7 @@ def build_tstrength_data(from_year=None, full_backfill=False):
                         "region": region,
                         "year": yr,
                         "draw": draw,
+                        "drawComplete": draw_complete,
                         "participantsLocked": False,
                         "rankings": [],
                         "hm": 0,
@@ -538,6 +542,7 @@ def build_tstrength_data(from_year=None, full_backfill=False):
                     "region": region,
                     "year": yr,
                     "draw": draw,
+                    "drawComplete": draw_complete,
                     "participantsLocked": True,
                     "rankings": player_ranks,
                     "hm": hm,

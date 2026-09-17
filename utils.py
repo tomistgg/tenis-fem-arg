@@ -2048,6 +2048,7 @@ _TSTRENGTH_CACHE_FIELDS = (
     "hm",
     "gm",
     "playerCount",
+    "drawComplete",
 )
 
 

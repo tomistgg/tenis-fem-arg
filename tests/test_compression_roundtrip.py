@@ -230,7 +230,7 @@ def test_fixed_row_cache_round_trips():
         "id": "1", "name": "Fixture Open", "city": "Madrid", "level": "WTA 125",
         "startDate": "2026-07-20", "surface": "Clay", "country": "ESP", "region": "Europe",
         "year": 2026, "draw": 32, "participantsLocked": True, "rankings": [1, 2],
-        "hm": 1.0, "gm": 2.0, "playerCount": 2,
+        "hm": 1.0, "gm": 2.0, "playerCount": 2, "drawComplete": True,
     }]
     itf_rankings = {"2026-07-20": [{"Player": "Julia Riera", "Rank": 1, "Country": "ARG", "Key": "8001"}]}
     assert_round_trip(points, compress_points_distribution, expand_points_distribution)

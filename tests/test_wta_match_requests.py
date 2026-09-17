@@ -48,7 +48,7 @@ def test_tournament_strength_requests_completed_matches_only(monkeypatch):
     assert requested == ["https://api.wtatennis.com/tennis/tournaments/1017/2026/matches?states=C"]
 
 
-def test_tournament_strength_retries_partial_main_draw_but_accepts_small_qualifying_draw():
+def test_tournament_strength_retries_partial_or_unconfirmed_draws():
     partial_main = {
         "draw": "MD",
         "playerCount": 12,
@@ -58,10 +58,12 @@ def test_tournament_strength_retries_partial_main_draw_but_accepts_small_qualify
         "hm": 16,
     }
     complete_main = {**partial_main, "playerCount": 20}
-    complete_qualifying = {**partial_main, "draw": "Q", "playerCount": 8}
+    unconfirmed_qualifying = {**partial_main, "draw": "Q", "playerCount": 8}
+    complete_qualifying = {**unconfirmed_qualifying, "drawComplete": True}
 
     assert tstrength._needs_refresh(partial_main)
     assert not tstrength._needs_refresh(complete_main)
+    assert tstrength._needs_refresh(unconfirmed_qualifying)
     assert not tstrength._needs_refresh(complete_qualifying)
 
 
