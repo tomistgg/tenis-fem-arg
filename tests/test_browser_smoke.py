@@ -74,7 +74,7 @@ def test_entry_withdrawal_toggle_deadline_and_translations(offline_generated_sit
             Object.entries(fixtures).forEach(([key, value]) => {
                 WTARG_DATA.entryWithdrawals[key] = value;
                 tournamentData[key] = [{name:'Current Player', country:'ARG', pos:1,
-                    type:'MAIN', priority:'1', rank:100, seed:1}];
+                    type:'MAIN', priority:'1', rank:100, wtn:'12.3', seed:1}];
                 const item = document.createElement('div');
                 item.className = 'entry-menu-item';
                 item.dataset.key = key;
@@ -96,7 +96,7 @@ def test_entry_withdrawal_toggle_deadline_and_translations(offline_generated_sit
         ).get_attribute("alt") == "ARG"
         visible_headers = [cell.text for cell in driver.find_elements(By.CSS_SELECTOR, "#entrylists-table th")
                            if cell.is_displayed()]
-        assert visible_headers == ["#", "PLAYER", "E-Rank", "DATE"]
+        assert visible_headers == ["#", "PLAYER", "E-RANK", "DATE"]
         assert "view=withdrawals" in driver.current_url
         driver.execute_script("WTARG_I18N.setLanguage('es')")
         wait.until(lambda _driver: button.text == "Mostrar E-List")
@@ -106,6 +106,11 @@ def test_entry_withdrawal_toggle_deadline_and_translations(offline_generated_sit
         driver.execute_script("WTARG_I18N.setLanguage('en')")
         driver.execute_script("selectEntryTournament(document.querySelector('[data-key=itf-future]'))")
         assert button.text == "Show Prio 1"
+        assert [cell.text for cell in driver.find_elements(By.CSS_SELECTOR, "#entrylists-table th")
+                if cell.is_displayed()] == ["#", "PLAYER", "SEED", "WTN", "E-RANK", "PRIO"]
+        assert [cell.text for cell in driver.find_elements(By.CSS_SELECTOR, "#entry-body td")] == [
+            "1", "Current Player", "1", "12.3", "100", "1",
+        ]
         button.click()
         assert button.text == "Show All"
         driver.execute_script("selectEntryTournament(document.querySelector('[data-key=itf-open]'))")
