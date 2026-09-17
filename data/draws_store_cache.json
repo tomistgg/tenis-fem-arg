@@ -78,7 +78,7 @@
           {"pos": 6, "name": "SHARMA, Astra", "country": "AUS"},
           {"pos": 7, "entry": "LL", "name": "TIKHONOVA, Anastasia"},
           {"pos": 8, "seed": "7", "name": "QUEVEDO, Kaitlin", "country": "ESP"},
-          {"pos": 9, "seed": "4", "name": "BLINKOVA, Anna"},
+          {"pos": 9, "seed": "4", "name": "BLINKOVA, Anna", "country": "FRA"},
           {"pos": 10, "name": "LEE, Carol Young Suh", "country": "USA"},
           {"pos": 11, "name": "VALDMANNOVA, Vendula", "country": "CZE"},
           {"pos": 12, "name": "PIGOSSI, Laura", "country": "BRA"},
@@ -106,8 +106,21 @@
         "matches": [
           {"round": 1, "match_num": 0, "winner_name": "D. Semenistaja", "score": "75 64"},
           {"round": 1, "match_num": 1, "winner_name": "T. Kostovic", "score": "62 64"},
+          {"round": 1, "match_num": 2, "winner_name": "N. V. Leme Da Silv...", "score": "57 64 75"},
+          {"round": 1, "match_num": 3, "winner_name": "K. Quevedo", "score": "60 62"},
+          {"round": 1, "match_num": 4, "winner_name": "A. Blinkova", "score": "61 63"},
+          {"round": 1, "match_num": 5, "winner_name": "V. Valdmannova", "score": "26 61 61"},
           {"round": 1, "match_num": 6, "winner_name": "E. Avanesyan", "score": "62 64"},
-          {"round": 1, "match_num": 9, "winner_name": "N. Podoroska", "score": "63 64"}
+          {"round": 1, "match_num": 7, "winner_name": "A. Charaeva", "score": "36 76(5) 63"},
+          {"round": 1, "match_num": 8, "winner_name": "E. Lys", "score": "61 57 75"},
+          {"round": 1, "match_num": 9, "winner_name": "N. Podoroska", "score": "63 64"},
+          {"round": 1, "match_num": 10, "winner_name": "S. Lamens", "score": "36 76(2) 62"},
+          {"round": 1, "match_num": 11, "winner_name": "S. Sierra", "score": "64 36 61"},
+          {"round": 1, "match_num": 12, "winner_name": "D. Salkova", "score": "75 61"},
+          {"round": 1, "match_num": 13, "winner_name": "M. Stoiana", "score": "63 75"},
+          {"round": 1, "match_num": 14, "winner_name": "J. Ortenzi", "score": "63 62"},
+          {"round": 1, "match_num": 15, "winner_name": "P. Badosa", "score": "63 62"},
+          {"round": 2, "match_num": 0, "winner_name": "T. Kostovic", "score": "64 61"}
         ],
         "round_labels": [
           "Round of 32",
@@ -236,10 +249,13 @@
           {"round": 1, "match_num": 14, "winner_name": "Z. Sonmez", "score": "61 61"},
           {"round": 1, "match_num": 15, "winner_name": "I. Jovic"},
           {"round": 2, "match_num": 0, "winner_name": "M. Kostyuk", "score": "WO"},
+          {"round": 2, "match_num": 1, "winner_name": "L. Samsonova", "score": "76(4) 26 76(5)"},
           {"round": 2, "match_num": 2, "winner_name": "P. Stearns", "score": "62 75"},
           {"round": 2, "match_num": 3, "winner_name": "S. Stephens", "score": "76(4) 76(3)"},
           {"round": 2, "match_num": 4, "winner_name": "C. Bucsa", "score": "64 64"},
-          {"round": 2, "match_num": 5, "winner_name": "S. Bejlek", "score": "64 63"}
+          {"round": 2, "match_num": 5, "winner_name": "S. Bejlek", "score": "64 63"},
+          {"round": 2, "match_num": 6, "winner_name": "M. Frech", "score": "64 63"},
+          {"round": 2, "match_num": 7, "winner_name": "I. Jovic", "score": "76(5) 64"}
         ],
         "byes": [
           2,
