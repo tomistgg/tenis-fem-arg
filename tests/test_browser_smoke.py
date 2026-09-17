@@ -56,6 +56,7 @@ def test_entry_withdrawal_toggle_deadline_and_translations(offline_generated_sit
     options.binary_location = browser_binary
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
+    options.add_argument("--window-size=1280,900")
     driver = webdriver.Chrome(service=Service(driver_binary), options=options)
     try:
         driver.get(f"http://127.0.0.1:{server.server_port}/app.html#entrylists")
@@ -90,6 +91,9 @@ def test_entry_withdrawal_toggle_deadline_and_translations(offline_generated_sit
         assert [cell.text for cell in driver.find_elements(By.CSS_SELECTOR, "#entry-body td")] == [
             "1-MD", "Withdrawn <Player>", "42", "2026-09-16",
         ]
+        assert driver.find_element(
+            By.CSS_SELECTOR, "#entry-body .entry-player-col img"
+        ).get_attribute("alt") == "ARG"
         visible_headers = [cell.text for cell in driver.find_elements(By.CSS_SELECTOR, "#entrylists-table th")
                            if cell.is_displayed()]
         assert visible_headers == ["#", "PLAYER", "E-Rank", "DATE"]

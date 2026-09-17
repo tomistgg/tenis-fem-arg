@@ -29,7 +29,7 @@ def player(identifier, name="Example Player", position="3", draw="QUAL", rank="1
     }
 
 
-def withdrawal(identifier, information, position="98"):
+def withdrawal(identifier, information, position="98", *, wta_rank="", itf_rank=""):
     return {
         "positionDisplay": position,
         "information": information,
@@ -39,6 +39,8 @@ def withdrawal(identifier, information, position="98"):
                 "givenName": "Example",
                 "familyName": "Player",
                 "nationalityCode": "ARG",
+                "atpWtaRank": wta_rank,
+                "itfWorldTennisRanking": itf_rank,
             }
         ],
     }
@@ -66,26 +68,25 @@ def test_itf_excludes_early_withdrawals_and_preserves_previous_draw_position(tmp
     ]
     record_itf_withdrawals(state, "itf-example", previous, [], classifications, "2026-09-28", "2026-09-16")
     rows = state["itf-example"]["withdrawals"]
-    assert len(rows) == 1
-    assert (rows[0]["pos"], rows[0]["type"], rows[0]["rank"], rows[0]["date"]) == (
-        "3",
-        "QUAL",
-        "123",
-        "2026-09-16",
-    )
+    assert [(row["player_id"], row["pos"], row["type"], row["rank"], row["date"]) for row in rows] == [
+        ("90001", "3", "QUAL", "123", "2026-09-16"),
+        ("90005", "3", "ALT", "123", "2026-09-16"),
+    ]
 
     # Simulate a separate run after the player is no longer in the cached list.
     path = tmp_path / "entry_withdrawals.json"
     save_json_file(path, state)
     restored = load_withdrawals(path)
     record_itf_withdrawals(restored, "itf-example", [], [], classifications, "2026-09-28", "2026-09-17")
-    assert restored["itf-example"]["withdrawals"][0] == rows[0]
-    assert len(restored["itf-example"]["withdrawals"]) == 1
+    assert restored["itf-example"]["withdrawals"][:2] == rows
+    assert len(restored["itf-example"]["withdrawals"]) == 3
     groups = {"Week": {"itf-example": {"startDate": "2026-09-28"}}}
     exposed = public_withdrawals(restored, groups)["itf-example"]
     assert exposed["deadline"] == "2026-09-16"
-    assert exposed["rows"] == [
-        {"position": "3-Q", "name": "Example Player", "country": "ARG", "rank": "123", "date": "2026-09-16"}
+    assert [(row["position"], row["date"]) for row in exposed["rows"]] == [
+        ("—", "2026-09-17"),
+        ("3-ALT", "2026-09-16"),
+        ("3-Q", "2026-09-16"),
     ]
     _validate_json_schema(restored, Path("schemas/entry_withdrawals.schema.json"), path)
 
@@ -132,6 +133,19 @@ def test_itf_does_not_record_withdrawals_before_deadline():
         "2026-09-15",
     )
     assert state["itf-example"]["withdrawals"] == []
+
+
+def test_itf_withdrawal_rank_uses_wta_then_itf_world_ranking():
+    state = {}
+    classifications = [{
+        "entryClassificationCode": "W",
+        "entries": [
+            withdrawal(90001, "W 16 Sep 2026", wta_rank="321", itf_rank="45"),
+            withdrawal(90002, "W 16 Sep 2026", itf_rank="67"),
+        ],
+    }]
+    record_itf_withdrawals(state, "itf-example", [], [], classifications, "2026-09-28", "2026-09-16")
+    assert [row["rank"] for row in state["itf-example"]["withdrawals"]] == ["321", "ITF 67"]
 
 
 def test_wta_uses_first_missing_date_without_treating_draw_moves_as_withdrawals(tmp_path):

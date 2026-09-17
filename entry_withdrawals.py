@@ -104,11 +104,8 @@ def _itf_entry_rank(player):
     wta_rank = str(player.get("atpWtaRank") or "").strip()
     if wta_rank:
         return wta_rank
-    itf_rank = str(player.get("itfBTRank") or "").strip()
-    if itf_rank:
-        return f"ITF {itf_rank}"
-    world_rating = str(player.get("worldRating") or "").strip()
-    return f"WTN {world_rating}" if world_rating else "-"
+    itf_rank = str(player.get("itfWorldTennisRanking") or "").strip()
+    return f"ITF {itf_rank}" if itf_rank else "-"
 
 
 def record_itf_withdrawals(state, key, previous, current, classifications, start_date, observed_date):
@@ -124,7 +121,7 @@ def record_itf_withdrawals(state, key, previous, current, classifications, start
     records = {
         _player_key(p): p
         for p in tournament["withdrawals"]
-        if p["date"] >= deadline.isoformat() and p.get("type") in WITHDRAWAL_DRAW_TYPES
+        if p["date"] >= deadline.isoformat()
     }
     if observed_date >= deadline.isoformat():
         for classification in classifications:
@@ -151,9 +148,6 @@ def record_itf_withdrawals(state, key, previous, current, classifications, start
                     position = last_seen.get(identity, {})
                     if previous_record and previous_record["date"] == withdrawn.isoformat():
                         position = previous_record
-                    if position.get("type") not in WITHDRAWAL_DRAW_TYPES:
-                        records.pop(identity, None)
-                        continue
                     rank = str(position.get("rank") or "").strip()
                     if not rank or rank == "-":
                         rank = _itf_entry_rank(player)
@@ -181,7 +175,7 @@ def public_withdrawals(state, tournament_groups):
             for row in state.get(key, {}).get("withdrawals", []):
                 if deadline is not None and row["date"] < deadline.isoformat():
                     continue
-                if row.get("type") not in WITHDRAWAL_DRAW_TYPES:
+                if key.startswith("http") and row.get("type") not in WITHDRAWAL_DRAW_TYPES:
                     continue
                 draw = DRAW_LABELS.get(row.get("type"))
                 position = f"{row['pos']}-{draw}" if row.get("pos") and draw else "—"

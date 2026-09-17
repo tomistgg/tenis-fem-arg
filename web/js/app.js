@@ -2210,7 +2210,7 @@
                     name.className = 'entry-player-col';
                     name.style.textAlign = 'left';
                     // Provider names are text, never markup.
-                    name.insertAdjacentHTML('beforeend', countryFlag(player.country, false));
+                    name.insertAdjacentHTML('beforeend', countryFlag(player.country, false) + ' ');
                     name.append(document.createTextNode(player.name));
                     const rank = row.insertCell();
                     rank.className = 'entry-rank-col';
