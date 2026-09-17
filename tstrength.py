@@ -493,7 +493,11 @@ def build_tstrength_data(from_year=None, full_backfill=False):
                 players, participants_locked = _extract_draw_players(matches, draw_level)
                 draw_complete = draw != "Q" or today > datetime.strptime(t["startDate"], "%Y-%m-%d").date()
                 cache_key = f"{yr}_{tid}_{draw}"
-                if (not participants_locked) or (not draw_complete) or (not _has_valid_draw_player_count(draw, len(players))):
+                if (
+                    not participants_locked
+                    or not draw_complete
+                    or not _has_valid_draw_player_count(draw, len(players))
+                ):
                     cache[cache_key] = {
                         "id": tid,
                         "name": t["name"],
