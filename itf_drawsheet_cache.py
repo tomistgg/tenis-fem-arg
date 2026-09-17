@@ -175,7 +175,7 @@ def tournament_draw_codes_with_definitive_no_nationality(
         if str(tournament_id or "").strip()
     }
     if not wanted_ids:
-        return set()
+        return {}
 
     cache = _load_raw_cache()
     result = {}

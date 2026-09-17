@@ -750,7 +750,9 @@ def fetch_player_info(player_id):
     return None
 
 
-def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=None):
+def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=None, *, observation=None):
+    if observation is not None:
+        observation.clear()
     try:
         r = get_with_retry(
             url,
@@ -1017,6 +1019,17 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
         p["pos_num"] = idx
 
     final_tourney_list = md_list + qual_list
+
+    if observation is not None:
+        # Raw IDs also protect players whose profile lookup failed. Missing/empty
+        # sections and JSON-LD count mismatches cannot establish withdrawals.
+        observation["player_ids"] = sorted(seen_pids)
+        observation["complete_sections"] = [
+            section for section, entries, count in (
+                ("MAIN", main_entries, jsonld_state.get("singles_count")),
+                ("QUAL", qual_entries, jsonld_state.get("qualifying_count")),
+            ) if entries and (count is None or count == len(entries))
+        ]
 
     suffix_map = dict.fromkeys(main_draw_names, "")
     suffix_map.update(dict.fromkeys(qualifying_names, " (Q)"))

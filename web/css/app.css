@@ -639,6 +639,21 @@
             #view-entrylists td { font-size: 12px; padding: 6px 10px; }
             #view-entrylists table { table-layout: auto; }
             #entrylists-table .entry-pr-mobile-label { display: none; }
+            #entrylists-table.entry-withdrawals .entry-pos-col {
+                width: 65px !important;
+                min-width: 65px !important;
+                white-space: nowrap;
+            }
+            #entrylists-table.entry-withdrawals .entry-rank-col {
+                width: 70px !important;
+                min-width: 70px !important;
+                white-space: nowrap;
+            }
+            #entrylists-table.entry-withdrawals .entry-date-col {
+                width: 100px !important;
+                min-width: 100px !important;
+                white-space: nowrap;
+            }
             #view-entrylists .entry-content { align-items: flex-start; }
             #view-entrylists .content-card { width: 100%; max-width: 760px; margin: 0; }
 
@@ -1548,6 +1563,13 @@
                     width: 70px !important;
                     min-width: 70px !important;
                     max-width: 70px !important;
+                    white-space: nowrap;
+                }
+                #entrylists-table .entry-date-col {
+                    box-sizing: border-box;
+                    width: 90px !important;
+                    min-width: 90px !important;
+                    max-width: 90px !important;
                     white-space: nowrap;
                 }
                 #entrylists-table .entry-player-col { width: 100% !important; }

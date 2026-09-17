@@ -23,6 +23,7 @@ from config import (
     resolve_player_display_name,
     resolve_player_presentation_name,
 )
+from entry_withdrawals import WITHDRAWALS_FILENAME, load_withdrawals, public_withdrawals
 from milestones import build_milestones_data
 from pipeline_errors import DataValidationError
 from run_state import report_run_issue
@@ -2069,6 +2070,9 @@ def generate_html(
         "schemaVersion": 1,
         "tstrength": tstrength_json_list,
         "tournaments": tournament_store,
+        "entryWithdrawals": public_withdrawals(
+            load_withdrawals(os.path.join(source_data_dir, WITHDRAWALS_FILENAME)), tournament_groups,
+        ),
         "pointsDistribution": points_distribution,
         "itfDrawSizes": itf_draw_sizes,
         "wtaDrawSizes": wta_draw_sizes,

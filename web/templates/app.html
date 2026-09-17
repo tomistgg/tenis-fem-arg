@@ -16,7 +16,7 @@
         <link href="assets/vendor/select2-4.1.0-rc.0.min.css" rel="stylesheet" />
         <script src="assets/vendor/jquery-3.6.0.min.js"></script>
         <script src="assets/vendor/select2-4.1.0-rc.0.min.js"></script>
-        <link rel="stylesheet" href="assets/app.css?v=20260904-milestones-3">
+        <link rel="stylesheet" href="assets/app.css?v=20260917-withdrawals-1">
         <link rel="stylesheet" href="assets/language.css">
     </head>
     <body class="home-mode" onload="renderHistoryTable(); renderMilestonesTable();">
@@ -123,7 +123,7 @@
                                 <div id="entry-strength" class="entry-strength"><span class="entry-gm-value">-</span></div>
                                 <h1 id="entry-title">Entry List</h1>
                                 <div class="rankings-filter-container">
-                                    <button id="btn-prio1" class="rankings-toggle-btn" hidden onclick="togglePrio1()">Show Prio 1</button>
+                                    <button type="button" id="btn-prio1" class="rankings-toggle-btn" hidden aria-pressed="false" onclick="togglePrio1()">Show Prio 1</button>
                                 </div>
                             </div>
                             <div class="content-card">
@@ -133,7 +133,8 @@
                                             <th class="entry-pos-col" style="width:35px;min-width:35px">#</th>
                                             <th class="entry-player-col">PLAYER</th>
                                             <th id="entry-seed-header" class="entry-seed-col" style="width:35px;display:none">SEED</th>
-                                            <th class="entry-rank-col" style="width:70px">E-Rank</th>
+                                            <th id="entry-rank-header" class="entry-rank-col" style="width:70px">E-Rank</th>
+                                            <th id="entry-date-header" class="entry-date-col" style="width:100px;display:none">DATE</th>
                                             <th id="entry-prio-header" class="entry-pr-col" style="width:35px;display:none"><span class="entry-pr-desktop-label">PRIO</span><span class="entry-pr-mobile-label">PR</span></th>
                                         </tr>
                                     </thead>

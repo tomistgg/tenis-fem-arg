@@ -4,6 +4,7 @@ from datetime import UTC, date, datetime
 from types import SimpleNamespace
 
 import pandas as pd
+import pytest
 from urllib3.exceptions import ReadTimeoutError
 
 import draws
@@ -13,6 +14,11 @@ import main
 import site_renderer
 from lazy_browser import LazyBrowserSession
 from populate_data import itf_load_new, tournament_sizes_update
+
+
+@pytest.fixture(autouse=True)
+def isolated_withdrawal_state(monkeypatch, tmp_path):
+    monkeypatch.setattr(main, "ENTRY_WITHDRAWALS_FILE", str(tmp_path / "entry_withdrawals.json"))
 
 
 def _tournaments():
@@ -620,6 +626,16 @@ def test_published_qualifying_and_main_draws_can_prove_no_arg(monkeypatch):
         "123": {"Q", "M"},
         "789": {"Q"},
     }
+
+
+def test_no_requested_tournaments_returns_an_empty_draw_code_mapping():
+    assert (
+        itf_drawsheet_cache.tournament_draw_codes_with_definitive_no_nationality(
+            [],
+            "ARG",
+        )
+        == {}
+    )
 
 
 def test_website_fetch_can_request_only_arg_relevant_draw_type(monkeypatch):

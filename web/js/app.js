@@ -253,6 +253,7 @@
                 const state = {};
                 if (active) state.t = entryTournamentStateSlugFromKey(active.getAttribute('data-key')) || entryMenuNameForItem(active);
                 if (_prioFilterActive) state.prio = '1';
+                if (_entryWithdrawalsActive) state.view = 'withdrawals';
                 return state;
             }
 
@@ -269,8 +270,9 @@
                 }
                 if (params.has('prio')) {
                     _prioFilterActive = ['1', 'true', 'yes'].includes((params.get('prio') || '').toLowerCase());
-                    updateEntryList();
                 }
+                _entryWithdrawalsActive = params.get('view') === 'withdrawals';
+                updateEntryList();
             }
 
             function collectCalendarUrlState() {
@@ -2136,7 +2138,10 @@
                 setEntryMenuCollapsed(false);
             }
 
-            window.addEventListener('resize', syncEntryMenuToggle);
+            window.addEventListener('resize', () => {
+                syncEntryMenuToggle();
+                syncEntryWithdrawalLabel();
+            });
 
             function selectEntryTournament(el) {
                 document.querySelectorAll('#view-entrylists .entry-menu-item').forEach(item => item.classList.remove('active'));
@@ -2150,11 +2155,70 @@
 
 
             let _prioFilterActive = false;
+            let _entryWithdrawalsActive = false;
+            let _entrySelectedKey = '';
+
+            function entryWithdrawalsAvailable(key) {
+                if (key.startsWith('http')) return true;
+                const deadline = window.WTARG_DATA?.entryWithdrawals?.[key]?.deadline;
+                // Match the refresh pipeline's calendar day, independent of the visitor's timezone.
+                const today = new Intl.DateTimeFormat('en-CA', {
+                    timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit'
+                }).format(new Date());
+                return !!deadline && today >= deadline;
+            }
+
+            function entryWithdrawalLabel() {
+                if (isMobileEntryLists()) {
+                    return _entryWithdrawalsActive ? 'Entry List' : 'Withdrawals';
+                }
+                return _entryWithdrawalsActive ? 'Show E-List' : 'Show Withdrawals';
+            }
+
+            function syncEntryWithdrawalLabel() {
+                const btn = document.getElementById('btn-prio1');
+                if (!btn || !_entrySelectedKey || !entryWithdrawalsAvailable(_entrySelectedKey)) return;
+                btn.textContent = entryWithdrawalLabel();
+            }
 
             function togglePrio1() {
-                _prioFilterActive = !_prioFilterActive;
-                document.getElementById('btn-prio1').textContent = _prioFilterActive ? 'Show All' : 'Show Prio 1';
+                if (entryWithdrawalsAvailable(_entrySelectedKey)) {
+                    _entryWithdrawalsActive = !_entryWithdrawalsActive;
+                    _prioFilterActive = false;
+                } else {
+                    _prioFilterActive = !_prioFilterActive;
+                }
                 updateEntryList();
+            }
+
+            function renderEntryWithdrawals(key, body) {
+                const rows = window.WTARG_DATA?.entryWithdrawals?.[key]?.rows || [];
+                body.replaceChildren();
+                if (!rows.length) {
+                    const cell = body.insertRow().insertCell();
+                    cell.colSpan = 4;
+                    cell.className = 'cell-state-info';
+                    cell.textContent = 'No withdrawals recorded.';
+                    return;
+                }
+                rows.forEach(player => {
+                    const row = body.insertRow();
+                    const position = row.insertCell();
+                    position.className = 'entry-pos-col';
+                    position.textContent = player.position;
+                    const name = row.insertCell();
+                    name.className = 'entry-player-col';
+                    name.style.textAlign = 'left';
+                    // Provider names are text, never markup.
+                    name.insertAdjacentHTML('beforeend', countryFlag(player.country, false));
+                    name.append(document.createTextNode(player.name));
+                    const rank = row.insertCell();
+                    rank.className = 'entry-rank-col';
+                    rank.textContent = player.rank || '-';
+                    const date = row.insertCell();
+                    date.className = 'entry-date-col';
+                    date.textContent = player.date;
+                });
             }
 
             function renderRows(list, isMain, isITF, renumber, showSeed, seedMap = null) {
@@ -2183,17 +2247,39 @@
                     name = entryMenuNameForItem(active);
                 }
                 const body = document.getElementById('entry-body');
+                if (_entrySelectedKey !== key) {
+                    _entryWithdrawalsActive = false;
+                    _prioFilterActive = false;
+                    _entrySelectedKey = key;
+                }
                 document.getElementById('entry-title').textContent = name || 'Entry List';
                 if (!tournamentData[key]) return;
                 const players = tournamentData[key];
                 const isITF = !key.startsWith('http');
-                document.getElementById('entry-prio-header').style.display = isITF ? '' : 'none';
+                const withdrawalsAvailable = entryWithdrawalsAvailable(key);
+                if (withdrawalsAvailable) _prioFilterActive = false;
+                else _entryWithdrawalsActive = false;
+                document.getElementById('entry-prio-header').style.display = isITF && !_entryWithdrawalsActive ? '' : 'none';
                 const btn = document.getElementById('btn-prio1');
-                btn.hidden = !isITF;
+                btn.hidden = false;
                 if (!isITF) _prioFilterActive = false;
-                btn.textContent = _prioFilterActive ? 'Show All' : 'Show Prio 1';
+                btn.textContent = withdrawalsAvailable
+                    ? entryWithdrawalLabel()
+                    : (_prioFilterActive ? 'Show All' : 'Show Prio 1');
+                btn.setAttribute('aria-pressed', String(_entryWithdrawalsActive || _prioFilterActive));
+                document.getElementById('entrylists-table').classList.toggle('entry-withdrawals', _entryWithdrawalsActive);
+                document.getElementById('entry-rank-header').textContent = 'E-Rank';
+                document.getElementById('entry-date-header').style.display = _entryWithdrawalsActive ? '' : 'none';
                 const showSeed = players.some(p => Number.isInteger(p.seed));
-                document.getElementById('entry-seed-header').style.display = showSeed ? '' : 'none';
+                document.getElementById('entry-seed-header').style.display = showSeed && !_entryWithdrawalsActive ? '' : 'none';
+                if (_entryWithdrawalsActive) {
+                    renderEntryWithdrawals(key, body);
+                    setEntryDrawStrength(players.filter(p => p.type === 'MAIN'), key, players, entryByPos);
+                    updateEntryMenuLabels();
+                    syncEntryMenuToggle();
+                    syncUrlStateForTab('entrylists');
+                    return;
+                }
                 let html = '';
                 const rankScore = p => {
                     const r = String(p.rank || '');

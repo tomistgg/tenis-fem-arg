@@ -252,6 +252,11 @@ def _validate_pydantic_json(data_dir: Path) -> dict[str, int]:
     cache_path = data_dir / "cache_state.json"
     cache_state = _read_json(cache_path)
     _validate_json_schema(cache_state, SCHEMA_DIR / "cache_state.schema.json", cache_path)
+    withdrawals_path = data_dir / "entry_withdrawals.json"
+    if withdrawals_path.exists():
+        _validate_json_schema(
+            _read_json(withdrawals_path), SCHEMA_DIR / "entry_withdrawals.schema.json", withdrawals_path,
+        )
     tournament_snapshot_path = data_dir / "tournament_snapshot.json"
     tournament_snapshot = _read_json(tournament_snapshot_path)
     _validate_json_schema(
@@ -283,7 +288,7 @@ def _validate_pydantic_json(data_dir: Path) -> dict[str, int]:
         "player_aliases": len(aliases),
         "tournament_snapshot": len(tournament_records),
         "pydantic_models": len(aliases) + 2,
-        "json_schemas": 3,
+        "json_schemas": 3 + int(withdrawals_path.exists()),
     }
 
 

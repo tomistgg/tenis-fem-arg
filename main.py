@@ -57,6 +57,13 @@ from config import (
     resolve_player_presentation_name,
 )
 from draws import _draw_is_complete, fetch_itf_tournament_draws, fetch_tournament_draws, wta_draw_polling_open
+from entry_withdrawals import (
+    WITHDRAWALS_FILENAME,
+    load_withdrawals,
+    record_itf_withdrawals,
+    record_wta_withdrawals,
+    withdrawal_deadline,
+)
 from itf import (
     _load_itf_event_filters_cache,
     get_draws_itf_tournament_list,
@@ -124,6 +131,7 @@ CALENDAR_SNAPSHOT_FILE = os.path.join(DATA_DIR, "calendar_snapshot.json")
 CALENDAR_CHANGE_HISTORY_FILE = os.path.join(DATA_DIR, "calendar_change_history.json")
 DRAWS_STORE_CACHE_FILE = os.path.join(DATA_DIR, "draws_store_cache.json")
 DRAW_FETCH_ERRORS_FILE = os.path.join(DATA_DIR, "draw_fetch_errors.json")
+ENTRY_WITHDRAWALS_FILE = os.path.join(DATA_DIR, WITHDRAWALS_FILENAME)
 ENABLE_ITF_DRAWS_PREFETCH = False
 HOURLY_PREFLIGHT_SCRIPTS = (
     ("weekly ranking", os.path.join(BASE_DIR, "populate_data", "load_weekly_ranking.py")),
@@ -1211,6 +1219,8 @@ def process_tournaments(
     current_monday_str = (_now - timedelta(days=_now.weekday())).strftime("%Y-%m-%d")
     acceptance_state = _load_acceptance_state()
     acceptance_state_dirty = False
+    withdrawal_state = load_withdrawals(ENTRY_WITHDRAWALS_FILE)
+    previous_withdrawal_state = copy.deepcopy(withdrawal_state)
     qualifying_draw_available_keys = {
         _canonical_draw_store_key(key) for key in (qualifying_draw_available_keys or set())
     }
@@ -1378,11 +1388,16 @@ def process_tournaments(
                             _p_pos = str(_p.get("pos") or "").strip()
                             status_dict[_p_name] = f" (ALT {_p_pos})" if _p_pos else " (ALT)"
                 else:
+                    observation = {}
                     t_list, status_dict = scrape_tournament_players(
                         key,
                         ranking_cache[md_date],
                         ranking_cache[q_date],
                         cached_players,
+                        observation=observation,
+                    )
+                    record_wta_withdrawals(
+                        withdrawal_state, key, cached_players, t_list, observation, today_str,
                     )
                     t_list = merge_entry_list(cached_players, t_list)
                 if not is_manual_entry:
@@ -1512,7 +1527,13 @@ def process_tournaments(
                 evening_already_fetched = state_entry.get("last_fetched_evening_date") == today_str
                 start_date_str = t_info.get("startDate", "")
                 list_available = _itf_acceptance_list_available(start_date_str, _now)
+                deadline = withdrawal_deadline(start_date_str)
+                withdrawals_need_refresh = (
+                    deadline is not None and today_str >= deadline.isoformat()
+                    and withdrawal_state.get(key, {}).get("last_checked_date") != today_str
+                )
                 fresh_players = []
+                itf_entries = []
 
                 if main_draw_available:
                     # The published main draw is the final roster boundary.
@@ -1526,12 +1547,13 @@ def process_tournaments(
                     logger.debug(f"  ITF qualifying draw published, acceptance list closed: {t_name}")
                     tourney_players_list = list(cached_players)
                     itf_name_map = {}
-                elif already_updated_today and not force_itf_acceptance:
+                elif already_updated_today and not force_itf_acceptance and not withdrawals_need_refresh:
                     logger.debug(f"  ITF acceptance list already updated today, skipping fetch: {t_name}")
                     tourney_players_list = list(cached_players)
                     itf_name_map = {}
                 elif (
                     not force_itf_acceptance
+                    and not withdrawals_need_refresh
                     and fetched_today_no_change
                     and _past_noon_utc
                     and (not _is_double_check_day or not _past_6pm_spain or evening_already_fetched)
@@ -1575,6 +1597,11 @@ def process_tournaments(
                             logger.debug(f"  No changes in ITF acceptance list yet for: {t_name}")
                     else:
                         logger.warning(f"  Using cached ITF acceptance list (fetch failed): {t_name}")
+
+                record_itf_withdrawals(
+                    withdrawal_state, key, cached_players, fresh_players, itf_entries,
+                    start_date_str, today_str,
+                )
 
                 # Preserve the saved cache when ITF returns nothing. We still
                 # use a working copy for ranking/seeding/schedule generation,
@@ -1711,6 +1738,8 @@ def process_tournaments(
 
     if acceptance_state_dirty:
         _save_acceptance_state(acceptance_state)
+    if withdrawal_state != previous_withdrawal_state:
+        save_json_file(ENTRY_WITHDRAWALS_FILE, withdrawal_state)
 
     _flush_itf_pending(schedule_map, itf_schedule_pending)
     _flush_itf_pending(unranked_schedule, unranked_itf_pending)
