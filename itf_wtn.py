@@ -129,6 +129,40 @@ def _select_observation(record, target_week, *, allow_cross_week_fallback):
     return {}
 
 
+def entry_list_wtn_status(entry_cache, cache_path, *, tournament_weeks=None, resolve_itf_player=None):
+    """Count WTA entry rows by the age of the WTN value they would display."""
+    cache = _normalize_cache(_load_cache(cache_path))
+    tournament_weeks = tournament_weeks or {}
+    resolve_itf_player = resolve_itf_player or _wta_player_with_itf_id
+    counts = {"total": 0, "current_week": 0, "previous_week": 0, "other_week": 0, "missing": 0, "unmapped": 0}
+    for key, players in (entry_cache or {}).items():
+        if not str(key).startswith("http"):
+            continue
+        target_week = _week_start(tournament_weeks.get(str(key).removesuffix("#qual")))
+        for player in players or []:
+            if player.get("type") == "ALT":
+                continue
+            counts["total"] += 1
+            itf_player = resolve_itf_player(player)
+            if not itf_player:
+                counts["unmapped"] += 1
+                counts["missing"] += 1
+                continue
+            weeks = cache.get(str(itf_player["player_id"]), {}).get("weeks", {})
+            previous_week = (
+                (date.fromisoformat(target_week) - timedelta(days=7)).isoformat() if target_week else ""
+            )
+            if target_week in weeks:
+                counts["current_week"] += 1
+            elif previous_week in weeks:
+                counts["previous_week"] += 1
+            elif weeks:
+                counts["other_week"] += 1
+            else:
+                counts["missing"] += 1
+    return counts
+
+
 def _wta_player_with_itf_id(player):
     from config import PLAYER_IDENTITY_INDEX
 

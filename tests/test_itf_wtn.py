@@ -1,7 +1,7 @@
 import json
 from datetime import date
 
-from itf_wtn import ITFProfileBlocked, parse_wtn_singles, refresh_entry_list_wtn
+from itf_wtn import ITFProfileBlocked, entry_list_wtn_status, parse_wtn_singles, refresh_entry_list_wtn
 
 
 def test_parse_wtn_singles_from_profile_props():
@@ -229,3 +229,39 @@ def test_legacy_profile_cache_wins_over_same_week_entry_snapshot(tmp_path):
     assert entries["https://wta.example/list"][0]["wtn"] == "9.3"
     observation = json.loads(cache_path.read_text(encoding="utf-8"))["8001"]["weeks"]["2026-09-14"]
     assert observation["source"] == "profile"
+
+
+def test_wtn_status_counts_current_old_missing_and_unmapped_rows(tmp_path):
+    cache_path = tmp_path / "cache.json"
+    cache_path.write_text(
+        json.dumps({
+            "8001": {"weeks": {"2026-09-21": {"wtn": 9.1}}},
+            "8002": {"weeks": {"2026-09-14": {"wtn": 9.2}}},
+            "8003": {"weeks": {"2026-10-05": {"wtn": 9.3}}},
+        }),
+        encoding="utf-8",
+    )
+    entries = {
+        "https://wta.example/list": [
+            {"player_id": str(number), "name": f"Player {number}", "type": "MAIN"}
+            for number in range(1, 6)
+        ]
+    }
+
+    def resolve(player):
+        return None if player["player_id"] == "5" else {**player, "player_id": "800" + player["player_id"]}
+
+    counts = entry_list_wtn_status(
+        entries,
+        cache_path,
+        tournament_weeks={"https://wta.example/list": "2026-09-21"},
+        resolve_itf_player=resolve,
+    )
+    assert counts == {
+        "total": 5,
+        "current_week": 1,
+        "previous_week": 1,
+        "other_week": 1,
+        "missing": 2,
+        "unmapped": 1,
+    }

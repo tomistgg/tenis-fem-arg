@@ -2252,7 +2252,6 @@
                 const body = document.getElementById('entry-body');
                 if (_entrySelectedKey !== key) {
                     _entryWithdrawalsActive = false;
-                    _prioFilterActive = false;
                     _entrySelectedKey = key;
                 }
                 document.getElementById('entry-title').textContent = name || 'Entry List';
