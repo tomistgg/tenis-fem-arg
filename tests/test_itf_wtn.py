@@ -96,7 +96,7 @@ def test_junior_profile_fallback_and_challenge_pause(tmp_path):
     assert not any("/3/" in url for url in fetched)
 
 
-def test_current_itf_entry_wtn_defers_live_profile_lookup_for_seven_days(tmp_path):
+def test_current_itf_entry_wtn_is_stored_under_retrieval_week(tmp_path):
     cache_path = tmp_path / "itf_wtn_cache.json"
     entries = {
         "https://wta.example/porto": [{"player_id": "123", "name": "Same Player", "country": "POR"}],
@@ -129,7 +129,7 @@ def test_current_itf_entry_wtn_defers_live_profile_lookup_for_seven_days(tmp_pat
     assert not fetched
     assert entries["https://wta.example/porto"][0]["wtn"] == "10.02"
     cached = json.loads(cache_path.read_text(encoding="utf-8"))["800123456"]["weeks"]
-    assert cached["2026-09-28"]["source"] == "entry_list"
+    assert cached["2026-09-14"]["source"] == "entry_list"
 
     refresh_entry_list_wtn(
         None,
@@ -143,10 +143,10 @@ def test_current_itf_entry_wtn_defers_live_profile_lookup_for_seven_days(tmp_pat
             "w-itf-por-example": "2026-09-28",
         },
     )
-    assert fetched
-    assert entries["https://wta.example/porto"][0]["wtn"] == "10.37"
+    assert not fetched
+    assert entries["https://wta.example/porto"][0]["wtn"] == "10.02"
     cached = json.loads(cache_path.read_text(encoding="utf-8"))["800123456"]["weeks"]
-    assert cached["2026-09-21"]["source"] == "profile"
+    assert cached["2026-09-21"]["source"] == "entry_list"
 
 
 def test_previous_week_beats_temporary_cross_week_fallback(tmp_path):

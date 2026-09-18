@@ -87,9 +87,21 @@ def _normalize_cache(cache):
             continue
         weeks = record.get("weeks")
         if isinstance(weeks, dict):
-            for observation in weeks.values():
+            normalized_weeks = {}
+            for stored_week, observation in weeks.items():
+                if isinstance(observation, dict) and observation.get("source") == "entry_list":
+                    stored_week = _week_start(observation.get("retrieved_at")) or stored_week
                 if isinstance(observation, dict) and not observation.get("source") and observation.get("profile_url"):
                     observation["source"] = "profile"
+                existing = normalized_weeks.get(stored_week)
+                if (
+                    existing
+                    and existing.get("source") == "profile"
+                    and (not isinstance(observation, dict) or observation.get("source") != "profile")
+                ):
+                    continue
+                normalized_weeks[stored_week] = observation
+            record = {**record, "weeks": normalized_weeks}
             normalized[player_id] = record
             continue
         week = _week_start(record.get("retrieved_at") or record.get("checked_at"))
@@ -152,11 +164,11 @@ def entry_list_wtn_status(entry_cache, cache_path, *, tournament_weeks=None, res
             previous_week = (
                 (date.fromisoformat(target_week) - timedelta(days=7)).isoformat() if target_week else ""
             )
-            if target_week in weeks:
+            if weeks.get(target_week, {}).get("wtn") not in (None, ""):
                 counts["current_week"] += 1
-            elif previous_week in weeks:
+            elif weeks.get(previous_week, {}).get("wtn") not in (None, ""):
                 counts["previous_week"] += 1
-            elif weeks:
+            elif any(isinstance(observation, dict) and observation.get("wtn") not in (None, "") for observation in weeks.values()):
                 counts["other_week"] += 1
             else:
                 counts["missing"] += 1
@@ -272,13 +284,17 @@ def refresh_entry_list_wtn(
             player_id = str(player.get("player_id") or "").strip()
             value = player.get("wtn")
             if player_id and value not in (None, "", "-"):
-                existing = cache.get(player_id, {}).get("weeks", {}).get(tournament_week(key), {})
-                if existing.get("source") != "profile":
+                existing = cache.get(player_id, {}).get("weeks", {}).get(current_week, {})
+                same_or_newer_entry_snapshot = (
+                    existing.get("source") == "entry_list"
+                    and existing.get("retrieved_at", "") >= today_text
+                )
+                if existing.get("source") != "profile" and not same_or_newer_entry_snapshot:
                     _store_observation(
                         cache,
                         player_id,
                         player,
-                        tournament_week(key),
+                        current_week,
                         {
                             "wtn": str(value),
                             "source": "entry_list",
@@ -304,7 +320,7 @@ def refresh_entry_list_wtn(
     targets = [
         (player_id, player)
         for player_id, player in players_by_id.items()
-        if current_week not in cache.get(player_id, {}).get("weeks", {})
+        if cache.get(player_id, {}).get("weeks", {}).get(current_week, {}).get("wtn") in (None, "")
     ] if fetch_profiles else []
     targets.sort(key=lambda item: (item[1].get("type") != "MAIN", item[0] in cache, item[0]))
     targets = targets[:max_profile_fetches]

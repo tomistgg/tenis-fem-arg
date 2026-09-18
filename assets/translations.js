@@ -237,7 +237,7 @@ window.WTARG_TRANSLATIONS = {
         "Next ▶": "Siguiente ▶",
         "(Geometric Mean): Balanced measure of overall draw quality across all players.": "(Media geométrica): Medida equilibrada del nivel general del cuadro considerando a todas las jugadoras.",
         "(Harmonic Mean): Weighted toward top-ranked players. Reflects star power in the draw.": "(Media armónica): Da más peso a las jugadoras mejor clasificadas. Refleja la presencia de figuras en el cuadro.",
-        "Overall draw quality across all players.": "Nivel general del cuadro considerando a todas las jugadoras.",
+        "Geometric mean of player WTNs (lower is stronger).": "Media geométrica de los WTN de las jugadoras (menor es mejor).",
         "January": "Enero",
         "February": "Febrero",
         "March": "Marzo",

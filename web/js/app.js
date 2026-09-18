@@ -1941,30 +1941,19 @@
                 return replaced ? filled : main;
             }
 
-            function entryRankToNumber(rank) {
-                if (Number.isFinite(rank)) return rank;
-                if (rank === null || rank === undefined) return 2000;
-                const text = String(rank).trim();
-                if (!text || text === '-') return 2000;
-                // Special/non-DA entries display their WTA rank in parentheses,
-                // for example "CA (431)" or "JA (365)". Use that WTA rank in GM.
-                const specialRank = text.match(/^[A-Z][A-Z0-9-]*\s*\((\d+(?:\.\d+)?)\)$/i);
-                if (specialRank) {
-                    const value = parseFloat(specialRank[1]);
-                    return Number.isFinite(value) && value > 0 ? value : 2000;
-                }
-                // Only a plain numeric value is a WTA ranking. Values such as
-                // "ITF 285", "WTN 17.08", and "JE (-)" use incompatible scales.
-                if (!/^\d+(?:\.\d+)?$/.test(text)) return 2000;
+            function entryWtnToNumber(wtn) {
+                if (Number.isFinite(wtn)) return wtn > 0 ? wtn : null;
+                const text = String(wtn ?? '').trim();
+                if (!/^\d+(?:\.\d+)?$/.test(text)) return null;
                 const value = parseFloat(text);
-                return Number.isFinite(value) && value > 0 ? value : 2000;
+                return Number.isFinite(value) && value > 0 ? value : null;
             }
 
             function entryDrawStrengthGM(players) {
-                const ranks = (players || []).map(p => entryRankToNumber(p.rank)).filter(n => Number.isFinite(n) && n > 0);
-                if (!ranks.length) return null;
-                const logSum = ranks.reduce((acc, v) => acc + Math.log(v), 0);
-                return Math.exp(logSum / ranks.length);
+                const wtns = (players || []).map(p => entryWtnToNumber(p.wtn)).filter(n => Number.isFinite(n) && n > 0);
+                if (!wtns.length) return null;
+                const logSum = wtns.reduce((acc, v) => acc + Math.log(v), 0);
+                return Math.exp(logSum / wtns.length);
             }
 
             let _entryMenuGmMin = 0;
