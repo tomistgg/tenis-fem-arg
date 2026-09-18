@@ -3,15 +3,15 @@
     "wta_full_calendar_cache.json": {
       "from": "2026-08-21",
       "to": "2026-12-31",
-      "fetchedAt": "2026-09-18T07:13:18Z",
-      "lastAttemptAt": "2026-09-18T07:13:18Z",
-      "fetchedRunId": "20260918T065903Z-6714ed26b1",
-      "lastAttemptRunId": "20260918T065903Z-6714ed26b1"
+      "fetchedAt": "2026-09-18T11:25:28Z",
+      "lastAttemptAt": "2026-09-18T11:25:28Z",
+      "fetchedRunId": "20260918T112454Z-1295ff4995",
+      "lastAttemptRunId": "20260918T112454Z-1295ff4995"
     },
     "itf_calendar_cache.json": {
       "year": 2026,
-      "count": 589,
-      "fetchedAt": "2026-09-18T06:59:55Z"
+      "count": 621,
+      "fetchedAt": "2026-09-18T11:26:05Z"
     }
   },
   "entries": {
@@ -33,6 +33,13 @@
       "w-itf-bra-2026-009": {
         "duplicatePlayersAlerted": [
           "Vitoria Rodrigues Oliveira"
+        ]
+      },
+      "w-itf-egy-2026-026": {
+        "duplicatePlayersAlerted": [
+          "Varvara Safonova",
+          "Meira Geras",
+          "Nina Rudiukova"
         ]
       }
     },
@@ -688,25 +695,25 @@
         "completedAt": "2026-09-12T23:54:37Z"
       },
       "https://www.wtatennis.com/tournaments/1139/sao-paulo/2026/player-list": {
-        "fetchedAt": "2026-09-18T07:12:30Z"
+        "fetchedAt": "2026-09-18T11:34:54Z"
       },
       "https://www.wtatennis.com/tournaments/2075/guadalajara-500/2026/player-list": {
-        "fetchedAt": "2026-09-18T07:12:30Z"
+        "fetchedAt": "2026-09-18T11:34:54Z"
       },
       "https://www.wtatennis.com/tournaments/1136/caldas-da-rainha-125/2026/player-list": {
-        "fetchedAt": "2026-09-18T07:12:30Z"
+        "fetchedAt": "2026-09-18T11:34:54Z"
       },
       "https://www.wtatennis.com/tournaments/2061/valencia-125/2026/player-list": {
-        "fetchedAt": "2026-09-18T07:12:30Z"
+        "fetchedAt": "2026-09-18T11:34:54Z"
       },
       "w-itf-fra-2026-020": {
         "fetchedAt": "2026-09-14T20:15:10Z"
       },
       "https://www.wtatennis.com/tournaments/2044/ljubljana-125/2026/player-list": {
-        "fetchedAt": "2026-09-18T07:12:30Z"
+        "fetchedAt": "2026-09-18T11:34:54Z"
       },
       "w-itf-bra-2026-007": {
-        "fetchedAt": "2026-09-18T07:12:31Z"
+        "fetchedAt": "2026-09-18T11:35:40Z"
       }
     }
   }
