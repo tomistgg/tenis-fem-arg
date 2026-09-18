@@ -10,6 +10,7 @@ from pathlib import Path
 import requests
 
 from runtime_logging import get_logger
+from time_utils import madrid_today
 from utils import save_json_file
 
 logger = get_logger("itf-wtn")
@@ -220,7 +221,7 @@ def refresh_entry_list_wtn(
     request_interval_seconds=REQUEST_INTERVAL_SECONDS,
 ):
     """Refresh profile WTNs for current WTA entries; ITF entries already include WTN."""
-    today = today or date.today()
+    today = today or madrid_today()
     today_text = today.isoformat()
     current_week = _week_start(today)
     tournament_weeks = tournament_weeks or {}
