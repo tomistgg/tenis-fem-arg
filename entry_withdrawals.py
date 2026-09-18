@@ -179,10 +179,15 @@ def public_withdrawals(state, tournament_groups):
                     continue
                 draw = DRAW_LABELS.get(row.get("type"))
                 position = f"{row['pos']}-{draw}" if row.get("pos") and draw else "—"
+                source = "wta" if key.startswith("http") else "itf"
                 rows.append(
                     {
                         "position": position,
-                        "name": row["name"],
+                        "name": resolve_player_presentation_name(
+                            source,
+                            player_id=row.get("player_id", ""),
+                            name=row.get("name", ""),
+                        ),
                         "country": row.get("country", "-"),
                         "rank": row.get("rank") or "-",
                         "date": row["date"],
