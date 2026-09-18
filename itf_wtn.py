@@ -168,7 +168,10 @@ def entry_list_wtn_status(entry_cache, cache_path, *, tournament_weeks=None, res
                 counts["current_week"] += 1
             elif weeks.get(previous_week, {}).get("wtn") not in (None, ""):
                 counts["previous_week"] += 1
-            elif any(isinstance(observation, dict) and observation.get("wtn") not in (None, "") for observation in weeks.values()):
+            elif any(
+                isinstance(observation, dict) and observation.get("wtn") not in (None, "")
+                for observation in weeks.values()
+            ):
                 counts["other_week"] += 1
             else:
                 counts["missing"] += 1
