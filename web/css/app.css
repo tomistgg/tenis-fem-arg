@@ -640,13 +640,16 @@
             #view-entrylists table { table-layout: auto; }
             #entrylists-table .entry-pr-mobile-label { display: none; }
             #entrylists-table.entry-withdrawals .entry-pos-col {
-                width: 65px !important;
-                min-width: 65px !important;
-                white-space: nowrap;
+                display: none;
             }
             #entrylists-table.entry-withdrawals .entry-rank-col {
                 width: 70px !important;
                 min-width: 70px !important;
+                white-space: nowrap;
+            }
+            #entrylists-table .entry-wtn-col {
+                width: 55px;
+                min-width: 55px;
                 white-space: nowrap;
             }
             #entrylists-table.entry-withdrawals .entry-date-col {
@@ -1563,6 +1566,13 @@
                     width: 70px !important;
                     min-width: 70px !important;
                     max-width: 70px !important;
+                    white-space: nowrap;
+                }
+                #entrylists-table .entry-wtn-col {
+                    box-sizing: border-box;
+                    width: 50px !important;
+                    min-width: 50px !important;
+                    max-width: 50px !important;
                     white-space: nowrap;
                 }
                 #entrylists-table .entry-date-col {

@@ -32,6 +32,7 @@
             let _urlStateSwitching = false;
             let _urlStateRestoreSeq = 0;
             let _urlStateLastTrackRequest = '';
+            const _entryWtnVisible = readUrlParams().has('wtn');
 
             function normalizeUrlPath(path) {
                 let out = (path || '/').toString().replace(/\/+$/g, '/');
@@ -134,7 +135,8 @@
                     const raw = key === 'q' || key === 'date' || key === 'asrank' || key === 'vsrank' || key === 'type' || key === 'draw';
                     setStateParam(params, key, value, { raw });
                 });
-                const query = params.toString().replace(/%2C/g, ',');
+                let query = params.toString().replace(/%2C/g, ',');
+                if (tab === 'entrylists' && _entryWtnVisible) query += (query ? '&' : '') + 'wtn';
                 const querySuffix = query ? ('?' + query) : '';
                 const isLocalFile = location.protocol === 'file:';
                 // A file:// page may only replace history with the same physical
@@ -2234,7 +2236,8 @@
                     const bold = isMain ? 'font-weight:bold;' : '';
                     const flag = (p.country && p.country !== '-') ? countryFlag(p.country, false) + ' ' : '';
                     const nameDisplay = p.name.startsWith('(') ? p.name : getDisplayName(p.name.toUpperCase());
-                    html += `<tr><td class="entry-pos-col">${displayPos}</td><td class="entry-player-col" style="text-align:left;${bold}">${flag}${nameDisplay}</td>${seedCell(p)}<td class="entry-rank-col">${p.rank}</td>${prioCell(p)}</tr>`;
+                    const wtnCell = _entryWtnVisible ? `<td class="entry-wtn-col">${p.wtn || '-'}</td>` : '';
+                    html += `<tr><td class="entry-pos-col">${displayPos}</td><td class="entry-player-col" style="text-align:left;${bold}">${flag}${nameDisplay}</td>${seedCell(p)}${wtnCell}<td class="entry-rank-col">${p.rank}</td>${prioCell(p)}</tr>`;
                 });
                 return html;
             }
@@ -2272,6 +2275,7 @@
                 document.getElementById('entry-date-header').style.display = _entryWithdrawalsActive ? '' : 'none';
                 const showSeed = players.some(p => Number.isInteger(p.seed));
                 document.getElementById('entry-seed-header').style.display = showSeed && !_entryWithdrawalsActive ? '' : 'none';
+                document.getElementById('entry-wtn-header').style.display = _entryWtnVisible && !_entryWithdrawalsActive ? '' : 'none';
                 if (_entryWithdrawalsActive) {
                     renderEntryWithdrawals(key, body);
                     setEntryDrawStrength(players.filter(p => p.type === 'MAIN'), key, players, entryByPos);
@@ -2322,7 +2326,7 @@
                 const main = players.filter(p => p.type === 'MAIN').sort(byPos);
                 const qual = sortEL(players.filter(p => p.type === 'QUAL'));
                 const alt = sortEL(players.filter(p => p.type === 'ALT'));
-                const cols = (isITF ? 5 : 4) + (showSeed ? 1 : 0);
+                const cols = (isITF ? 4 : 3) + (_entryWtnVisible ? 1 : 0) + (showSeed ? 1 : 0);
                 const qualifyingDivider = key.endsWith('#qual')
                     ? ''
                     : `<tr class="divider-row"><td colspan="${cols}">QUALIFYING</td></tr>`;

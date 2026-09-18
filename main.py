@@ -79,6 +79,7 @@ from itf_drawsheet_cache import (
     tournament_ids_with_published_main_draw,
     tournament_ids_with_published_qualifying_draw,
 )
+from itf_wtn import ITF_WTN_CACHE_FILENAME, refresh_entry_list_wtn
 from lazy_browser import LazyBrowserSession
 from tournament_snapshot import (
     TournamentSnapshotRecord,
@@ -132,6 +133,7 @@ CALENDAR_CHANGE_HISTORY_FILE = os.path.join(DATA_DIR, "calendar_change_history.j
 DRAWS_STORE_CACHE_FILE = os.path.join(DATA_DIR, "draws_store_cache.json")
 DRAW_FETCH_ERRORS_FILE = os.path.join(DATA_DIR, "draw_fetch_errors.json")
 ENTRY_WITHDRAWALS_FILE = os.path.join(DATA_DIR, WITHDRAWALS_FILENAME)
+ITF_WTN_CACHE_FILE = os.path.join(DATA_DIR, ITF_WTN_CACHE_FILENAME)
 ENABLE_ITF_DRAWS_PREFETCH = False
 HOURLY_PREFLIGHT_SCRIPTS = (
     ("weekly ranking", os.path.join(BASE_DIR, "populate_data", "load_weekly_ranking.py")),
@@ -2068,6 +2070,20 @@ def main():
             force_itf_acceptance=args.force_itf_acceptance,
             qualifying_draw_available_keys=qualifying_draw_available_keys,
             main_draw_available_keys=main_draw_available_keys,
+        )
+
+        entry_tournament_weeks = {
+            str(key): info.get("startDate")
+            for tournaments in tournament_groups.values()
+            for key, info in tournaments.items()
+        }
+        refresh_entry_list_wtn(
+            driver,
+            entry_cache,
+            ITF_WTN_CACHE_FILE,
+            today=madrid_today(),
+            fetch_profiles=False,
+            tournament_weeks=entry_tournament_weeks,
         )
 
         # Persist the refreshed entry lists after the tournament pass.

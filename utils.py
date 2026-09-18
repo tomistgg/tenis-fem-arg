@@ -760,6 +760,8 @@ _ENTRY_LISTS_CACHE_PLAYER_FIELDS = (
     "seed",
     # Appended for backwards-compatible expansion of older compact rows.
     "player_id",
+    "wtn",
+    "profile_url",
 )
 _ENTRY_LISTS_CACHE_SECTION_ORDER = ("MAIN", "QUAL", "ALT")
 _ENTRY_LISTS_CACHE_META_KEYS = {"_comment", "fields"}

@@ -97,6 +97,7 @@ def test_itf_acceptance_parser_formats_special_entries_and_repositions_placehold
                     "nationalityCode": "",
                     "atpWtaRank": 365,
                     "itfBTRank": 1,
+                    "profileLink": "/en/players/hannah-klugman/800631038/gbr/jt/",
                 }],
             }],
         },
@@ -123,6 +124,8 @@ def test_itf_acceptance_parser_formats_special_entries_and_repositions_placehold
         ("19", "(Special Exempt)", "-", "-", ""),
         ("20", "(Special Exempt)", "-", "-", ""),
     ]
+    assert [row["wtn"] for row in parsed] == ["-", "12.3", "-", "-"]
+    assert parsed[0]["profile_url"] == "https://www.itftennis.com/en/players/hannah-klugman/800631038/gbr/jt/"
 
 
 def test_itf_acceptance_parser_special_entry_without_wta_rank_uses_dash():

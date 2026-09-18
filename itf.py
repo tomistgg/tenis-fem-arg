@@ -204,6 +204,7 @@ def parse_itf_entry_list(itf_entries):
                         "name": display_name,
                         "country": "-",
                         "rank": "-",
+                        "wtn": "-",
                         "priority": priority,
                         "type": section_type,
                         "pos_num": pos_num,
@@ -220,8 +221,13 @@ def parse_itf_entry_list(itf_entries):
             display_name = resolve_player_display_name("itf", player_id=player_id, name=raw_f_name)
 
             wta = p_node.get("atpWtaRank", "")
-            itf_rank = p_node.get("itfBTRank")
+            itf_rank = p_node.get("itfWorldTennisRanking")
+            if itf_rank is None or str(itf_rank).strip() == "":
+                itf_rank = p_node.get("itfBTRank")
             wtn = p_node.get("worldRating", "")
+            profile_link = str(p_node.get("profileLink") or "").strip()
+            if profile_link.startswith("/"):
+                profile_link = f"{ITF_BASE_URL}{profile_link}"
 
             if section_type == "MAIN" and class_code not in direct_acceptance_codes:
                 wta_rank = str(wta).strip() if wta is not None else ""
@@ -232,8 +238,6 @@ def parse_itf_entry_list(itf_entries):
                     erank_str = f"{wta}"
                 elif itf_rank is not None and str(itf_rank).strip() != "":
                     erank_str = f"ITF {itf_rank}"
-                elif wtn and str(wtn).strip() != "":
-                    erank_str = f"WTN {wtn}"
 
             country = str(p_node.get("nationalityCode") or "").strip().upper()
             if not country or country == "-":
@@ -247,11 +251,13 @@ def parse_itf_entry_list(itf_entries):
                     "name": display_name,
                     "country": country or "-",
                     "rank": erank_str,
+                    "wtn": str(wtn).strip() if wtn is not None and str(wtn).strip() else "-",
                     "priority": priority,
                     "type": section_type,
                     "pos_num": pos_num,
                     "entry": class_code if section_type == "MAIN" and class_code not in direct_acceptance_codes else "",
                     "player_id": player_id,
+                    "profile_url": profile_link,
                 }
             )
 

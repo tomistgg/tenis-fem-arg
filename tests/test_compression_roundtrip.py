@@ -107,6 +107,8 @@ def test_entry_list_player_id_round_trip():
                 "seed_rank": 45,
                 "seed": "1",
                 "player_id": "321692",
+                "wtn": "12.3",
+                "profile_url": "https://www.itftennis.com/en/players/maria-carle/800000001/arg/wt/",
                 "type": "MAIN",
             }
         ]
