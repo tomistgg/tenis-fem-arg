@@ -2051,6 +2051,9 @@ _TSTRENGTH_CACHE_FIELDS = (
     "gm",
     "playerCount",
     "drawComplete",
+    "wtn_hm",
+    "wtn_gm",
+    "wtnPlayerCount",
 )
 
 
@@ -2059,7 +2062,16 @@ def compress_tstrength_cache(payload):
 
 
 def expand_tstrength_cache(payload):
-    return expand_row_list_cache(payload, _TSTRENGTH_CACHE_FIELDS)
+    rows = expand_row_list_cache(payload, _TSTRENGTH_CACHE_FIELDS)
+    # Optional WTN metrics were added after the original cache schema; keep
+    # older rows identical when those fields were not present.
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        for field in ("wtn_hm", "wtn_gm", "wtnPlayerCount"):
+            if row.get(field, "") == "":
+                row.pop(field, None)
+    return rows
 
 
 _ITF_RANKING_FIELDS = ("Player", "Rank", "Country", "Key")

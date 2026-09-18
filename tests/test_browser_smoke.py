@@ -175,8 +175,8 @@ def test_generated_site_loads_rankings_bundle_offline(offline_generated_site):
             ('Cut Off', 'CORTE'), ('Acc. Pts', 'PTS ACU.'), ('Est. Need', 'EST. NEC.'),
             ('ACC. PTS', 'PTS ACU.'),
             ('WTA Tournament Strength', 'Nivel Torneos WTA'), ('Yes', 'Si'), ('No', 'No'),
-            ('Geometric mean of player WTNs (lower is stronger).',
-             'Media geométrica de los WTN de las jugadoras (menor es mejor).'),
+            ("Draw quality measured by player's WTN.",
+             'Calidad del cuadro medida por el WTN de las jugadoras.'),
         ]:
             assert driver.execute_script('return WTARG_I18N.translate(arguments[0])', source) == translated
         assert driver.execute_script(

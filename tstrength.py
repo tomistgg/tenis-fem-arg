@@ -4,6 +4,7 @@ import csv
 import json
 import math
 import os
+import re
 import time
 from datetime import date, datetime, timedelta
 
@@ -16,7 +17,9 @@ from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
 from time_utils import madrid_today
 from utils import (
     compress_tstrength_cache,
+    expand_entry_lists_cache,
     expand_tstrength_cache,
+    load_cache,
     normalize_player_name,
     save_json_file,
 )
@@ -27,6 +30,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = str(RUNTIME_DATA_DIR)
 RANKINGS_CSV = os.path.join(DATA_DIR, "wta_rankings_20_29.csv")
 TSTRENGTH_CACHE = os.path.join(DATA_DIR, "tstrength_cache.json")
+ENTRY_LISTS_CACHE = os.path.join(DATA_DIR, "entry_lists_cache.json")
 
 _WTA_API_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -307,6 +311,39 @@ def _extract_draw_players(matches, draw_level_type):
     return sorted(all_players), participants_locked
 
 
+def _load_entry_wtn_index():
+    """Load cached WTN values by WTA tournament id and draw section."""
+    try:
+        entries = expand_entry_lists_cache(load_cache(ENTRY_LISTS_CACHE))
+    except (OSError, ValueError, TypeError):
+        return {}
+    index = {}
+    for key, players in entries.items():
+        match = re.search(r"/tournaments/(\d+)/", str(key))
+        if not match or not isinstance(players, list):
+            continue
+        tournament_id = match.group(1)
+        for player in players:
+            if not isinstance(player, dict):
+                continue
+            try:
+                wtn = float(str(player.get("wtn", "")).strip())
+            except (TypeError, ValueError):
+                continue
+            if wtn <= 0:
+                continue
+            draw = "Q" if player.get("type") == "QUAL" else "MD"
+            index.setdefault((tournament_id, draw), {})[
+                normalize_player_name(player.get("name", ""))
+            ] = wtn
+    return index
+
+
+def _entry_wtn_values(index, tournament_id, draw, players):
+    values = index.get((str(tournament_id), draw), {})
+    return [values[name] for name in (normalize_player_name(p) for p in players) if name in values]
+
+
 def _harmonic_mean(values):
     """Compute harmonic mean of a list of positive numbers."""
     if not values or any(v <= 0 for v in values):
@@ -366,6 +403,7 @@ def build_tstrength_data(from_year=None, full_backfill=False):
 
     # Load cache (keyed by "year_id")
     cache = {}
+    cache_schema_changed = False
     if os.path.exists(TSTRENGTH_CACHE):
         try:
             with open(TSTRENGTH_CACHE, encoding="utf-8") as f:
@@ -379,6 +417,15 @@ def build_tstrength_data(from_year=None, full_backfill=False):
                 if draw in {"QUALY", "QUAL", "Q"}:
                     draw = "Q"
                 entry["draw"] = draw
+                if "wtn_hm" not in entry:
+                    entry["wtn_hm"] = 0
+                    cache_schema_changed = True
+                if "wtn_gm" not in entry:
+                    entry["wtn_gm"] = 0
+                    cache_schema_changed = True
+                if "wtnPlayerCount" not in entry:
+                    entry["wtnPlayerCount"] = 0
+                    cache_schema_changed = True
                 year = entry.get("year", "2025")
                 cache_key = f"{year}_{entry['id']}_{draw}"
                 cache[cache_key] = entry
@@ -460,12 +507,15 @@ def build_tstrength_data(from_year=None, full_backfill=False):
 
     if not new_tournaments:
         logger.info("  No new tournaments to process")
+        if cache_schema_changed:
+            save_json_file(TSTRENGTH_CACHE, compress_tstrength_cache(list(cache.values())))
     else:
         logger.info(f"  {len(new_tournaments)} new tournaments to process")
 
         # Load rankings only if we have new tournaments
         logger.debug("Loading rankings for T-Strength...")
         rankings_index = _load_rankings_index()
+        entry_wtn_index = _load_entry_wtn_index()
         available_weeks = sorted(rankings_index)
         unranked_players = {}
 
@@ -514,6 +564,9 @@ def build_tstrength_data(from_year=None, full_backfill=False):
                         "rankings": [],
                         "hm": 0,
                         "gm": 0,
+                        "wtn_hm": 0,
+                        "wtn_gm": 0,
+                        "wtnPlayerCount": 0,
                         "playerCount": 0,
                     }
                     continue
@@ -534,6 +587,9 @@ def build_tstrength_data(from_year=None, full_backfill=False):
                 player_ranks.sort()
                 hm = round(_harmonic_mean(player_ranks), 1)
                 gm = round(_geometric_mean(player_ranks), 1)
+                wtn_values = _entry_wtn_values(entry_wtn_index, tid, draw, players)
+                wtn_hm = round(_harmonic_mean(wtn_values), 1) if wtn_values else 0
+                wtn_gm = round(_geometric_mean(wtn_values), 1) if wtn_values else 0
 
                 entry = {
                     "id": tid,
@@ -551,6 +607,9 @@ def build_tstrength_data(from_year=None, full_backfill=False):
                     "rankings": player_ranks,
                     "hm": hm,
                     "gm": gm,
+                    "wtn_hm": wtn_hm,
+                    "wtn_gm": wtn_gm,
+                    "wtnPlayerCount": len(wtn_values),
                     "playerCount": len(player_ranks),
                 }
                 cache[cache_key] = entry

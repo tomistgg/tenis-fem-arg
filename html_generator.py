@@ -1107,7 +1107,7 @@ def generate_html(
     # Build tournament side menu HTML for Entry Lists
     entry_menu_html = ""
     first_key = None
-    legend_html = '<div class="entry-menu-legend"><span class="entry-menu-gm-sample">9.9</span> Geometric mean of player WTNs (lower is stronger).</div>'
+    legend_html = '<div class="entry-menu-legend"><span class="entry-menu-gm-sample">9.9</span> Draw quality measured by player\'s WTN.<div class="entry-menu-note"><span class="entry-menu-warning">!</span> Now using WTN instead of rankings to better reflect junior, collegiate, and other players whose rankings understate their level.</div></div>'
     for week, tourneys in sorted(tournament_groups.items(), key=lambda item: _week_label_sort_key(item[0])):
         week_has_data = False
         for t_key in tourneys:

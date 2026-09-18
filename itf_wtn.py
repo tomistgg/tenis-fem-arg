@@ -266,7 +266,7 @@ def refresh_entry_list_wtn(
     settle_seconds=0.5,
     request_interval_seconds=REQUEST_INTERVAL_SECONDS,
 ):
-    """Refresh profile WTNs for current WTA entries; ITF entries already include WTN."""
+    """Refresh and propagate WTNs for WTA and ITF entry-list players."""
     today = today or madrid_today()
     today_text = today.isoformat()
     current_week = _week_start(today)
@@ -364,10 +364,12 @@ def refresh_entry_list_wtn(
 
     save_json_file(cache_path, cache)
     for key, players in (entry_cache or {}).items():
-        if not str(key).startswith("http"):
-            continue
         for player in players or []:
-            itf_player = resolve_itf_player(player)
+            if str(key).startswith("http"):
+                itf_player = resolve_itf_player(player)
+            else:
+                player_id = str(player.get("player_id") or "").strip()
+                itf_player = {"player_id": player_id} if player_id else None
             record = cache.get(str(itf_player["player_id"]), {}) if itf_player else {}
             observation = _select_observation(
                 record,

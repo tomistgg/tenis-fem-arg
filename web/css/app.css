@@ -678,6 +678,8 @@
             .entry-menu-header { width: 100%; background: var(--c-chrome-bg); color: white; font-size: var(--fs-xl); font-weight: bold; text-align: center; padding: var(--sp-3); }
             .entry-menu-legend { width: 100%; background: var(--c-surface); color: var(--c-text-muted); font-size: var(--fs-xs); line-height: 1.35; text-align: center; padding: var(--sp-2) 10px; border-bottom: 1px solid var(--c-border); box-sizing: border-box; }
             .entry-menu-gm-sample { display: inline-block; font-size: 8px; font-weight: 700; padding: 0px 3px; border-radius: 2px; background: var(--c-arg-tint); color: #1a1a1a; line-height: 13px; margin: 0 2px; vertical-align: middle; }
+            .entry-menu-warning { color: #dc2626; font-weight: 900; margin-left: 2px; }
+            .entry-menu-note { margin-top: 3px; }
             .entry-menu-week { width: 100%; background: var(--c-surface-sunk); font-size: var(--fs-sm); font-weight: bold; text-align: center; padding: var(--sp-2); color: var(--c-text-subtle); border-bottom: 1px solid var(--c-border); }
             .entry-menu-item { flex: 0 0 25%; min-width: 0; padding: 8px 2px; font-size: var(--fs-xs); cursor: pointer; border-bottom: 1px solid var(--c-border-soft); border-right: 1px solid var(--c-border-soft); color: var(--c-text-secondary); transition: background 0.15s; text-align: center; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
             .entry-menu-item.entry-row-size-1 { flex-basis: 100%; }

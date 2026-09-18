@@ -1949,6 +1949,18 @@
                 return Number.isFinite(value) && value > 0 ? value : null;
             }
 
+            function entryRankDisplay(player) {
+                const rank = String(player?.rank ?? '').trim();
+                if (player?.type === 'ALT') return rank || '-';
+                const rankNumber = rank.match(/^(?:ITF\s+)?\d+(?:\.\d+)?$/i);
+                if (rankNumber || !entryWtnToNumber(player?.wtn)) return rank || '-';
+                return String(player.wtn);
+            }
+
+            function entryWtnDisplay(player) {
+                return entryWtnToNumber(player?.wtn) === null ? '-' : String(player.wtn);
+            }
+
             function entryDrawStrengthGM(players) {
                 const wtns = (players || []).map(p => entryWtnToNumber(p.wtn)).filter(n => Number.isFinite(n) && n > 0);
                 if (!wtns.length) return null;
@@ -2225,8 +2237,8 @@
                     const bold = isMain ? 'font-weight:bold;' : '';
                     const flag = (p.country && p.country !== '-') ? countryFlag(p.country, false) + ' ' : '';
                     const nameDisplay = p.name.startsWith('(') ? p.name : getDisplayName(p.name.toUpperCase());
-                    const wtnCell = _entryWtnVisible ? `<td class="entry-wtn-col">${p.wtn || '-'}</td>` : '';
-                    html += `<tr><td class="entry-pos-col">${displayPos}</td><td class="entry-player-col" style="text-align:left;${bold}">${flag}${nameDisplay}</td>${seedCell(p)}${wtnCell}<td class="entry-rank-col">${p.rank}</td>${prioCell(p)}</tr>`;
+                    const wtnCell = _entryWtnVisible ? `<td class="entry-wtn-col">${entryWtnDisplay(p)}</td>` : '';
+                    html += `<tr><td class="entry-pos-col">${displayPos}</td><td class="entry-player-col" style="text-align:left;${bold}">${flag}${nameDisplay}</td>${seedCell(p)}${wtnCell}<td class="entry-rank-col">${entryRankDisplay(p)}</td>${prioCell(p)}</tr>`;
                 });
                 return html;
             }
