@@ -91,6 +91,19 @@ def test_itf_excludes_early_withdrawals_and_preserves_previous_draw_position(tmp
     _validate_json_schema(restored, Path("schemas/entry_withdrawals.schema.json"), path)
 
 
+@pytest.mark.parametrize("status", ["W", "LWQ", "LWM", "PFLWMD"])
+def test_itf_accepts_all_withdrawal_status_date_formats(status):
+    state = {}
+    classifications = [{
+        "entryClassificationCode": "W",
+        "entries": [withdrawal(90001, f"{status} 16 Sep 2026")],
+    }]
+
+    record_itf_withdrawals(state, "itf-example", [], [], classifications, "2026-09-28", "2026-09-16")
+
+    assert state["itf-example"]["withdrawals"][0]["date"] == "2026-09-16"
+
+
 def test_itf_retains_last_seen_position_until_withdrawal_section_catches_up():
     state = {}
     record_itf_withdrawals(

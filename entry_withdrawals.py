@@ -90,7 +90,7 @@ def record_wta_withdrawals(state, key, previous, current, observation, observed_
 
 
 def _itf_withdrawal_date(information):
-    match = re.search(r"\bW\s+(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})\b", str(information or ""))
+    match = re.search(r"\b(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})\b", str(information or ""))
     if not match:
         return None
     day, month, year = match.groups()
