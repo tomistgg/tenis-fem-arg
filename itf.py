@@ -15,7 +15,6 @@ from urllib3.exceptions import HTTPError as Urllib3HTTPError
 from calendar_builder import get_next_monday
 from config import (
     ITF_CALENDAR_CACHE_FILE,
-    NAME_LOOKUP,
     PLAYER_IDENTITY_INDEX,
     resolve_player_display_name,
 )
