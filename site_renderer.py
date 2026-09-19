@@ -29,7 +29,6 @@ from utils import (
     expand_calendar_snapshot,
     expand_draws_store_cache,
     expand_entry_lists_cache,
-    expand_itf_rankings_cache,
     expand_tournament_snapshot,
     expand_tstrength_cache,
     load_csv_rows,
@@ -195,18 +194,13 @@ def _ranking_inputs(
     rankings_by_date = _load_wta_csv(data_dir) or {}
     latest_date = max(rankings_by_date, default="")
     all_wta_players = list(rankings_by_date.get(latest_date, []))
-    players_data = [dict(player) for player in all_wta_players if str(player.get("Country", "")).upper() == "ARG"]
+    players_data = [
+        dict(player)
+        for player in all_wta_players
+        if str(player.get("Country", "")).upper() == "ARG"
+        and str(player.get("Rank") or "").isdigit()
+    ]
     known_names = {str(player.get("Player", "")).strip().upper() for player in players_data}
-
-    itf_by_date = expand_itf_rankings_cache(_load_json(data_dir / "itf_rankings_cache.json", {})) or {}
-    latest_itf_date = max(itf_by_date, default="")
-    for player in itf_by_date.get(latest_itf_date, []):
-        if not isinstance(player, dict):
-            continue
-        name = str(player.get("Player", "")).strip().upper()
-        if str(player.get("Country", "")).upper() == "ARG" and name not in known_names:
-            players_data.append(dict(player))
-            known_names.add(name)
 
     for name in sorted(entry_arg_names - known_names):
         players_data.append({"Player": name, "Key": name, "Rank": "-", "Country": "ARG"})

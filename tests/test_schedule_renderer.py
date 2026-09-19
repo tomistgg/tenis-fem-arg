@@ -1,7 +1,51 @@
 import json
 from pathlib import Path
 
-from site_renderer import _entry_inputs, _tournament_inputs, _visible_schedule_monday_map
+import main
+from site_renderer import _entry_inputs, _ranking_inputs, _tournament_inputs, _visible_schedule_monday_map
+
+
+def test_live_schedule_starts_with_wta_ranked_players_only(tmp_path: Path, monkeypatch):
+    monkeypatch.setattr(main, "DATA_DIR", str(tmp_path))
+    monkeypatch.setattr(
+        main,
+        "get_wta_rankings_cached",
+        lambda *args, **kwargs: (
+            [
+                {"Player": "WTA RANKED", "Country": "ARG", "Rank": 100, "Key": "WTA RANKED"},
+                {"Player": "WTA UNRANKED", "Country": "ARG", "Rank": None, "Key": "WTA UNRANKED"},
+                {"Player": "OTHER COUNTRY", "Country": "USA", "Rank": 50, "Key": "OTHER COUNTRY"},
+            ],
+            {"status": "fresh"},
+        ),
+    )
+
+    players, names, _, status = main.fetch_arg_players()
+
+    assert [player["Player"] for player in players] == ["WTA RANKED"]
+    assert names == {"WTA RANKED"}
+    assert set(status["sources"]) == {"wtaRankings"}
+
+
+def test_schedule_includes_unranked_players_only_from_entry_lists(tmp_path: Path):
+    (tmp_path / "wta_rankings_20_29.csv").write_text(
+        "week_date,id,rank,points,player,country,dob\n"
+        "2026-09-14,1,100,500,WTA Ranked,ARG,2000-01-01\n"
+        "2026-09-14,2,,0,WTA Unranked,ARG,2000-01-01\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "itf_rankings_cache.json").write_text(
+        json.dumps({"2026-09-14": [
+            {"Player": "ITF With Entry", "Rank": "ITF 10", "Country": "ARG", "Key": "ITF WITH ENTRY"},
+            {"Player": "ITF No Entry", "Rank": "ITF 20", "Country": "ARG", "Key": "ITF NO ENTRY"},
+        ]}),
+        encoding="utf-8",
+    )
+
+    players, _ = _ranking_inputs(tmp_path, {"ITF WITH ENTRY", "ENTRY ONLY"})
+
+    assert {player["Player"] for player in players} == {"WTA RANKED", "ITF WITH ENTRY", "ENTRY ONLY"}
+    assert next(player for player in players if player["Player"] == "ITF WITH ENTRY")["Rank"] == "-"
 
 
 def test_schedule_shows_four_chronological_unique_weeks(tmp_path: Path):

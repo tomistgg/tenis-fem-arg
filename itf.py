@@ -14,7 +14,6 @@ from urllib3.exceptions import HTTPError as Urllib3HTTPError
 
 from calendar_builder import get_next_monday
 from config import (
-    ITF_CACHE_FILE,
     ITF_CALENDAR_CACHE_FILE,
     NAME_LOOKUP,
     PLAYER_IDENTITY_INDEX,
@@ -26,12 +25,9 @@ from run_state import report_run_issue
 from runtime_logging import get_logger
 from time_utils import madrid_today, parse_utc_timestamp, utc_now
 from utils import (
-    compress_itf_rankings_cache,
     dumps_itf_calendar_cache,
     expand_itf_calendar_cache,
-    expand_itf_rankings_cache,
     get_cache_timestamp,
-    make_data_status,
     save_json_file,
     set_cache_file_meta,
     utc_now_iso,
@@ -52,14 +48,6 @@ _ITF_BLOCK_BACKOFF_BASE = float(os.getenv("ITF_API_BLOCK_BACKOFF_BASE_SEC", "15.
 _ITF_BLOCK_BACKOFF_MAX = float(os.getenv("ITF_API_BLOCK_BACKOFF_MAX_SEC", "60.0"))
 _itf_next_request_at = 0.0
 _itf_block_streak = 0
-
-
-class ItfApiFetchError(RuntimeError):
-    pass
-
-
-class ItfApiPartialData(RuntimeError):
-    pass
 
 
 def _itf_wait_for_rate_limit():
@@ -1265,200 +1253,3 @@ def get_draws_itf_tournament_list(driver):
         }
 
     return result
-
-
-def get_itf_rankings(nationality="ARG"):
-    all_players = []
-    skip = 0
-    take = 50
-    expected_total = None
-
-    while True:
-        url = "https://www.itftennis.com/tennis/api/PlayerRankApi/GetPlayerRankings"
-
-        headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
-            ),
-            "Accept": "*/*",
-            "Accept-Encoding": "gzip, deflate, br, zstd",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Referer": "https://www.itftennis.com/en/rankings/",
-            "Sec-Ch-Ua": '"Not(A:Brand";v="8", "Chromium";v="144", "Google Chrome";v="144"',
-            "Sec-Ch-Ua-Mobile": "?0",
-            "Sec-Ch-Ua-Platform": '"Windows"',
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-origin",
-        }
-
-        params = {
-            "circuitCode": "WT",
-            "matchTypeCode": "S",
-            "ageCategoryCode": "",
-            "nationCode": nationality,
-            "take": take,
-            "skip": skip,
-            "isOrderAscending": "true",
-        }
-
-        try:
-            r = requests.get(url, headers=headers, params=params, timeout=10)
-            r.raise_for_status()
-            data = r.json()
-            if not isinstance(data, dict):
-                raise ItfApiFetchError("ITF rankings returned an unexpected payload")
-            items = data.get("items", [])
-            if items is None:
-                raise ItfApiFetchError("ITF rankings payload was missing items")
-            if not isinstance(items, list):
-                raise ItfApiFetchError("ITF rankings items were not a list")
-            if not items:
-                break
-            all_players.extend(items)
-
-            try:
-                total_items = int(data.get("totalItems", 0) or 0)
-            except (TypeError, ValueError):
-                total_items = 0
-            if total_items:
-                expected_total = total_items
-            if skip + take >= total_items:
-                break
-
-            skip += take
-            time.sleep(0.1)
-        except (ItfApiFetchError, ItfApiPartialData):
-            raise
-        except Exception as e:
-            if all_players:
-                raise ItfApiPartialData(
-                    f"ITF rankings fetch interrupted after {len(all_players)} players for {nationality}: {e}"
-                ) from e
-            raise ItfApiFetchError(f"ITF rankings fetch failed for {nationality}: {e}") from e
-
-    if expected_total is not None and len(all_players) < expected_total:
-        raise ItfApiPartialData(
-            f"ITF rankings fetch ended early after {len(all_players)}/{expected_total} players for {nationality}"
-        )
-
-    ranking_results = []
-    for p in all_players:
-        if not p.get("playerId"):
-            continue
-        itf_name = f"{p.get('playerGivenName', '')} {p.get('playerFamilyName', '')}".strip().upper()
-        display_name = NAME_LOOKUP.get(itf_name, itf_name)
-        ranking_results.append(
-            {
-                "Player": display_name,
-                "Rank": f"ITF {p.get('rank')}",
-                "Country": p.get("playerNationalityCode", ""),
-                "Key": display_name,
-            }
-        )
-    return ranking_results
-
-
-def _load_itf_rankings_cache(*, strict=False):
-    if not os.path.exists(ITF_CACHE_FILE):
-        return {}
-    try:
-        with open(ITF_CACHE_FILE, encoding="utf-8") as f:
-            payload = expand_itf_rankings_cache(json.load(f))
-        return payload if isinstance(payload, dict) else {}
-    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError) as e:
-        if strict:
-            raise
-        logger.warning(f"Warning: ignoring unreadable ITF rankings cache {ITF_CACHE_FILE}: {e}")
-        return {}
-
-
-def _save_itf_rankings_cache(cache_obj):
-    try:
-        save_json_file(ITF_CACHE_FILE, compress_itf_rankings_cache(cache_obj or {}))
-    except Exception as e:
-        logger.warning(f"Warning: could not save ITF rankings cache {ITF_CACHE_FILE}: {e}")
-
-
-def get_itf_rankings_cached(date_str, nationality="ARG", *, with_status=False):
-    """Get ITF rankings with caching and optional freshness metadata."""
-
-    def _finish(players, status):
-        return (players, status) if with_status else players
-
-    cache = _load_itf_rankings_cache()
-    if date_str in cache:
-        players = cache[date_str]
-        return _finish(
-            players,
-            make_data_status(
-                "ITF rankings",
-                "fresh",
-                requested=date_str,
-                effective=date_str,
-                row_count=len(players),
-                reason="Exact cached rankings date available.",
-            ),
-        )
-
-    new_data = []
-    fetch_error = None
-    try:
-        new_data = get_itf_rankings(nationality=nationality)
-    except (ItfApiFetchError, ItfApiPartialData) as e:
-        fetch_error = e
-        logger.warning(f"Warning: ITF rankings refresh failed for {date_str}: {e}")
-    if new_data:
-        cache[date_str] = new_data
-        _save_itf_rankings_cache(cache)
-        return _finish(
-            new_data,
-            make_data_status(
-                "ITF rankings",
-                "fresh",
-                requested=date_str,
-                effective=date_str,
-                fetched_at=utc_now_iso(),
-                row_count=len(new_data),
-                reason="Live rankings refreshed successfully.",
-            ),
-        )
-
-    if cache:
-        latest_key = max(cache)
-        players = cache.get(latest_key, [])
-        reason = (
-            "Live rankings refresh failed; showing latest cached rankings."
-            if fetch_error
-            else "No live rankings were returned for the requested date; showing latest cached rankings."
-        )
-        return _finish(
-            players,
-            make_data_status(
-                "ITF rankings",
-                "stale",
-                requested=date_str,
-                effective=latest_key,
-                row_count=len(players),
-                stale=True,
-                reason=reason,
-            ),
-        )
-
-    reason = (
-        "Live rankings refresh failed and no cached ITF rankings were available."
-        if fetch_error
-        else "No ITF rankings were available for the requested date."
-    )
-    return _finish(
-        [],
-        make_data_status(
-            "ITF rankings",
-            "error",
-            requested=date_str,
-            row_count=0,
-            stale=True,
-            reason=reason,
-        ),
-    )

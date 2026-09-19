@@ -71,7 +71,6 @@ from itf import (
     get_full_itf_calendar,
     get_itf_level,
     get_itf_players,
-    get_itf_rankings_cached,
     parse_itf_entry_list,
 )
 from itf_drawsheet_cache import (
@@ -1062,7 +1061,7 @@ def build_all_tournament_groups(driver):
 
 
 def fetch_arg_players():
-    """Fetch WTA+ITF rankings and return deduplicated ARG player list."""
+    """Fetch WTA rankings and return ranked ARG players."""
     eastern_now = new_york_now()
     ranking_status_file = os.path.join(DATA_DIR, "wta_ranking_refresh_status.json")
     try:
@@ -1075,20 +1074,17 @@ def fetch_arg_players():
     ranking_monday = effective_wta_ranking_date(eastern_now, ranking_status).isoformat()
 
     all_wta_players, wta_status = get_wta_rankings_cached(ranking_monday, nationality=None, with_status=True)
-    wta_players_arg = [p for p in all_wta_players if p["Country"] == "ARG"]
-    itf_players_arg, itf_status = get_itf_rankings_cached(ranking_monday, nationality="ARG", with_status=True)
-
-    wta_names_arg = {p["Player"] for p in wta_players_arg}
-    itf_only_arg = [p for p in itf_players_arg if p["Player"] not in wta_names_arg]
-
-    players_data = wta_players_arg + itf_only_arg
+    wta_players_arg = [
+        p for p in all_wta_players
+        if p["Country"] == "ARG" and str(p.get("Rank") or "").isdigit()
+    ]
+    players_data = wta_players_arg
     arg_names_set = {p["Player"] for p in players_data}
 
     data_status = {
         "generatedAt": utc_now_iso(),
         "sources": {
             "wtaRankings": wta_status,
-            "itfRankings": itf_status,
         },
     }
 
@@ -2118,7 +2114,7 @@ def main():
                     _sv = _gs_seed_map.get(_p["name"])
                     _p["seed"] = _sv if _sv is not None else ""
 
-        # Add unranked ARG players found in entry lists to players_data and schedule_map
+        # Add ARG players without a WTA rank when they appear in entry lists.
         existing_player_keys = {p["Player"] for p in players_data}
         for name_upper, weeks in unranked_schedule.items():
             schedule_map[name_upper] = weeks

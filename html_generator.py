@@ -38,6 +38,7 @@ from utils import (
     dumps_history_data,
     dumps_readable,
     dumps_wta_rankings_bundle,
+    expand_itf_rankings_cache,
     expand_points_distribution,
     expand_tournament_draw_sizes,
     expand_wta_calendar_cache,
@@ -1091,6 +1092,17 @@ def generate_html(
             return _normalize_entry_country(parts[2])
         return ""
 
+    schedule_country_by_week = {}
+    for week, tourneys in (tournament_groups or {}).items():
+        for t_key, t_info in tourneys.items():
+            name = str(t_info.get("name", "") or "").strip()
+            if str(t_key).endswith("#qual"):
+                name = re.sub(r"\s+Qualifying\s*$", "", name, flags=re.IGNORECASE)
+            name = compact_tournament_name(name).replace("Sharm ElSheikh", "Sharm ES")
+            country = _entry_country_from_key(t_key, t_info)
+            if name and country:
+                schedule_country_by_week[(week, name.casefold())] = country
+
     hidden_entry_list_keys = {str(key) for key in (entry_list_hidden_keys or ())}
 
     def _hide_entry_list_menu_key(t_key):
@@ -1220,19 +1232,23 @@ def generate_html(
         for week_label in (re.sub(r"^Week of\s+", "", week, flags=re.IGNORECASE) for week in week_keys)
     )
 
+    def _schedule_flag(week, entry):
+        base = _schedule_tournament_base_name(entry).casefold()
+        country = schedule_country_by_week.get((week, base), "")
+        flag = country_flag_html(country, show_code=False) if country else ""
+        return f'<span class="schedule-tournament-flag">{flag}</span>' if flag else ""
+
     def get_sort_key(player_name):
         p = next(item for item in players_data if item["Player"] == player_name)
         rank = p["Rank"]
-        if isinstance(rank, int):
-            return (0, rank)
-        itf_rank = int(rank.replace("ITF ", "")) if isinstance(rank, str) and "ITF" in rank else 999999
-        return (1, itf_rank)
+        if str(rank).isdigit():
+            return (0, int(rank))
+        return (1, 999999)
 
     for p_name in sorted([p["Player"] for p in players_data], key=get_sort_key):
         p = next(item for item in players_data if item["Player"] == p_name)
         player_display = _player_display_name(p["Player"])
         row = f'<tr data-name="{player_display.lower()}">'
-        row += f'<td class="sticky-col col-rank">{p["Rank"]}</td>'
         mobile_name = "<br>".join(player_display.split())
         row += f'<td class="sticky-col col-name"><span class="desktop-only">{player_display}</span><span class="mobile-only">{mobile_name}</span></td>'
         for week in week_keys:
@@ -1242,17 +1258,22 @@ def generate_html(
             val = re.sub(r"^<div[^>]*>\s*", "", val, flags=re.IGNORECASE)
             val = re.sub(r"\s*</div>$", "", val, flags=re.IGNORECASE)
             parts = [part for part in val.split("<br>") if part]
-            rendered = "<br>".join(
-                (
-                    _sched_dot(e)
-                    + (
-                        f"<b>{e}</b>"
-                        if "(Q)" not in re.sub(r"<[^>]+>", "", e) and re.sub(r"<[^>]+>", "", e).strip() != "\u2014"
-                        else e
-                    )
+            rendered_parts = []
+            for entry in parts:
+                plain = re.sub(r"<[^>]+>", "", entry).strip()
+                if plain == "\u2014":
+                    rendered_parts.append(entry)
+                    continue
+                name = (
+                    f'<b class="schedule-tournament-name">{entry}</b>'
+                    if "(Q)" not in plain
+                    else f'<span class="schedule-tournament-name">{entry}</span>'
                 )
-                for e in parts
-            )
+                rendered_parts.append(
+                    f'<div class="schedule-tournament-item">'
+                    f'{_sched_dot(entry)}{_schedule_flag(week, entry)}{name}</div>'
+                )
+            rendered = "".join(rendered_parts)
             row += f'<td class="col-week">{rendered}</td>'
         table_rows += row + "</tr>"
 
@@ -1606,6 +1627,20 @@ def generate_html(
         if str(player.get("Country", "")).upper() == "ARG"
     }
     _active_milestone_names = [_player_display_name(player.get("Player", "")) for player in players_data]
+    # Milestones has its own active-player list. Keep existing ITF-ranked names
+    # from the saved cache without putting them back into Schedule or fetching rankings.
+    try:
+        with open(os.path.join(source_data_dir, "itf_rankings_cache.json"), encoding="utf-8-sig") as source:
+            _itf_rankings_by_date = expand_itf_rankings_cache(json.load(source)) or {}
+    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError):
+        _itf_rankings_by_date = {}
+    if isinstance(_itf_rankings_by_date, dict) and _itf_rankings_by_date:
+        _latest_itf_date = max(_itf_rankings_by_date)
+        _active_milestone_names.extend(
+            _player_display_name(player.get("Player", ""))
+            for player in _itf_rankings_by_date.get(_latest_itf_date, [])
+            if isinstance(player, dict) and str(player.get("Country", "")).upper() == "ARG"
+        )
     milestones_data = build_milestones_data(
         history=cleaned_history,
         ranking_weeks=_milestone_rankings,
