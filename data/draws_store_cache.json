@@ -413,7 +413,11 @@
           {"round": 2, "match_num": 4, "winner_name": "S. Bandecchi", "score": "63 62"},
           {"round": 2, "match_num": 5, "winner_name": "L. Pigato", "score": "62 26 64"},
           {"round": 2, "match_num": 6, "winner_name": "J. Vandromme", "score": "63 46 75"},
-          {"round": 2, "match_num": 7, "winner_name": "F. Jorge", "score": "62 46 64"}
+          {"round": 2, "match_num": 7, "winner_name": "F. Jorge", "score": "62 46 64"},
+          {"round": 3, "match_num": 0, "winner_name": "M. Pohankova", "score": "76(3) 64"},
+          {"round": 3, "match_num": 1, "winner_name": "G. Knutson", "score": "62 16 64"},
+          {"round": 3, "match_num": 2, "winner_name": "L. Pigato", "score": "64 16 64"},
+          {"round": 3, "match_num": 3, "winner_name": "J. Vandromme", "score": "63 67(7) 75"}
         ],
         "round_labels": [
           "Round of 32",
@@ -554,7 +558,11 @@
           {"round": 2, "match_num": 4, "winner_name": "C. Burel", "score": "WO"},
           {"round": 2, "match_num": 5, "winner_name": "G. Maristany Zulet...", "score": "63 36 64"},
           {"round": 2, "match_num": 6, "winner_name": "A. Lazaro Garcia", "score": "76(2) 63"},
-          {"round": 2, "match_num": 7, "winner_name": "J. Steur", "score": "67(6) 63 64"}
+          {"round": 2, "match_num": 7, "winner_name": "J. Steur", "score": "67(6) 63 64"},
+          {"round": 3, "match_num": 0, "winner_name": "A. Herrero Linana", "score": "62 61"},
+          {"round": 3, "match_num": 1, "winner_name": "Y. Kabbaj", "score": "61 75"},
+          {"round": 3, "match_num": 2, "winner_name": "C. Burel", "score": "62 64"},
+          {"round": 3, "match_num": 3, "winner_name": "J. Steur", "score": "63 26 64"}
         ],
         "round_labels": [
           "Round of 32",
@@ -867,6 +875,102 @@
           "Final"
         ],
         "num_rounds": 5
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/1152/singapore/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 500 Singapore",
+      "level": "WTA 500",
+      "week": "Week of September 21",
+      "startDate": "2026-09-21",
+      "endDate": "2026-09-27",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "Singapore Tennis Open",
+        "location": "SINGAPORE, SGP",
+        "dates": "September 21-27 2026",
+        "prize": "$ 1,206,446",
+        "surface": "Hard, Deco Turf",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 16,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "GARLAND, Joanna", "country": "TPE"},
+          {"pos": 2, "name": "PEREZ, Ellen", "country": "AUS"},
+          {"pos": 3, "entry": "WC", "name": "RADISIC, Nika", "country": "SLO"},
+          {"pos": 4, "seed": "6", "name": "MORVAYOVA, Viktoria", "country": "SVK"},
+          {"pos": 5, "seed": "2", "name": "HIBINO, Nao", "country": "JPN"},
+          {"pos": 6, "entry": "WC", "name": "NG, Kai Ning Chanya", "country": "SGP"},
+          {"pos": 7, "name": "ITO, Aoi", "country": "JPN"},
+          {"pos": 8, "seed": "5", "name": "LANSERE, Sofya"},
+          {"pos": 9, "seed": "3", "name": "YAMAGUCHI, Mei", "country": "JPN"},
+          {"pos": 10, "name": "EIKERI, Ulrikke", "country": "NOR"},
+          {"pos": 11, "entry": "WC", "name": "DESVIGNES, Eva Marie", "country": "SGP"},
+          {"pos": 12, "seed": "7", "name": "OKAMURA, Kyoka", "country": "JPN"},
+          {"pos": 13, "seed": "4", "name": "FRIEDSAM, Anna-Lena", "country": "GER"},
+          {"pos": 14, "name": "KRAWCZYK, Desirae", "country": "USA"},
+          {"pos": 15, "name": "WANG, Jiaqi", "country": "CHN"},
+          {"pos": 16, "seed": "8", "name": "KULIKOVA, Anastasia", "country": "FIN"}
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/1024/seoul/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 250 Seoul",
+      "level": "WTA 250",
+      "week": "Week of September 21",
+      "startDate": "2026-09-21",
+      "endDate": "2026-09-27",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "Korea Open",
+        "location": "SEOUL, KOR",
+        "dates": "September 21-27 2026",
+        "prize": "$ 283,347",
+        "surface": "Hard",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 16,
+        "players": [
+          {"pos": 1, "entry": "ALT", "name": "KURAMOCHI, Miho", "country": "JPN"},
+          {"pos": 2, "entry": "WC", "name": "JEONG, Boyoung", "country": "KOR"},
+          {"pos": 3, "name": "YAO, Xinxin", "country": "CHN"},
+          {"pos": 4, "seed": "7", "name": "HON, Priscilla", "country": "AUS"},
+          {"pos": 5, "seed": "2", "name": "SHUBLADZE, Alexandra"},
+          {"pos": 6, "entry": "WC", "name": "JANG, Gaeul", "country": "KOR"},
+          {"pos": 7, "name": "KAJI, Haruka", "country": "JPN"},
+          {"pos": 8, "seed": "6", "name": "ASTAKHOVA, Darya"},
+          {"pos": 9, "seed": "3", "name": "IBRAGIMOVA, Alevtina"},
+          {"pos": 10, "name": "SAIGO, Rina", "country": "JPN"},
+          {"pos": 11, "name": "LIANG, En-Shuo", "country": "TPE"},
+          {"pos": 12, "seed": "8", "name": "SAITO, Sara", "country": "JPN"},
+          {"pos": 13, "seed": "4", "name": "HONTAMA, Mai", "country": "JPN"},
+          {"pos": 14, "entry": "WC", "name": "LEE, Eunhye", "country": "KOR"},
+          {"pos": 15, "name": "ZHAO, Carol", "country": "CAN"},
+          {"pos": 16, "seed": "5", "name": "MA, Ye-Xin", "country": "CHN"}
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
       }
     }
   }
