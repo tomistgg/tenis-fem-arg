@@ -221,7 +221,7 @@
                     // (e.g. Roland Garros 2025 vs Roland Garros 2026), while still combining
                     // qualifying + main-draw weeks of the same edition.
                     const key=(tid?(tid+'|'+yr+'|'+tName):((isGS||isUC)?(mt+'|'+yr+'|'+tName):(mon+'|'+tName)));
-                    if (!tMap.has(key)) tMap.set(key, {date:mon,tournament:tName,tournamentId:tid,category:cat,isGS:isGS,isUnitedCup:isUC,bestMainRound:'',bestMainOrder:0,bestMainResult:'',bestQualRound:'',bestQualOrder:0,bestQualResult:'',qualMonday:'',mainMonday:'',ucWins:0,ucTotal:0,ucHasKnockout:false});
+                    if (!tMap.has(key)) tMap.set(key, {date:mon,tournament:tName,tournamentId:tid,category:cat,matchType:mt,isGS:isGS,isUnitedCup:isUC,bestMainRound:'',bestMainOrder:0,bestMainResult:'',bestQualRound:'',bestQualOrder:0,bestQualResult:'',qualMonday:'',mainMonday:'',ucWins:0,ucTotal:0,ucHasKnockout:false});
                     const e=tMap.get(key);
                     if (isUC) { e.ucTotal++; if (res==='W') e.ucWins++; if (round!=='Round Robin'&&res==='W') e.ucHasKnockout=true; }
                     if (draw==='Q') {
@@ -428,7 +428,7 @@
             }
 
             function _rtgsTournamentLabel(t) {
-                const name = _formatTournName(t.tournament, t.category);
+                const name = _formatTournName(t.tournament, t.category, t.matchType);
                 if (!name) return '';
                 if (!_rtgsIsLocked(t)) return name;
                 return `${name} <span class="rtgs-lock" title="Locked tournament" aria-label="Locked tournament">&#128274;&#65038;</span>`;
@@ -687,6 +687,7 @@
                             tournament: tName,
                             tournamentId: tournamentId,
                             category: category,
+                            matchType: matchType,
                             isGS: isGS,
                             isUnitedCup: isUnitedCup,
                             bestMainRound: '',
