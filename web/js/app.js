@@ -2937,13 +2937,14 @@
                 };
             }
 
-            function _formatTournName(name, category) {
+            function _formatTournName(name, category, matchType) {
                 if (!name) return '';
                 name = name.replace(/\s*\(\s*moved\s+from\b[^)]*\)/gi, '').trim();
+                if ((matchType || '').toUpperCase() === 'ITF' || (category || '').toUpperCase() === 'GS') return name;
                 if (name.toUpperCase().includes('MALLORCA')) return 'WTA 125 Mallorca';
                 const displayCategory = category && category.toUpperCase() === 'WT' ? 'World Tour' : (category && category.toUpperCase() === 'OG' ? '' : category);
                 const sep = name.lastIndexOf(' - ');
-                if (sep === -1) return name;
+                if (sep === -1) return displayCategory ? displayCategory + ' ' + name : name;
                 let city = name.slice(sep + 3);
                 const comma = city.indexOf(',');
                 if (comma !== -1) city = city.slice(0, comma).trim();
@@ -3020,7 +3021,7 @@
                 const roundFilterLabel = getRoundFilterLabel(row);
                 const resultLabel = getResultLabel(row, isWinner);
                 const rowYear = getRowYear(row);
-                const tournamentDisplay = _formatTournName(row['TOURNAMENT'] || '', row['CATEGORY'] || '');
+                const tournamentDisplay = _formatTournName(row['TOURNAMENT'] || '', row['CATEGORY'] || '', getRowMatchType(row));
                 const rowCategory = row['CATEGORY'] || '';
                 const opponentName = isWinner ? (row['_loserName'] || '') : (row['_winnerName'] || '');
                 const opponentDisplay = opponentName ? getDisplayName(opponentName.toUpperCase()) : '';
@@ -3094,7 +3095,7 @@
                 const rounds = collectHistoryFilterValues(playerMatches, selectionState, selectedPlayer, 'round', row => getRoundFilterLabel(row));
                 const resultsSet = new Set(collectHistoryFilterValues(playerMatches, selectionState, selectedPlayer, 'result', row => getResultLabel(row, getHistoryPerspective(row, selectedPlayer).isWinner)));
                 const years = collectHistoryFilterValues(playerMatches, selectionState, selectedPlayer, 'year', row => getRowYear(row));
-                const tournaments = collectHistoryFilterValues(playerMatches, selectionState, selectedPlayer, 'tournament', row => _formatTournName(row['TOURNAMENT'] || '', row['CATEGORY'] || ''));
+                const tournaments = collectHistoryFilterValues(playerMatches, selectionState, selectedPlayer, 'tournament', row => _formatTournName(row['TOURNAMENT'] || '', row['CATEGORY'] || '', getRowMatchType(row)));
                 const categories = collectHistoryFilterValues(playerMatches, selectionState, selectedPlayer, 'category', row => row['CATEGORY'] || '');
                 const opponents = collectHistoryFilterValues(playerMatches, selectionState, selectedPlayer, 'opponent', row => {
                     const perspective = getHistoryPerspective(row, selectedPlayer);
@@ -3436,7 +3437,7 @@
                     const scoreText = isWinner ? (row['SCORE'] || '') : reverseScore(row['SCORE'] || '');
                     const scoreClass = isWinner ? 'score-win' : 'score-loss';
 
-                    const displayTournament = _formatTournName(row['TOURNAMENT'] || '', row['CATEGORY'] || '');
+                    const displayTournament = _formatTournName(row['TOURNAMENT'] || '', row['CATEGORY'] || '', getRowMatchType(row));
 
                     parts.push('<tr><td>', formatDate(row['DATE'] || ''),
                         '</td><td>', displayTournament,
