@@ -1504,6 +1504,7 @@
                 #view-upcoming .schedule-tournament-item { gap: 3px; }
                 #view-upcoming .schedule-tournament-item + .schedule-tournament-item { margin-top: 5px; }
                 #view-upcoming .schedule-tournament-flag img { width: 9px !important; height: 6px !important; }
+                #view-upcoming .schedule-tournament-name { transform: translateY(0.2px); }
                 #view-upcoming .col-name {
                     width: 62px !important;
                     min-width: 62px !important;
