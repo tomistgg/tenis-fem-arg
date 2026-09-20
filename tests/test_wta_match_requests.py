@@ -137,7 +137,7 @@ def test_wta_draw_two_days_away_checks_pdfs_without_calling_matches_api(monkeypa
     )
 
     assert result == {}
-    assert pdf_requests == [("1039", 2026, "MDS"), ("1039", 2026, "QS")]
+    assert pdf_requests == [("1039", 2026, "MDS"), ("1039", 2026, "QS"), ("1039", 2026, "MDD")]
     assert api_requests == []
 
 

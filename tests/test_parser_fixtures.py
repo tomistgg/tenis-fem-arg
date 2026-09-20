@@ -3,6 +3,8 @@ import json
 from datetime import date
 from pathlib import Path
 
+import fitz
+
 from draws import parse_draw_pdf
 from itf import parse_itf_entry_list
 from populate_data import itf_load_new
@@ -57,6 +59,64 @@ def test_saved_pdf_fixture_parser():
     assert [player["country"] for player in parsed["players"]] == ["ARG", "ESP"]
     assert parsed["matches"][0]["winner_name"] == "A. Playera"
     assert parsed["matches"][0]["score"] == "64 63"
+
+
+def test_wta_doubles_pdf_groups_two_players_per_team_and_match_tiebreaks():
+    lines = [
+        "Fixture Open", "LJUBLJANA, SLO", "September 14-20 2026 | 100,000 | Clay",
+        "DOUBLES MAIN DRAW", "1", "1 CASCINO, Estelle", "FRA", "FENG, Shuo", "CHN",
+        "2", "BASILETTI, Noemi", "ITA", "ZANTEDESCHI, Aurora", "ITA",
+        "3", "NOVAK, Kristina", "SLO", "SEBESTOVA, Ivana", "CZE",
+        "4", "2 KUCMOVA, Aneta", "CZE", "LABOUTKOVA, Aneta", "CZE",
+        "E. Cascino", "S. Feng 1", "62 57 10-5",
+        "A. Kucmova", "A. Laboutkova 2", "64 63",
+        "E. Cascino", "S. Feng 1", "WO",
+        "Semifinals", "Final", "WTA Supervisor",
+    ]
+    document = fitz.open()
+    page = document.new_page(width=600, height=1200)
+    page.insert_text((36, 36), "\n".join(lines), fontsize=10)
+    parsed = parse_draw_pdf(document.tobytes())
+    document.close()
+
+    assert parsed["draw_size"] == 4
+    assert len(parsed["players"]) == 4
+    assert parsed["players"][0]["members"] == [
+        {"name": "CASCINO, Estelle", "country": "FRA"},
+        {"name": "FENG, Shuo", "country": "CHN"},
+    ]
+    assert [(match["round"], match["match_num"], match["score"]) for match in parsed["matches"]] == [
+        (1, 0, "62 57 10-5"), (1, 1, "64 63"), (2, 0, "WO"),
+    ]
+
+
+def test_wta_doubles_pdf_keeps_wrapped_winner_and_tournament_names():
+    lines = [
+        "Guadalajara Open presentado por", "Santander", "GUADALAJARA, MEX",
+        "September 13-19 2026 | $ 1,206,446 | Hard", "DOUBLES MAIN DRAW",
+        "1", "1 BUCSA, Cristina", "ESP", "MELICHAR-MARTINEZ, Nicole", "USA",
+        "2", "CABEZAS DOMINGUEZ, Sofia", "VEN", "GOMEZ PEZUELA CANO, Marian", "MEX",
+        "3", "DOLEHIDE, Caroline", "USA", "KHROMACHEVA, Irina",
+        "4", "2 LEPCHENKO, Varvara", "USA", "STEARNS, Peyton", "USA",
+        "C. Bucsa", "N. Melichar-", "Martinez 1", "62 61",
+        "C. Dolehide", "I. Khromacheva", "61 75",
+        "C. Bucsa", "N. Melichar-", "Martinez 1", "62 62",
+        "Semifinals", "Final", "WTA Supervisor",
+    ]
+    document = fitz.open()
+    page = document.new_page(width=600, height=1200)
+    page.insert_text((36, 36), "\n".join(lines), fontsize=10)
+    parsed = parse_draw_pdf(document.tobytes())
+    document.close()
+
+    assert parsed["tournament_name"] == "Guadalajara Open presentado por Santander"
+    assert parsed["location"] == "GUADALAJARA, MEX"
+    assert parsed["dates"] == "September 13-19 2026"
+    assert [(match["round"], match["match_num"], match["winner_name"]) for match in parsed["matches"]] == [
+        (1, 0, "C. Bucsa / N. Melichar-Martinez"),
+        (1, 1, "C. Dolehide / I. Khromacheva"),
+        (2, 0, "C. Bucsa / N. Melichar-Martinez"),
+    ]
 
 
 def test_itf_acceptance_parser_preserves_id_for_ambiguous_name():

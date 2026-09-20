@@ -16,6 +16,7 @@ logger = get_logger("draws")
 _DRAW_TYPES = [
     ("MDS", "Main Draw"),
     ("QS", "Qualifying"),
+    ("MDD", "Doubles"),
 ]
 
 _PDF_BASE = "https://wtafiles.wtatennis.com/pdf/draws/{year}/{tid}/{dtype}.pdf"
@@ -54,7 +55,7 @@ def _is_score(text):
         return False
     if text.upper() in _WO_TOKENS:
         return True
-    _S = r"[\d]+(?:\(\d+\))?"
+    _S = r"(?:\d+-\d+|\d+(?:\(\d+\))?)"
     # Standard score: 2 or 3 set tokens (no RET/DEF required)
     standard = rf"^(?:{_S}\s+){{1,2}}{_S}$"
     # Retired/defaulted: 1–3 set tokens followed by RET or DEF
@@ -76,6 +77,12 @@ def _is_completed_score(score_str):
 
     has_set = False
     for p in parts:
+        match_tiebreak = re.fullmatch(r"\[?(\d+)-(\d+)\]?", p)
+        if match_tiebreak:
+            if max(int(match_tiebreak.group(1)), int(match_tiebreak.group(2))) < 10:
+                return False
+            has_set = True
+            continue
         m = re.match(r"^(\d+)(?:\(\d+\))?$", p)
         if not m:
             continue
@@ -139,6 +146,13 @@ def _player_name_matches_winner(player_name, winner_name):
     """Return True when a full draw player name matches an abbreviated winner name."""
     if not player_name or not winner_name:
         return False
+    if " / " in player_name or " / " in winner_name:
+        players = player_name.split(" / ")
+        winners = winner_name.split(" / ")
+        return len(players) == len(winners) == 2 and all(
+            _player_name_matches_winner(player, winner)
+            for player, winner in zip(players, winners)
+        )
 
     # Exact normalized match first.
     p_norm = normalize_player_name(re.sub(r"\.\.\.$", "", player_name))
@@ -388,6 +402,124 @@ def _parse_page(text):
     return players, byes, qualifiers, result_entries, round_labels
 
 
+def _parse_doubles_page(text):
+    """Read teams and round results from one WTA doubles draw page."""
+    lines = [line.strip() for line in text.splitlines()]
+    players, byes, results, labels = [], set(), [], []
+    index = 0
+    while index < len(lines):
+        position = re.fullmatch(r"(\d+)(?:\s+(WC|LL|ALT|Alt|Q))?", lines[index])
+        if not position:
+            index += 1
+            continue
+        pos, entry = int(position.group(1)), position.group(2) or ""
+        if pos > 128:
+            index += 1
+            continue
+        cursor = index + 1
+        if cursor < len(lines) and lines[cursor] == "Bye":
+            byes.add(pos)
+            index = cursor + 1
+            continue
+        members = []
+        seed = ""
+        while len(members) < 2 and cursor < len(lines):
+            line = lines[cursor]
+            member = re.fullmatch(r"(?:(\d+)\s+)?([^,]+,\s*.+)", line)
+            if not member:
+                break
+            if not seed:
+                seed = member.group(1) or ""
+            country = ""
+            cursor += 1
+            if cursor < len(lines) and re.fullmatch(r"[A-Z]{3}", lines[cursor]):
+                country = lines[cursor]
+                cursor += 1
+            members.append({"name": member.group(2).strip(), "country": country})
+        if len(members) == 2:
+            players.append({
+                "pos": pos, "seed": seed, "entry": entry,
+                "name": " / ".join(member["name"] for member in members),
+                "country": members[0]["country"], "members": members,
+            })
+            index = cursor
+            continue
+        index += 1
+
+    # The PDF orders winner blocks by round. Each block has two abbreviated
+    # player names followed by one result, with an optional seed after name two.
+    result_start = 0
+    if players:
+        last_pos = max(player["pos"] for player in players)
+        for index, line in enumerate(lines):
+            if re.fullmatch(str(last_pos), line):
+                result_start = index + 1
+    pending_names = []
+    for line in lines[result_start:]:
+        if line.startswith(("WTA Supervisor", "Seeded teams")):
+            break
+        if re.fullmatch(r"Round of \d+|Quarterfinals|Semifinals|Final", line):
+            labels.append(line)
+            pending_names = []
+            continue
+        if _is_score(line):
+            if len(pending_names) == 2 and _is_completed_score(line):
+                results.append({
+                    "name": " / ".join(re.sub(r"\s+\d+$", "", name) for name in pending_names),
+                    "score": line,
+                })
+            pending_names = []
+            continue
+        if _is_winner_name(line):
+            pending_names = (pending_names + [line])[-2:]
+            continue
+        # Some PDFs wrap a long surname, e.g. "N. Melichar-" / "Martinez 1".
+        if pending_names and pending_names[-1].endswith("-") and re.fullmatch(r"[^\W\d_][\w'-]*(?:\s+\d+)?", line):
+            pending_names[-1] += line
+            continue
+        if line:
+            pending_names = []
+    return players, byes, results, labels
+
+
+def _parse_doubles_draw_pdf(doc):
+    header = (doc[0].get_text() or "").splitlines()
+    draw_header_index = next((i for i, line in enumerate(header) if "DOUBLES MAIN DRAW" in line.upper()), len(header))
+    details_index = next((i for i, line in enumerate(header[:draw_header_index]) if "|" in line), None)
+    location_index = details_index - 1 if details_index is not None else 1
+    players, byes, page_results, labels = [], set(), [], []
+    for page in doc:
+        page_players, page_byes, results, page_labels = _parse_doubles_page(page.get_text() or "")
+        players.extend(page_players)
+        byes.update(page_byes)
+        page_results.append(results)
+        if not labels and page_labels:
+            labels = page_labels
+    doc.close()
+    players = list({player["pos"]: player for player in players}.values())
+    players.sort(key=lambda player: player["pos"])
+    draw_size = max([player["pos"] for player in players] + list(byes), default=0)
+    page_count = len(page_results)
+    r1_per_page = draw_size // (2 * page_count) if page_count else 0
+    matches = []
+    for page_index, entries in enumerate(page_results):
+        matches.extend(_group_into_rounds(
+            entries, min(len(entries), r1_per_page), page_index * r1_per_page,
+            players, ideal_r1=r1_per_page,
+        ))
+    details = [part.strip() for part in header[details_index].split("|")] if details_index is not None else []
+    return {
+        "tournament_name": " ".join(line.strip() for line in header[:location_index]),
+        "location": header[location_index].strip() if len(header) > location_index else "",
+        "dates": details[0] if details else "",
+        "prize": details[1] if len(details) > 1 else "",
+        "surface": details[2] if len(details) > 2 else "",
+        "draw_type": "DOUBLES MAIN DRAW", "draw_size": draw_size,
+        "players": players, "matches": matches, "byes": sorted(byes),
+        "qualifiers": [], "round_labels": labels, "num_rounds": len(labels),
+    }
+
+
 def parse_draw_pdf(pdf_bytes):
     """Parse a WTA draw PDF and return structured draw data."""
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
@@ -395,6 +527,8 @@ def parse_draw_pdf(pdf_bytes):
 
     # Parse header from first page
     page0_text = doc[0].get_text() or ""
+    if "DOUBLES MAIN DRAW" in page0_text.upper():
+        return _parse_doubles_draw_pdf(doc)
     header_lines = page0_text.split("\n")
     tournament_name = header_lines[0].strip() if header_lines else ""
     location = header_lines[1].strip() if len(header_lines) > 1 else ""

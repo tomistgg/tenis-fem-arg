@@ -2157,9 +2157,6 @@ def main():
             if _is_excluded_draw_tournament(t_key, t_info):
                 continue
             store_key = _canonical_draw_store_key(t_key)
-            if is_draw_completed(store_key):
-                logger.debug(f"  Skipping completed WTA draw: {t_info.get('name', '')}")
-                continue
             if not wta_draw_polling_open(t_info.get("startDate"), today=today.date()):
                 logger.debug(
                     f"  Skipping WTA draw until two days before start: {t_info.get('name', '')} "
@@ -2167,7 +2164,11 @@ def main():
                 )
                 continue
             cached_entry = draws_store.get(store_key) if isinstance(draws_store.get(store_key), dict) else {}
-            requested_draw_types = _itf_requested_draw_types((cached_entry or {}).get("draws") or {})
+            cached_draws = (cached_entry or {}).get("draws") or {}
+            requested_draw_types = [
+                dtype for dtype in ("MDS", "QS", "MDD")
+                if not _draw_is_complete(cached_draws.get(dtype), is_qualifying=(dtype == "QS"))
+            ]
             if not requested_draw_types:
                 logger.debug(f"  Skipping completed WTA draw types: {t_info.get('name', '')}")
                 continue

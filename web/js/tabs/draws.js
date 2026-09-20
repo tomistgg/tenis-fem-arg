@@ -146,7 +146,7 @@
             function updateDrawTypeButtons(types) {
                 const container = document.getElementById('draws-type-btns');
                 container.innerHTML = '';
-                const labels = {'MDS': 'Main Draw', 'QS': 'Qualifying'};
+                const labels = {'MDS': 'Main Draw', 'QS': 'Qualifying', 'MDD': 'Doubles'};
                 types.forEach(t => {
                     const btn = document.createElement('button');
                     btn.className = 'draw-type-btn' + (t === currentDrawType ? ' active' : '');
@@ -255,6 +255,12 @@
 
             function isMatchWinner(playerName, winnerName) {
                 if (!playerName || !winnerName) return false;
+                if (playerName.includes(' / ') || winnerName.includes(' / ')) {
+                    const team = playerName.split(' / ');
+                    const winners = winnerName.split(' / ');
+                    return team.length === 2 && winners.length === 2 &&
+                        team.every((name, index) => isMatchWinner(name, winners[index]));
+                }
                 const truncated = winnerName.trim().endsWith('...');
                 const pNorm = playerName.replace(/\.\.\.$/, '').trim().toUpperCase();
                 const wNorm = winnerName.replace(/\.\.\.$/, '').trim().toUpperCase();
@@ -283,8 +289,9 @@
             }
 
             function renderPlayer(player, isBye, isQualifier, isWinner, isTop, scoreData, matchConcluded, showWalkover) {
-                const flag = player ? countryFlag(player.country, false) : '';
-                const flagHtml = '<span class="country">' + flag + '</span>';
+                const isTeam = !!(player && Array.isArray(player.members) && player.members.length === 2);
+                const flag = player && !isTeam ? countryFlag(player.country, false) : '';
+                const flagHtml = isTeam ? '' : '<span class="country">' + flag + '</span>';
                 let seedEntry = '<span class="seed-entry"></span>';
                 if (player) {
                     let seText = '';
@@ -302,7 +309,12 @@
                 else if (isBye) name = 'BYE';
                 else if (isQualifier) name = 'Qualifier';
                 const uiLabel = !player && (isBye || isQualifier) ? ' data-ui-label' : '';
-                const nameHtml = '<span class="name"' + uiLabel + '>' + name + '</span>';
+                const nameHtml = isTeam
+                    ? '<span class="name team-names">' + player.members.map(member =>
+                        '<span class="team-member"><span class="country">' + countryFlag(member.country, false) +
+                        '</span><span class="team-member-name">' + escapeHtml(formatDrawName(member.name)) +
+                        '</span></span>').join('') + '</span>'
+                    : '<span class="name"' + uiLabel + '>' + name + '</span>';
                 let setsHtml = '';
                 if (scoreData && scoreData.sets && scoreData.sets.length > 0) {
                     const ss = scoreData.sets;
@@ -325,7 +337,7 @@
                 } else if (matchConcluded && isWinner && showWalkover) {
                     setsHtml += '<span class="set-score won wo">W.O.</span>';
                 }
-                const cls = 'draw-player' + (isWinner ? ' winner' : '');
+                const cls = 'draw-player' + (isTeam ? ' team' : '') + (isWinner ? ' winner' : '');
                 return '<div class="' + cls + '">' + flagHtml + seedEntry + nameHtml + (setsHtml ? '<span class="sets">' + setsHtml + '</span>' : '') + '</div>';
             }
 
@@ -356,6 +368,7 @@
                 const playersByPos = new Map(players.map(p => [p.pos, p]));
                 const playerPosSet = new Set(players.map(p => p.pos));
                 const matchMap = new Map(matches.map(m => [`${m.round}:${m.match_num}`, m]));
+                container.dataset.drawType = currentDrawType;
                 const isQualifying = (data.draw_type || '').toUpperCase().includes('QUAL') || currentDrawType === 'QS';
 
                 function getMatch(roundNum, matchNum) {
