@@ -151,7 +151,7 @@ def _player_name_matches_winner(player_name, winner_name):
         winners = winner_name.split(" / ")
         return len(players) == len(winners) == 2 and all(
             _player_name_matches_winner(player, winner)
-            for player, winner in zip(players, winners)
+            for player, winner in zip(players, winners, strict=True)
         )
 
     # Exact normalized match first.
