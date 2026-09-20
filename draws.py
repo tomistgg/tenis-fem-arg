@@ -421,7 +421,7 @@ def _parse_doubles_page(text):
             byes.add(pos)
             index = cursor + 1
             continue
-        members = []
+        members: list[dict[str, str]] = []
         seed = ""
         while len(members) < 2 and cursor < len(lines):
             line = lines[cursor]
@@ -454,7 +454,7 @@ def _parse_doubles_page(text):
         for index, line in enumerate(lines):
             if re.fullmatch(str(last_pos), line):
                 result_start = index + 1
-    pending_names = []
+    pending_names: list[str] = []
     for line in lines[result_start:]:
         if line.startswith(("WTA Supervisor", "Seeded teams")):
             break
@@ -487,7 +487,8 @@ def _parse_doubles_draw_pdf(doc):
     draw_header_index = next((i for i, line in enumerate(header) if "DOUBLES MAIN DRAW" in line.upper()), len(header))
     details_index = next((i for i, line in enumerate(header[:draw_header_index]) if "|" in line), None)
     location_index = details_index - 1 if details_index is not None else 1
-    players, byes, page_results, labels = [], set(), [], []
+    players, byes, page_results = [], set(), []
+    labels: list[str] = []
     for page in doc:
         page_players, page_byes, results, page_labels = _parse_doubles_page(page.get_text() or "")
         players.extend(page_players)
