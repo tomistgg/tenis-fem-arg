@@ -1482,7 +1482,13 @@
         ],
         "matches": [
           {"round": 1, "match_num": 0, "winner_name": "W. Falkowska"},
-          {"round": 1, "match_num": 2, "winner_name": "D. Egorova"}
+          {"round": 1, "match_num": 1, "winner_name": "A. Smith", "score": "63 62"},
+          {"round": 1, "match_num": 2, "winner_name": "D. Egorova"},
+          {"round": 1, "match_num": 3, "winner_name": "M. Ercan", "score": "62 60"},
+          {"round": 1, "match_num": 4, "winner_name": "K. Zaytseva", "score": "60 60"},
+          {"round": 1, "match_num": 5, "winner_name": "I. Yoruk", "score": "61 60"},
+          {"round": 1, "match_num": 6, "winner_name": "M. Vogt", "score": "61 60"},
+          {"round": 1, "match_num": 7, "winner_name": "E. Yashina", "score": "62 64"}
         ],
         "byes": [
           2,
@@ -1670,6 +1676,53 @@
           "Final"
         ],
         "num_rounds": 4
+      },
+      "MDS":
+      {
+        "tournament_name": "Eupago Porto Open",
+        "location": "PORTO, POR",
+        "dates": "September 20-27 2026",
+        "prize": "€ 100,000",
+        "surface": "Hard, Greenset",
+        "draw_type": "SINGLES MAIN DRAW",
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "TIMOFEEVA, Maria", "country": "UZB"},
+          {"pos": 3, "name": "RINALDO PERSSON, Kajsa", "country": "SWE"},
+          {"pos": 4, "entry": "WC", "name": "TOMAI, Carla", "country": "POR"},
+          {"pos": 5, "name": "KOEVERMANS, Anouk", "country": "NED"},
+          {"pos": 6, "name": "AKLI, Ayana", "country": "USA"},
+          {"pos": 7, "name": "SEBOV, Katherine", "country": "CAN"},
+          {"pos": 8, "seed": "7", "name": "KNUTSON, Gabriela", "country": "CZE"},
+          {"pos": 9, "seed": "3", "name": "PODREZ, Veronika", "country": "UKR"},
+          {"pos": 10, "entry": "WC", "name": "MATIAS, Madalena", "country": "POR"},
+          {"pos": 11, "name": "JORGE, Francisca", "country": "POR"},
+          {"pos": 12, "name": "POHANKOVA, Mia", "country": "SVK"},
+          {"pos": 14, "name": "WERNER, Caroline", "country": "GER"},
+          {"pos": 16, "seed": "5", "name": "PIGATO, Lisa", "country": "ITA"},
+          {"pos": 17, "seed": "8", "name": "JIMENEZ KASINTSEVA, Victoria", "country": "AND"},
+          {"pos": 19, "name": "ANDREEVA, Erika"},
+          {"pos": 20, "name": "SWAN, Katie", "country": "GBR"},
+          {"pos": 22, "entry": "WC", "name": "FRANCO DIAS, Teresa", "country": "POR"},
+          {"pos": 23, "name": "TAN, Harmony", "country": "FRA"},
+          {"pos": 24, "seed": "4", "name": "LEE, Carol Young Suh", "country": "USA"},
+          {"pos": 25, "seed": "6", "name": "BANDECCHI, Susan", "country": "SUI"},
+          {"pos": 26, "name": "DODIN, Oceane", "country": "FRA"},
+          {"pos": 27, "name": "HODZIC, Mina", "country": "GER"},
+          {"pos": 28, "name": "MALYGINA, Elena", "country": "EST"},
+          {"pos": 29, "name": "JORGE, Matilde", "country": "POR"},
+          {"pos": 30, "entry": "WC", "name": "CERVINO RUIZ, Celia", "country": "ESP"},
+          {"pos": 31, "name": "CABRERA, Lizette", "country": "AUS"},
+          {"pos": 32, "seed": "2", "name": "KRAUS, Sinja", "country": "AUT"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
       }
     }
   },
@@ -1682,7 +1735,7 @@
       "week": "Week of September 21",
       "startDate": "2026-09-21",
       "endDate": "2026-09-27",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":false,"has_arg_any":true}
     },
     "draws":
     {
@@ -1718,6 +1771,60 @@
           "Q2"
         ],
         "num_rounds": 2
+      },
+      "MDS":
+      {
+        "tournament_name": "Delta Motors Tolentino Open",
+        "location": "TOLENTINO, ITA",
+        "dates": "September 21-27 2026",
+        "prize": "€ 100,000",
+        "surface": "Clay, Red Clay",
+        "draw_type": "SINGLES MAIN DRAW",
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "WALTERT, Simona", "country": "SUI"},
+          {"pos": 2, "name": "PAPAMICHAIL, Despina", "country": "GRE"},
+          {"pos": 3, "entry": "WC", "name": "ZANTEDESCHI, Aurora", "country": "ITA"},
+          {"pos": 4, "entry": "WC", "name": "LOMBARDINI, Marta", "country": "ITA"},
+          {"pos": 5, "entry": "WC", "name": "SERBAN, Isabella Maria", "country": "ITA"},
+          {"pos": 7, "name": "MARISTANY ZULETA DE REALES, Guiomar", "country": "ESP"},
+          {"pos": 8, "seed": "8", "name": "MASAROVA, Rebeka", "country": "SUI"},
+          {"pos": 9, "seed": "4", "name": "SAMSON, Laura", "country": "CZE"},
+          {"pos": 10, "name": "BASILETTI, Noemi", "country": "ITA"},
+          {"pos": 11, "name": "RISTIC, Mia", "country": "SRB"},
+          {"pos": 12, "name": "RUS, Arantxa", "country": "NED"},
+          {"pos": 14, "entry": "WC", "name": "DE ANGELIS, Ginevra", "country": "ITA"},
+          {"pos": 15, "name": "HERCOG, Polona", "country": "SLO"},
+          {"pos": 16, "seed": "5", "name": "ROMERO GORMAZ, Leyre", "country": "ESP"},
+          {"pos": 17, "seed": "6", "name": "ERJAVEC, Veronika", "country": "SLO"},
+          {"pos": 19, "name": "BRANCACCIO, Nuria", "country": "ITA"},
+          {"pos": 20, "name": "CARLE, Maria Lourdes", "country": "ARG"},
+          {"pos": 21, "name": "TUBELLO, Alice", "country": "FRA"},
+          {"pos": 23, "name": "RUGGERI, Jennifer", "country": "ITA"},
+          {"pos": 24, "seed": "3", "name": "GRABHER, Julia", "country": "AUT"},
+          {"pos": 25, "seed": "7", "name": "GORGODZE, Ekaterine", "country": "GEO"},
+          {"pos": 26, "name": "PIGOSSI, Laura", "country": "BRA"},
+          {"pos": 27, "name": "PALICOVA, Barbora", "country": "CZE"},
+          {"pos": 28, "entry": "SE", "name": "HERRERO LINANA, Alicia", "country": "ESP"},
+          {"pos": 29, "name": "STRUPLOVA, Julie", "country": "CZE"},
+          {"pos": 30, "name": "DE STEFANO, Samira", "country": "ITA"},
+          {"pos": 31, "name": "URGESI, Federica", "country": "ITA"},
+          {"pos": 32, "seed": "2", "name": "SELEKHMETEVA, Oksana", "country": "ESP"}
+        ],
+        "qualifiers": [
+          6,
+          13,
+          18,
+          22
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
       }
     }
   },
@@ -1776,8 +1883,11 @@
           {"round": 1, "match_num": 3, "winner_name": "E. Tomase", "score": "61 64"},
           {"round": 1, "match_num": 4, "winner_name": "C. Gomez", "score": "63 64"},
           {"round": 1, "match_num": 5, "winner_name": "G. Garcia-Perez", "score": "62 63"},
+          {"round": 1, "match_num": 6, "winner_name": "T. Jialin", "score": "62 61"},
           {"round": 1, "match_num": 7, "winner_name": "A. Rey Garcia", "score": "26 62 63"},
-          {"round": 1, "match_num": 9, "winner_name": "S. Rojas", "score": "64 60"}
+          {"round": 1, "match_num": 8, "winner_name": "I. Spink", "score": "64 60"},
+          {"round": 1, "match_num": 9, "winner_name": "S. Rojas", "score": "64 60"},
+          {"round": 1, "match_num": 14, "winner_name": "R. Munk Mortensen", "score": "61 60"}
         ],
         "round_labels": [
           "Round of 32",
