@@ -6,6 +6,8 @@ from pathlib import Path
 
 import main as main_module
 from html_generator import (
+    _draw_info_with_wtn,
+    _draw_wtn_lookups,
     _schedule_tournament_base_name,
     _week_label_sort_key,
     country_flag_html,
@@ -85,6 +87,27 @@ class GeneratedSiteTests(unittest.TestCase):
                 {"name": "US Open"},
             )
         )
+
+    def test_draw_singles_reuse_entry_list_wtn_but_doubles_do_not(self):
+        entries = {
+            "tournament-one": [{"name": "Joanna Garland", "wtn": "9.3"}],
+        }
+        local_wtn, global_wtn = _draw_wtn_lookups(entries)
+        singles = {"players": [{"name": "GARLAND, Joanna"}]}
+
+        rendered_main = _draw_info_with_wtn(
+            "tournament-one", "MDS", singles, local_wtn, global_wtn
+        )
+        rendered_qualifying = _draw_info_with_wtn(
+            "another-tournament", "QS", singles, local_wtn, global_wtn
+        )
+        rendered_doubles = _draw_info_with_wtn(
+            "tournament-one", "MDD", singles, local_wtn, global_wtn
+        )
+
+        self.assertEqual(rendered_main["players"][0]["wtn"], "9.3")
+        self.assertEqual(rendered_qualifying["players"][0]["wtn"], "9.3")
+        self.assertNotIn("wtn", rendered_doubles["players"][0])
 
     def test_legacy_wta_country_codes_render_flags(self):
         players = json.loads(

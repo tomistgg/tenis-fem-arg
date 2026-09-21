@@ -46,6 +46,7 @@ from utils import (
     format_player_name,
     get_surface_class,
     get_tournament_sort_order,
+    normalize_player_name,
     write_text_if_changed,
 )
 from wta import _load_wta_csv
@@ -90,6 +91,46 @@ def _week_label_sort_key(label):
         except ValueError:
             continue
     return datetime.max
+
+
+def _draw_wtn_name_key(name):
+    value = str(name or "").strip()
+    if "," in value:
+        last_name, first_name = value.split(",", 1)
+        value = f"{first_name} {last_name}"
+    return normalize_player_name(value)
+
+
+def _draw_wtn_lookups(tournament_store):
+    local = {}
+    global_values = {}
+    for tournament_key, players in (tournament_store or {}).items():
+        tournament_values = local.setdefault(tournament_key, {})
+        for player in players or []:
+            wtn = str(player.get("wtn") or "").strip()
+            name_key = _draw_wtn_name_key(player.get("name"))
+            if not name_key or wtn in {"", "-"}:
+                continue
+            tournament_values[name_key] = wtn
+            global_values.setdefault(name_key, set()).add(wtn)
+    global_unique = {
+        name: next(iter(values))
+        for name, values in global_values.items()
+        if len(values) == 1
+    }
+    return local, global_unique
+
+
+def _draw_info_with_wtn(tournament_key, draw_type, draw_info, local_wtn, global_wtn):
+    if draw_type not in {"MDS", "QS"} or not isinstance(draw_info, dict):
+        return draw_info
+    tournament_wtn = local_wtn.get(tournament_key, {})
+    players = []
+    for player in draw_info.get("players") or []:
+        name_key = _draw_wtn_name_key(player.get("name"))
+        wtn = tournament_wtn.get(name_key) or global_wtn.get(name_key)
+        players.append({**player, "wtn": wtn} if wtn else player)
+    return {**draw_info, "players": players}
 
 
 def _schedule_tournament_base_name(entry):
@@ -1219,11 +1260,14 @@ def generate_html(
             "types": draw_types,
         }
 
+    local_draw_wtn, global_draw_wtn = _draw_wtn_lookups(tournament_store)
     draws_js_data = {}
     for t_key, tdata in draws_data.items():
         for dtype_code, draw_info in tdata.get("draws", {}).items():
             js_key = f"{t_key}|{dtype_code}"
-            draws_js_data[js_key] = draw_info
+            draws_js_data[js_key] = _draw_info_with_wtn(
+                t_key, dtype_code, draw_info, local_draw_wtn, global_draw_wtn
+            )
 
     # Build table rows
     table_rows = ""

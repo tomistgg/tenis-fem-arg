@@ -33,6 +33,7 @@
             let _urlStateRestoreSeq = 0;
             let _urlStateLastTrackRequest = '';
             const _entryWtnVisible = readUrlParams().has('wtn');
+            const _drawWtnVisible = _entryWtnVisible;
 
             function normalizeUrlPath(path) {
                 let out = (path || '/').toString().replace(/\/+$/g, '/');
@@ -136,7 +137,7 @@
                     setStateParam(params, key, value, { raw });
                 });
                 let query = params.toString().replace(/%2C/g, ',');
-                if (tab === 'entrylists' && _entryWtnVisible) query += (query ? '&' : '') + 'wtn';
+                if ((tab === 'entrylists' || tab === 'draws') && _entryWtnVisible) query += (query ? '&' : '') + 'wtn';
                 const querySuffix = query ? ('?' + query) : '';
                 const isLocalFile = location.protocol === 'file:';
                 // A file:// page may only replace history with the same physical

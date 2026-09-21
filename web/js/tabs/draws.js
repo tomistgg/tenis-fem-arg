@@ -163,6 +163,7 @@
                 const key = currentDrawTKey + '|' + currentDrawType;
                 const data = drawsData[key];
                 const bracket = document.getElementById('draw-bracket');
+                bracket.classList.toggle('draw-wtn', _drawWtnVisible && ['MDS', 'QS'].includes(currentDrawType));
                 if (!data || !data.players || data.players.length === 0) {
                     bracket.innerHTML = '<div class="draw-no-draws">No draw available</div>';
                     return;
@@ -315,6 +316,10 @@
                         '</span><span class="team-member-name">' + escapeHtml(formatDrawName(member.name)) +
                         '</span></span>').join('') + '</span>'
                     : '<span class="name"' + uiLabel + '>' + name + '</span>';
+                const wtn = player && entryWtnToNumber(player.wtn);
+                const wtnHtml = _drawWtnVisible && ['MDS', 'QS'].includes(currentDrawType) && wtn !== null
+                    ? '<span class="draw-player-wtn" title="WTN">' + escapeHtml(String(player.wtn)) + '</span>'
+                    : '';
                 let setsHtml = '';
                 if (scoreData && scoreData.sets && scoreData.sets.length > 0) {
                     const ss = scoreData.sets;
@@ -338,7 +343,7 @@
                     setsHtml += '<span class="set-score won wo">W.O.</span>';
                 }
                 const cls = 'draw-player' + (isTeam ? ' team' : '') + (isWinner ? ' winner' : '');
-                return '<div class="' + cls + '">' + flagHtml + seedEntry + nameHtml + (setsHtml ? '<span class="sets">' + setsHtml + '</span>' : '') + '</div>';
+                return '<div class="' + cls + '">' + flagHtml + seedEntry + nameHtml + wtnHtml + (setsHtml ? '<span class="sets">' + setsHtml + '</span>' : '') + '</div>';
             }
 
             function renderMatch(p1, p2, isBye1, isBye2, isQ1, isQ2, match, players) {

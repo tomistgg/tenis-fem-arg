@@ -306,6 +306,7 @@
             .draw-bracket-wrapper { overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 110px); padding-bottom: 12px; }
             .draw-bracket { display: flex; gap: 0; padding: 6px; min-width: max-content; position: relative; }
             .draw-round { display: flex; flex-direction: column; min-width: 175px; padding: 0 10px; transition: min-width 0.2s, padding 0.2s, opacity 0.2s; }
+            #view-draws .draw-bracket.draw-wtn .draw-round { min-width: 215px; }
             #view-draws .draw-bracket[data-draw-type="MDD"] .draw-round { min-width: 210px; }
             .draw-round.hidden-round { display: none; }
             .draw-round-header { text-align: center; font-weight: bold; font-size: 9px; color: #64748b; padding: 3px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; z-index: 2; cursor: pointer; }
@@ -323,6 +324,7 @@
             .draw-player .seed { color: #6b7280; font-size: 9px; min-width: 10px; text-align: center; }
             .draw-player .entry { color: #9333ea; font-size: 9px; text-align: center; }
             .draw-player .name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .draw-player .draw-player-wtn { flex-shrink: 0; margin-left: 4px; color: #64748b; font-size: 8px; font-variant-numeric: tabular-nums; }
             .draw-player.team { min-height: 34px; }
             .draw-player .team-names { display: flex; flex-direction: column; row-gap: 2px; min-width: 0; }
             .draw-player .team-member { display: flex; align-items: center; gap: 5px; min-width: 0; }
