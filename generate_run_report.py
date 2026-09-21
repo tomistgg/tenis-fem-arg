@@ -334,6 +334,13 @@ def _safe_int(value, default=9999):
         return default
 
 
+def _has_wtn(value):
+    try:
+        return float(value) > 0
+    except (TypeError, ValueError):
+        return False
+
+
 def _acceptance_list_fingerprint(players):
     """Return a stable fingerprint for acceptance-list changes.
 
@@ -459,6 +466,7 @@ def compute_report(before_dir, after_dir):
         "withdrawals": [],
         "new_entry_lists": [],
         "itf_seed_missing_rankings": [],
+        "wta_players_missing_wtn": [],
         "added_matches": {},
         "added_calendar_tournaments": [],
         "changed_calendar_tournaments": [],
@@ -530,6 +538,30 @@ def compute_report(before_dir, after_dir):
     for t_key in sorted(before_entry.keys() | after_entry.keys()):
         old_entries = before_entry.get(t_key, [])
         new_entries = after_entry.get(t_key, [])
+
+        if str(t_key).startswith("http"):
+            missing_wtn_players = []
+            for row in new_entries:
+                if not isinstance(row, dict) or _has_wtn(row.get("wtn")):
+                    continue
+                name = repair_name_text(row.get("name") or "").strip()
+                if not name or name.startswith("("):
+                    continue
+                missing_wtn_players.append(
+                    {
+                        "name": name,
+                        "type": str(row.get("type") or "").strip().upper(),
+                        "position": str(row.get("pos") or row.get("pos_num") or "").strip(),
+                    }
+                )
+            if missing_wtn_players:
+                report["wta_players_missing_wtn"].append(
+                    {
+                        "tournament_key": t_key,
+                        "tournament_name": get_tournament_label(t_key, before_tourney, after_tourney),
+                        "players": missing_wtn_players,
+                    }
+                )
 
         # Only report withdrawals for tournaments present in both snapshots.
         # If a tournament was pruned (no longer in the active week window),
@@ -941,6 +973,7 @@ def render_email_markdown(report):
             bool(report.get("withdrawals")),
             bool(report.get("new_entry_lists")),
             bool(report.get("itf_seed_missing_rankings")),
+            bool(report.get("wta_players_missing_wtn")),
             bool(report.get("added_matches")),
             bool(report.get("new_draws")),
             bool(report.get("added_calendar_tournaments")),
@@ -1007,6 +1040,16 @@ def render_email_markdown(report):
                 f"{item.get('right_name', '')} [{right_ids}]: {name_detail}; "
                 f"{item.get('country', 'country missing')}; {item.get('dob', 'DOB missing')}."
             )
+        lines.append("")
+
+    if report.get("wta_players_missing_wtn"):
+        lines.append("## WTA Entry List Players Missing WTN")
+        for item in report["wta_players_missing_wtn"]:
+            players = "; ".join(
+                f"{player.get('name', '')} ({player.get('type') or 'entry'} pos {player.get('position') or '?'})"
+                for player in item.get("players") or []
+            )
+            lines.append(f"- {item.get('tournament_name') or item.get('tournament_key', '')}: {players}")
         lines.append("")
 
     if report.get("withdrawals"):

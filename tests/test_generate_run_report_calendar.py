@@ -116,6 +116,52 @@ def test_calendar_report_detects_additions_changes_and_cancellations(monkeypatch
     assert "W15 Buenos Aires" not in markdown
 
 
+def test_email_reports_wta_entry_list_players_missing_wtn(tmp_path):
+    before_dir = tmp_path / "before"
+    after_dir = tmp_path / "after"
+    before_dir.mkdir()
+    after_dir.mkdir()
+    wta_key = "https://www.wtatennis.com/tournaments/1147/suzhou-125/2026/player-list"
+    entries = {
+        wta_key: [
+            {"name": "Yue Yuan", "type": "QUAL", "pos": "7", "wtn": "-"},
+            {"name": "Has Rating", "type": "MAIN", "pos": "1", "wtn": "9.2"},
+        ],
+        "w-itf-example": [
+            {"name": "ITF Missing", "type": "MAIN", "pos": "1", "wtn": "-"},
+        ],
+    }
+    tournaments = {
+        wta_key: {
+            "name": "WTA 125 Suzhou",
+            "level": "WTA 125",
+            "surface": "Hard",
+            "country": "CHN",
+            "startDate": "2026-10-05",
+            "endDate": "2026-10-11",
+            "week": "Week of October 5",
+        }
+    }
+    for directory in (before_dir, after_dir):
+        (directory / "entry_lists_cache.json").write_text(json.dumps(entries), encoding="utf-8")
+        (directory / "tournament_snapshot.json").write_text(json.dumps(tournaments), encoding="utf-8")
+
+    report = compute_report(str(before_dir), str(after_dir))
+
+    assert report["wta_players_missing_wtn"] == [
+        {
+            "tournament_key": wta_key,
+            "tournament_name": "WTA 125 Suzhou",
+            "players": [{"name": "Yue Yuan", "type": "QUAL", "position": "7"}],
+        }
+    ]
+    markdown = render_email_markdown(report)
+    assert "## WTA Entry List Players Missing WTN" in markdown
+    assert "WTA 125 Suzhou: Yue Yuan (QUAL pos 7)" in markdown
+    assert "Has Rating" not in markdown
+    assert "ITF Missing" not in markdown
+
+
 def test_calendar_week_placement_change_is_not_a_tournament_change():
     before = [_calendar_row("itf:multiweek", "W100 Example", week_label="Week of September 7")]
     after = [_calendar_row("itf:multiweek", "W100 Example", week_label="Week of September 14")]

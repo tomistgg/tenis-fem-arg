@@ -325,7 +325,7 @@ def refresh_entry_list_wtn(
         for player_id, player in players_by_id.items()
         if cache.get(player_id, {}).get("weeks", {}).get(current_week, {}).get("wtn") in (None, "")
     ] if fetch_profiles else []
-    targets.sort(key=lambda item: (item[1].get("type") != "MAIN", item[0] in cache, item[0]))
+    targets.sort(key=lambda item: (item[0] in cache, item[1].get("type") != "MAIN", item[0]))
     targets = targets[:max_profile_fetches]
     logger.info(f"Refreshing ITF WTN profiles (0/{len(targets)}).")
     source_fetcher = fetch_source or (

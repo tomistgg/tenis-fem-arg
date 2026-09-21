@@ -200,6 +200,40 @@ def test_profile_batch_prioritizes_main_and_excludes_alternates(tmp_path):
     assert entries["https://wta.example/list"][2]["wtn"] == "-"
 
 
+def test_profile_batch_prioritizes_never_fetched_player_over_stale_main(tmp_path):
+    cache_path = tmp_path / "cache.json"
+    cache_path.write_text(
+        json.dumps({"2": {"weeks": {"2026-09-07": {"wtn": 9.5}}}}),
+        encoding="utf-8",
+    )
+    entries = {
+        "https://wta.example/list": [
+            {"player_id": "1", "name": "Missing Qualifier", "country": "POR", "type": "QUAL"},
+            {"player_id": "2", "name": "Stale Main", "country": "POR", "type": "MAIN"},
+        ]
+    }
+    fetched = []
+
+    def fetch(url):
+        fetched.append(url)
+        return '<script>var props = {"wtnSingles":10.0};</script>'
+
+    refresh_entry_list_wtn(
+        None,
+        entries,
+        cache_path,
+        today=date(2026, 9, 21),
+        fetch_source=fetch,
+        resolve_itf_player=lambda player: player,
+        max_profile_fetches=1,
+    )
+
+    assert len(fetched) == 1
+    assert "/1/" in fetched[0]
+    assert entries["https://wta.example/list"][0]["wtn"] == "10.0"
+    assert entries["https://wta.example/list"][1]["wtn"] == "9.5"
+
+
 def test_legacy_profile_cache_wins_over_same_week_entry_snapshot(tmp_path):
     cache_path = tmp_path / "cache.json"
     cache_path.write_text(
