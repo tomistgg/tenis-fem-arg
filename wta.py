@@ -61,9 +61,7 @@ def _normalize_country_code(code):
     value = str(code or "").strip().upper()
     if not value or value == "-":
         return ""
-    if value == "GRC":
-        return "GRE"
-    return value
+    return {"GRC": "GRE", "PRT": "POR"}.get(value, value)
 
 
 def _wta_tournament_name_parts(raw_name):
