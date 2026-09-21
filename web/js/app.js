@@ -701,12 +701,12 @@
                 if (!code || code === '-') return code || '';
                 const upper = code.toUpperCase();
                 if (_localFlags.has(upper)) {
-                    const img = `<img src="data/flags/${upper.toLowerCase()}.svg" alt="${code}" title="${code}" style="display:block;box-sizing:border-box;margin-right:3px;width:16px;height:11px;border:1px solid #000">`;
+                    const img = `<img src="data/flags/${upper.toLowerCase()}.svg" alt="${code}" title="${code}" style="display:inline-block;box-sizing:border-box;vertical-align:middle;margin-right:3px;width:16px;height:11px;border:1px solid #000">`;
                     return showCode === false ? img : img + code;
                 }
                 const iso = _iocToIso2[upper];
                 if (!iso) return code;
-                const img = `<img src="https://purecatamphetamine.github.io/country-flag-icons/3x2/${iso.toUpperCase()}.svg" alt="${code}" title="${code}" style="display:block;box-sizing:border-box;margin-right:3px;width:16px;height:11px;border:1px solid #000">`;
+                const img = `<img src="https://purecatamphetamine.github.io/country-flag-icons/3x2/${iso.toUpperCase()}.svg" alt="${code}" title="${code}" style="display:inline-block;box-sizing:border-box;vertical-align:middle;margin-right:3px;width:16px;height:11px;border:1px solid #000">`;
                 return showCode === false ? img : img + code;
             }
             function countryFlagHistory(code, showCode) {
@@ -1951,10 +1951,8 @@
 
             function entryRankDisplay(player) {
                 const rank = String(player?.rank ?? '').trim();
-                if (player?.type === 'ALT') return rank || '-';
-                const rankNumber = rank.match(/^(?:ITF\s+)?\d+(?:\.\d+)?$/i);
-                if (rankNumber || !entryWtnToNumber(player?.wtn)) return rank || '-';
-                return String(player.wtn);
+                if (rank && rank !== '-') return rank;
+                return entryWtnToNumber(player?.wtn) ? `WTN ${player.wtn}` : '-';
             }
 
             function entryWtnDisplay(player) {
