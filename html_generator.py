@@ -571,7 +571,7 @@ _BJKC_TIE_COUNTRY_CODES = {
 # Dissolved countries with local SVG flags
 LOCAL_FLAGS = {"AHO", "YUG", "SCG", "CIS", "URS"}
 
-FLAG_STYLE = "display:block;box-sizing:border-box;margin-right:3px;width:16px;height:11px;border:1px solid #000"
+FLAG_STYLE = "display:inline-block;box-sizing:border-box;vertical-align:middle;margin-right:3px;width:16px;height:11px;border:1px solid #000"
 
 # Road-to-GS thresholds â€” single source of truth shared between JS logic and the
 # user-facing legend text so the displayed numbers can't drift from the calculation.
