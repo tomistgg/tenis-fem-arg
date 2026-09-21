@@ -483,6 +483,7 @@ IOC_TO_ISO2 = {
     "PNG": "pg",
     "POL": "pl",
     "POR": "pt",
+    "PRT": "pt",
     "PUR": "pr",
     "QAT": "qa",
     "ROC": "ru",
