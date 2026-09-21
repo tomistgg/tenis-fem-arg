@@ -90,10 +90,20 @@ class GeneratedSiteTests(unittest.TestCase):
 
     def test_draw_singles_reuse_entry_list_wtn_but_doubles_do_not(self):
         entries = {
-            "tournament-one": [{"name": "Joanna Garland", "wtn": "9.3"}],
+            "tournament-one": [
+                {"name": "Joanna Garland", "wtn": "9.3"},
+                {"name": "Guiomar Maristany", "wtn": "10.42"},
+                {"name": "Lourdes Carlé", "wtn": "10.82"},
+            ],
         }
         local_wtn, global_wtn = _draw_wtn_lookups(entries)
-        singles = {"players": [{"name": "GARLAND, Joanna"}]}
+        singles = {
+            "players": [
+                {"name": "GARLAND, Joanna"},
+                {"name": "MARISTANY ZULETA DE REALES, Guiomar"},
+                {"name": "CARLE, Maria Lourdes"},
+            ]
+        }
 
         rendered_main = _draw_info_with_wtn(
             "tournament-one", "MDS", singles, local_wtn, global_wtn
@@ -106,6 +116,8 @@ class GeneratedSiteTests(unittest.TestCase):
         )
 
         self.assertEqual(rendered_main["players"][0]["wtn"], "9.3")
+        self.assertEqual(rendered_main["players"][1]["wtn"], "10.42")
+        self.assertEqual(rendered_main["players"][2]["wtn"], "10.82")
         self.assertEqual(rendered_qualifying["players"][0]["wtn"], "9.3")
         self.assertNotIn("wtn", rendered_doubles["players"][0])
 

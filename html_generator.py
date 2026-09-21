@@ -98,7 +98,7 @@ def _draw_wtn_name_key(name):
     if "," in value:
         last_name, first_name = value.split(",", 1)
         value = f"{first_name} {last_name}"
-    return normalize_player_name(value)
+    return normalize_player_name(resolve_player_display_name("wta", name=value))
 
 
 def _draw_wtn_lookups(tournament_store):
