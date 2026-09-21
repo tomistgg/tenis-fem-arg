@@ -101,8 +101,14 @@
         ],
         "matches": [
           {"round": 1, "match_num": 0, "winner_name": "M. Andreeva"},
+          {"round": 1, "match_num": 1, "winner_name": "A. Sasnovich", "score": "75 60"},
+          {"round": 1, "match_num": 3, "winner_name": "L. Fernandez", "score": "62 63"},
           {"round": 1, "match_num": 4, "winner_name": "E. Mertens"},
+          {"round": 1, "match_num": 7, "winner_name": "M. Chwalinska", "score": "64 62"},
+          {"round": 1, "match_num": 9, "winner_name": "J. Garland", "score": "63 57 61"},
           {"round": 1, "match_num": 11, "winner_name": "A. Eala"},
+          {"round": 1, "match_num": 13, "winner_name": "N. Hibino", "score": "75 36 64"},
+          {"round": 1, "match_num": 14, "winner_name": "T. Gibson", "score": "63 63"},
           {"round": 1, "match_num": 15, "winner_name": "A. Anisimova"}
         ],
         "byes": [
@@ -146,6 +152,10 @@
           {"pos": 14, "name": "ROUTLIFFE, Erin / SUTJIADI, Aldila", "country": "NZL", "members": [{"name": "ROUTLIFFE, Erin", "country": "NZL"}, {"name": "SUTJIADI, Aldila", "country": "INA"}]},
           {"pos": 15, "name": "GARLAND, Joanna / HSIEH, Su-Wei", "country": "TPE", "members": [{"name": "GARLAND, Joanna", "country": "TPE"}, {"name": "HSIEH, Su-Wei", "country": "TPE"}]},
           {"pos": 16, "seed": "2", "name": "MIHALIKOVA, Tereza / NICHOLLS, Olivia", "country": "SVK", "members": [{"name": "MIHALIKOVA, Tereza", "country": "SVK"}, {"name": "NICHOLLS, Olivia", "country": "GBR"}]}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 1, "winner_name": "Q. Tang / Y. Xu", "score": "64 62"},
+          {"round": 1, "match_num": 2, "winner_name": "M. Kato / E. Perez", "score": "75 61"}
         ],
         "round_labels": [
           "Round of 16",
@@ -572,6 +582,7 @@
         "draw_size": 32,
         "players": [
           {"pos": 1, "seed": "1", "name": "TIMOFEEVA, Maria", "country": "UZB"},
+          {"pos": 2, "entry": "LL", "name": "JOHNSON, Sofia", "country": "GBR"},
           {"pos": 3, "name": "RINALDO PERSSON, Kajsa", "country": "SWE"},
           {"pos": 4, "entry": "WC", "name": "TOMAI, Carla", "country": "POR"},
           {"pos": 5, "name": "KOEVERMANS, Anouk", "country": "NED"},
@@ -582,10 +593,15 @@
           {"pos": 10, "entry": "WC", "name": "MATIAS, Madalena", "country": "POR"},
           {"pos": 11, "name": "JORGE, Francisca", "country": "POR"},
           {"pos": 12, "name": "POHANKOVA, Mia", "country": "SVK"},
+          {"pos": 13, "entry": "Q", "name": "STEINER, Valentina", "country": "GER"},
           {"pos": 14, "name": "WERNER, Caroline", "country": "GER"},
+          {"pos": 15, "entry": "LL", "name": "YAMALAPALLI, Sahaja", "country": "IND"},
           {"pos": 16, "seed": "9", "name": "SWAN, Katie", "country": "GBR"},
           {"pos": 17, "seed": "8", "name": "JIMENEZ KASINTSEVA, Victoria", "country": "AND"},
+          {"pos": 18, "entry": "Q", "name": "BAINS, Naiktha", "country": "GBR"},
           {"pos": 19, "name": "ANDREEVA, Erika"},
+          {"pos": 20, "entry": "Q", "name": "BRANTMEIER, Reese", "country": "USA"},
+          {"pos": 21, "entry": "Q", "name": "VOLOSHCHUK, Angelina", "country": "POR"},
           {"pos": 22, "entry": "WC", "name": "FRANCO DIAS, Teresa", "country": "POR"},
           {"pos": 23, "name": "TAN, Harmony", "country": "FRA"},
           {"pos": 24, "seed": "4", "name": "LEE, Carol Young Suh", "country": "USA"},
@@ -597,6 +613,11 @@
           {"pos": 30, "entry": "WC", "name": "CERVINO RUIZ, Celia", "country": "ESP"},
           {"pos": 31, "name": "CABRERA, Lizette", "country": "AUS"},
           {"pos": 32, "seed": "2", "name": "KRAUS, Sinja", "country": "AUT"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 1, "winner_name": "K. Rinaldo Persson", "score": "60 60"},
+          {"round": 1, "match_num": 2, "winner_name": "A. Akli", "score": "64 61"},
+          {"round": 1, "match_num": 15, "winner_name": "S. Kraus", "score": "61 64"}
         ],
         "round_labels": [
           "Round of 32",
