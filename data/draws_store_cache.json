@@ -377,7 +377,11 @@
           {"round": 1, "match_num": 4, "winner_name": "K. Zaytseva", "score": "60 60"},
           {"round": 1, "match_num": 5, "winner_name": "I. Yoruk", "score": "61 60"},
           {"round": 1, "match_num": 6, "winner_name": "M. Vogt", "score": "61 60"},
-          {"round": 1, "match_num": 7, "winner_name": "E. Yashina", "score": "62 64"}
+          {"round": 1, "match_num": 7, "winner_name": "E. Yashina", "score": "62 64"},
+          {"round": 2, "match_num": 0, "winner_name": "W. Falkowska", "score": "63 63"},
+          {"round": 2, "match_num": 1, "winner_name": "D. Egorova", "score": "75 61"},
+          {"round": 2, "match_num": 2, "winner_name": "I. Yoruk", "score": "26 64 75"},
+          {"round": 2, "match_num": 3, "winner_name": "M. Vogt", "score": "64 62"}
         ],
         "byes": [
           2,
@@ -416,6 +420,9 @@
           {"pos": 14, "name": "MONNET, Carole / RIERA, Julia", "country": "FRA", "members": [{"name": "MONNET, Carole", "country": "FRA"}, {"name": "RIERA, Julia", "country": "ARG"}]},
           {"pos": 15, "name": "ANSARI, Carolyn / SHINIKOVA, Isabella", "country": "USA", "members": [{"name": "ANSARI, Carolyn", "country": "USA"}, {"name": "SHINIKOVA, Isabella", "country": "BUL"}]},
           {"pos": 16, "seed": "2", "name": "JAKUPOVIC, Dalila / KARAMOKO, Naima", "country": "SLO", "members": [{"name": "JAKUPOVIC, Dalila", "country": "SLO"}, {"name": "KARAMOKO, Naima", "country": "SUI"}]}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 3, "winner_name": "A. N. Altinel / D. Egorova", "score": "64 67(3) 10-3"}
         ],
         "round_labels": [
           "Round of 16",
@@ -467,6 +474,13 @@
           {"pos": 30, "entry": "Q", "name": "YORUK, Ilay", "country": "TUR"},
           {"pos": 31, "name": "HRUNCAKOVA, Viktoria", "country": "SVK"},
           {"pos": 32, "seed": "2", "name": "IATCENKO, Polina"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 5, "winner_name": "A. Mert", "score": "46 61 63"},
+          {"round": 1, "match_num": 7, "winner_name": "A. Aksu", "score": "61 76(3)"},
+          {"round": 1, "match_num": 10, "winner_name": "F. Tian", "score": "62 76(2)"},
+          {"round": 1, "match_num": 13, "winner_name": "K. Zaytseva", "score": "57 63 64"},
+          {"round": 1, "match_num": 15, "winner_name": "P. Iatcenko", "score": "46 63 63"}
         ],
         "round_labels": [
           "Round of 32",
@@ -826,15 +840,15 @@
           {"pos": 11, "entry": "WC", "name": "PAREDES PEREZ, Maria", "country": "ESP"},
           {"pos": 12, "seed": "12", "name": "GARCIA-PEREZ, Georgina", "country": "ESP"},
           {"pos": 13, "seed": "4", "name": "JIALIN, Tian", "country": "CHN"},
-          {"pos": 14, "entry": "WC", "name": "CAIROLS APARICIO, Claudia", "country": "ESP"},
-          {"pos": 15, "entry": "WC", "name": "MUNOZ BOTIA, Carmen Maria", "country": "ESP"},
+          {"pos": 14, "entry": "WC", "name": "CAIROLS APARICIO, Claudia", "country": "ESP", "itf_id": "800727762"},
+          {"pos": 15, "entry": "WC", "name": "MUNOZ BOTIA, Carmen Maria", "country": "ESP", "itf_id": "800718273"},
           {"pos": 16, "seed": "10", "name": "REY GARCIA, Alba", "country": "ESP"},
           {"pos": 17, "seed": "5", "name": "SPINK, Indianna", "country": "GBR"},
           {"pos": 18, "name": "LOPEZ MARTINEZ, Carmen", "country": "ESP"},
           {"pos": 19, "name": "JURNA, Elizabeth", "country": "EST"},
           {"pos": 20, "seed": "13", "name": "ROJAS, Sofia Camila", "country": "USA"},
           {"pos": 21, "seed": "6", "name": "VAGRAMOV, Alexandra", "country": "CAN"},
-          {"pos": 22, "entry": "WC", "name": "MARTINEZ PUCHE, Bianca", "country": "ESP"},
+          {"pos": 22, "entry": "WC", "name": "MARTINEZ PUCHE, Bianca", "country": "ESP", "itf_id": "800876782"},
           {"pos": 23, "name": "SARGANELLA VERDU, Nuria", "country": "ESP"},
           {"pos": 24, "seed": "14", "name": "LAZARENKO, Kateryna", "country": "UKR"},
           {"pos": 25, "seed": "7", "name": "VAN DEN BROEK, Isis Louise", "country": "NED"},
@@ -899,18 +913,18 @@
         "players": [
           {"pos": 1, "name": "AZAMBUJA WERNER, Antonella", "country": "BRA"},
           {"pos": 5, "name": "SANTOS, Sophia", "country": "BRA"},
-          {"pos": 9, "name": "ELLIOTT, Olivia", "country": "GBR"},
+          {"pos": 9, "name": "ELLIOTT, Olivia", "country": "GBR", "itf_id": "800784747"},
           {"pos": 12, "name": "INSFRAN, Guisella", "country": "PAR"},
-          {"pos": 13, "name": "DIAS, Beatriz", "country": "BRA"},
+          {"pos": 13, "name": "DIAS, Beatriz", "country": "BRA", "itf_id": "800764503"},
           {"pos": 16, "name": "MARQUEZ, Sofia Lucia", "country": "ARG"},
           {"pos": 17, "name": "MAIA CITOLINO, Manuela", "country": "BRA"},
-          {"pos": 20, "name": "TORRALES TEBES, Martina Macarena", "country": "CHI"},
+          {"pos": 20, "name": "TORRALES TEBES, Martina Macarena", "country": "CHI", "itf_id": "800532710", "wtn": "26.78"},
           {"pos": 21, "name": "VASCONCELOS DA COSTA, Ticiani", "country": "BRA"},
           {"pos": 24, "name": "ROBERTA BOUTH PINHEIRO, Bruna", "country": "BRA"},
-          {"pos": 25, "name": "DE OLIVEIRA, Ana Cristina", "country": "BRA"},
+          {"pos": 25, "name": "DE OLIVEIRA, Ana Cristina", "country": "BRA", "itf_id": "800728120"},
           {"pos": 28, "name": "DE MATTOS SILVA, ISABELA", "country": "BRA"},
-          {"pos": 29, "name": "RODRIGUES OLIVEIRA, Vitoria Beatriz", "country": "BRA"},
-          {"pos": 32, "name": "MORAES, Maria", "country": "BRA"}
+          {"pos": 29, "name": "RODRIGUES OLIVEIRA, Vitoria Beatriz", "country": "BRA", "itf_id": "800635001", "wtn": "23.27"},
+          {"pos": 32, "name": "MORAES, Maria", "country": "BRA", "itf_id": "800776634"}
         ],
         "matches": [
           {"round": 2, "match_num": 0, "winner_name": "A. Azambuja Werner"},
