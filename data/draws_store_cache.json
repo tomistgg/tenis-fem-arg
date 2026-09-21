@@ -251,7 +251,7 @@
           {"pos": 11, "entry": "WC", "name": "PARK, Sohyun", "country": "KOR"},
           {"pos": 12, "name": "MONTGOMERY, Robin", "country": "USA"},
           {"pos": 13, "name": "YUAN, Yue", "country": "CHN"},
-          {"pos": 14, "entry": "WC", "name": "BACK, Dayeon", "country": "KOR", "itf_id": "800497931", "wtn": "11.62"},
+          {"pos": 14, "entry": "WC", "name": "BACK, Dayeon", "country": "KOR"},
           {"pos": 15, "entry": "Q", "name": "YAO, Xinxin", "country": "CHN"},
           {"pos": 16, "seed": "5", "name": "JOINT, Maya", "country": "AUS"},
           {"pos": 17, "seed": "6", "name": "BONDAR, Anna", "country": "HUN"},
@@ -259,7 +259,7 @@
           {"pos": 19, "name": "CHARAEVA, Alina", "country": "ARM"},
           {"pos": 20, "name": "KENIN, Sofia", "country": "USA"},
           {"pos": 21, "entry": "Q", "name": "IBRAGIMOVA, Alevtina"},
-          {"pos": 22, "entry": "WC", "name": "KU, Yeonwoo", "country": "KOR", "itf_id": "800454354", "wtn": "10.61"},
+          {"pos": 22, "entry": "WC", "name": "KU, Yeonwoo", "country": "KOR"},
           {"pos": 23, "name": "LYS, Eva", "country": "GER"},
           {"pos": 24, "seed": "4", "name": "RUSE, Elena-Gabriela", "country": "ROU"},
           {"pos": 25, "seed": "8", "name": "RAKHIMOVA, Kamilla", "country": "UZB"},
@@ -377,7 +377,11 @@
           {"round": 1, "match_num": 4, "winner_name": "K. Zaytseva", "score": "60 60"},
           {"round": 1, "match_num": 5, "winner_name": "I. Yoruk", "score": "61 60"},
           {"round": 1, "match_num": 6, "winner_name": "M. Vogt", "score": "61 60"},
-          {"round": 1, "match_num": 7, "winner_name": "E. Yashina", "score": "62 64"}
+          {"round": 1, "match_num": 7, "winner_name": "E. Yashina", "score": "62 64"},
+          {"round": 2, "match_num": 0, "winner_name": "W. Falkowska", "score": "63 63"},
+          {"round": 2, "match_num": 1, "winner_name": "D. Egorova", "score": "75 61"},
+          {"round": 2, "match_num": 2, "winner_name": "I. Yoruk", "score": "26 64 75"},
+          {"round": 2, "match_num": 3, "winner_name": "M. Vogt", "score": "64 62"}
         ],
         "byes": [
           2,
@@ -417,6 +421,9 @@
           {"pos": 15, "name": "ANSARI, Carolyn / SHINIKOVA, Isabella", "country": "USA", "members": [{"name": "ANSARI, Carolyn", "country": "USA"}, {"name": "SHINIKOVA, Isabella", "country": "BUL"}]},
           {"pos": 16, "seed": "2", "name": "JAKUPOVIC, Dalila / KARAMOKO, Naima", "country": "SLO", "members": [{"name": "JAKUPOVIC, Dalila", "country": "SLO"}, {"name": "KARAMOKO, Naima", "country": "SUI"}]}
         ],
+        "matches": [
+          {"round": 1, "match_num": 3, "winner_name": "A. N. Altinel / D. Egorova", "score": "64 67(3) 10-3"}
+        ],
         "round_labels": [
           "Round of 16",
           "Quarterfinals",
@@ -438,14 +445,14 @@
           {"pos": 1, "seed": "1", "name": "SIERRA, Solana", "country": "ARG"},
           {"pos": 2, "entry": "WC", "name": "DILEK, Deniz", "country": "TUR"},
           {"pos": 3, "name": "KUZMOVA, Katarina", "country": "SVK"},
-          {"pos": 4, "entry": "WC", "name": "BUYUKAKCAY, Cagla", "country": "TUR", "itf_id": "800246765", "wtn": "12.39"},
+          {"pos": 4, "entry": "WC", "name": "BUYUKAKCAY, Cagla", "country": "TUR"},
           {"pos": 5, "name": "CRAWLEY, Fiona", "country": "USA"},
           {"pos": 6, "name": "MONNET, Carole", "country": "FRA"},
           {"pos": 7, "name": "TIKHONOVA, Anastasia"},
           {"pos": 8, "seed": "6", "name": "GASANOVA, Anastasia"},
           {"pos": 9, "seed": "4", "name": "KUBKA, Martyna", "country": "POL"},
-          {"pos": 10, "name": "CENGIZ, Berfu", "country": "TUR", "itf_id": "800352735", "wtn": "10.63"},
-          {"pos": 11, "entry": "WC", "name": "MERT, Aysegul", "country": "TUR", "itf_id": "800482146", "wtn": "12.11"},
+          {"pos": 10, "name": "CENGIZ, Berfu", "country": "TUR"},
+          {"pos": 11, "entry": "WC", "name": "MERT, Aysegul", "country": "TUR"},
           {"pos": 12, "name": "SHINIKOVA, Isabella", "country": "BUL"},
           {"pos": 13, "entry": "WC", "name": "ALTINEL, Alya Naz", "country": "TUR"},
           {"pos": 14, "name": "SHI, Han", "country": "CHN"},
@@ -457,7 +464,7 @@
           {"pos": 20, "name": "BERTEA, Elena Ruxandra", "country": "ROU"},
           {"pos": 21, "name": "FALEI, Aliona"},
           {"pos": 22, "name": "TIAN, Fangran", "country": "CHN"},
-          {"pos": 23, "name": "MICIC, Elena", "country": "AUS", "itf_id": "800441780", "wtn": "11.59"},
+          {"pos": 23, "name": "MICIC, Elena", "country": "AUS"},
           {"pos": 24, "seed": "3", "name": "RIERA, Julia", "country": "ARG"},
           {"pos": 25, "seed": "7", "name": "PRIDANKINA, Elena"},
           {"pos": 26, "entry": "Q", "name": "EGOROVA, Daria"},
@@ -467,6 +474,13 @@
           {"pos": 30, "entry": "Q", "name": "YORUK, Ilay", "country": "TUR"},
           {"pos": 31, "name": "HRUNCAKOVA, Viktoria", "country": "SVK"},
           {"pos": 32, "seed": "2", "name": "IATCENKO, Polina"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 5, "winner_name": "A. Mert", "score": "46 61 63"},
+          {"round": 1, "match_num": 7, "winner_name": "A. Aksu", "score": "61 76(3)"},
+          {"round": 1, "match_num": 10, "winner_name": "F. Tian", "score": "62 76(2)"},
+          {"round": 1, "match_num": 13, "winner_name": "K. Zaytseva", "score": "57 63 64"},
+          {"round": 1, "match_num": 15, "winner_name": "P. Iatcenko", "score": "46 63 63"}
         ],
         "round_labels": [
           "Round of 32",
@@ -594,7 +608,7 @@
           {"pos": 1, "seed": "1", "name": "TIMOFEEVA, Maria", "country": "UZB"},
           {"pos": 2, "entry": "LL", "name": "JOHNSON, Sofia", "country": "GBR"},
           {"pos": 3, "name": "RINALDO PERSSON, Kajsa", "country": "SWE"},
-          {"pos": 4, "entry": "WC", "name": "TOMAI, Carla", "country": "POR", "itf_id": "800667929"},
+          {"pos": 4, "entry": "WC", "name": "TOMAI, Carla", "country": "POR"},
           {"pos": 5, "name": "KOEVERMANS, Anouk", "country": "NED"},
           {"pos": 6, "name": "AKLI, Ayana", "country": "USA"},
           {"pos": 7, "name": "SEBOV, Katherine", "country": "CAN"},
@@ -665,7 +679,7 @@
         "draw_size": 16,
         "players": [
           {"pos": 1, "seed": "1", "name": "ZAAR, Lisa", "country": "SWE"},
-          {"pos": 2, "entry": "WC", "name": "OVARELLI, Arianna", "country": "ITA", "itf_id": "800665411"},
+          {"pos": 2, "entry": "WC", "name": "OVARELLI, Arianna", "country": "ITA"},
           {"pos": 3, "name": "SENICA, Alja", "country": "SLO"},
           {"pos": 4, "seed": "8", "name": "CHIESA, Enola", "country": "ITA"},
           {"pos": 5, "seed": "2", "name": "SPITERI, Dalila", "country": "ITA"},
@@ -674,7 +688,7 @@
           {"pos": 8, "seed": "6", "name": "PRIMORAC PAVICIC, Iva", "country": "CRO"},
           {"pos": 9, "seed": "3", "name": "PIERI, Jessica", "country": "ITA"},
           {"pos": 10, "name": "MORDERGER, Yana", "country": "GER"},
-          {"pos": 11, "entry": "WC", "name": "DALLE MOLLE, Silvia", "country": "ITA", "itf_id": "800663075", "wtn": "18.4"},
+          {"pos": 11, "entry": "WC", "name": "DALLE MOLLE, Silvia", "country": "ITA"},
           {"pos": 12, "seed": "7", "name": "KUCMOVA, Aneta", "country": "CZE"},
           {"pos": 13, "seed": "4", "name": "LABOUTKOVA, Aneta", "country": "CZE"},
           {"pos": 14, "name": "TOMA, Maria", "country": "ROU"},
