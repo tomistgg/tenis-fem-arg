@@ -612,7 +612,7 @@ _BJKC_TIE_COUNTRY_CODES = {
 # Dissolved countries with local SVG flags
 LOCAL_FLAGS = {"AHO", "YUG", "SCG", "CIS", "URS"}
 
-FLAG_STYLE = "display:inline-block;box-sizing:border-box;vertical-align:middle;margin-right:3px;width:16px;height:11px;border:1px solid #000"
+FLAG_STYLE = "display:inline-block;box-sizing:border-box;vertical-align:middle;margin-right:3px;width:18px;height:13px;border:0.5px solid #000;transform:translateY(-1px)"
 
 # Road-to-GS thresholds â€” single source of truth shared between JS logic and the
 # user-facing legend text so the displayed numbers can't drift from the calculation.
@@ -1255,6 +1255,9 @@ def generate_html(
     draws_tournament_info = {}
     for t_key, tdata in draws_data.items():
         draw_types = [dt for dt, di in tdata.get("draws", {}).items() if isinstance(di, dict) and di.get("players")]
+        # Fixed order: Qualifying, Main Draw, Doubles
+        order = {"QS": 0, "MDS": 1, "MDD": 2}
+        draw_types.sort(key=lambda dt: order.get(dt, 99))
         draws_tournament_info[t_key] = {
             "name": display_tournament_name(tdata["name"]),
             "types": draw_types,

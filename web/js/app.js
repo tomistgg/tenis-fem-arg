@@ -702,18 +702,18 @@
                 if (!code || code === '-') return code || '';
                 const upper = code.toUpperCase();
                 if (_localFlags.has(upper)) {
-                    const img = `<img src="data/flags/${upper.toLowerCase()}.svg" alt="${code}" title="${code}" style="display:inline-block;box-sizing:border-box;vertical-align:middle;margin-right:3px;width:16px;height:11px;border:1px solid #000">`;
+                    const img = `<img src="data/flags/${upper.toLowerCase()}.svg" alt="${code}" title="${code}" style="display:inline-block;box-sizing:border-box;vertical-align:middle;margin-right:3px;width:18px;height:13px;border:0.5px solid #000;transform:translateY(-1px)">`;
                     return showCode === false ? img : img + code;
                 }
                 const iso = _iocToIso2[upper];
                 if (!iso) return code;
-                const img = `<img src="https://purecatamphetamine.github.io/country-flag-icons/3x2/${iso.toUpperCase()}.svg" alt="${code}" title="${code}" style="display:inline-block;box-sizing:border-box;vertical-align:middle;margin-right:3px;width:16px;height:11px;border:1px solid #000">`;
+                const img = `<img src="https://purecatamphetamine.github.io/country-flag-icons/3x2/${iso.toUpperCase()}.svg" alt="${code}" title="${code}" style="display:inline-block;box-sizing:border-box;vertical-align:middle;margin-right:3px;width:18px;height:13px;border:0.5px solid #000;transform:translateY(-1px)">`;
                 return showCode === false ? img : img + code;
             }
             function countryFlagHistory(code, showCode) {
                 const html = countryFlag(code, showCode);
                 if (window.innerWidth > 768) return html;
-                return String(html).replace('width:16px;height:11px', 'width:12px;height:8px');
+                return String(html).replace('width:18px;height:13px', 'width:12px;height:8px');
             }
             // Icon swapping is CSS-driven via [data-theme="dark"]; JS only
             // manages the data-theme attribute, localStorage, and the label.
