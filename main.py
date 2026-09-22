@@ -2616,7 +2616,7 @@ def main():
     if draws_store:
         logger.info("Refreshing WTN for draw players...")
         from populate_data.update_wta_wtn import refresh_draw_wtn
-        refresh_draw_wtn(driver, draws_store, limit=8)
+        refresh_draw_wtn(driver, draws_store, limit=30)
 
     # Persist draws cache so a successful draw doesn't disappear on a later failed run.
     save_json_file(DRAWS_STORE_CACHE_FILE, draws_store, formatter=dumps_draws_store_cache)

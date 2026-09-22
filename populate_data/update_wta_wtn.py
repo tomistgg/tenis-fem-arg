@@ -55,11 +55,13 @@ def print_status(entries, weeks):
 
 def _draw_profile_players(draws_store):
     players_by_id = {}
+    name_to_itf_id = {}
     for tournament in (draws_store or {}).values():
         draws = tournament.get("draws", tournament) if isinstance(tournament, dict) else {}
         for draw_type in ("MDS", "QS"):
             for player in (draws.get(draw_type) or {}).get("players", []):
                 name = str(player.get("name") or "").strip()
+                original_name = name
                 if "," in name:
                     last_name, first_name = name.split(",", 1)
                     name = f"{first_name} {last_name}".strip()
@@ -73,11 +75,14 @@ def _draw_profile_players(draws_store):
                     "country": str(player.get("country") or (identity.country if identity else "")),
                     "type": "MAIN",
                 }
-    return players_by_id
+                # Map normalized name to ITF ID for later matching
+                name_key = name.casefold().strip()
+                name_to_itf_id[name_key] = player_id
+    return players_by_id, name_to_itf_id
 
 
 def refresh_draw_wtn(driver, draws_store, limit):
-    players_by_id = _draw_profile_players(draws_store)
+    players_by_id, name_to_itf_id = _draw_profile_players(draws_store)
     if not players_by_id:
         return 0
     profile_entries = {"https://draws.local": list(players_by_id.values())}
@@ -100,10 +105,17 @@ def refresh_draw_wtn(driver, draws_store, limit):
         draws = tournament.get("draws", tournament) if isinstance(tournament, dict) else {}
         for draw_type in ("MDS", "QS"):
             for player in (draws.get(draw_type) or {}).get("players", []):
-                value = values.get(str(player.get("itf_id") or ""))
-                if value is not None and player.get("wtn") != str(value):
-                    player["wtn"] = str(value)
-                    updated += 1
+                name = str(player.get("name") or "").strip()
+                if "," in name:
+                    last_name, first_name = name.split(",", 1)
+                    name = f"{first_name} {last_name}".strip()
+                name_key = name.casefold().strip()
+                player_id = name_to_itf_id.get(name_key)
+                if player_id:
+                    value = values.get(player_id)
+                    if value is not None and player.get("wtn") != str(value):
+                        player["wtn"] = str(value)
+                        updated += 1
     return updated
 
 
