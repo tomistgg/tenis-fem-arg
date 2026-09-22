@@ -61,7 +61,6 @@ def _draw_profile_players(draws_store):
         for draw_type in ("MDS", "QS"):
             for player in (draws.get(draw_type) or {}).get("players", []):
                 name = str(player.get("name") or "").strip()
-                original_name = name
                 if "," in name:
                     last_name, first_name = name.split(",", 1)
                     name = f"{first_name} {last_name}".strip()
