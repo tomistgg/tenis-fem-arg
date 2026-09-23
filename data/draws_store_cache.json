@@ -115,7 +115,9 @@
           {"round": 1, "match_num": 12, "winner_name": "M. Sakkari", "score": "64 61"},
           {"round": 1, "match_num": 13, "winner_name": "N. Hibino", "score": "75 36 64"},
           {"round": 1, "match_num": 14, "winner_name": "T. Gibson", "score": "63 63"},
-          {"round": 1, "match_num": 15, "winner_name": "V. Morvayova"}
+          {"round": 1, "match_num": 15, "winner_name": "V. Morvayova"},
+          {"round": 2, "match_num": 2, "winner_name": "E. Mertens", "score": "WO"},
+          {"round": 2, "match_num": 3, "winner_name": "M. Chwalinska", "score": "60 61"}
         ],
         "byes": [
           2,
@@ -154,7 +156,7 @@
           {"pos": 10, "name": "COSTOULAS, Sofia / GIBSON, Talia", "country": "BEL", "members": [{"name": "COSTOULAS, Sofia", "country": "BEL"}, {"name": "GIBSON, Talia", "country": "AUS"}]},
           {"pos": 11, "name": "NEEL, Ingrid / OLMOS, Giuliana", "country": "EST", "members": [{"name": "NEEL, Ingrid", "country": "EST"}, {"name": "OLMOS, Giuliana", "country": "MEX"}]},
           {"pos": 12, "seed": "4", "name": "MLADENOVIC, Kristina / PANOVA, Alexandra", "country": "FRA", "members": [{"name": "MLADENOVIC, Kristina", "country": "FRA"}, {"name": "PANOVA, Alexandra"}]},
-          {"pos": 13, "name": "CHWALINSKA, Maja / KREJCIKOVA, Barbora", "country": "POL", "members": [{"name": "CHWALINSKA, Maja", "country": "POL"}, {"name": "KREJCIKOVA, Barbora", "country": "CZE"}]},
+          {"pos": 13, "entry": "ALT", "name": "FRIEDSAM, Anna-Lena / SASNOVICH, Aliaksandra", "country": "GER", "members": [{"name": "FRIEDSAM, Anna-Lena", "country": "GER"}, {"name": "SASNOVICH, Aliaksandra"}]},
           {"pos": 14, "name": "ROUTLIFFE, Erin / SUTJIADI, Aldila", "country": "NZL", "members": [{"name": "ROUTLIFFE, Erin", "country": "NZL"}, {"name": "SUTJIADI, Aldila", "country": "INA"}]},
           {"pos": 15, "name": "GARLAND, Joanna / HSIEH, Su-Wei", "country": "TPE", "members": [{"name": "GARLAND, Joanna", "country": "TPE"}, {"name": "HSIEH, Su-Wei", "country": "TPE"}]},
           {"pos": 16, "seed": "2", "name": "MIHALIKOVA, Tereza / NICHOLLS, Olivia", "country": "SVK", "members": [{"name": "MIHALIKOVA, Tereza", "country": "SVK"}, {"name": "NICHOLLS, Olivia", "country": "GBR"}]}
@@ -163,7 +165,8 @@
           {"round": 1, "match_num": 0, "winner_name": "S. Hunter / D. Krawczyk", "score": "76(3) 76(4)"},
           {"round": 1, "match_num": 1, "winner_name": "Q. Tang / Y. Xu", "score": "64 62"},
           {"round": 1, "match_num": 2, "winner_name": "M. Kato / E. Perez", "score": "75 61"},
-          {"round": 1, "match_num": 5, "winner_name": "K. Mladenovic / A. Panova", "score": "64 46 10-8"}
+          {"round": 1, "match_num": 5, "winner_name": "K. Mladenovic / A. Panova", "score": "64 46 10-8"},
+          {"round": 1, "match_num": 7, "winner_name": "J. Garland / S. Hsieh", "score": "62 76(5)"}
         ],
         "round_labels": [
           "Round of 16",
@@ -198,7 +201,7 @@
         "draw_type": "SINGLES QUALIFYING DRAW",
         "draw_size": 16,
         "players": [
-          {"pos": 1, "entry": "ALT", "name": "KURAMOCHI, Miho", "country": "JPN", "wtn": "12.28"},
+          {"pos": 1, "entry": "ALT", "name": "KURAMOCHI, Miho", "country": "JPN", "wtn": "11.76"},
           {"pos": 2, "entry": "WC", "name": "JEONG, Boyoung", "country": "KOR", "wtn": "14.03"},
           {"pos": 3, "name": "YAO, Xinxin", "country": "CHN", "wtn": "11.27"},
           {"pos": 4, "seed": "7", "name": "HON, Priscilla", "country": "AUS", "wtn": "11.22"},
