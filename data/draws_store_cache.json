@@ -278,7 +278,7 @@
           {"pos": 27, "name": "VOLYNETS, Katie", "country": "USA", "wtn": "8.15"},
           {"pos": 28, "name": "KALIEVA, Elvina", "country": "USA", "wtn": "10.15"},
           {"pos": 29, "name": "JONES, Emerson", "country": "AUS", "wtn": "10.32"},
-          {"pos": 30, "entry": "Q", "name": "MA, Ye-Xin", "country": "CHN", "wtn": "11.72"},
+          {"pos": 30, "entry": "Q", "name": "MA, Yexin", "country": "CHN", "wtn": "11.72"},
           {"pos": 31, "name": "ZIDANSEK, Tamara", "country": "SLO", "wtn": "9.65"},
           {"pos": 32, "seed": "2", "name": "BIRRELL, Kimberly", "country": "AUS", "wtn": "9.79"}
         ],
@@ -298,7 +298,11 @@
           {"round": 1, "match_num": 12, "winner_name": "K. Rakhimova", "score": "76(4) 46 75"},
           {"round": 1, "match_num": 13, "winner_name": "K. Volynets", "score": "63 60"},
           {"round": 1, "match_num": 14, "winner_name": "Y. Ma", "score": "36 60 62"},
-          {"round": 1, "match_num": 15, "winner_name": "K. Birrell", "score": "76(2) 64"}
+          {"round": 1, "match_num": 15, "winner_name": "K. Birrell", "score": "76(2) 64"},
+          {"round": 2, "match_num": 1, "winner_name": "A. Korneeva", "score": "62 36 61"},
+          {"round": 2, "match_num": 2, "winner_name": "L. Tararudee", "score": "76(5) 60"},
+          {"round": 2, "match_num": 3, "winner_name": "M. Joint", "score": "62 61"},
+          {"round": 2, "match_num": 6, "winner_name": "K. Volynets", "score": "63 60"}
         ],
         "round_labels": [
           "Round of 32",
@@ -332,16 +336,21 @@
           {"pos": 11, "name": "KOBORI, Momoko / SHIMIZU, Ayano", "country": "JPN", "members": [{"name": "KOBORI, Momoko", "country": "JPN"}, {"name": "SHIMIZU, Ayano", "country": "JPN"}]},
           {"pos": 12, "seed": "4", "name": "CHONG, Eudice / HOZUMI, Eri", "country": "HKG", "members": [{"name": "CHONG, Eudice", "country": "HKG"}, {"name": "HOZUMI, Eri", "country": "JPN"}]},
           {"pos": 13, "entry": "WC", "name": "LEE, Eunhye / PARK, Sohyun", "country": "KOR", "members": [{"name": "LEE, Eunhye", "country": "KOR"}, {"name": "PARK, Sohyun", "country": "KOR"}]},
-          {"pos": 14, "name": "LEE, Ya Hsin / YE, Qiu Yu", "country": "TPE", "members": [{"name": "LEE, Ya Hsin", "country": "TPE"}, {"name": "YE, Qiu Yu", "country": "CHN"}]},
+          {"pos": 14, "name": "LEE, Ya Hsin / YE, Qiuyu", "country": "TPE", "members": [{"name": "LEE, Ya Hsin", "country": "TPE"}, {"name": "YE, Qiuyu", "country": "CHN"}]},
           {"pos": 15, "name": "BONDAR, Anna / STOLLAR, Fanny", "country": "HUN", "members": [{"name": "BONDAR, Anna", "country": "HUN"}, {"name": "STOLLAR, Fanny", "country": "HUN"}]},
           {"pos": 16, "seed": "2", "name": "JOINT, Maya / RUSE, Elena-Gabriela", "country": "AUS", "members": [{"name": "JOINT, Maya", "country": "AUS"}, {"name": "RUSE, Elena-Gabriela", "country": "ROU"}]}
         ],
         "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "H. Chan / F. Wu", "score": "75 61"},
+          {"round": 1, "match_num": 1, "winner_name": "D. Back / S. J. Jang", "score": "62 76(8)"},
           {"round": 1, "match_num": 2, "winner_name": "A. Detiuc / I. Khromacheva", "score": "46 64 10-4"},
           {"round": 1, "match_num": 3, "winner_name": "E. Liang / Y. Yuan", "score": "64 36 10-8"},
           {"round": 1, "match_num": 4, "winner_name": "I. Martins / R. Zarazua", "score": "64 64"},
-          {"round": 1, "match_num": 6, "winner_name": "Y. H. Lee / Q. Y. Ye", "score": "63 75"},
-          {"round": 1, "match_num": 7, "winner_name": "M. Joint / E. Ruse", "score": "61 76(2)"}
+          {"round": 1, "match_num": 5, "winner_name": "E. Chong / E. Hozumi", "score": "62 26 10-7"},
+          {"round": 1, "match_num": 6, "winner_name": "Y. H. Lee / Q. Ye", "score": "63 75"},
+          {"round": 1, "match_num": 7, "winner_name": "M. Joint / E. Ruse", "score": "61 76(2)"},
+          {"round": 2, "match_num": 1, "winner_name": "E. Liang / Y. Yuan", "score": "64 64"},
+          {"round": 2, "match_num": 3, "winner_name": "Y. H. Lee / Q. Ye", "score": "16 63 14-12"}
         ],
         "round_labels": [
           "Round of 16",
