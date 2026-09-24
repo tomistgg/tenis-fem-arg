@@ -61,14 +61,14 @@ def test_saved_pdf_fixture_parser():
     assert parsed["matches"][0]["score"] == "64 63"
 
 
-def test_wta_doubles_pdf_groups_two_players_per_team_and_match_tiebreaks():
+def test_wta_doubles_pdf_groups_two_players_per_team_and_wrapped_match_tiebreaks():
     lines = [
         "Fixture Open", "LJUBLJANA, SLO", "September 14-20 2026 | 100,000 | Clay",
         "DOUBLES MAIN DRAW", "1", "1 CASCINO, Estelle", "FRA", "FENG, Shuo", "CHN",
         "2", "BASILETTI, Noemi", "ITA", "ZANTEDESCHI, Aurora", "ITA",
         "3", "NOVAK, Kristina", "SLO", "SEBESTOVA, Ivana", "CZE",
         "4", "2 KUCMOVA, Aneta", "CZE", "LABOUTKOVA, Aneta", "CZE",
-        "E. Cascino", "S. Feng 1", "62 57 10-5",
+        "E. Cascino", "S. Feng 1", "62 57 10-", "5",
         "A. Kucmova", "A. Laboutkova 2", "64 63",
         "E. Cascino", "S. Feng 1", "WO",
         "Semifinals", "Final", "WTA Supervisor",

@@ -207,6 +207,10 @@ def _infer_match_num_from_winner_name(winner_name, round_num, players, used_matc
 _NAME_WITH_COMMA_RE = r"([^\W\d_][^,]*,\s*.+)"
 
 
+def _rejoin_wrapped_scores(text):
+    return re.sub(r"(?<=\d)-[ \t]*\r?\n[ \t]*(?=\d)", "-", text)
+
+
 def _parse_page(text):
     """Parse a single page's text into players, byes, qualifier placeholders, result entries, and round labels.
 
@@ -222,7 +226,7 @@ def _parse_page(text):
       winner_name:  'A. Sabalenka '  (abbreviated first name)
       score:        '64 63'          (optional, missing for bye advances and unplayed matches)
     """
-    lines = text.split("\n")
+    lines = _rejoin_wrapped_scores(text).split("\n")
 
     players = []
     byes = set()
@@ -404,7 +408,7 @@ def _parse_page(text):
 
 def _parse_doubles_page(text):
     """Read teams and round results from one WTA doubles draw page."""
-    lines = [line.strip() for line in text.splitlines()]
+    lines = [line.strip() for line in _rejoin_wrapped_scores(text).splitlines()]
     players, byes, results, labels = [], set(), [], []
     index = 0
     while index < len(lines):
