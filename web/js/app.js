@@ -871,40 +871,6 @@
                     syncUrlStateForTab('calendar', { track: true });
                 });
             }
-            function syncCalendarRowspans() {
-                const table = document.querySelector('#view-calendar .calendar-table');
-                if (!table) return;
-                const rows = Array.from(table.querySelectorAll('tbody tr'));
-                if (!rows.length) return;
-
-                const groupFirstRows = Array.from(table.querySelectorAll('tbody tr.cal-group-first'));
-                if (!groupFirstRows.length) return;
-
-                for (let gi = 0; gi < groupFirstRows.length; gi++) {
-                    const startRow = groupFirstRows[gi];
-                    const startIdx = rows.indexOf(startRow);
-                    if (startIdx === -1) continue;
-                    const nextStartRow = (gi + 1 < groupFirstRows.length) ? groupFirstRows[gi + 1] : null;
-                    const endIdx = nextStartRow ? rows.indexOf(nextStartRow) : rows.length;
-                    if (endIdx === -1) continue;
-
-                    const groupRows = rows.slice(startIdx, endIdx);
-                    if (!groupRows.length) continue;
-
-                    const catCell = groupRows.map(r => r.querySelector('.cal-cat-label')).find(Boolean);
-                    if (!catCell) continue;
-
-                    if (catCell.parentElement) catCell.parentElement.removeChild(catCell);
-                    groupRows.forEach(r => {
-                        r.querySelectorAll('.cal-cat-label').forEach(c => c.remove());
-                    });
-
-                    const visibleRows = groupRows.filter(r => r.style.display !== 'none');
-                    const targetRow = visibleRows.length ? visibleRows[0] : groupRows[0];
-                    targetRow.insertBefore(catCell, targetRow.firstChild);
-                    catCell.rowSpan = visibleRows.length ? visibleRows.length : groupRows.length;
-                }
-            }
             function applyCalendarFilters() {
                 const levelToggles = document.querySelectorAll('[data-cal-filter-toggle]');
                 const continentToggles = document.querySelectorAll('[data-cal-continent-toggle]');
@@ -927,8 +893,6 @@
                     if (continentToggles.length && rowCont && !activeContinents.has(rowCont)) show = false;
                     row.style.display = show ? '' : 'none';
                 });
-                syncCalendarRowspans();
-
                 document.querySelectorAll('#view-calendar [data-cal-filter]').forEach(el => {
                     const levelKey = el.dataset.calFilter || '';
                     const contKey = el.dataset.calContinent || '';

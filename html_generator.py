@@ -1571,86 +1571,69 @@ def generate_html(
         color = _gm_color(gm)
         return f'<span class="cal-gm-badge" style="background:{color}">{gm}</span>'
 
-    col_groups = [
-        {"label": "GS", "keys": ["gs"], "single_row": True},
-        {"label": "WTA", "keys": ["wta_tour", "wta_125"]},
-        {"label": "ITF", "keys": ["itf"]},
-    ]
-    _wta_keys = {"wta_tour", "wta_125"}
+    calendar_column_keys = ("gs", "wta_tour", "wta_125", "itf")
+    calendar_column_order = {key: index for index, key in enumerate(calendar_column_keys)}
+    bold_calendar_keys = {"gs", "wta_tour", "wta_125"}
     cont_labels = CONTINENT_LABELS
     mobile_cont_labels = MOBILE_CONTINENT_LABELS
 
     calendar_html = '<table class="calendar-table"><thead><tr>'
-    calendar_html += '<th class="cal-cat-header"></th><th class="cal-cont-header"></th>'
+    calendar_html += '<th class="cal-cont-header"></th>'
     for week in calendar_data:
         week_heading = re.sub(r"^Week of\s+", "", week["week_label"], flags=re.IGNORECASE)
         calendar_html += f'<th class="cal-week-header">{week_heading}</th>'
     calendar_html += "</tr></thead><tbody>"
 
-    for group in col_groups:
-        if group.get("single_row"):
-            calendar_html += '<tr class="cal-group-first cal-group-last">'
-            calendar_html += f'<td class="cal-cat-label" rowspan="1">{group["label"]}</td>'
-            calendar_html += '<td class="cal-cont-label"></td>'
-            for week in calendar_data:
-                calendar_html += '<td class="cal-cell">'
-                tournaments = []
-                for ck in group["keys"]:
-                    for cont_list in week.get("columns", {}).get(ck, {}).values():
-                        tournaments.extend(cont_list or [])
-                if tournaments:
-                    tournaments.sort(key=lambda x: get_tournament_sort_order(x.get("level", "")))
-                    for t in tournaments:
-                        sc = get_surface_class(t.get("surface", ""))
-                        fk = get_calendar_filter_key(t.get("level", ""))
-                        sk = get_calendar_surface_key(t.get("surface", ""))
-                        flag = country_flag_html(t.get("country", ""), show_code=False)
-                        flag_prefix = f"{flag} " if flag else ""
-                        display_name = escape(_display_calendar_tournament_name(t["name"]))
-                        calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-surface="{sk}">{flag_prefix}{display_name}</span>'
-                _week_cutoff_boxes = _gs_cutoff_boxes.get(week["week_label"], [])
-                if not _week_cutoff_boxes:
-                    _week_cutoff_boxes = _gs_cutoff_boxes.get(week["monday_date"], [])
-                for _, _box_label in sorted(_week_cutoff_boxes):
-                    calendar_html += f'<span class="cal-cutoff-box">{_box_label}</span>'
-                calendar_html += "</td>"
-            calendar_html += "</tr>"
-        else:
-            for ci, cont in enumerate(CONTINENT_KEYS):
-                row_cls = "cal-group-first" if ci == 0 else ("cal-group-last" if ci == len(CONTINENT_KEYS) - 1 else "")
-                if row_cls:
-                    calendar_html += f'<tr class="{row_cls}" data-cal-row-continent="{cont}">'
-                else:
-                    calendar_html += f'<tr data-cal-row-continent="{cont}">'
-                if ci == 0:
-                    calendar_html += f'<td class="cal-cat-label" rowspan="{len(CONTINENT_KEYS)}">{group["label"]}</td>'
-                calendar_html += (
-                    '<td class="cal-cont-label">'
-                    f'<span class="cal-cont-label-desktop">{cont_labels[cont]}</span>'
-                    f'<span class="cal-cont-label-mobile">{mobile_cont_labels[cont]}</span>'
-                    "</td>"
+    calendar_html += '<tr class="cal-cutoff-row"><td class="cal-cont-label"></td>'
+    for week in calendar_data:
+        calendar_html += '<td class="cal-cell">'
+        week_cutoff_boxes = _gs_cutoff_boxes.get(week["week_label"], [])
+        if not week_cutoff_boxes:
+            week_cutoff_boxes = _gs_cutoff_boxes.get(week["monday_date"], [])
+        for _, box_label in sorted(week_cutoff_boxes):
+            calendar_html += f'<span class="cal-cutoff-box">{box_label}</span>'
+        calendar_html += "</td>"
+    calendar_html += "</tr>"
+
+    for cont in CONTINENT_KEYS:
+        calendar_html += f'<tr data-cal-row-continent="{cont}">'
+        calendar_html += (
+            '<td class="cal-cont-label">'
+            f'<span class="cal-cont-label-desktop">{cont_labels[cont]}</span>'
+            f'<span class="cal-cont-label-mobile">{mobile_cont_labels[cont]}</span>'
+            "</td>"
+        )
+        for week in calendar_data:
+            calendar_html += '<td class="cal-cell">'
+            tournaments = []
+            for column_key in calendar_column_keys:
+                tournaments.extend(
+                    (t, column_key)
+                    for t in week.get("columns", {}).get(column_key, {}).get(cont, []) or []
                 )
-                for week in calendar_data:
-                    calendar_html += '<td class="cal-cell">'
-                    tournaments = []
-                    for ck in group["keys"]:
-                        tournaments.extend(week.get("columns", {}).get(ck, {}).get(cont, []) or [])
-                    if tournaments:
-                        tournaments.sort(key=lambda x: get_tournament_sort_order(x.get("level", "")))
-                        for t in tournaments:
-                            sc = get_surface_class(t.get("surface", ""))
-                            fk = get_calendar_filter_key(t.get("level", ""))
-                            sk = get_calendar_surface_key(t.get("surface", ""))
-                            flag = country_flag_html(t.get("country", ""), show_code=False)
-                            flag_prefix = f"{flag} " if flag else ""
-                            is_wta = any(ck in _wta_keys for ck in group["keys"])
-                            gm_badge = (
-                                _get_gm_badge(t["name"], t.get("level", ""), week["monday_date"]) if is_wta else ""
-                            )
-                            display_name = escape(_display_calendar_tournament_name(t["name"]))
-                            calendar_html += f'<span class="calendar-tournament {sc}" data-cal-filter="{fk}" data-cal-continent="{cont}" data-cal-surface="{sk}">{flag_prefix}{display_name}{gm_badge}</span>'
-                    calendar_html += "</td>"
-                calendar_html += "</tr>"
+            tournaments.sort(
+                key=lambda item: (
+                    calendar_column_order[item[1]],
+                    get_tournament_sort_order(item[0].get("level", "")),
+                )
+            )
+            for t, column_key in tournaments:
+                sc = get_surface_class(t.get("surface", ""))
+                fk = get_calendar_filter_key(t.get("level", ""))
+                sk = get_calendar_surface_key(t.get("surface", ""))
+                flag = country_flag_html(t.get("country", ""), show_code=False)
+                flag_prefix = f"{flag} " if flag else ""
+                weight_class = " cal-tournament-bold" if column_key in bold_calendar_keys else ""
+                wta_class = " cal-tournament-wta" if column_key in {"wta_tour", "wta_125"} else ""
+                gm_badge = (
+                    _get_gm_badge(t["name"], t.get("level", ""), week["monday_date"])
+                    if column_key in {"wta_tour", "wta_125"}
+                    else ""
+                )
+                display_name = escape(_display_calendar_tournament_name(t["name"]))
+                calendar_html += f'<span class="calendar-tournament {sc}{weight_class}{wta_class}" data-cal-filter="{fk}" data-cal-continent="{cont}" data-cal-surface="{sk}">{flag_prefix}{display_name}{gm_badge}</span>'
+            calendar_html += "</td>"
+        calendar_html += "</tr>"
 
     calendar_html += "</tbody></table>"
 

@@ -1223,16 +1223,18 @@
             .calendar-table th { padding: 4px 4px; vertical-align: top; border-bottom: 2px solid rgba(0,0,0,0.25); border-right: 1px solid rgba(255,255,255,0.25); }
             .calendar-table td { padding: 4px 4px; vertical-align: top; border-bottom: 1px solid var(--c-border); border-right: 1px solid var(--c-border); }
             .cal-week-header { background: var(--c-chrome-bg); color: white; font-size: 10px; font-weight: bold; text-align: center; white-space: nowrap; padding: 6px 6px; position: sticky; top: 0; z-index: 10; min-width: 90px; }
-            .cal-cat-header { background: var(--c-chrome-bg); color: white; position: sticky; top: 0; left: 0; z-index: 15; width: 24px; min-width: 24px; max-width: 24px; box-sizing: border-box; }
-            .cal-cont-header { background: var(--c-chrome-bg); color: white; position: sticky; top: 0; left: 24px; z-index: 15; min-width: 58px; }
-            .cal-cat-label { background: var(--c-chrome-bg); color: white; font-size: 11px; font-weight: bold; text-align: center; vertical-align: middle !important; text-transform: uppercase; writing-mode: vertical-lr; text-orientation: mixed; transform: rotate(180deg); padding: 0; width: 24px; min-width: 24px; max-width: 24px; position: sticky; left: 0; z-index: 14; border-top: 1px solid var(--c-text-subtle); border-bottom: 1px solid var(--c-text-subtle); border-right: 1px solid var(--c-border); box-shadow: inset 0 0 0 50px var(--c-chrome-bg); box-sizing: border-box; flex: 0 0 24px; }
-            .cal-cont-label { background: var(--c-surface-alt); font-size: 10px; font-weight: 600; color: var(--c-text-subtle); text-align: center; vertical-align: middle !important; white-space: nowrap; position: sticky; left: 24px; z-index: 14; min-width: 58px; border-left: 1px solid var(--c-border); }
+            .cal-cont-header { background: var(--c-chrome-bg); color: white; position: sticky; top: 0; left: 0; z-index: 15; min-width: 58px; }
+            .cal-cont-label { background: var(--c-surface-alt); font-size: 10px; font-weight: 600; color: var(--c-text-subtle); text-align: center; vertical-align: middle !important; white-space: nowrap; position: sticky; left: 0; z-index: 14; min-width: 58px; border-left: 1px solid var(--c-border); }
             .cal-cont-label-mobile { display: none; }
             .cal-cell { font-size: 10px; min-height: 24px; vertical-align: middle !important; }
-            .cal-group-first td { border-top: 1px solid var(--c-text-subtle); }
-            .cal-group-last td { border-bottom: 1px solid var(--c-text-subtle); }
-            .calendar-tournament { display: block; font-size: 10px; padding: 2px 6px; border-radius: 3px; line-height: 1.3; font-weight: 600; white-space: nowrap; margin: 1px 0; }
-            .calendar-tournament img { width: 17px; height: 12px; margin-right: 3px; vertical-align: middle; transform: translateY(-1px); }
+            .cal-cutoff-row td { border-bottom: 1px solid var(--c-text-subtle); }
+            .calendar-tournament { display: block; font-size: 10px; padding: 2px 6px; border-radius: 3px; line-height: 1.3; font-weight: 400; white-space: nowrap; margin: 1px 0; }
+            .cal-tournament-bold { font-weight: 700; }
+            .cal-tournament-wta { outline: 1px solid currentColor; outline-offset: -1px; }
+            .calendar-tournament img { width: 17px !important; height: 12px !important; margin-right: 3px; vertical-align: middle; transform: translateY(0) !important; }
+            @media (min-width: 769px) {
+                .calendar-tournament img { transform: translateY(-1px) !important; }
+            }
             .cal-gm-badge { display: inline-block; font-size: 8px; font-weight: 700; padding: 0px 3px; border-radius: 2px; margin-left: 4px; vertical-align: middle; color: #1a1a1a; line-height: 13px; }
             .cal-gm-na { background: #94a3b8; color: #fff; }
             .cal-cutoff-box { display: block; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 2px; margin: 1px 0; background: #374151; color: #fff; white-space: normal; line-height: 1.3; }
@@ -2226,7 +2228,6 @@
                 .cal-gm-legend { order: 4; font-size: 10px; padding: 3px 4px; gap: 4px; flex: 0 0 100%; width: 100%; }
                 .cal-cutoff-box { font-size: 7px; }
                 .cal-week-header { position: static; }
-                .cal-cat-header { top: unset; }
                 .cal-cont-header { top: unset; }
                 .cal-dd-btn { padding: 6px 24px 6px 8px; font-size: 11px; background-position: right 7px center; }
                 .calendar-gm-toggle { min-width: 82px; padding: 6px 7px; font-size: 10px; }
@@ -2235,16 +2236,14 @@
                 .calendar-change-date { font-size: 11px; }
                 .calendar-change-item { font-size: 10px; }
                 .cal-week-header { font-size: 7px; padding: 3px 3px; min-width: 80px; }
-                .cal-cat-header, .cal-cont-header { font-size: 7px; }
+                .cal-cont-header { font-size: 7px; }
                 .calendar-tournament { font-size: 8px; padding: 2px 4px; }
                 #view-calendar .content-card {
                     border: none;
                     box-shadow: none;
                     background: transparent;
                 }
-                .cal-cat-header { position: sticky !important; position: -webkit-sticky !important; left: 0; z-index: 14; background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%); }
-                .cal-cont-header { position: sticky !important; position: -webkit-sticky !important; left: 24px; z-index: 14; background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%); }
-                .cal-cat-label { position: sticky !important; position: -webkit-sticky !important; left: 0; z-index: 14; }
+                .cal-cont-header { position: sticky !important; position: -webkit-sticky !important; left: 0; z-index: 14; background: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%); }
                 .cal-cont-header,
                 .cal-cont-label {
                     width: 36px;
@@ -2252,7 +2251,7 @@
                     max-width: 36px;
                     box-sizing: border-box;
                 }
-                .cal-cont-label { position: sticky !important; position: -webkit-sticky !important; left: 24px; z-index: 14; background: #f1f5f9; padding-left: 2px; padding-right: 2px; }
+                .cal-cont-label { position: sticky !important; position: -webkit-sticky !important; left: 0; z-index: 14; background: #f1f5f9; padding-left: 2px; padding-right: 2px; }
                 .cal-cont-label-desktop { display: none; }
                 .cal-cont-label-mobile { display: inline; }
                 .calendar-container .table-wrapper { position: relative; }
@@ -2693,12 +2692,9 @@
             [data-theme="dark"] .cal-dd-item span { color: var(--c-text); }
             [data-theme="dark"] .calendar-changes-panel { background: var(--c-surface); border-color: var(--c-border); }
 
-            /* Calendar - cal-cat-label keeps chrome tone, but cal-cont-label
-               flips to surface in dark */
+            /* Calendar region labels flip to the surface color in dark mode. */
             [data-theme="dark"] .cal-cont-label { background: var(--c-surface); color: var(--c-text-subtle); }
-            [data-theme="dark"] .cal-group-first td { border-top-color: var(--c-border-strong); }
-            [data-theme="dark"] .cal-group-last td { border-bottom-color: var(--c-border-strong); }
-            [data-theme="dark"] .cal-cat-label { border-top-color: var(--c-border-strong); border-bottom-color: var(--c-border-strong); }
+            [data-theme="dark"] .cal-cutoff-row td { border-bottom-color: var(--c-border-strong); }
 
             /* FedBCup / BJK - specific accents */
             [data-theme="dark"] .bjkc-series-header { background: var(--c-arg-tint); }
