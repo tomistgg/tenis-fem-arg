@@ -402,6 +402,7 @@ def _write_frontend_assets(site_root, frontend_data):
 
 
 IOC_TO_ISO2 = {
+    "AFG": "af",
     "ALB": "al",
     "ALG": "dz",
     "AND": "ad",

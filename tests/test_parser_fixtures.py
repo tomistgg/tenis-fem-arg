@@ -31,7 +31,7 @@ def test_saved_wta_match_response_parser():
 
 def test_saved_itf_drawsheet_response_parser(monkeypatch):
     fixture = load_fixture("itf_drawsheet_response.json")
-    monkeypatch.setattr(itf_load_new, "madrid_today", lambda: date(2026, 7, 22))
+    monkeypatch.setattr(itf_load_new, "new_york_today", lambda: date(2026, 7, 22))
     parsed = itf_load_new.parse_drawsheet(fixture["drawsheet"], fixture["tournament"], "M")
     assert len(parsed) == 1
     assert parsed[0]["matchId"] == "1100209999"

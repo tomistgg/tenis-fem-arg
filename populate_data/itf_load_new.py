@@ -33,7 +33,7 @@ from lazy_browser import LazyBrowserSession
 from pipeline_errors import DataValidationError, PipelineError
 from run_state import record_run_issue, report_run_issue
 from runtime_logging import get_logger
-from time_utils import madrid_today
+from time_utils import madrid_today, new_york_today
 from transactional_io import atomic_write_dataframe
 from utils import (
     expand_draws_store_cache,
@@ -825,8 +825,8 @@ def parse_drawsheet(data, tourney_meta, draw_type, week_offset=0):
     t_indoor = tourney_meta.get("indoorOrOutDoor", "")
     t_io = "I" if t_indoor == "Indoor" else "O"
     t_nation = tourney_meta.get("hostNation")
-    # Requirement: load ITF matches using the ingestion date (today), not ITF event date.
-    t_date = madrid_today().isoformat()
+    # Load ITF matches using the New York ingestion date, not the ITF event date.
+    t_date = new_york_today().isoformat()
 
     ko_groups = data.get("koGroups", [])
 

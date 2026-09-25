@@ -273,7 +273,7 @@ def test_draw_store_round_trip():
 
 def test_itf_drawsheet_compression_preserves_parser_output(monkeypatch):
     fixture = json.loads((FIXTURES / "itf_drawsheet_response.json").read_text(encoding="utf-8"))
-    monkeypatch.setattr(itf_load_new, "madrid_today", lambda: date(2026, 7, 22))
+    monkeypatch.setattr(itf_load_new, "new_york_today", lambda: date(2026, 7, 22))
     original = itf_load_new.parse_drawsheet(fixture["drawsheet"], fixture["tournament"], "M")
     expanded = expand_itf_drawsheet_cache(compress_itf_drawsheet_cache(fixture["drawsheet"]))
     assert itf_load_new.parse_drawsheet(expanded, fixture["tournament"], "M") == original
