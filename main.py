@@ -2078,7 +2078,7 @@ def main():
             entry_cache,
             ITF_WTN_CACHE_FILE,
             today=madrid_today(),
-            fetch_profiles=False,
+            fetch_profiles=True,
             tournament_weeks=entry_tournament_weeks,
         )
 

@@ -1,7 +1,14 @@
 import json
 from datetime import date
 
-from itf_wtn import ITFProfileBlocked, entry_list_wtn_status, parse_wtn_singles, refresh_entry_list_wtn
+import itf_wtn
+from itf_wtn import (
+    ITFProfileBlocked,
+    entry_list_wtn_status,
+    parse_wtn_singles,
+    player_profile_urls,
+    refresh_entry_list_wtn,
+)
 
 
 def test_parse_wtn_singles_from_profile_props():
@@ -9,7 +16,18 @@ def test_parse_wtn_singles_from_profile_props():
     assert parse_wtn_singles(source) == 9.3
 
 
-def test_profile_wtn_cache_is_shared_and_refetched_in_a_new_ranking_week(tmp_path):
+def test_verified_womens_profile_does_not_fall_back_to_juniors():
+    preferred = "https://www.itftennis.com/en/players/yexin-ma/800439388/chn/wt/s/overview/"
+
+    urls = player_profile_urls(
+        {"player_id": "800439388", "name": "Ye-Xin MA", "country": "CHN"},
+        preferred,
+    )
+
+    assert urls == [preferred]
+
+
+def test_profile_wtn_cache_is_shared_and_refetched_after_seven_days(tmp_path):
     cache_path = tmp_path / "itf_wtn_cache.json"
     entries = {
         "https://wta.example/one": [{"player_id": "123", "name": "Eva Lys", "country": "GER"}],
@@ -38,10 +56,112 @@ def test_profile_wtn_cache_is_shared_and_refetched_in_a_new_ranking_week(tmp_pat
     refresh_entry_list_wtn(
         None, entries, cache_path, today=date(2026, 9, 7), fetch_source=fetch, resolve_itf_player=resolve
     )
+    assert len(fetched) == 1
+
+    refresh_entry_list_wtn(
+        None, entries, cache_path, today=date(2026, 9, 9), fetch_source=fetch, resolve_itf_player=resolve
+    )
     assert len(fetched) == 2
     cached = json.loads(cache_path.read_text(encoding="utf-8"))["800389685"]["weeks"]
     assert cached["2026-09-07"]["wtn"] == 9.3
-    assert cached["2026-09-07"]["retrieved_at"] == "2026-09-07"
+    assert cached["2026-09-07"]["retrieved_at"] == "2026-09-09"
+
+
+def test_stale_profile_reuses_last_verified_url_across_ranking_weeks(tmp_path):
+    cache_path = tmp_path / "cache.json"
+    preferred_url = "https://www.itftennis.com/en/players/anna-blinkova/800336598/fra/wt/s/overview/"
+    cache_path.write_text(
+        json.dumps({
+            "800336598": {
+                "weeks": {
+                    "2026-09-07": {
+                        "wtn": 9.0,
+                        "source": "profile",
+                        "profile_url": preferred_url,
+                        "retrieved_at": "2026-09-07",
+                    }
+                }
+            }
+        }),
+        encoding="utf-8",
+    )
+    entries = {
+        "https://wta.example/list": [
+            {"player_id": "324267", "name": "Anna Blinkova", "country": "RUS", "type": "MAIN"}
+        ]
+    }
+    fetched = []
+
+    refresh_entry_list_wtn(
+        None,
+        entries,
+        cache_path,
+        today=date(2026, 9, 26),
+        fetch_source=lambda url: fetched.append(url) or '<script>var props = {"wtnSingles":9.1};</script>',
+        resolve_itf_player=lambda player: {**player, "player_id": "800336598"},
+    )
+
+    assert fetched == [preferred_url]
+
+
+def test_wta_player_uses_unique_recent_itf_entry_identity(tmp_path):
+    cache_path = tmp_path / "cache.json"
+    cache_path.write_text(
+        json.dumps({
+            "800501322": {
+                "name": "NATSUMI KAWAGUCHI",
+                "country": "JPN",
+                "weeks": {
+                    "2026-09-21": {
+                        "wtn": "13.03",
+                        "source": "entry_list",
+                        "retrieved_at": "2026-09-21",
+                    }
+                },
+            }
+        }),
+        encoding="utf-8",
+    )
+    entries = {
+        "https://wta.example/list": [
+            {"player_id": "328919", "name": "Natsumi Kawaguchi", "country": "JPN", "type": "QUAL"}
+        ]
+    }
+
+    refresh_entry_list_wtn(
+        None,
+        entries,
+        cache_path,
+        today=date(2026, 9, 26),
+        fetch_source=lambda _url: (_ for _ in ()).throw(AssertionError("profile should not be fetched")),
+        resolve_itf_player=lambda _player: None,
+    )
+
+    assert entries["https://wta.example/list"][0]["wtn"] == "13.03"
+
+
+def test_profile_refresh_checkpoints_and_cools_down_between_batches(tmp_path, monkeypatch):
+    entries = {
+        "https://wta.example/list": [
+            {"player_id": str(index), "name": f"Player {index}", "country": "POR", "type": "MAIN"}
+            for index in range(1, 6)
+        ]
+    }
+    sleeps = []
+    monkeypatch.setattr(itf_wtn.time, "sleep", sleeps.append)
+
+    refresh_entry_list_wtn(
+        None,
+        entries,
+        tmp_path / "cache.json",
+        today=date(2026, 9, 26),
+        fetch_source=lambda _url: '<script>var props = {"wtnSingles":10.0};</script>',
+        resolve_itf_player=lambda player: player,
+        profile_batch_size=2,
+        profile_batch_cooldown_seconds=3,
+    )
+
+    assert sleeps == [3, 3]
 
 
 def test_blocked_profile_is_not_cached_as_a_completed_check(tmp_path):
