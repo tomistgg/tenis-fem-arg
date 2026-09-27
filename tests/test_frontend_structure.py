@@ -67,7 +67,11 @@ def test_generated_app_loads_data_before_static_application_scripts(offline_gene
         "assets/js/tabs/draws.js",
         "assets/js/router.js",
     )
-    positions = [app.index(f'src="{script}"') for script in expected_scripts]
+    positions = []
+    for script in expected_scripts:
+        match = re.search(rf'<script\b[^>]*\bsrc="{re.escape(script)}(?:\?[^"]*)?"', app)
+        assert match is not None, f"Missing required script: {script}"
+        positions.append(match.start())
 
     assert positions == sorted(positions)
     assert re.search(r'href="assets/app\.css(?:\?[^"]*)?"', app)
