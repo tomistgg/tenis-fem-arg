@@ -16,7 +16,7 @@
         <link href="assets/vendor/select2-4.1.0-rc.0.min.css" rel="stylesheet" />
         <script src="assets/vendor/jquery-3.6.0.min.js"></script>
         <script src="assets/vendor/select2-4.1.0-rc.0.min.js"></script>
-        <link rel="stylesheet" href="assets/app.css?v=20260917-withdrawals-1">
+        <link rel="stylesheet" href="assets/app.css?v=20260927-entry-wtn-draw-flags-4">
         <link rel="stylesheet" href="assets/language.css">
     </head>
     <body class="home-mode" onload="renderHistoryTable(); renderMilestonesTable();">
@@ -119,7 +119,7 @@
                                 <button type="button" id="btn-open-entry-menu" class="rankings-toggle-btn entry-menu-toggle-btn" hidden onclick="openEntryTournamentList()">Open tournament list</button>
                             </div>
                             <div class="header-row entry-header-row">
-                                <div id="entry-strength" class="entry-strength"><span class="entry-gm-value">-</span></div>
+                                <div id="entry-strength" class="entry-strength"><button type="button" class="entry-gm-value" aria-pressed="false" title="Show WTN column" onclick="toggleEntryWtn()">-</button></div>
                                 <h1 id="entry-title">Entry List</h1>
                                 <div class="rankings-filter-container">
                                     <button type="button" id="btn-prio1" class="rankings-toggle-btn" hidden aria-pressed="false" onclick="togglePrio1()">Show Prio 1</button>
@@ -704,7 +704,7 @@
         <script src="assets/js/data-loader.js"></script>
         <script src="assets/js/tabs/tstrength.js"></script>
         <script src="data/player_aliases_wta_itf_bundle.js"></script>
-        <script src="assets/js/app.js"></script>
+        <script src="assets/js/app.js?v=20260927-entry-wtn-1"></script>
         <script src="assets/js/tabs/roadtogs.js"></script>
         <script src="assets/js/tabs/draws.js"></script>
         <script src="assets/anonymous-analytics.js"></script>

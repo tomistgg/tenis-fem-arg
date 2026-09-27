@@ -32,8 +32,8 @@
             let _urlStateSwitching = false;
             let _urlStateRestoreSeq = 0;
             let _urlStateLastTrackRequest = '';
-            const _entryWtnVisible = readUrlParams().has('wtn');
-            const _drawWtnVisible = _entryWtnVisible;
+            let _entryWtnVisible = readUrlParams().has('wtn');
+            let _drawWtnVisible = readUrlParams().has('wtn');
 
             function normalizeUrlPath(path) {
                 let out = (path || '/').toString().replace(/\/+$/g, '/');
@@ -137,7 +137,10 @@
                     setStateParam(params, key, value, { raw });
                 });
                 let query = params.toString().replace(/%2C/g, ',');
-                if ((tab === 'entrylists' || tab === 'draws') && _entryWtnVisible) query += (query ? '&' : '') + 'wtn';
+                const wtnVisible = tab === 'entrylists'
+                    ? _entryWtnVisible
+                    : (tab === 'draws' ? _drawWtnVisible : false);
+                if (wtnVisible) query += (query ? '&' : '') + 'wtn';
                 const querySuffix = query ? ('?' + query) : '';
                 const isLocalFile = location.protocol === 'file:';
                 // A file:// page may only replace history with the same physical
@@ -261,6 +264,7 @@
             }
 
             function restoreEntryListUrlState(params) {
+                _entryWtnVisible = params.has('wtn');
                 const tSlug = params.get('t');
                 if (tSlug) {
                     const item = Array.from(document.querySelectorAll('#view-entrylists .entry-menu-item')).find(el => {
@@ -520,6 +524,7 @@
             }
 
             function restoreDrawsUrlState(params) {
+                _drawWtnVisible = params.has('wtn');
                 const select = document.getElementById('draws-tournament-select');
                 let key = params.has('t') && select ? findSelectValueBySlug(select, params.get('t')) : '';
                 if (!key && select && select.value) key = select.value;
@@ -1939,6 +1944,13 @@
                 if (!gmEl) return;
                 gmEl.style.background = Number.isFinite(gm) ? entryMenuGmBadgeColor(gm, _entryMenuGmMin, _entryMenuGmMax) : '#94a3b8';
                 gmEl.style.color = '#1a1a1a';
+                gmEl.setAttribute('aria-pressed', String(_entryWtnVisible));
+                gmEl.title = _entryWtnVisible ? 'Hide WTN column' : 'Show WTN column';
+            }
+
+            function toggleEntryWtn() {
+                _entryWtnVisible = !_entryWtnVisible;
+                updateEntryList();
             }
 
             function setEntryDrawStrength(players, key = '', allPlayers = null, byPosFn = null) {
@@ -1956,7 +1968,10 @@
                     gmPlayers = entryFillITFMainPlaceholders(gmPlayers, qualPlayers);
                 }
                 const gm = entryDrawStrengthGM(gmPlayers);
-                el.innerHTML = '<span class="entry-gm-value">' + (gm ? gm.toFixed(1) : '-') + '</span>';
+                el.innerHTML = '<button type="button" class="entry-gm-value" aria-pressed="' +
+                    String(_entryWtnVisible) + '" title="' +
+                    (_entryWtnVisible ? 'Hide WTN column' : 'Show WTN column') +
+                    '" onclick="toggleEntryWtn()">' + (gm ? gm.toFixed(1) : '-') + '</button>';
                 styleEntryStrengthBadge(el, gm);
             }
 

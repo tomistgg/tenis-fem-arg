@@ -32,6 +32,7 @@ from utils import (
     expand_tournament_snapshot,
     expand_tstrength_cache,
     load_csv_rows,
+    normalize_player_name,
 )
 from wta import _load_wta_csv
 
@@ -86,6 +87,7 @@ def _visible_schedule_monday_map(monday_map: OrderedDict[str, str]) -> OrderedDi
 def _entry_inputs(
     data_dir: Path,
     tournament_groups: TournamentGroups,
+    draws_store: dict[str, dict[str, Any]] | None = None,
 ) -> tuple[dict[str, list[dict[str, Any]]], ScheduleMap, set[str]]:
     entry_cache = expand_entry_lists_cache(_load_json(data_dir / "entry_lists_cache.json", {})) or {}
     active_keys = {
@@ -107,9 +109,33 @@ def _entry_inputs(
     schedule_map: ScheduleMap = {}
     schedule_entries: dict[str, dict[str, list[dict[str, Any]]]] = {}
     unranked_arg_names: set[str] = set()
+
+    def draw_player_key(name: Any) -> str:
+        """Normalize entry-list and draw names to their shared First Last form."""
+        value = str(name or "").strip()
+        if "," in value:
+            last_name, first_name = value.split(",", 1)
+            value = f"{first_name.strip()} {last_name.strip()}"
+        return normalize_player_name(value)
+
+    def published_draw_players(tournament_key: str, draw_type: str) -> set[str]:
+        draw_entry = (draws_store or {}).get(tournament_key)
+        if not isinstance(draw_entry, dict):
+            return set()
+        draw = (draw_entry.get("draws") or {}).get(draw_type)
+        if not isinstance(draw, dict):
+            return set()
+        return {
+            draw_player_key(player.get("name"))
+            for player in (draw.get("players") or [])
+            if isinstance(player, dict) and draw_player_key(player.get("name"))
+        }
+
     for tournament_key, players in tournament_store.items():
         week = key_to_week.get(tournament_key, "")
         base_key = tournament_key.removesuffix("#qual")
+        main_draw_players = published_draw_players(base_key, "MDS")
+        qualifying_draw_players = published_draw_players(base_key, "QS")
         tournament_info: TournamentInfo = next(
             (
                 tournaments.get(tournament_key) or tournaments.get(base_key) or {}
@@ -126,6 +152,26 @@ def _entry_inputs(
             if not player_key:
                 continue
             entry_type = str(player.get("type", "MAIN")).upper()
+            player_draw_key = draw_player_key(player.get("name"))
+            # A published draw is more current than its acceptance list.  Do
+            # not keep a player in Schedule after their relevant draw confirms
+            # that they are no longer playing. Qualifiers can appear in either
+            # the qualifying or main draw once qualifying has concluded.
+            if entry_type == "MAIN" and main_draw_players and player_draw_key not in main_draw_players:
+                continue
+            if (
+                entry_type == "QUAL"
+                and qualifying_draw_players
+                and player_draw_key not in (main_draw_players | qualifying_draw_players)
+            ):
+                continue
+            if (
+                entry_type == "ALT"
+                and main_draw_players
+                and qualifying_draw_players
+                and player_draw_key not in (main_draw_players | qualifying_draw_players)
+            ):
+                continue
             if entry_type == "QUAL":
                 suffix = " (Q)"
             elif entry_type == "ALT":
@@ -258,12 +304,12 @@ def render_site_from_data(data_dir: str | Path, site_root: str | Path) -> None:
     site_root.mkdir(parents=True, exist_ok=True)
 
     tournament_groups, monday_map = _tournament_inputs(data_dir)
-    tournament_store, schedule_map, entry_arg_names = _entry_inputs(data_dir, tournament_groups)
+    draws_store = expand_draws_store_cache(_load_json(data_dir / "draws_store_cache.json", {})) or {}
+    tournament_store, schedule_map, entry_arg_names = _entry_inputs(data_dir, tournament_groups, draws_store)
     monday_map = _visible_schedule_monday_map(monday_map)
     players_data, all_wta_players = _ranking_inputs(data_dir, entry_arg_names)
     match_history_data, cleaned_history = load_match_history(data_dir)
     enrich_history_with_wta_ranks(cleaned_history, data_dir)
-    draws_store = expand_draws_store_cache(_load_json(data_dir / "draws_store_cache.json", {})) or {}
     calendar_change_history = _load_json(data_dir / "calendar_change_history.json", []) or []
     tstrength_data = expand_tstrength_cache(_load_json(data_dir / "tstrength_cache.json", [])) or []
 
