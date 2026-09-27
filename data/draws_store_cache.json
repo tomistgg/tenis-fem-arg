@@ -430,7 +430,7 @@
           {"pos": 10, "name": "ETO, Naoko", "country": "JPN", "wtn": "19.14"},
           {"pos": 11, "entry": "WC", "name": "ULUEREN, Sude", "country": "TUR", "wtn": "19.00"},
           {"pos": 12, "seed": "8", "name": "YORUK, Ilay", "country": "TUR", "wtn": "13.51"},
-          {"pos": 13, "seed": "4", "name": "VOGT, Marie", "country": "GER", "wtn": "12.48"},
+          {"pos": 13, "seed": "4", "name": "VOGT, Marie", "country": "GER", "wtn": "12.50"},
           {"pos": 14, "name": "EASWARAMURTHI, Ashmitha", "country": "IND", "wtn": "19.27"},
           {"pos": 15, "entry": "WC", "name": "AKSU, Semra", "country": "TUR", "wtn": "16.01"},
           {"pos": 16, "seed": "6", "name": "YASHINA, Ekaterina", "wtn": "14.24"}
@@ -539,7 +539,7 @@
           {"pos": 16, "seed": "9", "name": "AKSU, Ayla", "country": "TUR", "wtn": "11.02"},
           {"pos": 17, "seed": "5", "name": "KOSTOVIC, Teodora", "country": "SRB", "wtn": "9.52"},
           {"pos": 18, "name": "ANSARI, Carolyn", "country": "USA", "wtn": "12.11"},
-          {"pos": 19, "entry": "Q", "name": "VOGT, Marie", "country": "GER", "wtn": "12.48"},
+          {"pos": 19, "entry": "Q", "name": "VOGT, Marie", "country": "GER", "wtn": "12.50"},
           {"pos": 20, "name": "BERTEA, Elena Ruxandra", "country": "ROU", "wtn": "10.95"},
           {"pos": 21, "name": "FALEI, Aliona", "wtn": "10.45"},
           {"pos": 22, "name": "TIAN, Fangran", "country": "CHN", "wtn": "11.8"},
@@ -623,7 +623,7 @@
           {"pos": 3, "entry": "WC", "name": "SANTOS, Madalena", "country": "POR", "wtn": "20.28"},
           {"pos": 4, "seed": "6", "name": "BAINS, Naiktha", "country": "GBR", "wtn": "12.01"},
           {"pos": 5, "seed": "2", "name": "VOLOSHCHUK, Angelina", "country": "POR", "wtn": "13.22"},
-          {"pos": 6, "entry": "ALT", "name": "LACASSE, Raphaelle", "country": "CAN", "wtn": "13.14"},
+          {"pos": 6, "entry": "ALT", "name": "LACASSE, Raphaelle", "country": "CAN", "wtn": "12.43"},
           {"pos": 7, "entry": "WC", "name": "GOMES, Catarina", "country": "POR", "wtn": "20.8"},
           {"pos": 8, "seed": "5", "name": "ARSENEAULT, Ariana", "country": "CAN", "wtn": "11.97"},
           {"pos": 9, "seed": "3", "name": "COLLINS, Kylie", "country": "USA", "wtn": "11.82"},
@@ -895,7 +895,7 @@
           {"pos": 28, "entry": "SE", "name": "HERRERO LINANA, Alicia", "country": "ESP", "wtn": "9.97"},
           {"pos": 29, "name": "STRUPLOVA, Julie", "country": "CZE", "wtn": "11.66"},
           {"pos": 30, "name": "DE STEFANO, Samira", "country": "ITA", "wtn": "10.25"},
-          {"pos": 31, "name": "URGESI, Federica", "country": "ITA", "wtn": "10.94"},
+          {"pos": 31, "name": "URGESI, Federica", "country": "ITA", "wtn": "10.74"},
           {"pos": 32, "seed": "2", "name": "SELEKHMETEVA, Oksana", "country": "ESP", "wtn": "10.28"}
         ],
         "matches": [
@@ -1099,7 +1099,7 @@
           {"pos": 9, "name": "ELLIOTT, Olivia", "country": "GBR", "itf_id": "800784747", "wtn": "20.2"},
           {"pos": 12, "name": "INSFRAN, Guisella", "country": "PAR"},
           {"pos": 13, "name": "DIAS, Beatriz", "country": "BRA", "itf_id": "800764503", "wtn": "25.94"},
-          {"pos": 16, "name": "MARQUEZ, Sofia Lucia", "country": "ARG", "wtn": "23.34"},
+          {"pos": 16, "name": "MARQUEZ, Sofia Lucia", "country": "ARG", "wtn": "23.35"},
           {"pos": 17, "name": "MAIA CITOLINO, Manuela", "country": "BRA"},
           {"pos": 20, "name": "TORRALES TEBES, Martina Macarena", "country": "CHI", "itf_id": "800532710", "wtn": "26.78"},
           {"pos": 21, "name": "VASCONCELOS DA COSTA, Ticiani", "country": "BRA", "wtn": "25.19"},
@@ -1313,7 +1313,7 @@
           {"pos": 12, "seed": "8", "name": "ZHENG, Wushuang", "country": "CHN"},
           {"pos": 13, "seed": "4", "name": "SIDOROVA, Kristiana"},
           {"pos": 14, "name": "SAGANDYKOVA, Aruzhan", "country": "KAZ"},
-          {"pos": 15, "name": "GUO, Meiqi", "country": "CHN", "wtn": "13.77"},
+          {"pos": 15, "name": "GUO, Meiqi", "country": "CHN", "wtn": "13.79"},
           {"pos": 16, "seed": "5", "name": "KAWAGUCHI, Natsumi", "country": "JPN"}
         ],
         "matches": [
@@ -1444,6 +1444,66 @@
           15,
           18,
           22,
+          26,
+          27,
+          30
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16"
+        ],
+        "num_rounds": 2
+      }
+    }
+  },
+  "w-itf-arg-2026-010":
+  {
+    "meta":
+    {
+      "name": "W15 Trelew",
+      "level": "W15",
+      "week": "Week of September 28",
+      "startDate": "2026-09-28T00:00:00",
+      "endDate": "2026-10-04T00:00:00",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "BHATIA, Diva", "country": "IND"},
+          {"pos": 4, "name": "PAWELEK PISCOPO, Iara", "country": "ARG", "wtn": "27.20"},
+          {"pos": 5, "seed": "2", "name": "TARANTOLA, Agustina", "country": "ARG", "wtn": "18.52"},
+          {"pos": 8, "name": "SARRIA MONDRAGON, Maria Emma", "country": "COL"},
+          {"pos": 9, "seed": "3", "name": "SFILIO, Tania", "country": "ARG", "wtn": "20.08"},
+          {"pos": 12, "name": "BERTOLINI, Camila", "country": "ARG", "wtn": "27.03"},
+          {"pos": 13, "seed": "4", "name": "DOLDAN, Zoe", "country": "PAR", "wtn": "17.93"},
+          {"pos": 16, "name": "MONDATI, Ornela Luisana", "country": "ARG", "wtn": "21.17"},
+          {"pos": 17, "seed": "5", "name": "TEJADA, Aiken", "country": "ARG", "wtn": "19.97"},
+          {"pos": 20, "name": "DA SILVA, Pilar", "country": "ARG"},
+          {"pos": 21, "name": "MARTINEZ, Zaira Abigail", "country": "ARG"},
+          {"pos": 24, "name": "MARINA, Guadalupe", "country": "ARG", "wtn": "25.16"},
+          {"pos": 25, "name": "ELLIOTT, Olivia", "country": "GBR", "wtn": "20.2"},
+          {"pos": 28, "name": "BAIER, Jazmin", "country": "ARG", "wtn": "27.21"},
+          {"pos": 29, "entry": "WC", "name": "CORVALAN MITILLI, Amparo", "country": "ARG"},
+          {"pos": 31, "name": "MARSILETTI, Ambra", "country": "ARG", "wtn": "20.46"},
+          {"pos": 32, "name": "ZINGG, Liv", "country": "GBR"}
+        ],
+        "byes": [
+          2,
+          3,
+          6,
+          7,
+          10,
+          11,
+          14,
+          15,
+          18,
+          19,
+          22,
+          23,
           26,
           27,
           30
