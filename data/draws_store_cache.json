@@ -1335,6 +1335,95 @@
           "Qualifier"
         ],
         "num_rounds": 3
+      },
+      "MDS":
+      {
+        "tournament_name": "Jingshan Tennis Open",
+        "location": "JINGSHAN, CHN",
+        "dates": "September 28-4 2026",
+        "prize": "$ 115,000",
+        "surface": "Hard",
+        "draw_type": "SINGLES MAIN DRAW",
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "BOUZAS MANEIRO, Jessica", "country": "ESP", "wtn": "8.84"},
+          {"pos": 2, "name": "TIAN, Fangran", "country": "CHN", "wtn": "11.8"},
+          {"pos": 4, "entry": "WC", "name": "WANG, Yuhan", "country": "CHN"},
+          {"pos": 5, "name": "ZAVATSKA, Katarina", "country": "UKR", "wtn": "10.85"},
+          {"pos": 6, "name": "LANSERE, Sofya", "wtn": "11.52"},
+          {"pos": 7, "name": "MLADENOVIC, Kristina", "country": "FRA", "wtn": "12.18"},
+          {"pos": 8, "seed": "5", "name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "10.50"},
+          {"pos": 9, "seed": "4", "name": "GRANT, Tyra Caterina", "country": "ITA", "wtn": "9.08"},
+          {"pos": 10, "name": "FALEI, Aliona", "wtn": "10.45"},
+          {"pos": 12, "name": "EGOROVA, Daria", "wtn": "11.86"},
+          {"pos": 13, "name": "YAMAGUCHI, Mei", "country": "JPN", "wtn": "11.59"},
+          {"pos": 15, "name": "MORVAYOVA, Viktoria", "country": "SVK", "wtn": "11.90"},
+          {"pos": 16, "seed": "8", "name": "SORRIBES TORMO, Sara", "country": "ESP", "wtn": "9.57"},
+          {"pos": 17, "seed": "7", "name": "IBRAGIMOVA, Alevtina", "wtn": "9.86"},
+          {"pos": 18, "name": "KHAMUTSIANSKAYA, Darya", "wtn": "12.41"},
+          {"pos": 19, "name": "OKAMURA, Kyoka", "country": "JPN", "wtn": "13.31"},
+          {"pos": 20, "entry": "WC", "name": "WU, Ru Xi", "country": "CHN"},
+          {"pos": 21, "name": "SAITO, Sara", "country": "JPN", "wtn": "12.37"},
+          {"pos": 22, "entry": "WC", "name": "ZHU, Chenting", "country": "CHN"},
+          {"pos": 23, "name": "KAJI, Haruka", "country": "JPN", "wtn": "11.15"},
+          {"pos": 24, "seed": "3", "name": "JONES, Emerson", "country": "AUS", "wtn": "10.32"},
+          {"pos": 25, "seed": "6", "name": "SHUBLADZE, Alexandra", "wtn": "8.9"},
+          {"pos": 26, "name": "SAIGO, Rina", "country": "JPN", "wtn": "12.39"},
+          {"pos": 27, "name": "LU, Jia-Jing", "country": "CHN", "wtn": "12.69"},
+          {"pos": 28, "name": "KINOSHITA, Hayu", "country": "JPN", "wtn": "11.16"},
+          {"pos": 29, "entry": "WC", "name": "WEI, Sijia", "country": "CHN", "wtn": "14.02"},
+          {"pos": 31, "name": "YANG, Yidi", "country": "CHN", "wtn": "12.89"},
+          {"pos": 32, "seed": "2", "name": "FERRO, Fiona", "country": "FRA", "wtn": "8.59"}
+        ],
+        "qualifiers": [
+          3,
+          11,
+          14,
+          30
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
+      },
+      "MDD":
+      {
+        "tournament_name": "Jingshan Tennis Open",
+        "location": "JINGSHAN, CHN",
+        "dates": "September 28-4 2026",
+        "prize": "$ 115,000",
+        "surface": "Hard",
+        "draw_type": "DOUBLES MAIN DRAW",
+        "draw_size": 16,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "DETIUC, Anastasia / KHROMACHEVA, Irina", "country": "CZE", "members": [{"name": "DETIUC, Anastasia", "country": "CZE"}, {"name": "KHROMACHEVA, Irina"}]},
+          {"pos": 2, "name": "COSTOULAS, Sofia / MARTINS, Ingrid", "country": "BEL", "members": [{"name": "COSTOULAS, Sofia", "country": "BEL"}, {"name": "MARTINS, Ingrid", "country": "BRA"}]},
+          {"pos": 3, "name": "LEE, Ya Hsin / YE, Qiuyu", "country": "TPE", "members": [{"name": "LEE, Ya Hsin", "country": "TPE"}, {"name": "YE, Qiuyu", "country": "CHN"}]},
+          {"pos": 4, "entry": "WC", "name": "GUO, Meiqi / YANG, Yidi", "country": "CHN", "members": [{"name": "GUO, Meiqi", "country": "CHN"}, {"name": "YANG, Yidi", "country": "CHN"}]},
+          {"pos": 5, "seed": "3", "name": "HOZUMI, Eri / SORRIBES TORMO, Sara", "country": "JPN", "members": [{"name": "HOZUMI, Eri", "country": "JPN"}, {"name": "SORRIBES TORMO, Sara", "country": "ESP"}]},
+          {"pos": 6, "name": "HUANG, Yujia / KAWAGUCHI, Natsumi", "country": "CHN", "members": [{"name": "HUANG, Yujia", "country": "CHN"}, {"name": "KAWAGUCHI, Natsumi", "country": "JPN"}]},
+          {"pos": 7, "name": "LANSERE, Sofya / SHUBLADZE, Alexandra", "members": [{"name": "LANSERE, Sofya"}, {"name": "SHUBLADZE, Alexandra"}]},
+          {"pos": 8, "name": "FENG, Shuo / TIAN, Fangran", "country": "CHN", "members": [{"name": "FENG, Shuo", "country": "CHN"}, {"name": "TIAN, Fangran", "country": "CHN"}]},
+          {"pos": 9, "name": "KUWATA, Hiroko / ZHENG, Wushuang", "country": "JPN", "members": [{"name": "KUWATA, Hiroko", "country": "JPN"}, {"name": "ZHENG, Wushuang", "country": "CHN"}]},
+          {"pos": 10, "name": "NUGROHO, Priska / YASHINA, Ekaterina", "country": "INA", "members": [{"name": "NUGROHO, Priska", "country": "INA"}, {"name": "YASHINA, Ekaterina"}]},
+          {"pos": 11, "name": "LI, Yu-Yun / ZHANG, Ying", "country": "TPE", "members": [{"name": "LI, Yu-Yun", "country": "TPE"}, {"name": "ZHANG, Ying", "country": "CHN"}]},
+          {"pos": 12, "seed": "4", "name": "CHO, I-Hsuan / CHO, Yi-Tsen", "country": "TPE", "members": [{"name": "CHO, I-Hsuan", "country": "TPE"}, {"name": "CHO, Yi-Tsen", "country": "TPE"}]},
+          {"pos": 13, "name": "EGOROVA, Daria / IBRAGIMOVA, Alevtina", "members": [{"name": "EGOROVA, Daria"}, {"name": "IBRAGIMOVA, Alevtina"}]},
+          {"pos": 14, "name": "GRANT, Tyra Caterina / JONES, Emerson", "country": "ITA", "members": [{"name": "GRANT, Tyra Caterina", "country": "ITA"}, {"name": "JONES, Emerson", "country": "AUS"}]},
+          {"pos": 15, "name": "BROOKS, Madeleine / RAJECKI, Amelia", "country": "GBR", "members": [{"name": "BROOKS, Madeleine", "country": "GBR"}, {"name": "RAJECKI, Amelia", "country": "GBR"}]},
+          {"pos": 16, "seed": "2", "name": "NINOMIYA, Makoto / RADISIC, Nika", "country": "JPN", "members": [{"name": "NINOMIYA, Makoto", "country": "JPN"}, {"name": "RADISIC, Nika", "country": "SLO"}]}
+        ],
+        "round_labels": [
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 4
       }
     }
   },
@@ -1368,7 +1457,7 @@
           {"pos": 11, "name": "SARGANELLA VERDU, Nuria", "country": "ESP", "wtn": "15.94"},
           {"pos": 12, "seed": "14", "name": "BRUNO, Valentina Abril", "country": "ARG", "wtn": "16.40"},
           {"pos": 13, "seed": "4", "name": "TOMASE, Elza", "country": "LAT"},
-          {"pos": 14, "entry": "WC", "name": "Gabriela", "country": "ESP"},
+          {"pos": 14, "entry": "WC", "name": "CLAVERO CANTON, Gabriela", "country": "ESP"},
           {"pos": 15, "name": "PEET, Freya", "country": "GBR"},
           {"pos": 16, "seed": "11", "name": "SHKUTOVA, Anna", "country": "RUS", "wtn": "13.98"},
           {"pos": 17, "seed": "5", "name": "ARIFULLINA, Arina", "country": "RUS", "wtn": "14.39"},
@@ -1482,12 +1571,12 @@
           {"pos": 13, "seed": "4", "name": "DOLDAN, Zoe", "country": "PAR", "wtn": "17.93"},
           {"pos": 16, "name": "MONDATI, Ornela Luisana", "country": "ARG", "wtn": "21.17"},
           {"pos": 17, "seed": "5", "name": "TEJADA, Aiken", "country": "ARG", "wtn": "19.97"},
-          {"pos": 20, "name": "DA SILVA, Pilar", "country": "ARG"},
-          {"pos": 21, "name": "MARTINEZ, Zaira Abigail", "country": "ARG"},
+          {"pos": 20, "name": "DA SILVA, Pilar", "country": "ARG", "wtn": "18.91"},
+          {"pos": 21, "name": "MARTINEZ, Zaira Abigail", "country": "ARG", "wtn": "20.26"},
           {"pos": 24, "name": "MARINA, Guadalupe", "country": "ARG", "wtn": "25.16"},
           {"pos": 25, "name": "ELLIOTT, Olivia", "country": "GBR", "wtn": "20.2"},
           {"pos": 28, "name": "BAIER, Jazmin", "country": "ARG", "wtn": "27.21"},
-          {"pos": 29, "entry": "WC", "name": "CORVALAN MITILLI, Amparo", "country": "ARG"},
+          {"pos": 29, "entry": "WC", "name": "CORVALAN MITILLI, Amparo", "country": "ARG", "wtn": "21.76"},
           {"pos": 31, "name": "MARSILETTI, Ambra", "country": "ARG", "wtn": "20.46"},
           {"pos": 32, "name": "ZINGG, Liv", "country": "GBR"}
         ],
