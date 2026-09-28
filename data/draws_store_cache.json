@@ -434,7 +434,7 @@
           {"pos": 13, "seed": "4", "name": "TANGUILIG, Carson", "country": "USA", "wtn": "12.29"},
           {"pos": 16, "seed": "11", "name": "BAYERLOVA, Michaela", "country": "CZE", "wtn": "13.76"},
           {"pos": 17, "seed": "5", "name": "BONARDI, Berta", "country": "ARG", "wtn": "15.65"},
-          {"pos": 19, "name": "MTVARELISHVILI, Tinatini", "country": "GEO"},
+          {"pos": 19, "name": "MTVARELISHVILI, Tinatini", "country": "GEO", "wtn": "17.89"},
           {"pos": 20, "seed": "15", "name": "SALVADORI, Micol", "country": "ITA", "wtn": "16.27"},
           {"pos": 21, "seed": "6", "name": "SEDLACKOVA, Petra", "country": "CZE", "wtn": "12.89"},
           {"pos": 23, "name": "GUDELJ, Vanja", "country": "NED"},
@@ -563,7 +563,15 @@
           {"pos": 32, "name": "ZINGG, Liv", "country": "GBR", "wtn": "15.88"}
         ],
         "matches": [
-          {"round": 1, "match_num": 15, "winner_name": "L. Zingg", "score": "61 61"}
+          {"round": 1, "match_num": 15, "winner_name": "L. Zingg", "score": "61 61"},
+          {"round": 2, "match_num": 0, "winner_name": "D. Bhatia", "score": "60 60"},
+          {"round": 2, "match_num": 1, "winner_name": "A. Tarantola", "score": "W/O"},
+          {"round": 2, "match_num": 2, "winner_name": "T. Sfilio", "score": "61 61"},
+          {"round": 2, "match_num": 3, "winner_name": "Z. Doldan", "score": "62 63"},
+          {"round": 2, "match_num": 4, "winner_name": "P. Da Silva", "score": "61 62"},
+          {"round": 2, "match_num": 5, "winner_name": "Z. Martinez", "score": "62 61"},
+          {"round": 2, "match_num": 6, "winner_name": "J. Baier", "score": "W/O"},
+          {"round": 2, "match_num": 7, "winner_name": "L. Zingg", "score": "60 60"}
         ],
         "byes": [
           2,
@@ -932,7 +940,7 @@
       "week": "Week of September 28",
       "startDate": "2026-09-28T00:00:00",
       "endDate": "2026-10-04T00:00:00",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":true,"has_arg_any":true}
     },
     "draws":
     {
@@ -978,6 +986,44 @@
           "Round of 16"
         ],
         "num_rounds": 2
+      },
+      "MDS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "REFAAT, Merna", "country": "EGY", "wtn": "14.73"},
+          {"pos": 3, "name": "MARTON, Isabella", "country": "CAN"},
+          {"pos": 4, "entry": "WC", "name": "WEBSTER, Sophia", "country": "USA"},
+          {"pos": 5, "entry": "JR", "name": "ZOZAYA MENENDEZ, Eugenia", "country": "ESP"},
+          {"pos": 6, "name": "DRUGDOVA, Salma", "country": "SVK", "wtn": "15.30"},
+          {"pos": 8, "seed": "8", "name": "SHOLOKHOVA, Maria", "country": "RUS", "wtn": "12.81"},
+          {"pos": 9, "seed": "3", "name": "NIJKAMP, Rose Marie", "country": "NED"},
+          {"pos": 11, "name": "IONESCU, Eva Maria", "country": "ROU"},
+          {"pos": 12, "name": "MATTIOLI, Francesca", "country": "ARG", "wtn": "14.12"},
+          {"pos": 13, "name": "MALKIN, Misa", "country": "USA", "wtn": "15.15"},
+          {"pos": 14, "name": "KAMPER, Emma", "country": "DEN", "wtn": "14.10"},
+          {"pos": 16, "seed": "7", "name": "DAS, Aishi", "country": "NZL"},
+          {"pos": 17, "seed": "5", "name": "WEBB, Stefani", "country": "AUS"},
+          {"pos": 19, "entry": "WC", "name": "BOWERS, Ashton", "country": "USA", "wtn": "14.92"},
+          {"pos": 20, "entry": "WC", "name": "YAMAKITA, Mia", "country": "USA"},
+          {"pos": 21, "name": "KRUGER, Isabella", "country": "RSA", "wtn": "13.97"},
+          {"pos": 22, "entry": "WC", "name": "RAY, Valeria", "country": "USA"},
+          {"pos": 24, "seed": "4", "name": "HEJTMANEK, Amelie Justine", "country": "CZE"},
+          {"pos": 25, "seed": "6", "name": "MERI, Eszter", "country": "SVK"},
+          {"pos": 27, "entry": "JR", "name": "SOHNS, Margaret", "country": "USA"},
+          {"pos": 28, "name": "SHARMA, Astra", "country": "AUS", "wtn": "12.73"},
+          {"pos": 29, "name": "LAHEY, Ashley", "country": "USA", "wtn": "12.06"},
+          {"pos": 30, "name": "BARTEL, Karla", "country": "GER", "wtn": "15.62"},
+          {"pos": 32, "seed": "2", "name": "LAM, Shannon", "country": "USA", "wtn": "13.67"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
       }
     }
   }
