@@ -570,7 +570,7 @@
         "draw_type": "SINGLES QUALIFYING DRAW",
         "draw_size": 48,
         "players": [
-          {"pos": 1, "seed": "1", "name": "YASTREMSKA, Dayana", "country": "UKR", "wtn": "9.38"},
+          {"pos": 1, "entry": "ALT", "name": "GLEASON, Quinn", "country": "USA", "wtn": "16.13"},
           {"pos": 2, "entry": "WC", "name": "WANG, Jiayi", "country": "CHN"},
           {"pos": 3, "name": "HODZIC, Mina", "country": "GER", "wtn": "10.82"},
           {"pos": 4, "seed": "21", "name": "BAI, Zhuoxuan", "country": "CHN", "wtn": "10.31"},
@@ -622,6 +622,64 @@
         "round_labels": [
           "Q1",
           "Q2"
+        ],
+        "num_rounds": 2
+      }
+    }
+  },
+  "w-itf-usa-2026-063":
+  {
+    "meta":
+    {
+      "name": "W15 Nashville, TN",
+      "level": "W15",
+      "week": "Week of September 28",
+      "startDate": "2026-09-28T00:00:00",
+      "endDate": "2026-10-04T00:00:00",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "XU, Annabelle", "country": "CAN", "wtn": "14.26"},
+          {"pos": 2, "name": "KUPRES, Mia", "country": "CAN"},
+          {"pos": 3, "entry": "WC", "name": "WENG, Nicole", "country": "USA"},
+          {"pos": 4, "seed": "14", "name": "ANSON SANCHEZ, Celia", "country": "ESP", "wtn": "15.04"},
+          {"pos": 5, "seed": "2", "name": "PLOSNIK, Ela", "country": "SLO"},
+          {"pos": 6, "name": "ELIZAROVA, Serafima", "country": "USA"},
+          {"pos": 7, "name": "CROCKER, Virginia", "country": "USA"},
+          {"pos": 8, "seed": "15", "name": "PASKAUSKAS, Kristina", "country": "GBR"},
+          {"pos": 9, "seed": "3", "name": "PODHAJECKA, Dominika", "country": "POL"},
+          {"pos": 10, "name": "SOULIE, Alice", "country": "FRA", "wtn": "15.18"},
+          {"pos": 11, "entry": "WC", "name": "HOVDE, Liv", "country": "USA"},
+          {"pos": 12, "seed": "12", "name": "BARTHA, Panna", "country": "HUN", "wtn": "15.21"},
+          {"pos": 13, "seed": "4", "name": "MATUSHKINA, Kira", "country": "RUS"},
+          {"pos": 14, "entry": "WC", "name": "VIJAYAKUMAR, Trinetra", "country": "USA"},
+          {"pos": 15, "name": "DI GENOVA, Chiara", "country": "ARG", "wtn": "15.17"},
+          {"pos": 16, "seed": "11", "name": "MOE, Kaya", "country": "USA"},
+          {"pos": 17, "seed": "5", "name": "NARTI, Charlotte", "country": "FRA", "wtn": "14.10"},
+          {"pos": 18, "name": "DOBREVA, Mariya", "country": "CAN"},
+          {"pos": 19, "name": "ROWINSKA, Malwina", "country": "POL"},
+          {"pos": 20, "seed": "13", "name": "NGIJOL CARRE, Mathilde", "country": "FRA"},
+          {"pos": 21, "seed": "6", "name": "MORENO, Carlota", "country": "USA"},
+          {"pos": 22, "name": "GAY, Cayetana", "country": "ESP", "wtn": "14.53"},
+          {"pos": 23, "entry": "WC", "name": "JIRAKOVA, Julie", "country": "CZE"},
+          {"pos": 24, "seed": "9", "name": "DIIANNI, Jensen", "country": "USA"},
+          {"pos": 25, "seed": "7", "name": "MILDREN, Sarah", "country": "AUS"},
+          {"pos": 26, "entry": "WC", "name": "FRIEDMAN, Leena", "country": "USA"},
+          {"pos": 27, "name": "SINGEORZAN, Juliana Nicole", "country": "USA"},
+          {"pos": 28, "seed": "10", "name": "DEAN, Jenna", "country": "USA", "wtn": "15.55"},
+          {"pos": 29, "seed": "8", "name": "NAVA ELKIN, Amanda Carolina", "country": "MEX", "wtn": "16.75"},
+          {"pos": 30, "name": "GUERRA, Beatriz", "country": "BRA", "wtn": "16.33"},
+          {"pos": 31, "entry": "WC", "name": "PEARCE, Erin", "country": "GBR"},
+          {"pos": 32, "seed": "16", "name": "CABALLERO CHICA, Raquel", "country": "ESP", "wtn": "14.22"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16"
         ],
         "num_rounds": 2
       }
