@@ -627,6 +627,15 @@ def test_published_qualifying_and_main_draws_can_prove_no_arg(monkeypatch):
         "789": {"Q"},
     }
 
+    decided_without_arg = _published_draw(["ESP", "BRA"])
+    for team in decided_without_arg["koGroups"][0]["rounds"][0]["matches"][0]["teams"]:
+        team["isWinner"] = False
+    decided_without_arg["koGroups"][0]["rounds"][0]["matches"][0]["teams"][0]["isWinner"] = True
+    assert itf_drawsheet_cache.drawsheet_is_complete_for_nationality(decided_without_arg, "ARG")
+
+    undecided_without_arg = _published_draw(["ESP", "BRA"])
+    assert not itf_drawsheet_cache.drawsheet_is_complete_for_nationality(undecided_without_arg, "ARG")
+
 
 def test_no_requested_tournaments_returns_an_empty_draw_code_mapping():
     assert (

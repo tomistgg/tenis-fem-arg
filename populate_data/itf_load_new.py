@@ -24,6 +24,7 @@ from http_client import get_with_retry
 from itf import ITF_BASE_URL, ITF_CALENDAR_PAGE_URL
 from itf import _is_cancelled_itf_calendar_item as _is_cancelled_tournament
 from itf_drawsheet_cache import (
+    drawsheet_is_complete_for_nationality,
     drawsheet_is_complete,
     get_cached_drawsheet,
     save_drawsheet,
@@ -42,6 +43,7 @@ from utils import (
     expand_itf_calendar_cache,
     is_draw_completed,
     load_cache,
+    mark_draw_completed,
     save_json_file,
 )
 
@@ -1294,6 +1296,7 @@ if __name__ == "__main__":
         }
 
         all_matches = []
+        completed_draw_keys = set()
         active_count = 0
         consecutive_empty = 0
         _MAX_CONSECUTIVE_EMPTY = 2  # Recreate session after this many all-empty results
@@ -1401,6 +1404,15 @@ if __name__ == "__main__":
                         else:
                             logger.debug(f"  [!] No data returned for {tName} (id={tId}, code={code})")
 
+                    main_draw = draw_payloads.get("M")
+                    if (
+                        main_draw
+                        and all(draw_payloads.get(code) for code in requested_codes)
+                        and ("Q" not in requested_codes or drawsheet_is_complete(draw_payloads.get("Q")))
+                        and drawsheet_is_complete_for_nationality(main_draw, "ARG")
+                    ):
+                        completed_draw_keys.add(_canonical_draw_store_key(tourney.get("tournamentKey")))
+
                 added = len(all_matches) - tourney_matches_before
                 logger.debug(f"  {tName} (id={tId}): {added} ARG matches found")
 
@@ -1434,3 +1446,8 @@ if __name__ == "__main__":
         logger.info("CSV update complete.")
     else:
         logger.info("No new ARG matches found — CSV not updated.")
+
+    for draw_key in completed_draw_keys:
+        mark_draw_completed(draw_key)
+    if completed_draw_keys:
+        logger.debug(f"Marked {len(completed_draw_keys)} tournament(s) complete for ARG match history.")
