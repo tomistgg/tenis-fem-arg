@@ -1397,6 +1397,8 @@ def process_tournaments(
                     record_wta_withdrawals(
                         withdrawal_state, key, cached_players, t_list, observation, today_str,
                     )
+                    complete_sections = set(observation.get("complete_sections", []))
+                    t_list = [p for p in t_list if p.get("type") in complete_sections]
                     t_list = merge_entry_list(cached_players, t_list)
                 if not is_manual_entry:
                     _canonicalize_player_names(t_list, source="wta", names_only=True)

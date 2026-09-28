@@ -1022,11 +1022,20 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
         # Raw IDs also protect players whose profile lookup failed. Missing/empty
         # sections and JSON-LD count mismatches cannot establish withdrawals.
         observation["player_ids"] = sorted(seen_pids)
+        observation["section_player_ids"] = {
+            "MAIN": [pid for pid, _ in main_entries],
+            "QUAL": [pid for pid, _ in qual_entries],
+        }
+        combined_singles = (
+            qual_entries
+            and jsonld_state.get("qualifying_count") is None
+            and jsonld_state.get("singles_count") == len(main_entries) + len(qual_entries)
+        )
         observation["complete_sections"] = [
             section for section, entries, count in (
                 ("MAIN", main_entries, jsonld_state.get("singles_count")),
                 ("QUAL", qual_entries, jsonld_state.get("qualifying_count")),
-            ) if entries and (count is None or count == len(entries))
+            ) if entries and (count is None or count == len(entries) or combined_singles)
         ]
 
     suffix_map = dict.fromkeys(main_draw_names, "")

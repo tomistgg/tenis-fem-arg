@@ -24,6 +24,7 @@ from http_client import get_with_retry
 from itf import ITF_BASE_URL, ITF_CALENDAR_PAGE_URL
 from itf import _is_cancelled_itf_calendar_item as _is_cancelled_tournament
 from itf_drawsheet_cache import (
+    drawsheet_is_complete,
     get_cached_drawsheet,
     save_drawsheet,
     tournament_draw_codes_with_definitive_no_nationality,
@@ -714,19 +715,17 @@ def fetch_tournament_draw_data(
     """
     tournament_id = int(tournament_id)
 
-    # Completed draw types may use stale raw data forever: their payload cannot
+    # Completed draw types may use retained stale raw data: their payload cannot
     # change again. Other types retain the normal freshness policy.
     skip_live_codes = set(skip_live_codes or ())
-    cached_results = {
-        code: get_cached_drawsheet(
-            tournament_id,
-            code,
-            week_number,
-            allow_stale=code in skip_live_codes,
+    cached_results = {}
+    for code in codes:
+        stale = get_cached_drawsheet(tournament_id, code, week_number, allow_stale=True)
+        cached = stale if code in skip_live_codes or drawsheet_is_complete(stale) else get_cached_drawsheet(
+            tournament_id, code, week_number
         )
-        for code in codes
-    }
-    cached_results = {code: payload for code, payload in cached_results.items() if payload is not None}
+        if cached is not None:
+            cached_results[code] = cached
     live_codes = [code for code in codes if code not in cached_results and code not in skip_live_codes]
     if not live_codes:
         return cached_results

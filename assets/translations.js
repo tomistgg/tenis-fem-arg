@@ -239,7 +239,6 @@ window.WTARG_TRANSLATIONS = {
         "(Harmonic Mean): Weighted toward top-ranked players. Reflects star power in the draw.": "(Media armónica): Da más peso a las jugadoras mejor clasificadas. Refleja la presencia de figuras en el cuadro.",
         "Draw quality measured by player's WTN.": "Calidad del cuadro medida por el WTN de las jugadoras.",
         "New change": "Nuevo cambio",
-        "Now using WTN instead of rankings to better reflect junior, collegiate, and other players whose rankings understate their level.": "Ahora usamos WTN en lugar de los rankings para reflejar mejor a las jugadoras juveniles, universitarias y otras cuyo ranking subestima su nivel.",
         "January": "Enero",
         "February": "Febrero",
         "March": "Marzo",

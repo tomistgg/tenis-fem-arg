@@ -68,20 +68,33 @@ def record_wta_withdrawals(state, key, previous, current, observation, observed_
     if not sections:
         return
     active_ids = set(observation.get("player_ids", []))
-    active_names = {_name_key(p) for p in current}
+    section_ids = {
+        section: set(ids)
+        for section, ids in observation.get("section_player_ids", {}).items()
+    }
+    active_names = {
+        section: {_name_key(p) for p in current if p.get("type") == section}
+        for section in WITHDRAWAL_DRAW_TYPES
+    }
 
-    def is_present(player):
-        return str(player.get("player_id") or "") in active_ids or _name_key(player) in active_names
+    def is_present(player, section):
+        ids = section_ids.get(section, active_ids)
+        return str(player.get("player_id") or "") in ids or _name_key(player) in active_names[section]
+
+    def is_active(player):
+        return is_present(player, "MAIN") or (
+            player.get("type") == "QUAL" and is_present(player, "QUAL")
+        )
 
     records = {
         _player_key(p): p
         for p in tournament["withdrawals"]
-        if p.get("type") in WITHDRAWAL_DRAW_TYPES and not is_present(p)
+        if p.get("type") in WITHDRAWAL_DRAW_TYPES and not is_active(p)
     }
     # Keep the last trusted roster even if an intervening partial response
     # changed the regular entry cache. That response must not erase history.
     for player in last_seen.values():
-        if player.get("type") in sections and not is_present(player):
+        if player.get("type") in sections and not is_active(player):
             records.setdefault(_player_key(player), {**_snapshot(player), "date": observed_date})
     for player in _real_players(current):
         if player.get("type") in sections:

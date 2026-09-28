@@ -154,6 +154,28 @@ def _drawsheet_nationality_status(data, nationality):
     return published, present
 
 
+def drawsheet_is_complete(data):
+    """Return whether every knockout group has a decided final round."""
+    groups = data.get("koGroups") if isinstance(data, dict) else None
+    if not groups:
+        return False
+    for group in groups:
+        rounds = group.get("rounds") if isinstance(group, dict) else None
+        if not rounds:
+            return False
+        matches = rounds[-1].get("matches") if isinstance(rounds[-1], dict) else None
+        if not matches or any(
+            not isinstance(match, dict)
+            or not any(
+                isinstance(team, dict) and team.get("isWinner") is True
+                for team in match.get("teams") or []
+            )
+            for match in matches
+        ):
+            return False
+    return True
+
+
 def tournament_draw_codes_with_definitive_no_nationality(
     tournament_ids,
     nationality="ARG",
