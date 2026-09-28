@@ -544,10 +544,10 @@
       {
         "draw_size": 32,
         "players": [
-          {"pos": 1, "seed": "1", "name": "BHATIA, Diva", "country": "IND"},
+          {"pos": 1, "seed": "1", "name": "BHATIA, Diva", "country": "IND", "wtn": "18.45"},
           {"pos": 4, "name": "PAWELEK PISCOPO, Iara", "country": "ARG", "wtn": "27.20"},
           {"pos": 5, "seed": "2", "name": "TARANTOLA, Agustina", "country": "ARG", "wtn": "18.52"},
-          {"pos": 8, "name": "SARRIA MONDRAGON, Maria Emma", "country": "COL"},
+          {"pos": 8, "name": "SARRIA MONDRAGON, Maria Emma", "country": "COL", "wtn": "23.62"},
           {"pos": 9, "seed": "3", "name": "SFILIO, Tania", "country": "ARG", "wtn": "20.08"},
           {"pos": 12, "name": "BERTOLINI, Camila", "country": "ARG", "wtn": "27.03"},
           {"pos": 13, "seed": "4", "name": "DOLDAN, Zoe", "country": "PAR", "wtn": "17.93"},
@@ -556,7 +556,7 @@
           {"pos": 20, "name": "DA SILVA, Pilar", "country": "ARG", "wtn": "18.91"},
           {"pos": 21, "name": "MARTINEZ, Zaira Abigail", "country": "ARG", "wtn": "20.26"},
           {"pos": 24, "name": "MARINA, Guadalupe", "country": "ARG", "wtn": "25.16"},
-          {"pos": 25, "name": "ELLIOTT, Olivia", "country": "GBR"},
+          {"pos": 25, "name": "ELLIOTT, Olivia", "country": "GBR", "wtn": "20.2"},
           {"pos": 28, "name": "BAIER, Jazmin", "country": "ARG", "wtn": "27.21"},
           {"pos": 29, "entry": "WC", "name": "CORVALAN MITILLI, Amparo", "country": "ARG", "wtn": "21.76"},
           {"pos": 31, "name": "MARSILETTI, Ambra", "country": "ARG", "wtn": "20.46"},
@@ -602,19 +602,27 @@
         "players": [
           {"pos": 1, "seed": "1", "name": "SANCHEZ, Ana Sofia", "country": "MEX", "wtn": "12.68"},
           {"pos": 2, "name": "SOSA, Carola Celina", "country": "ARG", "wtn": "19.25"},
+          {"pos": 3, "entry": "Q", "name": "BAIER, Jazmin", "country": "ARG", "wtn": "27.21"},
           {"pos": 4, "name": "MORON, Florencia Belen", "country": "ARG", "wtn": "18.38"},
           {"pos": 5, "name": "KAWANO CHO, Gabriela", "country": "BRA", "wtn": "18.45"},
+          {"pos": 6, "entry": "Q", "name": "BHATIA, Diva", "country": "IND", "wtn": "18.45"},
           {"pos": 7, "name": "DUARTE, Agustina Daniela", "country": "ARG", "wtn": "17.64"},
           {"pos": 8, "seed": "5", "name": "AYALA, Lourdes", "country": "ARG", "wtn": "16.12"},
           {"pos": 9, "seed": "3", "name": "MOYANO, Luciana", "country": "ARG", "wtn": "14.80"},
           {"pos": 10, "name": "MARUCA, Melina Maria", "country": "ARG", "wtn": "18.00"},
           {"pos": 11, "name": "MEABE, Sofia", "country": "ARG", "wtn": "15.03"},
+          {"pos": 12, "entry": "Q", "name": "TARANTOLA, Agustina", "country": "ARG", "wtn": "18.52"},
+          {"pos": 13, "entry": "Q", "name": "DA SILVA, Pilar", "country": "ARG", "wtn": "18.91"},
           {"pos": 14, "name": "CARROCERA, Mora", "country": "ARG", "wtn": "17.63"},
+          {"pos": 15, "entry": "Q", "name": "SFILIO, Tania", "country": "ARG", "wtn": "20.08"},
           {"pos": 16, "seed": "8", "name": "BULBARELLA, Marina", "country": "ARG", "wtn": "17.57"},
           {"pos": 17, "seed": "7", "name": "BRITEZ RISSO, Leyla Fiorella", "country": "PAR", "wtn": "13.11"},
           {"pos": 18, "entry": "WC", "name": "LASSAGA, Justina", "country": "ARG", "wtn": "21.47"},
+          {"pos": 19, "entry": "Q", "name": "MARTINEZ, Zaira Abigail", "country": "ARG", "wtn": "20.26"},
           {"pos": 20, "entry": "WC", "name": "MADRID ROCCA, Maria Sofia", "country": "ARG", "wtn": "16.17"},
           {"pos": 21, "entry": "WC", "name": "JURADO, Rosario", "country": "ARG"},
+          {"pos": 22, "entry": "Q", "name": "ZINGG, Liv", "country": "GBR", "wtn": "15.88"},
+          {"pos": 23, "entry": "Q", "name": "DOLDAN, Zoe", "country": "PAR", "wtn": "17.93"},
           {"pos": 24, "seed": "4", "name": "CINALLI, Luna Maria", "country": "ARG", "wtn": "14.36"},
           {"pos": 25, "seed": "6", "name": "SOUSA SALAZAR, Natalia", "country": "MEX", "wtn": "17.49"},
           {"pos": 26, "name": "ZORNADA, Emily", "country": "ARG", "wtn": "15.96"},
@@ -1015,6 +1023,59 @@
           {"pos": 29, "name": "LAHEY, Ashley", "country": "USA", "wtn": "12.06"},
           {"pos": 30, "name": "BARTEL, Karla", "country": "GER", "wtn": "15.62"},
           {"pos": 32, "seed": "2", "name": "LAM, Shannon", "country": "USA", "wtn": "13.67"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
+      }
+    }
+  },
+  "w-itf-usa-2026-044":
+  {
+    "meta":
+    {
+      "name": "W100 Templeton, CA",
+      "level": "W100",
+      "week": "Week of September 28",
+      "startDate": "2026-09-28T00:00:00",
+      "endDate": "2026-10-04T00:00:00",
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":false,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "MDS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "MARIA, Tatjana", "country": "GER", "wtn": "8.36"},
+          {"pos": 3, "name": "MA, Lea", "country": "USA", "wtn": "11.32"},
+          {"pos": 4, "entry": "WC", "name": "HU, Victoria", "country": "USA", "wtn": "12.66"},
+          {"pos": 5, "entry": "WC", "name": "RAPOLU, Malaika", "country": "USA", "wtn": "11.69"},
+          {"pos": 7, "entry": "WC", "name": "PENICKOVA, Annika", "country": "USA", "wtn": "12.10"},
+          {"pos": 8, "seed": "5", "name": "URHOBO, Akasha", "country": "USA", "wtn": "10.39"},
+          {"pos": 9, "seed": "4", "name": "CROSS, Kayla", "country": "CAN", "wtn": "10.63"},
+          {"pos": 10, "name": "OSUIGWE, Whitney", "country": "USA", "wtn": "11.71"},
+          {"pos": 12, "name": "BROADUS, Savannah", "country": "USA", "wtn": "10.97"},
+          {"pos": 13, "entry": "SR", "name": "BRANSTINE, Carson", "country": "CAN", "wtn": "10.33"},
+          {"pos": 15, "entry": "JE", "name": "PENICKOVA, Kristina", "country": "USA", "wtn": "13.13"},
+          {"pos": 16, "seed": "6", "name": "SHYMANOVICH, Iryna", "country": "BLR", "wtn": "10.01"},
+          {"pos": 17, "seed": "8", "name": "BRENGLE, Madison", "country": "USA", "wtn": "11.10"},
+          {"pos": 18, "name": "XU, Mimi", "country": "GBR"},
+          {"pos": 19, "name": "KOIKE, Ena", "country": "JPN", "wtn": "12.17"},
+          {"pos": 21, "name": "ROGERS, Anna", "country": "USA", "wtn": "12.42"},
+          {"pos": 22, "name": "PACE, Francesca", "country": "ITA", "wtn": "11.54"},
+          {"pos": 24, "seed": "3", "name": "DAY, Kayla", "country": "USA", "wtn": "8.76"},
+          {"pos": 25, "seed": "7", "name": "DOLEHIDE, Caroline", "country": "USA", "wtn": "9.91"},
+          {"pos": 27, "name": "BOSIO, Victoria", "country": "ARG", "wtn": "12.84"},
+          {"pos": 29, "name": "PAREJA, Julieta", "country": "USA", "wtn": "9.45"},
+          {"pos": 30, "entry": "WC", "name": "FRODIN, Thea", "country": "USA"},
+          {"pos": 31, "name": "CHANG, Hanna", "country": "USA", "wtn": "10.67"},
+          {"pos": 32, "seed": "2", "name": "STOIANA, Mary", "country": "USA", "wtn": "9.23"}
         ],
         "round_labels": [
           "Round of 32",
