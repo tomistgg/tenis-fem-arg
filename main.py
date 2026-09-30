@@ -26,7 +26,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
-from ranking_publication import effective_wta_ranking_date
+from ranking_publication import accepted_ranking_dates, effective_wta_ranking_date, load_ranking_status
 from run_state import report_run_issue
 from runtime_logging import configure_logging, get_logger
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
@@ -818,6 +818,7 @@ def enrich_history_with_wta_ranks(cleaned_history, data_dir=None):
                         aliases_lookup[k].append(cn)
 
     csv_by_week = _load_wta_csv(source_data_dir) or {}
+    accepted_weeks = set(accepted_ranking_dates(csv_by_week, new_york_now(), load_ranking_status(source_data_dir)))
 
     def _is_itf_id(value):
         s = str(value or "").strip()
@@ -901,7 +902,7 @@ def enrich_history_with_wta_ranks(cleaned_history, data_dir=None):
         row["_winnerRank"] = ""
         row["_loserRank"] = ""
         week_date = get_previous_monday(row.get("DATE", ""))
-        if not week_date or week_date not in csv_by_week:
+        if week_date not in accepted_weeks:
             continue
         history_rows_by_week.setdefault(week_date, []).append(row)
 
@@ -1063,15 +1064,7 @@ def build_all_tournament_groups(driver):
 def fetch_arg_players():
     """Fetch WTA rankings and return ranked ARG players."""
     eastern_now = new_york_now()
-    ranking_status_file = os.path.join(DATA_DIR, "wta_ranking_refresh_status.json")
-    try:
-        with open(ranking_status_file, encoding="utf-8-sig") as source:
-            ranking_status = json.load(source)
-    except (OSError, UnicodeError, json.JSONDecodeError):
-        ranking_status = {}
-    if not isinstance(ranking_status, dict):
-        ranking_status = {}
-    ranking_monday = effective_wta_ranking_date(eastern_now, ranking_status).isoformat()
+    ranking_monday = effective_wta_ranking_date(eastern_now, load_ranking_status(DATA_DIR)).isoformat()
 
     all_wta_players, wta_status = get_wta_rankings_cached(ranking_monday, nationality=None, with_status=True)
     wta_players_arg = [

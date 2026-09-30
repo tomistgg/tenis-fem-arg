@@ -1,9 +1,13 @@
 import json
 import re
+from datetime import datetime
 from pathlib import Path
+
+import pytest
 
 import wta
 from html_generator import _write_wta_ranking_bundles
+from time_utils import NEW_YORK
 from wta import WtaRankingsCsvStore
 
 HEADER = "week_date,id,rank,points,player,country,dob\n"
@@ -176,3 +180,89 @@ def test_new_ranking_week_is_streamed_into_atomic_csv(tmp_path, monkeypatch):
     identities = json.loads(player_table.read_text(encoding="utf-8"))
     assert {row["wta_id"] for row in identities} == {"1", "2"}
     assert not list(tmp_path.glob("*.tmp"))
+
+
+@pytest.mark.parametrize(
+    "hour, status",
+    [(11, {}), (12, {"requested_date": "2026-07-27", "status": "pending_publication"})],
+)
+def test_cached_unaccepted_week_uses_previous_without_fetching(tmp_path, monkeypatch, hour, status):
+    path = tmp_path / "wta_rankings_20_29.csv"
+    _write_rankings(path, [
+        "2026-07-20,1,1,900,Previous Player,ARG,2000-01-01\n",
+        "2026-07-27,2,1,1000,Unaccepted Player,ARG,2001-01-01\n",
+    ])
+    (tmp_path / "wta_ranking_refresh_status.json").write_text(json.dumps(status), encoding="utf-8")
+    store = WtaRankingsCsvStore([path])
+    monkeypatch.setattr(wta, "WTA_RANKINGS_CSV", str(path))
+    monkeypatch.setattr(wta, "_load_wta_csv", lambda: store)
+    monkeypatch.setattr(wta, "new_york_now", lambda: datetime(2026, 7, 27, hour, 1, tzinfo=NEW_YORK))
+    monkeypatch.setattr(wta, "get_rankings", lambda *args, **kwargs: pytest.fail("Unaccepted week was fetched"))
+
+    players, freshness = wta.get_wta_rankings_cached("2026-07-27", with_status=True)
+
+    assert [player["Player"] for player in players] == ["PREVIOUS PLAYER"]
+    assert freshness["effectiveDate"] == "2026-07-20"
+    assert freshness["status"] == "stale"
+    assert store._overrides == {}
+
+
+def test_ranking_persistence_rejects_unaccepted_and_partial_current_week(tmp_path, monkeypatch):
+    path = tmp_path / "wta_rankings_20_29.csv"
+    aliases = tmp_path / "player_aliases_wta_itf.json"
+    _write_rankings(path, ["2026-07-20,1,1,900,Previous Player,ARG,2000-01-01\n"])
+    aliases.write_text("[]\n", encoding="utf-8")
+    before_csv, before_aliases = path.read_bytes(), aliases.read_bytes()
+    status_file = tmp_path / "wta_ranking_refresh_status.json"
+    small_response = [{
+        "Id": "2", "Rank": 1, "Points": 1000, "OfficialPlayer": "New Player",
+        "Country": "ARG", "DOB": "2001-01-01",
+    }]
+    synced = []
+    monkeypatch.setattr(wta, "WTA_RANKINGS_CSV", str(path))
+    monkeypatch.setattr(wta, "PLAYER_ALIASES_WTA_ITF_FILE", str(aliases))
+    monkeypatch.setattr(wta, "new_york_now", lambda: datetime(2026, 7, 27, 12, 1, tzinfo=NEW_YORK))
+    monkeypatch.setattr(wta, "sync_wta_players", lambda path, rows: synced.append(len(rows)))
+
+    status_file.write_text('{"requested_date":"2026-07-27","status":"pending_publication"}', encoding="utf-8")
+    assert not wta._save_wta_csv_date("2026-07-27", small_response)
+    status_file.write_text('{"requested_date":"2026-07-27","status":"confirmed_changed"}', encoding="utf-8")
+    assert not wta._save_wta_csv_date("2026-07-27", small_response)
+    assert path.read_bytes() == before_csv
+    assert aliases.read_bytes() == before_aliases
+    assert synced == []
+
+    full_response = [
+        {**small_response[0], "Id": str(number), "Rank": number}
+        for number in range(1, 1001)
+    ]
+    assert wta._save_wta_csv_date("2026-07-27", full_response)
+    assert synced == [1000]
+    assert path.read_text(encoding="utf-8").count("2026-07-27,") == 1000
+
+
+def test_rejected_partial_refresh_keeps_previous_accepted_week(tmp_path, monkeypatch):
+    path = tmp_path / "wta_rankings_20_29.csv"
+    _write_rankings(path, [
+        "2026-07-20,1,1,900,Previous Player,ARG,2000-01-01\n",
+        "2026-07-27,2,1,1000,Partial Player,ARG,2001-01-01\n",
+    ])
+    (tmp_path / "wta_ranking_refresh_status.json").write_text(
+        '{"requested_date":"2026-07-27","status":"confirmed_changed"}', encoding="utf-8"
+    )
+    before_csv = path.read_bytes()
+    store = WtaRankingsCsvStore([path])
+    monkeypatch.setattr(wta, "WTA_RANKINGS_CSV", str(path))
+    monkeypatch.setattr(wta, "_load_wta_csv", lambda: store)
+    monkeypatch.setattr(wta, "new_york_now", lambda: datetime(2026, 7, 27, 12, 1, tzinfo=NEW_YORK))
+    monkeypatch.setattr(
+        wta, "get_rankings",
+        lambda date_str: [{"Id": "2", "Rank": 1, "Points": 1000, "DOB": "2001-01-01"}],
+    )
+
+    players, freshness = wta.get_wta_rankings_cached("2026-07-27", with_status=True)
+
+    assert [player["Player"] for player in players] == ["PREVIOUS PLAYER"]
+    assert freshness["effectiveDate"] == "2026-07-20"
+    assert path.read_bytes() == before_csv
+    assert store._overrides == {}

@@ -184,9 +184,36 @@ def test_weekly_ranking_does_not_refetch_an_accepted_week(monkeypatch):
         raise AssertionError(f"Refetched already accepted week {date_str}")
 
     monkeypatch.setattr(weekly_ranking, "fetch_from_api", unexpected_fetch)
+    monkeypatch.setattr(weekly_ranking, "ranking_is_valid", lambda rows: True)
     monkeypatch.setattr(weekly_ranking, "rewrite_csv", lambda rows: None)
 
     weekly_ranking.main()
+
+
+def test_weekly_ranking_refetches_a_corrupt_accepted_week(monkeypatch):
+    previous_date = "2026-07-20"
+    current_date = "2026-07-27"
+    repaired = [ranking_row(current_date), ranking_row(current_date, player_id="2", rank="2")]
+    by_date = {
+        previous_date: [ranking_row(previous_date)],
+        current_date: [ranking_row(current_date)],
+    }
+    accepted = {"requested_date": current_date, "status": "confirmed_changed"}
+    fetched = []
+
+    monkeypatch.setattr(weekly_ranking, "load_csv_by_date", lambda: by_date)
+    monkeypatch.setattr(weekly_ranking, "load_status", lambda: accepted)
+    monkeypatch.setattr(weekly_ranking, "now_eastern", lambda: datetime(2026, 7, 28, 9, tzinfo=NEW_YORK))
+    monkeypatch.setattr(weekly_ranking, "ranking_is_valid", lambda rows: len(rows or []) > 1)
+    monkeypatch.setattr(weekly_ranking, "fetch_from_api", lambda date_str: fetched.append(date_str) or repaired)
+    monkeypatch.setattr(weekly_ranking, "sync_wta_players", lambda path, rows: 0)
+    monkeypatch.setattr(weekly_ranking, "save_status", lambda status: True)
+    monkeypatch.setattr(weekly_ranking, "rewrite_csv", lambda rows: None)
+
+    weekly_ranking.main()
+
+    assert fetched == [current_date]
+    assert by_date[current_date] == repaired
 
 
 def test_itf_natural_key_is_not_match_id_alone():

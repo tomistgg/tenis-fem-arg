@@ -12,8 +12,11 @@ from canonical_data import sync_wta_players
 from config import PLAYER_ALIASES_WTA_ITF_FILE, WTA_RANKINGS_CSV
 from pipeline_errors import PipelineError
 from ranking_publication import (
+    ACCEPTED_RANKING_STATUSES,
     PUBLICATION_CUTOFF_LABEL,
+    load_ranking_status,
     publication_window_is_open,
+    ranking_is_valid,
 )
 from run_state import report_run_issue
 from runtime_logging import get_logger
@@ -26,7 +29,6 @@ logger = get_logger("weekly-ranking")
 RANKINGS_CSV = WTA_RANKINGS_CSV
 CSV_FIELDNAMES = ["week_date", "id", "rank", "points", "player", "country", "dob"]
 RANKING_SIGNATURE_FIELDS = ("id", "rank", "points")
-MIN_CURRENT_WEEK_ROWS = 1000
 RANKING_STATUS_FILE = os.path.join(os.path.dirname(RANKINGS_CSV), "wta_ranking_refresh_status.json")
 
 
@@ -68,22 +70,8 @@ def ranking_signature(rows):
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
-def ranking_is_valid(rows):
-    """Reject empty/partial API responses before they can replace a ranking."""
-    if len(rows or []) < MIN_CURRENT_WEEK_ROWS:
-        return False
-    ranks = {str(row.get("rank") or "").strip() for row in rows}
-    ids = [str(row.get("id") or "").strip() for row in rows]
-    return "1" in ranks and all(ids) and len(ids) == len(set(ids))
-
-
 def load_status():
-    try:
-        with open(RANKING_STATUS_FILE, encoding="utf-8") as f:
-            value = json.load(f)
-        return value if isinstance(value, dict) else {}
-    except (OSError, ValueError, TypeError):
-        return {}
+    return load_ranking_status(Path(RANKING_STATUS_FILE).parent)
 
 
 def save_status(status):
@@ -171,7 +159,8 @@ def main():
     # Once a ranking is accepted, do not hit the API again on every 2-hour run.
     status_is_accepted = (
         status_before.get("requested_date") == this_monday
-        and status_before.get("status") in {"confirmed_changed", "confirmed_frozen"}
+        and status_before.get("status") in ACCEPTED_RANKING_STATUSES
+        and ranking_is_valid(by_date.get(this_monday))
     )
     publication_is_open = publication_window_is_open(eastern_now)
 

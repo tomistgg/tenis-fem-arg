@@ -26,11 +26,12 @@ from config import (
 from entry_withdrawals import WITHDRAWALS_FILENAME, load_withdrawals, public_withdrawals
 from milestones import build_milestones_data
 from pipeline_errors import DataValidationError
+from ranking_publication import accepted_ranking_dates, load_ranking_status
 from run_state import report_run_issue
 from runtime_logging import get_logger
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
 from runtime_paths import SITE_ROOT as RUNTIME_SITE_ROOT
-from time_utils import madrid_today
+from time_utils import madrid_today, new_york_now
 from utils import (
     compact_tournament_name,
     compress_history_data,
@@ -1645,7 +1646,7 @@ def generate_html(
 
     # Build cascading year/month/day selects for ranking week picker
     _all_csv = _load_wta_csv(source_data_dir)
-    _all_dates = sorted(_all_csv)
+    _all_dates = sorted(accepted_ranking_dates(_all_csv, new_york_now(), load_ranking_status(source_data_dir)))
     _latest_date = _all_dates[-1] if _all_dates else ""
 
     _milestone_rankings = {
@@ -1654,9 +1655,9 @@ def generate_html(
                 **player,
                 "Player": _player_display_name(_ranking_display_name(player)),
             }
-            for player in rows
+            for player in _all_csv[week]
         ]
-        for week, rows in _all_csv.items()
+        for week in _all_dates
     }
     _current_arg_wta_names = {
         _player_display_name(_ranking_display_name(player))
