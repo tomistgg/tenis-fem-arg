@@ -143,11 +143,12 @@ jobs:
           echo "CHROMEDRIVER=${{ steps.chrome.outputs.chromedriver-path }}" >> "$GITHUB_ENV"
           echo "WTARG_REQUIRE_BROWSER_TESTS=1" >> "$GITHUB_ENV"
 
-      - name: Blocking data-quality gate before refresh
+      - name: Check data structure before refresh
         run: >-
           python data_quality.py validate
           --data-dir data
           --baseline-dir .quality-baseline/data
+          --allow-stale
           --report .quality-report.json
 
       - name: Ruff

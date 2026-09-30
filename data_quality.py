@@ -485,6 +485,8 @@ def _validate_freshness(
     data_dir: Path,
     policy: QualityPolicyModel,
     today: date,
+    *,
+    allow_stale: bool = False,
 ) -> dict[str, str]:
     observed: dict[str, str] = {}
     for filename, table_policy in policy.tables.items():
@@ -493,7 +495,7 @@ def _validate_freshness(
             continue
         latest = _latest_csv_date(data_dir / filename, freshness.column)
         age = (today - latest).days
-        if age > freshness.max_age_days or age < -freshness.future_tolerance_days:
+        if age < -freshness.future_tolerance_days or (not allow_stale and age > freshness.max_age_days):
             raise _quality_error(
                 "freshness",
                 f"{filename} latest {freshness.column} is {latest.isoformat()} (age {age} days)",
@@ -514,7 +516,7 @@ def _validate_freshness(
             raise _quality_error("freshness", f"cache fetchedAt metadata missing for {filename}")
         fetched_at = metadata.fetchedAt.astimezone(UTC)
         age_seconds = (now - fetched_at).total_seconds()
-        if age_seconds > max_age_days * 86400 or age_seconds < -2 * 86400:
+        if age_seconds < -2 * 86400 or (not allow_stale and age_seconds > max_age_days * 86400):
             raise _quality_error(
                 "freshness",
                 f"{filename} cache was fetched at {fetched_at.isoformat()}",
@@ -598,6 +600,7 @@ def run_data_quality_gate(
     baseline_dir: Path | str | None = None,
     policy_path: Path | str = DEFAULT_POLICY_PATH,
     today: date | None = None,
+    allow_stale: bool = False,
     site_root: Path | str | None = None,
     deploy_root: Path | str | None = None,
 ) -> dict[str, Any]:
@@ -631,7 +634,9 @@ def run_data_quality_gate(
         ) from exc
 
     comparisons = _validate_thresholds(resolved_data, resolved_baseline, policy, table_counts)
-    observed_freshness = _validate_freshness(resolved_data, policy, today or utc_now().date())
+    observed_freshness = _validate_freshness(
+        resolved_data, policy, today or utc_now().date(), allow_stale=allow_stale
+    )
     site = None
     if site_root is not None:
         site = validate_site_artifacts(
@@ -648,6 +653,7 @@ def run_data_quality_gate(
         "table_rows": table_counts,
         "canonical": canonical,
         "freshness": observed_freshness,
+        "freshness_enforced": not allow_stale,
         "thresholds": comparisons,
         "site": site,
     }
@@ -677,12 +683,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--site-root")
     parser.add_argument("--deploy-root")
     parser.add_argument("--report")
+    parser.add_argument("--allow-stale", action="store_true", help="Allow expired data while checking future dates")
     args = parser.parse_args(argv)
     try:
         report = run_data_quality_gate(
             args.data_dir,
             baseline_dir=args.baseline_dir,
             policy_path=args.policy,
+            allow_stale=args.allow_stale,
             site_root=args.site_root,
             deploy_root=args.deploy_root,
         )
