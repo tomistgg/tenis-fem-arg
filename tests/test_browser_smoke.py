@@ -229,6 +229,46 @@ def test_generated_site_loads_rankings_bundle_offline(offline_generated_site):
         driver.find_element(By.CSS_SELECTOR, '.home-btn').click()
         wait.until(lambda current: current.find_element(By.TAG_NAME, 'html').get_attribute('lang') == 'es')
 
+        malicious_name = '<img src=x onerror="window.injected=true">'
+        driver.execute_script(
+            "_renderRankingRows([{n: arguments[0], c: 'ARG', r: 1, pts: 100, d: '2000-01-01'}]);",
+            malicious_name,
+        )
+        ranking_body = driver.find_element(By.ID, 'rankings-body')
+        assert malicious_name.lower() in ranking_body.get_attribute('textContent').lower()
+        assert not ranking_body.find_elements(By.CSS_SELECTOR, 'img[src="x"]')
+
+        assert driver.execute_script('''
+            const menu = document.querySelector('#view-entrylists .entry-menu');
+            const item = document.createElement('div');
+            item.className = 'entry-menu-item';
+            item.dataset.key = 'fixture';
+            item.textContent = 'Fixture';
+            menu.append(item);
+            try {
+                item.click();
+                return item.classList.contains('active');
+            } finally {
+                item.remove();
+            }
+        ''')
+
+        assert driver.execute_script('''
+            _historyCurrentPage = 2;
+            const calls = [];
+            const render = _renderHistoryPage;
+            _renderHistoryPage = page => calls.push(page);
+            try {
+                _updateHistoryPagination(2001, 2, 3);
+                const [prev, next] = document.querySelectorAll('#history-pagination .history-page-btn');
+                prev.click();
+                next.click();
+                return calls;
+            } finally {
+                _renderHistoryPage = render;
+            }
+        ''') == [1, 3]
+
         messages = "\n".join(entry["message"] for entry in driver.get_log("browser"))
         assert "Uncaught" not in messages
     finally:

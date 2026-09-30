@@ -430,8 +430,9 @@
             function _rtgsTournamentLabel(t) {
                 const name = _formatTournName(t.tournament, t.category, t.matchType);
                 if (!name) return '';
-                if (!_rtgsIsLocked(t)) return name;
-                return `${name} <span class="rtgs-lock" title="Locked tournament" aria-label="Locked tournament">&#128274;&#65038;</span>`;
+                const safeName = escapeHtml(name);
+                if (!_rtgsIsLocked(t)) return safeName;
+                return `${safeName} <span class="rtgs-lock" title="Locked tournament" aria-label="Locked tournament">&#128274;&#65038;</span>`;
             }
 
             function _rtgsAppendCategories(parts, list) {
@@ -447,7 +448,7 @@
                     if (!rows.length) return;
                     parts.push(`<tr class="roadtogs-category-separator"><td colspan="5">${_rtgsCategoryLabel(key)}</td></tr>`);
                     rows.forEach(t => {
-                        parts.push(`<tr><td>${t.date}</td><td>${_rtgsTournamentLabel(t)}</td><td>${t.roundDisplay}</td><td>${t.points}</td><td${_rtgsDropClass(t.dropDate)}>${t.dropDate}</td></tr>`);
+                        parts.push(`<tr><td>${escapeHtml(t.date)}</td><td>${_rtgsTournamentLabel(t)}</td><td>${escapeHtml(t.roundDisplay)}</td><td>${escapeHtml(t.points)}</td><td${_rtgsDropClass(t.dropDate)}>${escapeHtml(t.dropDate)}</td></tr>`);
                     });
                 });
             }
@@ -462,7 +463,7 @@
                 if (includeNonCountable && breakdown.nonCountable.length) {
                     parts.push('<tr class="roadtogs-separator"><td colspan="5">NON-COUNTABLE TOURNAMENTS</td></tr>');
                     breakdown.nonCountable.forEach(t => {
-                        parts.push(`<tr><td>${t.date}</td><td>${_rtgsTournamentLabel(t)}</td><td>${t.roundDisplay}</td><td>${t.points}</td><td${_rtgsDropClass(t.dropDate)}>${t.dropDate}</td></tr>`);
+                        parts.push(`<tr><td>${escapeHtml(t.date)}</td><td>${_rtgsTournamentLabel(t)}</td><td>${escapeHtml(t.roundDisplay)}</td><td>${escapeHtml(t.points)}</td><td${_rtgsDropClass(t.dropDate)}>${escapeHtml(t.dropDate)}</td></tr>`);
                     });
                 }
                 tbody.innerHTML = parts.join('');

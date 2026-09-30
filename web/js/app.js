@@ -704,16 +704,18 @@
             const _iocToIso2 = {AFG:'af',ALB:'al',ALG:'dz',AND:'ad',ANG:'ao',ARG:'ar',ARM:'am',ASA:'as',AUS:'au',AUT:'at',AZE:'az',BAH:'bs',BAR:'bb',BDI:'bi',BEL:'be',BEN:'bj',BIH:'ba',BLR:'by',BOL:'bo',BOT:'bw',BRA:'br',BUL:'bg',CAL:'nc',CAM:'kh',CAN:'ca',CHE:'ch',CHI:'cl',CHL:'cl',CHN:'cn',CIV:'ci',CMR:'cm',COD:'cd',COL:'co',CRC:'cr',CRO:'hr',CUB:'cu',CUW:'cw',CYP:'cy',CZE:'cz',CZS:'cz',DEN:'dk',DOM:'do',DZA:'dz',ECU:'ec',EGY:'eg',ERI:'er',ESA:'sv',ESP:'es',EST:'ee',FIJ:'fj',FIN:'fi',FRA:'fr',FRG:'de',GAB:'ga',GBR:'gb',GEO:'ge',GER:'de',GHA:'gh',GLP:'gp',GRB:'gb',GRE:'gr',GRC:'gr',GUA:'gt',HAI:'ht',HKG:'hk',HON:'hn',HRV:'hr',HUN:'hu',INA:'id',IND:'in',IRI:'ir',IRL:'ie',IRN:'ir',ISR:'il',ITA:'it',JAM:'jm',JOR:'jo',JPN:'jp',KAZ:'kz',KEN:'ke',KGZ:'kg',KHM:'kh',KOR:'kr',KOS:'xk',KSA:'sa',LAO:'la',LAT:'lv',LIE:'li',LTU:'lt',LUX:'lu',MAD:'mg',MAR:'ma',MAS:'my',MDA:'md',MEX:'mx',MKD:'mk',MLI:'ml',MLT:'mt',MNE:'me',MON:'mc',MRI:'mu',MOZ:'mz',NAM:'na',NCA:'ni',NCD:'nc',NED:'nl',NEP:'np',NET:'nl',NGA:'ng',NGR:'ng',NOR:'no',NZL:'nz',OMA:'om',OMN:'om',PAK:'pk',PAN:'pa',PAR:'py',PER:'pe',PHI:'ph',PLE:'ps',PNG:'pg',POL:'pl',POR:'pt',PRT:'pt',PUR:'pr',QAT:'qa',ROC:'ru',ROM:'ro',ROU:'ro',RSA:'za',RUS:'ru',SAF:'za',SAM:'ws',SEN:'sn',SGP:'sg',SIN:'sg',SLO:'si',SMR:'sm',SRB:'rs',SRI:'lk',SUI:'ch',SVK:'sk',SWE:'se',SYR:'sy',TCH:'cz',THA:'th',TKM:'tm',TOG:'tg',TPE:'tw',TRI:'tt',TTO:'tt',TUN:'tn',TUR:'tr',UAE:'ae',UKR:'ua',URU:'uy',USA:'us',UZB:'uz',VEN:'ve',VIE:'vn',XKX:'xk',ZAM:'zm',ZIM:'zw'};
             const _localFlags = new Set(['AHO','YUG','SCG','CIS','URS']);
             function countryFlag(code, showCode) {
-                if (!code || code === '-') return code || '';
-                const upper = code.toUpperCase();
+                if (!code || code === '-') return escapeHtml(code || '');
+                const rawCode = String(code);
+                const upper = rawCode.toUpperCase();
+                const safeCode = escapeHtml(rawCode);
                 if (_localFlags.has(upper)) {
-                    const img = `<img src="data/flags/${upper.toLowerCase()}.svg" alt="${code}" title="${code}" style="display:inline-block;box-sizing:border-box;vertical-align:middle;margin-right:3px;width:18px;height:13px;border:0.5px solid #000;transform:translateY(-1px)">`;
-                    return showCode === false ? img : img + code;
+                    const img = `<img src="data/flags/${upper.toLowerCase()}.svg" alt="${safeCode}" title="${safeCode}" style="display:inline-block;box-sizing:border-box;vertical-align:middle;margin-right:3px;width:18px;height:13px;border:0.5px solid #000;transform:translateY(-1px)">`;
+                    return showCode === false ? img : img + safeCode;
                 }
                 const iso = _iocToIso2[upper];
-                if (!iso) return code;
-                const img = `<img src="https://purecatamphetamine.github.io/country-flag-icons/3x2/${iso.toUpperCase()}.svg" alt="${code}" title="${code}" style="display:inline-block;box-sizing:border-box;vertical-align:middle;margin-right:3px;width:18px;height:13px;border:0.5px solid #000;transform:translateY(-1px)">`;
-                return showCode === false ? img : img + code;
+                if (!iso) return safeCode;
+                const img = `<img src="https://purecatamphetamine.github.io/country-flag-icons/3x2/${iso.toUpperCase()}.svg" alt="${safeCode}" title="${safeCode}" style="display:inline-block;box-sizing:border-box;vertical-align:middle;margin-right:3px;width:18px;height:13px;border:0.5px solid #000;transform:translateY(-1px)">`;
+                return showCode === false ? img : img + safeCode;
             }
             function countryFlagHistory(code, showCode) {
                 const html = countryFlag(code, showCode);
@@ -953,7 +955,7 @@
             }
             function _milestonesCell(items) {
                 if (!Array.isArray(items) || !items.length) return '<span class="text-muted">—</span>';
-                return items.map(item => `<div class="milestones-achiever"><span class="milestones-position">${item.position}-</span> ${escapeHtml(item.name)} <span class="milestones-date">(${escapeHtml(item.date)})</span></div>`).join('');
+                return items.map(item => `<div class="milestones-achiever"><span class="milestones-position">${escapeHtml(item.position)}-</span> ${escapeHtml(item.name)} <span class="milestones-date">(${escapeHtml(item.date)})</span></div>`).join('');
             }
 
             function _milestonesRenderHistorical() {
@@ -962,7 +964,7 @@
                 const metricSelect = document.getElementById('milestones-historical-metric');
                 const metric = metricSelect ? metricSelect.value : 'ranked';
                 const rows = (window.WTARG_DATA.milestones || {}).historical || [];
-                tbody.innerHTML = rows.map(row => `<tr><th scope="row">${row.year}</th><td>${_milestonesCell(row[metric])}</td></tr>`).join('');
+                tbody.innerHTML = rows.map(row => `<tr><th scope="row">${escapeHtml(row.year)}</th><td>${_milestonesCell(row[metric])}</td></tr>`).join('');
             }
 
             function _milestonesRenderPointRows(tbody, rows, emptyMessage, includeDropDate = true) {
@@ -974,7 +976,7 @@
                 }
                 tbody.innerHTML = rows.map(row => {
                     const dropDateCell = includeDropDate ? `<td>${escapeHtml(row.dropDate)}</td>` : '';
-                    return `<tr><td>${escapeHtml(row.date)}</td><td>${escapeHtml(row.tournament)}</td><td>${escapeHtml(row.round)}</td><td>${row.points}</td>${dropDateCell}</tr>`;
+                    return `<tr><td>${escapeHtml(row.date)}</td><td>${escapeHtml(row.tournament)}</td><td>${escapeHtml(row.round)}</td><td>${escapeHtml(row.points)}</td>${dropDateCell}</tr>`;
                 }).join('');
             }
 
@@ -1345,12 +1347,12 @@
 
             function buildHistoryPlayerCell(rank, country, seed, entry, name) {
                 const rankText = String(rank || '').trim();
-                const rankHtml = rankText && rankText !== '-' ? `#${rankText}` : '';
+                const rankHtml = rankText && rankText !== '-' ? `#${escapeHtml(rankText)}` : '';
                 const countryText = String(country || '').trim();
                 const flagHtml = countryText && countryText !== '-' ? countryFlagHistory(countryText, false) : '';
                 return `<span class="history-player-cell"><span class="history-player-rank">${rankHtml}</span>${
                     flagHtml ? `<span class="history-player-flag">${flagHtml}</span>` : ''
-                }<span class="history-player-name">${buildPrefix(seed, entry) + name}</span></span>`;
+                }<span class="history-player-name">${escapeHtml(buildPrefix(seed, entry) + name)}</span></span>`;
             }
 
             const _drItfDrawLookup = {};
@@ -1731,7 +1733,7 @@
                 players.forEach(p => {
                     const dob = (p.d || '').split('T')[0];
                     const name = (p.n || '').toLowerCase().replace(/(^|\s)(\S)/g, (_, b, c) => b + c.toUpperCase());
-                    html += `<tr data-country="${(p.c||'').toUpperCase()}"><td>${p.r || ''}</td><td style="text-align:left;font-weight:bold;">${countryFlag(p.c || '', false)} ${name}</td><td>${p.pts || ''}</td><td>${dob}</td></tr>`;
+                    html += `<tr data-country="${escapeHtml((p.c||'').toUpperCase())}"><td>${escapeHtml(p.r || '')}</td><td style="text-align:left;font-weight:bold;">${countryFlag(p.c || '', false)} ${escapeHtml(name)}</td><td>${escapeHtml(p.pts || '')}</td><td>${escapeHtml(dob)}</td></tr>`;
                 });
                 tbody.innerHTML = html;
                 filterRankings();
@@ -2131,6 +2133,10 @@
                 const nameEl = el.querySelector('.entry-menu-name');
                 updateEntryList(el.getAttribute('data-key'), nameEl ? nameEl.textContent : el.textContent);
             }
+            document.querySelector('#view-entrylists .entry-menu')?.addEventListener('click', event => {
+                const item = event.target.closest('.entry-menu-item');
+                if (item) selectEntryTournament(item);
+            });
 
 
 
@@ -2203,7 +2209,7 @@
             }
 
             function renderRows(list, isMain, isITF, renumber, showSeed, seedMap = null) {
-                const prioCell = p => isITF ? `<td class="entry-pr-col">${p.priority||''}</td>` : '';
+                const prioCell = p => isITF ? `<td class="entry-pr-col">${escapeHtml(p.priority||'')}</td>` : '';
                 const seedCell = p => {
                     if (!showSeed) return '';
                     if (seedMap && seedMap.has(p)) return `<td class="entry-seed-col">${seedMap.get(p)}</td>`;
@@ -2215,8 +2221,8 @@
                     const bold = isMain ? 'font-weight:bold;' : '';
                     const flag = (p.country && p.country !== '-') ? countryFlag(p.country, false) + ' ' : '';
                     const nameDisplay = p.name.startsWith('(') ? p.name : getDisplayName(p.name.toUpperCase());
-                    const wtnCell = _entryWtnVisible ? `<td class="entry-wtn-col">${entryWtnDisplay(p)}</td>` : '';
-                    html += `<tr><td class="entry-pos-col">${displayPos}</td><td class="entry-player-col" style="text-align:left;${bold}">${flag}${nameDisplay}</td>${seedCell(p)}${wtnCell}<td class="entry-rank-col">${entryRankDisplay(p)}</td>${prioCell(p)}</tr>`;
+                    const wtnCell = _entryWtnVisible ? `<td class="entry-wtn-col">${escapeHtml(entryWtnDisplay(p))}</td>` : '';
+                    html += `<tr><td class="entry-pos-col">${escapeHtml(displayPos)}</td><td class="entry-player-col" style="text-align:left;${bold}">${flag}${escapeHtml(nameDisplay)}</td>${seedCell(p)}${wtnCell}<td class="entry-rank-col">${escapeHtml(entryRankDisplay(p))}</td>${prioCell(p)}</tr>`;
                 });
                 return html;
             }
@@ -2727,7 +2733,7 @@
                 }
 
                 tbody.innerHTML = activePlayers.map(player => (
-                    `<tr><td>${escapeHtml(player.name)}</td><td>${player.wins}</td></tr>`
+                    `<tr><td>${escapeHtml(player.name)}</td><td>${escapeHtml(player.wins)}</td></tr>`
                 )).join('');
             }
 
@@ -3417,12 +3423,12 @@
 
                     const displayTournament = _formatTournName(row['TOURNAMENT'] || '', row['CATEGORY'] || '', getRowMatchType(row));
 
-                    parts.push('<tr><td>', formatDate(row['DATE'] || ''),
-                        '</td><td>', displayTournament,
-                        '</td><td>', row['SURFACE'] || '',
-                        '</td><td>', displayRound(row['ROUND'] || '', row['TOURNAMENT_ID'] || '', row['DATE'] || '', row['TOURNAMENT'] || '', row['CATEGORY'] || '', row['MATCH_TYPE'] || '', row['DRAW'] || ''),
+                    parts.push('<tr><td>', escapeHtml(formatDate(row['DATE'] || '')),
+                        '</td><td>', escapeHtml(displayTournament),
+                        '</td><td>', escapeHtml(row['SURFACE'] || ''),
+                        '</td><td>', escapeHtml(displayRound(row['ROUND'] || '', row['TOURNAMENT_ID'] || '', row['DATE'] || '', row['TOURNAMENT'] || '', row['CATEGORY'] || '', row['MATCH_TYPE'] || '', row['DRAW'] || '')),
                         '</td><td>', playerCell,
-                        '</td><td class="', scoreClass, '">', `<span class="score-badge">${scoreText}</span>`,
+                        '</td><td class="', scoreClass, '">', `<span class="score-badge">${escapeHtml(scoreText)}</span>`,
                         '</td><td>', opponentCell,
                         '</td></tr>');
                 }
@@ -3443,9 +3449,12 @@
                 const nextDisabled = currentPage === totalPages ? 'disabled' : '';
                 container.style.display = 'flex';
                 container.innerHTML =
-                    `<button class="history-page-btn" ${prevDisabled} onclick="_renderHistoryPage(_historyCurrentPage - 1)">&#9664; Prev</button>` +
+                    `<button class="history-page-btn" ${prevDisabled}>&#9664; Prev</button>` +
                     `<span>${start}-${end} of ${total}</span>` +
-                    `<button class="history-page-btn" ${nextDisabled} onclick="_renderHistoryPage(_historyCurrentPage + 1)">Next &#9654;</button>`;
+                    `<button class="history-page-btn" ${nextDisabled}>Next &#9654;</button>`;
+                const [prev, next] = container.querySelectorAll('.history-page-btn');
+                prev.addEventListener('click', () => _renderHistoryPage(_historyCurrentPage - 1));
+                next.addEventListener('click', () => _renderHistoryPage(_historyCurrentPage + 1));
             }
 
             async function filterHistoryByPlayer() {

@@ -8,6 +8,12 @@
                         var surfaceColors = {"Hard":"#0055ff88","Clay":"#ff550088","Grass":"#00bb3388","Carpet":"#aa00ff88"};
                         var regionColors = {"Europe":"#0055ff88","North America":"#ff111188","South America":"#00bb3388","Asia":"#ffaa0088","Oceania":"#aa00ff88","Middle East":"#ff660088","Africa":"#ff330088"};
 
+                        function tsEscapeHtml(value) {
+                            return String(value ?? '').replace(/[&<>"']/g, ch => ({
+                                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                            }[ch]));
+                        }
+
                         function tsGradient(val, minV, maxV) {
                             if (maxV <= minV) return '#f1f5f9';
                             var t = (val - minV) / (maxV - minV);
@@ -125,13 +131,13 @@
                                 var nameStr = cleanName(t.name);
                                 html += '<tr>';
                                 html += '<td class="ts-rank-num">' + (i + 1) + '</td>';
-                                html += '<td class="ts-gm" style="background:' + gmBg + '">' + t.gm + '</td>';
-                                html += '<td class="ts-hm" style="background:' + hmBg + '">' + t.hm + '</td>';
-                                html += '<td>' + dateStr + '</td>';
-                                html += '<td class="ts-name" style="background:' + sc + '">' + nameStr + '</td>';
-                                html += '<td style="background:' + lc + '">' + levelStr + '</td>';
-                                html += '<td style="background:' + rc + '">' + regionStr + '</td>';
-                                html += '<td>' + t.playerCount + '</td>';
+                                html += '<td class="ts-gm" style="background:' + gmBg + '">' + tsEscapeHtml(t.gm) + '</td>';
+                                html += '<td class="ts-hm" style="background:' + hmBg + '">' + tsEscapeHtml(t.hm) + '</td>';
+                                html += '<td>' + tsEscapeHtml(dateStr) + '</td>';
+                                html += '<td class="ts-name" style="background:' + sc + '">' + tsEscapeHtml(nameStr) + '</td>';
+                                html += '<td style="background:' + lc + '">' + tsEscapeHtml(levelStr) + '</td>';
+                                html += '<td style="background:' + rc + '">' + tsEscapeHtml(regionStr) + '</td>';
+                                html += '<td>' + tsEscapeHtml(t.playerCount) + '</td>';
                                 html += '</tr>';
                             }
                             tbody.innerHTML = html;

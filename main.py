@@ -373,7 +373,7 @@ def _remove_duplicate_entry_players(players, tournament_key, tournament_name):
 def _normalize_schedule_text(text):
     """Normalize a schedule label/cell for robust duplicate detection."""
     raw = str(text or "")
-    raw = re.sub(r"(?i)<br\\s*/?>", "\n", raw)
+    raw = re.sub(r"(?i)<br\s*/?>", "\n", raw)
     raw = raw.replace("</div>", "\n")
     raw = re.sub(r"<[^>]+>", "", raw)
     raw = html.unescape(raw)
@@ -386,10 +386,9 @@ def _schedule_cell_contains_label(cell_html, label):
     if not normalized_label:
         return False
     raw = str(cell_html or "")
-    raw = re.sub(r"(?i)<br\\s*/?>", "\n", raw)
+    raw = re.sub(r"(?i)<br\s*/?>", "\n", raw)
     raw = raw.replace("</div>", "\n")
     raw = re.sub(r"<[^>]+>", "", raw)
-    raw = html.unescape(raw)
     return any(_normalize_schedule_text(line) == normalized_label for line in raw.splitlines())
 
 
@@ -399,6 +398,7 @@ def _append_schedule_label(target_map, player_key, week_label, label, style="app
         return False
     weeks = target_map.setdefault(player_key, {})
     existing = weeks.get(week_label, "")
+    label = html.escape(str(label), quote=True)
     if _schedule_cell_contains_label(existing, label):
         return False
     if not existing:
@@ -1295,7 +1295,9 @@ def process_tournaments(
                 if not items:
                     continue
                 sorted_items = sorted(items, key=_itf_item_sort_key)
-                formatted = "<br>".join(f"{it['name']}{it['suffix']}" for it in sorted_items)
+                formatted = "<br>".join(
+                    html.escape(f"{it['name']}{it['suffix']}", quote=True) for it in sorted_items
+                )
                 if week_label in target_map[p_key] and target_map[p_key][week_label]:
                     target_map[p_key][week_label] += f"<br>{formatted}"
                 else:
