@@ -86,9 +86,15 @@ def test_shared_calendar_is_fetched_once_and_filtered_for_each_consumer(monkeypa
         "2026-12-31",
         component="wta",
     )
+    quiet_window = wta_calendar_cache.get_shared_wta_calendar(
+        "2026-09-01",
+        "2026-09-14",
+        component="wta-loader",
+    )
 
     assert [item["tournamentGroup"]["id"] for item in results_window] == [1, 2]
     assert [item["tournamentGroup"]["id"] for item in future_window] == [2, 3, 4]
+    assert quiet_window == []
     assert len(requests) == 1
     assert requests[0][0] == wta_calendar_cache.WTA_CALENDAR_URL
     assert requests[0][1]["params"] == {
@@ -168,6 +174,12 @@ def test_shared_range_expands_when_tournament_strength_needs_catch_up(monkeypatc
 def test_failed_calendar_refresh_is_not_retried_by_later_consumers(monkeypatch, tmp_path):
     cache_file = _isolate_cache(monkeypatch, tmp_path)
     requests = []
+    issues = []
+    monkeypatch.setattr(
+        wta_calendar_cache,
+        "report_run_issue",
+        lambda *args, **kwargs: issues.append(kwargs["severity"]),
+    )
 
     def blocked(*_args, **_kwargs):
         requests.append("attempt")
@@ -178,6 +190,7 @@ def test_failed_calendar_refresh_is_not_retried_by_later_consumers(monkeypatch, 
     assert wta_calendar_cache.get_shared_wta_calendar(component="wta-loader") == []
     assert wta_calendar_cache.get_shared_wta_calendar(component="tstrength") == []
     assert requests == ["attempt"]
+    assert issues == ["partial"]
     assert json.loads(cache_file.read_text(encoding="utf-8"))["lastAttemptRunId"] == "run-20260819"
 
 

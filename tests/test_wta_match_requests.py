@@ -1,14 +1,33 @@
+import runpy
 from datetime import date
 
 import draws
+import runtime_paths
 import tstrength
 import wta
+import wta_calendar_cache
 from populate_data import tournament_sizes_update, wta_load_new
 
 
 class _MatchesResponse:
     def json(self):
         return {"matches": []}
+
+
+def test_wta_loader_accepts_empty_tournament_window(monkeypatch, tmp_path):
+    calendar_requests = []
+    monkeypatch.setattr(runtime_paths, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(
+        wta_calendar_cache,
+        "get_shared_wta_calendar",
+        lambda *args, **kwargs: calendar_requests.append((args, kwargs)) or [],
+    )
+    monkeypatch.setenv("WTARG_TRANSACTION_ACTIVE", "1")
+
+    runpy.run_path(wta_load_new.__file__, run_name="__main__")
+
+    assert len(calendar_requests) == 1
+    assert not (tmp_path / "wta_matches_arg.csv").exists()
 
 
 def test_wta_results_loader_requests_completed_matches_only(monkeypatch):
