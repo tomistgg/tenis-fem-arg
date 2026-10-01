@@ -152,6 +152,7 @@ class RankingRefreshModel(BaseModel):
     status: str = Field(min_length=1)
     comparison: str = Field(min_length=1)
     cutoff: str = Field(min_length=1)
+    last_checked_at: AwareDatetime | None = None
     message: str = Field(min_length=1)
 
 

@@ -3,7 +3,7 @@ import hashlib
 import json
 import os
 import sys
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -30,6 +30,7 @@ RANKINGS_CSV = WTA_RANKINGS_CSV
 CSV_FIELDNAMES = ["week_date", "id", "rank", "points", "player", "country", "dob"]
 RANKING_SIGNATURE_FIELDS = ("id", "rank", "points")
 RANKING_STATUS_FILE = os.path.join(os.path.dirname(RANKINGS_CSV), "wta_ranking_refresh_status.json")
+MAX_RECHECK_ROW_DROP_FRACTION = 0.05
 
 
 def load_csv_by_date():
@@ -156,13 +157,27 @@ def main():
     status_before = load_status()
     needs_rewrite = False
 
-    # Once a ranking is accepted, do not hit the API again on every 2-hour run.
+    # Accepted rankings remain publishable while bounded follow-up checks run.
     status_is_accepted = (
         status_before.get("requested_date") == this_monday
         and status_before.get("status") in ACCEPTED_RANKING_STATUSES
         and ranking_is_valid(by_date.get(this_monday))
     )
     publication_is_open = publication_window_is_open(eastern_now)
+    try:
+        last_checked_at = datetime.fromisoformat(status_before.get("last_checked_at", ""))
+        if last_checked_at.tzinfo is None:
+            last_checked_at = None
+    except (TypeError, ValueError):
+        last_checked_at = None
+    daily_cutoff = eastern_now.replace(hour=12, minute=0, second=0, microsecond=0)
+    retry_due = (
+        status_is_accepted
+        and eastern_now.weekday() <= 4
+        and (status_before.get("status") == "confirmed_frozen" or eastern_now.weekday() == 4)
+        and eastern_now >= daily_cutoff
+        and (last_checked_at is None or last_checked_at < daily_cutoff)
+    )
 
     # --- Step 1: re-fetch CSV dates missing points/dob ---
     for date_str in sorted(by_date):
@@ -182,7 +197,7 @@ def main():
             needs_rewrite = True
 
     # --- Step 2: validate this week's ranking against last week ---
-    if not status_is_accepted:
+    if not status_is_accepted or retry_due:
         current_rows = by_date.get(this_monday) or []
         previous_rows = by_date.get(previous_monday) or []
 
@@ -208,6 +223,14 @@ def main():
             if rows and not ranking_is_valid(rows):
                 logger.warning(f"Rejected incomplete/invalid ranking response for {this_monday}.")
                 rows = []
+            if rows and status_is_accepted and len(rows) < len(current_rows) * (1 - MAX_RECHECK_ROW_DROP_FRACTION):
+                logger.warning(
+                    "Rejected ranking recheck for %s: only %d of %d accepted rows returned.",
+                    this_monday,
+                    len(rows),
+                    len(current_rows),
+                )
+                rows = []
 
             if rows:
                 added = sync_wta_players(Path(PLAYER_ALIASES_WTA_ITF_FILE), rows)
@@ -224,13 +247,18 @@ def main():
                     "status": new_status,
                     "comparison": "same_as_previous_week" if same_as_previous else "different_from_previous_week",
                     "cutoff": PUBLICATION_CUTOFF_LABEL,
+                    "last_checked_at": eastern_now.isoformat(),
                     "message": (
-                        "Ranking accepted as a frozen week after the publication cutoff."
+                        "Ranking unchanged after the publication cutoff."
                         if same_as_previous
                         else "New WTA ranking accepted after the publication cutoff."
                     ),
                 }
                 logger.info(status["message"])
+            elif status_is_accepted:
+                # A failed recheck must not retract an already accepted week.
+                status = status_before
+                logger.warning("Ranking recheck failed; retaining the accepted week and retrying later.")
             else:
                 # A failed post-cutoff check is not an accepted update. Remove
                 # any unconfirmed current copy and retry on a later run.
@@ -251,7 +279,7 @@ def main():
                 logger.info(status["message"])
         save_status(status)
     else:
-        logger.debug(f"This week's ranking already accepted as {status_before.get('status')}.")
+        logger.debug(f"This week's ranking already accepted as {status_before.get('status')}; next check is not due.")
 
     # --- Step 3: check CSV is sorted ---
     if not needs_rewrite and not csv_is_sorted(by_date):
