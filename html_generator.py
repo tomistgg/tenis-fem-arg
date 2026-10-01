@@ -45,6 +45,7 @@ from utils import (
     expand_wta_calendar_cache,
     fix_encoding_keep_accents,
     format_player_name,
+    get_calendar_column,
     get_surface_class,
     get_tournament_sort_order,
     normalize_player_name,
@@ -143,6 +144,15 @@ def _schedule_tournament_base_name(entry):
         plain,
         flags=re.IGNORECASE,
     ).strip()
+
+
+def _schedule_position_suffix(entry):
+    """Show qualifying and alternate status without exposing alternate order."""
+    plain = unescape(re.sub(r"<[^>]+>", "", entry or "")).strip()
+    match = re.search(r"\s*\((Q|ALT(?:\s+[^)]+)?)\)\s*$", plain, flags=re.IGNORECASE)
+    if not match:
+        return ""
+    return " (Q)" if match.group(1).upper() == "Q" else " (A)"
 
 
 def _display_calendar_tournament_name(name):
@@ -1142,7 +1152,7 @@ def generate_html(
             return _normalize_entry_country(parts[2])
         return ""
 
-    schedule_country_by_week = {}
+    schedule_meta_by_week = {}
     for week, tourneys in (tournament_groups or {}).items():
         for t_key, t_info in tourneys.items():
             name = str(t_info.get("name", "") or "").strip()
@@ -1150,8 +1160,12 @@ def generate_html(
                 name = re.sub(r"\s+Qualifying\s*$", "", name, flags=re.IGNORECASE)
             name = compact_tournament_name(name).replace("Sharm ElSheikh", "Sharm ES")
             country = _entry_country_from_key(t_key, t_info)
-            if name and country:
-                schedule_country_by_week[(week, name.casefold())] = country
+            if name:
+                schedule_meta_by_week[(week, name.casefold())] = (
+                    country,
+                    t_info.get("surface", ""),
+                    t_info.get("level", ""),
+                )
 
     hidden_entry_list_keys = {str(key) for key in (entry_list_hidden_keys or ())}
 
@@ -1287,12 +1301,6 @@ def generate_html(
         for week_label in (re.sub(r"^Week of\s+", "", week, flags=re.IGNORECASE) for week in week_keys)
     )
 
-    def _schedule_flag(week, entry):
-        base = _schedule_tournament_base_name(entry).casefold()
-        country = schedule_country_by_week.get((week, base), "")
-        flag = country_flag_html(country, show_code=False) if country else ""
-        return f'<span class="schedule-tournament-flag">{flag}</span>' if flag else ""
-
     def get_sort_key(player_name):
         p = next(item for item in players_data if item["Player"] == player_name)
         rank = p["Rank"]
@@ -1319,14 +1327,35 @@ def generate_html(
                 if plain == "\u2014":
                     rendered_parts.append(entry)
                     continue
-                name = (
-                    f'<b class="schedule-tournament-name">{entry}</b>'
-                    if "(Q)" not in plain
-                    else f'<span class="schedule-tournament-name">{entry}</span>'
+                base = _schedule_tournament_base_name(entry)
+                country, surface, level = schedule_meta_by_week.get(
+                    (week, base.casefold()), ("", _name_to_surface.get(base.lower(), ""), "")
                 )
+                column_key = get_calendar_column(str(level or ""))
+                classes = get_surface_class(surface or _name_to_surface.get(base.lower(), ""))
+                if column_key in {"gs", "wta_tour", "wta_125"}:
+                    classes += " cal-tournament-bold"
+                if column_key in {"wta_tour", "wta_125"}:
+                    classes += " cal-tournament-wta"
+                flag = country_flag_html(country, show_code=False) if country else ""
+                flag_prefix = f"{flag} " if flag else ""
+                suffix = _schedule_position_suffix(entry)
+                category_match = re.match(r"^(WTA\s+(?:\d+|Finals)|W\d+|Grand Slam)\s+(.+)$", base, re.I)
+                label = f"{flag_prefix}{escape(base)}{suffix}"
+                if category_match:
+                    category, name = category_match.groups()
+                    classes += " schedule-tournament-split"
+                    status_html = (
+                        f'<span class="schedule-tournament-status">{suffix}</span>' if suffix else ""
+                    )
+                    label = (
+                        f'<span class="schedule-tournament-heading">{flag_prefix}{escape(category)}</span>'
+                        f'<span class="schedule-tournament-name"> {escape(name)}</span>'
+                        f'{status_html}'
+                    )
                 rendered_parts.append(
-                    f'<div class="schedule-tournament-item">'
-                    f'{_sched_dot(entry)}{_schedule_flag(week, entry)}{name}</div>'
+                    f'<span class="calendar-tournament {classes}">'
+                    f'{label}</span>'
                 )
             rendered = "".join(rendered_parts)
             row += f'<td class="col-week">{rendered}</td>'

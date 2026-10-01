@@ -716,12 +716,11 @@
             .col-rank { left: 0; width: 32px; min-width: 45px; max-width: 45px; }
             .col-name { left: 45px; width: 112px; min-width: 112px; max-width: 112px; text-align: left; font-weight: bold; }
             #view-upcoming .col-name { left: 0; text-align: center; }
-            #view-upcoming .schedule-tournament-item { display: flex; align-items: center; justify-content: center; gap: 4px; line-height: 1.3; }
-            #view-upcoming .schedule-tournament-item + .schedule-tournament-item { margin-top: 8px; }
-            #view-upcoming .schedule-tournament-item .tournament-surface-dot { margin-right: 0; flex: none; }
-            #view-upcoming .schedule-tournament-flag { display: inline-flex; align-items: center; flex: none; }
-            #view-upcoming .schedule-tournament-flag img { display: block; margin: 0 !important; }
-            #view-upcoming .schedule-tournament-name { min-width: 0; overflow-wrap: anywhere; }
+            #view-upcoming .calendar-tournament { white-space: normal; overflow: visible; overflow-wrap: anywhere; word-break: normal; text-overflow: clip; }
+            #view-upcoming .calendar-tournament.cal-tournament-bold { font-weight: 700 !important; }
+            @media (min-width: 769px) {
+                #view-upcoming .calendar-tournament { font-size: 10px; padding: 2px 6px; }
+            }
             .col-week { width: 150px; font-size: 11px; font-weight: bold; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }
             .divider-row td { background: var(--c-surface-sunk); font-weight: bold; text-align: center; padding: 5px 15px; font-size: 11px; border-right: none; }
             tr.hidden { display: none; }
@@ -1512,11 +1511,6 @@
                 #view-upcoming th { font-size: 6px; }
                 #view-upcoming th.col-week { font-size: 6px !important; }
                 #view-upcoming td.col-week, #view-upcoming .col-week { font-size: 5px; line-height: 1.6; }
-                #view-upcoming .tournament-surface-dot { width: 5px; height: 5px; margin-right: 2px; }
-                #view-upcoming .schedule-tournament-item { gap: 3px; }
-                #view-upcoming .schedule-tournament-item + .schedule-tournament-item { margin-top: 5px; }
-                #view-upcoming .schedule-tournament-flag img { width: 9px !important; height: 6px !important; }
-                #view-upcoming .schedule-tournament-name { transform: translateY(0.2px); }
                 #view-upcoming .col-name {
                     width: 62px !important;
                     min-width: 62px !important;
@@ -1531,6 +1525,11 @@
                     text-align: center;
                 }
                 #view-upcoming .col-week, #view-upcoming td.col-week { width: auto !important; min-width: 0 !important; max-width: none !important; }
+                #view-upcoming .calendar-tournament img { width: 13px !important; height: 9px !important; }
+                #view-upcoming .schedule-tournament-split { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: 1px; }
+                #view-upcoming .schedule-tournament-heading, #view-upcoming .schedule-tournament-status { white-space: nowrap; }
+                #view-upcoming .schedule-tournament-name { order: 2; flex: 0 0 100%; }
+                #view-upcoming .schedule-tournament-status { order: 1; }
 
                 /* Entry Lists: compact mode */
                 #view-entrylists table {
