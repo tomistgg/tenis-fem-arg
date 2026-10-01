@@ -3457,7 +3457,9 @@
                 next.addEventListener('click', () => _renderHistoryPage(_historyCurrentPage + 1));
             }
 
+            let _historyFilterRequestSeq = 0;
             async function filterHistoryByPlayer() {
+                const requestSeq = ++_historyFilterRequestSeq;
                 const selectedPlayer = getNormalizedPlayerSelection('playerHistorySelect');
                 const tbody = document.getElementById('history-body');
                 const displayColumns = ['DATE', 'TOURNAMENT', 'SURFACE', 'RND', 'PLAYER', 'SCORE', 'OPPONENT'];
@@ -3467,11 +3469,13 @@
                     try {
                         await ensureHistoryDataLoaded();
                     } catch (err) {
+                        if (requestSeq !== _historyFilterRequestSeq) return;
                         console.error('Failed to load match history:', err);
                         tbody.innerHTML = `<tr><td colspan="${displayColumns.length}" class="cell-state-error">Failed to load match history. Please refresh and try again.</td></tr>`;
                         updateHistoryCounter([], '__ALL__');
                         return;
                     }
+                    if (requestSeq !== _historyFilterRequestSeq) return;
                     const allFiltered = historyData.filter(row => !isDoublesHistoryRow(row));
                     if (allFiltered.length === 0) {
                         tbody.innerHTML = `<tr><td colspan="${displayColumns.length}" class="cell-state-error">No matches found.</td></tr>`;
@@ -3523,11 +3527,13 @@
                 try {
                     await ensureHistoryDataLoaded();
                 } catch (err) {
+                    if (requestSeq !== _historyFilterRequestSeq) return;
                     console.error('Failed to load match history:', err);
                     tbody.innerHTML = `<tr><td colspan="${displayColumns.length}" class="cell-state-error">Failed to load match history. Please refresh and try again.</td></tr>`;
                     updateHistoryCounter([], selectedPlayer);
                     return;
                 }
+                if (requestSeq !== _historyFilterRequestSeq) return;
 
                 const filtered = historyData.filter(row => {
                     if (isDoublesHistoryRow(row)) return false;

@@ -269,6 +269,75 @@ def test_generated_site_loads_rankings_bundle_offline(offline_generated_site):
             }
         ''') == [1, 3]
 
+        driver.get(f'http://127.0.0.1:{server.server_port}/app.html#history')
+        wait.until(expected_conditions.presence_of_element_located((By.ID, 'playerHistorySelect')))
+        race_results = driver.execute_async_script('''
+            const done = arguments[arguments.length - 1];
+            (async () => {
+                const originalLoader = ensureHistoryDataLoaded;
+                const originalHistory = historyData;
+                try {
+                    WTARG_I18N.setLanguage('en');
+                    const historySelect = document.getElementById('playerHistorySelect');
+                    const roadSelect = document.getElementById('roadtogsPlayerSelect');
+                    for (const select of [historySelect, roadSelect]) {
+                        select.add(new Option('Fixture Player', 'Fixture Player'));
+                    }
+                    if (!historySelect.querySelector('option[value="__ALL__"]')) {
+                        historySelect.add(new Option('All Players', '__ALL__'));
+                    }
+                    historyData = [];
+
+                    async function race(historyValue, rejectLoad) {
+                        let resolvePending, rejectPending;
+                        const pending = new Promise((resolve, reject) => {
+                            resolvePending = resolve;
+                            rejectPending = reject;
+                        });
+                        ensureHistoryDataLoaded = () => pending;
+                        $(historySelect).val(historyValue).trigger('change.select2');
+                        if (!getNormalizedPlayerSelection('playerHistorySelect')) {
+                            throw new Error('History test player was not selected');
+                        }
+                        const oldHistory = filterHistoryByPlayer();
+                        $(roadSelect).val('Fixture Player').trigger('change.select2');
+                        if (!getNormalizedPlayerSelection('roadtogsPlayerSelect')) {
+                            throw new Error('Points test player was not selected');
+                        }
+                        const oldRoad = renderRoadToGS();
+                        $(historySelect).val('').trigger('change.select2');
+                        const clearedHistory = filterHistoryByPlayer();
+                        $(roadSelect).val('').trigger('change.select2');
+                        const clearedRoad = renderRoadToGS();
+                        await Promise.all([clearedHistory, clearedRoad]);
+                        const snapshot = () => ({
+                            history: document.getElementById('history-body').textContent.trim(),
+                            road: document.getElementById('roadtogs-body').textContent.trim(),
+                            points: document.getElementById('roadtogs-points-total').textContent.trim()
+                        });
+                        const cleared = snapshot();
+                        if (rejectLoad) rejectPending(new Error('delayed history failure'));
+                        else resolvePending([]);
+                        await Promise.all([oldHistory, oldRoad]);
+                        return { cleared, afterLoad: snapshot() };
+                    }
+
+                    done({ success: await race('Fixture Player', false), failure: await race('__ALL__', true) });
+                } catch (error) {
+                    done({ error: String(error) });
+                } finally {
+                    ensureHistoryDataLoaded = originalLoader;
+                    historyData = originalHistory;
+                }
+            })();
+        ''')
+        assert 'error' not in race_results, race_results
+        for outcome in race_results.values():
+            assert outcome['cleared'] == outcome['afterLoad']
+            assert 'Select a player' in outcome['cleared']['history']
+            assert 'Select a player' in outcome['cleared']['road']
+            assert outcome['cleared']['points'] == 'Points: 0'
+
         messages = "\n".join(entry["message"] for entry in driver.get_log("browser"))
         assert "Uncaught" not in messages
     finally:

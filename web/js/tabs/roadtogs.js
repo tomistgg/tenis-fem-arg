@@ -492,7 +492,9 @@
                 }
             }
 
+            let _rtgsRenderRequestSeq = 0;
             async function renderRoadToGS() {
+                const requestSeq = ++_rtgsRenderRequestSeq;
                 const selectedPlayer = getNormalizedPlayerSelection('roadtogsPlayerSelect');
                 const tbody = document.getElementById('roadtogs-body');
 
@@ -508,6 +510,7 @@
                 try {
                     await ensureHistoryDataLoaded();
                 } catch (err) {
+                    if (requestSeq !== _rtgsRenderRequestSeq) return;
                     console.error('Failed to load match history:', err);
                     tbody.innerHTML = '<tr><td colspan="5" class="cell-state-error">Failed to load match history. Please refresh and try again.</td></tr>';
                     document.getElementById('roadtogs-points-total').textContent = 'Points: 0';
@@ -515,6 +518,7 @@
                     syncUrlStateForTab('roadtogs');
                     return;
                 }
+                if (requestSeq !== _rtgsRenderRequestSeq) return;
                 _rtgs_initLookups();
 
                 const selectedCutoff = _rtgsSelectedCutoff();
