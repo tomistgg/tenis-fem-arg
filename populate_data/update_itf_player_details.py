@@ -8,7 +8,7 @@ import json
 import os
 import sys
 import time
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +20,7 @@ import itf  # noqa: E402
 from lazy_browser import LazyBrowserSession  # noqa: E402
 from populate_data.itf_load_new import create_driver  # noqa: E402
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR  # noqa: E402
+from time_utils import utc_now  # noqa: E402
 from utils import (  # noqa: E402
     normalize_player_name,
     save_json_array_one_line_per_item,
@@ -142,7 +143,7 @@ def _retry_due(row: dict[str, Any], now: datetime) -> bool:
 def _unavailable_profile_row(
     player_id: str, fallback_name: str, previous: dict[str, Any] | None = None, now: datetime | None = None
 ) -> dict[str, Any]:
-    now = now or datetime.now(UTC)
+    now = now or utc_now()
     try:
         failures = max(0, int((previous or {}).get("consecutiveFailures", 0))) + 1
     except (TypeError, ValueError):
@@ -209,7 +210,7 @@ def main() -> None:
     existing = {player_id: row for player_id, row in existing.items() if player_id in roster_ids}
     print(f"Targeting {len(roster)} ARG players with matches on or after {MATCH_START_DATE}.", flush=True)
 
-    now = datetime.now(UTC)
+    now = utc_now()
     targets = [
         (name, player_id)
         for name, player_id in roster

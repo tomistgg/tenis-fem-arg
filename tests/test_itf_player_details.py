@@ -6,6 +6,7 @@ import pytest
 
 from populate_data import update_itf_player_details
 from run_state import initialize_run_state, load_run_state, report_run_issue
+from time_utils import utc_now
 
 
 def test_optional_profile_fetch_is_configured_as_a_degraded_warning(monkeypatch):
@@ -60,7 +61,7 @@ def test_profile_fetch_failure_warns_and_finishes_without_failing(monkeypatch, t
     assert profiles[0]["playerId"] == "800789876"
     assert profiles[0]["fetchStatus"] == "unavailable"
     assert profiles[0]["consecutiveFailures"] == 1
-    assert datetime.fromisoformat(profiles[0]["retryAfter"]) > datetime.now(UTC)
+    assert datetime.fromisoformat(profiles[0]["retryAfter"]) > utc_now()
 
 
 def test_unavailable_profiles_retry_when_due_without_refetching_successes(monkeypatch, tmp_path):
@@ -73,7 +74,7 @@ def test_unavailable_profiles_retry_when_due_without_refetching_successes(monkey
                     "playerId": "800000002",
                     "displayName": "Waiting",
                     "fetchStatus": "unavailable",
-                    "retryAfter": (datetime.now(UTC) + timedelta(days=2)).isoformat(),
+                    "retryAfter": (utc_now() + timedelta(days=2)).isoformat(),
                 },
                 {"playerId": "800000003", "displayName": "Complete", "birthYear": 2000},
             ]
