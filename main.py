@@ -56,7 +56,13 @@ from config import (
     resolve_player_display_name,
     resolve_player_presentation_name,
 )
-from draws import _draw_is_complete, fetch_itf_tournament_draws, fetch_tournament_draws, wta_draw_polling_open
+from draws import (
+    _draw_is_complete,
+    _wta_tournament_has_started,
+    fetch_itf_tournament_draws,
+    fetch_tournament_draws,
+    wta_draw_polling_open,
+)
 from entry_withdrawals import (
     WITHDRAWALS_FILENAME,
     load_withdrawals,
@@ -448,6 +454,27 @@ def _published_draw_has_content(draw_data):
     if not isinstance(draw_data, dict):
         return False
     return bool(draw_data.get("players"))
+
+
+def _report_wta_draw_fetch_failure(t_key, t_info, requested_types, cached_draws, fresh_draws, today, error=None):
+    """Report missing expected draws after the PDF and API fallbacks finish."""
+    cached_draws = cached_draws if isinstance(cached_draws, dict) else {}
+    fresh_draws = fresh_draws if isinstance(fresh_draws, dict) else {}
+    main_draw_due = _wta_tournament_has_started(t_info.get("startDate"), today=today)
+    missing_types = [
+        draw_type
+        for draw_type in requested_types
+        if ((draw_type == "MDS" and main_draw_due) or _published_draw_has_content(cached_draws.get(draw_type)))
+        and not _published_draw_has_content(fresh_draws.get(draw_type))
+    ]
+    if missing_types:
+        report_run_issue(
+            "wta-draws",
+            "fetch published draw",
+            error or RuntimeError(f"Expected published WTA draw unavailable: {', '.join(missing_types)}"),
+            severity="degraded",
+            context={"tournament_key": t_key, "draw_types": missing_types},
+        )
 
 
 def _keys_with_published_itf_draw(
@@ -2196,13 +2223,21 @@ def main():
     with ThreadPoolExecutor(max_workers=6) as pool:
         futures = {pool.submit(_fetch_wta_draw_job, job): job for job in wta_draw_jobs}
         for done, fut in enumerate(as_completed(futures), start=1):
+            week, t_key, t_info, requested_draw_types = futures[fut]
+            fetch_error = None
             try:
-                week, t_key, t_info, t_draws = fut.result()
+                _, _, _, t_draws = fut.result()
             except Exception as e:
-                week, t_key, t_info, _requested_draw_types = futures[fut]
                 t_draws = {}
+                fetch_error = e
                 logger.warning(f"  [!] WTA draw fetch failed for {t_info.get('name', '')}: {e}")
-            wta_draw_results[_canonical_draw_store_key(t_key)] = (week, t_key, t_info, t_draws)
+            store_key = _canonical_draw_store_key(t_key)
+            cached_entry = draws_store.get(store_key)
+            cached_draws = cached_entry.get("draws") if isinstance(cached_entry, dict) else {}
+            _report_wta_draw_fetch_failure(
+                t_key, t_info, requested_draw_types, cached_draws, t_draws, today.date(), fetch_error
+            )
+            wta_draw_results[store_key] = (week, t_key, t_info, t_draws)
             logger.debug(f"  WTA draw fetched ({done}/{total_wta_draws}): {t_info.get('name', '')}")
 
     for store_key, (week, _t_key, t_info, t_draws) in wta_draw_results.items():

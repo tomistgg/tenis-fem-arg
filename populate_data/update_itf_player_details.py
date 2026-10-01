@@ -8,6 +8,7 @@ import json
 import os
 import sys
 import time
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -128,7 +129,25 @@ def _profile_row(browser: LazyBrowserSession, player_id: str, fallback_name: str
     }
 
 
-def _unavailable_profile_row(player_id: str, fallback_name: str) -> dict[str, Any]:
+def _retry_due(row: dict[str, Any], now: datetime) -> bool:
+    if row.get("fetchStatus") != "unavailable":
+        return False
+    try:
+        retry_after = datetime.fromisoformat(str(row.get("retryAfter", "")))
+    except ValueError:
+        return True  # Old unavailable entries have no retry timestamp.
+    return retry_after.tzinfo is None or retry_after <= now
+
+
+def _unavailable_profile_row(
+    player_id: str, fallback_name: str, previous: dict[str, Any] | None = None, now: datetime | None = None
+) -> dict[str, Any]:
+    now = now or datetime.now(UTC)
+    try:
+        failures = max(0, int((previous or {}).get("consecutiveFailures", 0))) + 1
+    except (TypeError, ValueError):
+        failures = 1
+    retry_days = min(1 << min(failures - 1, 3), 7)
     return {
         "playerId": player_id,
         "displayName": fallback_name,
@@ -136,6 +155,8 @@ def _unavailable_profile_row(player_id: str, fallback_name: str) -> dict[str, An
         "playHand": "",
         "backHandStyle": "",
         "fetchStatus": "unavailable",
+        "consecutiveFailures": failures,
+        "retryAfter": (now + timedelta(days=retry_days)).isoformat(timespec="seconds"),
     }
 
 
@@ -188,16 +209,17 @@ def main() -> None:
     existing = {player_id: row for player_id, row in existing.items() if player_id in roster_ids}
     print(f"Targeting {len(roster)} ARG players with matches on or after {MATCH_START_DATE}.", flush=True)
 
+    now = datetime.now(UTC)
     targets = [
         (name, player_id)
         for name, player_id in roster
-        if player_id and (args.refresh or player_id not in existing)
+        if player_id and (args.refresh or player_id not in existing or _retry_due(existing[player_id], now))
     ]
     if args.limit > 0:
         targets = targets[: args.limit]
     if args.record_missing_unavailable:
         for name, player_id in targets:
-            existing[player_id] = _unavailable_profile_row(player_id, name)
+            existing[player_id] = _unavailable_profile_row(player_id, name, existing.get(player_id), now)
         _save_profiles(existing)
         print(
             f"Saved {len(existing)} ITF player profiles to {OUTPUT_PATH} "
@@ -215,7 +237,7 @@ def main() -> None:
             try:
                 existing[player_id] = _profile_row(browser, player_id, name)
             except (RuntimeError, ValueError) as exc:
-                existing[player_id] = _unavailable_profile_row(player_id, name)
+                existing[player_id] = _unavailable_profile_row(player_id, name, existing.get(player_id), now)
                 failures.append((name, player_id, str(exc)))
                 print(f"  Failed: {exc}", flush=True)
                 continue

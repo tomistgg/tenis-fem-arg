@@ -962,8 +962,10 @@ def render_email_markdown(report):
         or report.get("blocked_itf_responses")
         or any(
             isinstance(issue, dict)
-            and issue.get("component") == "itf-loader"
-            and issue.get("operation") == "fetch drawsheet"
+            and (
+                (issue.get("component") == "itf-loader" and issue.get("operation") == "fetch drawsheet")
+                or (issue.get("component") == "wta-draws" and issue.get("operation") == "fetch published draw")
+            )
             for issue in (run_status.get("issues") or [])
         )
     )
@@ -1000,11 +1002,14 @@ def render_email_markdown(report):
         lines.append("## Tournament draws that may be out of date")
         if status_name in {"success", "degraded"}:
             lines.append(
-                "- The rest of the update passed its checks, but one or more ITF draws could not be refreshed. "
+                "- The rest of the update passed its checks, but one or more tournament draws could not be refreshed. "
                 "The affected draws may be older or missing."
             )
         else:
-            lines.append("- One or more ITF draws could not be refreshed. The affected draws may be older or missing.")
+            lines.append(
+                "- One or more tournament draws could not be refreshed. "
+                "The affected draws may be older or missing."
+            )
         lines.append("")
 
     if report.get("wta_ranking_status"):

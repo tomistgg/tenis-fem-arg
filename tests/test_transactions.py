@@ -525,6 +525,29 @@ def test_degraded_draw_failure_email_says_other_updates_were_published():
     assert "The affected draws may be older or missing" in markdown
 
 
+def test_degraded_wta_draw_failure_email_identifies_missing_draws():
+    markdown = render_email_markdown(
+        {
+            "run_status": {
+                "run_id": "run-wta",
+                "status": "degraded",
+                "finished_at": "2026-08-23T12:00:00Z",
+                "promotion": {"deploy_site_promoted": True},
+                "issues": [
+                    {
+                        "component": "wta-draws",
+                        "operation": "fetch published draw",
+                        "message": "provider unavailable",
+                    }
+                ],
+            }
+        }
+    )
+
+    assert "## Tournament draws that may be out of date" in markdown
+    assert "one or more tournament draws could not be refreshed" in markdown
+
+
 def test_dataset_swap_rolls_back_when_later_promotion_fails(monkeypatch):
     with TemporaryDirectory() as directory:
         project = Path(directory) / "project"
