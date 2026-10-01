@@ -21,7 +21,7 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, ValidationErro
 
 from canonical_data import CanonicalConstraintError, validate_project_data
 from pipeline_errors import DataValidationError
-from time_utils import utc_now
+from time_utils import madrid_today, utc_now
 from tournament_snapshot import expand_tournament_snapshot
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -514,6 +514,13 @@ def _validate_freshness(
             raise _quality_error("freshness", f"cache freshness metadata missing for {filename}")
         if metadata.fetchedAt is None:
             raise _quality_error("freshness", f"cache fetchedAt metadata missing for {filename}")
+        if filename == "itf_calendar_cache.json" and not allow_stale and getattr(metadata, "year", None) != today.year:
+            raise _quality_error(
+                "freshness",
+                f"{filename} has no complete fetch for {today.year}",
+                verified_year=getattr(metadata, "year", None),
+                today=today.isoformat(),
+            )
         fetched_at = metadata.fetchedAt.astimezone(UTC)
         age_seconds = (now - fetched_at).total_seconds()
         if age_seconds < -2 * 86400 or (not allow_stale and age_seconds > max_age_days * 86400):
@@ -635,7 +642,7 @@ def run_data_quality_gate(
 
     comparisons = _validate_thresholds(resolved_data, resolved_baseline, policy, table_counts)
     observed_freshness = _validate_freshness(
-        resolved_data, policy, today or utc_now().date(), allow_stale=allow_stale
+        resolved_data, policy, today or madrid_today(), allow_stale=allow_stale
     )
     site = None
     if site_root is not None:

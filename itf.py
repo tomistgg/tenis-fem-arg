@@ -26,6 +26,7 @@ from time_utils import madrid_today, parse_utc_timestamp, utc_now
 from utils import (
     dumps_itf_calendar_cache,
     expand_itf_calendar_cache,
+    get_cache_file_meta,
     get_cache_timestamp,
     save_json_file,
     set_cache_file_meta,
@@ -282,7 +283,7 @@ def _load_itf_calendar_disk_cache(target_year=None, max_age_seconds=None):
 
     # Backward compatibility: plain list payload.
     if isinstance(payload, list):
-        return payload
+        return payload if max_age_seconds is None else []
 
     if not isinstance(payload, dict):
         return []
@@ -296,6 +297,8 @@ def _load_itf_calendar_disk_cache(target_year=None, max_age_seconds=None):
         return []
 
     if max_age_seconds is not None:
+        if target_year and get_cache_file_meta(ITF_CALENDAR_CACHE_FILE).get("year") != int(target_year):
+            return []
         fetched_at_str = get_cache_timestamp(ITF_CALENDAR_CACHE_FILE, payload=payload)
         if not fetched_at_str:
             return []
@@ -310,7 +313,7 @@ def _load_itf_calendar_disk_cache(target_year=None, max_age_seconds=None):
     return items
 
 
-def _save_itf_calendar_disk_cache(items, year):
+def _save_itf_calendar_disk_cache(items, year, *, complete=False):
     if not isinstance(items, list) or not items:
         return
     payload = {
@@ -319,12 +322,17 @@ def _save_itf_calendar_disk_cache(items, year):
         "items": items,
     }
     save_json_file(ITF_CALENDAR_CACHE_FILE, payload, formatter=dumps_itf_calendar_cache)
-    set_cache_file_meta(
-        ITF_CALENDAR_CACHE_FILE,
-        year=int(year),
-        count=len(items),
-        fetchedAt=utc_now_iso(),
-    )
+    # Fallbacks can update cached items, but only a complete year fetch verifies
+    # the source. Keep its timestamp and year separate from later attempts.
+    if complete or get_cache_file_meta(ITF_CALENDAR_CACHE_FILE).get("fetchedAt"):
+        attempted_at = utc_now_iso()
+        set_cache_file_meta(
+            ITF_CALENDAR_CACHE_FILE,
+            year=int(year) if complete else None,
+            count=len(items),
+            lastAttemptAt=attempted_at,
+            fetchedAt=attempted_at if complete else None,
+        )
 
 
 def _load_itf_event_filters_cache():
@@ -863,6 +871,7 @@ def _fetch_itf_calendar_range(
     """Fetch one ITF calendar range with pagination and browser-backed JSON fetches."""
     all_items = []
     expected_total = 0
+    reached_end = False
     skip = 0
     pages_fetched = 0
     order_ascending = "true" if ascending else "false"
@@ -888,8 +897,12 @@ def _fetch_itf_calendar_range(
             if not isinstance(data, dict):
                 break
 
-            items = data.get("items", [])
+            items = data.get("items")
+            if not isinstance(items, list) or any(not isinstance(item, dict) for item in items):
+                break
             if not items:
+                if pages_fetched and not expected_total:
+                    reached_end = True
                 break
 
             all_items.extend(items)
@@ -900,13 +913,13 @@ def _fetch_itf_calendar_range(
                 expected_total = total
 
             batch_size = len(items)
-            if total and (skip + batch_size >= total):
-                break
-            if batch_size <= 0:
+            if expected_total and len(all_items) >= expected_total:
+                reached_end = True
                 break
 
             skip += batch_size
-            if not total and batch_size < take:
+            if not expected_total and batch_size < take:
+                reached_end = True
                 break
         except (AttributeError, KeyError, TypeError, ValueError) as exc:
             report_run_issue(
@@ -918,7 +931,7 @@ def _fetch_itf_calendar_range(
             )
             break
 
-    fetch_complete = bool(all_items) and (not expected_total or len(all_items) >= expected_total)
+    fetch_complete = bool(all_items) and reached_end
     return all_items, expected_total, fetch_complete
 
 
@@ -972,16 +985,10 @@ def _fetch_itf_calendar_raw(driver):
     )
     if fetch_complete:
         _itf_calendar_raw = all_items
-        _save_itf_calendar_disk_cache(all_items, current_year)
+        _save_itf_calendar_disk_cache(all_items, current_year, complete=True)
         return _itf_calendar_raw
 
     # Partial or empty fetch — prefer disk cache to avoid overwriting complete data
-    if all_items and not expected_total:
-        # totalItems not reported by API; treat as complete
-        _itf_calendar_raw = all_items
-        _save_itf_calendar_disk_cache(all_items, current_year)
-        return _itf_calendar_raw
-
     if all_items:
         logger.warning(
             f"Partial ITF calendar fetch ({len(all_items)}/{expected_total}) — using disk cache to avoid false-positive new-tournament alerts."  # noqa: E501
