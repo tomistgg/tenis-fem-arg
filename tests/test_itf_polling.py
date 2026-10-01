@@ -17,6 +17,7 @@ from data_quality import QualityPolicyModel, _validate_freshness
 from lazy_browser import LazyBrowserSession
 from pipeline_errors import DataValidationError
 from populate_data import itf_load_new, tournament_sizes_update
+from run_state import initialize_run_state, load_run_state
 
 
 @pytest.fixture(autouse=True)
@@ -960,6 +961,113 @@ def test_itf_blocked_request_reports_response_details(monkeypatch):
     assert error.context["status_code"] == 200
     assert error.context["content_type"] == "text/html"
     assert error.context["response_bytes"] > 0
+
+
+@pytest.mark.parametrize(
+    ("json_payload", "html_recovered", "expected_status"),
+    [
+        (None, True, "running"),
+        (None, False, "partial"),
+        ({"entryClassifications": []}, False, "running"),
+    ],
+)
+def test_itf_acceptance_reports_only_unrecovered_failure(
+    monkeypatch, tmp_path, json_payload, html_recovered, expected_status
+):
+    status_path = tmp_path / "run.json"
+    initialize_run_state(status_path, "test-run", tmp_path / "stage")
+    monkeypatch.setenv("WTARG_RUN_STATUS_PATH", str(status_path))
+    monkeypatch.setattr(itf, "_itf_calendar_raw", [{
+        "tournamentKey": "w-test",
+        "tournamentLink": "/en/tournament/w-test",
+    }])
+    monkeypatch.setattr(itf, "_itf_session_warmed", True)
+    monkeypatch.setattr(itf, "_itf_browser_unavailable", False)
+    monkeypatch.setattr(itf, "_itf_wait_for_rate_limit", lambda: None)
+    monkeypatch.setattr(itf, "_itf_note_blocked_response", lambda: None)
+    monkeypatch.setattr(itf.time, "sleep", lambda seconds: None)
+    monkeypatch.setattr(itf.requests, "get", lambda *args, **kwargs: SimpleNamespace(
+        status_code=403,
+        text="<html>blocked</html>",
+        headers={"content-type": "text/html"},
+    ))
+
+    class AcceptanceDriver:
+        page_source = (
+            '<div class="acceptance-lists__details"><h3>Main Draw</h3>'
+            '<tbody class="acceptance-list__information">'
+            '<tr><td>1</td><td>ARG Test Player</td><td>123</td></tr>'
+            '</tbody></div>'
+            if html_recovered else ""
+        )
+
+        def get(self, url):
+            pass
+
+        def execute_async_script(self, *args):
+            if json_payload is not None:
+                return {"ok": True, "text": json.dumps(json_payload)}
+            return {"ok": False}
+
+        def find_element(self, *args):
+            raise itf.WebDriverException("no JSON body")
+
+        def get_cookies(self):
+            return []
+
+    entries, _ = itf.get_itf_players("w-test", AcceptanceDriver())
+
+    assert bool(entries) is html_recovered
+    state = load_run_state(status_path)
+    assert state["status"] == expected_status
+    assert [issue["severity"] for issue in state["issues"]] == (
+        ["partial"] if expected_status == "partial" else []
+    )
+
+
+@pytest.mark.parametrize(
+    ("recovered_tid", "expected_status"),
+    [(123, "running"), (None, "partial")],
+)
+def test_itf_event_filters_classify_after_navigation(monkeypatch, tmp_path, recovered_tid, expected_status):
+    status_path = tmp_path / "run.json"
+    initialize_run_state(status_path, "test-run", tmp_path / "stage")
+    monkeypatch.setenv("WTARG_RUN_STATUS_PATH", str(status_path))
+    monkeypatch.setattr(itf, "madrid_today", lambda: date(2026, 8, 10))
+    monkeypatch.setattr(itf, "_fetch_itf_calendar_raw", lambda driver: [{
+        "tournamentKey": "w-test",
+        "tournamentName": "W35 Example",
+        "startDate": "2026-08-10",
+    }])
+    monkeypatch.setattr(itf, "_load_itf_event_filters_cache", lambda: {})
+    monkeypatch.setattr(itf, "_save_itf_event_filters_cache", lambda cache: None)
+    monkeypatch.setattr(itf, "_itf_session_warmed", True)
+    monkeypatch.setattr(itf, "_itf_browser_unavailable", False)
+    monkeypatch.setattr(itf, "_itf_wait_for_rate_limit", lambda: None)
+    monkeypatch.setattr(itf, "_itf_note_blocked_response", lambda: None)
+    monkeypatch.setattr(itf.time, "sleep", lambda seconds: None)
+    monkeypatch.setattr(itf.requests, "get", lambda *args, **kwargs: SimpleNamespace(
+        status_code=403,
+        text="<html>blocked</html>",
+        headers={"content-type": "text/html"},
+    ))
+    navigation_responses = iter([None, {"tournamentId": recovered_tid} if recovered_tid else None])
+    monkeypatch.setattr(itf, "_fetch_itf_json_via_navigation", lambda *args, **kwargs: next(navigation_responses))
+
+    class Driver:
+        def get(self, url):
+            pass
+
+        def execute_async_script(self, *args):
+            return {"ok": False}
+
+        def get_cookies(self):
+            return []
+
+    result = itf.get_draws_itf_tournament_list(Driver())
+
+    assert next(iter(next(iter(result.values())).values()))["tournamentId"] == recovered_tid
+    assert load_run_state(status_path)["status"] == expected_status
 
 
 def test_itf_event_filter_cache_normalizes_ids_and_drops_invalid_values(monkeypatch, tmp_path):

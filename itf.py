@@ -488,6 +488,7 @@ def _fetch_itf_json(
     failure_severity="partial",
     failure_component="itf",
     failure_operation="fetch JSON via requests",
+    report_failure=True,
 ):
     is_calendar_endpoint = "TournamentApi/GetCalendar" in str(url)
 
@@ -563,6 +564,7 @@ def _fetch_itf_json(
         failure_severity=failure_severity,
         failure_component=failure_component,
         failure_operation=failure_operation,
+        report_failure=report_failure,
     )
     return req_data if isinstance(req_data, (dict, list)) else None
 
@@ -1067,7 +1069,8 @@ def get_itf_players(tournament_key, driver):
     key_lower = key.lower()
     url = f"{ITF_BASE_URL}/tennis/api/TournamentApi/GetAcceptanceList?tournamentKey={key_lower}&circuitCode=WT"
     try:
-        data = _fetch_itf_json(driver, url, timeout_ms=10000, retries=2)
+        data = _fetch_itf_json(driver, url, timeout_ms=10000, retries=2, report_failure=False)
+        api_response_received = isinstance(data, (dict, list))
         root_data: list[Any] = []
         if isinstance(data, list) and data:
             root_data = data[0].get("entryClassifications", []) if isinstance(data[0], dict) else []
@@ -1076,13 +1079,15 @@ def get_itf_players(tournament_key, driver):
 
         # Fallback 1: direct requests path when browser/session is blocked.
         if not root_data:
-            req_data = _fetch_itf_json_via_requests(url, timeout=10, retries=2)
+            req_data = _fetch_itf_json_via_requests(url, timeout=10, retries=2, report_failure=False)
+            api_response_received = api_response_received or isinstance(req_data, (dict, list))
             if isinstance(req_data, list) and req_data:
                 root_data = req_data[0].get("entryClassifications", []) if isinstance(req_data[0], dict) else []
             elif isinstance(req_data, dict):
                 root_data = req_data.get("entryClassifications", [])
 
         # Fallback: parse rendered acceptance page HTML when API is empty/unavailable.
+        html_error = None
         if not root_data:
             acceptance_url = _lookup_acceptance_url_from_calendar(key_lower)
             if acceptance_url:
@@ -1091,14 +1096,31 @@ def get_itf_players(tournament_key, driver):
                     time.sleep(random.uniform(3, 5))
                     root_data = _parse_acceptance_html_sections(driver.page_source)
                 except (WebDriverException, Urllib3HTTPError, AttributeError, TypeError, ValueError) as exc:
-                    report_run_issue(
-                        "itf",
-                        "parse acceptance page fallback",
-                        exc,
-                        severity="partial",
-                        context={"tournament_key": str(tournament_key)},
-                    )
+                    html_error = exc
                     root_data = []
+
+        if not root_data:
+            if html_error is not None:
+                report_run_issue(
+                    "itf",
+                    "parse acceptance page fallback",
+                    html_error,
+                    severity="partial",
+                    context={"tournament_key": key},
+                )
+            elif not api_response_received:
+                report_run_issue(
+                    "itf",
+                    "fetch acceptance list",
+                    SourceRequestError(
+                        component="itf",
+                        operation="fetch acceptance list",
+                        message="ITF acceptance list unavailable after JSON and HTML fallbacks",
+                        context={"tournament_key": key, "url": url},
+                        retryable=True,
+                    ),
+                    severity="partial",
+                )
 
         name_map = _build_name_map(root_data)
         return root_data, name_map
@@ -1206,7 +1228,9 @@ def get_draws_itf_tournament_list(driver):
             continue
         api_url = f"{ITF_BASE_URL}/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
         try:
-            data = _fetch_itf_json(driver, api_url, timeout_ms=9000, retries=2) or {}
+            data = _fetch_itf_json(driver, api_url, timeout_ms=9000, retries=2, report_failure=False)
+            transport_failed = data is None
+            data = data or {}
             tid = data.get("tournamentId")
             if not (isinstance(tid, int) and tid > 0):
                 # Fallback: some ITF sessions block browser fetch() but still return
@@ -1217,6 +1241,19 @@ def get_draws_itf_tournament_list(driver):
                 nav_tid = nav_data.get("tournamentId")
                 if isinstance(nav_tid, int) and nav_tid > 0:
                     tid = nav_tid
+            if transport_failed and not (isinstance(tid, int) and tid > 0):
+                report_run_issue(
+                    "itf",
+                    "fetch tournament event filters",
+                    SourceRequestError(
+                        component="itf",
+                        operation="fetch tournament event filters",
+                        message="ITF event filters unavailable after JSON and navigation fallbacks",
+                        context={"tournament_key": key, "url": api_url},
+                        retryable=True,
+                    ),
+                    severity="partial",
+                )
             item["_tid"] = tid
             if isinstance(tid, int) and tid > 0:
                 event_filters_cache[key] = tid
