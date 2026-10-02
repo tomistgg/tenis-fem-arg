@@ -720,6 +720,8 @@
             #view-upcoming .calendar-tournament.cal-tournament-bold { font-weight: 700 !important; }
             @media (min-width: 769px) {
                 #view-upcoming .calendar-tournament { font-size: 10px; padding: 2px 6px; }
+                #view-upcoming .schedule-tournament-name { font-size: 11px; }
+                #view-upcoming #schedule-table thead th { font-weight: 700 !important; }
             }
             .col-week { width: 150px; font-size: 11px; font-weight: bold; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }
             .divider-row td { background: var(--c-surface-sunk); font-weight: bold; text-align: center; padding: 5px 15px; font-size: 11px; border-right: none; }
@@ -1508,8 +1510,9 @@
                 /* Upcoming: mobile layout */
                 #view-upcoming table { width: 100%; min-width: 100%; table-layout: fixed; }
                 #view-upcoming th, #view-upcoming td { font-size: 7px; padding: 2px 2px; }
-                #view-upcoming th { font-size: 6px; }
-                #view-upcoming th.col-week { font-size: 6px !important; }
+                #view-upcoming th { font-size: 8px; }
+                #view-upcoming th.col-week { font-size: 8px !important; }
+                #view-upcoming td.col-name { font-size: 8px; }
                 #view-upcoming td.col-week, #view-upcoming .col-week { font-size: 5px; line-height: 1.6; }
                 #view-upcoming .col-name {
                     width: 62px !important;
