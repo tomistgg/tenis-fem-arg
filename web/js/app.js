@@ -419,17 +419,6 @@
 
             function collectHistoryUrlState() {
                 const state = {};
-                const page = typeof historySubpage === 'string' ? historySubpage : 'match';
-                if (page && page !== 'match') state.page = page;
-                if (page === 'milestones') {
-                    if (typeof getMilestonesFilterState === 'function' && typeof getMilestonesCategoryDefs === 'function') {
-                        const defs = getMilestonesCategoryDefs();
-                        const selected = getMilestonesFilterState();
-                        if (defs.length && selected.categories.length !== defs.length) state.mcat = selected.categories;
-                        if (!selected.includeQualy) state.qualy = '0';
-                    }
-                    return state;
-                }
                 const player = getNormalizedPlayerSelection('playerHistorySelect');
                 if (player) state.player = player === '__ALL__' ? 'all' : player;
                 if (!player) return state;
@@ -457,16 +446,6 @@
             }
 
             async function restoreHistoryUrlState(params) {
-                const page = slugStateValue(params.get('page') || '');
-                if (page === 'milestones') {
-                    setHistorySubpage('milestones');
-                    await renderMilestonesPage();
-                    restoreMilestonesUrlState(params);
-                    await renderMilestonesPage();
-                    return;
-                }
-
-                setHistorySubpage('match');
                 const playerSlug = params.get('player');
                 const select = document.getElementById('playerHistorySelect');
                 if (playerSlug && select) {
@@ -499,18 +478,6 @@
                 if (asRankMode && ['higher', 'lower'].includes(params.get('asmode'))) asRankMode.value = params.get('asmode');
                 if (vsRankMode && ['higher', 'lower'].includes(params.get('vsmode'))) vsRankMode.value = params.get('vsmode');
                 applyHistoryFilters();
-            }
-
-            function restoreMilestonesUrlState(params) {
-                const selectedCats = splitUrlStateList(params.get('mcat'));
-                if (selectedCats.length) {
-                    getMilestonesCategoryDefs().forEach(def => {
-                        const el = document.getElementById(def.id);
-                        if (el) el.checked = selectedCats.includes(slugStateValue(def.key));
-                    });
-                }
-                const qualy = document.getElementById('milestones-filter-qualy');
-                if (qualy && params.has('qualy')) qualy.checked = params.get('qualy') !== '0';
             }
 
             function collectDrawsUrlState() {
@@ -1081,7 +1048,6 @@
                 document.getElementById('view-draws').style.display = (tabName === 'draws') ? 'block' : 'none';
                 document.getElementById('view-tstrength').style.display = (tabName === 'tstrength') ? 'flex' : 'none';
                 document.getElementById('view-information').style.display = (tabName === 'information') ? 'flex' : 'none';
-                if (tabName === 'history') setHistorySubpage(HISTORY_SUBPAGE_MATCH);
 
                 if (tabName === 'entrylists') {
                     setEntryMenuCollapsed(false);
@@ -1274,7 +1240,7 @@
                 const button = document.getElementById('history-mobile-filter-btn');
                 if (!panel || !button) return;
                 const mobile = window.innerWidth <= 768;
-                const available = mobile && historySubpage === HISTORY_SUBPAGE_MATCH;
+                const available = mobile;
                 if (!available) document.body.classList.remove('history-filters-open');
                 const isOpen = available && document.body.classList.contains('history-filters-open');
                 button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
@@ -1292,7 +1258,7 @@
             }
 
             function openHistoryFilters() {
-                if (window.innerWidth > 768 || historySubpage !== HISTORY_SUBPAGE_MATCH) return;
+                if (window.innerWidth > 768) return;
                 _historyFilterReturnFocus = document.activeElement;
                 document.body.classList.add('history-filters-open');
                 syncHistoryFilterSheetMode();
@@ -1598,8 +1564,6 @@
                     select.value = getDisplayName(currentUpper);
                 }
 
-                _historyPlayerUniverse = null;
-                _historyPlayerUniverseUpper = null;
             }
 
             function getNormalizedPlayerSelection(selectId) {
@@ -1628,8 +1592,6 @@
                 });
 
                 renderHistoryTable();
-                renderMilestonesTable();
-                setHistorySubpage(historySubpage);
                 applyMobileHistoryLayout();
                 updateHistoryMobileFilterButton();
 
@@ -2407,370 +2369,7 @@
             }
 
             let currentPlayerData = [];
-            const HISTORY_SUBPAGE_MATCH = 'match';
-            const HISTORY_SUBPAGE_MILESTONES = 'milestones';
-            let historySubpage = HISTORY_SUBPAGE_MATCH;
-
             let _historyTableInitialized = false;
-            let _milestonesTableInitialized = false;
-            let _historyPlayerUniverse = null;
-            let _historyPlayerUniverseUpper = null;
-            let _milestonesIndex = null;
-            let _milestonesIndexPromise = null;
-            let _milestonesRenderSeq = 0;
-            let _milestonesCategoryDefs = null;
-
-            function renderMilestonesTable() {
-                const thead = document.querySelector('#milestones-table thead');
-                const tbody = document.getElementById('milestones-body');
-                if (!thead || !tbody || _milestonesTableInitialized) return;
-
-                thead.innerHTML = '<tr><th>PLAYER</th><th>WINS</th></tr>';
-                tbody.innerHTML = '<tr><td colspan="2" class="cell-state-info">Open Milestones to view the leaderboard</td></tr>';
-                _milestonesTableInitialized = true;
-            }
-
-            function _getMilestonesCategorySortRank(label) {
-                const priority = [
-                    'GS',
-                    'WTA 1000 / P5 / PM',
-                    'WTA 500 / P700',
-                    'WTA 250 / International',
-                    'WTA 125 / 125K Series',
-                    'ITF',
-                    'BJKC/Fed Cup',
-                    'Olympic Games',
-                    'Tier I',
-                    'Tier II',
-                    'Tier III',
-                    'Tier IV',
-                    'Tier V',
-                    'Tier 2',
-                    'Tier',
-                    'WTA 1000',
-                    'WTA 500',
-                    'WTA 250',
-                    'WTA 125',
-                    '125K',
-                    '125K Series',
-                    'Premier Mandatory',
-                    'Premier 5',
-                    'Premier 700',
-                    'Premier',
-                    'International',
-                    'International Gold',
-                    'WTA',
-                    'World Tour',
-                    'WT',
-                    'WTA Tour Championships',
-                    'YE Championships'
-                ];
-                const idx = priority.indexOf(label);
-                return idx >= 0 ? idx : 1000;
-            }
-
-            function _sortMilestonesCategoryLabels(labels) {
-                return Array.from(labels).sort((a, b) => {
-                    const rankA = _getMilestonesCategorySortRank(a);
-                    const rankB = _getMilestonesCategorySortRank(b);
-                    if (rankA !== rankB) return rankA - rankB;
-                    return a.localeCompare(b);
-                });
-            }
-
-            function getMilestonesCategoryDisplayLabel(label) {
-                if (label === 'GS') return 'Grand Slams';
-                return label;
-            }
-
-            function getMilestonesCategoryGroup(row) {
-                const rawCategory = (row['CATEGORY'] || row['tournamentCategory'] || '').toString().trim();
-                const matchType = getRowMatchType(row).toString().trim();
-                const tournament = (row['TOURNAMENT'] || row['tournamentName'] || '').toString().trim();
-                const categoryUpper = rawCategory.toUpperCase();
-                const matchTypeUpper = matchType.toUpperCase();
-                const tournamentUpper = tournament.toUpperCase();
-                // Keep short codes exact so tournament names like Oegstgeest or Bogota do not false-match.
-                const isExact = (...values) => values.some(value => categoryUpper === value || matchTypeUpper === value);
-                const tournamentHas = (...values) => values.some(value => tournamentUpper.includes(value));
-                const grandSlamNames = ['AUSTRALIAN OPEN', 'ROLAND GARROS', 'WIMBLEDON', 'US OPEN'];
-
-                if (isExact('FED/BJK CUP') || tournamentHas('FED CUP', 'BJK CUP', 'BILLIE JEAN KING CUP', 'BJKC')) return 'BJKC/Fed Cup';
-                if (isExact('OG') || tournamentHas('OLYMPIC')) return 'Olympic Games';
-                if (isExact('GS') || categoryUpper.includes('GRAND SLAM') || tournamentHas('GRAND SLAM') || grandSlamNames.includes(tournamentUpper)) return 'GS';
-                if (matchTypeUpper === 'ITF' || categoryUpper === 'ITF' || /^W\d+$/.test(categoryUpper) || tournamentUpper.includes('ITF')) return 'ITF';
-                if (isExact('WTA 1000', 'PREMIER MANDATORY', 'PREMIER 5')) return 'WTA 1000 / P5 / PM';
-                if (isExact('WTA 500', 'PREMIER 700', 'PREMIER')) return 'WTA 500 / P700';
-                if (isExact('WTA 250', 'INTERNATIONAL', 'INTERNATIONAL GOLD')) return 'WTA 250 / International';
-                if (isExact('WTA 125', '125K', '125K SERIES')) return 'WTA 125 / 125K Series';
-                if (!rawCategory) {
-                    if (matchTypeUpper === 'WTA') return 'WTA';
-                    if (matchTypeUpper === 'OG') return 'Olympic Games';
-                    if (matchTypeUpper === 'FED/BJK CUP') return 'BJKC/Fed Cup';
-                }
-                if (categoryUpper === 'TIER IIIV') return 'Tier III';
-                return rawCategory;
-            }
-
-            function getMilestonesCategoryDefs() {
-                if (!_milestonesIndex) return [];
-                if (_milestonesCategoryDefs) return _milestonesCategoryDefs;
-                const labels = new Set();
-                _milestonesIndex.forEach(stat => {
-                    if (!stat || !stat.active || !stat.playedCategories) return;
-                    stat.playedCategories.forEach(label => {
-                        if (label) labels.add(label);
-                    });
-                });
-                _milestonesCategoryDefs = _sortMilestonesCategoryLabels(labels).map((label, idx) => ({
-                    id: `milestones-filter-${idx}`,
-                    key: label,
-                    label: getMilestonesCategoryDisplayLabel(label)
-                }));
-                return _milestonesCategoryDefs;
-            }
-
-            function renderMilestonesFilters() {
-                const body = document.getElementById('milestones-filter-body');
-                if (!body) return;
-                const defs = getMilestonesCategoryDefs();
-                if (body.children.length) return;
-                const filterHtml = defs.map(def => (
-                    `<label class="milestones-filter-chip" for="${def.id}">
-                        <input type="checkbox" id="${def.id}" checked>
-                        <span>${escapeHtml(def.label)}</span>
-                    </label>`
-                )).join('');
-                body.innerHTML = `${filterHtml}<label class="milestones-filter-chip" for="milestones-filter-qualy"><input type="checkbox" id="milestones-filter-qualy" checked><span>Include Qualy</span></label>`;
-            }
-
-            function getHistoryPlayerUniverse() {
-                if (_historyPlayerUniverse && _historyPlayerUniverseUpper) return _historyPlayerUniverse;
-                const select = document.getElementById('playerHistorySelect');
-                const names = [];
-                const upper = new Set();
-                if (select && select.options) {
-                    Array.from(select.options).forEach(option => {
-                        const value = (option.value || '').toString().trim();
-                        if (!value || value === '__ALL__' || value === 'Select Player...') return;
-                        const upperValue = value.toUpperCase();
-                        if (upper.has(upperValue)) return;
-                        upper.add(upperValue);
-                        names.push(value);
-                    });
-                }
-                _historyPlayerUniverse = names;
-                _historyPlayerUniverseUpper = upper;
-                return names;
-            }
-
-            function isHistoryPlayerName(name) {
-                if (!name) return false;
-                if (!_historyPlayerUniverseUpper) getHistoryPlayerUniverse();
-                return !!_historyPlayerUniverseUpper && _historyPlayerUniverseUpper.has(name.toString().toUpperCase());
-            }
-
-            function isWalkoverOrByeHistoryRow(row) {
-                const statusDesc = (row['_resultStatusDesc'] || '').toString().toLowerCase();
-                const scoreText = (row['SCORE'] || '').toString().toLowerCase();
-                return statusDesc.includes('walkover') || statusDesc.includes('bye') || scoreText.includes('w/o') || scoreText === '-';
-            }
-
-            function isMilestonesQualifyingRow(row) {
-                const draw = (row['DRAW'] || '').toString().trim().toUpperCase();
-                const round = (row['ROUND'] || '').toString().trim().toUpperCase();
-                return draw === 'Q' || draw.includes('QUAL') || round === 'Q' || /^Q\d+$/.test(round) || round.startsWith('QR');
-            }
-
-            async function ensureMilestonesIndex() {
-                if (_milestonesIndex) return _milestonesIndex;
-                if (!_milestonesIndexPromise) {
-                    _milestonesIndexPromise = (async function() {
-                        await ensureHistoryDataLoaded();
-                        _milestonesIndex = buildMilestonesIndex();
-                        return _milestonesIndex;
-                    })();
-                }
-                return _milestonesIndexPromise;
-            }
-
-            function buildMilestonesIndex() {
-                const universe = getHistoryPlayerUniverse();
-                const playerByUpper = new Map(universe.map(name => [name.toUpperCase(), name]));
-                const stats = new Map();
-                const recentCutoff = new Date();
-                recentCutoff.setFullYear(recentCutoff.getFullYear() - 2);
-                recentCutoff.setHours(0, 0, 0, 0);
-
-                function createStats(name) {
-                    return {
-                        name,
-                        lastPlayed: null,
-                        active: false,
-                        wins: {},
-                        playedCategories: new Set()
-                    };
-                }
-
-                function getStats(name) {
-                    if (!stats.has(name)) stats.set(name, createStats(name));
-                    return stats.get(name);
-                }
-
-                function touchActive(entry, date) {
-                    const ts = date.getTime();
-                    if (entry.lastPlayed === null || ts > entry.lastPlayed) entry.lastPlayed = ts;
-                    if (date >= recentCutoff) entry.active = true;
-                }
-
-                (Array.isArray(historyData) ? historyData : []).forEach(row => {
-                    if (isWalkoverOrByeHistoryRow(row)) return;
-                    const rowDate = new Date(row['DATE'] || '');
-                    if (isNaN(rowDate)) return;
-
-                    const winnerName = getDisplayName((row['_winnerName'] || '').toString().toUpperCase());
-                    const loserName = getDisplayName((row['_loserName'] || '').toString().toUpperCase());
-                    const winnerKey = winnerName ? winnerName.toUpperCase() : '';
-                    const loserKey = loserName ? loserName.toUpperCase() : '';
-                    const winner = winnerKey ? playerByUpper.get(winnerKey) : '';
-                    const loser = loserKey ? playerByUpper.get(loserKey) : '';
-
-                    if (winner) touchActive(getStats(winner), rowDate);
-                    if (loser) touchActive(getStats(loser), rowDate);
-
-                    const categoryGroup = getMilestonesCategoryGroup(row);
-                    if (categoryGroup) {
-                        if (winner) getStats(winner).playedCategories.add(categoryGroup);
-                        if (loser) getStats(loser).playedCategories.add(categoryGroup);
-                    }
-                    if (!categoryGroup || !winner) return;
-                    const stat = getStats(winner);
-                    if (!stat.wins[categoryGroup]) {
-                        stat.wins[categoryGroup] = { main: 0, qualy: 0 };
-                    }
-                    if (isMilestonesQualifyingRow(row)) {
-                        stat.wins[categoryGroup].qualy += 1;
-                    } else {
-                        stat.wins[categoryGroup].main += 1;
-                    }
-                });
-
-                universe.forEach(name => {
-                    if (!stats.has(name)) stats.set(name, createStats(name));
-                });
-
-                return stats;
-            }
-
-            function getMilestonesFilterState() {
-                const defs = getMilestonesCategoryDefs();
-                return {
-                    categories: defs.filter(def => {
-                        const el = document.getElementById(def.id);
-                        return el ? el.checked : false;
-                    }).map(def => def.key),
-                    includeQualy: !!(document.getElementById('milestones-filter-qualy') && document.getElementById('milestones-filter-qualy').checked)
-                };
-            }
-
-            function updateMilestonesCounter(count) {
-                const counter = document.getElementById('milestones-active-counter');
-                if (!counter) return;
-                counter.textContent = '';
-            }
-
-            async function renderMilestonesPage() {
-                const tbody = document.getElementById('milestones-body');
-                if (!tbody) return;
-                renderMilestonesTable();
-                const renderSeq = ++_milestonesRenderSeq;
-                tbody.innerHTML = '<tr><td colspan="2" class="cell-state-info">Loading milestones...</td></tr>';
-                try {
-                    await ensureMilestonesIndex();
-                    renderMilestonesFilters();
-                } catch (err) {
-                    console.error('Failed to load milestones data:', err);
-                    if (renderSeq !== _milestonesRenderSeq) return;
-                    tbody.innerHTML = '<tr><td colspan="2" class="cell-state-error">Failed to load milestones. Please refresh and try again.</td></tr>';
-                    updateMilestonesCounter(0);
-                    return;
-                }
-
-                if (renderSeq !== _milestonesRenderSeq) return;
-                renderMilestonesFilters();
-                const selection = getMilestonesFilterState();
-                const activePlayers = [];
-                const categorySet = new Set(selection.categories);
-                const stats = _milestonesIndex || new Map();
-
-                stats.forEach(stat => {
-                    if (!stat.active) return;
-                    let totalWins = 0;
-                    categorySet.forEach(category => {
-                        const bucket = stat.wins[category];
-                        if (!bucket) return;
-                        totalWins += bucket.main + (selection.includeQualy ? bucket.qualy : 0);
-                    });
-                    if (totalWins <= 0) return;
-                    activePlayers.push({
-                        name: stat.name,
-                        wins: totalWins,
-                        lastPlayed: stat.lastPlayed || 0
-                    });
-                });
-
-                activePlayers.sort((a, b) => {
-                    if (b.wins !== a.wins) return b.wins - a.wins;
-                    if (b.lastPlayed !== a.lastPlayed) return b.lastPlayed - a.lastPlayed;
-                    return a.name.localeCompare(b.name);
-                });
-
-                updateMilestonesCounter(activePlayers.length);
-
-                if (activePlayers.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="2" class="cell-state-error">No players found for the selected filters.</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = activePlayers.map(player => (
-                    `<tr><td>${escapeHtml(player.name)}</td><td>${escapeHtml(player.wins)}</td></tr>`
-                )).join('');
-            }
-
-            function applyMilestonesFilters() {
-                renderMilestonesPage().then(() => syncUrlStateForTab('history'));
-            }
-
-            const milestonesFilterBody = document.getElementById('milestones-filter-body');
-            if (milestonesFilterBody) {
-                milestonesFilterBody.addEventListener('change', function(event) {
-                    if (!event.target.matches('input[type="checkbox"]')) return;
-                    applyMilestonesFilters();
-                });
-            }
-
-            function syncHistorySubpageVisibility() {
-                const historyLayout = document.querySelector('#view-history .history-layout');
-                const filterPanel = historyLayout ? historyLayout.querySelector('.filter-panel') : null;
-                const matchPage = document.getElementById('history-match-page');
-                const milestonesPage = document.getElementById('history-milestones-page');
-                if (filterPanel) filterPanel.style.display = historySubpage === HISTORY_SUBPAGE_MATCH ? '' : 'none';
-                if (matchPage) matchPage.style.display = historySubpage === HISTORY_SUBPAGE_MATCH ? 'flex' : 'none';
-                if (milestonesPage) milestonesPage.style.display = historySubpage === HISTORY_SUBPAGE_MILESTONES ? 'flex' : 'none';
-            }
-
-            function setHistorySubpage(page) {
-                historySubpage = page === HISTORY_SUBPAGE_MILESTONES ? HISTORY_SUBPAGE_MILESTONES : HISTORY_SUBPAGE_MATCH;
-                if (historySubpage !== HISTORY_SUBPAGE_MATCH) closeHistoryFilters(false);
-                syncHistorySubpageVisibility();
-                if (historySubpage === HISTORY_SUBPAGE_MILESTONES) {
-                    renderMilestonesPage();
-                } else {
-                    applyMobileHistoryLayout();
-                    applyHistoryFilters();
-                }
-                syncUrlStateForTab('history');
-            }
 
             function syncFilterGroupState(group) {
                 if (!group) return;

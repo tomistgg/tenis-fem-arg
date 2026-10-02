@@ -172,7 +172,6 @@
 
             .rankings-toggle-btn,
             .entry-menu-toggle-btn,
-            .history-nav-btn,
             .cal-dd-btn,
             .calendar-gm-toggle {
                 display: inline-flex;
@@ -195,10 +194,8 @@
             }
             .rankings-toggle-btn:hover,
             .entry-menu-toggle-btn:hover,
-            .history-nav-btn:not(:disabled):hover,
             .calendar-gm-toggle:hover { background: var(--c-surface-alt); }
-            .rankings-toggle-btn:disabled,
-            .history-nav-btn:disabled { opacity: 0.35; cursor: default; }
+            .rankings-toggle-btn:disabled { opacity: 0.35; cursor: default; }
             .rankings-load-btn {
                 display: inline-flex;
                 align-items: center;
@@ -1102,89 +1099,13 @@
             .filter-search { width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 11px; margin-bottom: 8px; box-sizing: border-box; }
             .filter-search:focus { border-color: var(--c-primary-strong); }
             .history-subpage { width: 100%; display: flex; flex-direction: column; gap: 15px; }
-            .history-subpage[style*="display: none"] { display: none !important; }
             .table-header-section { margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
             .table-title { margin: 0; font-size: 22px; color: #1e293b; flex: 1; text-align: center; }
             .history-summary-container { width: 250px; text-align: left; }
             .history-header-actions { width: 320px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
             .history-header-actions .player-select-container { width: auto; flex: 1 1 0; min-width: 0; }
             .history-header-actions .player-select-container .select2-container { width: 100% !important; }
-            .history-header-actions .history-nav-btn { flex: 0 0 auto; min-width: 118px; }
             .history-wl-counter { font-size: 14px; font-weight: 700; color: #1e293b; white-space: nowrap; }
-            .history-nav-btn { height: var(--btn-h-lg); font-size: var(--fs-lg); }
-            #history-milestones-page .content-card {
-                display: flex;
-                flex-direction: row;
-                align-items: flex-start;
-                justify-content: center;
-                gap: 20px;
-                padding: 0;
-                background: transparent;
-                border: none;
-                box-shadow: none;
-            }
-            #history-milestones-page .milestones-filter-panel {
-                width: 220px;
-                flex: 0 0 220px;
-                align-self: flex-start;
-                border: 2px solid #cbd5e1;
-                background: white;
-            }
-            #history-milestones-page .milestones-main-column {
-                flex: 0 1 380px;
-                max-width: 380px;
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-            }
-            #history-milestones-page .table-wrapper {
-                width: 100%;
-                max-width: 360px;
-                margin-left: auto;
-                margin-right: auto;
-                box-sizing: border-box;
-            }
-            #history-milestones-page .table-header-section {
-                position: relative;
-                width: 100%;
-                min-height: 38px;
-            }
-            #history-milestones-page .table-title {
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                flex: 0 0 auto;
-                width: max-content;
-                text-align: center;
-            }
-            #history-milestones-page .milestones-header-actions {
-                position: absolute;
-                left: calc(50% + 200px);
-                top: 50%;
-                transform: translate(-50%, -50%);
-                display: flex;
-                justify-content: center;
-                width: auto;
-            }
-            #history-milestones-page .milestones-header-actions .history-nav-btn {
-                min-width: 118px;
-            }
-            .milestones-filter-panel { border: 2px solid var(--c-border); background: var(--c-surface); align-self: stretch; }
-            .milestones-filter-panel h3 { margin: 0; font-size: var(--fs-2xl); color: white; text-align: center; font-weight: bold; background: var(--grad-primary); border: none; padding: var(--sp-3); border-radius: 0; }
-            .milestones-filter-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
-            .milestones-filter-chip { display: inline-flex; align-items: center; justify-content: flex-start; gap: 6px; width: 100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 8px 10px; background: #f8fafc; color: #334155; font-size: 12px; font-weight: 700; cursor: pointer; user-select: none; box-sizing: border-box; }
-            .milestones-filter-chip input { margin: 0; width: 14px; height: 14px; accent-color: #75AADB; }
-            .milestones-filter-chip:hover { background: #e2e8f0; }
-            #milestones-table { table-layout: fixed; width: 100%; }
-            #milestones-table th { background: var(--c-chrome-bg) !important; position: sticky; top: 0; z-index: 10; }
-            #milestones-table th:nth-child(1) { width: auto; text-align: center; }
-            #milestones-table th:nth-child(2) { width: 100px; text-align: center; }
-            #milestones-table td { font-size: 12px; }
-            #milestones-table td:nth-child(1) { white-space: normal; overflow: visible; text-overflow: clip; }
-            #milestones-table td:nth-child(2) { text-align: center; font-weight: 800; }
-
             /* Calendar Styles */
             #view-calendar { width: 100%; min-height: 0; }
             .calendar-container { width: 100%; min-width: 100%; min-height: 0; margin-bottom: 0; display: block; box-sizing: border-box; }
@@ -1885,12 +1806,6 @@
                     box-sizing: border-box;
                 }
 
-                .history-header-actions-player .history-nav-btn {
-                    flex: 3 1 0;
-                    min-width: 0;
-                    height: 35px;
-                }
-
                 .history-header-actions-player .select2-container--default .select2-selection--single {
                     height: 35px;
                     min-height: 35px;
@@ -1948,129 +1863,6 @@
                 .filter-instructions-desktop { display: none; }
                 .filter-instructions-mobile { display: inline; }
                 .filter-btn-clear { margin-right: 8px; }
-
-                .milestones-filter-panel {
-                    width: min(100%, 420px);
-                    margin-left: auto;
-                    margin-right: auto;
-                    box-sizing: border-box;
-                }
-
-                #history-milestones-page .content-card {
-                    flex-direction: column;
-                    gap: 12px;
-                }
-
-                #history-milestones-page .milestones-filter-panel,
-                #history-milestones-page .milestones-main-column {
-                    width: 100%;
-                    max-width: 100%;
-                    min-width: 0;
-                    flex: 1 1 auto;
-                }
-
-                #history-milestones-page .milestones-main-column {
-                    gap: 6px;
-                }
-
-                #history-milestones-page .table-wrapper {
-                    width: 100%;
-                    overflow-x: hidden;
-                }
-
-                #history-milestones-page .table-header-section {
-                    margin-bottom: 0;
-                    min-height: 30px;
-                    position: relative;
-                    justify-content: flex-start;
-                    align-items: center;
-                }
-
-                #history-milestones-page .table-title {
-                    position: absolute;
-                    left: 50%;
-                    top: 50%;
-                    transform: translate(-50%, -50%);
-                    width: max-content;
-                    margin-top: 0;
-                    font-size: 14px;
-                    text-align: center;
-                }
-
-                #history-milestones-page .milestones-header-actions {
-                    position: absolute;
-                    right: 0;
-                    left: auto;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    width: auto;
-                    margin-left: 0;
-                    justify-content: flex-end;
-                }
-
-                #history-milestones-page .milestones-header-actions .history-nav-btn {
-                    min-width: 0;
-                    height: 35px;
-                    padding: 0 10px;
-                    font-size: 11px;
-                }
-
-                .milestones-filter-panel h3 {
-                    font-size: 9px;
-                    padding: 5px;
-                }
-
-                .milestones-filter-body {
-                    display: grid;
-                    grid-template-columns: repeat(3, minmax(0, 1fr));
-                    padding: 8px;
-                    gap: 4px;
-                }
-
-                .milestones-filter-chip {
-                    font-size: 8px;
-                    padding: 4px 8px;
-                    min-width: 0;
-                }
-
-                #history-milestones-page .table-wrapper {
-                    max-width: 100%;
-                    width: 100%;
-                    min-width: 0;
-                }
-
-                #milestones-table {
-                    width: 100%;
-                    max-width: 100%;
-                    min-width: 0;
-                    table-layout: fixed;
-                }
-
-                #milestones-table th,
-                #milestones-table td {
-                    font-size: 9px;
-                    padding: 3px 4px;
-                    box-sizing: border-box;
-                }
-
-                #milestones-table th:nth-child(1),
-                #milestones-table td:nth-child(1) {
-                    width: 70%;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: normal;
-                    overflow-wrap: anywhere;
-                    word-break: break-word;
-                }
-
-                #milestones-table th:nth-child(2),
-                #milestones-table td:nth-child(2) {
-                    width: 30%;
-                }
-
-                #milestones-table th:nth-child(1) {
-                    text-align: center;
-                }
 
                 /* Opponent search (Select2): shorter height and smaller text */
                 .opponent-select-container .select2-container--default .select2-selection--single {
@@ -2974,7 +2766,6 @@
             button,
             .btn,
             .rankings-toggle-btn,
-            .history-nav-btn,
             .cal-dd-btn,
             .calendar-gm-toggle {
                 max-width: 100%;
@@ -2983,7 +2774,6 @@
                 border-radius: 10px;
             }
             .rankings-toggle-btn.active,
-            .history-nav-btn.active,
             .calendar-gm-toggle.active,
             .draw-type-btn.active {
                 background: var(--c-chrome-bg);

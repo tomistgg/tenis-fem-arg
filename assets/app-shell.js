@@ -16,7 +16,7 @@
         rankings: 'WTA Rankings',
         tstrength: 'WTA Tournament Strength',
         fedbcup: 'Fed / BJK Cup',
-        information: 'Milestones'
+        information: 'Firsts & Points'
     };
     var TAB_ICONS = {
         entrylists: 'assets/files.png',

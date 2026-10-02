@@ -19,7 +19,7 @@
         <link rel="stylesheet" href="assets/app.css?v=20261002-focus-contrast">
         <link rel="stylesheet" href="assets/language.css?v=20261002-focus-contrast">
     </head>
-    <body class="home-mode" onload="renderHistoryTable(); renderMilestonesTable();">
+    <body class="home-mode" onload="renderHistoryTable();">
         <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">\u2630</button>
         <div class="app-container">
             <nav class="sidebar" id="sidebar" aria-label="Primary">
@@ -36,7 +36,7 @@
                 <button type="button" class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</button>
                 <button type="button" class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</button>
                 <button type="button" class="menu-item" id="btn-tstrength" onclick="switchTab('tstrength')">WTA TRN STR</button>
-                <button type="button" class="menu-item" id="btn-information" onclick="switchTab('information')">Milestones</button>
+                <button type="button" class="menu-item" id="btn-information" onclick="switchTab('information')">Firsts &amp; Points</button>
             </nav>
 
             <div class="main-content">
@@ -81,8 +81,8 @@
                                 <span class="home-label">WTA Tournament Strength</span>
                             </button>
                             <button class="home-btn" onclick="switchTab('information')">
-                                <img class="home-icon-img" src="assets/podium.png" alt="Milestones icon" />
-                                <span class="home-label">Milestones</span>
+                                <img class="home-icon-img" src="assets/podium.png" alt="Firsts and points icon" />
+                                <span class="home-label">Firsts &amp; Points</span>
                             </button>
                         </div>
                         <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()"><svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg><svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><span id="home-dark-label">Dark Mode</span></button>
@@ -332,7 +332,6 @@
                                                 @@WTARG_HISTORY_PLAYER_OPTIONS@@
                                             </select>
                                         </div>
-                                        <button class="history-nav-btn" onclick="setHistorySubpage('milestones')">Milestones</button>
                                     </div>
                                 </div>
 
@@ -355,37 +354,6 @@
                                 </div>
                             </div>
 
-                            <div id="history-milestones-page" class="history-subpage" style="display: none;">
-                                <div class="table-header-section">
-                                    <h1 class="table-title">Milestones</h1>
-                                    <div class="milestones-header-actions">
-                                        <button class="history-nav-btn" onclick="setHistorySubpage('match')">Match History</button>
-                                    </div>
-                                </div>
-
-                                <div class="content-card">
-                                    <div class="milestones-filter-panel">
-                                        <h3>Filters</h3>
-                                        <div class="milestones-filter-body" id="milestones-filter-body"></div>
-                                    </div>
-
-                                    <div class="milestones-main-column">
-                                        <div class="table-wrapper">
-                                            <table id="milestones-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>PLAYER</th>
-                                                        <th>WINS</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="milestones-body">
-                                                    <tr><td colspan="2" class="cell-state-info">Open Milestones to view the leaderboard</td></tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -605,20 +573,20 @@
                 </div>
 
                 <div id="view-information" class="single-layout" style="display: none;">
-                    <div class="header-row"><h1>Milestones</h1></div>
-                    <div class="milestones-tabs" role="tablist" aria-label="Milestones views">
+                    <div class="header-row"><h1>Firsts &amp; Points</h1></div>
+                    <div class="milestones-tabs" role="tablist" aria-label="Firsts and points views">
                         <button type="button" class="fedbcup-btn active" id="milestones-btn-historical" role="tab" aria-selected="true" onclick="switchMilestonesTab('historical')">Historical</button>
                         <button type="button" class="fedbcup-btn" id="milestones-btn-active" role="tab" aria-selected="false" onclick="switchMilestonesTab('active')">Active</button>
                     </div>
 
                     <section id="milestones-historical" class="milestones-panel" role="tabpanel">
                         <div class="content-card milestones-historical-card">
-                            <div class="table-wrapper" tabindex="0" aria-label="Argentine player milestones by birth year">
+                            <div class="table-wrapper" tabindex="0" aria-label="Argentine player firsts by birth year">
                                 <table class="milestones-historical-table">
                                     <thead><tr>
                                         <th>Born</th>
                                         <th>
-                                            <select id="milestones-historical-metric" aria-label="Historical milestone" onchange="_milestonesRenderHistorical()">
+                                            <select id="milestones-historical-metric" aria-label="Historical first" onchange="_milestonesRenderHistorical()">
                                                 <option value="ranked">First WTA ranking</option>
                                                 <option value="point">First WTA point</option>
                                                 <option value="mainDrawWin">First MD win</option>
