@@ -297,11 +297,11 @@
                 if (player) {
                     let seText = '';
                     if (player.seed && player.entry) {
-                        seText = '<span class="seed">' + player.seed + '/' + '</span><span class="entry">' + player.entry + '</span>';
+                        seText = '<span class="seed">' + escapeHtml(player.seed) + '/' + '</span><span class="entry">' + escapeHtml(player.entry) + '</span>';
                     } else if (player.seed) {
-                        seText = '<span class="seed">' + player.seed + '</span>';
+                        seText = '<span class="seed">' + escapeHtml(player.seed) + '</span>';
                     } else if (player.entry) {
-                        seText = '<span class="entry">' + player.entry + '</span>';
+                        seText = '<span class="entry">' + escapeHtml(player.entry) + '</span>';
                     }
                     seedEntry = '<span class="seed-entry">' + seText + '</span>';
                 }
@@ -315,7 +315,7 @@
                         '<span class="team-member"><span class="country">' + countryFlag(member.country, false) +
                         '</span><span class="team-member-name">' + escapeHtml(formatDrawName(member.name)) +
                         '</span></span>').join('') + '</span>'
-                    : '<span class="name"' + uiLabel + '>' + name + '</span>';
+                    : '<span class="name"' + uiLabel + '>' + escapeHtml(name) + '</span>';
                 const wtn = player && entryWtnToNumber(player.wtn);
                 const wtnHtml = _drawWtnVisible && ['MDS', 'QS'].includes(currentDrawType) && wtn !== null
                     ? '<span class="draw-player-wtn" title="WTN">' + escapeHtml(String(player.wtn)) + '</span>'
@@ -329,8 +329,8 @@
                         const otherScore = isWinner ? s.l : s.w;
                         const won = myScore > otherScore;
                         const cls = won ? 'won' : 'lost';
-                        const tb = (s.tb && !won) ? '<sup>' + s.tb + '</sup>' : '';
-                        setsHtml += '<span class="set-score ' + cls + '">' + myScore + tb + '</span>';
+                        const tb = (s.tb && !won) ? '<sup>' + escapeHtml(s.tb) + '</sup>' : '';
+                        setsHtml += '<span class="set-score ' + cls + '">' + escapeHtml(myScore) + tb + '</span>';
                     }
                     if (scoreData.retired) {
                         if (!isWinner) {
@@ -430,7 +430,7 @@
                 for (let r = 0; r < numRounds; r++) {
                     const rawLabel = r < pdfRoundLabels.length ? pdfRoundLabels[r] : 'R' + (r + 1);
                     const label = formatRoundLabel(rawLabel, r);
-                    html += '<div class="draw-round" data-round="' + r + '"><div class="draw-round-header" role="button" tabindex="0" data-round="' + r + '" title="Show from this round">' + label + '</div>';
+                    html += '<div class="draw-round" data-round="' + r + '"><div class="draw-round-header" role="button" tabindex="0" data-round="' + r + '" title="Show from this round">' + escapeHtml(label) + '</div>';
 
                     if (r === 0) {
                         const numMatches = Math.floor(drawSize / 2);

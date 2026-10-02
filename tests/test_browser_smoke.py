@@ -229,6 +229,115 @@ def test_generated_site_loads_rankings_bundle_offline(offline_generated_site):
         driver.find_element(By.CSS_SELECTOR, '.home-btn').click()
         wait.until(lambda current: current.find_element(By.TAG_NAME, 'html').get_attribute('lang') == 'es')
 
+        malicious_name = '<img src=x onerror="window.injected=true">'
+        driver.execute_script(
+            "_renderRankingRows([{n: arguments[0], c: 'ARG', r: 1, pts: 100, d: '2000-01-01'}]);",
+            malicious_name,
+        )
+        ranking_body = driver.find_element(By.ID, 'rankings-body')
+        assert malicious_name.lower() in ranking_body.get_attribute('textContent').lower()
+        assert not ranking_body.find_elements(By.CSS_SELECTOR, 'img[src="x"]')
+
+        assert driver.execute_script('''
+            const menu = document.querySelector('#view-entrylists .entry-menu');
+            const item = document.createElement('div');
+            item.className = 'entry-menu-item';
+            item.dataset.key = 'fixture';
+            item.textContent = 'Fixture';
+            menu.append(item);
+            try {
+                item.click();
+                return item.classList.contains('active');
+            } finally {
+                item.remove();
+            }
+        ''')
+
+        assert driver.execute_script('''
+            _historyCurrentPage = 2;
+            const calls = [];
+            const render = _renderHistoryPage;
+            _renderHistoryPage = page => calls.push(page);
+            try {
+                _updateHistoryPagination(2001, 2, 3);
+                const [prev, next] = document.querySelectorAll('#history-pagination .history-page-btn');
+                prev.click();
+                next.click();
+                return calls;
+            } finally {
+                _renderHistoryPage = render;
+            }
+        ''') == [1, 3]
+
+        driver.get(f'http://127.0.0.1:{server.server_port}/app.html#history')
+        wait.until(expected_conditions.presence_of_element_located((By.ID, 'playerHistorySelect')))
+        race_results = driver.execute_async_script('''
+            const done = arguments[arguments.length - 1];
+            (async () => {
+                const originalLoader = ensureHistoryDataLoaded;
+                const originalHistory = historyData;
+                try {
+                    WTARG_I18N.setLanguage('en');
+                    const historySelect = document.getElementById('playerHistorySelect');
+                    const roadSelect = document.getElementById('roadtogsPlayerSelect');
+                    for (const select of [historySelect, roadSelect]) {
+                        select.add(new Option('Fixture Player', 'Fixture Player'));
+                    }
+                    if (!historySelect.querySelector('option[value="__ALL__"]')) {
+                        historySelect.add(new Option('All Players', '__ALL__'));
+                    }
+                    historyData = [];
+
+                    async function race(historyValue, rejectLoad) {
+                        let resolvePending, rejectPending;
+                        const pending = new Promise((resolve, reject) => {
+                            resolvePending = resolve;
+                            rejectPending = reject;
+                        });
+                        ensureHistoryDataLoaded = () => pending;
+                        $(historySelect).val(historyValue).trigger('change.select2');
+                        if (!getNormalizedPlayerSelection('playerHistorySelect')) {
+                            throw new Error('History test player was not selected');
+                        }
+                        const oldHistory = filterHistoryByPlayer();
+                        $(roadSelect).val('Fixture Player').trigger('change.select2');
+                        if (!getNormalizedPlayerSelection('roadtogsPlayerSelect')) {
+                            throw new Error('Points test player was not selected');
+                        }
+                        const oldRoad = renderRoadToGS();
+                        $(historySelect).val('').trigger('change.select2');
+                        const clearedHistory = filterHistoryByPlayer();
+                        $(roadSelect).val('').trigger('change.select2');
+                        const clearedRoad = renderRoadToGS();
+                        await Promise.all([clearedHistory, clearedRoad]);
+                        const snapshot = () => ({
+                            history: document.getElementById('history-body').textContent.trim(),
+                            road: document.getElementById('roadtogs-body').textContent.trim(),
+                            points: document.getElementById('roadtogs-points-total').textContent.trim()
+                        });
+                        const cleared = snapshot();
+                        if (rejectLoad) rejectPending(new Error('delayed history failure'));
+                        else resolvePending([]);
+                        await Promise.all([oldHistory, oldRoad]);
+                        return { cleared, afterLoad: snapshot() };
+                    }
+
+                    done({ success: await race('Fixture Player', false), failure: await race('__ALL__', true) });
+                } catch (error) {
+                    done({ error: String(error) });
+                } finally {
+                    ensureHistoryDataLoaded = originalLoader;
+                    historyData = originalHistory;
+                }
+            })();
+        ''')
+        assert 'error' not in race_results, race_results
+        for outcome in race_results.values():
+            assert outcome['cleared'] == outcome['afterLoad']
+            assert 'Select a player' in outcome['cleared']['history']
+            assert 'Select a player' in outcome['cleared']['road']
+            assert outcome['cleared']['points'] == 'Points: 0'
+
         messages = "\n".join(entry["message"] for entry in driver.get_log("browser"))
         assert "Uncaught" not in messages
     finally:

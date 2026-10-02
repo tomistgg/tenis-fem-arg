@@ -83,8 +83,9 @@ def test_refresh_publishes_only_validated_data_to_main():
     assert workflow.index("Require a promotable transaction") < workflow.index("Publish validated data to main")
 
 
-def test_refresh_runs_complete_quality_gate_before_updating_or_deploying():
+def test_refresh_checks_structure_before_updating_and_freshness_before_deploying():
     workflow = (WORKFLOW_DIR / "hourly-update.yml").read_text(encoding="utf-8")
+    quality_workflow = (WORKFLOW_DIR / "quality.yml").read_text(encoding="utf-8")
     overlay_index = workflow.index("Preserve committed data files")
     refresh_index = workflow.index("Extract, transform, validate, and build once")
     upload_index = workflow.index("Upload immutable Pages artifact")
@@ -104,6 +105,17 @@ def test_refresh_runs_complete_quality_gate_before_updating_or_deploying():
         assert command_index < refresh_index
         assert command_index < upload_index
 
+    preflight_gate = workflow[
+        workflow.index("Check data structure before refresh") : workflow.index("- name: Ruff")
+    ]
+    final_gate = workflow[
+        workflow.index("Gate the exact refreshed data and deploy artifact") : workflow.index("- name: Build run report")
+    ]
+    assert "--allow-stale" in preflight_gate
+    assert "--allow-stale" in quality_workflow
+    assert "--allow-stale" not in final_gate
+    assert "python data_quality.py validate" in final_gate
+    assert workflow.index("Gate the exact refreshed data and deploy artifact") < upload_index
     assert workflow.index("Snapshot validated quality baseline") < overlay_index
 
 

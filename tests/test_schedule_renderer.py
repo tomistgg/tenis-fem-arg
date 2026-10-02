@@ -1,8 +1,11 @@
 import json
+from datetime import datetime
 from pathlib import Path
 
 import main
+import site_renderer
 from site_renderer import _entry_inputs, _ranking_inputs, _tournament_inputs, _visible_schedule_monday_map
+from time_utils import NEW_YORK
 
 
 def test_live_schedule_starts_with_wta_ranked_players_only(tmp_path: Path, monkeypatch):
@@ -46,6 +49,24 @@ def test_schedule_includes_unranked_players_only_from_entry_lists(tmp_path: Path
 
     assert {player["Player"] for player in players} == {"WTA RANKED", "ITF WITH ENTRY", "ENTRY ONLY"}
     assert next(player for player in players if player["Player"] == "ITF WITH ENTRY")["Rank"] == "-"
+
+
+def test_schedule_ignores_cached_unaccepted_current_ranking(tmp_path: Path, monkeypatch):
+    (tmp_path / "wta_rankings_20_29.csv").write_text(
+        "week_date,id,rank,points,player,country,dob\n"
+        "2026-07-20,1,100,500,Previous Player,ARG,2000-01-01\n"
+        "2026-07-27,2,90,600,Unaccepted Player,ARG,2001-01-01\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "wta_ranking_refresh_status.json").write_text(
+        '{"requested_date":"2026-07-27","status":"pending_publication"}', encoding="utf-8"
+    )
+    monkeypatch.setattr(site_renderer, "new_york_now", lambda: datetime(2026, 7, 27, 12, 1, tzinfo=NEW_YORK))
+
+    players, all_players = _ranking_inputs(tmp_path, set())
+
+    assert [player["Player"] for player in players] == ["PREVIOUS PLAYER"]
+    assert [player["Player"] for player in all_players] == ["PREVIOUS PLAYER"]
 
 
 def test_schedule_shows_four_chronological_unique_weeks(tmp_path: Path):

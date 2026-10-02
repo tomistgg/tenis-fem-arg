@@ -26,7 +26,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
-from ranking_publication import effective_wta_ranking_date
+from ranking_publication import accepted_ranking_dates, effective_wta_ranking_date, load_ranking_status
 from run_state import report_run_issue
 from runtime_logging import configure_logging, get_logger
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
@@ -56,7 +56,13 @@ from config import (
     resolve_player_display_name,
     resolve_player_presentation_name,
 )
-from draws import _draw_is_complete, fetch_itf_tournament_draws, fetch_tournament_draws, wta_draw_polling_open
+from draws import (
+    _draw_is_complete,
+    _wta_tournament_has_started,
+    fetch_itf_tournament_draws,
+    fetch_tournament_draws,
+    wta_draw_polling_open,
+)
 from entry_withdrawals import (
     WITHDRAWALS_FILENAME,
     load_withdrawals,
@@ -373,7 +379,7 @@ def _remove_duplicate_entry_players(players, tournament_key, tournament_name):
 def _normalize_schedule_text(text):
     """Normalize a schedule label/cell for robust duplicate detection."""
     raw = str(text or "")
-    raw = re.sub(r"(?i)<br\\s*/?>", "\n", raw)
+    raw = re.sub(r"(?i)<br\s*/?>", "\n", raw)
     raw = raw.replace("</div>", "\n")
     raw = re.sub(r"<[^>]+>", "", raw)
     raw = html.unescape(raw)
@@ -386,10 +392,9 @@ def _schedule_cell_contains_label(cell_html, label):
     if not normalized_label:
         return False
     raw = str(cell_html or "")
-    raw = re.sub(r"(?i)<br\\s*/?>", "\n", raw)
+    raw = re.sub(r"(?i)<br\s*/?>", "\n", raw)
     raw = raw.replace("</div>", "\n")
     raw = re.sub(r"<[^>]+>", "", raw)
-    raw = html.unescape(raw)
     return any(_normalize_schedule_text(line) == normalized_label for line in raw.splitlines())
 
 
@@ -399,6 +404,7 @@ def _append_schedule_label(target_map, player_key, week_label, label, style="app
         return False
     weeks = target_map.setdefault(player_key, {})
     existing = weeks.get(week_label, "")
+    label = html.escape(str(label), quote=True)
     if _schedule_cell_contains_label(existing, label):
         return False
     if not existing:
@@ -448,6 +454,27 @@ def _published_draw_has_content(draw_data):
     if not isinstance(draw_data, dict):
         return False
     return bool(draw_data.get("players"))
+
+
+def _report_wta_draw_fetch_failure(t_key, t_info, requested_types, cached_draws, fresh_draws, today, error=None):
+    """Report missing expected draws after the PDF and API fallbacks finish."""
+    cached_draws = cached_draws if isinstance(cached_draws, dict) else {}
+    fresh_draws = fresh_draws if isinstance(fresh_draws, dict) else {}
+    main_draw_due = _wta_tournament_has_started(t_info.get("startDate"), today=today)
+    missing_types = [
+        draw_type
+        for draw_type in requested_types
+        if ((draw_type == "MDS" and main_draw_due) or _published_draw_has_content(cached_draws.get(draw_type)))
+        and not _published_draw_has_content(fresh_draws.get(draw_type))
+    ]
+    if missing_types:
+        report_run_issue(
+            "wta-draws",
+            "fetch published draw",
+            error or RuntimeError(f"Expected published WTA draw unavailable: {', '.join(missing_types)}"),
+            severity="degraded",
+            context={"tournament_key": t_key, "draw_types": missing_types},
+        )
 
 
 def _keys_with_published_itf_draw(
@@ -818,6 +845,7 @@ def enrich_history_with_wta_ranks(cleaned_history, data_dir=None):
                         aliases_lookup[k].append(cn)
 
     csv_by_week = _load_wta_csv(source_data_dir) or {}
+    accepted_weeks = set(accepted_ranking_dates(csv_by_week, new_york_now(), load_ranking_status(source_data_dir)))
 
     def _is_itf_id(value):
         s = str(value or "").strip()
@@ -901,7 +929,7 @@ def enrich_history_with_wta_ranks(cleaned_history, data_dir=None):
         row["_winnerRank"] = ""
         row["_loserRank"] = ""
         week_date = get_previous_monday(row.get("DATE", ""))
-        if not week_date or week_date not in csv_by_week:
+        if week_date not in accepted_weeks:
             continue
         history_rows_by_week.setdefault(week_date, []).append(row)
 
@@ -1063,15 +1091,7 @@ def build_all_tournament_groups(driver):
 def fetch_arg_players():
     """Fetch WTA rankings and return ranked ARG players."""
     eastern_now = new_york_now()
-    ranking_status_file = os.path.join(DATA_DIR, "wta_ranking_refresh_status.json")
-    try:
-        with open(ranking_status_file, encoding="utf-8-sig") as source:
-            ranking_status = json.load(source)
-    except (OSError, UnicodeError, json.JSONDecodeError):
-        ranking_status = {}
-    if not isinstance(ranking_status, dict):
-        ranking_status = {}
-    ranking_monday = effective_wta_ranking_date(eastern_now, ranking_status).isoformat()
+    ranking_monday = effective_wta_ranking_date(eastern_now, load_ranking_status(DATA_DIR)).isoformat()
 
     all_wta_players, wta_status = get_wta_rankings_cached(ranking_monday, nationality=None, with_status=True)
     wta_players_arg = [
@@ -1295,7 +1315,9 @@ def process_tournaments(
                 if not items:
                     continue
                 sorted_items = sorted(items, key=_itf_item_sort_key)
-                formatted = "<br>".join(f"{it['name']}{it['suffix']}" for it in sorted_items)
+                formatted = "<br>".join(
+                    html.escape(f"{it['name']}{it['suffix']}", quote=True) for it in sorted_items
+                )
                 if week_label in target_map[p_key] and target_map[p_key][week_label]:
                     target_map[p_key][week_label] += f"<br>{formatted}"
                 else:
@@ -1397,6 +1419,8 @@ def process_tournaments(
                     record_wta_withdrawals(
                         withdrawal_state, key, cached_players, t_list, observation, today_str,
                     )
+                    complete_sections = set(observation.get("complete_sections", []))
+                    t_list = [p for p in t_list if p.get("type") in complete_sections]
                     t_list = merge_entry_list(cached_players, t_list)
                 if not is_manual_entry:
                     _canonicalize_player_names(t_list, source="wta", names_only=True)
@@ -2199,13 +2223,21 @@ def main():
     with ThreadPoolExecutor(max_workers=6) as pool:
         futures = {pool.submit(_fetch_wta_draw_job, job): job for job in wta_draw_jobs}
         for done, fut in enumerate(as_completed(futures), start=1):
+            week, t_key, t_info, requested_draw_types = futures[fut]
+            fetch_error = None
             try:
-                week, t_key, t_info, t_draws = fut.result()
+                _, _, _, t_draws = fut.result()
             except Exception as e:
-                week, t_key, t_info, _requested_draw_types = futures[fut]
                 t_draws = {}
+                fetch_error = e
                 logger.warning(f"  [!] WTA draw fetch failed for {t_info.get('name', '')}: {e}")
-            wta_draw_results[_canonical_draw_store_key(t_key)] = (week, t_key, t_info, t_draws)
+            store_key = _canonical_draw_store_key(t_key)
+            cached_entry = draws_store.get(store_key)
+            cached_draws = cached_entry.get("draws") if isinstance(cached_entry, dict) else {}
+            _report_wta_draw_fetch_failure(
+                t_key, t_info, requested_draw_types, cached_draws, t_draws, today.date(), fetch_error
+            )
+            wta_draw_results[store_key] = (week, t_key, t_info, t_draws)
             logger.debug(f"  WTA draw fetched ({done}/{total_wta_draws}): {t_info.get('name', '')}")
 
     for store_key, (week, _t_key, t_info, t_draws) in wta_draw_results.items():

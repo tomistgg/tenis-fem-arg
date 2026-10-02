@@ -1,24 +1,7 @@
 {
   "fields": ["column","continent","name","level","surface","country","startDate","endDate","source","tournamentKey","tournamentId","calendarKey"],
   "weeks": {
-    "Week of September 28": [
-      ["wta_tour","asia","WTA 1000 Beijing","WTA 1000","Hard","CHN","2026-09-30","2026-10-11","WTA","",1020,"wta:1020"],
-      ["wta_125","europe","WTA 125 Adana","WTA 125","Hard","TUR","2026-09-28","2026-10-04","WTA","",1179,"wta:1179"],
-      ["wta_125","asia","WTA 125 Jingshan","WTA 125","Hard","CHN","2026-09-28","2026-10-04","WTA","",1143,"wta:1143"],
-      ["itf","south_america","W15 Trelew","W15","Hard","ARG","2026-09-28","2026-10-04","ITF","w-itf-arg-2026-010","","itf:w-itf-arg-2026-010"],
-      ["itf","north_central_america","W100 Templeton, CA","W100","Hard","USA","2026-09-28","2026-10-04","ITF","w-itf-usa-2026-044","","itf:w-itf-usa-2026-044"],
-      ["itf","north_central_america","W15 Nashville, TN","W15","Hard","USA","2026-09-28","2026-10-04","ITF","w-itf-usa-2026-063","","itf:w-itf-usa-2026-063"],
-      ["itf","europe","W75 Quinta do Lago","W75","Hard","POR","2026-09-28","2026-10-04","ITF","w-itf-por-2026-017","","itf:w-itf-por-2026-017"],
-      ["itf","europe","W35 Baza","W35","Hard","ESP","2026-09-28","2026-10-04","ITF","w-itf-esp-2026-031","","itf:w-itf-esp-2026-031"],
-      ["itf","europe","W35 Reims","W35","Hard","FRA","2026-09-28","2026-10-04","ITF","w-itf-fra-2026-029","","itf:w-itf-fra-2026-029"],
-      ["itf","europe","W15 Varna","W15","Clay","BUL","2026-09-28","2026-10-04","ITF","w-itf-bul-2026-008","","itf:w-itf-bul-2026-008"],
-      ["itf","africa","W15 Monastir 28","W15","Hard","TUN","2026-09-28","2026-10-04","ITF","w-itf-tun-2026-035","","itf:w-itf-tun-2026-035"],
-      ["itf","africa","W15 Sharm ElSheikh 13","W15","Hard","EGY","2026-09-28","2026-10-04","ITF","w-itf-egy-2026-027","","itf:w-itf-egy-2026-027"],
-      ["itf","asia","W15 Maanshan 6","W15","Hard","CHN","2026-09-28","2026-10-04","ITF","w-itf-chn-2026-034","","itf:w-itf-chn-2026-034"],
-      ["itf","oceania","W35 Wagga Wagga 1","W35","Hard","AUS","2026-09-28","2026-10-04","ITF","w-itf-aus-2026-011","","itf:w-itf-aus-2026-011"]
-    ],
     "Week of October 5": [
-      ["wta_tour","asia","WTA 1000 Beijing","WTA 1000","Hard","CHN","2026-09-30","2026-10-11","WTA","",1020,"wta:1020"],
       ["wta_125","europe","WTA 125 Samsun","WTA 125","Hard","TUR","2026-10-05","2026-10-11","WTA","",1149,"wta:1149"],
       ["wta_125","asia","WTA 125 Suzhou","WTA 125","Hard","CHN","2026-10-05","2026-10-11","WTA","",1147,"wta:1147"],
       ["itf","south_america","W15 Cipolletti","W15","Hard","ARG","2026-10-05","2026-10-11","ITF","w-itf-arg-2026-013","","itf:w-itf-arg-2026-013"],
@@ -48,7 +31,7 @@
       ["itf","north_central_america","W50 Quebec City","W50","Hard","CAN","2026-10-12","2026-10-18","ITF","w-itf-can-2026-003","","itf:w-itf-can-2026-003"],
       ["itf","north_central_america","W35 Redding, CA","W35","Hard","USA","2026-10-12","2026-10-18","ITF","w-itf-usa-2026-050","","itf:w-itf-usa-2026-050"],
       ["itf","europe","W50 Stara Zagora","W50","Clay","BUL","2026-10-12","2026-10-18","ITF","w-itf-bul-2026-004","","itf:w-itf-bul-2026-004"],
-      ["itf","europe","W35 Birmingham 2","W35","Hard","GBR","2026-10-12","2026-10-17","ITF","w-itf-gbr-2026-011","","itf:w-itf-gbr-2026-011"],
+      ["itf","europe","W35 Birmingham 2","W35","Hard","GBR","2026-10-12","2026-10-18","ITF","w-itf-gbr-2026-011","","itf:w-itf-gbr-2026-011"],
       ["itf","europe","W35 Heraklion 2","W35","Clay","GRE","2026-10-12","2026-10-18","ITF","w-itf-gre-2026-011","","itf:w-itf-gre-2026-011"],
       ["itf","europe","W35 Santa Margherita di Pula 10","W35","Clay","ITA","2026-10-12","2026-10-18","ITF","w-itf-ita-2026-036","","itf:w-itf-ita-2026-036"],
       ["itf","europe","W15 Bol 1","W15","Clay","CRO","2026-10-12","2026-10-18","ITF","w-itf-cro-2026-004","","itf:w-itf-cro-2026-004"],
@@ -125,7 +108,7 @@
     "Week of November 9": [
       ["wta_tour","north_central_america","WTA Finals","Finals","Hard","USA","2026-11-08","2026-11-15","WTA","",808,"wta:808"],
       ["wta_125","south_america","WTA 125 Sopo","WTA 125","Clay","COL","2026-11-09","2026-11-14","WTA","",1181,"wta:1181"],
-      ["itf","south_america","W15 Feira de Santana","W15","Hard","BRA","2026-11-09","2026-11-15","ITF","w-itf-bra-2026-013","","itf:w-itf-bra-2026-013"],
+      ["itf","south_america","W15 São Carlos","W15","Clay","BRA","2026-11-09","2026-11-15","ITF","w-itf-bra-2026-019","","itf:w-itf-bra-2026-019"],
       ["itf","north_central_america","W50 Chihuahua 2","W50","Clay","MEX","2026-11-09","2026-11-14","ITF","w-itf-mex-2026-008","","itf:w-itf-mex-2026-008"],
       ["itf","north_central_america","W35 Weston, FL 2","W35","Clay","USA","2026-11-09","2026-11-15","ITF","w-itf-usa-2026-061","","itf:w-itf-usa-2026-061"],
       ["itf","north_central_america","W15 Lincoln, NE","W15","Hard","USA","2026-11-09","2026-11-15","ITF","w-itf-usa-2026-060","","itf:w-itf-usa-2026-060"],
@@ -181,6 +164,7 @@
     ],
     "Week of December 7": [
       ["itf","south_america","W15 Lima 2","W15","Clay","PER","2026-12-07","2026-12-13","ITF","w-itf-per-2026-002","","itf:w-itf-per-2026-002"],
+      ["itf","south_america","W15 Mogi das Cruzes 1","W15","Clay","BRA","2026-12-07","2026-12-13","ITF","w-itf-bra-2026-017","","itf:w-itf-bra-2026-017"],
       ["itf","north_central_america","W50 Punta Cana 2","W50","Clay","DOM","2026-12-07","2026-12-13","ITF","w-itf-dom-2026-002","","itf:w-itf-dom-2026-002"],
       ["itf","north_central_america","W35 Daytona Beach, FL","W35","Clay","USA","2026-12-07","2026-12-13","ITF","w-itf-usa-2026-065","","itf:w-itf-usa-2026-065"],
       ["itf","europe","W15 Antalya 10","W15","Clay","TUR","2026-12-07","2026-12-13","ITF","w-itf-tur-2026-032","","itf:w-itf-tur-2026-032"],
@@ -193,6 +177,7 @@
     "Week of December 14": [
       ["wta_125","europe","WTA 125 Limoges","WTA 125","Hard","FRA","2026-12-14","2026-12-20","WTA","",1072,"wta:1072"],
       ["itf","south_america","W35 Lima","W35","Clay","PER","2026-12-14","2026-12-20","ITF","w-itf-per-2026-003","","itf:w-itf-per-2026-003"],
+      ["itf","south_america","W15 Mogi das Cruzes 2","W15","Clay","BRA","2026-12-14","2026-12-20","ITF","w-itf-bra-2026-018","","itf:w-itf-bra-2026-018"],
       ["itf","north_central_america","W50 Punta Cana 3","W50","Clay","DOM","2026-12-14","2026-12-20","ITF","w-itf-dom-2026-003","","itf:w-itf-dom-2026-003"],
       ["itf","europe","W15 Antalya 11","W15","Clay","TUR","2026-12-14","2026-12-20","ITF","w-itf-tur-2026-033","","itf:w-itf-tur-2026-033"],
       ["itf","africa","W15 Monastir 36","W15","Hard","TUN","2026-12-14","2026-12-20","ITF","w-itf-tun-2026-046","","itf:w-itf-tun-2026-046"],
@@ -201,10 +186,11 @@
       ["itf","oceania","W50 Tauranga","W50","Hard","NZL","2026-12-14","2026-12-20","ITF","w-itf-nzl-2026-003","","itf:w-itf-nzl-2026-003"]
     ],
     "Week of December 21": [
-      ["itf","europe","W15 Antalya 12","W15","Clay","TUR","2026-12-21","2026-12-27","ITF","w-itf-tur-2026-034","","itf:w-itf-tur-2026-034"]
+      ["itf","europe","W15 Antalya 12","W15","Clay","TUR","2026-12-21","2026-12-27","ITF","w-itf-tur-2026-034","","itf:w-itf-tur-2026-034"],
+      ["itf","africa","W15 Monastir 37","W15","Hard","TUN","2026-12-21","2026-12-27","ITF","w-itf-tun-2026-047","","itf:w-itf-tun-2026-047"]
     ],
     "Week of December 28": [
-      ["itf","africa","W15 Monastir 37","W15","Hard","TUN","2026-12-28","2027-01-03","ITF","w-itf-tun-2026-048","","itf:w-itf-tun-2026-048"]
+      ["itf","africa","W15 Monastir 38","W15","Hard","TUN","2026-12-28","2027-01-03","ITF","w-itf-tun-2026-048","","itf:w-itf-tun-2026-048"]
     ]
   }
 }

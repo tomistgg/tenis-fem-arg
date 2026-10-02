@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+import data_quality
 from data_quality import (
     CacheStateModel,
     FreshnessModel,
@@ -163,6 +164,43 @@ def test_stale_table_is_blocking(tmp_path):
     policy = QualityPolicyModel(schema_version=1, tables={"fixture.csv": table}, cache_freshness={})
     with pytest.raises(DataValidationError, match="age 51 days"):
         _validate_freshness(tmp_path, policy, date(2026, 7, 22))
+
+
+def test_allow_stale_still_checks_date_and_cache_structure(tmp_path):
+    table_path = tmp_path / "fixture.csv"
+    table_path.write_text("date\n2026-06-01\n", encoding="utf-8")
+    (tmp_path / "cache_state.json").write_text(
+        '{"files":{"calendar.json":{"fetchedAt":"2026-06-01T00:00:00Z"}},"entries":{}}',
+        encoding="utf-8",
+    )
+    table = TablePolicyModel(
+        kind="matches",
+        minimum_rows=1,
+        freshness=FreshnessModel(column="date", max_age_days=7),
+    )
+    policy = QualityPolicyModel(
+        schema_version=1, tables={"fixture.csv": table}, cache_freshness={"calendar.json": 7}
+    )
+
+    observed = _validate_freshness(tmp_path, policy, date(2026, 7, 22), allow_stale=True)
+    assert observed["fixture.csv"] == "2026-06-01"
+    assert "cache:calendar.json" in observed
+
+    table_path.write_text("date\n2026-02-31\n", encoding="utf-8")
+    with pytest.raises(DataValidationError, match="invalid date"):
+        _validate_freshness(tmp_path, policy, date(2026, 7, 22), allow_stale=True)
+
+    table_path.write_text("date\n2026-08-01\n", encoding="utf-8")
+    with pytest.raises(DataValidationError, match="age -10 days"):
+        _validate_freshness(tmp_path, policy, date(2026, 7, 22), allow_stale=True)
+
+
+def test_allow_stale_cli_passes_mode_to_quality_gate(monkeypatch):
+    seen = []
+    monkeypatch.setattr(data_quality, "run_data_quality_gate", lambda *args, **kwargs: seen.append(kwargs) or {})
+
+    assert data_quality.main(["validate", "--allow-stale"]) == 0
+    assert seen[0]["allow_stale"] is True
 
 
 @pytest.mark.integration

@@ -1,14 +1,35 @@
+import runpy
 from datetime import date
 
 import draws
+import main
+import runtime_paths
 import tstrength
 import wta
+import wta_calendar_cache
 from populate_data import tournament_sizes_update, wta_load_new
+from run_state import initialize_run_state, load_run_state
 
 
 class _MatchesResponse:
     def json(self):
         return {"matches": []}
+
+
+def test_wta_loader_accepts_empty_tournament_window(monkeypatch, tmp_path):
+    calendar_requests = []
+    monkeypatch.setattr(runtime_paths, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(
+        wta_calendar_cache,
+        "get_shared_wta_calendar",
+        lambda *args, **kwargs: calendar_requests.append((args, kwargs)) or [],
+    )
+    monkeypatch.setenv("WTARG_TRANSACTION_ACTIVE", "1")
+
+    runpy.run_path(wta_load_new.__file__, run_name="__main__")
+
+    assert len(calendar_requests) == 1
+    assert not (tmp_path / "wta_matches_arg.csv").exists()
 
 
 def test_wta_results_loader_requests_completed_matches_only(monkeypatch):
@@ -187,3 +208,29 @@ def test_wta_draw_only_polls_requested_incomplete_type(monkeypatch):
     assert result == {}
     assert pdf_requests == [("1017", 2026, "QS")]
     assert api_requests == []
+
+
+def test_wta_draw_fetch_failure_degrades_only_when_requested_draw_was_due(monkeypatch, tmp_path):
+    status_path = tmp_path / "run.json"
+    initialize_run_state(status_path, "test-run", tmp_path)
+    monkeypatch.setenv("WTARG_RUN_STATUS_PATH", str(status_path))
+    tournament = {"startDate": "2026-08-23"}
+    error = RuntimeError("provider unavailable")
+
+    # A draw that has never been published may legitimately be absent before start.
+    main._report_wta_draw_fetch_failure("event", tournament, ["MDS"], {}, {}, date(2026, 8, 21), error)
+    main._report_wta_draw_fetch_failure("event", tournament, ["QS"], {}, {}, date(2026, 8, 23), error)
+    main._report_wta_draw_fetch_failure(
+        "event", tournament, ["MDS"], {}, {"MDS": {"players": [{"name": "Player"}]}}, date(2026, 8, 23)
+    )
+    assert load_run_state(status_path)["status"] == "running"
+
+    # The request helpers turn network failures into empty responses; these must still be reported.
+    main._report_wta_draw_fetch_failure("event", tournament, ["MDS"], {}, {}, date(2026, 8, 23))
+    main._report_wta_draw_fetch_failure(
+        "event", tournament, ["QS"], {"QS": {"players": [{"name": "Player"}]}}, {}, date(2026, 8, 21), error
+    )
+    state = load_run_state(status_path)
+    assert state["status"] == "degraded"
+    assert len(state["issues"]) == 2
+    assert all(issue["component"] == "wta-draws" for issue in state["issues"])

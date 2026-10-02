@@ -185,6 +185,21 @@ def test_wta_uses_first_missing_date_without_treating_draw_moves_as_withdrawals(
     assert state["wta-example"]["withdrawals"] == []
 
 
+def test_wta_only_allows_qualifying_players_to_move_up_without_a_withdrawal():
+    old = [player(1, "Moves Up"), player(2, "Leaves Main", draw="MAIN")]
+    current = [player(1, "Moves Up", draw="MAIN"), player(2, "Leaves Main", draw="QUAL")]
+    observation = {
+        "complete_sections": ["MAIN", "QUAL"],
+        "player_ids": ["1", "2"],
+        "section_player_ids": {"MAIN": ["1"], "QUAL": ["2"]},
+    }
+    state = {}
+
+    record_wta_withdrawals(state, "wta-example", old, current, observation, "2026-09-16")
+
+    assert [row["player_id"] for row in state["wta-example"]["withdrawals"]] == ["2"]
+
+
 def test_wta_ignores_missing_sections_and_failed_profile_resolution():
     state = {}
     old = [player(1, "Unresolved Player", draw="MAIN"), player(2, "Missing Qualifier")]
@@ -226,7 +241,29 @@ def test_wta_scraper_exposes_raw_ids_and_checks_provider_counts(monkeypatch, dec
         "https://example.com/player-list", [], [], [player(90001), player(90002)], observation=observation
     )
     assert observation["player_ids"] == ["90001", "90002"]
+    assert observation["section_player_ids"] == {"MAIN": ["90001", "90002"], "QUAL": []}
     assert observation["complete_sections"] == expected_sections
+
+
+def test_wta_scraper_accepts_combined_main_and_qualifying_count(monkeypatch):
+    jsonld = {
+        "@type": "SportsEvent",
+        "@id": "https://example.com/player-list",
+        "subEvent": [{"name": "Singles", "performer": [{}] * 4}],
+    }
+    html = '<script type="application/ld+json">' + json.dumps(jsonld) + "</script>"
+    html += '<a href="/players/90001/first-player"></a><a href="/players/90002/second-player"></a>'
+    html += '<div data-ui-tab="qualifying"><a href="/players/90003/third-player"></a>'
+    html += '<a href="/players/90004/fourth-player"></a></div>'
+    cached = [player(identifier) for identifier in range(90001, 90005)]
+    monkeypatch.setattr(wta, "get_with_retry", lambda *args, **kwargs: SimpleNamespace(text=html))
+    observation = {}
+
+    wta.scrape_tournament_players(
+        "https://example.com/player-list", [], [], cached, observation=observation
+    )
+
+    assert observation["complete_sections"] == ["MAIN", "QUAL"]
 
 
 def test_tournament_pass_persists_wta_withdrawal_before_replacing_entry_cache(monkeypatch, tmp_path):
@@ -252,6 +289,32 @@ def test_tournament_pass_persists_wta_withdrawal_before_replacing_entry_cache(mo
     )
     assert [row["player_id"] for row in updated[key]] == ["90001"]
     assert load_withdrawals(path)[key]["withdrawals"][0]["date"] == "2026-09-16"
+
+
+def test_tournament_pass_preserves_an_incomplete_wta_section(monkeypatch, tmp_path):
+    path = tmp_path / "entry_withdrawals.json"
+    monkeypatch.setattr(main, "ENTRY_WITHDRAWALS_FILE", str(path))
+    monkeypatch.setattr(main, "utc_now", lambda: datetime(2026, 9, 16, 10, tzinfo=UTC))
+    monkeypatch.setattr(main, "_load_acceptance_state", lambda: {})
+    monkeypatch.setattr(main, "get_wta_rankings_cached", lambda *args, **kwargs: [])
+    key = "https://example.com/tournaments/1000/example/2026/player-list"
+    old = [player(90001, "Remains", "1", "MAIN"), player(90002, "Unconfirmed", "2", "MAIN")]
+
+    def fetch(*args, observation, **kwargs):
+        observation.update(complete_sections=[], player_ids=["90001"])
+        return [old[0]], {}
+
+    monkeypatch.setattr(main, "scrape_tournament_players", fetch)
+    _, _, updated, _ = main.process_tournaments(
+        None,
+        {"Week": {key: {"name": "WTA 250 Example", "level": "WTA 250", "startDate": "2026-09-28"}}},
+        {"2026-09-28": "Week"},
+        set(),
+        {key: old},
+    )
+
+    assert [row["player_id"] for row in updated[key]] == ["90001", "90002"]
+    assert load_withdrawals(path)[key]["withdrawals"] == []
 
 
 def test_itf_initial_withdrawal_fetch_is_not_skipped_by_acceptance_polling(monkeypatch, tmp_path):

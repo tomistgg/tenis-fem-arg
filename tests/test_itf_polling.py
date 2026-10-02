@@ -12,8 +12,12 @@ import itf
 import itf_drawsheet_cache
 import main
 import site_renderer
+import utils
+from data_quality import QualityPolicyModel, _validate_freshness
 from lazy_browser import LazyBrowserSession
+from pipeline_errors import DataValidationError
 from populate_data import itf_load_new, tournament_sizes_update
+from run_state import initialize_run_state, load_run_state
 
 
 @pytest.fixture(autouse=True)
@@ -627,6 +631,15 @@ def test_published_qualifying_and_main_draws_can_prove_no_arg(monkeypatch):
         "789": {"Q"},
     }
 
+    decided_without_arg = _published_draw(["ESP", "BRA"])
+    for team in decided_without_arg["koGroups"][0]["rounds"][0]["matches"][0]["teams"]:
+        team["isWinner"] = False
+    decided_without_arg["koGroups"][0]["rounds"][0]["matches"][0]["teams"][0]["isWinner"] = True
+    assert itf_drawsheet_cache.drawsheet_is_complete_for_nationality(decided_without_arg, "ARG")
+
+    undecided_without_arg = _published_draw(["ESP", "BRA"])
+    assert not itf_drawsheet_cache.drawsheet_is_complete_for_nationality(undecided_without_arg, "ARG")
+
 
 def test_no_requested_tournaments_returns_an_empty_draw_code_mapping():
     assert (
@@ -950,6 +963,113 @@ def test_itf_blocked_request_reports_response_details(monkeypatch):
     assert error.context["response_bytes"] > 0
 
 
+@pytest.mark.parametrize(
+    ("json_payload", "html_recovered", "expected_status"),
+    [
+        (None, True, "running"),
+        (None, False, "partial"),
+        ({"entryClassifications": []}, False, "running"),
+    ],
+)
+def test_itf_acceptance_reports_only_unrecovered_failure(
+    monkeypatch, tmp_path, json_payload, html_recovered, expected_status
+):
+    status_path = tmp_path / "run.json"
+    initialize_run_state(status_path, "test-run", tmp_path / "stage")
+    monkeypatch.setenv("WTARG_RUN_STATUS_PATH", str(status_path))
+    monkeypatch.setattr(itf, "_itf_calendar_raw", [{
+        "tournamentKey": "w-test",
+        "tournamentLink": "/en/tournament/w-test",
+    }])
+    monkeypatch.setattr(itf, "_itf_session_warmed", True)
+    monkeypatch.setattr(itf, "_itf_browser_unavailable", False)
+    monkeypatch.setattr(itf, "_itf_wait_for_rate_limit", lambda: None)
+    monkeypatch.setattr(itf, "_itf_note_blocked_response", lambda: None)
+    monkeypatch.setattr(itf.time, "sleep", lambda seconds: None)
+    monkeypatch.setattr(itf.requests, "get", lambda *args, **kwargs: SimpleNamespace(
+        status_code=403,
+        text="<html>blocked</html>",
+        headers={"content-type": "text/html"},
+    ))
+
+    class AcceptanceDriver:
+        page_source = (
+            '<div class="acceptance-lists__details"><h3>Main Draw</h3>'
+            '<tbody class="acceptance-list__information">'
+            '<tr><td>1</td><td>ARG Test Player</td><td>123</td></tr>'
+            '</tbody></div>'
+            if html_recovered else ""
+        )
+
+        def get(self, url):
+            pass
+
+        def execute_async_script(self, *args):
+            if json_payload is not None:
+                return {"ok": True, "text": json.dumps(json_payload)}
+            return {"ok": False}
+
+        def find_element(self, *args):
+            raise itf.WebDriverException("no JSON body")
+
+        def get_cookies(self):
+            return []
+
+    entries, _ = itf.get_itf_players("w-test", AcceptanceDriver())
+
+    assert bool(entries) is html_recovered
+    state = load_run_state(status_path)
+    assert state["status"] == expected_status
+    assert [issue["severity"] for issue in state["issues"]] == (
+        ["partial"] if expected_status == "partial" else []
+    )
+
+
+@pytest.mark.parametrize(
+    ("recovered_tid", "expected_status"),
+    [(123, "running"), (None, "partial")],
+)
+def test_itf_event_filters_classify_after_navigation(monkeypatch, tmp_path, recovered_tid, expected_status):
+    status_path = tmp_path / "run.json"
+    initialize_run_state(status_path, "test-run", tmp_path / "stage")
+    monkeypatch.setenv("WTARG_RUN_STATUS_PATH", str(status_path))
+    monkeypatch.setattr(itf, "madrid_today", lambda: date(2026, 8, 10))
+    monkeypatch.setattr(itf, "_fetch_itf_calendar_raw", lambda driver: [{
+        "tournamentKey": "w-test",
+        "tournamentName": "W35 Example",
+        "startDate": "2026-08-10",
+    }])
+    monkeypatch.setattr(itf, "_load_itf_event_filters_cache", lambda: {})
+    monkeypatch.setattr(itf, "_save_itf_event_filters_cache", lambda cache: None)
+    monkeypatch.setattr(itf, "_itf_session_warmed", True)
+    monkeypatch.setattr(itf, "_itf_browser_unavailable", False)
+    monkeypatch.setattr(itf, "_itf_wait_for_rate_limit", lambda: None)
+    monkeypatch.setattr(itf, "_itf_note_blocked_response", lambda: None)
+    monkeypatch.setattr(itf.time, "sleep", lambda seconds: None)
+    monkeypatch.setattr(itf.requests, "get", lambda *args, **kwargs: SimpleNamespace(
+        status_code=403,
+        text="<html>blocked</html>",
+        headers={"content-type": "text/html"},
+    ))
+    navigation_responses = iter([None, {"tournamentId": recovered_tid} if recovered_tid else None])
+    monkeypatch.setattr(itf, "_fetch_itf_json_via_navigation", lambda *args, **kwargs: next(navigation_responses))
+
+    class Driver:
+        def get(self, url):
+            pass
+
+        def execute_async_script(self, *args):
+            return {"ok": False}
+
+        def get_cookies(self):
+            return []
+
+    result = itf.get_draws_itf_tournament_list(Driver())
+
+    assert next(iter(next(iter(result.values())).values()))["tournamentId"] == recovered_tid
+    assert load_run_state(status_path)["status"] == expected_status
+
+
 def test_itf_event_filter_cache_normalizes_ids_and_drops_invalid_values(monkeypatch, tmp_path):
     cache_path = tmp_path / "event-filters.json"
     cache_path.write_text(
@@ -995,6 +1115,95 @@ def test_itf_calendar_refresh_uses_cached_items_as_degraded_fallback(monkeypatch
 
     assert itf._fetch_itf_calendar_raw(None) == cached_items
     assert refresh_calls[0]["failure_severity"] == "degraded"
+
+
+def test_itf_calendar_fallback_does_not_renew_release_freshness(monkeypatch, tmp_path):
+    cache_path = tmp_path / "itf_calendar_cache.json"
+    monkeypatch.setattr(itf, "ITF_CALENDAR_CACHE_FILE", str(cache_path))
+    monkeypatch.setattr(utils, "_CACHE_STATE_FILE", str(tmp_path / "cache_state.json"))
+    monkeypatch.setattr(utils, "_CACHE_STATE_CACHE", None)
+    clock = {"now": "2026-08-01T12:00:00Z"}
+    monkeypatch.setattr(itf, "utc_now_iso", lambda: clock["now"])
+    monkeypatch.setattr(itf, "utc_now", lambda: datetime.fromisoformat(clock["now"].replace("Z", "+00:00")))
+    monkeypatch.setattr(
+        itf, "madrid_today", lambda: datetime.fromisoformat(clock["now"].replace("Z", "+00:00")).date()
+    )
+
+    cached = {"tournamentKey": "cached-event", "startDate": "2026-08-24"}
+    live = {"tournamentKey": "new-event", "startDate": "2026-08-31"}
+    itf._save_itf_calendar_disk_cache([cached], 2026, complete=True)
+
+    def partial_refresh(_driver, _date_from, _date_to, **kwargs):
+        return ([live], 0, False) if kwargs["ascending"] else ([], 0, False)
+
+    monkeypatch.setattr(itf, "_fetch_itf_calendar_range", partial_refresh)
+    clock["now"] = "2026-08-01T13:00:00Z"
+    monkeypatch.setattr(itf, "_itf_calendar_raw", None)
+    assert len(itf._fetch_itf_calendar_raw(None)) == 2
+    assert utils.get_cache_file_meta(cache_path)["fetchedAt"] == "2026-08-01T12:00:00Z"
+
+    for attempted_at in ("2026-08-20T12:00:00Z", "2026-08-21T12:00:00Z"):
+        clock["now"] = attempted_at
+        monkeypatch.setattr(itf, "_itf_calendar_raw", None)
+        assert len(itf._fetch_itf_calendar_raw(None)) == 2
+        metadata = utils.get_cache_file_meta(cache_path)
+        assert metadata["fetchedAt"] == "2026-08-01T12:00:00Z"
+        assert metadata["lastAttemptAt"] == attempted_at
+
+    policy = QualityPolicyModel(
+        schema_version=1, tables={}, cache_freshness={"itf_calendar_cache.json": 7}
+    )
+    with pytest.raises(DataValidationError, match="cache was fetched"):
+        _validate_freshness(tmp_path, policy, date(2026, 8, 22))
+
+    monkeypatch.setattr(itf, "_itf_calendar_raw", None)
+    monkeypatch.setattr(itf, "_fetch_itf_calendar_range", lambda *args, **kwargs: ([cached, live], 2, True))
+    assert len(itf._fetch_itf_calendar_raw(None)) == 2
+    assert utils.get_cache_file_meta(cache_path)["fetchedAt"] == clock["now"]
+    assert "cache:itf_calendar_cache.json" in _validate_freshness(tmp_path, policy, date(2026, 8, 22))
+
+
+def test_itf_calendar_missing_total_requires_a_finished_page(monkeypatch):
+    item = {"tournamentKey": "one"}
+    responses = iter(({"items": [item]}, None))
+    monkeypatch.setattr(itf, "_fetch_itf_json", lambda *args, **kwargs: next(responses))
+    assert itf._fetch_itf_calendar_range(None, "2026-01-01", "2026-12-31", take=1) == ([item], 0, False)
+
+    monkeypatch.setattr(itf, "_fetch_itf_json", lambda *args, **kwargs: {"items": [item]})
+    assert itf._fetch_itf_calendar_range(None, "2026-01-01", "2026-12-31", take=2) == ([item], 0, True)
+
+
+def test_itf_calendar_new_year_requires_complete_fetch(monkeypatch, tmp_path):
+    cache_path = tmp_path / "itf_calendar_cache.json"
+    monkeypatch.setattr(itf, "ITF_CALENDAR_CACHE_FILE", str(cache_path))
+    monkeypatch.setattr(utils, "_CACHE_STATE_FILE", str(tmp_path / "cache_state.json"))
+    monkeypatch.setattr(utils, "_CACHE_STATE_CACHE", None)
+    clock = {"now": "2026-12-31T23:00:00Z"}
+    monkeypatch.setattr(itf, "utc_now_iso", lambda: clock["now"])
+    monkeypatch.setattr(itf, "utc_now", lambda: datetime.fromisoformat(clock["now"].replace("Z", "+00:00")))
+    cached = {"tournamentKey": "old-year", "startDate": "2026-12-28"}
+    current = {"tournamentKey": "new-year", "startDate": "2027-01-04"}
+    itf._save_itf_calendar_disk_cache([cached], 2026, complete=True)
+
+    clock["now"] = "2027-01-01T00:30:00Z"
+    monkeypatch.setattr(itf, "madrid_today", lambda: date(2027, 1, 1))
+    monkeypatch.setattr(itf, "_fetch_itf_calendar_range", lambda *args, **kwargs: ([current], 0, False))
+    monkeypatch.setattr(itf, "_itf_calendar_raw", None)
+    assert itf._fetch_itf_calendar_raw(None) == [current]
+    assert utils.get_cache_file_meta(cache_path)["year"] == 2026
+    assert itf._load_itf_calendar_disk_cache(target_year=2027, max_age_seconds=itf._ITF_CALENDAR_CACHE_TTL) == []
+
+    policy = QualityPolicyModel(schema_version=1, tables={}, cache_freshness={"itf_calendar_cache.json": 7})
+    with pytest.raises(DataValidationError, match="no complete fetch for 2027"):
+        _validate_freshness(tmp_path, policy, date(2027, 1, 1))
+    assert _validate_freshness(tmp_path, policy, date(2027, 1, 1), allow_stale=True)
+
+    clock["now"] = "2027-01-01T01:00:00Z"
+    monkeypatch.setattr(itf, "_fetch_itf_calendar_range", lambda *args, **kwargs: ([current], 1, True))
+    monkeypatch.setattr(itf, "_itf_calendar_raw", None)
+    assert itf._fetch_itf_calendar_raw(None) == [current]
+    assert utils.get_cache_file_meta(cache_path)["year"] == 2027
+    assert _validate_freshness(tmp_path, policy, date(2027, 1, 1))
 
 
 def test_uncached_blocked_draw_retries_without_poisoning_browser_session(monkeypatch):

@@ -25,6 +25,8 @@ from main import (
     enrich_history_with_wta_ranks,
     load_match_history,
 )
+from ranking_publication import accepted_ranking_dates, load_ranking_status
+from time_utils import new_york_now
 from utils import (
     expand_calendar_snapshot,
     expand_draws_store_cache,
@@ -238,7 +240,8 @@ def _ranking_inputs(
     entry_arg_names: set[str],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     rankings_by_date = _load_wta_csv(data_dir) or {}
-    latest_date = max(rankings_by_date, default="")
+    accepted_dates = accepted_ranking_dates(rankings_by_date, new_york_now(), load_ranking_status(data_dir))
+    latest_date = max(accepted_dates, default="")
     all_wta_players = list(rankings_by_date.get(latest_date, []))
     players_data = [
         dict(player)

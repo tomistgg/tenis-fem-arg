@@ -24,6 +24,8 @@ from http_client import get_with_retry
 from itf import ITF_BASE_URL, ITF_CALENDAR_PAGE_URL
 from itf import _is_cancelled_itf_calendar_item as _is_cancelled_tournament
 from itf_drawsheet_cache import (
+    drawsheet_is_complete,
+    drawsheet_is_complete_for_nationality,
     get_cached_drawsheet,
     save_drawsheet,
     tournament_draw_codes_with_definitive_no_nationality,
@@ -41,6 +43,7 @@ from utils import (
     expand_itf_calendar_cache,
     is_draw_completed,
     load_cache,
+    mark_draw_completed,
     save_json_file,
 )
 
@@ -714,19 +717,17 @@ def fetch_tournament_draw_data(
     """
     tournament_id = int(tournament_id)
 
-    # Completed draw types may use stale raw data forever: their payload cannot
+    # Completed draw types may use retained stale raw data: their payload cannot
     # change again. Other types retain the normal freshness policy.
     skip_live_codes = set(skip_live_codes or ())
-    cached_results = {
-        code: get_cached_drawsheet(
-            tournament_id,
-            code,
-            week_number,
-            allow_stale=code in skip_live_codes,
+    cached_results = {}
+    for code in codes:
+        stale = get_cached_drawsheet(tournament_id, code, week_number, allow_stale=True)
+        cached = stale if code in skip_live_codes or drawsheet_is_complete(stale) else get_cached_drawsheet(
+            tournament_id, code, week_number
         )
-        for code in codes
-    }
-    cached_results = {code: payload for code, payload in cached_results.items() if payload is not None}
+        if cached is not None:
+            cached_results[code] = cached
     live_codes = [code for code in codes if code not in cached_results and code not in skip_live_codes]
     if not live_codes:
         return cached_results
@@ -1295,6 +1296,7 @@ if __name__ == "__main__":
         }
 
         all_matches = []
+        completed_draw_keys = set()
         active_count = 0
         consecutive_empty = 0
         _MAX_CONSECUTIVE_EMPTY = 2  # Recreate session after this many all-empty results
@@ -1402,6 +1404,15 @@ if __name__ == "__main__":
                         else:
                             logger.debug(f"  [!] No data returned for {tName} (id={tId}, code={code})")
 
+                    main_draw = draw_payloads.get("M")
+                    if (
+                        main_draw
+                        and all(draw_payloads.get(code) for code in requested_codes)
+                        and ("Q" not in requested_codes or drawsheet_is_complete(draw_payloads.get("Q")))
+                        and drawsheet_is_complete_for_nationality(main_draw, "ARG")
+                    ):
+                        completed_draw_keys.add(_canonical_draw_store_key(tourney.get("tournamentKey")))
+
                 added = len(all_matches) - tourney_matches_before
                 logger.debug(f"  {tName} (id={tId}): {added} ARG matches found")
 
@@ -1435,3 +1446,8 @@ if __name__ == "__main__":
         logger.info("CSV update complete.")
     else:
         logger.info("No new ARG matches found — CSV not updated.")
+
+    for draw_key in completed_draw_keys:
+        mark_draw_completed(draw_key)
+    if completed_draw_keys:
+        logger.debug(f"Marked {len(completed_draw_keys)} tournament(s) complete for ARG match history.")

@@ -262,14 +262,6 @@ if __name__ == "__main__":
     )
     logger.debug(f"  Using shared WTA calendar ({len(tournaments)} tournaments in window).")
 
-    if not tournaments:
-        raise PipelineError(
-            component="wta-loader",
-            operation="fetch tournament window",
-            message="WTA tournament source returned no rows",
-            context={"from": from_date_str, "to": to_date_str},
-        )
-
     existing_ids = load_existing_match_ids(OUTPUT_FILE)
     new_rows = []
 

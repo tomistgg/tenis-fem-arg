@@ -26,11 +26,12 @@ from config import (
 from entry_withdrawals import WITHDRAWALS_FILENAME, load_withdrawals, public_withdrawals
 from milestones import build_milestones_data
 from pipeline_errors import DataValidationError
+from ranking_publication import accepted_ranking_dates, load_ranking_status
 from run_state import report_run_issue
 from runtime_logging import get_logger
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
 from runtime_paths import SITE_ROOT as RUNTIME_SITE_ROOT
-from time_utils import madrid_today
+from time_utils import madrid_today, new_york_now
 from utils import (
     compact_tournament_name,
     compress_history_data,
@@ -44,6 +45,7 @@ from utils import (
     expand_wta_calendar_cache,
     fix_encoding_keep_accents,
     format_player_name,
+    get_calendar_column,
     get_surface_class,
     get_tournament_sort_order,
     normalize_player_name,
@@ -135,13 +137,22 @@ def _draw_info_with_wtn(tournament_key, draw_type, draw_info, local_wtn, global_
 
 def _schedule_tournament_base_name(entry):
     """Strip Schedule position labels before looking up tournament metadata."""
-    plain = re.sub(r"<[^>]+>", "", entry or "").strip()
+    plain = unescape(re.sub(r"<[^>]+>", "", entry or "")).strip()
     return re.sub(
         r"\s*\((?:Q|ALT(?:\s+[^)]+)?)\)\s*$",
         "",
         plain,
         flags=re.IGNORECASE,
     ).strip()
+
+
+def _schedule_position_suffix(entry):
+    """Show qualifying and alternate status without exposing alternate order."""
+    plain = unescape(re.sub(r"<[^>]+>", "", entry or "")).strip()
+    match = re.search(r"\s*\((Q|ALT(?:\s+[^)]+)?)\)\s*$", plain, flags=re.IGNORECASE)
+    if not match:
+        return ""
+    return " (Q)" if match.group(1).upper() == "Q" else " (A)"
 
 
 def _display_calendar_tournament_name(name):
@@ -304,8 +315,8 @@ def _script_hash_sources(html_text):
     return sorted(hashes)
 
 
-def _content_security_policy_meta(html_text):
-    script_sources = " ".join(_script_hash_sources(html_text))
+def _content_security_policy_meta(trusted_html):
+    script_sources = " ".join(_script_hash_sources(trusted_html))
     script_src = "'self' 'unsafe-hashes'"
     if script_sources:
         script_src = f"{script_src} {script_sources}"
@@ -325,11 +336,16 @@ def _content_security_policy_meta(html_text):
     return f'<meta http-equiv="Content-Security-Policy" content="{escape(policy, quote=True)}">'
 
 
-def _apply_content_security_policy(html_text):
+def _apply_content_security_policy(html_text, *, trusted_html):
+    """Allow inline code from developer-owned source, never rendered data."""
     html_text = _CSP_META_RE.sub("", html_text)
     if _CSP_PLACEHOLDER not in html_text:
         return html_text
-    return html_text.replace(_CSP_PLACEHOLDER, _content_security_policy_meta(html_text), 1)
+    return html_text.replace(
+        _CSP_PLACEHOLDER,
+        _content_security_policy_meta(trusted_html),
+        1,
+    )
 
 
 def _frontend_source_path(relative_path):
@@ -359,8 +375,7 @@ def _read_frontend_source(relative_path):
         ) from exc
 
 
-def _render_frontend_source(relative_path, context):
-    source = _read_frontend_source(relative_path)
+def _render_frontend_source(relative_path, context, *, source):
     required = set(_FRONTEND_TOKEN_RE.findall(source))
     missing = sorted(required.difference(context))
     if missing:
@@ -623,19 +638,21 @@ GS_THRESHOLD_MD = 780
 
 def country_flag_html(code, show_code=True):
     if not code or code == "-":
-        return code or ""
+        return escape(str(code or ""))
+    code = str(code)
     upper = code.upper()
     if upper == "GRC":
         upper = "GRE"
         code = "GRE"
+    safe_code = escape(code, quote=True)
     if upper in LOCAL_FLAGS:
-        img = f'<img src="data/flags/{upper.lower()}.svg" alt="{code}" title="{code}" style="{FLAG_STYLE}">'
-        return f"{img}{code}" if show_code else img
+        img = f'<img src="data/flags/{upper.lower()}.svg" alt="{safe_code}" title="{safe_code}" style="{FLAG_STYLE}">'
+        return f"{img}{safe_code}" if show_code else img
     iso = IOC_TO_ISO2.get(upper)
     if not iso:
-        return code
-    img = f'<img src="https://purecatamphetamine.github.io/country-flag-icons/3x2/{iso.upper()}.svg" alt="{code}" title="{code}" style="{FLAG_STYLE}">'
-    return f"{img}{code}" if show_code else img
+        return safe_code
+    img = f'<img src="https://purecatamphetamine.github.io/country-flag-icons/3x2/{iso.upper()}.svg" alt="{safe_code}" title="{safe_code}" style="{FLAG_STYLE}">'
+    return f"{img}{safe_code}" if show_code else img
 
 
 def _render_calendar_changes(change_history):
@@ -1135,7 +1152,7 @@ def generate_html(
             return _normalize_entry_country(parts[2])
         return ""
 
-    schedule_country_by_week = {}
+    schedule_meta_by_week = {}
     for week, tourneys in (tournament_groups or {}).items():
         for t_key, t_info in tourneys.items():
             name = str(t_info.get("name", "") or "").strip()
@@ -1143,8 +1160,12 @@ def generate_html(
                 name = re.sub(r"\s+Qualifying\s*$", "", name, flags=re.IGNORECASE)
             name = compact_tournament_name(name).replace("Sharm ElSheikh", "Sharm ES")
             country = _entry_country_from_key(t_key, t_info)
-            if name and country:
-                schedule_country_by_week[(week, name.casefold())] = country
+            if name:
+                schedule_meta_by_week[(week, name.casefold())] = (
+                    country,
+                    t_info.get("surface", ""),
+                    t_info.get("level", ""),
+                )
 
     hidden_entry_list_keys = {str(key) for key in (entry_list_hidden_keys or ())}
 
@@ -1162,7 +1183,7 @@ def generate_html(
     # Build tournament side menu HTML for Entry Lists
     entry_menu_html = ""
     first_key = None
-    legend_html = '<div class="entry-menu-legend"><span class="entry-menu-gm-sample">9.9</span> Draw quality measured by player\'s WTN.<div class="entry-menu-note"><span class="entry-menu-warning">!</span> Now using WTN instead of rankings to better reflect junior, collegiate, and other players whose rankings understate their level.</div></div>'
+    legend_html = '<div class="entry-menu-legend"><span class="entry-menu-gm-sample">9.9</span> Draw quality measured by player\'s WTN.</div>'
     for week, tourneys in sorted(tournament_groups.items(), key=lambda item: _week_label_sort_key(item[0])):
         week_has_data = False
         for t_key in tourneys:
@@ -1185,7 +1206,7 @@ def generate_html(
             and tournament_store[t_key]
         ]
         entry_week_heading = re.sub(r"^Week of\s+", "", week, flags=re.IGNORECASE)
-        entry_menu_html += f'<div class="entry-menu-week">{entry_week_heading.upper()}</div>'
+        entry_menu_html += f'<div class="entry-menu-week">{escape(entry_week_heading.upper())}</div>'
 
         def _entry_menu_balance_class(index, count):
             remainder = count % 4
@@ -1211,9 +1232,8 @@ def generate_html(
             if first_key is None:
                 first_key = t_key
             entry_menu_html += (
-                f'<div class="entry-menu-item{active}{balance}" data-key="{t_key}" '
-                f'data-country="{escape(t_country)}" data-level="{t_level}" '
-                f'onclick="selectEntryTournament(this)">'
+                f'<div class="entry-menu-item{active}{balance}" data-key="{escape(t_key, quote=True)}" '
+                f'data-country="{escape(t_country)}" data-level="{t_level}">'
                 f'<div class="entry-menu-top">{t_dot}<span class="entry-menu-level">{t_level}</span>'
                 f"{t_flag_html}"
                 f'<span class="entry-menu-gm"><span class="entry-menu-gm-value">-</span></span>'
@@ -1238,7 +1258,7 @@ def generate_html(
     for week in sorted(draws_by_week.keys(), key=_week_label_sort_key):
         items = draws_by_week[week]
         items.sort(key=lambda x: get_tournament_sort_order(x[1].get("level", "")))
-        draws_dropdown_html += f'<optgroup label="{week.upper()}">'
+        draws_dropdown_html += f'<optgroup label="{escape(week.upper(), quote=True)}">'
         for t_key, tdata in items:
             t_name = compact_tournament_name(tdata["name"])
             t_country = _entry_country_from_key(t_key, tdata)
@@ -1277,15 +1297,9 @@ def generate_html(
     table_rows = ""
     week_keys = list(monday_map.values()) if monday_map else list(tournament_groups.keys())
     schedule_week_headers = "".join(
-        f'<th class="col-week">{week_label}</th>'
+        f'<th class="col-week">{escape(week_label)}</th>'
         for week_label in (re.sub(r"^Week of\s+", "", week, flags=re.IGNORECASE) for week in week_keys)
     )
-
-    def _schedule_flag(week, entry):
-        base = _schedule_tournament_base_name(entry).casefold()
-        country = schedule_country_by_week.get((week, base), "")
-        flag = country_flag_html(country, show_code=False) if country else ""
-        return f'<span class="schedule-tournament-flag">{flag}</span>' if flag else ""
 
     def get_sort_key(player_name):
         p = next(item for item in players_data if item["Player"] == player_name)
@@ -1297,9 +1311,9 @@ def generate_html(
     for p_name in sorted([p["Player"] for p in players_data], key=get_sort_key):
         p = next(item for item in players_data if item["Player"] == p_name)
         player_display = _player_display_name(p["Player"])
-        row = f'<tr data-name="{player_display.lower()}">'
-        mobile_name = "<br>".join(player_display.split())
-        row += f'<td class="sticky-col col-name"><span class="desktop-only">{player_display}</span><span class="mobile-only">{mobile_name}</span></td>'
+        row = f'<tr data-name="{escape(player_display.lower(), quote=True)}">'
+        mobile_name = "<br>".join(escape(part) for part in player_display.split())
+        row += f'<td class="sticky-col col-name"><span class="desktop-only">{escape(player_display)}</span><span class="mobile-only">{mobile_name}</span></td>'
         for week in week_keys:
             val = schedule_map.get(p["Key"], {}).get(week, "\u2014")
             val = val.replace("Sharm ElSheikh", "Sharm ES")
@@ -1313,14 +1327,35 @@ def generate_html(
                 if plain == "\u2014":
                     rendered_parts.append(entry)
                     continue
-                name = (
-                    f'<b class="schedule-tournament-name">{entry}</b>'
-                    if "(Q)" not in plain
-                    else f'<span class="schedule-tournament-name">{entry}</span>'
+                base = _schedule_tournament_base_name(entry)
+                country, surface, level = schedule_meta_by_week.get(
+                    (week, base.casefold()), ("", _name_to_surface.get(base.lower(), ""), "")
                 )
+                column_key = get_calendar_column(str(level or ""))
+                classes = get_surface_class(surface or _name_to_surface.get(base.lower(), ""))
+                if column_key in {"gs", "wta_tour", "wta_125"}:
+                    classes += " cal-tournament-bold"
+                if column_key in {"wta_tour", "wta_125"}:
+                    classes += " cal-tournament-wta"
+                flag = country_flag_html(country, show_code=False) if country else ""
+                flag_prefix = f"{flag} " if flag else ""
+                suffix = _schedule_position_suffix(entry)
+                category_match = re.match(r"^(WTA\s+(?:\d+|Finals)|W\d+|Grand Slam)\s+(.+)$", base, re.I)
+                label = f"{flag_prefix}{escape(base)}{suffix}"
+                if category_match:
+                    category, name = category_match.groups()
+                    classes += " schedule-tournament-split"
+                    status_html = (
+                        f'<span class="schedule-tournament-status">{suffix}</span>' if suffix else ""
+                    )
+                    label = (
+                        f'<span class="schedule-tournament-heading">{flag_prefix}{escape(category)}</span>'
+                        f'<span class="schedule-tournament-name"> {escape(name)}</span>'
+                        f'{status_html}'
+                    )
                 rendered_parts.append(
-                    f'<div class="schedule-tournament-item">'
-                    f'{_sched_dot(entry)}{_schedule_flag(week, entry)}{name}</div>'
+                    f'<span class="calendar-tournament {classes}">'
+                    f'{label}</span>'
                 )
             rendered = "".join(rendered_parts)
             row += f'<td class="col-week">{rendered}</td>'
@@ -1582,7 +1617,7 @@ def generate_html(
     calendar_html += '<th class="cal-cont-header"></th>'
     for week in calendar_data:
         week_heading = re.sub(r"^Week of\s+", "", week["week_label"], flags=re.IGNORECASE)
-        calendar_html += f'<th class="cal-week-header">{week_heading}</th>'
+        calendar_html += f'<th class="cal-week-header">{escape(week_heading)}</th>'
     calendar_html += "</tr></thead><tbody>"
 
     calendar_html += '<tr class="cal-cutoff-row"><td class="cal-cont-label"></td>'
@@ -1640,7 +1675,7 @@ def generate_html(
 
     # Build cascading year/month/day selects for ranking week picker
     _all_csv = _load_wta_csv(source_data_dir)
-    _all_dates = sorted(_all_csv)
+    _all_dates = sorted(accepted_ranking_dates(_all_csv, new_york_now(), load_ranking_status(source_data_dir)))
     _latest_date = _all_dates[-1] if _all_dates else ""
 
     _milestone_rankings = {
@@ -1649,9 +1684,9 @@ def generate_html(
                 **player,
                 "Player": _player_display_name(_ranking_display_name(player)),
             }
-            for player in rows
+            for player in _all_csv[week]
         ]
-        for week, rows in _all_csv.items()
+        for week in _all_dates
     }
     _current_arg_wta_names = {
         _player_display_name(_ranking_display_name(player))
@@ -1740,9 +1775,16 @@ def generate_html(
         dob = p.get("DOB", "")
         if dob and "T" in dob:
             dob = dob.split("T")[0]
-        name = format_player_name(_ranking_display_name(p))
-        country_code = p.get("Country") or ""
-        rankings_rows += f'<tr data-country="{country_code.upper()}"><td>{p.get("Rank", "")}</td><td style="text-align:left;font-weight:bold;">{country_flag_html(country_code, show_code=False)} {name}</td><td>{p.get("Points", "")}</td><td>{dob}</td></tr>'
+        name = escape(format_player_name(_ranking_display_name(p)))
+        country_code = str(p.get("Country") or "")
+        rankings_rows += (
+            f'<tr data-country="{escape(country_code.upper(), quote=True)}">'
+            f'<td>{escape(str(p.get("Rank", "")))}</td>'
+            f'<td style="text-align:left;font-weight:bold;">'
+            f'{country_flag_html(country_code, show_code=False)} {name}</td>'
+            f'<td>{escape(str(p.get("Points", "")))}</td>'
+            f'<td>{escape(str(dob))}</td></tr>'
+        )
 
     default_national_columns = ["N", "Player", "Date", "Event", "Partner", "Opponent", "Score"]
     source_national_columns = list(national_team_data[0]) if national_team_data else default_national_columns
@@ -2112,7 +2154,10 @@ def generate_html(
         "ENTRY_MENU_HTML": entry_menu_html,
         "RANKINGS_YEAR_OPTIONS": rankings_year_options,
         "RANKINGS_ROWS": rankings_rows,
-        "HISTORY_PLAYER_OPTIONS": "".join(f'<option value="{name}">{name}</option>' for name in history_players_sorted),
+        "HISTORY_PLAYER_OPTIONS": "".join(
+            f'<option value="{escape(name, quote=True)}">{escape(name)}</option>'
+            for name in history_players_sorted
+        ),
         "NATIONAL_HEADER_HTML": national_header_html,
         "NATIONAL_ROWS": national_rows,
         "CAPTAINS_HEADER_HTML": captains_header_html,
@@ -2157,8 +2202,14 @@ def generate_html(
         "gsThresholdMd": GS_THRESHOLD_MD,
         "milestones": milestones_data,
     }
-    html_template = _render_frontend_source("templates/app.html", frontend_context)
-    html_template = _apply_content_security_policy(html_template).rstrip() + "\n"
+    trusted_app_template = _read_frontend_source("templates/app.html")
+    html_template = _render_frontend_source(
+        "templates/app.html", frontend_context, source=trusted_app_template
+    )
+    html_template = _apply_content_security_policy(
+        html_template,
+        trusted_html=trusted_app_template,
+    ).rstrip() + "\n"
     # Always write generated site files beside this module.  main.py may be
     # launched with a different working directory (for example from an IDE),
     # but build_deploy_site.py and the local file URL use the project root.
@@ -2167,7 +2218,9 @@ def generate_html(
     write_text_if_changed(os.path.join(site_root, "app.html"), html_template, encoding="utf-8-sig")
 
     launcher_template = _read_frontend_source("templates/index.html")
-    launcher_template = _apply_content_security_policy(launcher_template).rstrip() + "\n"
+    launcher_template = _apply_content_security_policy(
+        launcher_template, trusted_html=launcher_template
+    ).rstrip() + "\n"
     write_text_if_changed(os.path.join(site_root, "index.html"), launcher_template, encoding="utf-8-sig")
 
     # SPA fallback: GitHub Pages serves this for any unknown path.
@@ -2192,7 +2245,9 @@ def generate_html(
 <body></body>
 </html>
 """
-    not_found_template = _apply_content_security_policy(not_found_template).rstrip() + "\n"
+    not_found_template = _apply_content_security_policy(
+        not_found_template, trusted_html=not_found_template
+    ).rstrip() + "\n"
     write_text_if_changed(os.path.join(site_root, "404.html"), not_found_template, encoding="utf-8-sig")
 
     route_template = """<!DOCTYPE html>
@@ -2232,5 +2287,8 @@ def generate_html(
     for tab in route_tabs:
         folder = os.path.join(site_root, tab)
         os.makedirs(folder, exist_ok=True)
-        route_html = _apply_content_security_policy(route_template.format(tab=tab)).rstrip() + "\n"
+        route_html = route_template.format(tab=tab)
+        route_html = _apply_content_security_policy(
+            route_html, trusted_html=route_html
+        ).rstrip() + "\n"
         write_text_if_changed(os.path.join(folder, "index.html"), route_html, encoding="utf-8")

@@ -11,10 +11,11 @@ from datetime import date, datetime, timedelta
 from calendar_builder import get_previous_monday
 from http_client import get_with_retry
 from pipeline_errors import DataValidationError, PipelineError
+from ranking_publication import accepted_ranking_dates, load_ranking_status
 from run_state import report_run_issue
 from runtime_logging import get_logger
 from runtime_paths import DATA_DIR as RUNTIME_DATA_DIR
-from time_utils import madrid_today
+from time_utils import madrid_today, new_york_now
 from utils import (
     compress_tstrength_cache,
     expand_entry_lists_cache,
@@ -23,6 +24,7 @@ from utils import (
     normalize_player_name,
     save_json_file,
 )
+from wta import _load_wta_csv
 from wta_calendar_cache import get_shared_wta_calendar
 
 logger = get_logger("tstrength")
@@ -191,11 +193,15 @@ def _load_rankings_index():
     Also builds partial-name entries (first name + first last name) as fallback
     for players with multiple last names (e.g. "Irene Burillo" for "Irene Burillo Escorihuela").
     """
+    data_dir = os.path.dirname(RANKINGS_CSV)
+    accepted_weeks = set(accepted_ranking_dates(_load_wta_csv(data_dir), new_york_now(), load_ranking_status(data_dir)))
     index = {}
     with open(RANKINGS_CSV, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             week = row["week_date"]
+            if week not in accepted_weeks:
+                continue
             if week not in index:
                 index[week] = {}
             norm = normalize_player_name(row["player"])

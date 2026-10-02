@@ -28,9 +28,15 @@ from config import (
 )
 from http_client import SlidingWindowRateLimiter, get_with_retry
 from pipeline_errors import PipelineError
+from ranking_publication import (
+    accepted_ranking_dates,
+    load_ranking_status,
+    ranking_date_is_accepted,
+    ranking_is_valid,
+)
 from run_state import report_run_issue
 from runtime_logging import get_logger
-from time_utils import madrid_today
+from time_utils import madrid_today, new_york_now
 from transactional_io import atomic_write_csv
 from utils import (
     fix_display_name,
@@ -589,7 +595,15 @@ def _load_wta_csv(data_dir=None):
 def _save_wta_csv_date(date_str, players):
     """Merge a new ranking week and atomically replace the decade CSV."""
     if not players:
-        return
+        return False
+    eastern_now = new_york_now()
+    status = load_ranking_status(Path(WTA_RANKINGS_CSV).parent)
+    if not ranking_date_is_accepted(date_str, eastern_now, status):
+        logger.warning("Rejected unaccepted WTA ranking week %s before persistence.", date_str)
+        return False
+    if date_str == status.get("requested_date") and not ranking_is_valid(players):
+        logger.warning("Rejected incomplete WTA ranking week %s before persistence.", date_str)
+        return False
     # Keep the canonical identity table ahead of the ranking write so a newly
     # ranked player can never leave a dangling WTA ID in the persisted CSV.
     sync_wta_players(Path(PLAYER_ALIASES_WTA_ITF_FILE), players)
@@ -601,7 +615,7 @@ def _save_wta_csv_date(date_str, players):
                 reader = _csv.DictReader(handle)
                 if reader.fieldnames is None:
                     raise ValueError(f"ranking CSV has no header: {WTA_RANKINGS_CSV}")
-                yield from reader
+                yield from (row for row in reader if row.get("week_date") != date_str)
         for player in players:
             yield {
                 "week_date": date_str,
@@ -614,6 +628,7 @@ def _save_wta_csv_date(date_str, players):
             }
 
     atomic_write_csv(WTA_RANKINGS_CSV, columns, merged_rows(), encoding="utf-8")
+    return True
 
 
 def get_wta_rankings_cached(date_str, nationality=None, *, with_status=False):
@@ -628,8 +643,12 @@ def get_wta_rankings_cached(date_str, nationality=None, *, with_status=False):
         return players
 
     csv_data = _load_wta_csv()
+    eastern_now = new_york_now()
+    status = load_ranking_status(Path(WTA_RANKINGS_CSV).parent)
+    accepted_dates = accepted_ranking_dates(csv_data, eastern_now, status)
+    request_is_accepted = ranking_date_is_accepted(date_str, eastern_now, status)
 
-    if date_str in csv_data:
+    if date_str in accepted_dates:
         players = _filter(csv_data[date_str])
         return _finish(
             players,
@@ -646,14 +665,15 @@ def get_wta_rankings_cached(date_str, nationality=None, *, with_status=False):
     # Date not in CSV — fetch from API, save to CSV, and keep in memory
     new_data = []
     fetch_error = None
-    try:
-        new_data = get_rankings(date_str, nationality=nationality)
-    except (WtaApiRateLimited, WtaApiFetchError, WtaApiPartialData) as e:
-        fetch_error = e
-        logger.warning(f"Warning: WTA rankings refresh failed for {date_str}: {e}")
-    if new_data:
+    if request_is_accepted:
+        try:
+            # The shared cache must always contain every nationality.
+            new_data = get_rankings(date_str)
+        except (WtaApiRateLimited, WtaApiFetchError, WtaApiPartialData) as e:
+            fetch_error = e
+            logger.warning(f"Warning: WTA rankings refresh failed for {date_str}: {e}")
+    if new_data and _save_wta_csv_date(date_str, new_data):
         csv_data[date_str] = new_data
-        _save_wta_csv_date(date_str, new_data)
         players = _filter(new_data)
         return _finish(
             players,
@@ -668,12 +688,15 @@ def get_wta_rankings_cached(date_str, nationality=None, *, with_status=False):
             ),
         )
 
-    # Fallback: use the latest available date in the CSV
-    if csv_data:
-        latest_key = max(csv_data)
+    # Fallback to an accepted ranking no later than the requested date.
+    fallback_dates = [week for week in accepted_dates if week <= date_str]
+    if fallback_dates:
+        latest_key = max(fallback_dates)
         players = _filter(csv_data.get(latest_key, []))
         reason = (
-            "Live rankings refresh failed; showing latest cached rankings."
+            "Requested ranking week is not accepted; showing latest accepted cached rankings."
+            if not request_is_accepted
+            else "Live rankings refresh failed; showing latest cached rankings."
             if fetch_error
             else "No live rankings were returned for the requested date; showing latest cached rankings."
         )
@@ -1022,11 +1045,20 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
         # Raw IDs also protect players whose profile lookup failed. Missing/empty
         # sections and JSON-LD count mismatches cannot establish withdrawals.
         observation["player_ids"] = sorted(seen_pids)
+        observation["section_player_ids"] = {
+            "MAIN": [pid for pid, _ in main_entries],
+            "QUAL": [pid for pid, _ in qual_entries],
+        }
+        combined_singles = (
+            qual_entries
+            and jsonld_state.get("qualifying_count") is None
+            and jsonld_state.get("singles_count") == len(main_entries) + len(qual_entries)
+        )
         observation["complete_sections"] = [
             section for section, entries, count in (
                 ("MAIN", main_entries, jsonld_state.get("singles_count")),
                 ("QUAL", qual_entries, jsonld_state.get("qualifying_count")),
-            ) if entries and (count is None or count == len(entries))
+            ) if entries and (count is None or count == len(entries) or combined_singles)
         ]
 
     suffix_map = dict.fromkeys(main_draw_names, "")

@@ -8,6 +8,7 @@ import main as main_module
 from html_generator import (
     _draw_info_with_wtn,
     _draw_wtn_lookups,
+    _schedule_position_suffix,
     _schedule_tournament_base_name,
     _week_label_sort_key,
     country_flag_html,
@@ -314,6 +315,10 @@ class GeneratedSiteTests(unittest.TestCase):
             _schedule_tournament_base_name("<b>W75 Kursumlijska Banja (ALT MDO)</b>"),
             "W75 Kursumlijska Banja",
         )
+        self.assertEqual(_schedule_position_suffix("W75 Kursumlijska Banja (ALT 38)"), " (A)")
+        self.assertEqual(_schedule_position_suffix("W75 Kursumlijska Banja (ALT MDO)"), " (A)")
+        self.assertEqual(_schedule_position_suffix("W75 Kursumlijska Banja (Q)"), " (Q)")
+        self.assertEqual(_schedule_position_suffix("W75 Kursumlijska Banja"), "")
 
     def test_moved_from_annotation_is_hidden_in_tournament_display_names(self):
         cases = {

@@ -154,6 +154,59 @@ def _drawsheet_nationality_status(data, nationality):
     return published, present
 
 
+def drawsheet_is_complete(data):
+    """Return whether every knockout group has a decided final round."""
+    groups = data.get("koGroups") if isinstance(data, dict) else None
+    if not groups:
+        return False
+    for group in groups:
+        rounds = group.get("rounds") if isinstance(group, dict) else None
+        if not rounds:
+            return False
+        matches = rounds[-1].get("matches") if isinstance(rounds[-1], dict) else None
+        if not matches or any(
+            not isinstance(match, dict)
+            or not any(
+                isinstance(team, dict) and team.get("isWinner") is True
+                for team in match.get("teams") or []
+            )
+            for match in matches
+        ):
+            return False
+    return True
+
+
+def drawsheet_is_complete_for_nationality(data, nationality):
+    """Return when a main draw cannot produce more matches for a nation.
+
+    If the nation is absent, wait until every opening-round match is decided;
+    until then a wildcard or lucky-loser replacement can still enter.  If the
+    nation is present, retain the conservative completed-final rule.
+    """
+    published, present = _drawsheet_nationality_status(data, nationality)
+    if not published:
+        return False
+    if present:
+        return drawsheet_is_complete(data)
+
+    groups = data.get("koGroups") if isinstance(data, dict) else None
+    if not groups:
+        return False
+    for group in groups:
+        rounds = group.get("rounds") if isinstance(group, dict) else None
+        matches = rounds[0].get("matches") if rounds and isinstance(rounds[0], dict) else None
+        if not matches or any(
+            not isinstance(match, dict)
+            or not any(
+                isinstance(team, dict) and team.get("isWinner") is True
+                for team in match.get("teams") or []
+            )
+            for match in matches
+        ):
+            return False
+    return True
+
+
 def tournament_draw_codes_with_definitive_no_nationality(
     tournament_ids,
     nationality="ARG",
