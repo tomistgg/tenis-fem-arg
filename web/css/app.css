@@ -31,9 +31,8 @@
 
                 /* Brand (Argentina sky blue) */
                 --c-primary: #75AADB;
-                --c-primary-strong: #4d89c3;
-                --c-primary-hover: #5a8fb8;
-                --c-primary-accent: #3B82F6;
+                --c-primary-strong: #245f91;
+                --c-primary-hover: #174e79;
                 --c-primary-deep: #1e40af;
                 --c-primary-soft: #dbeafe;
                 --c-primary-softer: #eaf3fb;
@@ -91,7 +90,7 @@
                 --btn-h-lg: 38px;
 
                 /* Focus ring - shown on :focus-visible (keyboard nav) */
-                --c-focus-ring: rgba(117,170,219,0.55);
+                --c-focus-ring: #245f91;
 
                 /* Shadow */
                 --shadow-sm: 0 1px 2px rgba(15,23,42,0.06);
@@ -101,7 +100,7 @@
 
                 /* Gradients - kept as literals so they resolve the same
                    regardless of theme. */
-                --grad-primary: linear-gradient(180deg, #75AADB 0%, #4d89c3 100%);
+                --grad-primary: linear-gradient(180deg, #245f91 0%, #174e79 100%);
                 --grad-chrome: linear-gradient(180deg, #0A3366 0%, #062A55 100%);
             }
 
@@ -129,7 +128,7 @@
                 --shadow-lg: 0 12px 28px rgba(0,0,0,0.4);
                 --shadow-hover: 0 6px 16px rgba(0,0,0,0.4);
 
-                --c-focus-ring: rgba(125,197,255,0.6);
+                --c-focus-ring: #9bd5ff;
             }
 
             /* === Button system ===
@@ -157,11 +156,11 @@
                 transition: background 0.15s, color 0.15s, border-color 0.15s;
             }
             .btn:disabled { opacity: 0.35; cursor: default; }
-            .btn-primary { background: var(--c-primary); color: #fff; border-color: var(--c-primary); }
+            .btn-primary { background: var(--c-primary-strong); color: #fff; border-color: var(--c-primary-strong); }
             .btn-primary:hover:not(:disabled) { background: var(--c-primary-hover); border-color: var(--c-primary-hover); }
             .btn-secondary { background: var(--c-surface); color: var(--c-text-primary); border-color: var(--c-border-strong); }
             .btn-secondary:hover:not(:disabled) { background: var(--c-surface-alt); }
-            .btn-secondary.active { background: var(--c-primary); color: #fff; border-color: var(--c-primary); }
+            .btn-secondary.active { background: var(--c-primary-strong); color: #fff; border-color: var(--c-primary-strong); }
             .btn-secondary.active:hover:not(:disabled) { background: var(--c-primary-hover); border-color: var(--c-primary-hover); }
             .btn-ghost { background: var(--c-surface-sunk); color: var(--c-text-subtle); border-color: transparent; }
             .btn-ghost:hover:not(:disabled) { background: var(--c-border); }
@@ -205,7 +204,7 @@
                 align-items: center;
                 justify-content: center;
                 border: 0;
-                background: var(--c-primary);
+                background: var(--c-primary-strong);
                 color: #fff;
                 font-family: inherit;
                 font-size: var(--fs-lg);
@@ -229,7 +228,11 @@
             /* Keyboard focus ring - only fires on :focus-visible, so
                mouse clicks don't get an outline. Applies globally;
                components with custom focus styling can opt out. */
-            *:focus-visible { outline: 2px solid var(--c-focus-ring); outline-offset: 2px; }
+            *:focus-visible { outline: 3px solid var(--c-focus-ring); outline-offset: 2px; }
+            .sidebar, .mobile-app-header, body.home-mode { --c-focus-ring: #9bd5ff; }
+            @media (max-width: 768px) {
+                html:not([data-theme="dark"]) .sidebar .nav-secondary { --c-focus-ring: #245f91; }
+            }
 
             /* Skeleton loading - shimmer bars for async table renders. */
             @keyframes skeleton-shimmer {
@@ -264,7 +267,7 @@
             .sidebar-logo { display: block; width: 82px; height: auto; flex-shrink: 0; }
             .menu-item { width: 100%; padding: 15px 20px; cursor: pointer; color: var(--c-chrome-text); font-family: inherit; font-size: 14px; text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--c-chrome-border); transition: 0.2s; text-decoration: none; display: block; }
             .menu-item:hover { background: var(--c-chrome-hover); color: white; border-left: 3px solid rgba(117,170,219,0.45); padding-left: 17px; }
-            .menu-item.active { background: rgba(255,255,255,0.08); color: white; font-weight: bold; border-left: 3px solid var(--c-primary-accent); padding-left: 17px; }
+            .menu-item.active { background: rgba(255,255,255,0.08); color: white; font-weight: bold; border-left: 3px solid var(--c-primary); padding-left: 17px; }
             .main-content { flex: 1; overflow-y: visible; background: var(--c-bg); padding: 20px; display: flex; flex-direction: column; }
             .single-layout { width: 100%; min-width: 0; display: flex; flex-direction: column; }
             #view-upcoming { max-width: 1200px; margin: 0 auto; }
@@ -279,7 +282,6 @@
             .draws-toolbar { display: flex; align-items: center; gap: 10px; padding: 6px 12px; flex-wrap: wrap; position: relative; }
             .draws-tournament-picker { position: relative; min-width: 180px; }
             .draws-tournament-toggle { width: 100%; min-height: 33px; padding: 6px 8px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 12px; font-family: inherit; background: white; cursor: pointer; color: #1e293b; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-            .draws-tournament-toggle:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
             .draws-tournament-current, .draws-tournament-option { display: flex; align-items: center; gap: 6px; }
             .draws-tournament-flag { display: inline-flex; flex: 0 0 auto; }
             .draws-tournament-flag img { display: block; margin-right: 0 !important; }
@@ -295,7 +297,7 @@
             html[lang="es"] .draws-tournament-note-es { display: inline-flex !important; }
             .draws-tournament-week { padding: 7px 8px 4px; color: #64748b; background: #f1f5f9; font-size: 9px; font-weight: 700; letter-spacing: .3px; }
             .draws-tournament-option { width: 100%; padding: 7px 8px; border: 0; border-radius: 5px; background: transparent; color: #1e293b; font-family: inherit; font-size: 11px; text-align: left; cursor: pointer; }
-            .draws-tournament-option:hover, .draws-tournament-option:focus-visible { background: #f1f5f9; outline: none; }
+            .draws-tournament-option:hover, .draws-tournament-option:focus-visible { background: #f1f5f9; }
             .draws-tournament-option.selected { background: #dbeafe; color: #1e40af; font-weight: 600; }
             .draws-tournament-native { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; opacity: 0; pointer-events: none; }
             .draws-type-btns { display: flex; gap: 0; }
@@ -433,7 +435,6 @@
                 text-align: left;
             }
             .roadtogs-info-summary:hover { border-color: var(--c-primary); background: var(--c-primary-soft); }
-            .roadtogs-info-summary:focus-visible { outline: 2px solid var(--c-primary); outline-offset: 2px; }
             .roadtogs-info-summary-label { display: inline-flex; align-items: center; gap: 6px; }
             .roadtogs-info-icon {
                 width: 16px;
@@ -442,7 +443,7 @@
                 place-items: center;
                 flex: 0 0 16px;
                 border-radius: 50%;
-                background: var(--c-primary);
+                background: var(--c-primary-strong);
                 color: #fff;
                 font-family: Georgia, serif;
                 font-size: 11px;
@@ -635,7 +636,8 @@
             .rankings-btn-end { flex: 1; display: flex; justify-content: flex-end; }
             #rankings-search { width: 190px; }
             input, select { padding: var(--sp-2) var(--sp-3); border-radius: var(--radius-md); border: 2px solid var(--c-border-strong); background-color: var(--c-surface); color: var(--c-text-primary); font-family: inherit; font-size: var(--fs-lg); width: 250px; box-sizing: border-box; }
-            input:focus, select:focus { outline: none; border-color: var(--c-primary); box-shadow: 0 0 0 3px var(--c-focus-ring); }
+            input:focus, select:focus { border-color: var(--c-primary-strong); }
+            .select2-container--default .select2-selection:focus-visible { outline: 3px solid var(--c-focus-ring); outline-offset: 2px; }
             select { font-weight: 700; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
             .content-card { background: var(--c-surface); box-shadow: var(--shadow-md); width: 100%; border: 1px solid var(--c-border); }
             .table-wrapper { overflow-x: auto; width: 100%; }
@@ -705,7 +707,6 @@
             #view-entrylists .entry-header-row { position: relative; min-height: 40px; }
             #view-entrylists .entry-strength { position: absolute; left: 0; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; line-height: 1.1; max-width: calc(50% - 14px); }
             #view-entrylists .entry-gm-value { display: inline-flex; align-items: center; justify-content: center; min-height: 28px; padding: 5px 12px; border: 0; border-radius: var(--radius-pill); font-family: inherit; font-size: 13px; font-weight: 700; line-height: 1; letter-spacing: 0; box-sizing: border-box; cursor: pointer; }
-            #view-entrylists .entry-gm-value:focus-visible { outline: 2px solid var(--c-primary); outline-offset: 2px; }
             #view-entrylists .entry-gm-value[aria-pressed="true"] { box-shadow: inset 0 0 0 2px rgba(15, 23, 42, 0.45); }
             #view-rankings table { table-layout: auto; }
             #view-rankings td { font-size: 12px; padding: 6px 10px; }
@@ -766,7 +767,7 @@
                 font-size: 13px;
             }
             .select2-results__option--highlighted {
-                background-color: #75AADB !important;
+                background-color: var(--c-primary-strong) !important;
                 color: white !important;
             }
             .select2-container {
@@ -819,7 +820,7 @@
             }
             .fedbcup-btn:first-child { border-radius: 8px 0 0 8px; }
             .fedbcup-btn:last-child { border-radius: 0 8px 8px 0; }
-            .fedbcup-btn.active { background: #75AADB; color: #fff; }
+            .fedbcup-btn.active { background: var(--c-primary-strong); color: #fff; }
             .fedbcup-btn:hover:not(.active) { background: #cbd5e1; }
 
             /* Player Debuts table: size every column from its longest rendered value. */
@@ -892,8 +893,8 @@
             #view-tstrength { display: flex; flex-direction: column; align-items: center; }
             .tstrength-wrapper { overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 160px); }
             .ts-controls { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; justify-content: center; }
-            .ts-controls button { padding: 4px 8px; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; background: #75AADB; color: #fff; border-color: #75AADB; font-family: inherit; min-width: 0; }
-            .ts-controls button:hover { opacity: 0.85; }
+            .ts-controls button { padding: 4px 8px; font-size: 11px; border: 1px solid var(--c-primary-strong); border-radius: 6px; cursor: pointer; background: var(--c-primary-strong); color: #fff; font-family: inherit; min-width: 0; }
+            .ts-controls button:hover { background: var(--c-primary-hover); border-color: var(--c-primary-hover); }
             .ts-controls select { padding: 3px 18px 3px 4px; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; width: 100px; text-align-last: center; }
             #ts-filter-year { width: 60px; }
             .ts-explanation { max-width: 700px; margin: 0 auto 8px auto; font-size: 11px; color: #64748b; line-height: 1.4; }
@@ -962,7 +963,6 @@
                 user-select: none;
             }
             .bjkc-series-header::-webkit-details-marker { display: none; }
-            .bjkc-series-header:focus-visible { outline: 2px solid var(--c-primary); outline-offset: 2px; }
             .bjkc-series-block[open] .bjkc-series-header { border-radius: 8px 8px 0 0; }
             .bjkc-series-block > .content-card { width: 100%; max-width: 100%; margin: 0; border-top: 0; border-radius: 0 0 12px 12px; }
             .bjkc-series-block .table-wrapper { width: 100%; box-sizing: border-box; }
@@ -1100,7 +1100,7 @@
             .filter-group.collapsed .collapse-icon::before { content: '▼'; }
             .filter-group:not(.collapsed) .collapse-icon::before { content: '▲'; }
             .filter-search { width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 11px; margin-bottom: 8px; box-sizing: border-box; }
-            .filter-search:focus { outline: none; border-color: #75AADB; }
+            .filter-search:focus { border-color: var(--c-primary-strong); }
             .history-subpage { width: 100%; display: flex; flex-direction: column; gap: 15px; }
             .history-subpage[style*="display: none"] { display: none !important; }
             .table-header-section { margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -1312,7 +1312,7 @@
                     justify-content: center;
                 }
                 .menu-item:last-child { border-right: none; }
-                .menu-item.active { border-left: none; border-bottom: 3px solid #3B82F6; padding: 4px 3px !important; }
+                .menu-item.active { border-left: none; border-bottom: 3px solid var(--c-primary); padding: 4px 3px !important; }
                 .menu-item:hover { border-left: none; }
 
                 #view-upcoming, #view-rankings, #view-national, #view-captains, #view-roadtogs { max-width: 100%; }

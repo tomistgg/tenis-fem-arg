@@ -6,7 +6,7 @@
 }
 .language-toggle:hover { background: rgba(255,255,255,.22); }
 .language-toggle img { width: 23px; height: 23px; object-fit: cover; border-radius: 50%; border: 1px solid rgba(255,255,255,.7); filter: none !important; }
-.language-toggle:focus-visible { outline: 2px solid #75AADB; outline-offset: 3px; }
+.language-toggle:focus-visible { outline: 3px solid var(--c-focus-ring, #9bd5ff); outline-offset: 3px; }
 .home-preferences { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
 .home-preferences .home-dark-btn { display: inline-flex; margin: 0; }
 .home-preferences .language-toggle { min-height: 40px; border-radius: 20px; padding: 7px 14px; }
