@@ -105,7 +105,8 @@
         backdrop.className = 'nav-sheet-backdrop';
         backdrop.id = 'nav-more-backdrop';
         backdrop.setAttribute('aria-label', 'Close navigation');
-        backdrop.addEventListener('click', closeMobileMore);
+        backdrop.tabIndex = -1;
+        backdrop.addEventListener('click', function () { closeMobileMore(true); });
         document.body.appendChild(backdrop);
     }
 
@@ -117,7 +118,7 @@
         header.className = 'mobile-app-header';
         header.innerHTML =
             '<img src="assets/wtarg-app-icon.png" alt="" class="mobile-app-logo">' +
-            '<div class="mobile-app-heading"><strong id="mobile-app-title">Home</strong></div>' +
+            '<div class="mobile-app-heading"><h1 id="mobile-app-title" tabindex="-1">Home</h1></div>' +
             '<button type="button" class="mobile-header-theme" aria-label="Toggle dark mode">' +
             '<svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg>' +
             '<svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>' +
@@ -171,23 +172,31 @@
         document.body.dataset.activeTab = normalized;
     }
 
-    function closeMobileMore() {
+    function closeMobileMore(restoreFocus) {
+        var wasOpen = document.body.classList.contains('mobile-more-open');
         document.body.classList.remove('mobile-more-open');
         var sidebar = document.getElementById('sidebar');
         var more = document.getElementById('nav-more-toggle');
         if (sidebar) sidebar.classList.remove('more-open');
         if (more) more.setAttribute('aria-expanded', 'false');
+        if (wasOpen && restoreFocus && more) more.focus();
     }
 
     function toggleMobileMore(forceOpen) {
         var open = typeof forceOpen === 'boolean'
             ? forceOpen
             : !document.body.classList.contains('mobile-more-open');
+        if (!open) {
+            closeMobileMore(true);
+            return;
+        }
         document.body.classList.toggle('mobile-more-open', open);
         var sidebar = document.getElementById('sidebar');
         var more = document.getElementById('nav-more-toggle');
         if (sidebar) sidebar.classList.toggle('more-open', open);
         if (more) more.setAttribute('aria-expanded', open ? 'true' : 'false');
+        var firstItem = sidebar && sidebar.querySelector('.nav-secondary .menu-item');
+        if (firstItem) firstItem.focus();
     }
 
     window.closeMobileMore = closeMobileMore;
@@ -198,9 +207,14 @@
         var original = window.switchTab;
         var wrapped = function (tabName) {
             var tab = String(tabName || 'home').trim().toLowerCase();
+            var menuWasOpen = document.body.classList.contains('mobile-more-open');
             original(tab);
             updateShell(tab);
             closeMobileMore();
+            if (menuWasOpen) {
+                var title = document.getElementById('mobile-app-title');
+                if (title) title.focus();
+            }
         };
         wrapped.__appShellWrapped = true;
         window.switchTab = wrapped;
@@ -221,7 +235,23 @@
         }
 
         document.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape') closeMobileMore();
+            if (!document.body.classList.contains('mobile-more-open')) return;
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                closeMobileMore(true);
+            } else if (event.key === 'Tab') {
+                var items = document.querySelectorAll('#nav-secondary .menu-item');
+                if (!items.length) return;
+                var first = items[0];
+                var last = items[items.length - 1];
+                if (event.shiftKey && document.activeElement === first) {
+                    event.preventDefault();
+                    last.focus();
+                } else if (!event.shiftKey && document.activeElement === last) {
+                    event.preventDefault();
+                    first.focus();
+                }
+            }
         });
         window.addEventListener('resize', function () {
             if (window.innerWidth > 768) closeMobileMore();

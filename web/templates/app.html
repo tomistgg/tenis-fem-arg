@@ -154,10 +154,10 @@
                             </div>
                             <div class="rankings-filter-container">
                                 <div class="rankings-date-picker">
-                                    <select id="rankings-year-select" class="rankings-date-select" onchange="onRankingYearChange(this.value)">@@WTARG_RANKINGS_YEAR_OPTIONS@@</select>
-                                    <select id="rankings-month-select" class="rankings-date-select" onchange="onRankingMonthChange()"></select>
-                                    <select id="rankings-day-select" class="rankings-date-select"></select>
-                                    <button id="rankings-load-btn" class="rankings-load-btn" onclick="applyRankingSelection()">&#8594;</button>
+                                    <select id="rankings-year-select" class="rankings-date-select" aria-label="Rankings year" onchange="onRankingYearChange(this.value)">@@WTARG_RANKINGS_YEAR_OPTIONS@@</select>
+                                    <select id="rankings-month-select" class="rankings-date-select" aria-label="Rankings month" onchange="onRankingMonthChange()"></select>
+                                    <select id="rankings-day-select" class="rankings-date-select" aria-label="Rankings day"></select>
+                                    <button type="button" id="rankings-load-btn" class="rankings-load-btn" aria-label="Show rankings for selected date" onclick="applyRankingSelection()">&#8594;</button>
                                 </div>
                             </div>
                             <div class="rankings-btn-end">
