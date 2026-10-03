@@ -145,12 +145,14 @@ def _select_observation(record, target_week, *, allow_cross_week_fallback):
     return {}
 
 
-def _select_recent_observation(record, today, max_age_days=7):
+def _select_recent_observation(record, today, max_age_days=7, *, source=None):
     """Return the newest WTN observation saved in the rolling freshness window."""
     cutoff = today - timedelta(days=max_age_days)
     candidates = []
     for stored_week, observation in (record.get("weeks", {}) if isinstance(record, dict) else {}).items():
         if not isinstance(observation, dict) or observation.get("wtn") in (None, ""):
+            continue
+        if source and observation.get("source") != source:
             continue
         observed_text = observation.get("retrieved_at") or observation.get("checked_at") or stored_week
         try:
@@ -346,6 +348,8 @@ def refresh_entry_list_wtn(
     fetch_source=None,
     resolve_itf_player=None,
     fetch_profiles=True,
+    check_new_entry_lists=True,
+    fresh_itf_entry_lists=None,
     tournament_weeks=None,
     allow_cross_week_fallback=True,
     max_profile_fetches=None,
@@ -365,7 +369,9 @@ def refresh_entry_list_wtn(
     def tournament_week(key):
         return _week_start(tournament_weeks.get(str(key).removesuffix("#qual"))) or current_week
 
-    for key, players in (entry_cache or {}).items():
+    # Only raw rows obtained in this run are new observations. The saved entry
+    # cache may contain old lists or WTNs propagated from a previous profile.
+    for key, players in (fresh_itf_entry_lists or {}).items():
         if str(key).startswith("http"):
             continue
         for player in players or []:
@@ -394,25 +400,35 @@ def refresh_entry_list_wtn(
     resolve_itf_player = _resolver_with_entry_cache_fallback(entry_cache, cache, base_resolver)
 
     players_by_id = {}
+    player_entry_lists = {}
     for key, players in (entry_cache or {}).items():
         if not str(key).startswith("http"):
             continue
         for player in players or []:
-            if player.get("type") == "ALT":
-                continue
             itf_player = resolve_itf_player(player)
             if itf_player:
                 player_id = str(itf_player["player_id"])
+                player_entry_lists.setdefault(player_id, set()).add(str(key))
                 previous = players_by_id.get(player_id)
                 if previous is None or (previous.get("type") != "MAIN" and itf_player.get("type") == "MAIN"):
                     players_by_id[player_id] = itf_player
 
+    pending_entry_lists = {
+        player_id: keys - set(cache.get(player_id, {}).get("entry_lists_checked", {}))
+        for player_id, keys in player_entry_lists.items()
+    } if check_new_entry_lists else {}
     targets = [
         (player_id, player)
         for player_id, player in players_by_id.items()
-        if not _select_recent_observation(cache.get(player_id, {}), today)
+        if pending_entry_lists.get(player_id)
+        or not _select_recent_observation(cache.get(player_id, {}), today, source="profile")
     ] if fetch_profiles else []
-    targets.sort(key=lambda item: (item[0] in cache, item[1].get("type") != "MAIN", item[0]))
+    targets.sort(key=lambda item: (
+        not bool(pending_entry_lists.get(item[0])),
+        item[0] in cache,
+        {"MAIN": 0, "QUAL": 1, "ALT": 2}.get(item[1].get("type"), 1),
+        item[0],
+    ))
     if max_profile_fetches is not None:
         targets = targets[:max_profile_fetches]
     logger.info(f"Refreshing ITF WTN profiles (0/{len(targets)}).")
@@ -448,6 +464,10 @@ def refresh_entry_list_wtn(
                     "retrieved_at": today_text,
                 },
             )
+            if check_new_entry_lists:
+                cache[player_id].setdefault("entry_lists_checked", {}).update(
+                    dict.fromkeys(player_entry_lists[player_id], today_text)
+                )
         except ITFProfileBlocked as exc:
             logger.warning(f"ITF WTN refresh paused after {index - 1} profiles: {exc}")
             break

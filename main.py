@@ -1215,6 +1215,7 @@ def process_tournaments(
     qualifying_draw_available_keys=None,
     main_draw_available_keys=None,
     itf_main_draw_available_keys=None,
+    fresh_itf_entry_lists=None,
 ):
     """Process WTA & ITF tournaments: scrape entry lists, build schedule map."""
     schedule_map = {}
@@ -1595,6 +1596,8 @@ def process_tournaments(
                 else:
                     itf_entries, itf_name_map = get_itf_players(key, driver)
                     fresh_players = parse_itf_entry_list(itf_entries)
+                    if fresh_players and fresh_itf_entry_lists is not None:
+                        fresh_itf_entry_lists[key] = copy.deepcopy(fresh_players)
                     # Record the fetch attempt (success or failure) so we can
                     # stop retrying after noon UTC when nothing's changed.
                     state_entry = acceptance_state.setdefault(store_key, {})
@@ -2081,6 +2084,7 @@ def main():
             _normalize_draws_store_keys(cached_draws_for_acceptance),
             prefetched_itf_draws,
         )
+        fresh_itf_entry_lists = {}
         schedule_map, tournament_store, entry_cache, unranked_schedule = process_tournaments(
             driver,
             tournament_groups,
@@ -2090,6 +2094,7 @@ def main():
             force_itf_acceptance=args.force_itf_acceptance,
             qualifying_draw_available_keys=qualifying_draw_available_keys,
             main_draw_available_keys=main_draw_available_keys,
+            fresh_itf_entry_lists=fresh_itf_entry_lists,
         )
 
         entry_tournament_weeks = {
@@ -2104,6 +2109,7 @@ def main():
             today=madrid_today(),
             fetch_profiles=True,
             tournament_weeks=entry_tournament_weeks,
+            fresh_itf_entry_lists=fresh_itf_entry_lists,
         )
 
         # Persist the refreshed entry lists after the tournament pass.

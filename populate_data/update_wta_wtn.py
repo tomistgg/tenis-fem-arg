@@ -93,6 +93,7 @@ def refresh_draw_wtn(driver, draws_store, limit):
         resolve_itf_player=lambda player: player,
         fetch_profiles=True,
         max_profile_fetches=limit,
+        check_new_entry_lists=False,
     )
     values = {
         player_id: player.get("wtn")

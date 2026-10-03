@@ -206,6 +206,7 @@ def test_current_week_acceptance_is_refetched_and_withdrawal_removed(monkeypatch
 
     monkeypatch.setattr(main, "get_itf_players", fetch_players)
 
+    fresh_itf_entry_lists = {}
     _, tournament_store, updated_cache, _ = main.process_tournaments(
         driver=None,
         tournament_groups={
@@ -223,11 +224,15 @@ def test_current_week_acceptance_is_refetched_and_withdrawal_removed(monkeypatch
         monday_map={"2026-08-10": week},
         arg_names_set={"CARLA MARKUS"},
         entry_cache={tournament_key: cached_players},
+        fresh_itf_entry_lists=fresh_itf_entry_lists,
     )
 
     assert fetches == [tournament_key]
     assert {player["name"].upper() for player in tournament_store[tournament_key]} == {"LAN MI"}
     assert {player["name"].upper() for player in updated_cache[tournament_key]} == {"LAN MI"}
+    assert fresh_itf_entry_lists[tournament_key][0]["name"] == "Lan Mi"
+    assert "seed_rank" not in fresh_itf_entry_lists[tournament_key][0]
+    assert fresh_itf_entry_lists[tournament_key] is not fresh_players
 
 
 def test_published_main_draw_permanently_closes_acceptance_refresh(monkeypatch):
@@ -276,6 +281,7 @@ def test_published_main_draw_permanently_closes_acceptance_refresh(monkeypatch):
         "arg_names_set": {"CARLA MARKUS"},
         "entry_cache": {tournament_key: cached_players},
         "force_itf_acceptance": True,
+        "fresh_itf_entry_lists": {},
     }
     main.process_tournaments(
         **process_args,
@@ -283,6 +289,7 @@ def test_published_main_draw_permanently_closes_acceptance_refresh(monkeypatch):
     )
 
     assert acceptance_state[tournament_key]["main_draw_available_date"] == "2026-08-10"
+    assert process_args["fresh_itf_entry_lists"] == {}
 
     current_time[0] = datetime(2026, 8, 11, 10, 0, tzinfo=UTC)
     main.process_tournaments(

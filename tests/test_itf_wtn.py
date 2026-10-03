@@ -133,11 +133,11 @@ def test_wta_player_uses_unique_recent_itf_entry_identity(tmp_path):
         entries,
         cache_path,
         today=date(2026, 9, 26),
-        fetch_source=lambda _url: (_ for _ in ()).throw(AssertionError("profile should not be fetched")),
+        fetch_source=lambda _url: '<script>var props = {"wtnSingles":12.8};</script>',
         resolve_itf_player=lambda _player: None,
     )
 
-    assert entries["https://wta.example/list"][0]["wtn"] == "13.03"
+    assert entries["https://wta.example/list"][0]["wtn"] == "12.8"
 
 
 def test_profile_refresh_checkpoints_and_cools_down_between_batches(tmp_path, monkeypatch):
@@ -241,6 +241,7 @@ def test_current_itf_entry_wtn_is_stored_under_retrieval_week(tmp_path):
         fetch_source=fetch,
         resolve_itf_player=resolve,
         fetch_profiles=False,
+        fresh_itf_entry_lists={"w-itf-por-example": entries["w-itf-por-example"]},
         tournament_weeks={
             "https://wta.example/porto": "2026-09-21",
             "w-itf-por-example": "2026-09-28",
@@ -263,10 +264,10 @@ def test_current_itf_entry_wtn_is_stored_under_retrieval_week(tmp_path):
             "w-itf-por-example": "2026-09-28",
         },
     )
-    assert not fetched
-    assert entries["https://wta.example/porto"][0]["wtn"] == "10.02"
+    assert fetched == [True]
+    assert entries["https://wta.example/porto"][0]["wtn"] == "10.37"
     cached = json.loads(cache_path.read_text(encoding="utf-8"))["800123456"]["weeks"]
-    assert cached["2026-09-21"]["source"] == "entry_list"
+    assert cached["2026-09-21"]["source"] == "profile"
 
 
 def test_previous_week_beats_temporary_cross_week_fallback(tmp_path):
@@ -281,6 +282,7 @@ def test_previous_week_beats_temporary_cross_week_fallback(tmp_path):
         tmp_path / "cache.json",
         today=date(2026, 9, 18),
         fetch_profiles=False,
+        fresh_itf_entry_lists=entries,
         resolve_itf_player=lambda player: {**player, "player_id": "8001"},
         tournament_weeks={
             "https://wta.example/porto": "2026-09-21",
@@ -291,7 +293,7 @@ def test_previous_week_beats_temporary_cross_week_fallback(tmp_path):
     assert entries["https://wta.example/porto"][0]["wtn"] == "10.1"
 
 
-def test_profile_batch_prioritizes_main_and_excludes_alternates(tmp_path):
+def test_profile_batch_prioritizes_main_before_qualifiers_and_alternates(tmp_path):
     entries = {
         "https://wta.example/list": [
             {"player_id": "1", "name": "Qualifier", "country": "POR", "type": "QUAL"},
@@ -378,6 +380,7 @@ def test_legacy_profile_cache_wins_over_same_week_entry_snapshot(tmp_path):
         cache_path,
         today=date(2026, 9, 18),
         fetch_profiles=False,
+        fresh_itf_entry_lists={"itf-list": entries["itf-list"]},
         resolve_itf_player=lambda player: {**player, "player_id": "8001"},
     )
     assert entries["https://wta.example/list"][0]["wtn"] == "9.3"
@@ -419,3 +422,91 @@ def test_wtn_status_counts_current_old_missing_and_unmapped_rows(tmp_path):
         "missing": 2,
         "unmapped": 1,
     }
+
+
+def test_new_entry_list_rechecks_recent_profile_and_updates_shared_rows(tmp_path):
+    cache_path = tmp_path / "cache.json"
+    player = {"player_id": "800533984", "name": "Julia Riera", "country": "ARG", "type": "MAIN"}
+    samsun = "https://wta.example/samsun"
+    curitiba = "https://wta.example/curitiba"
+    entries = {samsun: [dict(player)]}
+    fetched = []
+
+    def refresh(day, value):
+        return refresh_entry_list_wtn(
+            None, entries, cache_path, today=day,
+            resolve_itf_player=lambda row: row,
+            fetch_source=lambda url: fetched.append(url) or f'<script>var props = {{"wtnSingles":{value}}};</script>',
+        )
+
+    refresh(date(2026, 10, 1), 9.86)
+    refresh(date(2026, 10, 2), 10.42)
+    assert len(fetched) == 1
+
+    entries[curitiba] = [dict(player)]
+    cache = refresh(date(2026, 10, 3), 10.42)
+    assert len(fetched) == 2
+    assert entries[samsun][0]["wtn"] == entries[curitiba][0]["wtn"] == "10.42"
+    assert cache[player["player_id"]]["entry_lists_checked"][curitiba] == "2026-10-03"
+
+    refresh(date(2026, 10, 3), 11)
+    assert len(fetched) == 2
+
+
+def test_new_entry_list_checks_all_sections_and_retries_blocked_player(tmp_path):
+    cache_path = tmp_path / "cache.json"
+    entries = {"https://wta.example/one": [
+        {"player_id": str(number), "name": f"Player {number}", "country": "ARG", "type": section}
+        for number, section in enumerate(("MAIN", "QUAL", "ALT"), 1)
+    ]}
+    # A second list shares the same players: fetch each profile only once.
+    entries["https://wta.example/two"] = [dict(row) for row in entries["https://wta.example/one"]]
+    fetched = []
+
+    def fetch(url):
+        fetched.append(url)
+        if "/3/" in url:
+            raise ITFProfileBlocked("challenge")
+        return '<script>var props = {"wtnSingles":10.42};</script>'
+
+    cache = refresh_entry_list_wtn(
+        None, entries, cache_path, today=date(2026, 10, 3),
+        resolve_itf_player=lambda row: row, fetch_source=fetch,
+    )
+    assert len(fetched) == 3
+    assert "3" not in cache
+    assert set(cache["1"]["entry_lists_checked"]) == set(entries)
+
+    fetched.clear()
+    cache = refresh_entry_list_wtn(
+        None, entries, cache_path, today=date(2026, 10, 3),
+        resolve_itf_player=lambda row: row,
+        fetch_source=lambda url: fetched.append(url) or '<script>var props = {"wtnSingles":11.2};</script>',
+    )
+    assert len(fetched) == 1 and "/3/" in fetched[0]
+    assert set(cache["3"]["entry_lists_checked"]) == set(entries)
+    assert all(rows[2]["wtn"] == "11.2" for rows in entries.values())
+
+
+def test_cached_itf_rows_cannot_renew_freshness_or_prevent_profile_refresh(tmp_path):
+    cache_path = tmp_path / "cache.json"
+    cached_record = {"entry_lists_checked": {"https://wta.example/curitiba": "2026-09-23"}, "weeks": {
+        "2026-09-28": {"wtn": "9.86", "source": "entry_list", "retrieved_at": "2026-10-03"},
+        "2026-09-21": {
+            "wtn": "9.86", "source": "entry_list", "retrieved_at": "2026-09-23",
+        },
+    }}
+    cache_path.write_text(json.dumps({"800533984": cached_record}), encoding="utf-8")
+    player = {"player_id": "800533984", "name": "Julia Riera", "country": "ARG", "wtn": "9.86"}
+    entries = {"https://wta.example/curitiba": [dict(player)], "itf-old-list": [dict(player)]}
+    cache = refresh_entry_list_wtn(None, entries, cache_path, today=date(2026, 10, 3), fetch_profiles=False)
+    assert cache["800533984"] == cached_record
+
+    fetched = []
+    refresh_entry_list_wtn(
+        None, entries, cache_path, today=date(2026, 10, 3),
+        resolve_itf_player=lambda row: row,
+        fetch_source=lambda url: fetched.append(url) or '<script>var props = {"wtnSingles":10.42};</script>',
+    )
+    assert len(fetched) == 1
+    assert entries["https://wta.example/curitiba"][0]["wtn"] == "10.42"
