@@ -1159,7 +1159,7 @@ def get_dynamic_itf_calendar(driver, num_weeks=3):
     return filtered
 
 
-def get_draws_itf_tournament_list(driver):
+def get_draws_itf_tournament_list(driver, *, include_next_week=False):
     """Get ITF tournaments for the draws page.
 
     Show current + next week. Only include last week if the event is multi-week.
@@ -1192,7 +1192,7 @@ def get_draws_itf_tournament_list(driver):
         is_multiweek = (item.get("category") or "") == "ITF Womens Multi-Week Circuit"
         # Weekday runs only need current-week ITF draw IDs. Next-week draw IDs
         # are deferred until Saturday/Sunday of the week before the event.
-        if monday > current_monday and today.weekday() < 5:
+        if monday > current_monday and today.weekday() < 5 and not include_next_week:
             continue
         if monday < current_monday:
             if not (monday == past_monday and is_multiweek):

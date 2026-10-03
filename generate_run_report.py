@@ -467,6 +467,7 @@ def compute_report(before_dir, after_dir):
         "new_entry_lists": [],
         "itf_seed_missing_rankings": [],
         "wta_players_missing_wtn": [],
+        "main_draw_players_missing_wtn": [],
         "added_matches": {},
         "added_calendar_tournaments": [],
         "changed_calendar_tournaments": [],
@@ -479,6 +480,12 @@ def compute_report(before_dir, after_dir):
     }
 
     aliases_path = os.path.join(after_dir, ALIASES_JSON_FILE)
+
+    # The collector writes current failures on every run, including events
+    # hidden from the website and players without an ITF identity mapping.
+    report["main_draw_players_missing_wtn"] = load_json(
+        os.path.join(after_dir, "main_draw_wtn_errors.json")
+    ) or []
 
     added_rows_by_csv = {}
 
@@ -976,6 +983,7 @@ def render_email_markdown(report):
             bool(report.get("new_entry_lists")),
             bool(report.get("itf_seed_missing_rankings")),
             bool(report.get("wta_players_missing_wtn")),
+            bool(report.get("main_draw_players_missing_wtn")),
             bool(report.get("added_matches")),
             bool(report.get("new_draws")),
             bool(report.get("added_calendar_tournaments")),
@@ -1045,6 +1053,17 @@ def render_email_markdown(report):
                 f"{item.get('right_name', '')} [{right_ids}]: {name_detail}; "
                 f"{item.get('country', 'country missing')}; {item.get('dob', 'DOB missing')}."
             )
+        lines.append("")
+
+    if report.get("main_draw_players_missing_wtn"):
+        lines.append("## Main Draw Players Missing Current WTN")
+        for item in report["main_draw_players_missing_wtn"]:
+            lines.append(f"- {item.get('tournament_name') or item.get('tournament_key', '')}:")
+            for player in item.get("players") or []:
+                profile = player.get("profile_url")
+                name = player.get("name", "Unknown player")
+                label = f"[{name}]({profile})" if profile else name
+                lines.append(f"  - {label}: {player.get('reason', 'WTN unavailable')}")
         lines.append("")
 
     if report.get("wta_players_missing_wtn"):

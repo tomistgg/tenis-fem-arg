@@ -881,11 +881,11 @@ def wta_draw_polling_open(start_date, *, today=None):
     return (tournament_start - (today or madrid_today())).days <= 2
 
 
-def fetch_tournament_draws(tournament_url, year, start_date=None, draw_types=None):
+def fetch_tournament_draws(tournament_url, year, start_date=None, draw_types=None, *, poll_early=False):
     tid = _extract_tournament_id(tournament_url)
     if not tid:
         return {}
-    if not wta_draw_polling_open(start_date):
+    if not poll_early and not wta_draw_polling_open(start_date):
         logger.debug(f"  [WTA PDF] Skipping draw polling for {tid} until two days before start ({start_date})")
         return {}
 
@@ -1101,12 +1101,12 @@ def _drawsheet_has_arg_in_round1(data):
     return False
 
 
-def _parse_itf_draw(data):
+def _parse_itf_draw(data, *, include_all_players=False):
     """Convert ITF drawsheet JSON to the same format as parse_draw_pdf output."""
     if not data or not isinstance(data, dict):
         return None
 
-    if not _drawsheet_has_arg_in_round1(data):
+    if not include_all_players and not _drawsheet_has_arg_in_round1(data):
         return None
 
     ko_groups = data.get("koGroups") or []
@@ -1162,6 +1162,7 @@ def _parse_itf_draw(data):
                         "entry": entry,
                         "name": name,
                         "country": country,
+                        "itf_id": str(player.get("playerId") or ""),
                     }
                 )
             elif is_bye:
@@ -1254,6 +1255,7 @@ def fetch_itf_tournament_draws(
     tournament_name="",
     return_meta=False,
     draw_types=None,
+    include_all_players=False,
 ):
     """Fetch and parse ITF draws for a tournament. Returns dict like WTA draws.
 
@@ -1334,7 +1336,10 @@ def fetch_itf_tournament_draws(
             if not (raw and raw.get("koGroups")):
                 continue
             try:
-                parsed = _parse_itf_draw(raw)
+                parsed = (
+                    _parse_itf_draw(raw, include_all_players=True)
+                    if include_all_players else _parse_itf_draw(raw)
+                )
                 if parsed and parsed["players"]:
                     draws[dtype_code] = parsed
                     break

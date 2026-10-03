@@ -281,7 +281,7 @@ def _profile_source(driver, url, settle_seconds):
     if settle_seconds:
         time.sleep(settle_seconds)
     source = driver.page_source or ""
-    if "NOINDEX, NOFOLLOW" in source and len(source) < 5000:
+    if len(source) < 5000 and re.search(r"noindex\s*,\s*nofollow", source, re.IGNORECASE):
         raise ITFProfileBlocked("ITF profile request was challenged")
     return source
 
@@ -313,7 +313,7 @@ def _profile_fetcher(driver, settle_seconds, request_interval_seconds):
                 session.cookies.set(cookie["name"], cookie["value"], **options)
             response = session.get(url, headers={"User-Agent": user_agent}, timeout=30)
             last_request_at = time.monotonic()
-            if "NOINDEX, NOFOLLOW" in response.text and len(response.text) < 5000:
+            if len(response.text) < 5000 and re.search(r"noindex\s*,\s*nofollow", response.text, re.IGNORECASE):
                 raise ITFProfileBlocked("ITF profile request was challenged")
             if response.status_code in (403, 429):
                 raise ITFProfileBlocked(f"ITF profile request returned HTTP {response.status_code}")

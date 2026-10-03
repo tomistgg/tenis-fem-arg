@@ -131,6 +131,23 @@ per-tournament, cache, and retry diagnostics:
 python main.py --verbose
 ```
 
+Each live refresh also archives main-draw singles WTN geometric means in
+`data/main_draw_wtn_gm.json`, covering WTA and ITF tournaments regardless of
+Argentine participation or Draws-page visibility. On publication, every named
+player's current singles WTN is fetched from their ITF profile, without a
+per-run player limit. The archive keeps the GM and tournament/coverage metadata;
+individual WTNs remain in the operational profile and active draw caches.
+A completed roster's GM is frozen unless its participants change. Unnamed
+qualifier slots or unavailable profiles leave `status: "pending"` and
+`wtn_gm: null`; a partial average is never presented as the full draw GM.
+Pending tournaments are retried even after they leave the current calendar.
+
+`data/main_draw_wtn_errors.json` records players whose profiles could not provide
+a valid current WTN, including unresolved ITF IDs and blocked requests. The
+existing scheduled-update email report includes these names, profile links
+when available, and failure reasons. Local runs write the alert data; the
+existing GitHub Actions email step sends it to `RECEIVE_ALERT`.
+
 Logs are written to stderr so machine-readable command output can remain on
 stdout. `WTARG_VERBOSE=1` provides the same verbose logging for maintenance
 scripts that are run directly.

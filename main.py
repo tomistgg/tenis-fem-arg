@@ -2046,7 +2046,7 @@ def main():
             itf_draws_tournaments = {}
         else:
             logger.info("Fetching ITF draws tournament list...")
-            itf_draws_tournaments = get_draws_itf_tournament_list(driver)
+            itf_draws_tournaments = get_draws_itf_tournament_list(driver, include_next_week=True)
         if ENABLE_ITF_DRAWS_PREFETCH and not skip_draws_fetch:
             itf_prefetch_jobs = []
             for week, tourneys in (itf_draws_tournaments or {}).items():
@@ -2576,6 +2576,32 @@ def main():
     save_json_file(DRAW_FETCH_ERRORS_FILE, draw_fetch_errors)
     save_json_file(ITF_BLOCKED_RESPONSES_FILE, itf_blocked_responses)
 
+    # WTN history covers all tournaments before website visibility/pruning.
+    # Main draws without ARG players are fetched separately from the site's
+    # nationality-filtered draw pipeline, including hidden WTA tournaments.
+    if not skip_draws_fetch:
+        from main_draw_wtn import (
+            ARCHIVE_FILENAME,
+            ERRORS_FILENAME,
+            collect_main_draws,
+            refresh_main_draw_wtn,
+        )
+
+        logger.info("Archiving main-draw WTN geometric means for all tournaments...")
+        refresh_main_draw_wtn(
+            driver,
+            collect_main_draws(
+                driver, draws_tournaments, itf_draws_tournaments, draws_store,
+                prefetched_itf_draws,
+                archive_path=os.path.join(DATA_DIR, ARCHIVE_FILENAME),
+                itf_tournament_ids=_event_filters_cache,
+            ),
+            os.path.join(DATA_DIR, ARCHIVE_FILENAME),
+            ITF_WTN_CACHE_FILE,
+            os.path.join(DATA_DIR, ERRORS_FILENAME),
+            entry_cache=entry_cache,
+        )
+
     # Prune draws for tournaments that are definitely over (endDate < today).
     today = madrid_today()
     keys_to_delete = []
@@ -2649,12 +2675,6 @@ def main():
     ]
     for t_key in argless_draw_keys:
         draws_store.pop(t_key, None)
-
-    # Fetch WTN for draw players from ITF profiles
-    if draws_store:
-        logger.info("Refreshing WTN for draw players...")
-        from populate_data.update_wta_wtn import refresh_draw_wtn
-        refresh_draw_wtn(driver, draws_store, limit=30)
 
     # Persist draws cache so a successful draw doesn't disappear on a later failed run.
     save_json_file(DRAWS_STORE_CACHE_FILE, draws_store, formatter=dumps_draws_store_cache)

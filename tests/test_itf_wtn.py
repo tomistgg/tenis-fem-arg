@@ -1,6 +1,8 @@
 import json
 from datetime import date
 
+import pytest
+
 import itf_wtn
 from itf_wtn import (
     ITFProfileBlocked,
@@ -14,6 +16,18 @@ from itf_wtn import (
 def test_parse_wtn_singles_from_profile_props():
     source = '''<script>var props = {"visible":true,"wtnSingles":9.3,"wtnDoubles":11.69};</script>'''
     assert parse_wtn_singles(source) == 9.3
+
+
+@pytest.mark.parametrize("robots", ["NOINDEX, NOFOLLOW", "noindex,nofollow", "noindex, nofollow"])
+def test_short_challenge_page_is_recognized_before_parsing(robots):
+    class Driver:
+        page_source = f'<html><meta name="robots" content="{robots}"></html>'
+
+        def get(self, url):
+            pass
+
+    with pytest.raises(ITFProfileBlocked):
+        itf_wtn._profile_source(Driver(), "https://www.itftennis.com/profile", 0)
 
 
 def test_verified_womens_profile_does_not_fall_back_to_juniors():
