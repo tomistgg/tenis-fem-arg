@@ -1039,6 +1039,22 @@
           {"round": 1, "match_num": 29, "winner_name": "L. Zhu", "score": "64 62"},
           {"round": 1, "match_num": 30, "winner_name": "X. Gao", "score": "62 63"},
           {"round": 1, "match_num": 31, "winner_name": "I. Swiatek"},
+          {"round": 2, "match_num": 0, "winner_name": "A. Charaeva", "score": "36 64 63"},
+          {"round": 2, "match_num": 1, "winner_name": "S. Kartal", "score": "63 62"},
+          {"round": 2, "match_num": 2, "winner_name": "M. Bouzkova", "score": "64 64"},
+          {"round": 2, "match_num": 3, "winner_name": "Q. Zheng", "score": "67(4) 64 30 RET"},
+          {"round": 2, "match_num": 4, "winner_name": "B. Bencic", "score": "61 76(3)"},
+          {"round": 2, "match_num": 5, "winner_name": "A. Li", "score": "64 62"},
+          {"round": 2, "match_num": 6, "winner_name": "M. Sakkari", "score": "62 62"},
+          {"round": 2, "match_num": 7, "winner_name": "E. Svitolina", "score": "16 64 62"},
+          {"round": 2, "match_num": 8, "winner_name": "C. Gauff", "score": "76(4) 46 62"},
+          {"round": 2, "match_num": 9, "winner_name": "X. Sun", "score": "64 75"},
+          {"round": 2, "match_num": 10, "winner_name": "J. Ostapenko", "score": "76(5) 75"},
+          {"round": 2, "match_num": 11, "winner_name": "E. Mertens", "score": "60 46 75"},
+          {"round": 2, "match_num": 12, "winner_name": "I. Jovic", "score": "26 63 63"},
+          {"round": 2, "match_num": 13, "winner_name": "K. Rakhimova", "score": "62 46 63"},
+          {"round": 2, "match_num": 14, "winner_name": "D. Vekic", "score": "61 46 62"},
+          {"round": 2, "match_num": 15, "winner_name": "I. Swiatek", "score": "62 63"},
           {"round": 1, "match_num": 32, "winner_name": "L. Noskova"},
           {"round": 1, "match_num": 33, "winner_name": "E. Ruse", "score": "64 62"},
           {"round": 1, "match_num": 34, "winner_name": "V. Golubic", "score": "63 61"},
@@ -1473,6 +1489,112 @@
         "round_labels": [
           "Q1",
           "Q2"
+        ],
+        "num_rounds": 2
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/1149/samsun-125/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 125 Samsun",
+      "level": "WTA 125",
+      "week": "Week of October 5",
+      "startDate": "2026-10-05",
+      "endDate": "2026-10-11",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "Samsun Open",
+        "location": "SAMSUN, TUR",
+        "dates": "October 4-11 2026",
+        "prize": "$ 115,000",
+        "surface": "Hard, Flexiten",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 16,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "NOHA AKUGUE, Noma", "country": "GER", "wtn": "9.69"},
+          {"pos": 2, "name": "YORUK, Ilay", "country": "TUR", "wtn": "13.51"},
+          {"pos": 3, "name": "GOLOVINA, Maria", "wtn": "12.81"},
+          {"pos": 4, "seed": "5", "name": "MICIC, Elena", "country": "AUS", "wtn": "11.46"},
+          {"pos": 5, "seed": "2", "name": "CRAWLEY, Fiona", "country": "USA", "wtn": "10.07"},
+          {"pos": 6, "name": "SMITH, Alana", "country": "USA", "wtn": "11.08"},
+          {"pos": 7, "name": "JAKUPOVIC, Dalila", "country": "SLO", "wtn": "11.95"},
+          {"pos": 8, "seed": "7", "name": "CIRIC BAGARIC, Lucija", "country": "CRO", "wtn": "11.10"},
+          {"pos": 9, "seed": "3", "name": "TIKHONOVA, Anastasia", "wtn": "11.02"},
+          {"pos": 10, "name": "TKACHEVA, Mariia", "wtn": "13.15"},
+          {"pos": 11, "entry": "WC", "name": "ALTINEL, Alya Naz", "country": "TUR"},
+          {"pos": 12, "seed": "8", "name": "BOLKVADZE, Mariam", "country": "GEO", "wtn": "10.53"},
+          {"pos": 13, "seed": "4", "name": "WERNER, Caroline", "country": "GER", "wtn": "10.80"},
+          {"pos": 14, "name": "KULAMBAYEVA, Zhibek", "country": "KAZ", "wtn": "11.53"},
+          {"pos": 15, "entry": "WC", "name": "TURKMEN, Doga", "country": "TUR"},
+          {"pos": 16, "seed": "6", "name": "FALKOWSKA, Weronika", "country": "POL", "wtn": "11.17"}
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
+      }
+    }
+  },
+  "w-itf-esp-2026-015":
+  {
+    "meta":
+    {
+      "name": "W35 Seville",
+      "level": "W35",
+      "week": "Week of October 5",
+      "startDate": "2026-10-05T00:00:00",
+      "endDate": "2026-10-11T00:00:00",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "LEME DA SILVA, Nauhany Vitoria", "country": "BRA", "wtn": "12.67"},
+          {"pos": 2, "entry": "WC", "name": "CARRERAS MEDINA, Valentina", "country": "ESP"},
+          {"pos": 3, "name": "QUESADA OYONARTE, Marina", "country": "ESP"},
+          {"pos": 4, "seed": "13", "name": "ROS PARRES, Lucia", "country": "ESP", "wtn": "16.25"},
+          {"pos": 5, "seed": "2", "name": "DIAZ ADROVER, Cristina", "country": "ESP"},
+          {"pos": 6, "entry": "WC", "name": "NORES SANCHEZHARO, Mar", "country": "ESP"},
+          {"pos": 7, "entry": "WC", "name": "COLTORTI LOPEZ, Adriana", "country": "ESP"},
+          {"pos": 8, "seed": "14", "name": "MAYE MARTINEZ, Ana", "country": "ESP", "wtn": "17.39"},
+          {"pos": 9, "seed": "3", "name": "TEIXIDO GARCIA, Meritxell", "country": "ESP", "wtn": "15.57"},
+          {"pos": 10, "name": "CABASSERS MORROS, Mar", "country": "ESP"},
+          {"pos": 11, "name": "TEIXIDO GARCIA, Ares", "country": "ESP", "wtn": "17.46"},
+          {"pos": 12, "seed": "11", "name": "CHERNY, Isabelle", "country": "GBR"},
+          {"pos": 13, "seed": "4", "name": "MATTEL, Marie", "country": "FRA", "wtn": "12.97"},
+          {"pos": 14, "name": "GARCIA FERNANDEZ, Ailish", "country": "ESP"},
+          {"pos": 15, "name": "GUDELJ, Vanja", "country": "NED"},
+          {"pos": 16, "seed": "10", "name": "CORTE, Carlota", "country": "ESP", "wtn": "17.55"},
+          {"pos": 17, "seed": "5", "name": "BOEHNER, Laura", "country": "GER", "wtn": "14.80"},
+          {"pos": 18, "name": "AGUILAR FERRANDEZ, Vega", "country": "ESP"},
+          {"pos": 19, "name": "ADROVER GALLEGO, Isabel", "country": "ESP", "wtn": "15.40"},
+          {"pos": 20, "seed": "9", "name": "SARA, Angelica", "country": "ITA"},
+          {"pos": 21, "seed": "6", "name": "LOPEZ ALCARAZ, Esther", "country": "ESP", "wtn": "14.40"},
+          {"pos": 22, "name": "RODRIGUEZ CARRETERO, Patricia", "country": "ESP", "wtn": "18.80"},
+          {"pos": 23, "entry": "WC", "name": "BLANCO, carlota", "country": "ESP"},
+          {"pos": 24, "seed": "16", "name": "TRUJILLO GARNICA, Maria", "country": "ESP", "wtn": "17.01"},
+          {"pos": 25, "seed": "7", "name": "BRUNO, Valentina Abril", "country": "ARG", "wtn": "16.20"},
+          {"pos": 26, "name": "CALIMAN, Silvia", "country": "ROU"},
+          {"pos": 27, "name": "CABASSERS MORROS, Anna", "country": "ESP"},
+          {"pos": 28, "seed": "15", "name": "CASSANI, Sonia", "country": "ITA", "wtn": "17.54"},
+          {"pos": 29, "seed": "8", "name": "LIU, Min", "country": "CHN", "wtn": "16.85"},
+          {"pos": 30, "name": "PELLICANO, Helene", "country": "MLT", "wtn": "16.45"},
+          {"pos": 31, "entry": "WC", "name": "RABASCO SEGURA, Laura", "country": "ESP"},
+          {"pos": 32, "seed": "12", "name": "MONTESINOS VILANOVA, Sofia", "country": "ESP"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16"
         ],
         "num_rounds": 2
       }
