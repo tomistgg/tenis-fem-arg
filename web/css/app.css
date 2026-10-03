@@ -1449,9 +1449,12 @@
                     text-align: center;
                 }
                 #view-upcoming .col-week, #view-upcoming td.col-week { width: auto !important; min-width: 0 !important; max-width: none !important; }
+                #view-upcoming td.col-week { vertical-align: middle; }
+                #view-upcoming .calendar-tournament { line-height: 1.5; }
                 #view-upcoming .calendar-tournament img { width: 13px !important; height: 9px !important; }
-                #view-upcoming .schedule-tournament-split { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: 1px; }
+                #view-upcoming .schedule-tournament-split { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: 1px; row-gap: 0; }
                 #view-upcoming .schedule-tournament-heading, #view-upcoming .schedule-tournament-status { white-space: nowrap; }
+                #view-upcoming .schedule-tournament-heading { display: inline-flex; align-items: center; justify-content: center; }
                 #view-upcoming .schedule-tournament-name { order: 2; flex: 0 0 100%; }
                 #view-upcoming .schedule-tournament-status { order: 1; }
 
