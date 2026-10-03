@@ -273,6 +273,7 @@ WTA_BY_ITF_ID = {
     "800572950": "331158",  # Romane Longueville
     "800180479": "70022",   # Sabrina Giusto
     "800412854": "326799",  # Sara Dahlstrom
+    "800520051": "331078",  # Sarafina Olivia Hansen / Sarafina Hansen
     "800179171": "30082",   # Silvana Casaretto
     "800311509": "319000",  # Simone Pratt
     "800192053": "100096",  # Stephanie Johnson (1971)

@@ -136,6 +136,7 @@ _REGION_MAP = {
     "UZB": "Asia",
     "MAS": "Asia",
     "SGP": "Asia",
+    "SIN": "Asia",
     "INA": "Asia",
     "PHI": "Asia",
     "VIE": "Asia",
