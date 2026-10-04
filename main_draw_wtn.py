@@ -269,7 +269,8 @@ def refresh_main_draw_wtn(
             observation = _draw_observation(profiles.get(player_id, {}), key, today=today)
             if observation:
                 profiles[player_id].setdefault("main_draw_observations", {})[key] = {
-                    field: observation[field] for field in ("wtn", "source", "profile_url", "retrieved_at", "observed_on")
+                    field: observation[field]
+                    for field in ("wtn", "source", "profile_url", "retrieved_at", "observed_on")
                     if field in observation
                 }
                 wtn = _positive_wtn(observation["wtn"])

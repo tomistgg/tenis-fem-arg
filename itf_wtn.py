@@ -628,7 +628,9 @@ def refresh_draw_wtn(
                 continue
             for player in draw.get("players", []):
                 name = _player_name(player)
-                if not name or name.casefold() in {"qualifier", "bye", "q", "tbd", "(available slot)", "(special exempt)"}:
+                if not name or name.casefold() in {
+                    "qualifier", "bye", "q", "tbd", "(available slot)", "(special exempt)"
+                }:
                     continue
                 resolved = _resolve_player(player, key, resolver)
                 if not resolved:
@@ -662,7 +664,9 @@ def refresh_draw_wtn(
                 if player.get("type") == "ALT":
                     continue
                 name = _player_name(player)
-                if not name or name.casefold() in {"qualifier", "bye", "q", "tbd", "(available slot)", "(special exempt)"}:
+                if not name or name.casefold() in {
+                    "qualifier", "bye", "q", "tbd", "(available slot)", "(special exempt)"
+                }:
                     continue
                 resolved = _resolve_player(player, str(key), resolver)
                 pid = str(resolved["player_id"]) if resolved else ""

@@ -12,6 +12,10 @@ For text, labels, styling, configuration, straightforward refactors, and other r
 
 If uncertain whether a new test is valuable, do not add it.
 
+# Python lint policy
+
+Before finishing a Python code change, run Ruff on every changed Python file and fix any reported errors. Use the project's Ruff configuration in `pyproject.toml`, including its 120-character line limit. For example: `.venv\Scripts\ruff.exe check --force-exclude <changed Python files>` on Windows.
+
 # WTN scope
 
 WTN checks and profile lookups must concern singles players only. Never search for doubles WTNs or trigger WTN profile lookups because a player appears in a doubles draw.
