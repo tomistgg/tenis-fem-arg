@@ -3,16 +3,16 @@
     "wta_full_calendar_cache.json": {
       "from": "2026-09-06",
       "to": "2026-12-31",
-      "fetchedAt": "2026-10-04T14:04:58Z",
-      "lastAttemptAt": "2026-10-04T14:04:58Z",
-      "fetchedRunId": "20261004T133917Z-29c0dd9f5e",
-      "lastAttemptRunId": "20261004T133917Z-29c0dd9f5e"
+      "fetchedAt": "2026-10-04T18:03:30Z",
+      "lastAttemptAt": "2026-10-04T18:03:30Z",
+      "fetchedRunId": "20261004T180038Z-9bf8b5bbb0",
+      "lastAttemptRunId": "20261004T180038Z-9bf8b5bbb0"
     },
     "itf_calendar_cache.json": {
       "year": 2026,
-      "count": 602,
-      "fetchedAt": "2026-10-04T12:06:04Z",
-      "lastAttemptAt": "2026-10-04T13:44:51Z"
+      "count": 635,
+      "fetchedAt": "2026-10-04T18:06:26Z",
+      "lastAttemptAt": "2026-10-04T18:06:26Z"
     }
   },
   "entries": {
@@ -382,6 +382,9 @@
       },
       "1100204712_Q_0": {
         "fetchedAt": "2026-10-04T13:42:55Z"
+      },
+      "1100205028_M_0": {
+        "fetchedAt": "2026-10-04T18:17:16Z"
       }
     },
     "draws_store_cache.json": {
@@ -880,11 +883,11 @@
         "completedAt": "2026-09-28T18:49:22Z"
       },
       "https://www.wtatennis.com/tournaments/1179/adana-125/2026/player-list": {
-        "fetchedAt": "2026-10-04T13:46:39Z"
+        "fetchedAt": "2026-10-04T18:07:49Z"
       },
       "https://www.wtatennis.com/tournaments/1143/jingshan-125/2026/player-list": {
-        "fetchedAt": "2026-10-04T13:46:39Z",
-        "completedAt": "2026-10-04T13:46:39Z"
+        "fetchedAt": "2026-10-04T18:07:49Z",
+        "completedAt": "2026-10-04T18:07:49Z"
       },
       "w-itf-esp-2026-031": {
         "fetchedAt": "2026-09-29T14:40:10Z",
@@ -892,31 +895,33 @@
       },
       "w-itf-por-2026-017": {
         "fetchedAt": "2026-10-04T13:48:34Z",
-        "completedAt": "2026-10-04T13:48:34Z"
+        "completedAt": "2026-10-04T18:07:47Z"
       },
       "w-itf-arg-2026-010": {
-        "fetchedAt": "2026-10-04T13:47:22Z"
+        "fetchedAt": "2026-10-04T18:09:01Z",
+        "completedAt": "2026-10-04T18:09:01Z"
       },
       "https://www.wtatennis.com/tournaments/1020/beijing/2026/player-list": {
-        "fetchedAt": "2026-10-04T13:46:39Z"
+        "fetchedAt": "2026-10-04T18:07:49Z"
       },
       "w-itf-usa-2026-063": {
-        "fetchedAt": "2026-10-04T13:47:05Z"
+        "fetchedAt": "2026-10-04T18:09:26Z",
+        "completedAt": "2026-10-04T18:09:26Z"
       },
       "w-itf-usa-2026-044": {
-        "fetchedAt": "2026-10-04T13:46:40Z"
+        "fetchedAt": "2026-10-04T18:07:49Z"
       },
       "https://www.wtatennis.com/tournaments/1147/suzhou-125/2026/player-list": {
-        "fetchedAt": "2026-10-04T13:46:39Z"
+        "fetchedAt": "2026-10-04T18:07:49Z"
       },
       "https://www.wtatennis.com/tournaments/1149/samsun-125/2026/player-list": {
-        "fetchedAt": "2026-10-04T13:46:39Z"
+        "fetchedAt": "2026-10-04T18:07:49Z"
       },
       "w-itf-esp-2026-015": {
-        "fetchedAt": "2026-10-04T13:52:01Z"
+        "fetchedAt": "2026-10-04T18:12:36Z"
       },
       "w-itf-arg-2026-013": {
-        "fetchedAt": "2026-10-04T13:49:47Z"
+        "fetchedAt": "2026-10-04T18:13:00Z"
       }
     }
   }
