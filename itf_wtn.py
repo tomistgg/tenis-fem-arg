@@ -20,7 +20,7 @@ ITF_WTN_CACHE_FILENAME = "itf_wtn_cache.json"
 PROFILE_URL = "https://www.itftennis.com/en/players/{slug}/{player_id}/{country}/wt/s/overview/"
 REQUEST_INTERVAL_SECONDS = 2.0
 PROFILE_BATCH_SIZE = 8
-PROFILE_BATCH_COOLDOWN_SECONDS = 30.0
+PROFILE_BATCH_COOLDOWN_SECONDS = 61.0
 
 
 class ITFProfileBlocked(RuntimeError):
@@ -148,7 +148,7 @@ def _store_observation(cache, player_id, player, observation):
         record["last_profile_url"] = observation["profile_url"]
 
 
-def _select_recent_observation(record, today, max_age_days=7, *, source=None):
+def _select_recent_observation(record, today, max_age_days=5, *, source=None):
     """Return the newest WTN observation saved in the rolling freshness window."""
     cutoff = today - timedelta(days=max_age_days)
     if not _valid_wtn(record.get("wtn")) or (source and record.get("source") != source):
@@ -438,7 +438,6 @@ def refresh_entry_list_wtn(
     draw_players=None,
     profile_failures=None,
     include_itf_entry_players=False,
-    reuse_fresh_wtn=False,
 ):
     """Refresh and propagate WTNs for WTA and ITF entry-list players."""
     today = today or madrid_today()
@@ -488,6 +487,8 @@ def refresh_entry_list_wtn(
         if not _current_entry_list(key, tournament_weeks, today):
             continue
         for player in players or []:
+            if player.get("type") == "ALT":
+                continue
             itf_player = ({**player, "player_id": str(player["player_id"])}
                           if not str(key).startswith("http") and player.get("player_id")
                           else resolve_itf_player(player))
@@ -498,7 +499,6 @@ def refresh_entry_list_wtn(
                 if previous is None or (previous.get("type") != "MAIN" and itf_player.get("type") == "MAIN"):
                     players_by_id[player_id] = itf_player
 
-    profile_required = {str(player["player_id"]) for player in draw_players or []}
     for player in draw_players or []:
         players_by_id.setdefault(str(player["player_id"]), player)
 
@@ -509,11 +509,7 @@ def refresh_entry_list_wtn(
     targets = [
         (player_id, player)
         for player_id, player in players_by_id.items()
-        if pending_entry_lists.get(player_id)
-        or not _select_recent_observation(
-            cache.get(player_id, {}), today,
-            source="profile" if not reuse_fresh_wtn or player_id in profile_required else None,
-        )
+        if not _select_recent_observation(cache.get(player_id, {}), today)
     ] if fetch_profiles else []
     targets.sort(key=lambda item: (
         not bool(pending_entry_lists.get(item[0])),
@@ -632,7 +628,7 @@ def refresh_draw_wtn(
                 continue
             for player in draw.get("players", []):
                 name = _player_name(player)
-                if not name or name.casefold() in {"qualifier", "bye", "q", "tbd"}:
+                if not name or name.casefold() in {"qualifier", "bye", "q", "tbd", "(available slot)", "(special exempt)"}:
                     continue
                 resolved = _resolve_player(player, key, resolver)
                 if not resolved:
@@ -655,7 +651,7 @@ def refresh_draw_wtn(
         driver, entry_cache, cache_path, today=today, resolve_itf_player=resolver,
         include_entry_players=include_entry_players, draw_players=list(targets.values()), check_new_entry_lists=False,
         profile_failures=failures,
-        include_itf_entry_players=include_entry_players, reuse_fresh_wtn=True,
+        include_itf_entry_players=include_entry_players,
         **profile_options,
     )
     if include_entry_players:
@@ -663,8 +659,10 @@ def refresh_draw_wtn(
             if not _current_entry_list(key, profile_options.get("tournament_weeks"), today):
                 continue
             for player in players or []:
+                if player.get("type") == "ALT":
+                    continue
                 name = _player_name(player)
-                if not name or name.casefold() in {"qualifier", "bye", "q", "tbd"}:
+                if not name or name.casefold() in {"qualifier", "bye", "q", "tbd", "(available slot)", "(special exempt)"}:
                     continue
                 resolved = _resolve_player(player, str(key), resolver)
                 pid = str(resolved["player_id"]) if resolved else ""
@@ -679,7 +677,7 @@ def refresh_draw_wtn(
                                        ),
                                        "reason": failures[pid]})
     for pid, player in targets.items():
-        if not _select_recent_observation(cache.get(pid, {}), today, source="profile"):
+        if not _select_recent_observation(cache.get(pid, {}), today):
             unresolved.extend(
                 {**location, "name": player.get("name", pid), "itf_id": pid,
                  "profile_url": _latest_profile_url(cache.get(pid, {})) or player_profile_url(player),

@@ -1,4 +1,4 @@
-"""Archive a profile-based singles WTN geometric mean for every main draw."""
+"""Archive a singles WTN geometric mean for every main draw."""
 
 import hashlib
 import json
@@ -194,13 +194,13 @@ def _restore_profile_wtn(players, key, profiles, resolver):
 
 
 def _draw_observation(record, key, *, today=None):
-    """Use the latest fresh profile, falling back to a fresh saved draw lookup."""
-    latest = _select_recent_observation(record, today, source="profile") if today else {}
+    """Use the latest fresh WTN, falling back to a fresh saved draw lookup."""
+    latest = _select_recent_observation(record, today) if today else {}
     if latest:
         return latest
     observation = record.get("main_draw_observations", {}).get(key, {})
-    if observation.get("source") == "profile" and _positive_wtn(observation.get("wtn")) is not None:
-        return _select_recent_observation(observation, today, source="profile") if today else observation
+    if observation.get("source") in {"profile", "entry_list"} and _positive_wtn(observation.get("wtn")) is not None:
+        return _select_recent_observation(observation, today) if today else observation
     return {}
 
 
@@ -220,13 +220,12 @@ def refresh_main_draw_wtn(
     fetch_profiles=True,
     profile_failures=None,
 ):
-    """Freeze complete roster means; retry missing profiles and changed rosters.
+    """Freeze complete roster means; retry missing WTNs and changed rosters.
 
     Individual observations remain in the existing operational profile cache.
     The permanent tournament archive contains aggregates and metadata only.
     Successful tournament-specific lookups survive retries and roster changes.
-    Fresh profile observations are shared across tournaments. Entry-list WTNs
-    cannot substitute for a profile observation when calculating the GM.
+    Fresh profile and entry-list observations are shared across tournaments.
     """
     today = today or madrid_today()
     tournaments = list(tournaments)
@@ -270,7 +269,7 @@ def refresh_main_draw_wtn(
             observation = _draw_observation(profiles.get(player_id, {}), key, today=today)
             if observation:
                 profiles[player_id].setdefault("main_draw_observations", {})[key] = {
-                    field: observation[field] for field in ("wtn", "source", "profile_url", "retrieved_at")
+                    field: observation[field] for field in ("wtn", "source", "profile_url", "retrieved_at", "observed_on")
                     if field in observation
                 }
                 wtn = _positive_wtn(observation["wtn"])
@@ -354,7 +353,7 @@ def refresh_main_draw_wtn(
             "unfilledPositions": unfilled,
             "status": "complete" if complete else "pending",
             "observedOn": today.isoformat(),
-            "source": "ITF player profiles",
+            "source": "ITF singles WTNs",
             "rosterHash": fingerprint,
         }
         draw["wtn_gm"] = archive[key]["wtn_gm"]

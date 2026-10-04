@@ -116,7 +116,7 @@ def test_blocked_profiles_never_use_old_values_and_notify_for_unattempted_player
     assert len(calls) == 1
 
 
-def test_pending_retry_keeps_fresh_profile_successes_after_entry_cache_changes_and_another_block(tmp_path):
+def test_pending_retry_uses_fresh_entry_wtn_after_another_block(tmp_path):
     draw = tournament(("A, Alice", "800000001"), ("B, Bea", "800000002"), ("C, Carla", "800000003"))
 
     def first_fetch(url):
@@ -154,14 +154,14 @@ def test_pending_retry_keeps_fresh_profile_successes_after_entry_cache_changes_a
         return 'var props = {"wtnSingles":%s};' % (9 if "800000002" in url else 16)
 
     record = refresh(tmp_path, [("one", draw)], recovered, today=date(2026, 10, 6))["one"]
-    assert record["wtn_gm"] == round((4 * 9 * 16) ** (1 / 3), 4)
+    assert record["wtn_gm"] == round((25 * 9 * 16) ** (1 / 3), 4)
     assert record["status"] == "complete"
     assert len(calls) == 2
     assert json.loads((tmp_path / "main_draw_wtn_errors.json").read_text()) == []
     assert "main_draw_observations" not in json.dumps(record)
 
 
-def test_another_tournament_reuses_fresh_profile_then_refreshes_after_seven_days(tmp_path):
+def test_another_tournament_reuses_fresh_profile_then_refreshes_after_five_days(tmp_path):
     draw = tournament(("A, Alice", "800000001"))
     refresh(tmp_path, [("one", draw)], lambda _: 'var props = {"wtnSingles":4};')
     calls = []
@@ -173,7 +173,7 @@ def test_another_tournament_reuses_fresh_profile_then_refreshes_after_seven_days
     record = refresh(tmp_path, [("two", draw)], fetch)["two"]
     assert len(calls) == 0
     assert record["wtn_gm"] == 4
-    record = refresh(tmp_path, [("three", draw)], fetch, today=date(2026, 10, 12))["three"]
+    record = refresh(tmp_path, [("three", draw)], fetch, today=date(2026, 10, 10))["three"]
     assert len(calls) == 1
     assert record["wtn_gm"] == 16
 
@@ -272,7 +272,7 @@ def test_combined_queue_covers_hidden_main_draws_entries_and_qualifying_without_
     assert entries["https://wta.example/event"][0]["wtn"] == "9.0"
 
 
-def test_gm_requires_profile_even_if_entry_wtn_is_fresh_and_does_not_retry_block_in_same_run(tmp_path):
+def test_gm_accepts_fresh_entry_wtn_without_profile_lookup(tmp_path):
     from itf_wtn import refresh_draw_wtn
 
     (tmp_path / "profiles.json").write_text(json.dumps({
@@ -283,21 +283,44 @@ def test_gm_requires_profile_even_if_entry_wtn_is_fresh_and_does_not_retry_block
     failures = {}
     calls = []
 
-    def blocked(url):
-        calls.append(url)
-        raise ITFProfileBlocked("HTTP 403")
-
     refresh_draw_wtn(
         None, {}, tmp_path / "profiles.json", main_draws=[("w-itf-hidden", draw)],
-        today=date(2026, 10, 4), fetch_source=blocked, profile_failures=failures,
+        today=date(2026, 10, 4),
+        fetch_source=lambda url: calls.append(url) or 'var props = {"wtnSingles":9};',
+        profile_failures=failures,
     )
-    assert len(calls) == 1
+    assert calls == []
     record = refresh(tmp_path, [("w-itf-hidden", draw)],
-                     lambda _: pytest.fail("Must wait for next run to retry"),
+                     lambda _: pytest.fail("Fresh entry-list WTN must avoid a profile request"),
                      fetch_profiles=False, profile_failures=failures)["w-itf-hidden"]
-    assert record["status"] == "pending" and record["wtnPlayerCount"] == 1
-    errors = json.loads((tmp_path / "main_draw_wtn_errors.json").read_text())
-    assert "blocked" in errors[0]["players"][0]["reason"]
+    assert record["status"] == "complete" and record["wtnPlayerCount"] == 2
+    assert record["wtn_gm"] == 8
+    assert json.loads((tmp_path / "main_draw_wtn_errors.json").read_text()) == []
+
+
+def test_entry_list_wtn_is_reused_for_five_days_then_refreshed_for_new_draw(tmp_path):
+    (tmp_path / "profiles.json").write_text(json.dumps({
+        "800000001": {"wtn": 4, "source": "entry_list", "observed_on": "2026-10-04",
+                      "retrieved_at": "2026-10-09"},
+    }))
+    draw = tournament(("Alice", "800000001"))
+    calls = []
+
+    record = refresh(
+        tmp_path, [("one", draw)],
+        lambda url: calls.append(url) or 'var props = {"wtnSingles":9};',
+        today=date(2026, 10, 9),
+    )["one"]
+    assert calls == [] and record["wtn_gm"] == 4
+    saved = json.loads((tmp_path / "profiles.json").read_text())["800000001"]
+    assert saved["main_draw_observations"]["one"]["observed_on"] == "2026-10-04"
+
+    record = refresh(
+        tmp_path, [("two", draw)],
+        lambda url: calls.append(url) or 'var props = {"wtnSingles":9};',
+        today=date(2026, 10, 10),
+    )["two"]
+    assert len(calls) == 1 and record["wtn_gm"] == 9
 
 
 def test_itf_collection_includes_no_arg_main_draws_and_preserves_ids(monkeypatch):

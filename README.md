@@ -134,18 +134,18 @@ python main.py --verbose
 Each live refresh also archives main-draw singles WTN geometric means in
 `data/main_draw_wtn_gm.json`, covering WTA and ITF tournaments regardless of
 Argentine participation or Draws-page visibility. On publication, every named
-player's singles WTN comes from their ITF profile, without a per-run player
-limit. A saved profile WTN up to seven days old is reused across tournaments.
+player's singles WTN comes from a recent ITF entry list or player profile, without a per-run player
+limit. A saved WTN up to five days old is reused across tournaments.
 The archive keeps the GM and tournament/coverage metadata;
 individual WTNs remain in the operational profile and active draw caches.
 A completed roster's GM is frozen unless its participants change. Unnamed
-qualifier slots or unavailable profiles leave `status: "pending"` and
+qualifier slots or unavailable WTNs leave `status: "pending"` and
 `wtn_gm: null`; a partial average is never presented as the full draw GM.
 Pending tournaments are retried even after they leave the current calendar.
-Successful profile lookups are retained for that tournament in the operational
-cache. Retries fetch missing players and observations over seven days old;
-filled qualifier slots or replacement players use a fresh saved profile WTN
-or receive a new lookup. Pending GMs use the latest fresh profile values;
+Successful WTN observations are retained for that tournament in the operational
+cache. Retries fetch missing players and observations over five days old;
+filled qualifier slots or replacement players use a fresh saved WTN
+or receive a new lookup. Pending GMs use the latest fresh WTNs;
 completed historical GMs remain frozen.
 
 `data/itf_wtn_cache.json` keeps one latest WTN per player, with its source and
@@ -158,13 +158,14 @@ The permanent tournament GM archive remains frozen independently of displayed
 player WTNs.
 
 Every run collects entry lists and all available main draws before refreshing
-WTNs. One combined queue covers current entry lists, active singles main and
+WTNs. One combined queue covers current main and qualifying entry players, active singles main and
 qualifying draws, and pending GM draws, including tournaments without ARG
 players and players whose entry lists have already been removed. Missing WTNs
-and observations more than seven days old trigger a profile lookup; a pending
-GM always requires a profile value rather than an entry-list WTN. Each player
+and observations more than five days old trigger a profile lookup. A fresh
+entry-list WTN also satisfies a pending GM. Each player
 is refreshed once per run, then their value is propagated everywhere before
-pending GMs are calculated. Doubles draws
+pending GMs are calculated. ALTs receive entry-list WTNs without profile lookups
+until they appear in a singles qualifying or main draw. Doubles draws
 never trigger WTN lookups. If a refresh fails or is blocked, the stale singles
 draw value is shown as unavailable and retried on the next run; the last saved
 observation and archived tournament GM are retained.
