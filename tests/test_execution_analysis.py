@@ -8,6 +8,30 @@ from execution_analysis import (
 )
 
 
+def test_normal_and_fallback_emails_include_unidentified_and_unavailable_singles_profiles():
+    from generate_run_report import render_email_markdown
+
+    players = [
+        {"name": "Unknown Player", "tournament_name": "WTA 125 Example", "draw": "QS",
+         "reason": "ITF profile not identified: no unambiguous ITF player ID"},
+        {"name": "Known Player", "tournament_name": "WTA 125 Example", "draw": "MDS",
+         "profile_url": "https://www.itftennis.com/en/players/known-player/8001/esp/wt/s/overview/",
+         "reason": "Fresh singles WTN unavailable: profile lookup was blocked"},
+    ]
+    issue = {"component": "itf-wtn", "operation": "refresh active singles draw WTNs",
+             "message": "Fresh WTN unavailable for 2 singles draw players", "severity": "partial",
+             "context": {"players": players}}
+    state = completed_state("partial", issues=[issue, issue])
+    for markdown in (render_status_markdown(state), render_email_markdown({"run_status": state})):
+        assert "## Singles Players Missing Current WTN" in markdown
+        assert "WTA 125 Example (qualifying draw)" in markdown
+        assert "Unknown Player: ITF profile not identified" in markdown
+        assert "WTA 125 Example (main draw)" in markdown
+        assert "[Known Player](https://www.itftennis.com/" in markdown
+        assert "profile lookup was blocked" in markdown
+        assert markdown.count("Unknown Player: ITF profile not identified") == 1
+
+
 def completed_state(status, *, issues=None, error=None):
     state = {
         "run_id": "run-123",

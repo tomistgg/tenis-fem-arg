@@ -588,3 +588,124 @@ def test_latest_profile_propagates_to_every_entry_and_draw_without_changing_gm()
     assert draws["w-itf-old"]["draws"]["MDS"]["players"][0]["wtn"] == "9.3"
     assert draws["w-itf-old"]["draws"]["MDD"]["players"][0]["members"][0]["wtn"] == "9.3"
     assert draws["w-itf-old"]["draws"]["MDS"]["wtn_gm"] == 20
+
+
+@pytest.mark.parametrize("source", ["profile", "entry_list"])
+def test_active_singles_refresh_stale_players_without_entry_lists_and_deduplicate(tmp_path, source):
+    path = tmp_path / "cache.json"
+    record = {"wtn": 20, "source": source, "retrieved_at": "2026-10-04",
+              "observed_on": "2026-09-26", "name": "Alice", "country": "ESP",
+              "main_draw_observations": {"w-itf-active": {"wtn": 20, "source": "profile"}}}
+    path.write_text(json.dumps({"8001": record}), encoding="utf-8")
+    player = {"player_id": "8001", "name": "Alice", "country": "ESP", "wtn": "20"}
+    draws = {"w-itf-active": {"endDate": "2026-10-04", "draws": {
+        "MDS": {"players": [dict(player)], "wtn_gm": 20},
+        "QS": {"players": [dict(player), {"name": "Qualifier"}, {"name": "Bye"}]},
+    }}}
+    fetched = []
+    entries = {"w-itf-old": [dict(player)]}
+    cache = itf_wtn.refresh_draw_wtn(
+        None, draws, path, entry_cache=entries, today=date(2026, 10, 4), profile_batch_size=0,
+        fetch_source=lambda url: fetched.append(url) or '<script>var props = {"wtnSingles":9.3};</script>',
+    )
+    assert len(fetched) == 1
+    assert cache["8001"]["retrieved_at"] == "2026-10-04"
+    assert cache["8001"]["main_draw_observations"] == record["main_draw_observations"]
+    assert draws["w-itf-active"]["draws"]["MDS"]["players"][0]["wtn"] == "9.3"
+    assert draws["w-itf-active"]["draws"]["QS"]["players"][0]["wtn"] == "9.3"
+    assert entries["w-itf-old"][0]["wtn"] == "9.3"
+    assert draws["w-itf-active"]["draws"]["MDS"]["wtn_gm"] == 20
+
+
+def test_draw_freshness_uses_observation_date_and_skips_doubles_and_finished_events(tmp_path):
+    path = tmp_path / "cache.json"
+    cache = {
+        "8001": {"wtn": 10, "source": "profile", "retrieved_at": "2026-09-27"},
+        "8002": {"wtn": 11, "source": "entry_list", "observed_on": "2026-10-02"},
+        "8003": {"wtn": 20, "source": "profile", "retrieved_at": "2026-09-01"},
+    }
+    path.write_text(json.dumps(cache), encoding="utf-8")
+    def player(pid):
+        return {"player_id": pid, "name": f"Player {pid}", "country": "ESP"}
+    draws = {
+        "w-itf-active": {"endDate": "2026-10-11", "draws": {
+            "MDS": {"players": [player("8001"), player("8002")]},
+            "MDD": {"players": [{"members": [player("8003")]}]},
+        }},
+        "w-itf-finished": {"endDate": "2026-10-03", "draws": {"MDS": {"players": [player("8003")]}}},
+    }
+    def unexpected_fetch(url):
+        pytest.fail(f"Unexpected profile request: {url}")
+    itf_wtn.refresh_draw_wtn(None, draws, path, today=date(2026, 10, 4), fetch_source=unexpected_fetch)
+    assert draws["w-itf-active"]["draws"]["MDS"]["players"][0]["wtn"] == "10"
+    assert draws["w-itf-active"]["draws"]["MDS"]["players"][1]["wtn"] == "11"
+
+
+def test_blocked_draw_refresh_hides_old_value_and_retries_on_next_run(tmp_path, monkeypatch):
+    path = tmp_path / "cache.json"
+    path.write_text(json.dumps({"8001": {"wtn": 20, "source": "profile", "retrieved_at": "2026-09-26"}}))
+    draws = {"w-itf-active": {"endDate": "2026-10-11", "draws": {
+        "MDS": {"wtn_gm": 20, "players": [{"player_id": "8001", "name": "Alice", "country": "ESP"}]}
+    }}}
+    issues = []
+    monkeypatch.setattr("run_state.report_run_issue", lambda *args, **kwargs: issues.append(kwargs))
+    def blocked(url):
+        raise ITFProfileBlocked("challenge")
+    cache = itf_wtn.refresh_draw_wtn(None, draws, path, today=date(2026, 10, 4), fetch_source=blocked)
+    assert cache["8001"]["wtn"] == 20
+    assert cache["8001"]["retrieved_at"] == "2026-09-26"
+    assert draws["w-itf-active"]["draws"]["MDS"]["players"][0]["wtn"] == "-"
+    assert issues[0]["context"]["players"][0]["itf_id"] == "8001"
+    # Final persistence must not reintroduce a stale value after a blocked refresh.
+    itf_wtn.propagate_wtn({}, cache, draws, today=date(2026, 10, 4), fresh_singles_only=True)
+    assert draws["w-itf-active"]["draws"]["MDS"]["players"][0]["wtn"] == "-"
+    cache = itf_wtn.refresh_draw_wtn(
+        None, draws, path, today=date(2026, 10, 4),
+        fetch_source=lambda url: '<script>var props = {"wtnSingles":9.3};</script>',
+    )
+    assert draws["w-itf-active"]["draws"]["MDS"]["players"][0]["wtn"] == "9.3"
+    assert draws["w-itf-active"]["draws"]["MDS"]["wtn_gm"] == 20
+
+
+def test_draw_only_wta_player_resolves_and_missing_wtn_is_fetched(tmp_path):
+    path = tmp_path / "cache.json"
+    draws = {"https://wta.example/active": {"draws": {
+        "QS": {"players": [{"player_id": "123", "name": "Alice", "country": "ESP"}]}
+    }}}
+    fetched = []
+    itf_wtn.refresh_draw_wtn(
+        None, draws, path, today=date(2026, 10, 4),
+        resolve_itf_player=lambda player: {**player, "player_id": "8001"},
+        fetch_source=lambda url: fetched.append(url) or '<script>var props = {"wtnSingles":9.3};</script>',
+    )
+    assert len(fetched) == 1 and "/8001/" in fetched[0]
+    assert draws["https://wta.example/active"]["draws"]["QS"]["players"][0]["wtn"] == "9.3"
+
+
+def test_unidentified_singles_profile_records_player_and_tournament_for_email(tmp_path, monkeypatch):
+    from run_state import initialize_run_state, load_run_state
+
+    status_path = tmp_path / "run_status.json"
+    initialize_run_state(status_path, "test-run", tmp_path)
+    monkeypatch.setenv("WTARG_RUN_STATUS_PATH", str(status_path))
+    draws = {"https://wta.example/active": {"name": "WTA 125 Example", "draws": {
+        "QS": {"players": [
+            {"player_id": "123", "name": "Unknown Player", "country": "ESP", "wtn": "20"},
+            {"name": "Qualifier"},
+        ]},
+    }}}
+    def unexpected_fetch(url):
+        pytest.fail("Unidentified profile must not trigger a guessed lookup")
+    itf_wtn.refresh_draw_wtn(
+        None, draws, tmp_path / "cache.json", today=date(2026, 10, 4),
+        resolve_itf_player=lambda player: None, fetch_source=unexpected_fetch,
+    )
+    state = load_run_state(status_path)
+    assert state["status"] == "partial"
+    players = state["issues"][0]["context"]["players"]
+    assert len(players) == 1
+    assert players[0]["name"] == "Unknown Player"
+    assert players[0]["tournament_name"] == "WTA 125 Example"
+    assert players[0]["draw"] == "QS"
+    assert "profile not identified" in players[0]["reason"]
+    assert draws["https://wta.example/active"]["draws"]["QS"]["players"][0]["wtn"] == "-"

@@ -292,6 +292,30 @@ def analyze_execution(
     }
 
 
+def wtn_alert_lines(run_state: dict[str, Any] | None) -> list[str]:
+    """Retain actionable player details in normal and fallback email reports."""
+    lines = []
+    seen = set()
+    for issue in (run_state or {}).get("issues") or []:
+        if not isinstance(issue, dict) or issue.get("component") != "itf-wtn":
+            continue
+        for player in (issue.get("context") or {}).get("players") or []:
+            name = _clean(player.get("name")) or "Unknown player"
+            tournament = _clean(player.get("tournament_name") or player.get("tournament")) or "Unknown tournament"
+            draw = {"MDS": "main draw", "QS": "qualifying draw"}.get(player.get("draw"), "singles draw")
+            reason = _clean(player.get("reason")) or "WTN unavailable"
+            key = (name, tournament, draw, reason)
+            if key in seen:
+                continue
+            seen.add(key)
+            profile = player.get("profile_url")
+            label = f"[{name}]({profile})" if profile else name
+            lines.append(f"- {tournament} ({draw}) — {label}: {reason}.")
+    if lines:
+        return ["## Singles Players Missing Current WTN", *lines, ""]
+    return []
+
+
 def render_status_markdown(
     run_state: dict[str, Any] | None,
     *,
@@ -313,6 +337,9 @@ def render_status_markdown(
         for issue in analysis["issues"]:
             count = f" This happened {issue['count']} times." if issue["count"] > 1 else ""
             lines.append(f"- {issue['reason']}{count} {issue['impact']}")
+    alerts = wtn_alert_lines(run_state)
+    if alerts:
+        lines.extend(["", *alerts])
     lines.extend(["", "## What happens next", f"- **Next step:** {analysis['next_step']}", ""])
     technical = [detail for issue in analysis["issues"] for detail in issue["technical"]]
     if run_state:

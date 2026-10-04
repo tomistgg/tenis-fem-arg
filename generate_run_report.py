@@ -901,6 +901,8 @@ def _format_itf_empty_draw_status(draw_types):
 
 
 def _append_execution_summary(lines, run_status, *, include_technical=True):
+    from execution_analysis import wtn_alert_lines
+
     if not run_status:
         return
     analysis = analyze_execution(run_status)
@@ -918,6 +920,7 @@ def _append_execution_summary(lines, run_status, *, include_technical=True):
             lines.append(f"- {issue['reason']}{count} {issue['impact']}")
         lines.append("")
 
+    lines.extend(wtn_alert_lines(run_status))
     lines.append("## What happens next")
     lines.append(f"- **Next step:** {analysis['next_step']}")
     lines.append("")

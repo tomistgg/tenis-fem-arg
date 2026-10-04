@@ -246,18 +246,25 @@ def entry_list_wtn_status(entry_cache, cache_path, *, tournament_weeks=None, res
     return counts
 
 
-def propagate_wtn(entry_cache, cache, draws_store=None, *, resolve_itf_player=None):
+def propagate_wtn(
+    entry_cache, cache, draws_store=None, *, resolve_itf_player=None, fresh_singles_only=False, today=None
+):
     """Use the player's latest value everywhere, independently of tournament dates."""
     from main_draw_wtn import _resolve_player
 
     resolver = _resolver_with_entry_cache_fallback(entry_cache, cache, resolve_itf_player or _wta_player_with_itf_id)
 
-    def update(player, key):
+    today = today or madrid_today()
+
+    def update(player, key, require_fresh=False):
         # ITF entry-list IDs are authoritative; WTA IDs need resolution.
         pid = str(player.get("player_id") or "") if not str(key).startswith("http") else ""
         resolved = None if pid else _resolve_player(player, key, resolver)
         pid = str(resolved["player_id"]) if resolved else pid
         record = cache.get(pid, {})
+        if require_fresh and not _select_recent_observation(record, today):
+            player["wtn"] = "-"
+            return
         if _valid_wtn(record.get("wtn")):
             player["wtn"] = str(record["wtn"])
         else:
@@ -267,13 +274,13 @@ def propagate_wtn(entry_cache, cache, draws_store=None, *, resolve_itf_player=No
         for player in players or []:
             update(player, key)
     for key, tournament in (draws_store or {}).items():
-        for draw in (tournament.get("draws") or {}).values():
+        for kind, draw in (tournament.get("draws") or {}).items():
             for player in draw.get("players", []):
                 if player.get("members"):
                     for member in player["members"]:
                         update(member, key)
                 else:
-                    update(player, key)
+                    update(player, key, require_fresh=fresh_singles_only and kind in {"MDS", "QS"})
 
 
 def _wta_player_with_itf_id(player):
@@ -374,6 +381,8 @@ def refresh_entry_list_wtn(
     profile_batch_cooldown_seconds=PROFILE_BATCH_COOLDOWN_SECONDS,
     settle_seconds=0.5,
     request_interval_seconds=REQUEST_INTERVAL_SECONDS,
+    include_entry_players=True,
+    draw_players=None,
 ):
     """Refresh and propagate WTNs for WTA and ITF entry-list players."""
     today = today or madrid_today()
@@ -418,7 +427,7 @@ def refresh_entry_list_wtn(
     players_by_id = {}
     player_entry_lists = {}
     for key, players in (entry_cache or {}).items():
-        if not str(key).startswith("http"):
+        if not include_entry_players or not str(key).startswith("http"):
             continue
         for player in players or []:
             itf_player = resolve_itf_player(player)
@@ -428,6 +437,9 @@ def refresh_entry_list_wtn(
                 previous = players_by_id.get(player_id)
                 if previous is None or (previous.get("type") != "MAIN" and itf_player.get("type") == "MAIN"):
                     players_by_id[player_id] = itf_player
+
+    for player in draw_players or []:
+        players_by_id.setdefault(str(player["player_id"]), player)
 
     pending_entry_lists = {
         player_id: keys - set(cache.get(player_id, {}).get("entry_lists_checked", {}))
@@ -481,7 +493,7 @@ def refresh_entry_list_wtn(
             )
             if check_new_entry_lists:
                 cache[player_id].setdefault("entry_lists_checked", {}).update(
-                    dict.fromkeys(player_entry_lists[player_id], today_text)
+                    dict.fromkeys(player_entry_lists.get(player_id, ()), today_text)
                 )
         except ITFProfileBlocked as exc:
             logger.warning(f"ITF WTN refresh paused after {index - 1} profiles: {exc}")
@@ -499,4 +511,70 @@ def refresh_entry_list_wtn(
 
     save_json_file(cache_path, cache)
     propagate_wtn(entry_cache, cache, resolve_itf_player=resolve_itf_player)
+    return cache
+
+
+def refresh_draw_wtn(
+    driver, draws_store, cache_path, *, entry_cache=None, today=None, resolve_itf_player=None, **profile_options
+):
+    """Refresh stale or missing WTNs for active singles draws, never doubles."""
+    from main_draw_wtn import _player_name, _resolve_player
+    from run_state import report_run_issue
+
+    today = today or madrid_today()
+    entry_cache = entry_cache or {}
+    cache = _normalize_cache(_load_cache(cache_path))
+    resolver = _resolver_with_entry_cache_fallback(
+        entry_cache, cache, resolve_itf_player or _wta_player_with_itf_id
+    )
+    targets = {}
+    locations = {}
+    unresolved = []
+    for key, tournament in (draws_store or {}).items():
+        meta = tournament.get("meta") or tournament
+        end = str(meta.get("endDate") or "")[:10]
+        if end and end < today.isoformat():
+            continue
+        for kind, draw in (tournament.get("draws") or {}).items():
+            if kind not in {"MDS", "QS"}:
+                continue
+            for player in draw.get("players", []):
+                name = _player_name(player)
+                if not name or name.casefold() in {"qualifier", "bye", "q", "tbd"}:
+                    continue
+                resolved = _resolve_player(player, key, resolver)
+                if not resolved:
+                    unresolved.append({
+                        "name": name, "tournament": key, "tournament_name": meta.get("name", key),
+                        "draw": kind, "reason": "ITF profile not identified: no unambiguous ITF player ID",
+                    })
+                    continue
+                pid = str(resolved["player_id"])
+                if not _select_recent_observation(cache.get(pid, {}), today):
+                    targets.setdefault(pid, {**resolved, "type": "MAIN" if kind == "MDS" else "QUAL"})
+                    locations.setdefault(pid, []).append({
+                        "tournament": key, "tournament_name": meta.get("name", key), "draw": kind,
+                    })
+    cache = refresh_entry_list_wtn(
+        driver, entry_cache, cache_path, today=today, resolve_itf_player=resolver,
+        include_entry_players=False, draw_players=list(targets.values()), check_new_entry_lists=False,
+        **profile_options,
+    )
+    for pid, player in targets.items():
+        if not _select_recent_observation(cache.get(pid, {}), today):
+            unresolved.extend(
+                {**location, "name": player.get("name", pid), "itf_id": pid,
+                 "profile_url": _latest_profile_url(cache.get(pid, {})) or player_profile_url(player),
+                 "reason": "Fresh singles WTN unavailable: profile lookup failed, was blocked, or has no valid WTN"}
+                for location in locations[pid]
+            )
+    if unresolved:
+        report_run_issue(
+            "itf-wtn", "refresh active singles draw WTNs",
+            ValueError(f"Fresh WTN unavailable for {len(unresolved)} singles draw players"),
+            severity="partial", context={"players": unresolved},
+        )
+    propagate_wtn(
+        entry_cache, cache, draws_store, resolve_itf_player=resolver, fresh_singles_only=True, today=today
+    )
     return cache

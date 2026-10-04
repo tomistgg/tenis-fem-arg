@@ -11,3 +11,7 @@ For text, labels, styling, configuration, straightforward refactors, and other r
 - Do not run the full suite unless the change is cross-cutting or risky.
 
 If uncertain whether a new test is valuable, do not add it.
+
+# WTN scope
+
+WTN checks and profile lookups must concern singles players only. Never search for doubles WTNs or trigger WTN profile lookups because a player appears in a doubles draw.

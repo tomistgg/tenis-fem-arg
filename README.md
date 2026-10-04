@@ -155,6 +155,18 @@ retains those first-fetch markers. Direct profile lookups provide current WTNs.
 The permanent tournament GM archive remains frozen independently of displayed
 player WTNs.
 
+Every run also checks named players in active singles main and qualifying draws
+for missing WTNs or observations more than seven days old, including players
+whose entry lists have already been removed. Each player is fetched once per
+draw refresh and the new profile value is propagated everywhere. Doubles draws
+never trigger WTN lookups. If a refresh fails or is blocked, the stale singles
+draw value is shown as unavailable and retried on the next run; the last saved
+observation and archived tournament GM are retained.
+Unavailable active singles WTNs also appear in the scheduled email alert with
+the player, tournament, draw and reason. Unidentified ITF profiles are reported
+by name; known profiles include their link. These details are retained even
+when the email must be generated from run status after a rejected update.
+
 `data/main_draw_wtn_errors.json` records players whose profiles could not provide
 a valid current WTN, including unresolved ITF IDs and blocked requests. The
 existing scheduled-update email report includes these names, profile links
