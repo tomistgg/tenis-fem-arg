@@ -81,7 +81,7 @@ def test_missing_player_prevents_partial_gm_and_retries_then_clears_email_errors
     assert record["wtnPlayerCount"] == 1
     report = compute_report(str(before), str(tmp_path))
     email = render_email_markdown(report)
-    assert "Main Draw Players Missing Current WTN" in email
+    assert "Singles Players Missing Current WTN" in email
     assert "Bea B" in email and "no valid singles WTN" in email
     assert "itftennis.com/en/players/" in email
     assert len(report["main_draw_players_missing_wtn"][0]["players"]) == 1
@@ -98,7 +98,7 @@ def test_blocked_profiles_never_use_old_values_and_notify_for_unattempted_player
     (tmp_path / "profiles.json").write_text(
         json.dumps(
             {
-                "800000001": {"weeks": {"2026-09-28": {"wtn": 8, "source": "profile", "retrieved_at": "2026-10-04"}}},
+                "800000001": {"weeks": {"2026-09-21": {"wtn": 8, "source": "profile", "retrieved_at": "2026-09-26"}}},
             }
         )
     )
@@ -116,7 +116,7 @@ def test_blocked_profiles_never_use_old_values_and_notify_for_unattempted_player
     assert len(calls) == 1
 
 
-def test_pending_retry_keeps_successes_after_weekly_cache_changes_and_another_block(tmp_path):
+def test_pending_retry_keeps_fresh_profile_successes_after_entry_cache_changes_and_another_block(tmp_path):
     draw = tournament(("A, Alice", "800000001"), ("B, Bea", "800000002"), ("C, Carla", "800000003"))
 
     def first_fetch(url):
@@ -127,6 +127,8 @@ def test_pending_retry_keeps_successes_after_weekly_cache_changes_and_another_bl
     refresh(tmp_path, [("one", draw)], first_fetch)
     profiles = json.loads((tmp_path / "profiles.json").read_text())
     profiles["800000001"]["wtn"] = 25
+    profiles["800000001"]["source"] = "entry_list"
+    profiles["800000001"]["retrieved_at"] = "2026-10-05"
     (tmp_path / "profiles.json").write_text(json.dumps(profiles))
     # A retry can encounter the blocked player before an already saved success.
     draw["draws"]["MDS"]["players"].reverse()
@@ -138,7 +140,7 @@ def test_pending_retry_keeps_successes_after_weekly_cache_changes_and_another_bl
         calls.append(url)
         raise ITFProfileBlocked("HTTP 403")
 
-    record = refresh(tmp_path, [("one", draw)], blocked, today=date(2026, 10, 12))["one"]
+    record = refresh(tmp_path, [("one", draw)], blocked, today=date(2026, 10, 5))["one"]
     assert record["wtnPlayerCount"] == 1
     assert next(p for p in draw["draws"]["MDS"]["players"] if p["itf_id"] == "800000001")["wtn"] == "25"
     assert len(calls) == 1
@@ -151,7 +153,7 @@ def test_pending_retry_keeps_successes_after_weekly_cache_changes_and_another_bl
         assert "800000001" not in url
         return 'var props = {"wtnSingles":%s};' % (9 if "800000002" in url else 16)
 
-    record = refresh(tmp_path, [("one", draw)], recovered, today=date(2026, 10, 13))["one"]
+    record = refresh(tmp_path, [("one", draw)], recovered, today=date(2026, 10, 6))["one"]
     assert record["wtn_gm"] == round((4 * 9 * 16) ** (1 / 3), 4)
     assert record["status"] == "complete"
     assert len(calls) == 2
@@ -159,7 +161,7 @@ def test_pending_retry_keeps_successes_after_weekly_cache_changes_and_another_bl
     assert "main_draw_observations" not in json.dumps(record)
 
 
-def test_another_tournament_requires_a_new_profile_lookup(tmp_path):
+def test_another_tournament_reuses_fresh_profile_then_refreshes_after_seven_days(tmp_path):
     draw = tournament(("A, Alice", "800000001"))
     refresh(tmp_path, [("one", draw)], lambda _: 'var props = {"wtnSingles":4};')
     calls = []
@@ -169,8 +171,31 @@ def test_another_tournament_requires_a_new_profile_lookup(tmp_path):
         return 'var props = {"wtnSingles":16};'
 
     record = refresh(tmp_path, [("two", draw)], fetch)["two"]
+    assert len(calls) == 0
+    assert record["wtn_gm"] == 4
+    record = refresh(tmp_path, [("three", draw)], fetch, today=date(2026, 10, 12))["three"]
     assert len(calls) == 1
     assert record["wtn_gm"] == 16
+
+
+def test_pending_gm_uses_latest_fresh_profile_and_never_expired_draw_observations(tmp_path):
+    draw = tournament(("Alice", "800000001"), ("Bea", "800000002"))
+    refresh(tmp_path, [("one", draw)], lambda url: 'var props = {"wtnSingles":%s};' % (
+        4 if "800000001" in url else "null"
+    ))
+    path = tmp_path / "profiles.json"
+    profiles = json.loads(path.read_text())
+    profiles["800000001"].update(wtn=9, retrieved_at="2026-10-05")
+    path.write_text(json.dumps(profiles))
+    record = refresh(tmp_path, [("one", draw)],
+                     lambda _: pytest.fail("Archive must not fetch after combined pass"),
+                     fetch_profiles=False, today=date(2026, 10, 5))["one"]
+    assert record["wtnPlayerCount"] == 1
+    assert json.loads(path.read_text())["800000001"]["main_draw_observations"]["one"]["wtn"] == 9
+    record = refresh(tmp_path, [("one", draw)], lambda _: pytest.fail("No second lookup pass"),
+                     fetch_profiles=False, today=date(2026, 10, 13))["one"]
+    assert record["status"] == "pending" and record["wtnPlayerCount"] == 0
+    assert record["wtn_gm"] is None
 
 
 def test_qualifiers_and_replaced_players_recompute_roster_without_treating_byes_as_players(tmp_path):
@@ -215,6 +240,64 @@ def test_shared_player_fetched_once_per_run_and_unmapped_player_is_reported(tmp_
     error = json.loads((tmp_path / "main_draw_wtn_errors.json").read_text())[0]
     assert error["tournament_key"] == "two"
     assert error["players"][0]["reason"] == "No unambiguous ITF player ID"
+
+
+def test_combined_queue_covers_hidden_main_draws_entries_and_qualifying_without_gm_refetch(tmp_path):
+    from itf_wtn import refresh_draw_wtn
+
+    calls = []
+    hidden = tournament(("Alice", "800000001"), ("Bea", "800000002"))
+    visible = tournament(("Alice", "800000001"))
+    visible["draws"]["QS"] = {"players": [{"name": "Carla", "itf_id": "800000003", "country": "USA"}]}
+    visible["draws"]["MDD"] = {"players": [{"members": [{"name": "Doubles only", "itf_id": "800000004"}]}]}
+    entries = {"https://wta.example/event": [{"name": "Bea", "player_id": "123", "country": "USA"}]}
+    def resolve(player):
+        return {**player, "player_id": "800000002"} if player.get("player_id") == "123" else None
+    failures = {}
+    refresh_draw_wtn(
+        None, {"w-itf-visible": visible}, tmp_path / "profiles.json",
+        main_draws=[("w-itf-hidden", hidden)], entry_cache=entries, include_entry_players=True,
+        today=date(2026, 10, 4), resolve_itf_player=resolve, profile_failures=failures,
+        profile_batch_cooldown_seconds=0,
+        fetch_source=lambda url: calls.append(url) or 'var props = {"wtnSingles":9};',
+    )
+    assert len(calls) == 3
+    assert all("800000004" not in url for url in calls)
+    archive = refresh(
+        tmp_path, [("w-itf-hidden", hidden), ("w-itf-visible", visible)],
+        lambda _: pytest.fail("GM archive must not repeat profile lookups"), fetch_profiles=False,
+        profile_failures=failures,
+    )
+    assert all(record["wtn_gm"] == 9 for record in archive.values())
+    assert entries["https://wta.example/event"][0]["wtn"] == "9.0"
+
+
+def test_gm_requires_profile_even_if_entry_wtn_is_fresh_and_does_not_retry_block_in_same_run(tmp_path):
+    from itf_wtn import refresh_draw_wtn
+
+    (tmp_path / "profiles.json").write_text(json.dumps({
+        "800000001": {"wtn": 4, "source": "entry_list", "retrieved_at": "2026-10-04"},
+        "800000002": {"wtn": 16, "source": "profile", "retrieved_at": "2026-10-04"},
+    }))
+    draw = tournament(("Alice", "800000001"), ("Bea", "800000002"))
+    failures = {}
+    calls = []
+
+    def blocked(url):
+        calls.append(url)
+        raise ITFProfileBlocked("HTTP 403")
+
+    refresh_draw_wtn(
+        None, {}, tmp_path / "profiles.json", main_draws=[("w-itf-hidden", draw)],
+        today=date(2026, 10, 4), fetch_source=blocked, profile_failures=failures,
+    )
+    assert len(calls) == 1
+    record = refresh(tmp_path, [("w-itf-hidden", draw)],
+                     lambda _: pytest.fail("Must wait for next run to retry"),
+                     fetch_profiles=False, profile_failures=failures)["w-itf-hidden"]
+    assert record["status"] == "pending" and record["wtnPlayerCount"] == 1
+    errors = json.loads((tmp_path / "main_draw_wtn_errors.json").read_text())
+    assert "blocked" in errors[0]["players"][0]["reason"]
 
 
 def test_itf_collection_includes_no_arg_main_draws_and_preserves_ids(monkeypatch):

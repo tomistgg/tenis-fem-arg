@@ -701,7 +701,7 @@ def test_unidentified_singles_profile_records_player_and_tournament_for_email(tm
         resolve_itf_player=lambda player: None, fetch_source=unexpected_fetch,
     )
     state = load_run_state(status_path)
-    assert state["status"] == "partial"
+    assert state["status"] == "degraded"
     players = state["issues"][0]["context"]["players"]
     assert len(players) == 1
     assert players[0]["name"] == "Unknown Player"
@@ -709,3 +709,42 @@ def test_unidentified_singles_profile_records_player_and_tournament_for_email(tm
     assert players[0]["draw"] == "QS"
     assert "profile not identified" in players[0]["reason"]
     assert draws["https://wta.example/active"]["draws"]["QS"]["players"][0]["wtn"] == "-"
+
+
+def test_combined_entry_queue_uses_current_lists_and_keeps_fresh_first_list_values(tmp_path):
+    path = tmp_path / "cache.json"
+    path.write_text(json.dumps({"8002": {"wtn": 9, "source": "entry_list", "observed_on": "2026-10-02"}}))
+    entries = {
+        "w-itf-current": [{"player_id": "8001", "name": "Alice", "country": "USA"}],
+        "w-itf-current#qual": [{"player_id": "8002", "name": "Bea", "country": "USA"}],
+        "w-itf-old": [{"player_id": "8003", "name": "Past list only", "country": "USA"}],
+    }
+    calls = []
+    itf_wtn.refresh_draw_wtn(
+        None, {}, path, entry_cache=entries, include_entry_players=True, today=date(2026, 10, 4),
+        tournament_weeks={"w-itf-current": "2026-10-05", "w-itf-old": "2026-09-21"},
+        fetch_source=lambda url: calls.append(url) or 'var props = {"wtnSingles":16};',
+    )
+    assert len(calls) == 1 and "/8001/" in calls[0]
+    assert entries["w-itf-current"][0]["wtn"] == "16.0"
+    assert entries["w-itf-current#qual"][0]["wtn"] == "9"
+
+
+def test_success_is_checkpointed_before_the_next_profile_can_block(tmp_path):
+    path = tmp_path / "cache.json"
+    entries = {"https://wta.example/active": [
+        {"player_id": "8001", "name": "Alice", "country": "USA", "type": "MAIN"},
+        {"player_id": "8002", "name": "Bea", "country": "USA", "type": "MAIN"},
+    ]}
+
+    def fetch(url):
+        if "/8001/" in url:
+            return 'var props = {"wtnSingles":9};'
+        assert json.loads(path.read_text())["8001"]["wtn"] == 9
+        raise ITFProfileBlocked("HTTP 403")
+
+    itf_wtn.refresh_entry_list_wtn(
+        None, entries, path, today=date(2026, 10, 4), fetch_source=fetch,
+        resolve_itf_player=lambda player: player, profile_batch_size=100,
+    )
+    assert json.loads(path.read_text())["8001"]["wtn"] == 9

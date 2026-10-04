@@ -32,6 +32,22 @@ def test_normal_and_fallback_emails_include_unidentified_and_unavailable_singles
         assert markdown.count("Unknown Player: ITF profile not identified") == 1
 
 
+def test_wtn_alerts_consolidate_gm_and_refresh_failures_in_normal_and_fallback_email():
+    from generate_run_report import render_email_markdown
+
+    player = {"name": "Alice", "draw": "MDS", "tournament_name": "W35 Example",
+              "reason": "ITF profiles blocked: HTTP 403"}
+    issues = [{"component": component, "severity": "degraded", "context": {"players": [player]}}
+              for component in ("itf-wtn", "main-draw-wtn")]
+    state = completed_state("degraded", issues=issues)
+    report = {"run_status": state, "main_draw_players_missing_wtn": [{
+        "tournament_name": "W35 Example", "tournament_key": "one", "players": [player]
+    }]}
+    for markdown in (render_email_markdown(report), render_status_markdown(state)):
+        assert markdown.count("## Singles Players Missing Current WTN") == 1
+        assert markdown.count("Alice: ITF profiles blocked") == 1
+
+
 def completed_state(status, *, issues=None, error=None):
     state = {
         "run_id": "run-123",

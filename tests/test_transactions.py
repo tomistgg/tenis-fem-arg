@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import datetime
 from pathlib import Path
@@ -869,6 +870,74 @@ def test_unsuccessful_refresh_discards_run_files(
     assert latest_state["staging_retained"] is False
     assert not (project / ".run_staging" / "test-run").exists()
     assert [path.name for path in (project / ".run_state").iterdir()] == ["latest.json"]
+
+
+@pytest.mark.parametrize("status", ["partial", "failed"])
+def test_rejected_transaction_preserves_only_verified_wtn_profiles(tmp_path, monkeypatch, status):
+    from datetime import date
+
+    import itf_wtn
+
+    production = tmp_path / "data"
+    production.mkdir()
+    original = {"800000001": {"name": "Alice", "country": "USA", "wtn": 20,
+                              "source": "profile", "retrieved_at": "2026-09-01",
+                              "main_draw_observations": {"old": {"wtn": 20}}}}
+    (production / "itf_wtn_cache.json").write_text(json.dumps(original))
+    (production / "main_draw_wtn_gm.json").write_text('{"old":{"wtn_gm":20}}')
+    (production / "entry_lists_cache.json").write_text('{"old":[]}')
+    staged = tmp_path / ".run_staging" / "test-run"
+    (staged / "data").mkdir(parents=True)
+    # These unaccepted changes must never be copied to production.
+    (staged / "data" / "entry_lists_cache.json").write_text('{"unsafe":true}')
+    (staged / "data" / "main_draw_wtn_gm.json").write_text('{}')
+    journal = staged / "wtn_profile_checkpoints.json"
+    monkeypatch.setenv("WTARG_WTN_CHECKPOINT_PATH", str(journal))
+    monkeypatch.setattr(itf_wtn, "madrid_today", lambda: date(2026, 10, 4))
+    cache = json.loads(json.dumps(original))
+    itf_wtn._store_observation(cache, "800000001", {"name": "Alice", "country": "USA"}, {
+        "wtn": 9, "source": "profile", "retrieved_at": "2026-10-04",
+        "profile_url": "https://www.itftennis.com/en/players/alice/800000001/usa/wt/s/overview/",
+    })
+    itf_wtn.checkpoint_profile_wtn(staged / "data" / "itf_wtn_cache.json", cache, "800000001")
+    assert json.loads(journal.read_text())["800000001"]["wtn"] == 9
+    state = tmp_path / ".run_state" / "run.json"
+    initialize_run_state(state, "test-run", staged)
+    latest = state.with_name("latest.json")
+    monkeypatch.setattr(pipeline_transaction, "PRODUCTION_DATA_DIR", production)
+    monkeypatch.setattr(pipeline_transaction, "LATEST_STATE_PATH", latest)
+    pipeline_transaction._finish(state, status, staged, promotion="blocked")
+    saved = json.loads((production / "itf_wtn_cache.json").read_text())
+    assert saved["800000001"]["wtn"] == 9
+    assert saved["800000001"]["main_draw_observations"] == original["800000001"]["main_draw_observations"]
+    assert (production / "entry_lists_cache.json").read_text() == '{"old":[]}'
+    assert (production / "main_draw_wtn_gm.json").read_text() == '{"old":{"wtn_gm":20}}'
+    assert load_run_state(latest)["wtn_profiles_preserved"] == 1
+    assert load_run_state(latest)["status"] == status
+    assert not staged.exists()
+
+
+def test_invalid_checkpoint_never_overwrites_production_and_newer_observation_wins(tmp_path, monkeypatch):
+    from datetime import date
+
+    import itf_wtn
+
+    monkeypatch.setattr(itf_wtn, "madrid_today", lambda: date(2026, 10, 4))
+    cache = tmp_path / "cache.json"
+    original = '{"800000001":{"wtn":8,"source":"profile","retrieved_at":"2026-10-04"}}'
+    cache.write_text(original)
+    journal = tmp_path / "journal.json"
+    observation = {"name": "Alice", "country": "USA", "wtn": 9, "source": "profile",
+                   "retrieved_at": "2026-10-03",
+                   "profile_url": "https://www.itftennis.com/en/players/alice/800000001/usa/wt/s/overview/"}
+    journal.write_text(json.dumps({"800000001": observation}))
+    assert itf_wtn.recover_profile_wtn_checkpoints(journal, cache) == 1  # Identity metadata supplied.
+    assert json.loads(cache.read_text())["800000001"]["wtn"] == 8
+    before = cache.read_bytes()
+    journal.write_text(json.dumps({"800000001": {**observation, "wtn": 41}}))
+    with pytest.raises(ValueError, match="Invalid verified"):
+        itf_wtn.recover_profile_wtn_checkpoints(journal, cache)
+    assert cache.read_bytes() == before
 
 
 def test_staging_cleanup_retries_transient_lock(tmp_path, monkeypatch):

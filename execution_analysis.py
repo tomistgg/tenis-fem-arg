@@ -292,19 +292,27 @@ def analyze_execution(
     }
 
 
-def wtn_alert_lines(run_state: dict[str, Any] | None) -> list[str]:
+def wtn_alert_lines(run_state: dict[str, Any] | None, main_draw_errors=None) -> list[str]:
     """Retain actionable player details in normal and fallback email reports."""
     lines = []
     seen = set()
-    for issue in (run_state or {}).get("issues") or []:
-        if not isinstance(issue, dict) or issue.get("component") != "itf-wtn":
+    issues = list((run_state or {}).get("issues") or [])
+    issues.extend({"component": "main-draw-wtn", "context": {"players": [
+        {**player, "tournament": item.get("tournament_key"),
+         "tournament_name": item.get("tournament_name"), "draw": player.get("draw", "MDS")}
+        for player in item.get("players", [])
+    ]}} for item in main_draw_errors or [])
+    for issue in issues:
+        if not isinstance(issue, dict) or issue.get("component") not in {"itf-wtn", "main-draw-wtn"}:
             continue
         for player in (issue.get("context") or {}).get("players") or []:
             name = _clean(player.get("name")) or "Unknown player"
             tournament = _clean(player.get("tournament_name") or player.get("tournament")) or "Unknown tournament"
-            draw = {"MDS": "main draw", "QS": "qualifying draw"}.get(player.get("draw"), "singles draw")
+            draw = {"MDS": "main draw", "QS": "qualifying draw", "entry": "entry list"}.get(
+                player.get("draw"), "singles draw"
+            )
             reason = _clean(player.get("reason")) or "WTN unavailable"
-            key = (name, tournament, draw, reason)
+            key = (name.casefold(), tournament.casefold(), draw)
             if key in seen:
                 continue
             seen.add(key)

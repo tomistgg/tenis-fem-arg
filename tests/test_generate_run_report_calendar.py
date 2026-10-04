@@ -156,8 +156,9 @@ def test_email_reports_wta_entry_list_players_missing_wtn(tmp_path):
         }
     ]
     markdown = render_email_markdown(report)
-    assert "## WTA Entry List Players Missing WTN" in markdown
-    assert "WTA 125 Suzhou: Yue Yuan (QUAL pos 7)" in markdown
+    assert "## Singles Players Missing Current WTN" in markdown
+    assert "WTA 125 Suzhou (entry list)" in markdown
+    assert "Yue Yuan: WTN unavailable" in markdown
     assert "Has Rating" not in markdown
     assert "ITF Missing" not in markdown
 

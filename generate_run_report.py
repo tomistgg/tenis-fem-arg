@@ -900,7 +900,7 @@ def _format_itf_empty_draw_status(draw_types):
     return "MD and QS are empty"
 
 
-def _append_execution_summary(lines, run_status, *, include_technical=True):
+def _append_execution_summary(lines, run_status, *, include_technical=True, include_wtn_alerts=True):
     from execution_analysis import wtn_alert_lines
 
     if not run_status:
@@ -920,7 +920,8 @@ def _append_execution_summary(lines, run_status, *, include_technical=True):
             lines.append(f"- {issue['reason']}{count} {issue['impact']}")
         lines.append("")
 
-    lines.extend(wtn_alert_lines(run_status))
+    if include_wtn_alerts:
+        lines.extend(wtn_alert_lines(run_status))
     lines.append("## What happens next")
     lines.append(f"- **Next step:** {analysis['next_step']}")
     lines.append("")
@@ -1007,7 +1008,7 @@ def render_email_markdown(report):
         lines.append("None detected.")
         return "\n".join(lines).rstrip() + "\n"
 
-    _append_execution_summary(lines, run_status)
+    _append_execution_summary(lines, run_status, include_wtn_alerts=False)
 
     if draw_update_warning:
         lines.append("## Tournament draws that may be out of date")
@@ -1058,26 +1059,13 @@ def render_email_markdown(report):
             )
         lines.append("")
 
-    if report.get("main_draw_players_missing_wtn"):
-        lines.append("## Main Draw Players Missing Current WTN")
-        for item in report["main_draw_players_missing_wtn"]:
-            lines.append(f"- {item.get('tournament_name') or item.get('tournament_key', '')}:")
-            for player in item.get("players") or []:
-                profile = player.get("profile_url")
-                name = player.get("name", "Unknown player")
-                label = f"[{name}]({profile})" if profile else name
-                lines.append(f"  - {label}: {player.get('reason', 'WTN unavailable')}")
-        lines.append("")
+    from execution_analysis import wtn_alert_lines
 
-    if report.get("wta_players_missing_wtn"):
-        lines.append("## WTA Entry List Players Missing WTN")
-        for item in report["wta_players_missing_wtn"]:
-            players = "; ".join(
-                f"{player.get('name', '')} ({player.get('type') or 'entry'} pos {player.get('position') or '?'})"
-                for player in item.get("players") or []
-            )
-            lines.append(f"- {item.get('tournament_name') or item.get('tournament_key', '')}: {players}")
-        lines.append("")
+    missing_wtn = list(report.get("main_draw_players_missing_wtn") or [])
+    missing_wtn.extend({**item, "players": [
+        {**player, "draw": "entry", "reason": "WTN unavailable"} for player in item.get("players") or []
+    ]} for item in report.get("wta_players_missing_wtn") or [])
+    lines.extend(wtn_alert_lines(run_status, missing_wtn))
 
     if report.get("withdrawals"):
         lines.append("## 1) Argentine Withdrawals (WTA/ITF)")

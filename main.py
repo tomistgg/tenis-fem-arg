@@ -2109,7 +2109,7 @@ def main():
             entry_cache,
             ITF_WTN_CACHE_FILE,
             today=madrid_today(),
-            fetch_profiles=True,
+            fetch_profiles=False,
             tournament_weeks=entry_tournament_weeks,
             fresh_itf_entry_lists=fresh_itf_entry_lists,
         )
@@ -2589,22 +2589,36 @@ def main():
             refresh_main_draw_wtn,
         )
 
-        logger.info("Archiving main-draw WTN geometric means for all tournaments...")
-        refresh_main_draw_wtn(
-            driver,
-            collect_main_draws(
+        main_draws = list(collect_main_draws(
                 driver, draws_tournaments, itf_draws_tournaments, draws_store,
                 prefetched_itf_draws,
                 archive_path=os.path.join(DATA_DIR, ARCHIVE_FILENAME),
                 itf_tournament_ids=_event_filters_cache,
-            ),
+            ))
+    else:
+        main_draws = []
+
+    profile_failures = {}
+    logger.info("Refreshing singles WTNs for entry lists and all available draws...")
+    refresh_draw_wtn(
+        driver, draws_store, ITF_WTN_CACHE_FILE, entry_cache=entry_cache,
+        main_draws=main_draws, archive_path=os.path.join(DATA_DIR, "main_draw_wtn_gm.json"),
+        include_entry_players=True, profile_failures=profile_failures,
+        tournament_weeks=entry_tournament_weeks,
+    )
+
+    if not skip_draws_fetch:
+        logger.info("Archiving main-draw WTN geometric means for all tournaments...")
+        refresh_main_draw_wtn(
+            driver,
+            main_draws,
             os.path.join(DATA_DIR, ARCHIVE_FILENAME),
             ITF_WTN_CACHE_FILE,
             os.path.join(DATA_DIR, ERRORS_FILENAME),
             entry_cache=entry_cache,
+            fetch_profiles=False,
+            profile_failures=profile_failures,
         )
-
-    refresh_draw_wtn(driver, draws_store, ITF_WTN_CACHE_FILE, entry_cache=entry_cache)
 
     # Prune draws for tournaments that are definitely over (endDate < today).
     today = madrid_today()

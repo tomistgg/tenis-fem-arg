@@ -545,6 +545,19 @@ def _finish(
     staging_root: Path,
     **details: Any,
 ) -> int:
+    if status in {"partial", "failed"}:
+        from itf_wtn import ITF_WTN_CACHE_FILENAME, recover_profile_wtn_checkpoints
+
+        try:
+            saved = recover_profile_wtn_checkpoints(
+                staging_root / "wtn_profile_checkpoints.json", PRODUCTION_DATA_DIR / ITF_WTN_CACHE_FILENAME
+            )
+            details["wtn_profiles_preserved"] = saved
+            if saved:
+                logger.info("Preserved %s verified singles WTN updates from the rejected run.", saved)
+        except Exception as exc:
+            details["wtn_checkpoint_error"] = str(exc)
+            logger.error("Could not preserve verified WTN checkpoints: %s", exc)
     staging_retained, cleanup_warning = _cleanup_staging(staging_root)
     details["staging_retained"] = staging_retained
     if cleanup_warning is not None:
@@ -609,6 +622,7 @@ def run_refresh_transaction(
             "WTARG_RUN_STATUS_PATH": str(run_state_path),
             "WTARG_DATA_DIR": str(staging_data),
             "WTARG_SITE_ROOT": str(staging_site),
+            "WTARG_WTN_CHECKPOINT_PATH": str(staging_root / "wtn_profile_checkpoints.json"),
             "PYTHONIOENCODING": "utf-8",
             "PYTHONUTF8": "1",
         }

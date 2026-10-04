@@ -134,17 +134,19 @@ python main.py --verbose
 Each live refresh also archives main-draw singles WTN geometric means in
 `data/main_draw_wtn_gm.json`, covering WTA and ITF tournaments regardless of
 Argentine participation or Draws-page visibility. On publication, every named
-player's current singles WTN is fetched from their ITF profile, without a
-per-run player limit. The archive keeps the GM and tournament/coverage metadata;
+player's singles WTN comes from their ITF profile, without a per-run player
+limit. A saved profile WTN up to seven days old is reused across tournaments.
+The archive keeps the GM and tournament/coverage metadata;
 individual WTNs remain in the operational profile and active draw caches.
 A completed roster's GM is frozen unless its participants change. Unnamed
 qualifier slots or unavailable profiles leave `status: "pending"` and
 `wtn_gm: null`; a partial average is never presented as the full draw GM.
 Pending tournaments are retried even after they leave the current calendar.
 Successful profile lookups are retained for that tournament in the operational
-cache. Retries fetch only missing players; filled qualifier slots or replacement
-players receive new lookups. Later player WTN refreshes do not replace these
-saved draw observations.
+cache. Retries fetch missing players and observations over seven days old;
+filled qualifier slots or replacement players use a fresh saved profile WTN
+or receive a new lookup. Pending GMs use the latest fresh profile values;
+completed historical GMs remain frozen.
 
 `data/itf_wtn_cache.json` keeps one latest WTN per player, with its source and
 observation date. That value is propagated to every cached entry list and active
@@ -155,10 +157,14 @@ retains those first-fetch markers. Direct profile lookups provide current WTNs.
 The permanent tournament GM archive remains frozen independently of displayed
 player WTNs.
 
-Every run also checks named players in active singles main and qualifying draws
-for missing WTNs or observations more than seven days old, including players
-whose entry lists have already been removed. Each player is fetched once per
-draw refresh and the new profile value is propagated everywhere. Doubles draws
+Every run collects entry lists and all available main draws before refreshing
+WTNs. One combined queue covers current entry lists, active singles main and
+qualifying draws, and pending GM draws, including tournaments without ARG
+players and players whose entry lists have already been removed. Missing WTNs
+and observations more than seven days old trigger a profile lookup; a pending
+GM always requires a profile value rather than an entry-list WTN. Each player
+is refreshed once per run, then their value is propagated everywhere before
+pending GMs are calculated. Doubles draws
 never trigger WTN lookups. If a refresh fails or is blocked, the stale singles
 draw value is shown as unavailable and retried on the next run; the last saved
 observation and archived tournament GM are retained.
@@ -166,6 +172,17 @@ Unavailable active singles WTNs also appear in the scheduled email alert with
 the player, tournament, draw and reason. Unidentified ITF profiles are reported
 by name; known profiles include their link. These details are retained even
 when the email must be generated from run status after a rejected update.
+The email consolidates entry-list, qualifying-draw and main-draw WTN failures.
+WTN availability failures mark the run degraded while leaving incomplete GMs
+pending. Logs summarize the refresh queue, successes, unavailable profiles,
+and complete/pending GMs.
+
+Verified profile values are checkpointed after every successful lookup. If
+another part of the run is rejected or fails, only these validated profile
+observations are merged into the production WTN cache; entry lists, draws,
+historical GMs and website files keep their previously accepted versions.
+GitHub Actions saves recovered profile updates on the data-state branch so
+the next execution can reuse them even when website publication was blocked.
 
 `data/main_draw_wtn_errors.json` records players whose profiles could not provide
 a valid current WTN, including unresolved ITF IDs and blocked requests. The

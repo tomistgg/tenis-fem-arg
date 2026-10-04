@@ -208,6 +208,7 @@ jobs:
               output.write(f"status={status}\n")
               output.write(f"alert={'true' if status in {'failed', 'partial', 'degraded'} else 'false'}\n")
               output.write(f"promotable={'true' if promotable else 'false'}\n")
+              output.write(f"wtn_preserved={'true' if state.get('wtn_profiles_preserved', 0) > 0 else 'false'}\n")
           PY
 
       - name: Require a promotable transaction
@@ -297,6 +298,7 @@ jobs:
           path: .site
 
       - name: Save validated data on the dedicated state branch
+        if: ${{ !cancelled() && (success() || steps.transaction_status.outputs.wtn_preserved == 'true') }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

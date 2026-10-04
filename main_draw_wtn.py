@@ -20,8 +20,10 @@ from itf_wtn import (
     _normalize_cache,
     _profile_fetcher,
     _resolver_with_entry_cache_fallback,
+    _select_recent_observation,
     _store_observation,
     _wta_player_with_itf_id,
+    checkpoint_profile_wtn,
     parse_wtn_singles,
     player_profile_urls,
 )
@@ -191,11 +193,14 @@ def _restore_profile_wtn(players, key, profiles, resolver):
             player["wtn"] = str(observation["wtn"])
 
 
-def _draw_observation(record, key):
-    """Only reuse an official profile successfully fetched for this tournament."""
+def _draw_observation(record, key, *, today=None):
+    """Use the latest fresh profile, falling back to a fresh saved draw lookup."""
+    latest = _select_recent_observation(record, today, source="profile") if today else {}
+    if latest:
+        return latest
     observation = record.get("main_draw_observations", {}).get(key, {})
     if observation.get("source") == "profile" and _positive_wtn(observation.get("wtn")) is not None:
-        return observation
+        return _select_recent_observation(observation, today, source="profile") if today else observation
     return {}
 
 
@@ -212,15 +217,19 @@ def refresh_main_draw_wtn(
     resolve_itf_player=None,
     profile_batch_size=PROFILE_BATCH_SIZE,
     profile_batch_cooldown_seconds=PROFILE_BATCH_COOLDOWN_SECONDS,
+    fetch_profiles=True,
+    profile_failures=None,
 ):
     """Freeze complete roster means; retry missing profiles and changed rosters.
 
     Individual observations remain in the existing operational profile cache.
     The permanent tournament archive contains aggregates and metadata only.
     Successful tournament-specific lookups survive retries and roster changes.
-    Entry-list WTNs and unrelated profile observations cannot replace them.
+    Fresh profile observations are shared across tournaments. Entry-list WTNs
+    cannot substitute for a profile observation when calculating the GM.
     """
     today = today or madrid_today()
+    tournaments = list(tournaments)
     archive_file = Path(archive_path)
     # A damaged archive must fail visibly instead of discarding historical GMs.
     archive = json.loads(archive_file.read_text(encoding="utf-8")) if archive_file.exists() else {}
@@ -258,15 +267,21 @@ def refresh_main_draw_wtn(
                 missing.append({"name": name, "reason": "No unambiguous ITF player ID"})
                 continue
             player_id = str(resolved["player_id"])
-            observation = _draw_observation(profiles.get(player_id, {}), key)
+            observation = _draw_observation(profiles.get(player_id, {}), key, today=today)
             if observation:
+                profiles[player_id].setdefault("main_draw_observations", {})[key] = {
+                    field: observation[field] for field in ("wtn", "source", "profile_url", "retrieved_at")
+                    if field in observation
+                }
                 wtn = _positive_wtn(observation["wtn"])
                 values.append(wtn)
                 player["wtn"] = str(profiles[player_id].get("wtn", wtn))
                 continue
             if player_id not in fetched_players:
-                wtn, url, reason = None, "", blocked_reason
-                if not blocked_reason:
+                wtn, url, reason = None, _latest_profile_url(profiles.get(player_id, {})), blocked_reason
+                if not fetch_profiles:
+                    reason = (profile_failures or {}).get(player_id, "Fresh singles profile WTN unavailable")
+                if fetch_profiles and not blocked_reason:
                     if attempts and profile_batch_size > 0 and attempts % profile_batch_size == 0:
                         save_json_file(profile_cache_path, profiles)
                         if profile_batch_cooldown_seconds > 0:
@@ -302,6 +317,7 @@ def refresh_main_draw_wtn(
                                     "retrieved_at": today.isoformat(),
                                 },
                             )
+                            checkpoint_profile_wtn(profile_cache_path, profiles, player_id)
                     except ITFProfileBlocked as exc:
                         blocked_reason = f"ITF profiles blocked: {exc}"
                         reason = blocked_reason
@@ -352,4 +368,18 @@ def refresh_main_draw_wtn(
     save_json_file(profile_cache_path, profiles)
     save_json_file(archive_path, archive)
     save_json_file(errors_path, errors)
+    if errors:
+        report_run_issue(
+            "main-draw-wtn", "calculate main-draw GMs",
+            ValueError(f"WTN unavailable for {sum(len(item['players']) for item in errors)} main-draw players"),
+            severity="degraded", context={"players": [
+                {**player, "tournament": item["tournament_key"],
+                 "tournament_name": item["tournament_name"], "draw": "MDS"}
+                for item in errors for player in item["players"]
+            ]},
+        )
+    current = [archive[_key(key)] for key, _ in tournaments if _key(key) in archive]
+    logger.info("Main-draw GMs: %s complete, %s pending.",
+                sum(item.get("status") == "complete" for item in current),
+                sum(item.get("status") == "pending" for item in current))
     return archive
