@@ -1507,11 +1507,22 @@
           {"pos": 15, "name": "LU, Jia-Jing", "country": "CHN", "wtn": "12.73"},
           {"pos": 16, "seed": "8", "name": "LI, Zongyu", "country": "CHN", "wtn": "11.22"}
         ],
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "S. Wei", "score": "62 62"},
+          {"round": 1, "match_num": 1, "winner_name": "K. Okamura", "score": "63 76(5)"},
+          {"round": 1, "match_num": 2, "winner_name": "H. Shi", "score": "36 64 64"},
+          {"round": 1, "match_num": 3, "winner_name": "Y. Yang", "score": "63 63"},
+          {"round": 1, "match_num": 4, "winner_name": "K. Zavatska", "score": "64 61"},
+          {"round": 1, "match_num": 5, "winner_name": "D. Khamutsianskaya", "score": "46 64 76(4)"},
+          {"round": 1, "match_num": 6, "winner_name": "W. Zheng", "score": "46 63 64"},
+          {"round": 1, "match_num": 7, "winner_name": "J. Lu", "score": "61 57 75"}
+        ],
         "round_labels": [
           "Q1",
-          "Q2"
+          "Q2",
+          "Qualifier"
         ],
-        "num_rounds": 2
+        "num_rounds": 3
       },
       "MDS":
       {
@@ -1532,7 +1543,6 @@
           {"pos": 8, "seed": "7", "name": "LIU, Claire", "country": "USA", "wtn": "8.8"},
           {"pos": 9, "seed": "3", "name": "PUTINTSEVA, Yulia", "country": "KAZ", "wtn": "8.66"},
           {"pos": 10, "entry": "WC", "name": "SHAO, Yushan", "country": "CHN", "wtn": "14.04"},
-          {"pos": 11, "name": "SHUBLADZE, Alexandra", "wtn": "9.36"},
           {"pos": 12, "name": "GRANT, Tyra Caterina", "country": "ITA", "wtn": "9.33"},
           {"pos": 13, "name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "10.59"},
           {"pos": 14, "name": "ASTAKHOVA, Darya", "wtn": "9.81"},
@@ -1551,12 +1561,6 @@
           {"pos": 29, "name": "KALIEVA, Elvina", "country": "USA", "wtn": "10.5"},
           {"pos": 30, "name": "MA, Yexin", "country": "CHN", "wtn": "11.12"},
           {"pos": 32, "seed": "2", "name": "KORPATSCH, Tamara", "country": "GER", "wtn": "9.95"}
-        ],
-        "qualifiers": [
-          2,
-          15,
-          23,
-          31
         ],
         "round_labels": [
           "Round of 32",
@@ -1701,6 +1705,9 @@
           {"pos": 30, "name": "PELLICANO, Helene", "country": "MLT", "itf_id": "800401584", "wtn": "16.47"},
           {"pos": 31, "entry": "WC", "name": "RABASCO SEGURA, Laura", "country": "ESP", "itf_id": "800676683", "wtn": "21.09"},
           {"pos": 32, "seed": "12", "name": "MONTESINOS VILANOVA, Sofia", "country": "ESP", "itf_id": "800767936", "wtn": "17.25"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "N. Leme Da Silva", "score": "60 62"}
         ],
         "round_labels": [
           "Round of 32",
