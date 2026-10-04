@@ -39,7 +39,6 @@
           {"pos": 16, "seed": "6", "name": "BOISSON, Lois", "country": "FRA", "wtn": "9.41"}
         ],
         "matches": [
-          {"round": 1, "match_num": 0, "winner_name": "G. Feistel"},
           {"round": 1, "match_num": 1, "winner_name": "E. R. Bertea", "score": "60 60"},
           {"round": 1, "match_num": 2, "winner_name": "V. Hruncakova", "score": "64 63"},
           {"round": 1, "match_num": 3, "winner_name": "A. Tikhonova", "score": "76(3) 62"},
@@ -47,7 +46,7 @@
           {"round": 1, "match_num": 5, "winner_name": "E. Micic", "score": "62 61"},
           {"round": 1, "match_num": 6, "winner_name": "F. Crawley", "score": "46 63 63"},
           {"round": 1, "match_num": 7, "winner_name": "L. Boisson", "score": "61 61"},
-          {"round": 2, "match_num": 0, "winner_name": "E. R. Bertea", "score": "WO"},
+          {"round": 1, "match_num": 7, "winner_name": "E. R. Bertea", "score": "WO"},
           {"round": 2, "match_num": 1, "winner_name": "A. Tikhonova", "score": "61 62"},
           {"round": 2, "match_num": 2, "winner_name": "E. Andreeva", "score": "62 62"},
           {"round": 2, "match_num": 3, "winner_name": "F. Crawley", "score": "26 63 75"}
@@ -187,7 +186,8 @@
           {"round": 3, "match_num": 2, "winner_name": "E. Andreeva", "score": "16 61 63"},
           {"round": 3, "match_num": 3, "winner_name": "L. Boisson", "score": "60 61"},
           {"round": 4, "match_num": 0, "winner_name": "L. Jeanjean", "score": "46 61 63"},
-          {"round": 4, "match_num": 1, "winner_name": "L. Boisson", "score": "63 46 62"}
+          {"round": 4, "match_num": 1, "winner_name": "L. Boisson", "score": "63 46 62"},
+          {"round": 5, "match_num": 0, "winner_name": "L. Jeanjean", "score": "76(3) 46 64"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1461,7 +1461,8 @@
           {"round": 3, "match_num": 2, "winner_name": "M. Brengle", "score": "60 64"},
           {"round": 3, "match_num": 3, "winner_name": "J. Pareja", "score": "46 75 64"},
           {"round": 4, "match_num": 0, "winner_name": "T. Maria", "score": "W/O"},
-          {"round": 4, "match_num": 1, "winner_name": "M. Brengle", "score": "61 76(1)"}
+          {"round": 4, "match_num": 1, "winner_name": "M. Brengle", "score": "61 76(1)"},
+          {"round": 5, "match_num": 0, "winner_name": "T. Maria", "score": "63 64"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1708,7 +1709,7 @@
           {"pos": 24, "seed": "4", "name": "GRABHER, Julia", "country": "AUT", "wtn": "9.29"},
           {"pos": 25, "seed": "6", "name": "JEANJEAN, Leolia", "country": "FRA", "wtn": "9.41"},
           {"pos": 27, "name": "ANDREESCU, Bianca", "country": "CAN", "wtn": "9.48"},
-          {"pos": 29, "entry": "WC", "name": "EGRIBEL, Elvin", "country": "TUR", "wtn": "20.74", "itf_id": "800643741", "profile_url": "https://www.itftennis.com/en/players/elvin-egribel/800643741/tur/jt/s/overview/"},
+          {"pos": 29, "entry": "WC", "name": "EGRIBEL, Elvin", "country": "TUR", "wtn": "20.74"},
           {"pos": 31, "name": "PRIDANKINA, Elena", "wtn": "9.98"},
           {"pos": 32, "seed": "2", "name": "BLINKOVA, Anna", "country": "FRA", "wtn": "8.71"}
         ],
@@ -1945,7 +1946,8 @@
           "Semifinals",
           "Final"
         ],
-        "num_rounds": 5
+        "num_rounds": 5,
+        "wtn_gm": 17.778
       }
     }
   }
