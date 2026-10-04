@@ -76,9 +76,10 @@ def test_profile_wtn_cache_is_shared_and_refetched_after_seven_days(tmp_path):
         None, entries, cache_path, today=date(2026, 9, 9), fetch_source=fetch, resolve_itf_player=resolve
     )
     assert len(fetched) == 2
-    cached = json.loads(cache_path.read_text(encoding="utf-8"))["800389685"]["weeks"]
-    assert cached["2026-09-07"]["wtn"] == 9.3
-    assert cached["2026-09-07"]["retrieved_at"] == "2026-09-09"
+    cached = json.loads(cache_path.read_text(encoding="utf-8"))["800389685"]
+    assert cached["wtn"] == 9.3
+    assert cached["retrieved_at"] == "2026-09-09"
+    assert "weeks" not in cached
 
 
 def test_stale_profile_reuses_last_verified_url_across_ranking_weeks(tmp_path):
@@ -224,13 +225,13 @@ def test_junior_profile_fallback_and_challenge_pause(tmp_path):
     )
 
     cached = json.loads(cache_path.read_text(encoding="utf-8"))
-    observation = cached["1"]["weeks"]["2026-08-31"]
+    observation = cached["1"]
     assert observation["wtn"] == 14.2
     assert "/jt/" in observation["profile_url"]
     assert not any("/3/" in url for url in fetched)
 
 
-def test_current_itf_entry_wtn_is_stored_under_retrieval_week(tmp_path):
+def test_first_itf_entry_wtn_uses_publication_date_and_profile_updates_every_list(tmp_path):
     cache_path = tmp_path / "itf_wtn_cache.json"
     entries = {
         "https://wta.example/porto": [{"player_id": "123", "name": "Same Player", "country": "POR"}],
@@ -263,8 +264,9 @@ def test_current_itf_entry_wtn_is_stored_under_retrieval_week(tmp_path):
     )
     assert not fetched
     assert entries["https://wta.example/porto"][0]["wtn"] == "10.02"
-    cached = json.loads(cache_path.read_text(encoding="utf-8"))["800123456"]["weeks"]
-    assert cached["2026-09-14"]["source"] == "entry_list"
+    cached = json.loads(cache_path.read_text(encoding="utf-8"))["800123456"]
+    assert cached["source"] == "entry_list"
+    assert cached["observed_on"] == "2026-09-11"
 
     refresh_entry_list_wtn(
         None,
@@ -280,11 +282,12 @@ def test_current_itf_entry_wtn_is_stored_under_retrieval_week(tmp_path):
     )
     assert fetched == [True]
     assert entries["https://wta.example/porto"][0]["wtn"] == "10.37"
-    cached = json.loads(cache_path.read_text(encoding="utf-8"))["800123456"]["weeks"]
-    assert cached["2026-09-21"]["source"] == "profile"
+    cached = json.loads(cache_path.read_text(encoding="utf-8"))["800123456"]
+    assert cached["source"] == "profile"
+    assert entries["w-itf-por-example"][0]["wtn"] == "10.37"
 
 
-def test_previous_week_beats_temporary_cross_week_fallback(tmp_path):
+def test_latest_list_publication_updates_all_older_lists(tmp_path):
     entries = {
         "https://wta.example/porto": [{"player_id": "1", "name": "Player", "country": "POR"}],
         "itf-last-week": [{"player_id": "8001", "name": "Player", "country": "POR", "wtn": "10.1"}],
@@ -304,7 +307,7 @@ def test_previous_week_beats_temporary_cross_week_fallback(tmp_path):
             "itf-other-week": "2026-10-05",
         },
     )
-    assert entries["https://wta.example/porto"][0]["wtn"] == "10.1"
+    assert all(rows[0]["wtn"] == "10.9" for rows in entries.values())
 
 
 def test_profile_batch_prioritizes_main_before_qualifiers_and_alternates(tmp_path):
@@ -398,7 +401,7 @@ def test_legacy_profile_cache_wins_over_same_week_entry_snapshot(tmp_path):
         resolve_itf_player=lambda player: {**player, "player_id": "8001"},
     )
     assert entries["https://wta.example/list"][0]["wtn"] == "9.3"
-    observation = json.loads(cache_path.read_text(encoding="utf-8"))["8001"]["weeks"]["2026-09-14"]
+    observation = json.loads(cache_path.read_text(encoding="utf-8"))["8001"]
     assert observation["source"] == "profile"
 
 
@@ -514,7 +517,7 @@ def test_cached_itf_rows_cannot_renew_freshness_or_prevent_profile_refresh(tmp_p
     player = {"player_id": "800533984", "name": "Julia Riera", "country": "ARG", "wtn": "9.86"}
     entries = {"https://wta.example/curitiba": [dict(player)], "itf-old-list": [dict(player)]}
     cache = refresh_entry_list_wtn(None, entries, cache_path, today=date(2026, 10, 3), fetch_profiles=False)
-    assert cache["800533984"] == cached_record
+    assert cache["800533984"] == itf_wtn._normalize_cache({"800533984": cached_record})["800533984"]
 
     fetched = []
     refresh_entry_list_wtn(
@@ -524,3 +527,64 @@ def test_cached_itf_rows_cannot_renew_freshness_or_prevent_profile_refresh(tmp_p
     )
     assert len(fetched) == 1
     assert entries["https://wta.example/curitiba"][0]["wtn"] == "10.42"
+
+
+def test_itf_list_is_consumed_once_and_newer_list_updates_older_rows(tmp_path):
+    path = tmp_path / "cache.json"
+    old, new = "w-itf-old", "w-itf-new"
+    entries = {old: [{"player_id": "8001", "name": "Player", "country": "POR", "wtn": "12"}]}
+    starts = {old: "2026-09-28", new: "2026-10-12"}
+    refresh_entry_list_wtn(None, entries, path, today=date(2026, 9, 18), fetch_profiles=False,
+                           fresh_itf_entry_lists={old: [dict(entries[old][0])]}, tournament_weeks=starts)
+    entries[new] = [{**entries[old][0], "wtn": "11"}]
+    cache = refresh_entry_list_wtn(None, entries, path, today=date(2026, 9, 25), fetch_profiles=False,
+                                   fresh_itf_entry_lists={new: [dict(entries[new][0])]}, tournament_weeks=starts)
+    assert cache["8001"]["observed_on"] == "2026-09-25"
+    assert all(rows[0]["wtn"] == "11" for rows in entries.values())
+    reread = [{**entries[old][0], "wtn": "7"}, {"player_id": "8002", "wtn": "8"}]
+    cache = refresh_entry_list_wtn(None, entries, path, today=date(2026, 10, 2), fetch_profiles=False,
+                                   fresh_itf_entry_lists={old: reread}, tournament_weeks=starts)
+    assert cache["8001"]["wtn"] == "11" and cache["8001"]["retrieved_at"] == "2026-09-25"
+    assert "8002" not in cache
+    assert all(rows[0]["wtn"] == "11" for rows in entries.values())
+
+
+def test_first_discovery_of_old_list_cannot_replace_newer_profile(tmp_path):
+    path = tmp_path / "cache.json"
+    original = {"8001": {"name": "Player", "wtn": 9.3, "source": "profile", "retrieved_at": "2026-09-26"}}
+    path.write_text(json.dumps(original))
+    entries = {"w-itf-old": [{"player_id": "8001", "wtn": "20"}]}
+    cache = refresh_entry_list_wtn(None, entries, path, today=date(2026, 9, 30), fetch_profiles=False,
+                                   fresh_itf_entry_lists=entries, tournament_weeks={"w-itf-old": "2026-09-28"})
+    assert cache["8001"]["source"] == "profile" and cache["8001"]["retrieved_at"] == "2026-09-26"
+    assert entries["w-itf-old"][0]["wtn"] == "9.3"
+
+
+def test_weekly_migration_keeps_latest_effective_date_and_retry_metadata():
+    old = {"8001": {"name": "Player", "entry_lists_checked": {"one": "2026-09-26"},
+                    "main_draw_observations": {"draw": {"wtn": 8, "source": "profile"}},
+                    "weeks": {
+                        "2026-10-05": {"wtn": 20, "source": "entry_list", "observed_on": "2026-09-18",
+                                       "retrieved_at": "2026-09-30"},
+                        "2026-09-21": {"wtn": 9, "source": "profile", "retrieved_at": "2026-09-26"},
+                    }}}
+    cache = itf_wtn._normalize_cache(old)
+    assert cache["8001"]["wtn"] == 9 and "weeks" not in cache["8001"]
+    assert cache["8001"]["main_draw_observations"] == old["8001"]["main_draw_observations"]
+    assert cache["8001"]["entry_lists_checked"] == old["8001"]["entry_lists_checked"]
+    assert itf_wtn._normalize_cache(cache) == cache
+
+
+def test_latest_profile_propagates_to_every_entry_and_draw_without_changing_gm():
+    entries = {"w-itf-old": [{"player_id": "8001", "wtn": "20"}],
+               "https://wta.example/new": [{"itf_id": "8001", "name": "Alice", "wtn": "20"}]}
+    cache = {"8001": {"wtn": 9.3, "source": "profile", "retrieved_at": "2026-09-26"}}
+    draws = {"w-itf-old": {"draws": {
+        "MDS": {"wtn_gm": 20, "players": [{"itf_id": "8001", "name": "Alice", "wtn": "20"}]},
+        "MDD": {"players": [{"members": [{"itf_id": "8001", "name": "Alice"}]}]},
+    }}}
+    itf_wtn.propagate_wtn(entries, cache, draws)
+    assert all(rows[0]["wtn"] == "9.3" for rows in entries.values())
+    assert draws["w-itf-old"]["draws"]["MDS"]["players"][0]["wtn"] == "9.3"
+    assert draws["w-itf-old"]["draws"]["MDD"]["players"][0]["members"][0]["wtn"] == "9.3"
+    assert draws["w-itf-old"]["draws"]["MDS"]["wtn_gm"] == 20

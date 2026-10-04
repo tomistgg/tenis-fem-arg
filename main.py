@@ -84,7 +84,9 @@ from itf_drawsheet_cache import (
     tournament_ids_with_published_main_draw,
     tournament_ids_with_published_qualifying_draw,
 )
-from itf_wtn import ITF_WTN_CACHE_FILENAME, refresh_entry_list_wtn
+from itf_wtn import ITF_WTN_CACHE_FILENAME, propagate_wtn, refresh_entry_list_wtn
+from itf_wtn import _load_cache as load_wtn_cache
+from itf_wtn import _normalize_cache as normalize_wtn_cache
 from lazy_browser import LazyBrowserSession
 from tournament_snapshot import (
     TournamentSnapshotRecord,
@@ -2677,6 +2679,8 @@ def main():
         draws_store.pop(t_key, None)
 
     # Persist draws cache so a successful draw doesn't disappear on a later failed run.
+    propagate_wtn(entry_cache, normalize_wtn_cache(load_wtn_cache(ITF_WTN_CACHE_FILE)), draws_store)
+    save_cache(ENTRY_LISTS_CACHE_FILE, entry_cache, formatter=dumps_entry_lists_cache)
     save_json_file(DRAWS_STORE_CACHE_FILE, draws_store, formatter=dumps_draws_store_cache)
 
     # Save draws snapshot (tournament key -> list of draw types available)

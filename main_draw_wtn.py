@@ -21,7 +21,6 @@ from itf_wtn import (
     _profile_fetcher,
     _resolver_with_entry_cache_fallback,
     _store_observation,
-    _week_start,
     _wta_player_with_itf_id,
     parse_wtn_singles,
     player_profile_urls,
@@ -186,11 +185,18 @@ def _restore_profile_wtn(players, key, profiles, resolver):
         resolved = _resolve_player(player, key, resolver)
         if not resolved:
             continue
-        observations = profiles.get(str(resolved["player_id"]), {}).get("weeks", {})
-        for _, observation in sorted(observations.items(), reverse=True):
-            if observation.get("source") == "profile" and _positive_wtn(observation.get("wtn")) is not None:
-                player["wtn"] = str(observation["wtn"])
-                break
+        record = profiles.get(str(resolved["player_id"]), {})
+        if _positive_wtn(record.get("wtn")) is not None:
+            observation = record
+            player["wtn"] = str(observation["wtn"])
+
+
+def _draw_observation(record, key):
+    """Only reuse an official profile successfully fetched for this tournament."""
+    observation = record.get("main_draw_observations", {}).get(key, {})
+    if observation.get("source") == "profile" and _positive_wtn(observation.get("wtn")) is not None:
+        return observation
+    return {}
 
 
 def refresh_main_draw_wtn(
@@ -211,7 +217,8 @@ def refresh_main_draw_wtn(
 
     Individual observations remain in the existing operational profile cache.
     The permanent tournament archive contains aggregates and metadata only.
-    No entry-list WTN or stale profile WTN can substitute for a live lookup.
+    Successful tournament-specific lookups survive retries and roster changes.
+    Entry-list WTNs and unrelated profile observations cannot replace them.
     """
     today = today or madrid_today()
     archive_file = Path(archive_path)
@@ -251,6 +258,12 @@ def refresh_main_draw_wtn(
                 missing.append({"name": name, "reason": "No unambiguous ITF player ID"})
                 continue
             player_id = str(resolved["player_id"])
+            observation = _draw_observation(profiles.get(player_id, {}), key)
+            if observation:
+                wtn = _positive_wtn(observation["wtn"])
+                values.append(wtn)
+                player["wtn"] = str(profiles[player_id].get("wtn", wtn))
+                continue
             if player_id not in fetched_players:
                 wtn, url, reason = None, "", blocked_reason
                 if not blocked_reason:
@@ -282,7 +295,6 @@ def refresh_main_draw_wtn(
                                 profiles,
                                 player_id,
                                 resolved,
-                                _week_start(today),
                                 {
                                     "wtn": wtn,
                                     "source": "profile",
@@ -300,6 +312,14 @@ def refresh_main_draw_wtn(
             if wtn is None:
                 missing.append({"name": name, "itf_id": player_id, "profile_url": url, "reason": reason})
             else:
+                # Keep the draw's observation independent of the latest WTN:
+                # later entry-list refreshes must not replace a saved success.
+                profiles[player_id].setdefault("main_draw_observations", {})[key] = {
+                    "wtn": wtn,
+                    "source": "profile",
+                    "profile_url": url,
+                    "retrieved_at": today.isoformat(),
+                }
                 values.append(wtn)
                 player["wtn"] = str(wtn)
 
@@ -327,6 +347,7 @@ def refresh_main_draw_wtn(
             logger.warning(
                 "Main-draw WTN missing for %s: %s", tournament.get("name", key), ", ".join(p["name"] for p in missing)
             )
+        save_json_file(profile_cache_path, profiles)
         save_json_file(archive_path, archive)
     save_json_file(profile_cache_path, profiles)
     save_json_file(archive_path, archive)

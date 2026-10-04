@@ -141,6 +141,19 @@ A completed roster's GM is frozen unless its participants change. Unnamed
 qualifier slots or unavailable profiles leave `status: "pending"` and
 `wtn_gm: null`; a partial average is never presented as the full draw GM.
 Pending tournaments are retried even after they leave the current calendar.
+Successful profile lookups are retained for that tournament in the operational
+cache. Retries fetch only missing players; filled qualifier slots or replacement
+players receive new lookups. Later player WTN refreshes do not replace these
+saved draw observations.
+
+`data/itf_wtn_cache.json` keeps one latest WTN per player, with its source and
+observation date. That value is propagated to every cached entry list and active
+draw where the player appears, including older lists. ITF list WTNs are consumed
+only on the first fetch of a list and dated to its publication; rereading an old
+list cannot renew or overwrite a newer WTN. `data/itf_wtn_entry_lists_seen.json`
+retains those first-fetch markers. Direct profile lookups provide current WTNs.
+The permanent tournament GM archive remains frozen independently of displayed
+player WTNs.
 
 `data/main_draw_wtn_errors.json` records players whose profiles could not provide
 a valid current WTN, including unresolved ITF IDs and blocked requests. The

@@ -1,6 +1,7 @@
 """Cached ITF World Tennis Number lookups from official player profiles."""
 
 import json
+import math
 import re
 import time
 import unicodedata
@@ -85,92 +86,81 @@ def _week_start(value):
 
 
 def _normalize_cache(cache):
+    """Migrate weekly history to one latest observation, preserving retry metadata."""
     normalized = {}
     for player_id, record in cache.items():
         if not isinstance(record, dict):
             continue
-        weeks = record.get("weeks")
-        if isinstance(weeks, dict):
-            normalized_weeks = {}
-            for stored_week, observation in weeks.items():
-                if isinstance(observation, dict) and observation.get("source") == "entry_list":
-                    stored_week = _week_start(observation.get("retrieved_at")) or stored_week
-                if isinstance(observation, dict) and not observation.get("source") and observation.get("profile_url"):
+        target = {k: v for k, v in record.items() if k != "weeks"}
+        candidates = []
+        for stored_week, value in (record.get("weeks") or {}).items():
+            if isinstance(value, dict) and _valid_wtn(value.get("wtn")):
+                observation = dict(value)
+                observation.setdefault("retrieved_at", stored_week)
+                if not observation.get("source") and observation.get("profile_url"):
                     observation["source"] = "profile"
-                existing = normalized_weeks.get(stored_week)
-                if (
-                    existing
-                    and existing.get("source") == "profile"
-                    and (not isinstance(observation, dict) or observation.get("source") != "profile")
-                ):
-                    continue
-                normalized_weeks[stored_week] = observation
-            record = {**record, "weeks": normalized_weeks}
-            normalized[player_id] = record
-            continue
-        week = _week_start(record.get("retrieved_at") or record.get("checked_at"))
-        observation = {
-            key: value
-            for key, value in record.items()
-            if key not in {"name", "country", "weeks"}
-        }
-        if not observation.get("source") and observation.get("profile_url"):
-            observation["source"] = "profile"
-        normalized[player_id] = {
-            "name": record.get("name", ""),
-            "country": record.get("country", ""),
-            "weeks": {week: observation} if week and observation.get("wtn") not in (None, "") else {},
-        }
+                candidates.append(observation)
+        if _valid_wtn(record.get("wtn")):
+            observation = {k: record[k] for k in _OBSERVATION_FIELDS if k in record}
+            if not observation.get("source") and observation.get("profile_url"):
+                observation["source"] = "profile"
+            candidates.append(observation)
+        if candidates:
+            latest = max(candidates, key=_observation_priority)
+            for field in _OBSERVATION_FIELDS:
+                target.pop(field, None)
+            target.update(latest)
+            profiles = [v for v in candidates if v.get("source") == "profile" and v.get("profile_url")]
+            if profiles:
+                target["last_profile_url"] = max(profiles, key=_observation_priority)["profile_url"]
+        normalized[player_id] = target
     return normalized
 
 
-def _store_observation(cache, player_id, player, week, observation):
-    if not week:
+_OBSERVATION_FIELDS = {"wtn", "source", "source_key", "profile_url", "retrieved_at", "checked_at", "observed_on"}
+
+
+def _valid_wtn(value):
+    try:
+        return math.isfinite(float(value)) and 0 < float(value) <= 40
+    except (TypeError, ValueError):
+        return False
+
+
+def _observation_priority(observation):
+    return (str(observation.get("observed_on") or observation.get("retrieved_at")
+                or observation.get("checked_at") or ""), observation.get("source") == "profile")
+
+
+def _store_observation(cache, player_id, player, observation):
+    if not _valid_wtn(observation.get("wtn")):
         return
-    record = cache.setdefault(player_id, {"name": "", "country": "", "weeks": {}})
+    record = cache.setdefault(player_id, {"name": "", "country": ""})
     record["name"] = player.get("name") or record.get("name", "")
     record["country"] = player.get("country") or record.get("country", "")
-    record.setdefault("weeks", {})[week] = observation
-
-
-def _select_observation(record, target_week, *, allow_cross_week_fallback):
-    weeks = record.get("weeks", {}) if isinstance(record, dict) else {}
-    if target_week in weeks:
-        return weeks[target_week]
-    previous_week = (date.fromisoformat(target_week) - timedelta(days=7)).isoformat()
-    if previous_week in weeks:
-        return weeks[previous_week]
-    if allow_cross_week_fallback and weeks:
-        return weeks[sorted(weeks)[-1]]
-    return {}
+    if _valid_wtn(record.get("wtn")) and _observation_priority(observation) < _observation_priority(record):
+        return
+    for field in _OBSERVATION_FIELDS:
+        record.pop(field, None)
+    record.update(observation)
+    if observation.get("source") == "profile" and observation.get("profile_url"):
+        record["last_profile_url"] = observation["profile_url"]
 
 
 def _select_recent_observation(record, today, max_age_days=7, *, source=None):
     """Return the newest WTN observation saved in the rolling freshness window."""
     cutoff = today - timedelta(days=max_age_days)
-    candidates = []
-    for stored_week, observation in (record.get("weeks", {}) if isinstance(record, dict) else {}).items():
-        if not isinstance(observation, dict) or observation.get("wtn") in (None, ""):
-            continue
-        if source and observation.get("source") != source:
-            continue
-        observed_text = observation.get("retrieved_at") or observation.get("checked_at") or stored_week
-        try:
-            observed_date = date.fromisoformat(str(observed_text)[:10])
-        except (TypeError, ValueError):
-            continue
-        if cutoff <= observed_date <= today:
-            candidates.append((observed_date, observation.get("source") == "profile", observation))
-    return max(candidates, default=(None, None, {}), key=lambda item: item[:2])[2]
+    if not _valid_wtn(record.get("wtn")) or (source and record.get("source") != source):
+        return {}
+    try:
+        observed_date = date.fromisoformat(_observation_priority(record)[0][:10])
+    except (TypeError, ValueError):
+        return {}
+    return record if cutoff <= observed_date <= today else {}
 
 
 def _latest_profile_url(record):
-    candidates = []
-    for stored_week, observation in (record.get("weeks", {}) if isinstance(record, dict) else {}).items():
-        if not isinstance(observation, dict) or not observation.get("profile_url"):
-            continue
-        candidates.append((observation.get("retrieved_at") or stored_week, observation["profile_url"]))
-    return max(candidates, default=("", ""))[1]
+    return record.get("last_profile_url") or record.get("profile_url", "")
 
 
 def _identity_key(player):
@@ -240,22 +230,50 @@ def entry_list_wtn_status(entry_cache, cache_path, *, tournament_weeks=None, res
                 counts["unmapped"] += 1
                 counts["missing"] += 1
                 continue
-            weeks = cache.get(str(itf_player["player_id"]), {}).get("weeks", {})
+            observation = cache.get(str(itf_player["player_id"]), {})
+            observed_week = _week_start(_observation_priority(observation)[0])
             previous_week = (
                 (date.fromisoformat(target_week) - timedelta(days=7)).isoformat() if target_week else ""
             )
-            if weeks.get(target_week, {}).get("wtn") not in (None, ""):
+            if _valid_wtn(observation.get("wtn")) and observed_week == target_week:
                 counts["current_week"] += 1
-            elif weeks.get(previous_week, {}).get("wtn") not in (None, ""):
+            elif _valid_wtn(observation.get("wtn")) and observed_week == previous_week:
                 counts["previous_week"] += 1
-            elif any(
-                isinstance(observation, dict) and observation.get("wtn") not in (None, "")
-                for observation in weeks.values()
-            ):
+            elif _valid_wtn(observation.get("wtn")):
                 counts["other_week"] += 1
             else:
                 counts["missing"] += 1
     return counts
+
+
+def propagate_wtn(entry_cache, cache, draws_store=None, *, resolve_itf_player=None):
+    """Use the player's latest value everywhere, independently of tournament dates."""
+    from main_draw_wtn import _resolve_player
+
+    resolver = _resolver_with_entry_cache_fallback(entry_cache, cache, resolve_itf_player or _wta_player_with_itf_id)
+
+    def update(player, key):
+        # ITF entry-list IDs are authoritative; WTA IDs need resolution.
+        pid = str(player.get("player_id") or "") if not str(key).startswith("http") else ""
+        resolved = None if pid else _resolve_player(player, key, resolver)
+        pid = str(resolved["player_id"]) if resolved else pid
+        record = cache.get(pid, {})
+        if _valid_wtn(record.get("wtn")):
+            player["wtn"] = str(record["wtn"])
+        else:
+            player.setdefault("wtn", "-")
+
+    for key, players in (entry_cache or {}).items():
+        for player in players or []:
+            update(player, key)
+    for key, tournament in (draws_store or {}).items():
+        for draw in (tournament.get("draws") or {}).values():
+            for player in draw.get("players", []):
+                if player.get("members"):
+                    for member in player["members"]:
+                        update(member, key)
+                else:
+                    update(player, key)
 
 
 def _wta_player_with_itf_id(player):
@@ -351,7 +369,6 @@ def refresh_entry_list_wtn(
     check_new_entry_lists=True,
     fresh_itf_entry_lists=None,
     tournament_weeks=None,
-    allow_cross_week_fallback=True,
     max_profile_fetches=None,
     profile_batch_size=PROFILE_BATCH_SIZE,
     profile_batch_cooldown_seconds=PROFILE_BATCH_COOLDOWN_SECONDS,
@@ -361,41 +378,40 @@ def refresh_entry_list_wtn(
     """Refresh and propagate WTNs for WTA and ITF entry-list players."""
     today = today or madrid_today()
     today_text = today.isoformat()
-    current_week = _week_start(today)
     tournament_weeks = tournament_weeks or {}
     cache = _normalize_cache(_load_cache(cache_path))
     base_resolver = resolve_itf_player or _wta_player_with_itf_id
 
-    def tournament_week(key):
-        return _week_start(tournament_weeks.get(str(key).removesuffix("#qual"))) or current_week
-
-    # Only raw rows obtained in this run are new observations. The saved entry
-    # cache may contain old lists or WTNs propagated from a previous profile.
+    seen_path = Path(cache_path).with_name(Path(cache_path).stem.removesuffix("_cache") + "_entry_lists_seen.json")
+    seen_lists = _load_cache(seen_path)
+    # A live re-read still contains the WTN from the list's publication day.
+    # Consume each list only once, including players added on later re-reads.
     for key, players in (fresh_itf_entry_lists or {}).items():
-        if str(key).startswith("http"):
+        if str(key).startswith("http") or key in seen_lists or not players:
             continue
+        published = tournament_weeks.get(str(key).removesuffix("#qual"))
+        observed_on = (
+            min(today, date.fromisoformat(str(published)[:10]) - timedelta(days=17)).isoformat()
+            if published else today_text
+        )
+        seen_lists[key] = {"first_seen": today_text, "observed_on": observed_on}
         for player in players or []:
             player_id = str(player.get("player_id") or "").strip()
             value = player.get("wtn")
             if player_id and value not in (None, "", "-"):
-                existing = cache.get(player_id, {}).get("weeks", {}).get(current_week, {})
-                same_or_newer_entry_snapshot = (
-                    existing.get("source") == "entry_list"
-                    and existing.get("retrieved_at", "") >= today_text
+                _store_observation(
+                    cache,
+                    player_id,
+                    player,
+                    {
+                        "wtn": str(value),
+                        "source": "entry_list",
+                        "source_key": str(key),
+                        "retrieved_at": today_text,
+                        "observed_on": observed_on,
+                    },
                 )
-                if existing.get("source") != "profile" and not same_or_newer_entry_snapshot:
-                    _store_observation(
-                        cache,
-                        player_id,
-                        player,
-                        current_week,
-                        {
-                            "wtn": str(value),
-                            "source": "entry_list",
-                            "source_key": str(key),
-                            "retrieved_at": today_text,
-                        },
-                    )
+    save_json_file(seen_path, seen_lists)
 
     resolve_itf_player = _resolver_with_entry_cache_fallback(entry_cache, cache, base_resolver)
 
@@ -450,13 +466,12 @@ def refresh_entry_list_wtn(
                     raise
                 except ValueError:
                     continue
-            if not profile_url:
-                raise ValueError("ITF profile did not contain wtnSingles props")
+            if not profile_url or not _valid_wtn(wtn):
+                raise ValueError("ITF profile did not contain a valid singles WTN")
             _store_observation(
                 cache,
                 player_id,
                 player,
-                current_week,
                 {
                     "wtn": wtn,
                     "source": "profile",
@@ -483,20 +498,5 @@ def refresh_entry_list_wtn(
                 time.sleep(profile_batch_cooldown_seconds)
 
     save_json_file(cache_path, cache)
-    for key, players in (entry_cache or {}).items():
-        for player in players or []:
-            if str(key).startswith("http"):
-                itf_player = resolve_itf_player(player)
-            else:
-                player_id = str(player.get("player_id") or "").strip()
-                itf_player = {"player_id": player_id} if player_id else None
-            record = cache.get(str(itf_player["player_id"]), {}) if itf_player else {}
-            observation = _select_recent_observation(record, today) or _select_observation(
-                record, tournament_week(key), allow_cross_week_fallback=allow_cross_week_fallback
-            )
-            value = observation.get("wtn")
-            if value not in (None, ""):
-                player["wtn"] = str(value)
-            else:
-                player.setdefault("wtn", "-")
+    propagate_wtn(entry_cache, cache, resolve_itf_player=resolve_itf_player)
     return cache

@@ -38,7 +38,7 @@ def refresh(tmp_path, tournaments, fetch, **options):
         tmp_path / "archive.json",
         tmp_path / "profiles.json",
         tmp_path / "main_draw_wtn_errors.json",
-        today=date(2026, 10, 4),
+        today=options.pop("today", date(2026, 10, 4)),
         fetch_source=fetch,
         profile_batch_cooldown_seconds=0,
         **options,
@@ -89,7 +89,7 @@ def test_missing_player_prevents_partial_gm_and_retries_then_clears_email_errors
     record = refresh(tmp_path, [("w-itf-usa-2026-044", draw)], lambda _: 'var props = {"wtnSingles":9};')[
         "w-itf-usa-2026-044"
     ]
-    assert record["wtn_gm"] == 9
+    assert record["wtn_gm"] == 6
     assert json.loads((tmp_path / "main_draw_wtn_errors.json").read_text()) == []
 
 
@@ -116,17 +116,74 @@ def test_blocked_profiles_never_use_old_values_and_notify_for_unattempted_player
     assert len(calls) == 1
 
 
+def test_pending_retry_keeps_successes_after_weekly_cache_changes_and_another_block(tmp_path):
+    draw = tournament(("A, Alice", "800000001"), ("B, Bea", "800000002"), ("C, Carla", "800000003"))
+
+    def first_fetch(url):
+        if "800000001" in url:
+            return 'var props = {"wtnSingles":4};'
+        raise ITFProfileBlocked("HTTP 403")
+
+    refresh(tmp_path, [("one", draw)], first_fetch)
+    profiles = json.loads((tmp_path / "profiles.json").read_text())
+    profiles["800000001"]["wtn"] = 25
+    (tmp_path / "profiles.json").write_text(json.dumps(profiles))
+    # A retry can encounter the blocked player before an already saved success.
+    draw["draws"]["MDS"]["players"].reverse()
+    for player in draw["draws"]["MDS"]["players"]:
+        player.pop("wtn", None)
+    calls = []
+
+    def blocked(url):
+        calls.append(url)
+        raise ITFProfileBlocked("HTTP 403")
+
+    record = refresh(tmp_path, [("one", draw)], blocked, today=date(2026, 10, 12))["one"]
+    assert record["wtnPlayerCount"] == 1
+    assert next(p for p in draw["draws"]["MDS"]["players"] if p["itf_id"] == "800000001")["wtn"] == "25"
+    assert len(calls) == 1
+    errors = json.loads((tmp_path / "main_draw_wtn_errors.json").read_text())
+    assert {p["name"] for p in errors[0]["players"]} == {"Bea B", "Carla C"}
+    calls.clear()
+
+    def recovered(url):
+        calls.append(url)
+        assert "800000001" not in url
+        return 'var props = {"wtnSingles":%s};' % (9 if "800000002" in url else 16)
+
+    record = refresh(tmp_path, [("one", draw)], recovered, today=date(2026, 10, 13))["one"]
+    assert record["wtn_gm"] == round((4 * 9 * 16) ** (1 / 3), 4)
+    assert record["status"] == "complete"
+    assert len(calls) == 2
+    assert json.loads((tmp_path / "main_draw_wtn_errors.json").read_text()) == []
+    assert "main_draw_observations" not in json.dumps(record)
+
+
+def test_another_tournament_requires_a_new_profile_lookup(tmp_path):
+    draw = tournament(("A, Alice", "800000001"))
+    refresh(tmp_path, [("one", draw)], lambda _: 'var props = {"wtnSingles":4};')
+    calls = []
+
+    def fetch(url):
+        calls.append(url)
+        return 'var props = {"wtnSingles":16};'
+
+    record = refresh(tmp_path, [("two", draw)], fetch)["two"]
+    assert len(calls) == 1
+    assert record["wtn_gm"] == 16
+
+
 def test_qualifiers_and_replaced_players_recompute_roster_without_treating_byes_as_players(tmp_path):
     draw = tournament(("A, Alice", "800000001"), qualifiers=[2])
     record = refresh(tmp_path, [("one", draw)], lambda _: 'var props = {"wtnSingles":4};')["one"]
     assert record["status"] == "pending" and record["unfilledPositions"] == 1
     draw["draws"]["MDS"]["players"].append({"pos": 2, "name": "B, Bea", "country": "USA", "itf_id": "800000002"})
     record = refresh(tmp_path, [("one", draw)], lambda _: 'var props = {"wtnSingles":9};')["one"]
-    assert record["status"] == "complete" and record["wtn_gm"] == 9
+    assert record["status"] == "complete" and record["wtn_gm"] == 6
     draw["draws"]["MDS"]["players"][1]["name"] = "C, Carla"
     draw["draws"]["MDS"]["players"][1]["itf_id"] = "800000003"
     record = refresh(tmp_path, [("one", draw)], lambda _: 'var props = {"wtnSingles":16};')["one"]
-    assert record["wtn_gm"] == 16
+    assert record["wtn_gm"] == 8
     draw["draws"]["MDS"]["players"].pop()
     draw["draws"]["MDS"]["byes"] = [2]
     record = refresh(tmp_path, [("one", draw)], lambda _: 'var props = {"wtnSingles":4};')["one"]
@@ -272,6 +329,12 @@ def test_completed_archive_restores_active_player_wtn_after_draw_refresh(tmp_pat
 
     refresh(tmp_path, [("one", draw)], unexpected_fetch)
     assert draw["draws"]["MDS"]["players"][0]["wtn"] == "9.0"
+    assert draw["draws"]["MDS"]["wtn_gm"] == 9
+    profiles = json.loads((tmp_path / "profiles.json").read_text())
+    profiles["800000001"]["wtn"] = 16
+    (tmp_path / "profiles.json").write_text(json.dumps(profiles))
+    refresh(tmp_path, [("one", draw)], unexpected_fetch)
+    assert draw["draws"]["MDS"]["players"][0]["wtn"] == "16"
     assert draw["draws"]["MDS"]["wtn_gm"] == 9
 
 
