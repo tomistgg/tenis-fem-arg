@@ -534,6 +534,11 @@ def refresh_entry_list_wtn(
     source_fetcher = fetch_source or (
         _profile_fetcher(driver, settle_seconds, request_interval_seconds) if targets else None
     )
+    if targets and fetch_source is None and profile_batch_cooldown_seconds > 0:
+        logger.info(
+            f"Pausing ITF WTN profile requests for {profile_batch_cooldown_seconds:g}s before the first request."
+        )
+        time.sleep(profile_batch_cooldown_seconds)
     for index, (player_id, player) in enumerate(targets, start=1):
         record = cache.get(player_id, {})
         try:

@@ -181,6 +181,32 @@ def test_profile_refresh_checkpoints_and_cools_down_between_batches(tmp_path, mo
     assert sleeps == [3, 3]
 
 
+def test_live_profile_refresh_waits_before_first_request(tmp_path, monkeypatch):
+    events = []
+
+    class Driver:
+        page_source = 'var props = {"wtnSingles":10};'
+
+        def get(self, url):
+            events.append(("get", url))
+
+        def get_cookies(self):
+            return []
+
+        def execute_script(self, _script):
+            return "test-agent"
+
+    monkeypatch.setattr(itf_wtn.time, "sleep", lambda seconds: events.append(("sleep", seconds)))
+    refresh_entry_list_wtn(
+        Driver(), {"itf-current": [{"player_id": "8001", "name": "Player", "country": "ARG"}]},
+        tmp_path / "cache.json", today=date(2026, 10, 5), include_itf_entry_players=True,
+        profile_batch_cooldown_seconds=61, settle_seconds=0,
+    )
+
+    assert events[0] == ("sleep", 61)
+    assert events[1][0] == "get"
+
+
 def test_blocked_profile_is_not_cached_as_a_completed_check(tmp_path):
     cache_path = tmp_path / "itf_wtn_cache.json"
     entries = {"https://wta.example/one": [{"player_id": "123", "name": "Blocked", "country": "ARG"}]}
