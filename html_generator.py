@@ -712,6 +712,51 @@ def _player_display_name(raw_name):
     return format_player_name(mapped)
 
 
+def _milestone_active_names(players_data, itf_players, history, tournament_store, draws_data, today):
+    names = [_player_display_name(player.get("Player", "")) for player in players_data]
+    names.extend(
+        _player_display_name(player.get("Player", ""))
+        for player in itf_players
+        if isinstance(player, dict) and str(player.get("Country", "")).upper() == "ARG"
+    )
+
+    cutoff = (today - timedelta(weeks=52)).isoformat()
+    for match in history:
+        match_date = str(match.get("DATE", ""))[:10]
+        score = str(match.get("SCORE", "")).strip().upper()
+        if not cutoff <= match_date <= today.isoformat() or score in {"", "-", "BYE", "W/O", "WO"}:
+            continue
+        for side in ("winner", "loser"):
+            name = str(match.get(f"_{side}Name", "")).strip()
+            if str(match.get(f"_{side}Country", "")).upper() == "ARG" and name and "/" not in name:
+                names.append(name)
+
+    for players in (tournament_store or {}).values():
+        for player in players or []:
+            if isinstance(player, dict) and str(player.get("country", "")).upper() == "ARG":
+                name = str(player.get("name", "")).strip()
+                if name and "/" not in name:
+                    names.append(_player_display_name(resolve_player_display_name("itf", player_id=player.get("player_id"), name=name)))
+
+    for tournament in (draws_data or {}).values():
+        end_date = str(tournament.get("endDate", ""))[:10]
+        if end_date and end_date < today.isoformat():
+            continue
+        for draw_type, draw in (tournament.get("draws") or {}).items():
+            if draw_type not in {"MDS", "QS"} or not isinstance(draw, dict):
+                continue
+            for player in draw.get("players") or []:
+                if not isinstance(player, dict) or str(player.get("country", "")).upper() != "ARG":
+                    continue
+                name = str(player.get("name", "")).strip()
+                if "," in name:
+                    surname, given = name.split(",", 1)
+                    name = f"{given.strip()} {surname.strip()}"
+                if name and "/" not in name:
+                    names.append(_player_display_name(resolve_player_display_name("itf", player_id=player.get("itf_id"), name=name)))
+    return names
+
+
 def _bjkc_player_display_name(raw_name):
     """Resolve one BJK Cup player or a slash-separated doubles team for display."""
     names = re.split(r"\s*/\s*", fix_encoding_keep_accents(str(raw_name or "")).strip())
@@ -1688,34 +1733,28 @@ def generate_html(
         ]
         for week in _all_dates
     }
-    _current_arg_wta_names = {
-        _player_display_name(_ranking_display_name(player))
-        for player in _all_csv.get(_latest_date, [])
-        if str(player.get("Country", "")).upper() == "ARG"
-    }
-    _active_milestone_names = [_player_display_name(player.get("Player", "")) for player in players_data]
-    # Milestones has its own active-player list. Keep existing ITF-ranked names
-    # from the saved cache without putting them back into Schedule or fetching rankings.
+    # Milestones keeps ITF-ranked names from the saved cache without putting them in Schedule.
     try:
         with open(os.path.join(source_data_dir, "itf_rankings_cache.json"), encoding="utf-8-sig") as source:
             _itf_rankings_by_date = expand_itf_rankings_cache(json.load(source)) or {}
     except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError):
         _itf_rankings_by_date = {}
-    if isinstance(_itf_rankings_by_date, dict) and _itf_rankings_by_date:
-        _latest_itf_date = max(_itf_rankings_by_date)
-        _active_milestone_names.extend(
-            _player_display_name(player.get("Player", ""))
-            for player in _itf_rankings_by_date.get(_latest_itf_date, [])
-            if isinstance(player, dict) and str(player.get("Country", "")).upper() == "ARG"
-        )
+    _latest_itf_players = (
+        _itf_rankings_by_date.get(max(_itf_rankings_by_date), [])
+        if isinstance(_itf_rankings_by_date, dict) and _itf_rankings_by_date
+        else []
+    )
+    _today = madrid_today()
+    _active_milestone_names = _milestone_active_names(
+        players_data, _latest_itf_players, cleaned_history, tournament_store, draws_data, _today
+    )
     milestones_data = build_milestones_data(
         history=cleaned_history,
         ranking_weeks=_milestone_rankings,
         active_names=_active_milestone_names,
-        current_wta_names=_current_arg_wta_names,
         draw_sizes=all_draw_sizes,
         data_dir=source_data_dir,
-        today=madrid_today(),
+        today=_today,
     )
 
     # Build nested date index: year(str) -> month(int) -> [day(int), ...]

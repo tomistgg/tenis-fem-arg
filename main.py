@@ -2604,7 +2604,7 @@ def main():
         driver, draws_store, ITF_WTN_CACHE_FILE, entry_cache=entry_cache,
         main_draws=main_draws, archive_path=os.path.join(DATA_DIR, "main_draw_wtn_gm.json"),
         include_entry_players=True, profile_failures=profile_failures,
-        tournament_weeks=entry_tournament_weeks, max_profile_fetches=80,
+        tournament_weeks=entry_tournament_weeks, max_profile_fetches=40,
     )
 
     if not skip_draws_fetch:

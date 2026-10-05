@@ -482,7 +482,6 @@ def build_milestones_data(
     history: list[dict[str, Any]],
     ranking_weeks: dict[str, list[dict[str, Any]]],
     active_names: list[str],
-    current_wta_names: set[str],
     draw_sizes: list[dict[str, Any]],
     data_dir: str | Path,
     today: date,
@@ -588,12 +587,12 @@ def build_milestones_data(
             )
         historical.append(row)
 
-    current_wta_keys = {_name_key(name) for name in current_wta_names}
     active = []
     seen = set()
     for name in sorted(active_names, key=_name_key):
-        key = _name_key(name)
-        if not key or key in current_wta_keys or key in seen:
+        canonical_name = arg_names.get(_name_key(name), name)
+        key = _name_key(canonical_name)
+        if not key or key in seen:
             continue
         seen.add(key)
         rows = sorted(point_rows.get(key, []), key=lambda row: (row["date"], row["tournament"]), reverse=True)
@@ -605,7 +604,7 @@ def build_milestones_data(
         ]
         active.append(
             {
-                "name": _display_name(name),
+                "name": _display_name(canonical_name),
                 "lastRankedWeek": last_ranked.get(key, ""),
                 "totalEverPoints": sum(int(row["points"]) for row in rows),
                 "livePoints": sum(int(row["points"]) for row in live_rows),

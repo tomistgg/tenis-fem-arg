@@ -1,6 +1,7 @@
 from datetime import date
 from pathlib import Path
 
+from html_generator import _milestone_active_names
 from milestones import _dense_top_three, build_milestones_data
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -34,7 +35,34 @@ def test_dense_top_three_stops_after_three_first_place_ties():
     assert [(item["position"], item["name"]) for item in result] == [(1, "A"), (1, "B"), (1, "C")]
 
 
-def test_active_players_exclude_current_wta_and_keep_career_details(tmp_path):
+def test_active_names_include_recent_singles_and_current_entries_and_draws():
+    history = [
+        {"DATE": "2025-10-06", "SCORE": "6-2 6-2", "_winnerName": "Recent Player", "_winnerCountry": "ARG"},
+        {"DATE": "2025-10-05", "SCORE": "6-2 6-2", "_winnerName": "Old Player", "_winnerCountry": "ARG"},
+        {"DATE": "2026-10-04", "SCORE": "-", "_winnerName": "Bye Player", "_winnerCountry": "ARG"},
+        {"DATE": "2026-10-04", "SCORE": "6-2 6-2", "_winnerName": "A / B", "_winnerCountry": "ARG"},
+    ]
+    entries = {"event": [{"name": "Entry Player", "country": "ARG"}]}
+    draws = {
+        "event": {
+            "endDate": "2026-10-11",
+            "draws": {
+                "QS": {"players": [{"name": "MONDATI, Ornela Luisana", "country": "ARG", "itf_id": "800753197"}]},
+                "MDD": {"players": [{"name": "Doubles Player", "country": "ARG"}]},
+            },
+        },
+        "old": {"endDate": "2026-10-04", "draws": {"MDS": {"players": [{"name": "Past Draw", "country": "ARG"}]}}},
+    }
+
+    names = _milestone_active_names([], [], history, entries, draws, date(2026, 10, 5))
+
+    assert "Recent Player" in names
+    assert "Entry Player" in names
+    assert "Ornela Mondati" in names
+    assert not {"Old Player", "Bye Player", "A / B", "Doubles Player", "Past Draw"} & set(names)
+
+
+def test_active_players_include_current_wta_and_keep_career_details(tmp_path):
     (tmp_path / "points_distribution_history.json").write_text(
         (PROJECT_ROOT / "data" / "points_distribution_history.json").read_text(encoding="utf-8"),
         encoding="utf-8",
@@ -56,13 +84,12 @@ def test_active_players_exclude_current_wta_and_keep_career_details(tmp_path):
         history=history,
         ranking_weeks=rankings,
         active_names=["Test Player", "Ranked Player", "Entry Player"],
-        current_wta_names={"Ranked Player"},
         draw_sizes=[],
         data_dir=tmp_path,
         today=date(2026, 1, 1),
     )
 
-    assert [player["name"] for player in result["active"]] == ["Entry Player", "Test Player"]
+    assert [player["name"] for player in result["active"]] == ["Entry Player", "Ranked Player", "Test Player"]
     test_player = next(player for player in result["active"] if player["name"] == "Test Player")
     assert test_player["lastRankedWeek"] == "2025-01-06"
     assert test_player["totalEverPoints"] == 1
@@ -85,7 +112,6 @@ def test_zero_point_expired_tournaments_are_not_returned(tmp_path):
         history=history,
         ranking_weeks={},
         active_names=["Test Player"],
-        current_wta_names=set(),
         draw_sizes=[],
         data_dir=tmp_path,
         today=date(2026, 1, 1),
@@ -126,8 +152,7 @@ def test_arg_identity_overrides_incorrect_match_nationality(tmp_path):
     result = build_milestones_data(
         history=[first, second],
         ranking_weeks={},
-        active_names=[],
-        current_wta_names=set(),
+        active_names=["Andrea Agostina Farulla Di Palma"],
         draw_sizes=[],
         data_dir=tmp_path,
         today=date(2026, 1, 1),
@@ -135,6 +160,7 @@ def test_arg_identity_overrides_incorrect_match_nationality(tmp_path):
 
     cohort = next(row for row in result["historical"] if row["year"] == 2000)
     assert cohort["point"][0]["name"] == "Andrea Farulla Di Palma"
+    assert [player["name"] for player in result["active"]] == ["Andrea Farulla Di Palma"]
 
 
 def test_itf_profile_birth_year_adds_player_to_historical_cohort(tmp_path):
@@ -154,7 +180,6 @@ def test_itf_profile_birth_year_adds_player_to_historical_cohort(tmp_path):
         history=history,
         ranking_weeks={},
         active_names=["Test Player"],
-        current_wta_names=set(),
         draw_sizes=[],
         data_dir=tmp_path,
         today=date(2026, 1, 1),
