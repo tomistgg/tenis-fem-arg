@@ -1,493 +1,4 @@
 {
-  "https://www.wtatennis.com/tournaments/1179/adana-125/2026/player-list":
-  {
-    "meta":
-    {
-      "name": "WTA 125 Adana",
-      "level": "WTA 125",
-      "week": "Week of September 28",
-      "startDate": "2026-09-28",
-      "endDate": "2026-10-04",
-      "arg_visibility": {"has_arg_main":true,"has_arg_qual":false,"has_arg_any":true}
-    },
-    "draws":
-    {
-      "QS":
-      {
-        "tournament_name": "Adana Open",
-        "location": "ADANA, TUR",
-        "dates": "September 28-4 2026",
-        "prize": "$ 115,000",
-        "surface": "Hard, Laykold",
-        "draw_type": "SINGLES QUALIFYING DRAW",
-        "draw_size": 16,
-        "players": [
-          {"pos": 2, "name": "FEISTEL, Gina", "country": "POL", "wtn": "11.57"},
-          {"pos": 3, "entry": "WC", "name": "KESER, Melis", "country": "TUR", "wtn": "20.06"},
-          {"pos": 4, "seed": "7", "name": "BERTEA, Elena Ruxandra", "country": "ROU", "wtn": "11.42"},
-          {"pos": 5, "seed": "2", "name": "HRUNCAKOVA, Viktoria", "country": "SVK", "wtn": "11.05"},
-          {"pos": 6, "name": "DANIEL, Jaeda", "country": "USA", "wtn": "13.71"},
-          {"pos": 7, "entry": "WC", "name": "MERT, Aysegul", "country": "TUR", "wtn": "12.16"},
-          {"pos": 8, "seed": "5", "name": "TIKHONOVA, Anastasia", "wtn": "11.44"},
-          {"pos": 9, "seed": "3", "name": "ANDREEVA, Erika", "wtn": "11.18"},
-          {"pos": 10, "name": "YORUK, Ilay", "country": "TUR", "wtn": "12.81"},
-          {"pos": 11, "name": "SHINIKOVA, Isabella", "country": "BUL", "wtn": "12.42"},
-          {"pos": 12, "seed": "8", "name": "MICIC, Elena", "country": "AUS", "wtn": "11.46"},
-          {"pos": 13, "seed": "4", "name": "CRAWLEY, Fiona", "country": "USA", "wtn": "10.34"},
-          {"pos": 14, "name": "LACINOVA, Adelina", "country": "LAT", "wtn": "13.3"},
-          {"pos": 15, "entry": "WC", "name": "OZDEMIR, Piraye", "country": "TUR", "wtn": "19.26"},
-          {"pos": 16, "seed": "6", "name": "BOISSON, Lois", "country": "FRA", "wtn": "9.41"}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 1, "winner_name": "E. R. Bertea", "score": "60 60"},
-          {"round": 1, "match_num": 2, "winner_name": "V. Hruncakova", "score": "64 63"},
-          {"round": 1, "match_num": 3, "winner_name": "A. Tikhonova", "score": "76(3) 62"},
-          {"round": 1, "match_num": 4, "winner_name": "E. Andreeva", "score": "63 36 41 RET"},
-          {"round": 1, "match_num": 5, "winner_name": "E. Micic", "score": "62 61"},
-          {"round": 1, "match_num": 6, "winner_name": "F. Crawley", "score": "46 63 63"},
-          {"round": 1, "match_num": 7, "winner_name": "L. Boisson", "score": "61 61"},
-          {"round": 1, "match_num": 7, "winner_name": "E. R. Bertea", "score": "WO"},
-          {"round": 2, "match_num": 1, "winner_name": "A. Tikhonova", "score": "61 62"},
-          {"round": 2, "match_num": 2, "winner_name": "E. Andreeva", "score": "62 62"},
-          {"round": 2, "match_num": 3, "winner_name": "F. Crawley", "score": "26 63 75"}
-        ],
-        "byes": [
-          1
-        ],
-        "round_labels": [
-          "Q1",
-          "Q2",
-          "Qualifier"
-        ],
-        "num_rounds": 3
-      },
-      "MDD":
-      {
-        "tournament_name": "Adana Open",
-        "location": "ADANA, TUR",
-        "dates": "September 28-4 2026",
-        "prize": "$ 115,000",
-        "surface": "Hard, Laykold",
-        "draw_type": "DOUBLES MAIN DRAW",
-        "draw_size": 16,
-        "players": [
-          {"pos": 1, "seed": "1", "name": "PRIDANKINA, Elena / TIKHONOVA, Anastasia", "members": [{"name": "PRIDANKINA, Elena", "wtn": "9.98"}, {"name": "TIKHONOVA, Anastasia", "wtn": "11.44"}]},
-          {"pos": 2, "name": "IATCENKO, Polina / KARAMOKO, Naima", "members": [{"name": "IATCENKO, Polina", "wtn": "9.6"}, {"name": "KARAMOKO, Naima", "country": "SUI", "wtn": "-"}]},
-          {"pos": 3, "name": "AKSU, Ayla / MERT, Aysegul", "country": "TUR", "members": [{"name": "AKSU, Ayla", "country": "TUR", "wtn": "11.01"}, {"name": "MERT, Aysegul", "country": "TUR", "wtn": "12.16"}]},
-          {"pos": 4, "entry": "WC", "name": "BERTEA, Elena Ruxandra / ERCAN, Melisa", "country": "ROU", "members": [{"name": "BERTEA, Elena Ruxandra", "country": "ROU", "wtn": "11.42"}, {"name": "ERCAN, Melisa", "country": "AUS", "wtn": "13.49"}]},
-          {"pos": 5, "seed": "3", "name": "JAKUPOVIC, Dalila / SALDEN, Lara", "country": "SLO", "members": [{"name": "JAKUPOVIC, Dalila", "country": "SLO", "wtn": "11.98"}, {"name": "SALDEN, Lara", "country": "BEL", "wtn": "-"}]},
-          {"pos": 6, "name": "NOHA AKUGUE, Noma / WAGNER, Anita", "country": "GER", "members": [{"name": "NOHA AKUGUE, Noma", "country": "GER", "wtn": "9.72"}, {"name": "WAGNER, Anita", "country": "BIH", "wtn": "-"}]},
-          {"pos": 7, "name": "CRAWLEY, Fiona / DANIEL, Jaeda", "country": "USA", "members": [{"name": "CRAWLEY, Fiona", "country": "USA", "wtn": "10.34"}, {"name": "DANIEL, Jaeda", "country": "USA", "wtn": "13.71"}]},
-          {"pos": 8, "name": "MCGIFFIN, Tenika / MICIC, Elena", "country": "AUS", "members": [{"name": "MCGIFFIN, Tenika", "country": "AUS", "wtn": "-"}, {"name": "MICIC, Elena", "country": "AUS", "wtn": "11.46"}]},
-          {"pos": 9, "name": "CHRISTIE, Freya / SILVA, Eden", "country": "GBR", "members": [{"name": "CHRISTIE, Freya", "country": "GBR", "wtn": "-"}, {"name": "SILVA, Eden", "country": "GBR", "wtn": "-"}]},
-          {"pos": 10, "name": "MONNET, Carole / RIERA, Julia", "country": "FRA", "members": [{"name": "MONNET, Carole", "country": "FRA", "wtn": "10.72"}, {"name": "RIERA, Julia", "country": "ARG", "wtn": "10.42"}]},
-          {"pos": 11, "name": "ARANGO, Emiliana / RUZIC, Antonia", "country": "COL", "members": [{"name": "ARANGO, Emiliana", "country": "COL", "wtn": "10.71"}, {"name": "RUZIC, Antonia", "country": "CRO", "wtn": "10.3"}]},
-          {"pos": 12, "seed": "4", "name": "FALKOWSKA, Weronika / SMITH, Alana", "country": "POL", "members": [{"name": "FALKOWSKA, Weronika", "country": "POL", "wtn": "11.17"}, {"name": "SMITH, Alana", "country": "USA", "wtn": "11.46"}]},
-          {"pos": 13, "name": "GALFI, Dalma / WALTERT, Simona", "country": "HUN", "members": [{"name": "GALFI, Dalma", "country": "HUN", "wtn": "10.16"}, {"name": "WALTERT, Simona", "country": "SUI", "wtn": "10.08"}]},
-          {"pos": 14, "name": "MORATELLI, Angelica / VALDMANNOVA, Vendula", "country": "ITA", "members": [{"name": "MORATELLI, Angelica", "country": "ITA", "wtn": "14.93"}, {"name": "VALDMANNOVA, Vendula", "country": "CZE", "wtn": "10.01"}]},
-          {"pos": 15, "name": "DRAZIC, Mariana / MATTEL, Marie", "country": "CRO", "members": [{"name": "DRAZIC, Mariana", "country": "CRO", "wtn": "-"}, {"name": "MATTEL, Marie", "country": "FRA", "wtn": "13.02"}]},
-          {"pos": 16, "seed": "2", "name": "HRUNCAKOVA, Viktoria / SISKOVA, Anna", "country": "SVK", "members": [{"name": "HRUNCAKOVA, Viktoria", "country": "SVK", "wtn": "11.05"}, {"name": "SISKOVA, Anna", "country": "CZE", "wtn": "9.75"}]}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 0, "winner_name": "E. Pridankina / A. Tikhonova", "score": "64 63"},
-          {"round": 1, "match_num": 1, "winner_name": "A. Aksu / A. Mert", "score": "60 63"},
-          {"round": 1, "match_num": 2, "winner_name": "D. Jakupovic / L. Salden", "score": "36 63 10-7"},
-          {"round": 1, "match_num": 3, "winner_name": "F. Crawley / J. Daniel", "score": "61 64"},
-          {"round": 1, "match_num": 4, "winner_name": "C. Monnet / J. Riera", "score": "62 75"},
-          {"round": 1, "match_num": 5, "winner_name": "W. Falkowska / A. Smith", "score": "64 62"},
-          {"round": 1, "match_num": 6, "winner_name": "A. Moratelli / V. Valdmannova", "score": "26 61 11-9"},
-          {"round": 1, "match_num": 7, "winner_name": "V. Hruncakova / A. Siskova", "score": "76(3) 67(2) 10-7"},
-          {"round": 2, "match_num": 0, "winner_name": "E. Pridankina / A. Tikhonova", "score": "60 62"},
-          {"round": 2, "match_num": 1, "winner_name": "D. Jakupovic / L. Salden", "score": "63 46 11-9"},
-          {"round": 2, "match_num": 2, "winner_name": "W. Falkowska / A. Smith", "score": "62 63"},
-          {"round": 2, "match_num": 3, "winner_name": "A. Moratelli / V. Valdmannova", "score": "61 76(5)"},
-          {"round": 3, "match_num": 0, "winner_name": "D. Jakupovic / L. Salden", "score": "62 62"},
-          {"round": 3, "match_num": 1, "winner_name": "A. Moratelli / V. Valdmannova", "score": "62 57 10-6"},
-          {"round": 4, "match_num": 0, "winner_name": "A. Moratelli / V. Valdmannova", "score": "76(3) 64"}
-        ],
-        "round_labels": [
-          "Round of 16",
-          "Quarterfinals",
-          "Semifinals",
-          "Final"
-        ],
-        "num_rounds": 4
-      },
-      "MDS":
-      {
-        "tournament_name": "Adana Open",
-        "location": "ADANA, TUR",
-        "dates": "September 28-4 2026",
-        "prize": "$ 115,000",
-        "surface": "Hard, Laykold",
-        "draw_type": "SINGLES MAIN DRAW",
-        "draw_size": 32,
-        "players": [
-          {"pos": 1, "seed": "1", "name": "RUZIC, Antonia", "country": "CRO", "wtn": "10.3"},
-          {"pos": 2, "name": "VALDMANNOVA, Vendula", "country": "CZE", "wtn": "10.01"},
-          {"pos": 3, "name": "RIERA, Julia", "country": "ARG", "wtn": "10.42"},
-          {"pos": 4, "name": "SISKOVA, Anna", "country": "CZE", "wtn": "9.75"},
-          {"pos": 5, "name": "KOSTOVIC, Teodora", "country": "SRB", "wtn": "9.2"},
-          {"pos": 6, "entry": "WC", "name": "CENGIZ, Berfu", "country": "TUR", "wtn": "9.95"},
-          {"pos": 7, "name": "GALFI, Dalma", "country": "HUN", "wtn": "10.16"},
-          {"pos": 8, "entry": "LL", "name": "MICIC, Elena", "country": "AUS", "wtn": "11.46"},
-          {"pos": 9, "seed": "4", "name": "JEANJEAN, Leolia", "country": "FRA", "wtn": "9.41"},
-          {"pos": 10, "name": "LAMENS, Suzan", "country": "NED", "wtn": "10.25"},
-          {"pos": 11, "name": "RADIVOJEVIC, Lola", "country": "SRB", "wtn": "10.97"},
-          {"pos": 12, "entry": "WC", "name": "ERCAN, Melisa", "country": "AUS", "wtn": "13.49"},
-          {"pos": 13, "name": "MONNET, Carole", "country": "FRA", "wtn": "10.72"},
-          {"pos": 14, "entry": "WC", "name": "BUYUKAKCAY, Cagla", "country": "TUR", "wtn": "12.33"},
-          {"pos": 15, "entry": "Q", "name": "BERTEA, Elena Ruxandra", "country": "ROU", "wtn": "11.42"},
-          {"pos": 16, "seed": "6", "name": "STEFANINI, Lucrezia", "country": "ITA", "wtn": "9.17"},
-          {"pos": 17, "seed": "7", "name": "NOHA AKUGUE, Noma", "country": "GER", "wtn": "9.72"},
-          {"pos": 18, "entry": "Q", "name": "CRAWLEY, Fiona", "country": "USA", "wtn": "10.34"},
-          {"pos": 19, "name": "PRIDANKINA, Elena", "wtn": "9.98"},
-          {"pos": 20, "name": "AKSU, Ayla", "country": "TUR", "wtn": "11.01"},
-          {"pos": 21, "name": "IATCENKO, Polina", "wtn": "9.6"},
-          {"pos": 22, "entry": "Q", "name": "ANDREEVA, Erika", "wtn": "11.18"},
-          {"pos": 23, "entry": "Q", "name": "TIKHONOVA, Anastasia", "wtn": "11.44"},
-          {"pos": 24, "seed": "3", "name": "WALTERT, Simona", "country": "SUI", "wtn": "10.08"},
-          {"pos": 25, "seed": "8", "name": "BRONZETTI, Lucia", "country": "ITA", "wtn": "9.81"},
-          {"pos": 26, "entry": "LL", "name": "BOISSON, Lois", "country": "FRA", "wtn": "9.41"},
-          {"pos": 27, "entry": "WC", "name": "EFREMOVA, Ksenia", "country": "FRA", "wtn": "13.88"},
-          {"pos": 28, "name": "KUBKA, Martyna", "country": "POL", "wtn": "10.47"},
-          {"pos": 29, "entry": "LL", "name": "HRUNCAKOVA, Viktoria", "country": "SVK", "wtn": "11.05"},
-          {"pos": 30, "name": "GASANOVA, Anastasia", "wtn": "10.1"},
-          {"pos": 31, "name": "ARANGO, Emiliana", "country": "COL", "wtn": "10.71"},
-          {"pos": 32, "seed": "2", "name": "BLINKOVA, Anna", "country": "FRA", "wtn": "8.71"}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 0, "winner_name": "A. Ruzic", "score": "64 63"},
-          {"round": 1, "match_num": 1, "winner_name": "J. Riera", "score": "75 62"},
-          {"round": 1, "match_num": 2, "winner_name": "T. Kostovic", "score": "61 00 RET"},
-          {"round": 1, "match_num": 3, "winner_name": "D. Galfi", "score": "75 60"},
-          {"round": 1, "match_num": 4, "winner_name": "L. Jeanjean", "score": "46 63 62"},
-          {"round": 1, "match_num": 5, "winner_name": "M. Ercan", "score": "62 62"},
-          {"round": 1, "match_num": 6, "winner_name": "C. Buyukakcay", "score": "26 63 76(5)"},
-          {"round": 1, "match_num": 7, "winner_name": "L. Stefanini", "score": "36 64 62"},
-          {"round": 1, "match_num": 8, "winner_name": "F. Crawley", "score": "63 61"},
-          {"round": 1, "match_num": 9, "winner_name": "E. Pridankina", "score": "63 63"},
-          {"round": 1, "match_num": 10, "winner_name": "E. Andreeva", "score": "63 62"},
-          {"round": 1, "match_num": 11, "winner_name": "S. Waltert", "score": "36 76(4) 63"},
-          {"round": 1, "match_num": 12, "winner_name": "L. Boisson", "score": "61 62"},
-          {"round": 1, "match_num": 13, "winner_name": "M. Kubka", "score": "63 46 64"},
-          {"round": 1, "match_num": 14, "winner_name": "V. Hruncakova", "score": "42 RET"},
-          {"round": 1, "match_num": 15, "winner_name": "A. Blinkova", "score": "76(4) 62"},
-          {"round": 2, "match_num": 0, "winner_name": "A. Ruzic", "score": "63 64"},
-          {"round": 2, "match_num": 1, "winner_name": "T. Kostovic", "score": "46 76(1) 64"},
-          {"round": 2, "match_num": 2, "winner_name": "L. Jeanjean", "score": "36 75 64"},
-          {"round": 2, "match_num": 3, "winner_name": "L. Stefanini", "score": "67(5) 63 63"},
-          {"round": 2, "match_num": 4, "winner_name": "E. Pridankina", "score": "75 26 64"},
-          {"round": 2, "match_num": 5, "winner_name": "E. Andreeva", "score": "63 61"},
-          {"round": 2, "match_num": 6, "winner_name": "L. Boisson", "score": "63 62"},
-          {"round": 2, "match_num": 7, "winner_name": "A. Blinkova", "score": "62 60"},
-          {"round": 3, "match_num": 0, "winner_name": "A. Ruzic", "score": "46 64 62"},
-          {"round": 3, "match_num": 1, "winner_name": "L. Jeanjean", "score": "64 16 61"},
-          {"round": 3, "match_num": 2, "winner_name": "E. Andreeva", "score": "16 61 63"},
-          {"round": 3, "match_num": 3, "winner_name": "L. Boisson", "score": "60 61"},
-          {"round": 4, "match_num": 0, "winner_name": "L. Jeanjean", "score": "46 61 63"},
-          {"round": 4, "match_num": 1, "winner_name": "L. Boisson", "score": "63 46 62"},
-          {"round": 5, "match_num": 0, "winner_name": "L. Jeanjean", "score": "76(3) 46 64"}
-        ],
-        "round_labels": [
-          "Round of 32",
-          "Round of 16",
-          "Quarterfinals",
-          "Semifinals",
-          "Final"
-        ],
-        "num_rounds": 5,
-        "wtn_gm": 10.3972
-      }
-    }
-  },
-  "https://www.wtatennis.com/tournaments/1143/jingshan-125/2026/player-list":
-  {
-    "meta":
-    {
-      "name": "WTA 125 Jingshan",
-      "level": "WTA 125",
-      "week": "Week of September 28",
-      "startDate": "2026-09-28",
-      "endDate": "2026-10-04",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
-    },
-    "draws":
-    {
-      "QS":
-      {
-        "tournament_name": "Jingshan Tennis Open",
-        "location": "JINGSHAN, CHN",
-        "dates": "September 28-4 2026",
-        "prize": "$ 115,000",
-        "surface": "Hard",
-        "draw_type": "SINGLES QUALIFYING DRAW",
-        "draw_size": 16,
-        "players": [
-          {"pos": 1, "seed": "1", "name": "NUGROHO, Priska", "country": "INA", "wtn": "11.15"},
-          {"pos": 3, "name": "YASHINA, Ekaterina", "wtn": "14.26"},
-          {"pos": 4, "seed": "7", "name": "HUANG, Yujia", "country": "CHN", "wtn": "11.0"},
-          {"pos": 5, "seed": "2", "name": "RAJECKI, Amelia", "country": "GBR", "wtn": "12.8"},
-          {"pos": 6, "name": "KUWATA, Hiroko", "country": "JPN", "wtn": "15.93"},
-          {"pos": 7, "name": "RADISIC, Nika", "country": "SLO", "wtn": "12.88"},
-          {"pos": 8, "seed": "6", "name": "YUAN, Chengyiyi", "country": "CHN", "wtn": "13.75"},
-          {"pos": 9, "seed": "3", "name": "WANG, Jiaqi", "country": "CHN", "wtn": "12.43"},
-          {"pos": 10, "name": "ZHANG, Ying", "country": "CHN", "wtn": "13.65"},
-          {"pos": 11, "name": "LEYKINA, Polina", "wtn": "14.45"},
-          {"pos": 12, "seed": "8", "name": "ZHENG, Wushuang", "country": "CHN", "wtn": "11.82"},
-          {"pos": 13, "seed": "4", "name": "SIDOROVA, Kristiana", "wtn": "10.56"},
-          {"pos": 14, "name": "SAGANDYKOVA, Aruzhan", "country": "KAZ", "wtn": "13.34"},
-          {"pos": 15, "name": "GUO, Meiqi", "country": "CHN", "wtn": "14.3"},
-          {"pos": 16, "seed": "5", "name": "KAWAGUCHI, Natsumi", "country": "JPN", "wtn": "13.31"}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 0, "winner_name": "P. Nugroho"},
-          {"round": 1, "match_num": 1, "winner_name": "Y. Huang", "score": "62 62"},
-          {"round": 1, "match_num": 2, "winner_name": "A. Rajecki", "score": "61 16 61"},
-          {"round": 1, "match_num": 3, "winner_name": "C. Yuan", "score": "62 63"},
-          {"round": 1, "match_num": 4, "winner_name": "J. Wang", "score": "75 75"},
-          {"round": 1, "match_num": 5, "winner_name": "W. Zheng", "score": "62 62"},
-          {"round": 1, "match_num": 6, "winner_name": "K. Sidorova", "score": "36 62 61"},
-          {"round": 1, "match_num": 7, "winner_name": "M. Guo", "score": "60 63"},
-          {"round": 2, "match_num": 0, "winner_name": "Y. Huang", "score": "64 75"},
-          {"round": 2, "match_num": 1, "winner_name": "A. Rajecki", "score": "63 75"},
-          {"round": 2, "match_num": 2, "winner_name": "W. Zheng", "score": "62 76(2)"},
-          {"round": 2, "match_num": 3, "winner_name": "K. Sidorova", "score": "63 64"}
-        ],
-        "byes": [
-          2
-        ],
-        "round_labels": [
-          "Q1",
-          "Q2",
-          "Qualifier"
-        ],
-        "num_rounds": 3
-      },
-      "MDS":
-      {
-        "tournament_name": "Jingshan Tennis Open",
-        "location": "JINGSHAN, CHN",
-        "dates": "September 28-4 2026",
-        "prize": "$ 115,000",
-        "surface": "Hard",
-        "draw_type": "SINGLES MAIN DRAW",
-        "draw_size": 32,
-        "players": [
-          {"pos": 1, "seed": "1", "name": "BOUZAS MANEIRO, Jessica", "country": "ESP", "wtn": "9.07"},
-          {"pos": 2, "name": "TIAN, Fangran", "country": "CHN", "wtn": "11.87"},
-          {"pos": 3, "entry": "Q", "name": "RAJECKI, Amelia", "country": "GBR", "wtn": "12.8"},
-          {"pos": 4, "entry": "WC", "name": "WANG, Yuhan", "country": "CHN", "wtn": "12.66"},
-          {"pos": 5, "name": "ZAVATSKA, Katarina", "country": "UKR", "wtn": "10.87"},
-          {"pos": 6, "name": "LANSERE, Sofya", "wtn": "11.78"},
-          {"pos": 7, "name": "MLADENOVIC, Kristina", "country": "FRA", "wtn": "-"},
-          {"pos": 8, "seed": "5", "name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "10.59"},
-          {"pos": 9, "seed": "4", "name": "GRANT, Tyra Caterina", "country": "ITA", "wtn": "9.33"},
-          {"pos": 10, "name": "FALEI, Aliona", "wtn": "10.85"},
-          {"pos": 11, "entry": "Q", "name": "SIDOROVA, Kristiana", "wtn": "10.56"},
-          {"pos": 12, "name": "EGOROVA, Daria", "wtn": "11.92"},
-          {"pos": 13, "name": "YAMAGUCHI, Mei", "country": "JPN", "wtn": "11.62"},
-          {"pos": 14, "entry": "Q", "name": "ZHENG, Wushuang", "country": "CHN", "wtn": "11.82"},
-          {"pos": 15, "name": "MORVAYOVA, Viktoria", "country": "SVK", "wtn": "11.61"},
-          {"pos": 16, "seed": "8", "name": "SORRIBES TORMO, Sara", "country": "ESP", "wtn": "9.64"},
-          {"pos": 17, "seed": "7", "name": "IBRAGIMOVA, Alevtina", "wtn": "9.98"},
-          {"pos": 18, "name": "KHAMUTSIANSKAYA, Darya", "wtn": "12.07"},
-          {"pos": 19, "name": "OKAMURA, Kyoka", "country": "JPN", "wtn": "12.29"},
-          {"pos": 20, "entry": "WC", "name": "WU, Ru Xi", "country": "CHN", "wtn": "15.0"},
-          {"pos": 21, "name": "SAITO, Sara", "country": "JPN", "wtn": "11.81"},
-          {"pos": 22, "entry": "WC", "name": "ZHU, Chenting", "country": "CHN", "wtn": "13.65"},
-          {"pos": 23, "name": "KAJI, Haruka", "country": "JPN", "wtn": "11.07"},
-          {"pos": 24, "seed": "3", "name": "JONES, Emerson", "country": "AUS", "wtn": "10.55"},
-          {"pos": 25, "seed": "6", "name": "SHUBLADZE, Alexandra", "wtn": "9.36"},
-          {"pos": 26, "name": "SAIGO, Rina", "country": "JPN", "wtn": "12.71"},
-          {"pos": 27, "name": "LU, Jia-Jing", "country": "CHN", "wtn": "12.73"},
-          {"pos": 28, "name": "KINOSHITA, Hayu", "country": "JPN", "wtn": "12.03"},
-          {"pos": 29, "entry": "WC", "name": "WEI, Sijia", "country": "CHN", "wtn": "11.87"},
-          {"pos": 30, "entry": "Q", "name": "HUANG, Yujia", "country": "CHN", "wtn": "11.0"},
-          {"pos": 31, "name": "YANG, Yidi", "country": "CHN", "wtn": "13.51"},
-          {"pos": 32, "seed": "2", "name": "FERRO, Fiona", "country": "FRA", "wtn": "8.87"}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 0, "winner_name": "J. Bouzas Maneiro", "score": "63 41 RET"},
-          {"round": 1, "match_num": 1, "winner_name": "Y. Wang", "score": "64 36 76(1)"},
-          {"round": 1, "match_num": 2, "winner_name": "S. Lansere", "score": "63 60"},
-          {"round": 1, "match_num": 3, "winner_name": "S. Costoulas", "score": "62 75"},
-          {"round": 1, "match_num": 4, "winner_name": "A. Falei", "score": "64 61"},
-          {"round": 1, "match_num": 5, "winner_name": "K. Sidorova", "score": "63 64"},
-          {"round": 1, "match_num": 6, "winner_name": "W. Zheng", "score": "61 63"},
-          {"round": 1, "match_num": 7, "winner_name": "S. Sorribes Tormo", "score": "60 26 76(1)"},
-          {"round": 1, "match_num": 8, "winner_name": "A. Ibragimova", "score": "36 64 75"},
-          {"round": 1, "match_num": 9, "winner_name": "K. Okamura", "score": "62 64"},
-          {"round": 1, "match_num": 10, "winner_name": "C. Zhu", "score": "62 63"},
-          {"round": 1, "match_num": 11, "winner_name": "E. Jones", "score": "62 64"},
-          {"round": 1, "match_num": 12, "winner_name": "A. Shubladze", "score": "75 63"},
-          {"round": 1, "match_num": 13, "winner_name": "J. Lu", "score": "64 63"},
-          {"round": 1, "match_num": 14, "winner_name": "S. Wei", "score": "63 16 76(6)"},
-          {"round": 1, "match_num": 15, "winner_name": "F. Ferro", "score": "64 26 61"},
-          {"round": 2, "match_num": 0, "winner_name": "J. Bouzas Maneiro", "score": "60 62"},
-          {"round": 2, "match_num": 1, "winner_name": "S. Lansere", "score": "63 64"},
-          {"round": 2, "match_num": 2, "winner_name": "A. Falei", "score": "46 76(2) 64"},
-          {"round": 2, "match_num": 3, "winner_name": "S. Sorribes Tormo", "score": "46 62 63"},
-          {"round": 2, "match_num": 4, "winner_name": "K. Okamura", "score": "67(7) 61 63"},
-          {"round": 2, "match_num": 5, "winner_name": "E. Jones", "score": "61 64"},
-          {"round": 2, "match_num": 6, "winner_name": "A. Shubladze", "score": "60 62"},
-          {"round": 2, "match_num": 7, "winner_name": "S. Wei", "score": "61 20 RET"},
-          {"round": 3, "match_num": 0, "winner_name": "J. Bouzas Maneiro", "score": "62 62"},
-          {"round": 3, "match_num": 1, "winner_name": "A. Falei", "score": "64 62"},
-          {"round": 3, "match_num": 2, "winner_name": "E. Jones", "score": "76(4) 76(3)"},
-          {"round": 3, "match_num": 3, "winner_name": "A. Shubladze", "score": "67(3) 63 62"},
-          {"round": 4, "match_num": 0, "winner_name": "J. Bouzas Maneiro", "score": "63 63"},
-          {"round": 4, "match_num": 1, "winner_name": "A. Shubladze", "score": "75 64"},
-          {"round": 5, "match_num": 0, "winner_name": "A. Shubladze", "score": "63 62"}
-        ],
-        "round_labels": [
-          "Round of 32",
-          "Round of 16",
-          "Quarterfinals",
-          "Semifinals",
-          "Final"
-        ],
-        "num_rounds": 5,
-        "wtn_gm": 11.4469
-      },
-      "MDD":
-      {
-        "tournament_name": "Jingshan Tennis Open",
-        "location": "JINGSHAN, CHN",
-        "dates": "September 28-4 2026",
-        "prize": "$ 115,000",
-        "surface": "Hard",
-        "draw_type": "DOUBLES MAIN DRAW",
-        "draw_size": 16,
-        "players": [
-          {"pos": 1, "seed": "1", "name": "DETIUC, Anastasia / KHROMACHEVA, Irina", "country": "CZE", "members": [{"name": "DETIUC, Anastasia", "country": "CZE", "wtn": "-"}, {"name": "KHROMACHEVA, Irina", "wtn": "-"}]},
-          {"pos": 2, "name": "COSTOULAS, Sofia / MARTINS, Ingrid", "country": "BEL", "members": [{"name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "10.59"}, {"name": "MARTINS, Ingrid", "country": "BRA", "wtn": "-"}]},
-          {"pos": 3, "name": "LEE, Ya Hsin / YE, Qiuyu", "country": "TPE", "members": [{"name": "LEE, Ya Hsin", "country": "TPE", "wtn": "-"}, {"name": "YE, Qiuyu", "country": "CHN", "wtn": "-"}]},
-          {"pos": 4, "entry": "WC", "name": "GUO, Meiqi / YANG, Yidi", "country": "CHN", "members": [{"name": "GUO, Meiqi", "country": "CHN", "wtn": "14.3"}, {"name": "YANG, Yidi", "country": "CHN", "wtn": "13.51"}]},
-          {"pos": 5, "seed": "3", "name": "HOZUMI, Eri / SORRIBES TORMO, Sara", "country": "JPN", "members": [{"name": "HOZUMI, Eri", "country": "JPN", "wtn": "-"}, {"name": "SORRIBES TORMO, Sara", "country": "ESP", "wtn": "9.64"}]},
-          {"pos": 6, "name": "HUANG, Yujia / KAWAGUCHI, Natsumi", "country": "CHN", "members": [{"name": "HUANG, Yujia", "country": "CHN", "wtn": "11.0"}, {"name": "KAWAGUCHI, Natsumi", "country": "JPN", "wtn": "13.31"}]},
-          {"pos": 7, "name": "LANSERE, Sofya / SHUBLADZE, Alexandra", "members": [{"name": "LANSERE, Sofya", "wtn": "11.78"}, {"name": "SHUBLADZE, Alexandra", "wtn": "9.36"}]},
-          {"pos": 8, "name": "FENG, Shuo / TIAN, Fangran", "country": "CHN", "members": [{"name": "FENG, Shuo", "country": "CHN", "wtn": "-"}, {"name": "TIAN, Fangran", "country": "CHN", "wtn": "11.87"}]},
-          {"pos": 9, "name": "KUWATA, Hiroko / ZHENG, Wushuang", "country": "JPN", "members": [{"name": "KUWATA, Hiroko", "country": "JPN", "wtn": "15.93"}, {"name": "ZHENG, Wushuang", "country": "CHN", "wtn": "11.82"}]},
-          {"pos": 10, "name": "NUGROHO, Priska / YASHINA, Ekaterina", "country": "INA", "members": [{"name": "NUGROHO, Priska", "country": "INA", "wtn": "11.15"}, {"name": "YASHINA, Ekaterina", "wtn": "14.26"}]},
-          {"pos": 11, "name": "LI, Yu-Yun / ZHANG, Ying", "country": "TPE", "members": [{"name": "LI, Yu-Yun", "country": "TPE", "wtn": "14.99"}, {"name": "ZHANG, Ying", "country": "CHN", "wtn": "13.65"}]},
-          {"pos": 12, "seed": "4", "name": "CHO, I-Hsuan / CHO, Yi-Tsen", "country": "TPE", "members": [{"name": "CHO, I-Hsuan", "country": "TPE", "wtn": "-"}, {"name": "CHO, Yi-Tsen", "country": "TPE", "wtn": "-"}]},
-          {"pos": 13, "name": "EGOROVA, Daria / IBRAGIMOVA, Alevtina", "members": [{"name": "EGOROVA, Daria", "wtn": "11.92"}, {"name": "IBRAGIMOVA, Alevtina", "wtn": "9.98"}]},
-          {"pos": 14, "name": "GRANT, Tyra Caterina / JONES, Emerson", "country": "ITA", "members": [{"name": "GRANT, Tyra Caterina", "country": "ITA", "wtn": "9.33"}, {"name": "JONES, Emerson", "country": "AUS", "wtn": "10.55"}]},
-          {"pos": 15, "name": "BROOKS, Madeleine / RAJECKI, Amelia", "country": "GBR", "members": [{"name": "BROOKS, Madeleine", "country": "GBR", "wtn": "-"}, {"name": "RAJECKI, Amelia", "country": "GBR", "wtn": "12.8"}]},
-          {"pos": 16, "seed": "2", "name": "NINOMIYA, Makoto / RADISIC, Nika", "country": "JPN", "members": [{"name": "NINOMIYA, Makoto", "country": "JPN", "wtn": "-"}, {"name": "RADISIC, Nika", "country": "SLO", "wtn": "12.88"}]}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 0, "winner_name": "A. Detiuc / I. Khromacheva", "score": "62 64"},
-          {"round": 1, "match_num": 1, "winner_name": "Y. H. Lee / Q. Ye", "score": "57 62 10-4"},
-          {"round": 1, "match_num": 2, "winner_name": "Y. Huang / N. Kawaguchi", "score": "46 76(5) 10-2"},
-          {"round": 1, "match_num": 3, "winner_name": "S. Lansere / A. Shubladze", "score": "20 RET"},
-          {"round": 1, "match_num": 4, "winner_name": "H. Kuwata / W. Zheng", "score": "76(3) 61"},
-          {"round": 1, "match_num": 5, "winner_name": "Y. Li / Y. Zhang", "score": "62 63"},
-          {"round": 1, "match_num": 6, "winner_name": "T. C. Grant / E. Jones", "score": "76(5) 64"},
-          {"round": 1, "match_num": 7, "winner_name": "M. Brooks / A. Rajecki", "score": "76(5) 60"},
-          {"round": 2, "match_num": 0, "winner_name": "Y. H. Lee / Q. Ye", "score": "64 75"},
-          {"round": 2, "match_num": 1, "winner_name": "S. Lansere / A. Shubladze", "score": "26 63 10-7"},
-          {"round": 2, "match_num": 2, "winner_name": "Y. Li / Y. Zhang", "score": "46 75 14-12"},
-          {"round": 2, "match_num": 3, "winner_name": "M. Brooks / A. Rajecki", "score": "62 62"},
-          {"round": 3, "match_num": 0, "winner_name": "S. Lansere / A. Shubladze", "score": "76(5) 61"},
-          {"round": 3, "match_num": 1, "winner_name": "M. Brooks / A. Rajecki", "score": "63 36 12-10"},
-          {"round": 4, "match_num": 0, "winner_name": "M. Brooks / A. Rajecki", "score": "67(5) 76(1) 10-6"}
-        ],
-        "round_labels": [
-          "Round of 16",
-          "Quarterfinals",
-          "Semifinals",
-          "Final"
-        ],
-        "num_rounds": 4
-      }
-    }
-  },
-  "w-itf-esp-2026-031":
-  {
-    "meta":
-    {
-      "name": "W35 Baza",
-      "level": "W35",
-      "week": "Week of September 28",
-      "startDate": "2026-09-28T00:00:00",
-      "endDate": "2026-10-04T00:00:00",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
-    },
-    "draws":
-    {
-      "QS":
-      {
-        "draw_size": 32,
-        "players": [
-          {"pos": 1, "seed": "1", "name": "NOVAK, Kristina", "country": "SLO", "wtn": "14.54"},
-          {"pos": 2, "name": "PELLICANO, Helene", "country": "MLT", "wtn": "16.47"},
-          {"pos": 3, "entry": "WC", "name": "PARRES AZCOITIA, Olga", "country": "ESP", "wtn": "16.92"},
-          {"pos": 4, "seed": "9", "name": "PUSHKAR, Stefaniya", "country": "SUI", "wtn": "16.17"},
-          {"pos": 5, "seed": "2", "name": "GARCIA-PEREZ, Georgina", "country": "ESP", "wtn": "12.84"},
-          {"pos": 6, "name": "MOCCIA, Carlotta", "country": "ITA", "wtn": "15.35"},
-          {"pos": 7, "entry": "WC", "name": "FERNANDEZ SANCHEZ, Ainara", "country": "ESP", "wtn": "16.79"},
-          {"pos": 8, "seed": "13", "name": "GOMEZ, Carolina", "country": "ESP", "wtn": "13.32"},
-          {"pos": 9, "seed": "3", "name": "LAZARENKO, Kateryna", "country": "UKR", "wtn": "13.97"},
-          {"pos": 10, "entry": "WC", "name": "RABASCO SEGURA, Laura", "country": "ESP", "wtn": "21.09"},
-          {"pos": 11, "name": "SARGANELLA VERDU, Nuria", "country": "ESP", "wtn": "16.05"},
-          {"pos": 12, "seed": "14", "name": "BRUNO, Valentina Abril", "country": "ARG", "wtn": "16.24"},
-          {"pos": 13, "seed": "4", "name": "TOMASE, Elza", "country": "LAT", "wtn": "13.09"},
-          {"pos": 14, "entry": "WC", "name": "CLAVERO CANTON, Gabriela", "country": "ESP", "wtn": "23.12"},
-          {"pos": 15, "name": "PEET, Freya", "country": "GBR", "wtn": "15.64"},
-          {"pos": 16, "seed": "11", "name": "SHKUTOVA, Anna", "country": "RUS", "wtn": "14.05"},
-          {"pos": 17, "seed": "5", "name": "ARIFULLINA, Arina", "country": "RUS", "wtn": "14.42"},
-          {"pos": 18, "entry": "WC", "name": "GIBBS, Kennedy", "country": "USA", "wtn": "16.69"},
-          {"pos": 19, "name": "LLINARES DOMINGO, Lucia", "country": "ESP", "wtn": "16.16"},
-          {"pos": 20, "seed": "16", "name": "LIU, Min", "country": "CHN", "wtn": "16.55"},
-          {"pos": 21, "seed": "6", "name": "LOPEZ MARTINEZ, Carmen", "country": "ESP", "wtn": "15.05"},
-          {"pos": 22, "name": "PASCUAL MONTALVO, Isabel", "country": "ESP", "wtn": "15.34"},
-          {"pos": 23, "name": "VANCEA, Gabriela maria", "country": "ROU", "wtn": "16.83"},
-          {"pos": 24, "seed": "15", "name": "GARCIA-PATRON CANALS, Ariadna", "country": "ESP", "wtn": "17.53"},
-          {"pos": 25, "seed": "7", "name": "MARCINKEVICA, Diana", "country": "LAT", "wtn": "15.65"},
-          {"pos": 26, "name": "CABASSERS MORROS, Anna", "country": "ESP", "wtn": "17.76"},
-          {"pos": 27, "name": "NGOUNOUE, Malkia", "country": "USA", "wtn": "13.9"},
-          {"pos": 28, "seed": "10", "name": "REVA, Aliesia", "country": "UKR", "wtn": "16.19"},
-          {"pos": 29, "seed": "8", "name": "GIACCIO, Juliana", "country": "ESP", "wtn": "13.18"},
-          {"pos": 30, "name": "CABASSERS MORROS, Mar", "country": "ESP", "wtn": "17.76"},
-          {"pos": 31, "name": "TEIXIDO GARCIA, Ares", "country": "ESP", "wtn": "17.09"},
-          {"pos": 32, "seed": "12", "name": "GOMEZ O'HAYON, Victoria", "country": "ESP", "wtn": "15.65"}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 0, "winner_name": "K. Novak", "score": "63 64"},
-          {"round": 1, "match_num": 1, "winner_name": "O. Parres Azcoitia", "score": "63 64"},
-          {"round": 1, "match_num": 2, "winner_name": "C. Moccia", "score": "64 64"},
-          {"round": 1, "match_num": 3, "winner_name": "C. Gomez", "score": "46 63 10-1"},
-          {"round": 1, "match_num": 4, "winner_name": "K. Lazarenko", "score": "61 60"},
-          {"round": 1, "match_num": 5, "winner_name": "V. Bruno", "score": "64 RET"},
-          {"round": 1, "match_num": 6, "winner_name": "E. Tomase", "score": "62 62"},
-          {"round": 1, "match_num": 7, "winner_name": "F. Peet", "score": "46 76(3) 10-5"},
-          {"round": 1, "match_num": 8, "winner_name": "A. Arifullina", "score": "75 62"},
-          {"round": 1, "match_num": 9, "winner_name": "M. Liu", "score": "62 61"},
-          {"round": 1, "match_num": 10, "winner_name": "C. Lopez Martinez", "score": "62 60"},
-          {"round": 1, "match_num": 11, "winner_name": "G. Vancea", "score": "62 75"},
-          {"round": 1, "match_num": 12, "winner_name": "A. Cabassers Morros", "score": "63 76(2)"},
-          {"round": 1, "match_num": 13, "winner_name": "M. Ngounoue", "score": "64 75"},
-          {"round": 1, "match_num": 14, "winner_name": "J. Giaccio", "score": "61 60"},
-          {"round": 1, "match_num": 15, "winner_name": "V. Gomez O'Hayon", "score": "63 62"},
-          {"round": 2, "match_num": 0, "winner_name": "K. Novak", "score": "60 61"},
-          {"round": 2, "match_num": 1, "winner_name": "C. Moccia", "score": "61 26 10-3"},
-          {"round": 2, "match_num": 2, "winner_name": "K. Lazarenko", "score": "62 62"},
-          {"round": 2, "match_num": 3, "winner_name": "E. Tomase", "score": "64 61"},
-          {"round": 2, "match_num": 4, "winner_name": "A. Arifullina", "score": "75 63"},
-          {"round": 2, "match_num": 5, "winner_name": "C. Lopez Martinez", "score": "62 62"},
-          {"round": 2, "match_num": 6, "winner_name": "M. Ngounoue", "score": "67 62 10-8"},
-          {"round": 2, "match_num": 7, "winner_name": "J. Giaccio", "score": "76(6) 61"}
-        ],
-        "round_labels": [
-          "Round of 32",
-          "Round of 16"
-        ],
-        "num_rounds": 2
-      }
-    }
-  },
   "https://www.wtatennis.com/tournaments/1020/beijing/2026/player-list":
   {
     "meta":
@@ -511,7 +22,7 @@
         "draw_type": "SINGLES QUALIFYING DRAW",
         "draw_size": 48,
         "players": [
-          {"pos": 1, "entry": "ALT", "name": "GLEASON, Quinn", "country": "USA", "wtn": "-"},
+          {"pos": 1, "entry": "ALT", "name": "GLEASON, Quinn", "country": "USA", "wtn": "16.17"},
           {"pos": 2, "entry": "WC", "name": "WANG, Jiayi", "country": "CHN", "wtn": "13.05"},
           {"pos": 3, "name": "HODZIC, Mina", "country": "GER", "wtn": "11.24"},
           {"pos": 4, "seed": "21", "name": "BAI, Zhuoxuan", "country": "CHN", "wtn": "10.33"},
@@ -549,7 +60,7 @@
           {"pos": 36, "seed": "16", "name": "HUNTER, Storm", "country": "AUS", "wtn": "9.31"},
           {"pos": 37, "seed": "10", "name": "SRAMKOVA, Rebecca", "country": "SVK", "wtn": "9.95"},
           {"pos": 38, "name": "BURRAGE, Jodie", "country": "GBR", "wtn": "11.4"},
-          {"pos": 39, "name": "PANOVA, Alexandra", "wtn": "-"},
+          {"pos": 39, "name": "PANOVA, Alexandra", "wtn": "15.35"},
           {"pos": 40, "seed": "13", "name": "HONTAMA, Mai", "country": "JPN", "wtn": "10.14"},
           {"pos": 41, "seed": "11", "name": "JACQUEMOT, Elsa", "country": "FRA", "wtn": "10.76"},
           {"pos": 42, "entry": "WC", "name": "LI, Zongyu", "country": "CHN", "wtn": "11.22"},
@@ -891,7 +402,7 @@
           {"pos": 15, "name": "AOYAMA, Shuko / LIANG, En-Shuo", "country": "JPN", "members": [{"name": "AOYAMA, Shuko", "country": "JPN", "wtn": "-"}, {"name": "LIANG, En-Shuo", "country": "TPE", "wtn": "9.58"}]},
           {"pos": 16, "seed": "7", "name": "DANILINA, Anna / KRAWCZYK, Desirae", "country": "KAZ", "members": [{"name": "DANILINA, Anna", "country": "KAZ", "wtn": "-"}, {"name": "KRAWCZYK, Desirae", "country": "USA", "wtn": "15.93"}]},
           {"pos": 17, "seed": "6", "name": "MERTENS, Elise / SHNAIDER, Diana", "country": "BEL", "members": [{"name": "MERTENS, Elise", "country": "BEL", "wtn": "7.94"}, {"name": "SHNAIDER, Diana", "wtn": "7.37"}]},
-          {"pos": 18, "name": "LUMSDEN, Maia / PANOVA, Alexandra", "country": "GBR", "members": [{"name": "LUMSDEN, Maia", "country": "GBR", "wtn": "-"}, {"name": "PANOVA, Alexandra", "wtn": "15.34"}]},
+          {"pos": 18, "name": "LUMSDEN, Maia / PANOVA, Alexandra", "country": "GBR", "members": [{"name": "LUMSDEN, Maia", "country": "GBR", "wtn": "-"}, {"name": "PANOVA, Alexandra", "wtn": "15.35"}]},
           {"pos": 19, "name": "CHAN, Hao-Ching / KATO, Miyu", "country": "TPE", "members": [{"name": "CHAN, Hao-Ching", "country": "TPE", "wtn": "-"}, {"name": "KATO, Miyu", "country": "JPN", "wtn": "-"}]},
           {"pos": 20, "name": "MIHALIKOVA, Tereza / NICHOLLS, Olivia", "country": "SVK", "members": [{"name": "MIHALIKOVA, Tereza", "country": "SVK", "wtn": "15.58"}, {"name": "NICHOLLS, Olivia", "country": "GBR", "wtn": "18.12"}]},
           {"pos": 21, "entry": "ALT", "name": "SONMEZ, Zeynep / VEKIC, Donna", "country": "TUR", "members": [{"name": "SONMEZ, Zeynep", "country": "TUR", "wtn": "9.21"}, {"name": "VEKIC, Donna", "country": "CRO", "wtn": "9.14"}]},
@@ -903,7 +414,7 @@
           {"pos": 27, "entry": "ALT", "name": "BOULTER, Katie / STARODUBTSEVA, Yuliia", "country": "GBR", "members": [{"name": "BOULTER, Katie", "country": "GBR", "wtn": "9.14"}, {"name": "STARODUBTSEVA, Yuliia", "country": "UKR", "wtn": "8.91"}]},
           {"pos": 28, "name": "JOINT, Maya / KLEPAC, Andreja", "country": "AUS", "members": [{"name": "JOINT, Maya", "country": "AUS", "wtn": "9.21"}, {"name": "KLEPAC, Andreja", "country": "SLO", "wtn": "-"}]},
           {"pos": 29, "name": "NOSKOVA, Linda / TAUSON, Clara", "country": "CZE", "members": [{"name": "NOSKOVA, Linda", "country": "CZE", "wtn": "6.76"}, {"name": "TAUSON, Clara", "country": "DEN", "wtn": "9.04"}]},
-          {"pos": 30, "name": "EIKERI, Ulrikke / GLEASON, Quinn", "country": "NOR", "members": [{"name": "EIKERI, Ulrikke", "country": "NOR", "wtn": "14.74"}, {"name": "GLEASON, Quinn", "country": "USA", "wtn": "16.13"}]},
+          {"pos": 30, "name": "EIKERI, Ulrikke / GLEASON, Quinn", "country": "NOR", "members": [{"name": "EIKERI, Ulrikke", "country": "NOR", "wtn": "14.74"}, {"name": "GLEASON, Quinn", "country": "USA", "wtn": "16.17"}]},
           {"pos": 31, "name": "TANG, Qianhui / XU, Yifan", "country": "CHN", "members": [{"name": "TANG, Qianhui", "country": "CHN", "wtn": "-"}, {"name": "XU, Yifan", "country": "CHN", "wtn": "-"}]},
           {"pos": 32, "seed": "2", "name": "DABROWSKI, Gabriela / STEFANI, Luisa", "country": "CAN", "members": [{"name": "DABROWSKI, Gabriela", "country": "CAN", "wtn": "-"}, {"name": "STEFANI, Luisa", "country": "BRA", "wtn": "-"}]}
         ],
@@ -979,6 +490,7 @@
         "draw_size": 32,
         "players": [
           {"pos": 1, "seed": "1", "name": "OLIYNYKOVA, Oleksandra", "country": "UKR", "wtn": "9.04"},
+          {"pos": 2, "entry": "Q", "name": "ZHENG, Wushuang", "country": "CHN", "wtn": "11.82"},
           {"pos": 3, "name": "GUO, Hanyu", "country": "CHN", "wtn": "10.62"},
           {"pos": 4, "name": "FALEI, Aliona", "wtn": "10.85"},
           {"pos": 5, "name": "IBRAGIMOVA, Alevtina", "wtn": "9.98"},
@@ -987,9 +499,11 @@
           {"pos": 8, "seed": "7", "name": "LIU, Claire", "country": "USA", "wtn": "8.8"},
           {"pos": 9, "seed": "3", "name": "PUTINTSEVA, Yulia", "country": "KAZ", "wtn": "8.66"},
           {"pos": 10, "entry": "WC", "name": "SHAO, Yushan", "country": "CHN", "wtn": "14.04"},
+          {"pos": 11, "entry": "Q", "name": "KHAMUTSIANSKAYA, Darya", "wtn": "12.07"},
           {"pos": 12, "name": "GRANT, Tyra Caterina", "country": "ITA", "wtn": "9.33"},
           {"pos": 13, "name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "10.59"},
           {"pos": 14, "name": "ASTAKHOVA, Darya", "wtn": "9.81"},
+          {"pos": 15, "entry": "Q", "name": "SHI, Han", "country": "CHN", "wtn": "10.53"},
           {"pos": 16, "seed": "6", "name": "ZARAZUA, Renata", "country": "MEX", "wtn": "10.3"},
           {"pos": 17, "seed": "8", "name": "UCHIJIMA, Moyuka", "country": "JPN", "wtn": "10.13"},
           {"pos": 18, "entry": "WC", "name": "BAI, Zhuoxuan", "country": "CHN", "wtn": "10.33"},
@@ -997,6 +511,7 @@
           {"pos": 20, "name": "HONTAMA, Mai", "country": "JPN", "wtn": "10.14"},
           {"pos": 21, "entry": "WC", "name": "ZHANG, Ruien", "country": "CHN", "wtn": "13.02"},
           {"pos": 22, "name": "PROZOROVA, Tatiana", "wtn": "9.16"},
+          {"pos": 23, "entry": "Q", "name": "OKAMURA, Kyoka", "country": "JPN", "wtn": "12.29"},
           {"pos": 24, "seed": "4", "name": "VIDMANOVA, Darja", "country": "CZE", "wtn": "9.2"},
           {"pos": 25, "seed": "5", "name": "SAWANGKAEW, Mananchaya", "country": "THA", "wtn": "9.07"},
           {"pos": 26, "name": "FRUHVIRTOVA, Linda", "country": "CZE", "wtn": "10.63"},
@@ -1004,7 +519,11 @@
           {"pos": 28, "name": "SASNOVICH, Aliaksandra", "wtn": "9.53"},
           {"pos": 29, "name": "KALIEVA, Elvina", "country": "USA", "wtn": "10.5"},
           {"pos": 30, "name": "MA, Yexin", "country": "CHN", "wtn": "11.12"},
+          {"pos": 31, "entry": "LL", "name": "LU, Jia-Jing", "country": "CHN", "wtn": "12.73"},
           {"pos": 32, "seed": "2", "name": "KORPATSCH, Tamara", "country": "GER", "wtn": "9.95"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 2, "winner_name": "R. Sramkova", "score": "62 63"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1013,7 +532,8 @@
           "Semifinals",
           "Final"
         ],
-        "num_rounds": 5
+        "num_rounds": 5,
+        "wtn_gm": 10.4461
       },
       "MDD":
       {
@@ -1029,13 +549,13 @@
           {"pos": 2, "name": "IBRAGIMOVA, Alevtina / MARTINS, Ingrid", "members": [{"name": "IBRAGIMOVA, Alevtina", "wtn": "9.98"}, {"name": "MARTINS, Ingrid", "country": "BRA", "wtn": "-"}]},
           {"pos": 3, "name": "LI, Yu-Yun / ZHANG, Ying", "country": "TPE", "members": [{"name": "LI, Yu-Yun", "country": "TPE", "wtn": "14.99"}, {"name": "ZHANG, Ying", "country": "CHN", "wtn": "13.65"}]},
           {"pos": 4, "entry": "WC", "name": "QU, Yihan / SHAO, Yushan", "country": "CHN", "members": [{"name": "QU, Yihan", "country": "CHN", "wtn": "12.96"}, {"name": "SHAO, Yushan", "country": "CHN", "wtn": "14.04"}]},
-          {"pos": 5, "seed": "4", "name": "BROOKS, Madeleine / OVCHARENKO, Ekaterina", "country": "GBR", "members": [{"name": "BROOKS, Madeleine", "country": "GBR", "wtn": "-"}, {"name": "OVCHARENKO, Ekaterina", "wtn": "12.10"}]},
-          {"pos": 6, "name": "LEE, Ya Hsin / WONG, Hong Yi Cody", "country": "TPE", "members": [{"name": "LEE, Ya Hsin", "country": "TPE", "wtn": "-"}, {"name": "WONG, Hong Yi Cody", "country": "HKG", "wtn": "11.85"}]},
+          {"pos": 5, "seed": "4", "name": "BROOKS, Madeleine / OVCHARENKO, Ekaterina", "country": "GBR", "members": [{"name": "BROOKS, Madeleine", "country": "GBR", "wtn": "-"}, {"name": "OVCHARENKO, Ekaterina", "wtn": "12.12"}]},
+          {"pos": 6, "name": "LEE, Ya Hsin / WONG, Hong Yi Cody", "country": "TPE", "members": [{"name": "LEE, Ya Hsin", "country": "TPE", "wtn": "-"}, {"name": "WONG, Hong Yi Cody", "country": "HKG", "wtn": "12.3"}]},
           {"pos": 7, "name": "KUWATA, Hiroko / YE, Qiuyu", "country": "JPN", "members": [{"name": "KUWATA, Hiroko", "country": "JPN", "wtn": "15.93"}, {"name": "YE, Qiuyu", "country": "CHN", "wtn": "-"}]},
           {"pos": 8, "name": "MA, Yexin / SAWANGKAEW, Mananchaya", "country": "CHN", "members": [{"name": "MA, Yexin", "country": "CHN", "wtn": "11.12"}, {"name": "SAWANGKAEW, Mananchaya", "country": "THA", "wtn": "9.07"}]},
           {"pos": 9, "name": "PROZOROVA, Tatiana / SASNOVICH, Aliaksandra", "members": [{"name": "PROZOROVA, Tatiana", "wtn": "9.16"}, {"name": "SASNOVICH, Aliaksandra", "wtn": "9.53"}]},
           {"pos": 10, "name": "DANG, Yiming / YOU, Xiaodi", "country": "CHN", "members": [{"name": "DANG, Yiming", "country": "CHN", "wtn": "14.94"}, {"name": "YOU, Xiaodi", "country": "CHN", "wtn": "10.71"}]},
-          {"pos": 11, "name": "HUANG, Yujia / PLIPUECH, Peangtarn", "country": "CHN", "members": [{"name": "HUANG, Yujia", "country": "CHN", "wtn": "11.0"}, {"name": "PLIPUECH, Peangtarn", "country": "THA", "wtn": "12.16"}]},
+          {"pos": 11, "name": "HUANG, Yujia / PLIPUECH, Peangtarn", "country": "CHN", "members": [{"name": "HUANG, Yujia", "country": "CHN", "wtn": "11.0"}, {"name": "PLIPUECH, Peangtarn", "country": "THA", "wtn": "12.21"}]},
           {"pos": 12, "seed": "3", "name": "KOBORI, Momoko / SHIMIZU, Ayano", "country": "JPN", "members": [{"name": "KOBORI, Momoko", "country": "JPN", "wtn": "-"}, {"name": "SHIMIZU, Ayano", "country": "JPN", "wtn": "-"}]},
           {"pos": 13, "name": "LI, Zongyu / ZHENG, Wushuang", "country": "CHN", "members": [{"name": "LI, Zongyu", "country": "CHN", "wtn": "11.22"}, {"name": "ZHENG, Wushuang", "country": "CHN", "wtn": "11.82"}]},
           {"pos": 14, "name": "AYUKAWA, Mana / WEBLEY-SMITH, Emily", "country": "JPN", "members": [{"name": "AYUKAWA, Mana", "country": "JPN", "wtn": "-"}, {"name": "WEBLEY-SMITH, Emily", "country": "GBR", "wtn": "15.73"}]},
@@ -1383,6 +903,64 @@
         ],
         "num_rounds": 5,
         "wtn_gm": 17.778
+      }
+    }
+  },
+  "w-itf-usa-2026-046":
+  {
+    "meta":
+    {
+      "name": "W35 Las Vegas, NV",
+      "level": "W35",
+      "week": "Week of October 5",
+      "startDate": "2026-10-05T00:00:00",
+      "endDate": "2026-10-11T00:00:00",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "PRESTON, Janae", "country": "USA", "itf_id": "800758791", "wtn": "-"},
+          {"pos": 2, "name": "KRUGER, Isabella", "country": "RSA", "itf_id": "800517664", "wtn": "14.02"},
+          {"pos": 3, "name": "SNELLS, Jamilah", "country": "USA", "itf_id": "800479569", "wtn": "14.41"},
+          {"pos": 4, "seed": "10", "name": "DEFALCO, Jenna", "country": "USA", "itf_id": "800449349", "wtn": "13.22"},
+          {"pos": 5, "seed": "2", "name": "WEBB, Stefani", "country": "AUS", "itf_id": "800538433", "wtn": "15.22"},
+          {"pos": 6, "entry": "WC", "name": "HARDING, Ciara", "country": "USA", "itf_id": "800700177", "wtn": "-"},
+          {"pos": 7, "name": "GHIRARDATO, Emma Ottavia", "country": "ITA", "itf_id": "800516290", "wtn": "14.08"},
+          {"pos": 8, "seed": "12", "name": "COOLING, Ruby", "country": "GBR", "itf_id": "800594288", "wtn": "-"},
+          {"pos": 9, "seed": "3", "name": "SOKE, Duru", "country": "TUR", "itf_id": "800537711", "wtn": "13.01"},
+          {"pos": 10, "name": "XU, Annabelle", "country": "CAN", "itf_id": "800435362", "wtn": "14.35"},
+          {"pos": 11, "name": "REAMI, Adriana", "country": "USA", "itf_id": "800349299", "wtn": "13.61"},
+          {"pos": 12, "seed": "16", "name": "PUSHKAREVA, Anna", "country": "RUS", "itf_id": "800636696", "wtn": "-"},
+          {"pos": 13, "seed": "4", "name": "NOEL, Chloe", "country": "FRA", "itf_id": "800486630", "wtn": "13.01"},
+          {"pos": 14, "entry": "WC", "name": "BERNALES, Jessica", "country": "USA", "itf_id": "800644230", "wtn": "-"},
+          {"pos": 15, "name": "BARTEL, Karla", "country": "GER", "itf_id": "800576126", "wtn": "15.66"},
+          {"pos": 16, "seed": "11", "name": "DMITRICHENKO, Yekaterina", "country": "KAZ", "itf_id": "800417780", "wtn": "12.46"},
+          {"pos": 17, "seed": "5", "name": "KAMPER, Emma", "country": "DEN", "itf_id": "800569592", "wtn": "12.18"},
+          {"pos": 18, "entry": "WC", "name": "MAMINA, Evelina", "country": "USA", "itf_id": "800859277", "wtn": "17.67"},
+          {"pos": 19, "entry": "WC", "name": "RICE, Remi", "country": "USA", "itf_id": "800780374", "wtn": "18.13"},
+          {"pos": 20, "seed": "15", "name": "LEONG, Shihomi Li Xuan", "country": "MAS", "itf_id": "800548146", "wtn": "13.04"},
+          {"pos": 21, "seed": "6", "name": "SHOLOKHOVA, Maria", "country": "RUS", "itf_id": "800464428", "wtn": "12.39"},
+          {"pos": 22, "name": "GOMEZ PEZUELA CANO, Marian", "country": "MEX", "itf_id": "800508339", "wtn": "17.38"},
+          {"pos": 23, "name": "WALKER, Brandy", "country": "USA", "itf_id": "800483063", "wtn": "15.3"},
+          {"pos": 24, "seed": "9", "name": "MAHENDRAN, Krisha", "country": "IND", "itf_id": "800660087", "wtn": "-"},
+          {"pos": 25, "seed": "7", "name": "SAHDIIEVA, Anita", "country": "UKR", "itf_id": "800513778", "wtn": "14.87"},
+          {"pos": 26, "name": "FALKNER, Ziva", "country": "SLO", "itf_id": "800405194", "wtn": "14.31"},
+          {"pos": 27, "name": "KORHONEN, Cara", "country": "AUS", "itf_id": "800623314", "wtn": "-"},
+          {"pos": 28, "seed": "14", "name": "MATTIOLI, Francesca", "country": "ARG", "itf_id": "800583540", "wtn": "14.18"},
+          {"pos": 29, "seed": "8", "name": "VAN IMPE, Amelie", "country": "BEL", "itf_id": "800492984", "wtn": "12.28"},
+          {"pos": 30, "name": "RENCHELI, Abigail", "country": "USA", "itf_id": "800442513", "wtn": "14.65"},
+          {"pos": 31, "entry": "WC", "name": "BATTISTONE, Grace", "country": "USA", "itf_id": "800883977", "wtn": "-"},
+          {"pos": 32, "seed": "13", "name": "REED, Lexington", "country": "USA", "itf_id": "800594686", "wtn": "-"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16"
+        ],
+        "num_rounds": 2
       }
     }
   }
