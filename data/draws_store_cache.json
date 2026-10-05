@@ -272,6 +272,14 @@
           {"round": 2, "match_num": 13, "winner_name": "K. Rakhimova", "score": "62 46 63"},
           {"round": 2, "match_num": 14, "winner_name": "D. Vekic", "score": "61 46 62"},
           {"round": 2, "match_num": 15, "winner_name": "I. Swiatek", "score": "62 63"},
+          {"round": 3, "match_num": 0, "winner_name": "A. Charaeva", "score": "64 61"},
+          {"round": 3, "match_num": 1, "winner_name": "Q. Zheng", "score": "76(3) 46 75"},
+          {"round": 3, "match_num": 2, "winner_name": "A. Li", "score": "64 63"},
+          {"round": 3, "match_num": 3, "winner_name": "E. Svitolina", "score": "64 75"},
+          {"round": 3, "match_num": 4, "winner_name": "C. Gauff", "score": "75 61"},
+          {"round": 3, "match_num": 5, "winner_name": "E. Mertens", "score": "62 36 63"},
+          {"round": 3, "match_num": 6, "winner_name": "I. Jovic", "score": "61 75"},
+          {"round": 3, "match_num": 7, "winner_name": "I. Swiatek", "score": "46 76(0) 62"},
           {"round": 1, "match_num": 32, "winner_name": "L. Noskova"},
           {"round": 1, "match_num": 33, "winner_name": "E. Ruse", "score": "64 62"},
           {"round": 1, "match_num": 34, "winner_name": "V. Golubic", "score": "63 61"},
@@ -928,8 +936,12 @@
           {"pos": 32, "seed": "2", "name": "GONZALEZ DANIELE, Justina Maria", "country": "ARG", "itf_id": "800643592", "wtn": "14.24"}
         ],
         "matches": [
+          {"round": 1, "match_num": 1, "winner_name": "D. Bhatia", "score": "64 63"},
+          {"round": 1, "match_num": 2, "winner_name": "C. Markus", "score": "61 61"},
+          {"round": 1, "match_num": 5, "winner_name": "E. Zornada", "score": "60 61"},
           {"round": 1, "match_num": 6, "winner_name": "A. Duarte", "score": "63 62"},
-          {"round": 1, "match_num": 9, "winner_name": "G. Kawano Cho", "score": "16 61 61"}
+          {"round": 1, "match_num": 9, "winner_name": "G. Kawano Cho", "score": "16 61 61"},
+          {"round": 1, "match_num": 13, "winner_name": "F. Rain", "score": "75 76(6)"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1122,6 +1134,121 @@
         ],
         "num_rounds": 5,
         "wtn_gm": 12.255
+      }
+    }
+  },
+  "w-itf-usa-2026-048":
+  {
+    "meta":
+    {
+      "name": "W50 Lexington, SC",
+      "level": "W50",
+      "week": "Week of October 5",
+      "startDate": "2026-10-05T00:00:00",
+      "endDate": "2026-10-11T00:00:00",
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":false,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "MDS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "BRENGLE, Madison", "country": "USA", "itf_id": "800249049", "wtn": "10.61"},
+          {"pos": 3, "name": "XU, Mimi", "country": "GBR", "itf_id": "800571228", "wtn": "12.03"},
+          {"pos": 4, "entry": "WC", "name": "SCHUMAN, Aspen", "country": "USA", "itf_id": "800651632", "wtn": "12.62"},
+          {"pos": 5, "name": "COLLINS, Kylie", "country": "USA", "itf_id": "800479515", "wtn": "11.13"},
+          {"pos": 6, "name": "INOUE, Hina", "country": "USA", "itf_id": "800479537", "wtn": "12.62"},
+          {"pos": 7, "name": "BAJRALIU, Linea", "country": "SWE", "itf_id": "800575320", "wtn": "12.34"},
+          {"pos": 8, "seed": "8", "name": "MA, Lea", "country": "USA", "itf_id": "800447395", "wtn": "11.02"},
+          {"pos": 9, "seed": "4", "name": "BRACE, Cadence", "country": "CAN", "itf_id": "800526885", "wtn": "11.28"},
+          {"pos": 10, "entry": "WC", "name": "CLARKE, Chukwumelije", "country": "USA", "itf_id": "800719735", "wtn": "11.41"},
+          {"pos": 12, "name": "SIEG, Madison", "country": "USA", "itf_id": "800479568", "wtn": "12.12"},
+          {"pos": 14, "name": "HU, Victoria", "country": "USA", "itf_id": "800472995", "wtn": "12.71"},
+          {"pos": 16, "seed": "6", "name": "CAPURRO TABORDA, Martina", "country": "ARG", "itf_id": "800389099", "wtn": "12.57"},
+          {"pos": 17, "seed": "7", "name": "RUS, Arantxa", "country": "NED", "itf_id": "800260520", "wtn": "10.68"},
+          {"pos": 18, "name": "KOIKE, Ena", "country": "JPN", "itf_id": "800596217", "wtn": "12.1"},
+          {"pos": 19, "name": "RAPOLU, Malaika", "country": "USA", "itf_id": "800500748", "wtn": "10.24"},
+          {"pos": 20, "name": "HEWITT, Dalayna", "country": "USA", "itf_id": "800473288", "wtn": "12.18"},
+          {"pos": 21, "name": "NAITO, Yuki", "country": "JPN", "itf_id": "800474178", "wtn": "12.09"},
+          {"pos": 23, "name": "YAMALAPALLI, Sahaja", "country": "IND", "itf_id": "800505933", "wtn": "13.59"},
+          {"pos": 24, "seed": "3", "name": "OSUIGWE, Whitney", "country": "USA", "itf_id": "800468387", "wtn": "11.6"},
+          {"pos": 25, "seed": "5", "name": "RINALDO PERSSON, Kajsa", "country": "SWE", "itf_id": "800334394", "wtn": "10.77"},
+          {"pos": 28, "entry": "WC", "name": "CARNICELLA, Kaitlyn", "country": "USA", "itf_id": "800585020", "wtn": "12.76"},
+          {"pos": 29, "name": "PEREZ ALARCON, Lucciana", "country": "PER", "itf_id": "800533853", "wtn": "10.44"},
+          {"pos": 31, "name": "STRAKHOVA, Valeriya", "country": "UKR", "itf_id": "800317488", "wtn": "12.26"},
+          {"pos": 32, "seed": "2", "name": "CARLE, Maria Lourdes", "country": "ARG", "itf_id": "800446892", "wtn": "11.01"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
+      }
+    }
+  },
+  "w-itf-por-2026-014":
+  {
+    "meta":
+    {
+      "name": "W35 Lagos",
+      "level": "W35",
+      "week": "Week of October 5",
+      "startDate": "2026-10-05T00:00:00",
+      "endDate": "2026-10-11T00:00:00",
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":false,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "MDS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "MIKULSKYTE, Justina", "country": "LTU", "itf_id": "800313910", "wtn": "11.22"},
+          {"pos": 2, "entry": "Q", "name": "RAJESHWARAN REVATHI, Maaya", "country": "IND", "itf_id": "800632131", "wtn": "13.91"},
+          {"pos": 3, "entry": "Q", "name": "HAYS, Georgina", "country": "GBR", "itf_id": "800557866", "wtn": "16.07"},
+          {"pos": 4, "name": "BONARDI, Berta", "country": "ARG", "itf_id": "800357966", "wtn": "16.39"},
+          {"pos": 5, "entry": "Q", "name": "XU, Baotong", "country": "CHN", "itf_id": "800767226", "wtn": "15.75"},
+          {"pos": 6, "entry": "Q", "name": "MEDVEDEVA, Miroslava", "country": "RUS", "itf_id": "800683365", "wtn": "16.06"},
+          {"pos": 7, "name": "MUNK MORTENSEN, Rebecca", "country": "DEN", "itf_id": "800519998", "wtn": "12.15"},
+          {"pos": 8, "seed": "8", "name": "JIALIN, Tian", "country": "CHN", "itf_id": "800599013", "wtn": "14.76"},
+          {"pos": 9, "seed": "3", "name": "DU PREE, Britt", "country": "NED", "itf_id": "800564408", "wtn": "11.57"},
+          {"pos": 10, "entry": "Q", "name": "GIBBS, Kennedy", "country": "USA", "itf_id": "800579754", "wtn": "16.69"},
+          {"pos": 11, "entry": "Q", "name": "KUJOVIC, Katarina", "country": "BEL", "itf_id": "800575334", "wtn": "14.12"},
+          {"pos": 12, "entry": "Q", "name": "MOCCIA, Carlotta", "country": "ITA", "itf_id": "800565866", "wtn": "15.35"},
+          {"pos": 13, "entry": "WC", "name": "IVANTSIV, Milana", "country": "POR", "itf_id": "800534707", "wtn": "16.83"},
+          {"pos": 14, "entry": "WC", "name": "SANTOS, Ana Filipa", "country": "POR", "itf_id": "800320032", "wtn": "16.46"},
+          {"pos": 15, "name": "PETRETIC, Laia", "country": "FRA", "itf_id": "800478307", "wtn": "14.37"},
+          {"pos": 16, "seed": "6", "name": "MARTINEZ VAQUERO, Maria", "country": "ESP", "itf_id": "800504908", "wtn": "13.59"},
+          {"pos": 17, "seed": "7", "name": "CERVINO RUIZ, Celia", "country": "ESP", "itf_id": "800397871", "wtn": "12.70"},
+          {"pos": 18, "name": "LOPEZ MARTINEZ, Carmen", "country": "ESP", "itf_id": "800512222", "wtn": "15.05"},
+          {"pos": 19, "entry": "WC", "name": "AGRA AMORIM, Gabriela", "country": "POR", "itf_id": "800636886", "wtn": "19.04"},
+          {"pos": 20, "name": "REY GARCIA, Alba", "country": "ESP", "itf_id": "800424930", "wtn": "14.90"},
+          {"pos": 21, "name": "VAN DEN BROEK, Isis Louise", "country": "NED", "itf_id": "800535274", "wtn": "13.46"},
+          {"pos": 22, "name": "NOVAK, Kristina", "country": "SLO", "itf_id": "800345866", "wtn": "14.54"},
+          {"pos": 23, "name": "DAPKUTE, Iveta", "country": "LTU", "itf_id": "800278792", "wtn": "13.84"},
+          {"pos": 24, "seed": "4", "name": "VOLOSHCHUK, Angelina", "country": "POR", "itf_id": "800541081", "wtn": "11.22"},
+          {"pos": 25, "seed": "5", "name": "KOTLIAR, Yelyzaveta", "country": "UKR", "itf_id": "800544302", "wtn": "11.76"},
+          {"pos": 26, "entry": "Q", "name": "JURNA, Elizabeth", "country": "EST", "itf_id": "800523386", "wtn": "16.61"},
+          {"pos": 27, "name": "LAZARENKO, Kateryna", "country": "UKR", "itf_id": "800487865", "wtn": "13.97"},
+          {"pos": 28, "name": "CEMBRANOS, Paula", "country": "SUI", "itf_id": "800535383", "wtn": "13.92"},
+          {"pos": 29, "entry": "WC", "name": "BROWN, Baylen", "country": "USA", "itf_id": "800561267", "wtn": "18.12"},
+          {"pos": 30, "name": "ARIFULLINA, Arina", "country": "RUS", "itf_id": "800510696", "wtn": "14.42"},
+          {"pos": 31, "name": "SAVINYKH, Valeria", "country": "RUS", "itf_id": "800265981", "wtn": "13.05"},
+          {"pos": 32, "seed": "2", "name": "CABRERA, Lizette", "country": "AUS", "itf_id": "800325686", "wtn": "12.28"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5,
+        "wtn_gm": 14.3756
       }
     }
   }
