@@ -499,8 +499,11 @@ def refresh_entry_list_wtn(
                 if previous is None or (previous.get("type") != "MAIN" and itf_player.get("type") == "MAIN"):
                     players_by_id[player_id] = itf_player
 
+    draw_player_ids = set()
     for player in draw_players or []:
-        players_by_id.setdefault(str(player["player_id"]), player)
+        player_id = str(player["player_id"])
+        draw_player_ids.add(player_id)
+        players_by_id.setdefault(player_id, player)
 
     pending_entry_lists = {
         player_id: keys - set(cache.get(player_id, {}).get("entry_lists_checked", {}))
@@ -512,18 +515,22 @@ def refresh_entry_list_wtn(
         if not _select_recent_observation(cache.get(player_id, {}), today)
     ] if fetch_profiles else []
     targets.sort(key=lambda item: (
+        item[0] not in draw_player_ids,
         not bool(pending_entry_lists.get(item[0])),
         item[0] in cache,
         {"MAIN": 0, "QUAL": 1, "ALT": 2}.get(item[1].get("type"), 1),
         item[0],
     ))
-    if max_profile_fetches is not None:
-        targets = targets[:max_profile_fetches]
+    queue_size = len(targets)
     failures = profile_failures if profile_failures is not None else {}
+    if max_profile_fetches is not None:
+        for player_id, _ in targets[max_profile_fetches:]:
+            failures[player_id] = f"Deferred by {max_profile_fetches}-profile run limit"
+        targets = targets[:max_profile_fetches]
     succeeded = 0
     if fetch_profiles:
-        logger.info("Singles WTN queue: %s unique players, %s profiles need refreshing.",
-                    len(players_by_id), len(targets))
+        logger.info("Singles WTN queue: %s unique players, %s profiles need refreshing; attempting %s.",
+                    len(players_by_id), queue_size, len(targets))
     source_fetcher = fetch_source or (
         _profile_fetcher(driver, settle_seconds, request_interval_seconds) if targets else None
     )
@@ -582,7 +589,7 @@ def refresh_entry_list_wtn(
     save_json_file(cache_path, cache)
     if fetch_profiles:
         logger.info("Singles WTN refresh: %s updated, %s unavailable or unattempted.",
-                    succeeded, len(targets) - succeeded)
+                    succeeded, queue_size - succeeded)
     propagate_wtn(entry_cache, cache, resolve_itf_player=resolve_itf_player)
     return cache
 
