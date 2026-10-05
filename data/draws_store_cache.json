@@ -633,7 +633,11 @@
           {"round": 1, "match_num": 4, "winner_name": "M. Tkacheva", "score": "62 62"},
           {"round": 1, "match_num": 5, "winner_name": "M. Bolkvadze", "score": "61 60"},
           {"round": 1, "match_num": 6, "winner_name": "C. Werner", "score": "63 36 62"},
-          {"round": 1, "match_num": 7, "winner_name": "W. Falkowska", "score": "62 63"}
+          {"round": 1, "match_num": 7, "winner_name": "W. Falkowska", "score": "62 63"},
+          {"round": 2, "match_num": 0, "winner_name": "N. Noha Akugue", "score": "75 63"},
+          {"round": 2, "match_num": 1, "winner_name": "A. Smith", "score": "61 64"},
+          {"round": 2, "match_num": 2, "winner_name": "M. Bolkvadze", "score": "46 76(5) 60"},
+          {"round": 2, "match_num": 3, "winner_name": "C. Werner", "score": "63 26 76(3)"}
         ],
         "round_labels": [
           "Q1",
@@ -671,21 +675,25 @@
           {"pos": 17, "seed": "8", "name": "STEFANINI, Lucrezia", "country": "ITA", "wtn": "9.17"},
           {"pos": 18, "name": "MONNET, Carole", "country": "FRA", "wtn": "10.72"},
           {"pos": 19, "name": "KOSTOVIC, Teodora", "country": "SRB", "wtn": "9.2"},
+          {"pos": 20, "entry": "Q", "name": "NOHA AKUGUE, Noma", "country": "GER", "wtn": "9.72"},
           {"pos": 21, "name": "IATCENKO, Polina", "wtn": "9.6"},
           {"pos": 22, "name": "LAMENS, Suzan", "country": "NED", "wtn": "10.25"},
           {"pos": 23, "name": "GALFI, Dalma", "country": "HUN", "wtn": "10.16"},
           {"pos": 24, "seed": "4", "name": "GRABHER, Julia", "country": "AUT", "wtn": "9.29"},
           {"pos": 25, "seed": "6", "name": "JEANJEAN, Leolia", "country": "FRA", "wtn": "9.41"},
+          {"pos": 26, "entry": "Q", "name": "BOLKVADZE, Mariam", "country": "GEO", "wtn": "10.58"},
           {"pos": 27, "name": "ANDREESCU, Bianca", "country": "CAN", "wtn": "9.48"},
+          {"pos": 28, "entry": "Q", "name": "SMITH, Alana", "country": "USA", "wtn": "11.46"},
           {"pos": 29, "entry": "WC", "name": "EGRIBEL, Elvin", "country": "TUR", "wtn": "20.74"},
+          {"pos": 30, "entry": "Q", "name": "WERNER, Caroline", "country": "GER", "wtn": "11.15"},
           {"pos": 31, "name": "PRIDANKINA, Elena", "wtn": "9.98"},
           {"pos": 32, "seed": "2", "name": "BLINKOVA, Anna", "country": "FRA", "wtn": "8.71"}
         ],
-        "qualifiers": [
-          20,
-          26,
-          28,
-          30
+        "matches": [
+          {"round": 1, "match_num": 2, "winner_name": "F. Crawley", "score": "62 64"},
+          {"round": 1, "match_num": 7, "winner_name": "H. Sakatsume", "score": "61 64"},
+          {"round": 1, "match_num": 10, "winner_name": "P. Iatcenko", "score": "63 61"},
+          {"round": 1, "match_num": 11, "winner_name": "D. Galfi", "score": "63 64"}
         ],
         "round_labels": [
           "Round of 32",
@@ -694,7 +702,8 @@
           "Semifinals",
           "Final"
         ],
-        "num_rounds": 5
+        "num_rounds": 5,
+        "wtn_gm": 10.6337
       },
       "MDD":
       {
@@ -982,6 +991,128 @@
           "Round of 16"
         ],
         "num_rounds": 2
+      }
+    }
+  },
+  "w-itf-mda-2026-002":
+  {
+    "meta":
+    {
+      "name": "W15 Chisinau 1",
+      "level": "W15",
+      "week": "Week of October 5",
+      "startDate": "2026-10-05T00:00:00",
+      "endDate": "2026-10-11T00:00:00",
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":false,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "MDS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "PRISACARIU, Andreea", "country": "ROU", "itf_id": "800368339", "wtn": "14.16"},
+          {"pos": 2, "entry": "JR", "name": "NIKOLAIEVA, Anastasiia", "country": "UKR", "itf_id": "800667997", "wtn": "12.45"},
+          {"pos": 3, "name": "REVA, Aliesia", "country": "UKR", "itf_id": "800517316", "wtn": "16.19"},
+          {"pos": 4, "entry": "WC", "name": "IURINA, Eva", "country": "MDA", "itf_id": "800597650", "wtn": "-"},
+          {"pos": 5, "name": "BRUNE OLSEN, Astrid Wanja", "country": "NOR", "itf_id": "800375000", "wtn": "14.83"},
+          {"pos": 6, "name": "EBSTER, Anna Lena", "country": "AUT", "itf_id": "800509291", "wtn": "16.85"},
+          {"pos": 7, "name": "JOVANOVIC, Mirjana", "country": "SRB", "itf_id": "800507463", "wtn": "15.92"},
+          {"pos": 8, "seed": "7", "name": "SLAVIKOVA, Emma", "country": "CZE", "itf_id": "800630209", "wtn": "14.57"},
+          {"pos": 9, "seed": "3", "name": "BEDNARZ, Zuzanna", "country": "POL", "itf_id": "800516567", "wtn": "13.6"},
+          {"pos": 10, "name": "POCHTOVYK, Krystyna", "country": "UKR", "itf_id": "800345645", "wtn": "15.55"},
+          {"pos": 11, "entry": "Q", "name": "TRUSH, Yelizaveta", "country": "UKR", "itf_id": "800575791", "wtn": "16.78"},
+          {"pos": 12, "entry": "WC", "name": "BELIBOVA, Lia", "country": "MDA", "itf_id": "800594040", "wtn": "-"},
+          {"pos": 13, "name": "MIKHAILOVA, Maria", "country": "RUS", "itf_id": "800433734", "wtn": "16.95"},
+          {"pos": 14, "name": "BOYDEN, Melissa", "country": "GBR", "itf_id": "800478425", "wtn": "16.54"},
+          {"pos": 15, "entry": "Q", "name": "LUESCHER, Sophie", "country": "SUI", "itf_id": "800440790", "wtn": "13.95"},
+          {"pos": 16, "seed": "5", "name": "BALAN, Sara Victoria", "country": "ROU", "itf_id": "800664253", "wtn": "14.47"},
+          {"pos": 17, "seed": "6", "name": "DIATLOVA, Kateryna", "country": "UKR", "itf_id": "800436364", "wtn": "14.77"},
+          {"pos": 18, "name": "MASLENKOVA, Milana", "country": "UZB", "itf_id": "800354959", "wtn": "16.97"},
+          {"pos": 19, "entry": "JR", "name": "POP, Maria Valentina", "country": "ROU", "itf_id": "800664506", "wtn": "14.57"},
+          {"pos": 20, "entry": "WC", "name": "GAMRETKAIA, Arina", "country": "MDA", "itf_id": "800450086", "wtn": "-"},
+          {"pos": 21, "entry": "Q", "name": "BUTUC CERCHEZ, Sonia Erika", "country": "ROU", "itf_id": "800601838", "wtn": "17.52"},
+          {"pos": 22, "entry": "Q", "name": "NESMIANOVYCH, Alina", "country": "UKR", "itf_id": "800577925", "wtn": "16.63"},
+          {"pos": 23, "entry": "Q", "name": "GAILLARD, Delia", "country": "FRA", "itf_id": "800542223", "wtn": "17.07"},
+          {"pos": 24, "seed": "4", "name": "DOROFEEVA-RYBAS, Felitsata", "country": "RUS", "itf_id": "800721825", "wtn": "13.08"},
+          {"pos": 25, "seed": "8", "name": "CHLPAC, Agustina", "country": "ARG", "itf_id": "800402403", "wtn": "14.13"},
+          {"pos": 26, "entry": "Q", "name": "CORVI, Aurora", "country": "ITA", "itf_id": "800548494", "wtn": "15.19"},
+          {"pos": 27, "name": "CIRPANLI, Defne", "country": "TUR", "itf_id": "800473887", "wtn": "17.03"},
+          {"pos": 28, "name": "SAFTA, Anastasia", "country": "ROU", "itf_id": "800499674", "wtn": "15.42"},
+          {"pos": 29, "entry": "WC", "name": "HINCU, Romina", "country": "MDA", "itf_id": "800656359", "wtn": "-"},
+          {"pos": 30, "entry": "Q", "name": "KSANDINOV, Sophia", "country": "GER", "itf_id": "800576271", "wtn": "15.44"},
+          {"pos": 31, "entry": "Q", "name": "PARES BERGNES DE LAS CASAS, Maria", "country": "ESP", "itf_id": "800703288", "wtn": "-"},
+          {"pos": 32, "seed": "2", "name": "PANKRATOVA, Maria", "country": "RUS", "itf_id": "800522796", "wtn": "14.57"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
+      }
+    }
+  },
+  "w-itf-bul-2026-007":
+  {
+    "meta":
+    {
+      "name": "W50 Burgas",
+      "level": "W50",
+      "week": "Week of October 5",
+      "startDate": "2026-10-05T00:00:00",
+      "endDate": "2026-10-11T00:00:00",
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":false,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "MDS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "YANEVA, Elizara", "country": "BUL", "itf_id": "800544012", "wtn": "9.75"},
+          {"pos": 2, "entry": "Q", "name": "POPA, Giulia Safina", "country": "ROU", "itf_id": "800640357", "wtn": "12.65"},
+          {"pos": 3, "entry": "WC", "name": "GARNEVSKA, Valeria", "country": "BUL", "itf_id": "800639234", "wtn": "14.39"},
+          {"pos": 4, "entry": "Q", "name": "ZHENIKHOVA, Sonja", "country": "GER", "itf_id": "800595691", "wtn": "14.25"},
+          {"pos": 5, "entry": "Q", "name": "VAN EMST, Sarah", "country": "NED", "itf_id": "800518841", "wtn": "12.95"},
+          {"pos": 6, "name": "SAKELLARIDI, Sapfo", "country": "GRE", "itf_id": "800414262", "wtn": "13.61"},
+          {"pos": 7, "name": "KOVACKOVA, Alena", "country": "CZE", "itf_id": "800572951", "wtn": "10.57"},
+          {"pos": 8, "seed": "7", "name": "HERCOG, Polona", "country": "SLO", "itf_id": "800257514", "wtn": "11.1"},
+          {"pos": 9, "seed": "3", "name": "SOBOLIEVA, Anastasiia", "country": "UKR", "itf_id": "800467264", "wtn": "9.31"},
+          {"pos": 10, "entry": "Q", "name": "KRASTENOVA, Galena", "country": "BUL", "itf_id": "800571738", "wtn": "-"},
+          {"pos": 11, "name": "VOGT, Marie", "country": "GER", "itf_id": "800522513", "wtn": "12.35"},
+          {"pos": 12, "name": "ENCHEVA, Lidia", "country": "BUL", "itf_id": "800520666", "wtn": "10.63"},
+          {"pos": 13, "name": "ALVES, Carolina", "country": "BRA", "itf_id": "800346038", "wtn": "12.33"},
+          {"pos": 14, "name": "GLUSHKOVA, Denislava", "country": "BUL", "itf_id": "800486853", "wtn": "12.88"},
+          {"pos": 15, "name": "KARATANCHEVA, Lia", "country": "BUL", "itf_id": "800497713", "wtn": "12.37"},
+          {"pos": 16, "seed": "5", "name": "GIOVANNINI, Luisina", "country": "ARG", "itf_id": "800645555", "wtn": "10.75"},
+          {"pos": 17, "seed": "6", "name": "FITA BOLUDA, Angela", "country": "ESP", "itf_id": "800360901", "wtn": "11.06"},
+          {"pos": 18, "name": "URGESI, Federica", "country": "ITA", "itf_id": "800509472", "wtn": "11.12"},
+          {"pos": 19, "entry": "WC", "name": "IVANOVA, Iva", "country": "BUL", "itf_id": "800542873", "wtn": "12.85"},
+          {"pos": 20, "entry": "Q", "name": "SIMIONESCU, Diana-Ioana", "country": "ROU", "itf_id": "800576187", "wtn": "13.28"},
+          {"pos": 21, "name": "EBELING KONING, Loes", "country": "NED", "itf_id": "800563723", "wtn": "9.91"},
+          {"pos": 22, "entry": "WC", "name": "NAIDENOVA, Teodora", "country": "BUL", "itf_id": "800667592", "wtn": "-"},
+          {"pos": 23, "name": "FEISTEL, Gina", "country": "POL", "itf_id": "800487374", "wtn": "11.57"},
+          {"pos": 24, "seed": "4", "name": "DENCHEVA, Rositsa", "country": "BUL", "itf_id": "800538308", "wtn": "9.64"},
+          {"pos": 25, "seed": "8", "name": "MINTEGI DEL OLMO, Ane", "country": "ESP", "itf_id": "800457375", "wtn": "10.28"},
+          {"pos": 26, "entry": "Q", "name": "BARBULESCU, Bianca Elena", "country": "ROU", "itf_id": "800488761", "wtn": "15.32"},
+          {"pos": 27, "entry": "Q", "name": "PETRUZELOVA, Lucie", "country": "CZE", "itf_id": "800534730", "wtn": "13.22"},
+          {"pos": 28, "entry": "JE", "name": "KOVACKOVA, Jana", "country": "CZE", "itf_id": "800661515", "wtn": "10.15"},
+          {"pos": 29, "entry": "Q", "name": "AMARIEI, Ilinca Dalina", "country": "ROU", "itf_id": "800426771", "wtn": "11.23"},
+          {"pos": 30, "entry": "WC", "name": "IVANOVA, Nikol", "country": "BUL", "itf_id": "800600446", "wtn": "-"},
+          {"pos": 31, "name": "MAIR, Laura", "country": "ITA", "itf_id": "800424304", "wtn": "13.42"},
+          {"pos": 32, "seed": "2", "name": "ORTENZI, Jazmin", "country": "ARG", "itf_id": "800512761", "wtn": "10.42"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
       }
     }
   }
