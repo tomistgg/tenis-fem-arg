@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from datetime import date, timedelta
 
-from config import EXCLUDED_WTA_CALENDAR_TOURNAMENT_IDS
 from http_client import get_with_retry
 from pipeline_errors import PipelineError
 from run_state import report_run_issue
@@ -92,15 +92,13 @@ def filter_wta_calendar(items, from_date, to_date, *, exclude_levels=()):
     for tournament in items or []:
         if not isinstance(tournament, dict):
             continue
-        tournament_group = tournament.get("tournamentGroup")
-        tournament_id = (
-            tournament_group.get("id")
-            if isinstance(tournament_group, dict)
-            else tournament.get("tournamentId") or tournament.get("id")
-        )
-        if str(tournament_id or "").strip() in EXCLUDED_WTA_CALENDAR_TOURNAMENT_IDS:
-            continue
         start_date = str(tournament.get("startDate") or "")[:10]
+        tournament_group = tournament.get("tournamentGroup")
+        metadata = tournament_group.get("metadata") if isinstance(tournament_group, dict) else None
+        season = str(tournament.get("year") or start_date[:4])
+        cancelled_seasons = metadata.get("cancelledSeasons") if isinstance(metadata, dict) else ""
+        if season in re.findall(r"\b\d{4}\b", str(cancelled_seasons or "")):
+            continue
         level = str(tournament.get("level") or "").strip().casefold()
         if from_date <= start_date <= to_date and level not in excluded:
             result.append(tournament)

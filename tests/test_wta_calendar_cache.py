@@ -4,6 +4,7 @@ from pathlib import Path
 
 import wta
 import wta_calendar_cache
+from utils import compress_wta_calendar_cache, expand_wta_calendar_cache
 
 
 class FakeResponse:
@@ -68,6 +69,7 @@ def test_shared_calendar_is_fetched_once_and_filtered_for_each_consumer(monkeypa
         _tournament(4, "2026-10-05"),
         _tournament(1150, "2026-10-19"),
     ]
+    calendar[-1]["tournamentGroup"]["metadata"] = {"cancelledSeasons": "2026"}
 
     def fake_get(url, **kwargs):
         requests.append((url, kwargs))
@@ -147,6 +149,22 @@ def test_force_refresh_ignores_fresh_disk_calendar(monkeypatch, tmp_path):
     result = wta_calendar_cache.get_shared_wta_calendar(component="wta", force_refresh=True)
 
     assert [item["tournamentGroup"]["id"] for item in result] == [1174]
+
+
+def test_cancelled_season_is_preserved_in_cache_and_filtered():
+    miami = _tournament(1169, "2026-11-02", level="WTA 125")
+    miami["tournamentGroup"]["metadata"] = {"cancelledSeasons": "2026", "websiteUrl": "unused"}
+    earlier_season = _tournament(1169, "2025-11-03", level="WTA 125")
+    earlier_season["year"] = 2025
+    earlier_season["tournamentGroup"]["metadata"] = {"cancelledSeasons": "2026"}
+    active = _tournament(1176, "2026-11-02", level="WTA 125")
+
+    cached = compress_wta_calendar_cache({"items": [miami, earlier_season, active]})
+    assert cached["items"][0]["tournamentGroup"]["metadata"] == {"cancelledSeasons": "2026"}
+    restored = expand_wta_calendar_cache(cached)["items"]
+    result = wta_calendar_cache.filter_wta_calendar(restored, "2025-01-01", "2026-12-31")
+
+    assert [(item["tournamentGroup"]["id"], item["year"]) for item in result] == [(1169, 2025), (1176, 2026)]
 
 
 def test_shared_range_expands_when_tournament_strength_needs_catch_up(monkeypatch, tmp_path):

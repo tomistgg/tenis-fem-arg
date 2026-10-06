@@ -1,10 +1,8 @@
 {
   "from": "2026-09-08",
   "to": "2026-12-31",
-  "fetchedAt": "2026-10-06T12:36:01Z",
-  "lastAttemptAt": "2026-10-06T12:36:01Z",
-  "fetchedRunId": "20261006T123354Z-c1d506c8a1",
-  "lastAttemptRunId": "20261006T123354Z-c1d506c8a1",
+  "fetchedAt": "2026-10-06T13:11:17Z",
+  "lastAttemptAt": "2026-10-06T13:11:17Z",
   "items": [
     {
       "tournamentGroup": { "id": 905, "name": "US OPEN", "level": "Grand Slam" },
@@ -207,7 +205,7 @@
       "singlesDrawSize": 28
     },
     {
-      "tournamentGroup": { "id": 1150, "name": "RIO DE JANEIRO 125", "level": "WTA 125" },
+      "tournamentGroup": { "id": 1150, "name": "RIO DE JANEIRO 125", "level": "WTA 125", "metadata": {"cancelledSeasons": "2026"} },
       "year": 2026, "startDate": "2026-10-19", "endDate": "2026-10-25",
       "title": "Río Ladies Open by MundoTênis Tours  - Rio De Janeiro, BRA", "level": "WTA 125",
       "surface": "Clay", "inOutdoor": "O",
@@ -279,7 +277,7 @@
       "singlesDrawSize": 32
     },
     {
-      "tournamentGroup": { "id": 1169, "name": "MIAMI 125", "level": "WTA 125" },
+      "tournamentGroup": { "id": 1169, "name": "MIAMI 125", "level": "WTA 125", "metadata": {"cancelledSeasons": "2026"} },
       "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-08",
       "title": "American Tennis Open Miami - Miami, FL, USA", "level": "WTA 125",
       "surface": "Hard", "inOutdoor": "O",

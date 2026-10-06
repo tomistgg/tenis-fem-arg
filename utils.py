@@ -1159,7 +1159,12 @@ def compress_wta_calendar_cache(payload):
             compact.pop(key, None)
         if isinstance(compact.get("tournamentGroup"), dict) and "metadata" in compact["tournamentGroup"]:
             compact["tournamentGroup"] = dict(compact["tournamentGroup"])
-            compact["tournamentGroup"].pop("metadata", None)
+            metadata = compact["tournamentGroup"].get("metadata")
+            cancelled_seasons = metadata.get("cancelledSeasons") if isinstance(metadata, dict) else None
+            if cancelled_seasons:
+                compact["tournamentGroup"]["metadata"] = {"cancelledSeasons": cancelled_seasons}
+            else:
+                compact["tournamentGroup"].pop("metadata", None)
         return compact
 
     compact = dict(payload)

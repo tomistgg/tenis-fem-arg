@@ -5,7 +5,6 @@ import pandas as pd
 from config import (
     CALENDAR_END_DATE_OVERRIDES,
     CONTINENT_KEYS,
-    EXCLUDED_WTA_CALENDAR_TOURNAMENT_IDS,
 )
 from time_utils import madrid_today
 from utils import get_calendar_column, get_continent, get_tournament_sort_order
@@ -126,8 +125,6 @@ def build_calendar_data(tournaments):
     parsed = []
     seen = set()
     for t in tournaments:
-        if str(t.get("tournamentId") or "").strip() in EXCLUDED_WTA_CALENDAR_TOURNAMENT_IDS:
-            continue
         calendar_key = get_calendar_tournament_key(t)
         if calendar_key in seen:
             continue
