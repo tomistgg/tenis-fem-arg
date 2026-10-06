@@ -200,6 +200,10 @@ def _draw_observation(record, key, *, today=None):
     latest = _select_recent_observation(record, today) if today else {}
     if latest:
         return latest
+    if today and _recent_no_wtn_check(record, today) and record.get("source") == "entry_list" \
+            and record.get("source_key") == key \
+            and _positive_wtn(record.get("wtn")) is not None:
+        return record
     observation = record.get("main_draw_observations", {}).get(key, {})
     if observation.get("source") in {"profile", "entry_list"} and _positive_wtn(observation.get("wtn")) is not None:
         return _select_recent_observation(observation, today) if today else observation

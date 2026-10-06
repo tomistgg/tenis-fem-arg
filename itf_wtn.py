@@ -106,7 +106,7 @@ def _normalize_cache(cache):
             if not observation.get("source") and observation.get("profile_url"):
                 observation["source"] = "profile"
             candidates.append(observation)
-        if record.get("no_wtn_checked_at"):
+        if record.get("no_wtn_checked_at") and not _valid_wtn(target.get("wtn")):
             candidates = []
         if candidates:
             latest = max(candidates, key=_observation_priority)
@@ -146,8 +146,8 @@ def _store_observation(cache, player_id, player, observation):
     for field in _OBSERVATION_FIELDS:
         record.pop(field, None)
     record.update(observation)
-    record.pop("no_wtn_checked_at", None)
     if observation.get("source") == "profile" and observation.get("profile_url"):
+        record.pop("no_wtn_checked_at", None)
         record["last_profile_url"] = observation["profile_url"]
 
 
@@ -175,8 +175,6 @@ def _store_no_wtn_check(cache, player_id, player, profile_url, today):
     record = cache.setdefault(player_id, {})
     record["name"] = player.get("name") or record.get("name", "")
     record["country"] = player.get("country") or record.get("country", "")
-    for field in _OBSERVATION_FIELDS:
-        record.pop(field, None)
     record.update(no_wtn_checked_at=today.isoformat(), last_profile_url=profile_url)
 
 
@@ -189,7 +187,7 @@ def checkpoint_profile_wtn(cache_path, cache, player_id):
         journal[player_id] = {
             key: record[key] for key in (
                 "name", "country", "wtn", "source", "profile_url", "retrieved_at",
-                "no_wtn_checked_at", "last_profile_url",
+                "source_key", "observed_on", "no_wtn_checked_at", "last_profile_url",
             )
             if key in record
         }
@@ -206,13 +204,20 @@ def recover_profile_wtn_checkpoints(journal_path, cache_path):
         raise ValueError("WTN checkpoint must be an object")
     today = madrid_today()
     for pid, record in journal.items():
-        url = str(record.get("profile_url") or record.get("last_profile_url") or "") if isinstance(record, dict) else ""
+        url = (
+            str(record.get("last_profile_url") if record.get("no_wtn_checked_at") else record.get("profile_url") or "")
+            if isinstance(record, dict) else ""
+        )
         valid_value = (
             _select_recent_observation(record, today, source="profile")
             if isinstance(record, dict) and not record.get("no_wtn_checked_at") else {}
         )
         valid_absence = (
-            _recent_no_wtn_check(record, today) and not _valid_wtn(record.get("wtn"))
+            _recent_no_wtn_check(record, today)
+            and (
+                "wtn" not in record or record.get("wtn") in (None, "")
+                or (_valid_wtn(record["wtn"]) and record.get("source") in {"entry_list", "profile"})
+            )
             if isinstance(record, dict) else False
         )
         if (not str(pid).isdigit() or not (valid_value or valid_absence)
@@ -228,7 +233,13 @@ def recover_profile_wtn_checkpoints(journal_path, cache_path):
         previous = dict(cache.get(pid, {}))
         if record.get("no_wtn_checked_at"):
             checked = date.fromisoformat(record["no_wtn_checked_at"])
-            latest = _observation_priority(previous)[0][:10]
+            latest = str(previous.get("retrieved_at") or previous.get("observed_on") or "")[:10]
+            if _valid_wtn(record.get("wtn")):
+                _store_observation(cache, pid, record, {
+                    key: record[key]
+                    for key in ("wtn", "source", "source_key", "profile_url", "retrieved_at", "observed_on")
+                    if key in record
+                })
             if not (_valid_wtn(previous.get("wtn")) and latest >= checked.isoformat()):
                 _store_no_wtn_check(cache, pid, record, record["last_profile_url"], checked)
         else:
@@ -351,7 +362,7 @@ def propagate_wtn(
         resolved = None if pid else _resolve_player(player, key, resolver)
         pid = str(resolved["player_id"]) if resolved else pid
         record = cache.get(pid, {})
-        if record.get("no_wtn_checked_at"):
+        if record.get("no_wtn_checked_at") and not _valid_wtn(record.get("wtn")):
             player["wtn"] = "-"
             return
         if require_fresh and not _select_recent_observation(record, today):

@@ -306,6 +306,21 @@ def test_gm_accepts_fresh_entry_wtn_without_profile_lookup(tmp_path):
     assert json.loads((tmp_path / "main_draw_wtn_errors.json").read_text()) == []
 
 
+def test_gm_uses_matching_entry_wtn_when_profile_has_none(tmp_path):
+    key = "w-itf-chn-2026-037"
+    (tmp_path / "profiles.json").write_text(json.dumps({"800575358": {
+        "name": "Emma Armitage-Ho", "country": "AUS", "wtn": "23.39", "source": "entry_list",
+        "source_key": key, "observed_on": "2026-09-25", "retrieved_at": "2026-09-27",
+        "no_wtn_checked_at": "2026-10-07",
+    }}))
+    draw = tournament(("Emma Armitage-Ho", "800575358"))
+    record = refresh(tmp_path, [(key, draw)], lambda _: pytest.fail("Known entry WTN needs no lookup"),
+                     today=date(2026, 10, 7))[key]
+    assert record["wtn_gm"] == 23.39
+    assert record["status"] == "complete"
+    assert draw["draws"]["MDS"]["players"][0]["wtn"] == "23.39"
+
+
 def test_entry_list_wtn_is_reused_for_five_days_then_refreshed_for_new_draw(tmp_path):
     (tmp_path / "profiles.json").write_text(json.dumps({
         "800000001": {"wtn": 4, "source": "entry_list", "observed_on": "2026-10-04",

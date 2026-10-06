@@ -948,7 +948,7 @@ def test_rejected_transaction_preserves_verified_no_wtn_check(tmp_path, monkeypa
     saved = json.loads(cache_path.read_text())["800000001"]
     assert saved["no_wtn_checked_at"] == "2026-10-07"
     assert saved["last_profile_url"] == url
-    assert "wtn" not in saved
+    assert saved["wtn"] == 20
     assert saved["main_draw_observations"] == original["800000001"]["main_draw_observations"]
 
 

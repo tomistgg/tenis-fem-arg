@@ -260,6 +260,30 @@ def test_profile_without_singles_wtn_waits_five_days_before_retry(tmp_path, monk
     assert "no_wtn_checked_at" not in json.loads(cache_path.read_text())["800000001"]
 
 
+def test_empty_profile_preserves_known_entry_list_wtn(tmp_path):
+    cache_path = tmp_path / "cache.json"
+    key = "w-itf-chn-2026-037"
+    player = {"player_id": "800575358", "name": "Emma Armitage-Ho", "country": "AUS", "wtn": "23.39"}
+    entries = {key: [player]}
+    cache_path.write_text(json.dumps({"800575358": {
+        "name": player["name"], "country": "AUS", "wtn": "23.39", "source": "entry_list",
+        "source_key": key, "observed_on": "2026-09-25", "retrieved_at": "2026-09-27",
+    }}))
+
+    refresh_entry_list_wtn(None, entries, cache_path, today=date(2026, 10, 7),
+                           fetch_source=lambda _: 'var props = {"wtnSingles":null};',
+                           include_itf_entry_players=True)
+    saved = json.loads(cache_path.read_text())["800575358"]
+    assert saved["wtn"] == "23.39" and saved["source_key"] == key
+    assert saved["no_wtn_checked_at"] == "2026-10-07"
+    assert player["wtn"] == "23.39"
+
+    refresh_entry_list_wtn(None, entries, cache_path, today=date(2026, 10, 12),
+                           fetch_source=lambda _: pytest.fail("Profile retry is too early"),
+                           include_itf_entry_players=True)
+    assert player["wtn"] == "23.39"
+
+
 def test_junior_profile_fallback_and_challenge_pause(tmp_path):
     cache_path = tmp_path / "itf_wtn_cache.json"
     entries = {
