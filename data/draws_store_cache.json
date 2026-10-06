@@ -714,10 +714,18 @@
           {"pos": 32, "seed": "2", "name": "BLINKOVA, Anna", "country": "FRA", "wtn": "8.71"}
         ],
         "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "A. Dudeney", "score": "36 63 64"},
+          {"round": 1, "match_num": 1, "winner_name": "A. Aksu", "score": "63 62"},
           {"round": 1, "match_num": 2, "winner_name": "F. Crawley", "score": "62 64"},
+          {"round": 1, "match_num": 3, "winner_name": "O. Selekhmeteva", "score": "75 76(0)"},
+          {"round": 1, "match_num": 4, "winner_name": "S. Waltert", "score": "62 62"},
+          {"round": 1, "match_num": 6, "winner_name": "V. Hruncakova", "score": "62 46 62"},
           {"round": 1, "match_num": 7, "winner_name": "H. Sakatsume", "score": "61 64"},
+          {"round": 1, "match_num": 8, "winner_name": "L. Stefanini", "score": "75 64"},
+          {"round": 1, "match_num": 9, "winner_name": "N. Noha Akugue", "score": "63 62"},
           {"round": 1, "match_num": 10, "winner_name": "P. Iatcenko", "score": "63 61"},
-          {"round": 1, "match_num": 11, "winner_name": "D. Galfi", "score": "63 64"}
+          {"round": 1, "match_num": 11, "winner_name": "D. Galfi", "score": "63 64"},
+          {"round": 1, "match_num": 13, "winner_name": "B. Andreescu", "score": "60 60"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1041,7 +1049,11 @@
           {"round": 1, "match_num": 12, "winner_name": "A. Sahdiieva", "score": "67 64 10-5"},
           {"round": 1, "match_num": 13, "winner_name": "F. Mattioli", "score": "62 60"},
           {"round": 1, "match_num": 14, "winner_name": "A. Van Impe", "score": "61 62"},
-          {"round": 1, "match_num": 15, "winner_name": "L. Reed", "score": "60 63"}
+          {"round": 1, "match_num": 15, "winner_name": "L. Reed", "score": "60 63"},
+          {"round": 2, "match_num": 0, "winner_name": "J. Preston", "score": "63 61"},
+          {"round": 2, "match_num": 2, "winner_name": "D. Soke", "score": "63 61"},
+          {"round": 2, "match_num": 4, "winner_name": "E. Kamper", "score": "60 60"},
+          {"round": 2, "match_num": 7, "winner_name": "L. Reed", "score": "76(2) 64"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1143,8 +1155,12 @@
           {"round": 1, "match_num": 0, "winner_name": "A. Prisacariu", "score": "62 75"},
           {"round": 1, "match_num": 1, "winner_name": "A. Reva", "score": "61 61"},
           {"round": 1, "match_num": 2, "winner_name": "A. Brune Olsen", "score": "62 16 62"},
+          {"round": 1, "match_num": 3, "winner_name": "M. Jovanovic", "score": "61 61"},
           {"round": 1, "match_num": 5, "winner_name": "Y. Trush", "score": "63 64"},
-          {"round": 1, "match_num": 7, "winner_name": "S. Luescher", "score": "57 76(8) 76(4)"}
+          {"round": 1, "match_num": 7, "winner_name": "S. Luescher", "score": "57 76(8) 76(4)"},
+          {"round": 1, "match_num": 9, "winner_name": "M. Pop", "score": "63 63"},
+          {"round": 1, "match_num": 12, "winner_name": "A. Corvi", "score": "60 60"},
+          {"round": 1, "match_num": 13, "winner_name": "A. Safta", "score": "61 46 75"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1212,7 +1228,9 @@
           {"round": 1, "match_num": 1, "winner_name": "S. Zhenikhova", "score": "76(2) 63"},
           {"round": 1, "match_num": 2, "winner_name": "S. Van Emst", "score": "63 61"},
           {"round": 1, "match_num": 3, "winner_name": "A. Kovackova", "score": "64 63"},
-          {"round": 1, "match_num": 9, "winner_name": "I. Ivanova", "score": "46 63 61"}
+          {"round": 1, "match_num": 9, "winner_name": "I. Ivanova", "score": "46 63 61"},
+          {"round": 1, "match_num": 10, "winner_name": "L. Ebeling Koning", "score": "63 61"},
+          {"round": 1, "match_num": 13, "winner_name": "J. Kovackova", "score": "75 61"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1244,6 +1262,7 @@
         "draw_size": 32,
         "players": [
           {"pos": 1, "seed": "1", "name": "BRENGLE, Madison", "country": "USA", "itf_id": "800249049", "wtn": "10.61"},
+          {"pos": 2, "entry": "Q", "name": "SCHAEFBAUER, McKenna", "country": "USA", "itf_id": "800587934", "wtn": "13.22"},
           {"pos": 3, "name": "XU, Mimi", "country": "GBR", "itf_id": "800571228", "wtn": "12.03"},
           {"pos": 4, "entry": "WC", "name": "SCHUMAN, Aspen", "country": "USA", "itf_id": "800651632", "wtn": "12.62"},
           {"pos": 5, "name": "COLLINS, Kylie", "country": "USA", "itf_id": "800479515", "wtn": "11.13"},
@@ -1252,21 +1271,33 @@
           {"pos": 8, "seed": "8", "name": "MA, Lea", "country": "USA", "itf_id": "800447395", "wtn": "11.02"},
           {"pos": 9, "seed": "4", "name": "BRACE, Cadence", "country": "CAN", "itf_id": "800526885", "wtn": "11.28"},
           {"pos": 10, "entry": "WC", "name": "CLARKE, Chukwumelije", "country": "USA", "itf_id": "800719735", "wtn": "11.41"},
+          {"pos": 11, "entry": "Q", "name": "SHARMA, Astra", "country": "AUS", "itf_id": "800158716", "wtn": "12.43"},
           {"pos": 12, "name": "SIEG, Madison", "country": "USA", "itf_id": "800479568", "wtn": "12.12"},
+          {"pos": 13, "entry": "Q", "name": "BERGQVIST LARSSON, Bella", "country": "SWE", "itf_id": "800535273", "wtn": "13.49"},
           {"pos": 14, "name": "HU, Victoria", "country": "USA", "itf_id": "800472995", "wtn": "12.71"},
+          {"pos": 15, "entry": "Q", "name": "DUNYON, Jane", "country": "USA", "itf_id": "800677207", "wtn": "16.19"},
           {"pos": 16, "seed": "6", "name": "CAPURRO TABORDA, Martina", "country": "ARG", "itf_id": "800389099", "wtn": "12.57"},
           {"pos": 17, "seed": "7", "name": "RUS, Arantxa", "country": "NED", "itf_id": "800260520", "wtn": "10.68"},
           {"pos": 18, "name": "KOIKE, Ena", "country": "JPN", "itf_id": "800596217", "wtn": "12.1"},
           {"pos": 19, "name": "RAPOLU, Malaika", "country": "USA", "itf_id": "800500748", "wtn": "10.24"},
           {"pos": 20, "name": "HEWITT, Dalayna", "country": "USA", "itf_id": "800473288", "wtn": "12.18"},
           {"pos": 21, "name": "NAITO, Yuki", "country": "JPN", "itf_id": "800474178", "wtn": "12.09"},
+          {"pos": 22, "entry": "Q", "name": "NGUYEN, Alexis", "country": "USA", "itf_id": "800691041", "wtn": "12.72"},
           {"pos": 23, "name": "YAMALAPALLI, Sahaja", "country": "IND", "itf_id": "800505933", "wtn": "13.59"},
           {"pos": 24, "seed": "3", "name": "OSUIGWE, Whitney", "country": "USA", "itf_id": "800468387", "wtn": "11.6"},
           {"pos": 25, "seed": "5", "name": "RINALDO PERSSON, Kajsa", "country": "SWE", "itf_id": "800334394", "wtn": "10.77"},
+          {"pos": 26, "entry": "Q", "name": "BURGIC, Ema", "country": "BIH", "itf_id": "800283102", "wtn": "13.23"},
+          {"pos": 27, "entry": "Q", "name": "BUCHWALD, Helena", "country": "GER", "itf_id": "800528180", "wtn": "14.16"},
           {"pos": 28, "entry": "WC", "name": "CARNICELLA, Kaitlyn", "country": "USA", "itf_id": "800585020", "wtn": "12.76"},
           {"pos": 29, "name": "PEREZ ALARCON, Lucciana", "country": "PER", "itf_id": "800533853", "wtn": "10.44"},
+          {"pos": 30, "entry": "Q", "name": "SLAMA, Mia", "country": "USA", "itf_id": "800592684", "wtn": "13.51"},
           {"pos": 31, "name": "STRAKHOVA, Valeriya", "country": "UKR", "itf_id": "800317488", "wtn": "12.26"},
           {"pos": 32, "seed": "2", "name": "CARLE, Maria Lourdes", "country": "ARG", "itf_id": "800446892", "wtn": "11.01"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 3, "winner_name": "L. Ma", "score": "64 62"},
+          {"round": 1, "match_num": 8, "winner_name": "A. Rus", "score": "61 63"},
+          {"round": 1, "match_num": 9, "winner_name": "M. Rapolu", "score": "60 62"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1275,7 +1306,8 @@
           "Semifinals",
           "Final"
         ],
-        "num_rounds": 5
+        "num_rounds": 5,
+        "wtn_gm": 12.1635
       }
     }
   },
@@ -1330,7 +1362,13 @@
           {"pos": 32, "seed": "2", "name": "CABRERA, Lizette", "country": "AUS", "itf_id": "800325686", "wtn": "12.28"}
         ],
         "matches": [
-          {"round": 1, "match_num": 5, "winner_name": "C. Moccia", "score": "62 62"}
+          {"round": 1, "match_num": 2, "winner_name": "B. Xu", "score": "63 64"},
+          {"round": 1, "match_num": 3, "winner_name": "T. Jialin", "score": "75 62"},
+          {"round": 1, "match_num": 5, "winner_name": "C. Moccia", "score": "62 62"},
+          {"round": 1, "match_num": 8, "winner_name": "C. Cervino Ruiz", "score": "75 62"},
+          {"round": 1, "match_num": 12, "winner_name": "Y. Kotliar", "score": "63 75"},
+          {"round": 1, "match_num": 13, "winner_name": "K. Lazarenko", "score": "36 62 54 RET"},
+          {"round": 1, "match_num": 14, "winner_name": "A. Arifullina", "score": "60 60"}
         ],
         "round_labels": [
           "Round of 32",
