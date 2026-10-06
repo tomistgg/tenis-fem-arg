@@ -187,7 +187,10 @@ def checkpoint_profile_wtn(cache_path, cache, player_id):
         record = cache[player_id]
         journal = _load_cache(journal_path)
         journal[player_id] = {
-            key: record[key] for key in ("name", "country", "wtn", "source", "profile_url", "retrieved_at")
+            key: record[key] for key in (
+                "name", "country", "wtn", "source", "profile_url", "retrieved_at",
+                "no_wtn_checked_at", "last_profile_url",
+            )
             if key in record
         }
         save_json_file(journal_path, journal)
@@ -203,10 +206,17 @@ def recover_profile_wtn_checkpoints(journal_path, cache_path):
         raise ValueError("WTN checkpoint must be an object")
     today = madrid_today()
     for pid, record in journal.items():
-        if (not isinstance(record, dict) or not str(pid).isdigit()
-                or not _select_recent_observation(record, today, source="profile")
-                or not str(record.get("profile_url", "")).startswith("https://www.itftennis.com/en/players/")
-                or f"/{pid}/" not in record["profile_url"]):
+        url = str(record.get("profile_url") or record.get("last_profile_url") or "") if isinstance(record, dict) else ""
+        valid_value = (
+            _select_recent_observation(record, today, source="profile")
+            if isinstance(record, dict) and not record.get("no_wtn_checked_at") else {}
+        )
+        valid_absence = (
+            _recent_no_wtn_check(record, today) and not _valid_wtn(record.get("wtn"))
+            if isinstance(record, dict) else False
+        )
+        if (not str(pid).isdigit() or not (valid_value or valid_absence)
+                or not url.startswith("https://www.itftennis.com/en/players/") or f"/{pid}/" not in url):
             raise ValueError(f"Invalid verified WTN checkpoint for {pid}")
     # A damaged production cache must never be replaced with an empty cache.
     path = Path(cache_path)
@@ -216,9 +226,15 @@ def recover_profile_wtn_checkpoints(journal_path, cache_path):
     saved = 0
     for pid, record in journal.items():
         previous = dict(cache.get(pid, {}))
-        _store_observation(cache, pid, record, {
-            key: record[key] for key in ("wtn", "source", "profile_url", "retrieved_at")
-        })
+        if record.get("no_wtn_checked_at"):
+            checked = date.fromisoformat(record["no_wtn_checked_at"])
+            latest = _observation_priority(previous)[0][:10]
+            if not (_valid_wtn(previous.get("wtn")) and latest >= checked.isoformat()):
+                _store_no_wtn_check(cache, pid, record, record["last_profile_url"], checked)
+        else:
+            _store_observation(cache, pid, record, {
+                key: record[key] for key in ("wtn", "source", "profile_url", "retrieved_at")
+            })
         saved += cache[pid] != previous
     if saved:
         save_json_file(cache_path, cache)
@@ -578,10 +594,13 @@ def refresh_entry_list_wtn(
                     raise
                 except ValueError:
                     continue
-            if not profile_url or not _valid_wtn(wtn):
-                if profile_url:
-                    _store_no_wtn_check(cache, player_id, player, profile_url, today)
+            if not profile_url:
                 raise ValueError("ITF profile did not contain a valid singles WTN")
+            if not _valid_wtn(wtn):
+                _store_no_wtn_check(cache, player_id, player, profile_url, today)
+                checkpoint_profile_wtn(cache_path, cache, player_id)
+                failures.pop(player_id, None)
+                continue
             _store_observation(
                 cache,
                 player_id,
@@ -681,7 +700,7 @@ def refresh_draw_wtn(
                 record = cache.get(pid, {})
                 needs_refresh = (not _draw_observation(record, key, today=today) if for_gm
                                  else not _select_recent_observation(record, today))
-                if needs_refresh:
+                if needs_refresh and not _recent_no_wtn_check(record, today):
                     targets.setdefault(pid, {**resolved, "type": "MAIN" if kind == "MDS" else "QUAL"})
                     locations.setdefault(pid, []).append({
                         "tournament": key, "tournament_name": meta.get("name", key), "draw": kind,
@@ -711,7 +730,7 @@ def refresh_draw_wtn(
                 if not pid:
                     unresolved.append({"name": name, "tournament": key, "draw": "entry",
                                        "reason": "ITF profile not identified: no unambiguous ITF player ID"})
-                if pid in failures and pid not in targets:
+                if pid in failures and pid not in targets and not _recent_no_wtn_check(cache.get(pid, {}), today):
                     unresolved.append({"name": _player_name(player), "itf_id": pid,
                                        "tournament": key, "draw": "entry",
                                        "profile_url": (
@@ -719,7 +738,9 @@ def refresh_draw_wtn(
                                        ),
                                        "reason": failures[pid]})
     for pid, player in targets.items():
-        if not _select_recent_observation(cache.get(pid, {}), today):
+        if not _select_recent_observation(cache.get(pid, {}), today) and not _recent_no_wtn_check(
+            cache.get(pid, {}), today
+        ):
             unresolved.extend(
                 {**location, "name": player.get("name", pid), "itf_id": pid,
                  "profile_url": _latest_profile_url(cache.get(pid, {})) or player_profile_url(player),

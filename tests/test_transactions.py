@@ -917,6 +917,41 @@ def test_rejected_transaction_preserves_only_verified_wtn_profiles(tmp_path, mon
     assert not staged.exists()
 
 
+@pytest.mark.parametrize("status", ["partial", "failed"])
+def test_rejected_transaction_preserves_verified_no_wtn_check(tmp_path, monkeypatch, status):
+    from datetime import date
+
+    import itf_wtn
+
+    production = tmp_path / "data"
+    production.mkdir()
+    cache_path = production / "itf_wtn_cache.json"
+    original = {"800000001": {"name": "Alice", "country": "USA", "wtn": 20,
+                              "source": "entry_list", "retrieved_at": "2026-09-01",
+                              "main_draw_observations": {"old": {"wtn": 20}}}}
+    cache_path.write_text(json.dumps(original))
+    staged = tmp_path / ".run_staging" / "test-run"
+    (staged / "data").mkdir(parents=True)
+    monkeypatch.setenv("WTARG_WTN_CHECKPOINT_PATH", str(staged / "wtn_profile_checkpoints.json"))
+    monkeypatch.setattr(itf_wtn, "madrid_today", lambda: date(2026, 10, 7))
+    cache = json.loads(json.dumps(original))
+    url = "https://www.itftennis.com/en/players/alice/800000001/usa/wt/s/overview/"
+    itf_wtn._store_no_wtn_check(cache, "800000001", original["800000001"], url, date(2026, 10, 7))
+    itf_wtn.checkpoint_profile_wtn(staged / "data" / "itf_wtn_cache.json", cache, "800000001")
+
+    state = tmp_path / ".run_state" / "run.json"
+    initialize_run_state(state, "test-run", staged)
+    monkeypatch.setattr(pipeline_transaction, "PRODUCTION_DATA_DIR", production)
+    monkeypatch.setattr(pipeline_transaction, "LATEST_STATE_PATH", state.with_name("latest.json"))
+    pipeline_transaction._finish(state, status, staged, promotion="blocked")
+
+    saved = json.loads(cache_path.read_text())["800000001"]
+    assert saved["no_wtn_checked_at"] == "2026-10-07"
+    assert saved["last_profile_url"] == url
+    assert "wtn" not in saved
+    assert saved["main_draw_observations"] == original["800000001"]["main_draw_observations"]
+
+
 def test_invalid_checkpoint_never_overwrites_production_and_newer_observation_wins(tmp_path, monkeypatch):
     from datetime import date
 
