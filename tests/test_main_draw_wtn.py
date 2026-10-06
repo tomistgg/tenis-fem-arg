@@ -77,7 +77,7 @@ def test_missing_player_prevents_partial_gm_and_retries_then_clears_email_errors
         return 'var props = {"wtnSingles":%s};' % (4 if "800000001" in url else "null")
 
     record = refresh(tmp_path, [("w-itf-usa-2026-044", draw)], fetch)["w-itf-usa-2026-044"]
-    assert record["wtn_gm"] is None
+    assert record["wtn_gm"] == round((4 * 30) ** (1 / 2), 4)
     assert record["wtnPlayerCount"] == 1
     report = compute_report(str(before), str(tmp_path))
     email = render_email_markdown(report)
@@ -85,8 +85,16 @@ def test_missing_player_prevents_partial_gm_and_retries_then_clears_email_errors
     assert "Bea B" in email and "no valid singles WTN" in email
     assert "itftennis.com/en/players/" in email
     assert len(report["main_draw_players_missing_wtn"][0]["players"]) == 1
+    profiles = json.loads((tmp_path / "profiles.json").read_text())
+    assert profiles["800000002"]["no_wtn_checked_at"] == "2026-10-04"
+    assert "wtn" not in profiles["800000002"]
 
-    record = refresh(tmp_path, [("w-itf-usa-2026-044", draw)], lambda _: 'var props = {"wtnSingles":9};')[
+    refresh(tmp_path, [("w-itf-usa-2026-044", draw)],
+            lambda _: pytest.fail("No-WTN profile must wait five days"), today=date(2026, 10, 9))
+
+    record = refresh(tmp_path, [("w-itf-usa-2026-044", draw)],
+                     lambda url: 'var props = {"wtnSingles":%s};' % (4 if "800000001" in url else 9),
+                     today=date(2026, 10, 10))[
         "w-itf-usa-2026-044"
     ]
     assert record["wtn_gm"] == 6
@@ -109,7 +117,7 @@ def test_blocked_profiles_never_use_old_values_and_notify_for_unattempted_player
         raise ITFProfileBlocked("HTTP 403")
 
     archive = refresh(tmp_path, [("w-itf-usa-2026-044", draw)], blocked)
-    assert archive["w-itf-usa-2026-044"]["wtn_gm"] is None
+    assert archive["w-itf-usa-2026-044"]["wtn_gm"] == 30
     errors = json.loads((tmp_path / "main_draw_wtn_errors.json").read_text())
     assert len(errors[0]["players"]) == 2
     assert all("blocked" in p["reason"] for p in errors[0]["players"])
@@ -195,7 +203,7 @@ def test_pending_gm_uses_latest_fresh_profile_and_never_expired_draw_observation
     record = refresh(tmp_path, [("one", draw)], lambda _: pytest.fail("No second lookup pass"),
                      fetch_profiles=False, today=date(2026, 10, 13))["one"]
     assert record["status"] == "pending" and record["wtnPlayerCount"] == 0
-    assert record["wtn_gm"] is None
+    assert record["wtn_gm"] == 30
 
 
 def test_qualifiers_and_replaced_players_recompute_roster_without_treating_byes_as_players(tmp_path):
@@ -467,7 +475,8 @@ def test_pending_itf_tournament_is_retried_after_leaving_calendar(monkeypatch, t
     )
     assert calls == [123]
     assert collected[0][0] == key
-    record = refresh(tmp_path, collected, lambda _: 'var props = {"wtnSingles":9};')[key]
+    record = refresh(tmp_path, collected, lambda _: 'var props = {"wtnSingles":9};',
+                     today=date(2026, 10, 10))[key]
     assert record["status"] == "complete" and record["wtn_gm"] == 9
 
 

@@ -19,8 +19,10 @@ from itf_wtn import (
     _load_cache,
     _normalize_cache,
     _profile_fetcher,
+    _recent_no_wtn_check,
     _resolver_with_entry_cache_fallback,
     _select_recent_observation,
+    _store_no_wtn_check,
     _store_observation,
     _wta_player_with_itf_id,
     checkpoint_profile_wtn,
@@ -278,10 +280,14 @@ def refresh_main_draw_wtn(
                 player["wtn"] = str(profiles[player_id].get("wtn", wtn))
                 continue
             if player_id not in fetched_players:
-                wtn, url, reason = None, _latest_profile_url(profiles.get(player_id, {})), blocked_reason
-                if not fetch_profiles:
+                record = profiles.get(player_id, {})
+                recent_no_wtn = _recent_no_wtn_check(record, today)
+                wtn, url, reason = None, _latest_profile_url(record), blocked_reason
+                if recent_no_wtn:
+                    reason = "ITF profile has no valid singles WTN"
+                elif not fetch_profiles:
                     reason = (profile_failures or {}).get(player_id, "Fresh singles profile WTN unavailable")
-                if fetch_profiles and not blocked_reason:
+                if fetch_profiles and not blocked_reason and not recent_no_wtn:
                     if attempts and profile_batch_size > 0 and attempts % profile_batch_size == 0:
                         save_json_file(profile_cache_path, profiles)
                         if profile_batch_cooldown_seconds > 0:
@@ -290,6 +296,7 @@ def refresh_main_draw_wtn(
                     if source_fetcher is None:
                         source_fetcher = _profile_fetcher(driver, 0.5, REQUEST_INTERVAL_SECONDS)
                     try:
+                        no_wtn_url = ""
                         for candidate in player_profile_urls(
                             resolved, _latest_profile_url(profiles.get(player_id, {}))
                         ):
@@ -298,6 +305,7 @@ def refresh_main_draw_wtn(
                                 wtn = _positive_wtn(parse_wtn_singles(source_fetcher(candidate)))
                                 if wtn is not None:
                                     break
+                                no_wtn_url = candidate
                             except requests.HTTPError as exc:
                                 if exc.response is None or exc.response.status_code != 404:
                                     raise
@@ -305,6 +313,8 @@ def refresh_main_draw_wtn(
                                 continue
                         if wtn is None:
                             reason = "ITF profile has no valid singles WTN"
+                            if no_wtn_url:
+                                _store_no_wtn_check(profiles, player_id, resolved, no_wtn_url, today)
                         else:
                             _store_observation(
                                 profiles,
@@ -340,6 +350,9 @@ def refresh_main_draw_wtn(
                 player["wtn"] = str(wtn)
 
         complete = not missing and not unfilled
+        # Keep missing profiles pending for retry; 30 is only a GM fallback.
+        gm_values = values + [30.0] * len(missing)
+        wtn_gm = round(math.exp(sum(math.log(v) for v in gm_values) / len(gm_values)), 4) if not unfilled else None
         archive[key] = {
             "name": tournament.get("name", key),
             "level": tournament.get("level", ""),
@@ -348,7 +361,7 @@ def refresh_main_draw_wtn(
             "tournamentId": tournament.get("tournamentId"),
             "is_multiweek": tournament.get("is_multiweek", False),
             "draw": "MDS",
-            "wtn_gm": round(math.exp(sum(math.log(v) for v in values) / len(values)), 4) if complete else None,
+            "wtn_gm": wtn_gm,
             "playerCount": len(players),
             "wtnPlayerCount": len(values),
             "unfilledPositions": unfilled,

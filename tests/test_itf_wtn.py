@@ -224,6 +224,39 @@ def test_blocked_profile_is_not_cached_as_a_completed_check(tmp_path):
     assert entries["https://wta.example/one"][0]["wtn"] == "-"
 
 
+def test_profile_without_singles_wtn_waits_five_days_before_retry(tmp_path):
+    cache_path = tmp_path / "itf_wtn_cache.json"
+    player = {"player_id": "800000001", "name": "New Player", "country": "ARG"}
+    entries = {"https://wta.example/one": [player]}
+    fetched = []
+
+    refresh_entry_list_wtn(None, entries, cache_path, today=date(2026, 10, 4),
+                           fetch_source=lambda url: fetched.append(url) or 'var props = {"wtnSingles":null};',
+                           resolve_itf_player=lambda row: row)
+    assert len(fetched) == 1
+    assert player["wtn"] == "-"
+    cached = json.loads(cache_path.read_text())
+    assert cached["800000001"]["no_wtn_checked_at"] == "2026-10-04"
+    cached["800000001"]["weeks"] = {"2026-09-21": {"wtn": 15, "source": "profile"}}
+    cache_path.write_text(json.dumps(cached))
+
+    refresh_entry_list_wtn(None, entries, cache_path, today=date(2026, 10, 9),
+                           fetch_source=lambda _: pytest.fail("No-WTN profile should be cached"),
+                           resolve_itf_player=lambda row: row)
+    assert player["wtn"] == "-"
+    draws = {"w-itf-active": {"endDate": "2026-10-20", "draws": {"QS": {"players": [dict(player)]}}}}
+    itf_wtn.refresh_draw_wtn(None, draws, cache_path, today=date(2026, 10, 9),
+                             fetch_source=lambda _: pytest.fail("Qualifying draw must reuse no-WTN check"))
+    assert draws["w-itf-active"]["draws"]["QS"]["players"][0]["wtn"] == "-"
+
+    refresh_entry_list_wtn(None, entries, cache_path, today=date(2026, 10, 10),
+                           fetch_source=lambda url: fetched.append(url) or 'var props = {"wtnSingles":12};',
+                           resolve_itf_player=lambda row: row)
+    assert len(fetched) == 2
+    assert player["wtn"] == "12.0"
+    assert "no_wtn_checked_at" not in json.loads(cache_path.read_text())["800000001"]
+
+
 def test_junior_profile_fallback_and_challenge_pause(tmp_path):
     cache_path = tmp_path / "itf_wtn_cache.json"
     entries = {

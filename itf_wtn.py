@@ -106,6 +106,8 @@ def _normalize_cache(cache):
             if not observation.get("source") and observation.get("profile_url"):
                 observation["source"] = "profile"
             candidates.append(observation)
+        if record.get("no_wtn_checked_at"):
+            candidates = []
         if candidates:
             latest = max(candidates, key=_observation_priority)
             for field in _OBSERVATION_FIELDS:
@@ -144,6 +146,7 @@ def _store_observation(cache, player_id, player, observation):
     for field in _OBSERVATION_FIELDS:
         record.pop(field, None)
     record.update(observation)
+    record.pop("no_wtn_checked_at", None)
     if observation.get("source") == "profile" and observation.get("profile_url"):
         record["last_profile_url"] = observation["profile_url"]
 
@@ -158,6 +161,23 @@ def _select_recent_observation(record, today, max_age_days=5, *, source=None):
     except (TypeError, ValueError):
         return {}
     return record if cutoff <= observed_date <= today else {}
+
+
+def _recent_no_wtn_check(record, today):
+    try:
+        checked = date.fromisoformat(record.get("no_wtn_checked_at", ""))
+    except (TypeError, ValueError):
+        return False
+    return today - timedelta(days=5) <= checked <= today
+
+
+def _store_no_wtn_check(cache, player_id, player, profile_url, today):
+    record = cache.setdefault(player_id, {})
+    record["name"] = player.get("name") or record.get("name", "")
+    record["country"] = player.get("country") or record.get("country", "")
+    for field in _OBSERVATION_FIELDS:
+        record.pop(field, None)
+    record.update(no_wtn_checked_at=today.isoformat(), last_profile_url=profile_url)
 
 
 def checkpoint_profile_wtn(cache_path, cache, player_id):
@@ -315,6 +335,9 @@ def propagate_wtn(
         resolved = None if pid else _resolve_player(player, key, resolver)
         pid = str(resolved["player_id"]) if resolved else pid
         record = cache.get(pid, {})
+        if record.get("no_wtn_checked_at"):
+            player["wtn"] = "-"
+            return
         if require_fresh and not _select_recent_observation(record, today):
             player["wtn"] = "-"
             return
@@ -513,6 +536,7 @@ def refresh_entry_list_wtn(
         (player_id, player)
         for player_id, player in players_by_id.items()
         if not _select_recent_observation(cache.get(player_id, {}), today)
+        and not _recent_no_wtn_check(cache.get(player_id, {}), today)
     ] if fetch_profiles else []
     targets.sort(key=lambda item: (
         item[0] not in draw_player_ids,
@@ -555,6 +579,8 @@ def refresh_entry_list_wtn(
                 except ValueError:
                     continue
             if not profile_url or not _valid_wtn(wtn):
+                if profile_url:
+                    _store_no_wtn_check(cache, player_id, player, profile_url, today)
                 raise ValueError("ITF profile did not contain a valid singles WTN")
             _store_observation(
                 cache,

@@ -596,7 +596,8 @@ def build_tstrength_data(from_year=None, full_backfill=False):
                 gm = round(_geometric_mean(player_ranks), 1)
                 wtn_values = _entry_wtn_values(entry_wtn_index, tid, draw, players)
                 wtn_hm = round(_harmonic_mean(wtn_values), 1) if wtn_values else 0
-                wtn_gm = round(_geometric_mean(wtn_values), 1) if wtn_values else 0
+                wtn_gm_values = wtn_values + [30.0] * (len(players) - len(wtn_values))
+                wtn_gm = round(_geometric_mean(wtn_gm_values), 1) if wtn_gm_values else 0
 
                 entry = {
                     "id": tid,

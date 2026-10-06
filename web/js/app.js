@@ -1894,7 +1894,8 @@
             }
 
             function entryDrawStrengthGM(players) {
-                const wtns = (players || []).map(p => entryWtnToNumber(p.wtn)).filter(n => Number.isFinite(n) && n > 0);
+                const wtns = (players || []).filter(p => p && !_itfMainPlaceholderNames.has(String(p.name || '')))
+                    .map(p => entryWtnToNumber(p.wtn) ?? 30);
                 if (!wtns.length) return null;
                 const logSum = wtns.reduce((acc, v) => acc + Math.log(v), 0);
                 return Math.exp(logSum / wtns.length);
