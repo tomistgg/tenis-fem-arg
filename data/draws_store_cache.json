@@ -1070,31 +1070,41 @@
         "draw_size": 32,
         "players": [
           {"pos": 1, "seed": "1", "name": "SCOTT, Katrina", "country": "USA", "itf_id": "800479564", "wtn": "11.3"},
+          {"pos": 2, "entry": "Q", "name": "REED, Lexington", "country": "USA", "itf_id": "800594686", "wtn": "12.63"},
           {"pos": 3, "name": "BARTASHEVICH, Yara", "country": "FRA", "itf_id": "800477877", "wtn": "13.17"},
           {"pos": 4, "name": "MAMEDOVA, Edda", "country": "RUS", "itf_id": "800531984", "wtn": "12.95"},
+          {"pos": 5, "entry": "Q", "name": "MATTIOLI, Francesca", "country": "ARG", "itf_id": "800583540", "wtn": "14.18"},
+          {"pos": 6, "entry": "Q", "name": "SOKE, Duru", "country": "TUR", "itf_id": "800537711", "wtn": "13.01"},
           {"pos": 7, "name": "CHAN, Jo-Yee", "country": "USA", "itf_id": "800583964", "wtn": "13.54"},
           {"pos": 8, "seed": "5", "name": "BOSIO, Victoria", "country": "ARG", "itf_id": "800158403", "wtn": "12.37"},
           {"pos": 9, "seed": "4", "name": "KULIKOVA, Anastasia", "country": "FIN", "itf_id": "800367920", "wtn": "11.41"},
           {"pos": 10, "name": "ABBAGNATO, Anastasia", "country": "ITA", "itf_id": "800482433", "wtn": "14.99"},
+          {"pos": 11, "entry": "Q", "name": "KAMPER, Emma", "country": "DEN", "itf_id": "800569592", "wtn": "12.18"},
           {"pos": 12, "name": "LUTKEMEYER, Anne Christine", "country": "USA", "itf_id": "800540750", "wtn": "13.04"},
           {"pos": 13, "entry": "WC", "name": "FRODIN, Thea", "country": "USA", "itf_id": "800702416", "wtn": "12.02"},
+          {"pos": 14, "entry": "Q", "name": "DMITRICHENKO, Yekaterina", "country": "KAZ", "itf_id": "800417780", "wtn": "12.46"},
           {"pos": 15, "entry": "WC", "name": "KHA, Natalie", "country": "USA", "itf_id": "800736552", "wtn": "13.61"},
           {"pos": 16, "seed": "7", "name": "CHERUBINI, Diletta", "country": "ITA", "itf_id": "800486786", "wtn": "13.24"},
           {"pos": 17, "seed": "8", "name": "MAKLAKOVA, Ekaterina", "country": "RUS", "itf_id": "800503456", "wtn": "13.13"},
           {"pos": 18, "name": "RODRIGUEZ, Victoria", "country": "MEX", "itf_id": "800303120", "wtn": "12.98"},
           {"pos": 19, "entry": "WC", "name": "HAZELITT, Jordyn", "country": "USA", "itf_id": "800646432", "wtn": "12.71"},
           {"pos": 20, "name": "PENICKOVA, Annika", "country": "USA", "itf_id": "800719372", "wtn": "12.06"},
+          {"pos": 21, "entry": "Q", "name": "PRESTON, Janae", "country": "USA", "itf_id": "800758791", "wtn": "10.99"},
           {"pos": 22, "name": "GRUBOR, Ana", "country": "CAN", "itf_id": "800508701", "wtn": "13.81"},
           {"pos": 23, "name": "HEJTMANEK, Amelie Justine", "country": "CZE", "itf_id": "800571573", "wtn": "13.71"},
           {"pos": 24, "seed": "3", "name": "CHANG, Hanna", "country": "USA", "itf_id": "800394670", "wtn": "11.3"},
           {"pos": 25, "seed": "6", "name": "REASCO GONZALEZ, Mell Elizabeth", "country": "ECU", "itf_id": "800486399", "wtn": "12.76"},
+          {"pos": 26, "entry": "Q", "name": "SHOLOKHOVA, Maria", "country": "RUS", "itf_id": "800464428", "wtn": "12.39"},
           {"pos": 27, "name": "PENICKOVA, Kristina", "country": "USA", "itf_id": "800719373", "wtn": "11.88"},
           {"pos": 28, "name": "SHCHERBININA, Alina", "country": "RUS", "itf_id": "800437387", "wtn": "11.38"},
           {"pos": 29, "entry": "WC", "name": "FAKIH, Kate", "country": "USA", "itf_id": "800659481", "wtn": "13.67"},
           {"pos": 30, "name": "KORPANEC DAVIES, Allegra", "country": "GBR", "itf_id": "800567311", "wtn": "13.44"},
+          {"pos": 31, "entry": "Q", "name": "GHIRARDATO, Emma Ottavia", "country": "ITA", "itf_id": "800516290", "wtn": "14.08"},
           {"pos": 32, "seed": "2", "name": "PACE, Francesca", "country": "ITA", "itf_id": "800592736", "wtn": "10.5"}
         ],
         "matches": [
+          {"round": 1, "match_num": 3, "winner_name": "V. Bosio", "score": "75 76(3)"},
+          {"round": 1, "match_num": 8, "winner_name": "V. Rodriguez", "score": "16 61 64"},
           {"round": 1, "match_num": 9, "winner_name": "A. Penickova", "score": "60 62"}
         ],
         "round_labels": [
@@ -1104,7 +1114,8 @@
           "Semifinals",
           "Final"
         ],
-        "num_rounds": 5
+        "num_rounds": 5,
+        "wtn_gm": 12.6744
       }
     }
   },
