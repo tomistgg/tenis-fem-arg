@@ -131,8 +131,10 @@ def _valid_wtn(value):
 
 
 def _observation_priority(observation):
-    return (str(observation.get("observed_on") or observation.get("retrieved_at")
-                or observation.get("checked_at") or ""), observation.get("source") == "profile")
+    source_date = observation.get("observed_on") or (
+        "" if observation.get("source") == "entry_list" else observation.get("retrieved_at")
+    )
+    return (str(source_date or observation.get("checked_at") or ""), observation.get("source") == "profile")
 
 
 def _store_observation(cache, player_id, player, observation):
@@ -152,15 +154,17 @@ def _store_observation(cache, player_id, player, observation):
 
 
 def _select_recent_observation(record, today, max_age_days=5, *, source=None):
-    """Return the newest WTN observation saved in the rolling freshness window."""
+    """Reuse a WTN for five days after it was retrieved, regardless of source."""
     cutoff = today - timedelta(days=max_age_days)
     if not _valid_wtn(record.get("wtn")) or (source and record.get("source") != source):
         return {}
     try:
-        observed_date = date.fromisoformat(_observation_priority(record)[0][:10])
+        retrieved_date = date.fromisoformat(str(
+            record.get("retrieved_at") or record.get("checked_at") or record.get("observed_on") or ""
+        )[:10])
     except (TypeError, ValueError):
         return {}
-    return record if cutoff <= observed_date <= today else {}
+    return record if cutoff <= retrieved_date <= today else {}
 
 
 def _recent_no_wtn_check(record, today):

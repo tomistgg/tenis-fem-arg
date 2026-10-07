@@ -360,7 +360,7 @@ def test_first_itf_entry_wtn_uses_publication_date_and_profile_updates_every_lis
         None,
         entries,
         cache_path,
-        today=date(2026, 9, 21),
+        today=date(2026, 9, 24),
         fetch_source=fetch,
         resolve_itf_player=resolve,
         tournament_weeks={
@@ -620,6 +620,15 @@ def test_alt_uses_entry_list_wtn_until_singles_draw(tmp_path):
         today=date(2026, 10, 4), tournament_weeks={key: "2026-10-05"},
         fetch_source=lambda url: fetched.append(url) or 'var props = {"wtnSingles":19};',
     )
+    assert fetched == []
+    assert cache["8001"]["source"] == "entry_list"
+    assert draws[key]["draws"]["QS"]["players"][0]["wtn"] == "22"
+
+    cache = itf_wtn.refresh_draw_wtn(
+        None, draws, path, entry_cache=entries, include_entry_players=True,
+        today=date(2026, 10, 10), tournament_weeks={key: "2026-10-05"},
+        fetch_source=lambda url: fetched.append(url) or 'var props = {"wtnSingles":19};',
+    )
     assert len(fetched) == 1
     assert cache["8001"]["source"] == "profile"
     assert draws[key]["draws"]["QS"]["players"][0]["wtn"] == "19.0"
@@ -643,7 +652,7 @@ def test_entry_placeholders_and_alts_do_not_report_missing_profiles(tmp_path, mo
     assert issues == []
 
 
-def test_cached_itf_rows_cannot_renew_freshness_or_prevent_profile_refresh(tmp_path):
+def test_cached_itf_rows_use_retrieval_date_without_renewing_freshness(tmp_path):
     cache_path = tmp_path / "cache.json"
     cached_record = {"entry_lists_checked": {"https://wta.example/curitiba": "2026-09-23"}, "weeks": {
         "2026-09-28": {"wtn": "9.86", "source": "entry_list", "observed_on": "2026-09-21",
@@ -661,6 +670,14 @@ def test_cached_itf_rows_cannot_renew_freshness_or_prevent_profile_refresh(tmp_p
     fetched = []
     refresh_entry_list_wtn(
         None, entries, cache_path, today=date(2026, 10, 3),
+        resolve_itf_player=lambda row: row,
+        fetch_source=lambda url: fetched.append(url) or '<script>var props = {"wtnSingles":10.42};</script>',
+    )
+    assert fetched == []
+    assert entries["https://wta.example/curitiba"][0]["wtn"] == "9.86"
+
+    refresh_entry_list_wtn(
+        None, entries, cache_path, today=date(2026, 10, 9),
         resolve_itf_player=lambda row: row,
         fetch_source=lambda url: fetched.append(url) or '<script>var props = {"wtnSingles":10.42};</script>',
     )
@@ -737,18 +754,18 @@ def test_active_singles_refresh_stale_players_without_entry_lists_and_deduplicat
               "main_draw_observations": {"w-itf-active": {"wtn": 20, "source": "profile"}}}
     path.write_text(json.dumps({"8001": record}), encoding="utf-8")
     player = {"player_id": "8001", "name": "Alice", "country": "ESP", "wtn": "20"}
-    draws = {"w-itf-active": {"endDate": "2026-10-04", "draws": {
+    draws = {"w-itf-active": {"endDate": "2026-10-11", "draws": {
         "MDS": {"players": [dict(player)], "wtn_gm": 20},
         "QS": {"players": [dict(player), {"name": "Qualifier"}, {"name": "Bye"}]},
     }}}
     fetched = []
     entries = {"w-itf-old": [dict(player)]}
     cache = itf_wtn.refresh_draw_wtn(
-        None, draws, path, entry_cache=entries, today=date(2026, 10, 4), profile_batch_size=0,
+        None, draws, path, entry_cache=entries, today=date(2026, 10, 10), profile_batch_size=0,
         fetch_source=lambda url: fetched.append(url) or '<script>var props = {"wtnSingles":9.3};</script>',
     )
     assert len(fetched) == 1
-    assert cache["8001"]["retrieved_at"] == "2026-10-04"
+    assert cache["8001"]["retrieved_at"] == "2026-10-10"
     assert cache["8001"]["main_draw_observations"] == record["main_draw_observations"]
     assert draws["w-itf-active"]["draws"]["MDS"]["players"][0]["wtn"] == "9.3"
     assert draws["w-itf-active"]["draws"]["QS"]["players"][0]["wtn"] == "9.3"

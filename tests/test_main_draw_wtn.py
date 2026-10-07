@@ -343,6 +343,13 @@ def test_entry_list_wtn_is_reused_for_five_days_then_refreshed_for_new_draw(tmp_
         lambda url: calls.append(url) or 'var props = {"wtnSingles":9};',
         today=date(2026, 10, 10),
     )["two"]
+    assert calls == [] and record["wtn_gm"] == 4
+
+    record = refresh(
+        tmp_path, [("three", draw)],
+        lambda url: calls.append(url) or 'var props = {"wtnSingles":9};',
+        today=date(2026, 10, 15),
+    )["three"]
     assert len(calls) == 1 and record["wtn_gm"] == 9
 
 
