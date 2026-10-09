@@ -22439,15 +22439,15 @@
                             ]
                           },
                           {
-                            "matchId": 1183726280, "playStatusCode": "IP",
+                            "matchId": 1183726280, "playStatusCode": "PC", "resultStatusDesc": "Retired", "resultStatusCode": "RET",
                             "teams": [
                                 {
                                   "player": {"playerId":800585020,"nationality":"USA","givenName":"Kaitlyn","familyName":"Carnicella"},
-                                  "scores": [], "isWinner": false, "entryStatus": "WC"
+                                  "scores": [6,3], "isWinner": true, "entryStatus": "WC"
                                 },
                                 {
                                   "player": {"playerId":800533853,"nationality":"PER","givenName":"Lucciana","familyName":"Perez Alarcon"},
-                                  "scores": [], "isWinner": false, "entryStatus": "DA"
+                                  "scores": [3,0], "isWinner": false, "entryStatus": "DA"
                                 }
                             ]
                           }
@@ -22476,7 +22476,8 @@
                                   "scores": [], "isWinner": false, "seeding": 7, "entryStatus": "DA"
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "player": {"playerId":800585020,"nationality":"USA","givenName":"Kaitlyn","familyName":"Carnicella"},
+                                  "scores": [], "isWinner": false, "entryStatus": "WC"
                                 }
                             ]
                           }
