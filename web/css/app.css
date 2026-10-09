@@ -2700,11 +2700,11 @@
 
             [data-theme="dark"] .filter-panel { background: #1e293b; border-color: #334155; }
             [data-theme="dark"] .filter-panel h3 { background: var(--c-chrome-bg); }
-            [data-theme="dark"] .filter-options { background: transparent; border: none; padding: 0; }
+            [data-theme="dark"] .filter-options { background: transparent; border-color: #334155; }
             [data-theme="dark"] .filter-option { color: #e2e8f0; }
             [data-theme="dark"] .filter-option:hover { background: #273548; }
             [data-theme="dark"] .filter-option.selected { background: #1e3a5c; color: #93c5fd; }
-            [data-theme="dark"] .filter-group { border: none; background: transparent; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+            [data-theme="dark"] .filter-group { border-color: #334155; background: transparent; }
             [data-theme="dark"] .filter-group-title { color: #94a3b8; }
             [data-theme="dark"] .filter-search { background: #1e293b; border-color: #475569; color: #e2e8f0; }
             [data-theme="dark"] .rank-filter-input,
