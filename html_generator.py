@@ -512,6 +512,7 @@ IOC_TO_ISO2 = {
     "MAS": "my",
     "MDA": "md",
     "MEX": "mx",
+    "MGL": "mn",
     "MKD": "mk",
     "MLI": "ml",
     "MLT": "mt",
