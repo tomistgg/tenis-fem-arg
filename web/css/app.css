@@ -310,6 +310,7 @@
             .draw-player .name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             .draw-player .draw-player-wtn { flex-shrink: 0; margin-left: 4px; color: #64748b; font-size: 8px; font-variant-numeric: tabular-nums; }
             .draw-player.team { min-height: 34px; }
+            #view-draws .draw-bracket[data-draw-type="MDD"] .draw-player { min-height: 34px; }
             .draw-player .team-names { display: flex; flex-direction: column; row-gap: 2px; min-width: 0; }
             .draw-player .team-member { display: flex; align-items: center; gap: 5px; min-width: 0; }
             #view-draws .draw-player .team-member .country { flex: 0 0 22px; width: 22px; min-width: 22px; }
