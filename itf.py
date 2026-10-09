@@ -213,19 +213,23 @@ def parse_itf_entry_list(itf_entries):
             if itf_rank is None or str(itf_rank).strip() == "":
                 itf_rank = p_node.get("itfBTRank")
             wtn = p_node.get("worldRating", "")
+            wta_rank = str(wta).strip() if wta is not None else ""
+            itf_rank_text = str(itf_rank).strip() if itf_rank is not None else ""
+            entry_wtn = str(wtn).strip() if wtn is not None else ""
             profile_link = str(p_node.get("profileLink") or "").strip()
             if profile_link.startswith("/"):
                 profile_link = f"{ITF_BASE_URL}{profile_link}"
 
             if section_type == "MAIN" and class_code not in direct_acceptance_codes:
-                wta_rank = str(wta).strip() if wta is not None else ""
                 erank_str = f"{class_code} ({wta_rank or '-'})"
             else:
                 erank_str = "-"
-                if wta and str(wta).strip() != "":
-                    erank_str = f"{wta}"
-                elif itf_rank is not None and str(itf_rank).strip() != "":
-                    erank_str = f"ITF {itf_rank}"
+                if wta_rank:
+                    erank_str = wta_rank
+                elif itf_rank_text:
+                    erank_str = f"ITF {itf_rank_text}"
+                elif entry_wtn:
+                    erank_str = f"WTN {entry_wtn}"
 
             country = str(p_node.get("nationalityCode") or "").strip().upper()
             if not country or country == "-":
@@ -239,7 +243,7 @@ def parse_itf_entry_list(itf_entries):
                     "name": display_name,
                     "country": country or "-",
                     "rank": erank_str,
-                    "wtn": str(wtn).strip() if wtn is not None and str(wtn).strip() else "-",
+                    "wtn": entry_wtn or "-",
                     "priority": priority,
                     "type": section_type,
                     "pos_num": pos_num,

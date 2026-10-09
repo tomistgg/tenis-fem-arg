@@ -1,6 +1,8 @@
 import ast
 import json
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -111,6 +113,33 @@ def test_history_frontend_uses_canonical_qualifying_round_labels(offline_generat
     assert "if (qualifyingRound) return 'QR' + qualifyingRound[1];" in app_js
     assert "'1st Round':'QR1'" in app_js
     assert "'QR1': 1, 'QR2': 2, 'QR3': 3, 'QR4': 4" in app_js
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="Node.js unavailable")
+def test_entry_rank_uses_acceptance_list_rank_even_with_profile_wtn():
+    source = (PROJECT_ROOT / "web/js/app.js").read_text(encoding="utf-8")
+    script = """
+        const source = require('fs').readFileSync(0, 'utf8');
+        const start = source.indexOf('function entryWtnToNumber(wtn)');
+        const end = source.indexOf('function entryDrawStrengthGM(players)', start);
+        if (start < 0 || end < 0) throw new Error('Entry display functions missing');
+        const {entryRankDisplay, entryWtnDisplay} = new Function(
+            source.slice(start, end) + '; return {entryRankDisplay, entryWtnDisplay};'
+        )();
+        for (const [player, rank, wtn] of [
+            [{rank: '-', wtn: '13.44'}, '-', '13.44'],
+            [{rank: 'ITF 412', wtn: '11.2'}, 'ITF 412', '11.2'],
+            [{rank: 'WTN 11.33', wtn: '8.7'}, 'WTN 11.33', '8.7'],
+            [{rank: 'JA (-)', wtn: '18.2'}, 'JA (-)', '18.2'],
+            [{wtn: '9.1'}, '-', '9.1'],
+        ]) {
+            if (entryRankDisplay(player) !== rank || entryWtnDisplay(player) !== wtn) {
+                throw new Error(`Unexpected entry display for ${JSON.stringify(player)}`);
+            }
+        }
+    """
+    result = subprocess.run([shutil.which("node"), "-e", script], input=source, text=True, capture_output=True)
+    assert result.returncode == 0, result.stderr
 
 
 def test_deploy_builder_copies_static_assets_then_renders_site(tmp_path, monkeypatch):

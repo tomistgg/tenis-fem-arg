@@ -1885,8 +1885,7 @@
 
             function entryRankDisplay(player) {
                 const rank = String(player?.rank ?? '').trim();
-                if (rank && rank !== '-') return rank;
-                return entryWtnToNumber(player?.wtn) ? `WTN ${player.wtn}` : '-';
+                return rank && rank !== '-' ? rank : '-';
             }
 
             function entryWtnDisplay(player) {

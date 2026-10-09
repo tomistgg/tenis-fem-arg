@@ -1360,7 +1360,7 @@
                 transition: transform 0.15s ease;
             }
             .bjkc-series-block[open] .bjkc-header-arrow::after { transform: translate(-50%, -30%) rotate(225deg); }
-            .bjkc-series-table { table-layout: auto !important; width: 100% !important; min-width: max-content; }
+            .bjkc-series-table { table-layout: auto !important; width: 100% !important; min-width: max-content; border-radius: 0; }
             .bjkc-series-table th, .bjkc-series-table td { white-space: nowrap; }
             .bjkc-series-table th:nth-child(2), .bjkc-series-table td:nth-child(2) { width: 88px; text-align: center; }
             .doubles-br { display: none; }
@@ -1418,12 +1418,12 @@
                 padding-left: 4px;
                 padding-right: 4px;
             }
+            #national-table td.score-win { background: #166534; }
+            #national-table td.score-loss { background: #b91c1c; }
             #history-table td.score-win,
-            #national-table td.score-win,
-            #view-fedbcup .bjkc-series-table td.score-win { background: #166534; }
+            #view-fedbcup .bjkc-series-table td.score-win { background: #bbf7d0; color: #166534; }
             #history-table td.score-loss,
-            #national-table td.score-loss,
-            #view-fedbcup .bjkc-series-table td.score-loss { background: #b91c1c; }
+            #view-fedbcup .bjkc-series-table td.score-loss { background: #fecaca; color: #991b1b; }
             #history-table .score-badge,
             #national-table .score-badge,
             .bjkc-series-table .score-badge {
@@ -1435,6 +1435,8 @@
                 background: transparent;
                 box-sizing: border-box;
             }
+            #history-table .score-badge,
+            #view-fedbcup .bjkc-series-table .score-badge { color: inherit; }
             .bjkc-score-status { opacity: 0.85; font-size: 0.85em; }
 
             /* Filter Panel Styles */

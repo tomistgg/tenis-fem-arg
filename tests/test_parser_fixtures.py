@@ -7,6 +7,7 @@ import fitz
 
 from draws import parse_draw_pdf
 from itf import parse_itf_entry_list
+from itf_wtn import propagate_wtn
 from populate_data import itf_load_new
 from populate_data.bjkc_load_new import parse_tie_matches
 from populate_data.wta_load_new import parse_match
@@ -134,6 +135,37 @@ def test_itf_acceptance_parser_preserves_id_for_ambiguous_name():
     }])
     assert parsed[0]["player_id"] == "800409958"
     assert parsed[0]["name"] == "Camila Romero"
+
+
+def test_itf_entry_rank_uses_acceptance_list_wta_then_itf_then_wtn():
+    for wta, itf, rating, expected in (
+        (421, 90, "11.33", "421"),
+        (None, 90, "11.33", "ITF 90"),
+        (None, None, "11.33", "WTN 11.33"),
+        (None, None, None, "-"),
+    ):
+        players = parse_itf_entry_list([{
+            "entryClassificationCode": "MDA",
+            "entries": [{"positionDisplay": "1", "players": [{
+                "playerId": "800000001", "givenName": "Entry", "familyName": "Player",
+                "atpWtaRank": wta, "itfWorldTennisRanking": itf, "worldRating": rating,
+            }]}],
+        }])
+        assert players[0]["rank"] == expected
+
+
+def test_itf_acceptance_wtn_rank_stays_put_when_profile_wtn_changes():
+    key = "w-itf-usa-2026-049"
+    players = parse_itf_entry_list([{
+        "entryClassificationCode": "Q",
+        "entries": [{"positionDisplay": "1", "players": [{
+            "playerId": "800000001", "givenName": "Entry", "familyName": "Player", "worldRating": "11.33",
+        }]}],
+    }])
+    propagate_wtn({key: players}, {"800000001": {"wtn": "8.7", "source": "profile"}})
+
+    assert players[0]["rank"] == "WTN 11.33"
+    assert players[0]["wtn"] == "8.7"
 
 
 def test_itf_acceptance_parser_formats_special_entries_and_repositions_placeholders():

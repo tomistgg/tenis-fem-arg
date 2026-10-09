@@ -2089,7 +2089,7 @@ def generate_html(
                 else:
                     _arg_losses += 1
             _tie_won = _arg_wins > _arg_losses
-            _badge_bg = "#dcfce7" if _tie_won else "#fee2e2"
+            _badge_bg = "#bbf7d0" if _tie_won else "#fecaca"
             _badge_color = "#166534" if _tie_won else "#991b1b"
             _tie_res_label = f"{_arg_wins}-{_arg_losses}"
 
