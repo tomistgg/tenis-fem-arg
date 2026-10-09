@@ -16492,7 +16492,7 @@
                       "roundDesc": "Quarter-finals", "roundNumber": 3,
                       "matches": [
                           {
-                            "matchId": 1183723954, "playStatusCode": "IP",
+                            "matchId": 1183723954, "playStatusCode": "TP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "JR",
@@ -16505,7 +16505,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183723955, "playStatusCode": "IP",
+                            "matchId": 1183723955, "playStatusCode": "TP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "seeding": 3, "entryStatus": "DA",
@@ -16518,20 +16518,20 @@
                             ]
                           },
                           {
-                            "matchId": 1183723956, "playStatusCode": "PC",
+                            "matchId": 1183723956, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [0,1], "isWinner": false, "seeding": 7, "entryStatus": "DA",
+                                  "scores": [], "isWinner": false, "seeding": 7, "entryStatus": "DA",
                                   "player": {"playerId":800416646,"nationality":"GER","givenName":"Anja","familyName":"Wildgruber"}
                                 },
                                 {
-                                  "scores": [6,6], "isWinner": true, "seeding": 4, "entryStatus": "DA",
+                                  "scores": [], "isWinner": false, "seeding": 4, "entryStatus": "DA",
                                   "player": {"playerId":800589346,"nationality":"BLR","givenName":"Yuliya","familyName":"Perapekhina"}
                                 }
                             ]
                           },
                           {
-                            "matchId": 1183723957, "playStatusCode": "IP",
+                            "matchId": 1183723957, "playStatusCode": "TP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "DA",
@@ -16564,8 +16564,7 @@
                             "matchId": 1183723953, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 4, "entryStatus": "DA",
-                                  "player": {"playerId":800589346,"nationality":"BLR","givenName":"Yuliya","familyName":"Perapekhina"}
+                                  "scores": [], "isWinner": false, "entryStatus": null
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": null
