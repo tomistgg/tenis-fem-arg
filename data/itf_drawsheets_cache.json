@@ -15245,14 +15245,14 @@
                       "roundDesc": "Semi-finals", "roundNumber": 5,
                       "matches": [
                           {
-                            "matchId": 1183723494, "playStatusCode": "IP",
+                            "matchId": 1183723494, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 11, "entryStatus": "DA",
+                                  "scores": [7,2,7], "isWinner": true, "seeding": 11, "entryStatus": "DA",
                                   "player": {"playerId":800343617,"nationality":"TUR","givenName":"Ipek","familyName":"Oz"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 4, "entryStatus": "DA",
+                                  "scores": [5,6,"6(5)"], "isWinner": false, "seeding": 4, "entryStatus": "DA",
                                   "player": {"playerId":800439017,"nationality":"FRA","givenName":"Alice","familyName":"Tubello"}
                                 }
                             ]
@@ -15280,7 +15280,8 @@
                             "matchId": 1183723493, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 11, "entryStatus": "DA",
+                                  "player": {"playerId":800343617,"nationality":"TUR","givenName":"Ipek","familyName":"Oz"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "seeding": 13, "entryStatus": "DA",
