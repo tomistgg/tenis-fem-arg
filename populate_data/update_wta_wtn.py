@@ -14,6 +14,7 @@ from itf_wtn import (  # noqa: E402
     ITF_WTN_CACHE_FILENAME,
     entry_list_wtn_status,
     refresh_entry_list_wtn,
+    singles_draw_finished,
 )
 from lazy_browser import LazyBrowserSession  # noqa: E402
 from main import create_driver  # noqa: E402
@@ -59,6 +60,8 @@ def _draw_profile_players(draws_store):
     for tournament in (draws_store or {}).values():
         draws = tournament.get("draws", tournament) if isinstance(tournament, dict) else {}
         for draw_type in ("MDS", "QS"):
+            if singles_draw_finished({**tournament, "draws": draws}, draw_type):
+                continue
             for player in (draws.get(draw_type) or {}).get("players", []):
                 name = str(player.get("name") or "").strip()
                 if "," in name:
