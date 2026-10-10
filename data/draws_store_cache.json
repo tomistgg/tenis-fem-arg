@@ -286,6 +286,7 @@
           {"round": 4, "match_num": 3, "winner_name": "I. Swiatek", "score": "61 63"},
           {"round": 5, "match_num": 0, "winner_name": "Q. Zheng", "score": "63 76(6)"},
           {"round": 5, "match_num": 1, "winner_name": "E. Mertens", "score": "76(0) 63"},
+          {"round": 6, "match_num": 0, "winner_name": "Q. Zheng", "score": "75 62"},
           {"round": 1, "match_num": 32, "winner_name": "L. Noskova"},
           {"round": 1, "match_num": 33, "winner_name": "E. Ruse", "score": "64 62"},
           {"round": 1, "match_num": 34, "winner_name": "V. Golubic", "score": "63 61"},
@@ -347,7 +348,8 @@
           {"round": 4, "match_num": 6, "winner_name": "K. Muchova", "score": "75 16 76(7)"},
           {"round": 4, "match_num": 7, "winner_name": "N. Bartunkova", "score": "60 46 63"},
           {"round": 5, "match_num": 2, "winner_name": "M. Andreeva", "score": "76(4) 76(3)"},
-          {"round": 5, "match_num": 3, "winner_name": "N. Bartunkova", "score": "63 60"}
+          {"round": 5, "match_num": 3, "winner_name": "N. Bartunkova", "score": "63 60"},
+          {"round": 6, "match_num": 1, "winner_name": "M. Andreeva", "score": "62 62"}
         ],
         "byes": [
           2,
@@ -773,7 +775,9 @@
           {"round": 3, "match_num": 0, "winner_name": "A. Aksu", "score": "36 63 64"},
           {"round": 3, "match_num": 1, "winner_name": "H. Sakatsume", "score": "57 64 60"},
           {"round": 3, "match_num": 2, "winner_name": "L. Stefanini", "score": "63 75"},
-          {"round": 3, "match_num": 3, "winner_name": "A. Blinkova", "score": "63 64"}
+          {"round": 3, "match_num": 3, "winner_name": "A. Blinkova", "score": "63 64"},
+          {"round": 4, "match_num": 0, "winner_name": "A. Aksu", "score": "75 63"},
+          {"round": 4, "match_num": 1, "winner_name": "L. Stefanini", "score": "62 63"}
         ],
         "round_labels": [
           "Round of 32",
@@ -820,7 +824,9 @@
           {"round": 1, "match_num": 0, "winner_name": "E. Pridankina / A. Tikhonova", "score": "63 62"},
           {"round": 1, "match_num": 7, "winner_name": "L. Ciric Bagaric / Z. Kulambayeva", "score": "63 64"},
           {"round": 2, "match_num": 2, "winner_name": "R. Bhosale / E. Micic", "score": "WO"},
-          {"round": 2, "match_num": 3, "winner_name": "D. Jakupovic / L. Salden", "score": "76(4) 62"}
+          {"round": 2, "match_num": 3, "winner_name": "D. Jakupovic / L. Salden", "score": "76(4) 62"},
+          {"round": 2, "match_num": 0, "winner_name": "E. Pridankina / A. Tikhonova", "score": "75 63"},
+          {"round": 2, "match_num": 3, "winner_name": "R. Bhosale / E. Micic", "score": "60 75"}
         ],
         "byes": [
           2,
@@ -1034,6 +1040,7 @@
           {"round": 1, "match_num": 14, "winner_name": "C. VEGA GUDINO", "score": "63 60"},
           {"round": 1, "match_num": 15, "winner_name": "J. Gonzalez Daniele", "score": "61 62"},
           {"round": 2, "match_num": 0, "winner_name": "A. Sanchez", "score": "W/O"},
+          {"round": 2, "match_num": 1, "winner_name": "S. Meabe", "score": "64 36 60"},
           {"round": 2, "match_num": 2, "winner_name": "L. Moyano", "score": "61 64"},
           {"round": 2, "match_num": 3, "winner_name": "S. Larraya Guidi", "score": "61 62"},
           {"round": 2, "match_num": 4, "winner_name": "L. Britez Risso", "score": "60 62"},
@@ -1573,7 +1580,8 @@
           {"round": 3, "match_num": 1, "winner_name": "B. Du Pree", "score": "46 62 62"},
           {"round": 3, "match_num": 2, "winner_name": "C. Cervino Ruiz", "score": "63 75"},
           {"round": 3, "match_num": 3, "winner_name": "Y. Kotliar", "score": "75 62"},
-          {"round": 4, "match_num": 0, "winner_name": "M. Rajeshwaran Revathi", "score": "W/O"}
+          {"round": 4, "match_num": 0, "winner_name": "M. Rajeshwaran Revathi", "score": "W/O"},
+          {"round": 4, "match_num": 1, "winner_name": "C. Cervino Ruiz", "score": "75 64"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1811,6 +1819,202 @@
           "Final"
         ],
         "num_rounds": 6
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/1128/mallorca-125/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 125 Mallorca",
+      "level": "WTA 125",
+      "week": "Week of October 12",
+      "startDate": "2026-10-12",
+      "endDate": "2026-10-18",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "Vanda Pharmaceuticals Mallorca Women's",
+        "location": "Championships",
+        "dates": "MALLORCA, ESP",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 16,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "ENCHEVA, Lidia", "country": "BUL", "wtn": "10.63"},
+          {"pos": 2, "name": "METTRAUX, Marie", "country": "SUI", "wtn": "11.88"},
+          {"pos": 3, "name": "YESYPCHUK, Daria", "country": "UKR", "wtn": "12.66"},
+          {"pos": 4, "seed": "8", "name": "VOGT, Marie", "country": "GER", "wtn": "12.35"},
+          {"pos": 5, "seed": "2", "name": "SHINIKOVA, Isabella", "country": "BUL", "wtn": "12.42"},
+          {"pos": 6, "name": "KUCMOVA, Aneta", "country": "CZE", "wtn": "12.69"},
+          {"pos": 7, "name": "GARCIA CID, Maria", "country": "ESP", "wtn": "11.4"},
+          {"pos": 8, "seed": "5", "name": "HESSE, Amandine", "country": "FRA", "wtn": "13.02"},
+          {"pos": 9, "seed": "3", "name": "KARATANCHEVA, Lia", "country": "BUL", "wtn": "12.37"},
+          {"pos": 10, "name": "WOBKER, Ida", "country": "GER", "wtn": "10.41"},
+          {"pos": 11, "entry": "WC", "name": "DIAZ ADROVER, Cristina", "country": "ESP", "wtn": "15.35"},
+          {"pos": 12, "seed": "7", "name": "SAKELLARIDI, Sapfo", "country": "GRE", "wtn": "13.61"},
+          {"pos": 13, "seed": "4", "name": "NGUYEN TAN, Lucie", "country": "FRA", "wtn": "12.57"},
+          {"pos": 14, "entry": "WC", "name": "SAGRISTA BERMEJO, Mireia", "country": "ESP", "wtn": "-"},
+          {"pos": 15, "name": "ROURA LLAVERIAS, Ruth", "country": "ESP", "wtn": "12.77"},
+          {"pos": 16, "seed": "6", "name": "LABOUTKOVA, Aneta", "country": "CZE", "wtn": "12.81"}
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/1168/lisbon-125/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 125 Lisbon",
+      "level": "WTA 125",
+      "week": "Week of October 12",
+      "startDate": "2026-10-12",
+      "endDate": "2026-10-18",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "Lisboa Belem Open",
+        "location": "LISBON, POR",
+        "dates": "October 12-18 2026",
+        "prize": "€ 100,000",
+        "surface": "Clay, Red Clay",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 16,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "FEISTEL, Gina", "country": "POL", "wtn": "11.57"},
+          {"pos": 2, "name": "NEPLIY, Elina", "wtn": "14.02"},
+          {"pos": 3, "entry": "WC", "name": "SANTOS, Ana Filipa", "country": "POR", "wtn": "16.49"},
+          {"pos": 4, "seed": "6", "name": "LUKAS, Tena", "country": "CRO", "wtn": "12.19"},
+          {"pos": 5, "seed": "2", "name": "VOLOSHCHUK, Angelina", "country": "POR", "wtn": "11.74"},
+          {"pos": 6, "name": "NAGY, Adrienn", "country": "HUN", "wtn": "12.72"},
+          {"pos": 7, "entry": "WC", "name": "FRANCO DIAS, Teresa", "country": "POR", "wtn": "18.41"},
+          {"pos": 8, "seed": "8", "name": "PRIMORAC PAVICIC, Iva", "country": "CRO", "wtn": "12.41"},
+          {"pos": 9, "seed": "3", "name": "KLUGMAN, Hannah", "country": "GBR", "wtn": "10.81"},
+          {"pos": 10, "name": "MARTINEZ VAQUERO, Maria", "country": "ESP", "wtn": "13.69"},
+          {"pos": 11, "name": "LOVRIC, Pia", "country": "SLO", "wtn": "11.52"},
+          {"pos": 12, "seed": "5", "name": "EBELING KONING, Loes", "country": "NED", "wtn": "9.91"},
+          {"pos": 13, "seed": "4", "name": "SERBAN, Raluka", "country": "CYP", "wtn": "12.43"},
+          {"pos": 14, "name": "VAN EMST, Sarah", "country": "NED", "wtn": "12.95"},
+          {"pos": 15, "name": "CAKAREVIC, Sara", "country": "FRA", "wtn": "12.35"},
+          {"pos": 16, "seed": "7", "name": "TSYGOUROVA, Katerina", "country": "SUI", "wtn": "11.89"}
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/1140/rovereto-125/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 125 Rovereto",
+      "level": "WTA 125",
+      "week": "Week of October 12",
+      "startDate": "2026-10-12",
+      "endDate": "2026-10-18",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "MDS":
+      {
+        "tournament_name": "RoveretOpen Citta della Pace",
+        "location": "ROVERETO, ITA",
+        "dates": "October 12-18 2026",
+        "prize": "€ 100,000",
+        "surface": "Hard, Mapei Tns Comfort",
+        "draw_type": "SINGLES MAIN DRAW",
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "RUZIC, Antonia", "country": "CRO", "wtn": "10.3"},
+          {"pos": 2, "name": "SISKOVA, Anna", "country": "CZE", "wtn": "9.75"},
+          {"pos": 3, "name": "ANDREESCU, Bianca", "country": "CAN", "wtn": "9.49"},
+          {"pos": 4, "name": "RISTIC, Mia", "country": "SRB", "wtn": "9.99"},
+          {"pos": 5, "name": "IATCENKO, Polina", "wtn": "9.60"},
+          {"pos": 6, "name": "TAN, Harmony", "country": "FRA", "wtn": "10.04"},
+          {"pos": 7, "entry": "WC", "name": "MAIR, Laura", "country": "ITA", "wtn": "13.42"},
+          {"pos": 8, "seed": "5", "name": "STEFANINI, Lucrezia", "country": "ITA", "wtn": "9.17"},
+          {"pos": 9, "seed": "3", "name": "PIGATO, Lisa", "country": "ITA", "wtn": "9.36"},
+          {"pos": 10, "name": "AVDEEVA, Julia", "wtn": "10.50"},
+          {"pos": 11, "name": "KLIMOVICOVA, Linda", "country": "POL", "wtn": "11.40"},
+          {"pos": 12, "name": "HAVLICKOVA, Lucie", "country": "CZE", "wtn": "10.1"},
+          {"pos": 13, "name": "TEICHMANN, Jil", "country": "SUI", "wtn": "9.12"},
+          {"pos": 15, "name": "BARTHEL, Mona", "country": "GER", "wtn": "9.88"},
+          {"pos": 16, "seed": "7", "name": "BRONZETTI, Lucia", "country": "ITA", "wtn": "9.81"},
+          {"pos": 17, "seed": "8", "name": "ARANGO, Emiliana", "country": "COL", "wtn": "10.72"},
+          {"pos": 18, "name": "KNUTSON, Gabriela", "country": "CZE", "wtn": "9.62"},
+          {"pos": 19, "name": "BANDECCHI, Susan", "country": "SUI", "wtn": "9.88"},
+          {"pos": 20, "entry": "WC", "name": "MADUZZI, Gaia", "country": "ITA", "wtn": "11.83"},
+          {"pos": 21, "name": "RADIVOJEVIC, Lola", "country": "SRB", "wtn": "10.97"},
+          {"pos": 22, "name": "KOSTOVIC, Teodora", "country": "SRB", "wtn": "9.20"},
+          {"pos": 23, "name": "KUBKA, Martyna", "country": "POL", "wtn": "10.47"},
+          {"pos": 24, "seed": "4", "name": "CHARAEVA, Alina", "country": "ARM", "wtn": "9.17"},
+          {"pos": 25, "seed": "6", "name": "SALKOVA, Dominika", "country": "CZE", "wtn": "10.33"},
+          {"pos": 26, "entry": "WC", "name": "VISENTIN, Elisa", "country": "ITA", "wtn": "-"},
+          {"pos": 27, "entry": "WC", "name": "BASILETTI, Noemi", "country": "ITA", "wtn": "9.71"},
+          {"pos": 28, "name": "HRUNCAKOVA, Viktoria", "country": "SVK", "wtn": "11.05"},
+          {"pos": 32, "seed": "2", "name": "SELEKHMETEVA, Oksana", "country": "ESP", "wtn": "10.36"}
+        ],
+        "qualifiers": [
+          14,
+          29,
+          30,
+          31
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
+      },
+      "QS":
+      {
+        "tournament_name": "RoveretOpen Citta della Pace",
+        "location": "ROVERETO, ITA",
+        "dates": "October 12-18 2026",
+        "prize": "€ 100,000",
+        "surface": "Hard, Mapei Tns Comfort",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 16,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "JACQUEMOT, Elsa", "country": "FRA", "wtn": "10.77"},
+          {"pos": 2, "name": "ZANOLINI, Camilla", "country": "ITA", "wtn": "14.32"},
+          {"pos": 3, "name": "SENICA, Alja", "country": "SLO", "wtn": "13.51"},
+          {"pos": 4, "seed": "7", "name": "BOSKOVIC, Lea", "country": "CRO", "wtn": "11.76"},
+          {"pos": 5, "seed": "2", "name": "ANDREEVA, Erika", "wtn": "11.18"},
+          {"pos": 6, "name": "MONTELEONE, Giulia Alessia", "country": "ITA", "wtn": "18.69"},
+          {"pos": 7, "name": "SERBAN, Isabella Maria", "country": "ITA", "wtn": "11.64"},
+          {"pos": 8, "seed": "6", "name": "LI, Zongyu", "country": "CHN", "wtn": "11.22"},
+          {"pos": 9, "seed": "3", "name": "KOEVERMANS, Anouk", "country": "NED", "wtn": "10.69"},
+          {"pos": 10, "name": "RAINA, Ankita", "country": "IND", "wtn": "14.14"},
+          {"pos": 11, "name": "NOVAK, Kristina", "country": "SLO", "wtn": "14.11"},
+          {"pos": 12, "seed": "5", "name": "WERNER, Caroline", "country": "GER", "wtn": "11.31"},
+          {"pos": 13, "seed": "4", "name": "FRIEDSAM, Anna-Lena", "country": "GER", "wtn": "10.59"},
+          {"pos": 14, "entry": "WC", "name": "PEER, Lisa", "country": "ITA", "wtn": "16.16"},
+          {"pos": 15, "entry": "WC", "name": "TAMINDZIC, Ana", "country": "ITA", "wtn": "-"},
+          {"pos": 16, "seed": "8", "name": "BROCKMANN, Tessa Johanna", "country": "GER", "wtn": "11.39"}
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
       }
     }
   }
