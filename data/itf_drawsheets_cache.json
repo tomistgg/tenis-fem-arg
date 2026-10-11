@@ -18692,7 +18692,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183731282, "playStatusCode": "TP",
+                            "matchId": 1183731282, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "WC",
@@ -18744,7 +18744,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183731286, "playStatusCode": "TP",
+                            "matchId": 1183731286, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "DA",
@@ -18757,14 +18757,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183731287, "playStatusCode": "IP",
+                            "matchId": 1183731287, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 6, "entryStatus": "DA",
+                                  "scores": [2,6,2], "isWinner": false, "seeding": 6, "entryStatus": "DA",
                                   "player": {"playerId":800599680,"nationality":"BUL","givenName":"Melis","familyName":"Rasim"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [6,3,6], "isWinner": true, "entryStatus": "DA",
                                   "player": {"playerId":800593287,"nationality":"BUL","givenName":"Rafaela","familyName":"Simeonova"}
                                 }
                             ]
@@ -18822,7 +18822,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183731292, "playStatusCode": "TP",
+                            "matchId": 1183731292, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "DA",
@@ -18903,7 +18903,8 @@
                             "matchId": 1183731274, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "player": {"playerId":800593287,"nationality":"BUL","givenName":"Rafaela","familyName":"Simeonova"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": null
