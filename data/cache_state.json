@@ -1,18 +1,18 @@
 {
   "files": {
     "wta_full_calendar_cache.json": {
-      "from": "2026-09-11",
+      "from": "2026-09-13",
       "to": "2026-12-31",
-      "fetchedAt": "2026-10-09T09:32:34Z",
-      "lastAttemptAt": "2026-10-09T09:32:34Z",
-      "fetchedRunId": "20261009T091707Z-e27d981bb7",
-      "lastAttemptRunId": "20261009T091707Z-e27d981bb7"
+      "fetchedAt": "2026-10-11T16:11:58Z",
+      "lastAttemptAt": "2026-10-11T16:11:58Z",
+      "fetchedRunId": "20261011T160947Z-8c4cb9f0d4",
+      "lastAttemptRunId": "20261011T160947Z-8c4cb9f0d4"
     },
     "itf_calendar_cache.json": {
       "year": 2026,
-      "count": 602,
-      "fetchedAt": "2026-10-09T07:06:17Z",
-      "lastAttemptAt": "2026-10-09T09:18:40Z"
+      "count": 606,
+      "fetchedAt": "2026-10-11T13:12:50Z",
+      "lastAttemptAt": "2026-10-11T16:14:21Z"
     }
   },
   "entries": {
@@ -353,51 +353,6 @@
       "1100203860_M_0": {
         "fetchedAt": "2026-07-13T02:12:20Z"
       },
-      "1100204903_Q_0": {
-        "fetchedAt": "2026-09-26T17:46:24Z"
-      },
-      "1100204903_M_0": {
-        "fetchedAt": "2026-09-26T17:46:37Z"
-      },
-      "1100204798_M_0": {
-        "fetchedAt": "2026-09-26T17:51:34Z"
-      },
-      "1100204798_Q_0": {
-        "fetchedAt": "2026-09-26T17:51:47Z"
-      },
-      "1100205122_Q_0": {
-        "fetchedAt": "2026-09-27T00:10:06Z"
-      },
-      "1100205122_M_0": {
-        "fetchedAt": "2026-09-27T00:10:19Z"
-      },
-      "1100204939_M_0": {
-        "fetchedAt": "2026-09-27T00:11:56Z"
-      },
-      "1100204939_Q_0": {
-        "fetchedAt": "2026-09-27T00:11:57Z"
-      },
-      "1100204837_M_0": {
-        "fetchedAt": "2026-09-27T00:11:57Z"
-      },
-      "1100204837_Q_0": {
-        "fetchedAt": "2026-09-27T00:11:58Z"
-      },
-      "1100205088_M_0": {
-        "fetchedAt": "2026-09-27T00:11:58Z"
-      },
-      "1100205088_Q_0": {
-        "fetchedAt": "2026-09-27T00:11:59Z"
-      },
-      "1100205186_M_0": {
-        "fetchedAt": "2026-09-27T00:12:00Z"
-      },
-      "1100204711_M_0": {
-        "fetchedAt": "2026-09-27T07:26:01Z"
-      },
-      "1100204711_Q_0": {
-        "fetchedAt": "2026-09-27T07:26:02Z"
-      },
       "1100205407_Q_0": {
         "fetchedAt": "2026-09-28T03:10:45Z"
       },
@@ -514,6 +469,60 @@
       },
       "1100205028_Q_0": {
         "fetchedAt": "2026-10-05T22:24:10Z"
+      },
+      "1100205029_Q_0": {
+        "fetchedAt": "2026-10-10T16:51:29Z"
+      },
+      "1100205029_M_0": {
+        "fetchedAt": "2026-10-10T16:51:43Z"
+      },
+      "1100204572_Q_0": {
+        "fetchedAt": "2026-10-10T16:51:56Z"
+      },
+      "1100204572_M_0": {
+        "fetchedAt": "2026-10-10T16:52:09Z"
+      },
+      "1100204749_M_0": {
+        "fetchedAt": "2026-10-10T17:05:30Z"
+      },
+      "1100205090_M_0": {
+        "fetchedAt": "2026-10-10T17:05:43Z"
+      },
+      "1100205364_M_0": {
+        "fetchedAt": "2026-10-10T17:05:56Z"
+      },
+      "1100205383_M_0": {
+        "fetchedAt": "2026-10-10T17:06:08Z"
+      },
+      "1100205434_M_0": {
+        "fetchedAt": "2026-10-10T17:06:22Z"
+      },
+      "1100203515_M_0": {
+        "fetchedAt": "2026-10-10T17:06:35Z"
+      },
+      "1100203760_M_0": {
+        "fetchedAt": "2026-10-10T21:19:39Z"
+      },
+      "1100205048_M_0": {
+        "fetchedAt": "2026-10-10T21:20:05Z"
+      },
+      "1100205188_Q_0": {
+        "fetchedAt": "2026-10-11T00:42:17Z"
+      },
+      "1100205188_M_0": {
+        "fetchedAt": "2026-10-11T00:42:30Z"
+      },
+      "1100203586_M_0": {
+        "fetchedAt": "2026-10-11T00:43:52Z"
+      },
+      "1100203586_Q_0": {
+        "fetchedAt": "2026-10-11T00:43:53Z"
+      },
+      "1100203515_Q_0": {
+        "fetchedAt": "2026-10-11T13:10:14Z"
+      },
+      "1100205364_Q_0": {
+        "fetchedAt": "2026-10-11T13:10:15Z"
       }
     },
     "draws_store_cache.json": {
@@ -1032,7 +1041,7 @@
         "completedAt": "2026-10-04T21:57:10Z"
       },
       "https://www.wtatennis.com/tournaments/1020/beijing/2026/player-list": {
-        "fetchedAt": "2026-10-09T09:26:17Z"
+        "fetchedAt": "2026-10-11T16:25:46Z"
       },
       "w-itf-usa-2026-063": {
         "fetchedAt": "2026-10-04T18:09:26Z",
@@ -1043,32 +1052,48 @@
         "completedAt": "2026-10-04T21:57:10Z"
       },
       "https://www.wtatennis.com/tournaments/1147/suzhou-125/2026/player-list": {
-        "fetchedAt": "2026-10-09T09:26:17Z"
+        "fetchedAt": "2026-10-11T16:25:46Z",
+        "completedAt": "2026-10-11T16:25:46Z"
       },
       "https://www.wtatennis.com/tournaments/1149/samsun-125/2026/player-list": {
-        "fetchedAt": "2026-10-09T09:26:17Z"
+        "fetchedAt": "2026-10-11T16:25:46Z"
       },
       "w-itf-esp-2026-015": {
         "fetchedAt": "2026-10-05T12:31:18Z",
         "completedAt": "2026-10-06T20:41:45Z"
       },
       "w-itf-arg-2026-013": {
-        "fetchedAt": "2026-10-09T09:26:40Z"
+        "fetchedAt": "2026-10-11T16:25:46Z"
       },
       "w-itf-usa-2026-046": {
-        "fetchedAt": "2026-10-09T09:27:32Z"
+        "fetchedAt": "2026-10-11T16:26:01Z"
       },
       "w-itf-mda-2026-002": {
-        "fetchedAt": "2026-10-09T09:26:17Z"
+        "fetchedAt": "2026-10-11T13:16:05Z",
+        "completedAt": "2026-10-11T16:25:45Z"
       },
       "w-itf-bul-2026-007": {
-        "fetchedAt": "2026-10-09T09:28:48Z"
+        "fetchedAt": "2026-10-11T13:13:54Z",
+        "completedAt": "2026-10-11T16:25:45Z"
       },
       "w-itf-usa-2026-048": {
-        "fetchedAt": "2026-10-09T09:29:06Z"
+        "fetchedAt": "2026-10-11T16:27:20Z"
       },
       "w-itf-por-2026-014": {
-        "fetchedAt": "2026-10-09T09:27:02Z"
+        "fetchedAt": "2026-10-11T13:14:56Z",
+        "completedAt": "2026-10-11T16:25:45Z"
+      },
+      "https://www.wtatennis.com/tournaments/1075/wuhan/2026/player-list": {
+        "fetchedAt": "2026-10-11T16:25:46Z"
+      },
+      "https://www.wtatennis.com/tournaments/1128/mallorca-125/2026/player-list": {
+        "fetchedAt": "2026-10-11T16:25:46Z"
+      },
+      "https://www.wtatennis.com/tournaments/1168/lisbon-125/2026/player-list": {
+        "fetchedAt": "2026-10-11T16:25:46Z"
+      },
+      "https://www.wtatennis.com/tournaments/1140/rovereto-125/2026/player-list": {
+        "fetchedAt": "2026-10-11T16:25:46Z"
       }
     }
   }

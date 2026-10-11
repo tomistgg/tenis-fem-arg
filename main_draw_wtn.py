@@ -28,6 +28,7 @@ from itf_wtn import (
     checkpoint_profile_wtn,
     parse_wtn_singles,
     player_profile_urls,
+    singles_draw_finished,
 )
 from run_state import report_run_issue
 from runtime_logging import get_logger
@@ -289,9 +290,10 @@ def refresh_main_draw_wtn(
                 wtn, url, reason = None, _latest_profile_url(record), blocked_reason
                 if recent_no_wtn:
                     reason = "ITF profile has no valid singles WTN"
-                elif not fetch_profiles:
+                elif not fetch_profiles or singles_draw_finished(tournament, "MDS", today=today):
                     reason = (profile_failures or {}).get(player_id, "Fresh singles profile WTN unavailable")
-                if fetch_profiles and not blocked_reason and not recent_no_wtn:
+                if fetch_profiles and not blocked_reason and not recent_no_wtn \
+                        and not singles_draw_finished(tournament, "MDS", today=today):
                     if attempts and profile_batch_size > 0 and attempts % profile_batch_size == 0:
                         save_json_file(profile_cache_path, profiles)
                         if profile_batch_cooldown_seconds > 0:

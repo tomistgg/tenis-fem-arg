@@ -350,6 +350,17 @@ def entry_list_wtn_status(entry_cache, cache_path, *, tournament_weeks=None, res
     return counts
 
 
+def singles_draw_finished(tournament, kind, *, today=None):
+    """Stop profile requests once this draw, or its tournament, has finished."""
+    from draws import _draw_is_complete
+
+    today = today or madrid_today()
+    meta = tournament.get("meta") or tournament
+    end = str(meta.get("endDate") or "")[:10]
+    draw = (tournament.get("draws") or {}).get(kind)
+    return bool(end and end < today.isoformat()) or _draw_is_complete(draw, is_qualifying=kind == "QS")
+
+
 def propagate_wtn(
     entry_cache, cache, draws_store=None, *, resolve_itf_player=None, fresh_singles_only=False, today=None
 ):
@@ -382,12 +393,16 @@ def propagate_wtn(
             update(player, key)
     for key, tournament in (draws_store or {}).items():
         for kind, draw in (tournament.get("draws") or {}).items():
+            require_fresh = (
+                fresh_singles_only and kind in {"MDS", "QS"}
+                and not singles_draw_finished(tournament, kind, today=today)
+            )
             for player in draw.get("players", []):
                 if player.get("members"):
                     for member in player["members"]:
                         update(member, key)
                 else:
-                    update(player, key, require_fresh=fresh_singles_only and kind in {"MDS", "QS"})
+                    update(player, key, require_fresh=require_fresh)
 
 
 def _wta_player_with_itf_id(player):
@@ -692,11 +707,10 @@ def refresh_draw_wtn(
         *((key, tournament, True) for key, tournament in pending),
     ]:
         meta = tournament.get("meta") or tournament
-        end = str(meta.get("endDate") or "")[:10]
-        if not for_gm and end and end < today.isoformat():
-            continue
         for kind, draw in (tournament.get("draws") or {}).items():
             if kind not in {"MDS", "QS"} or (for_gm and kind != "MDS"):
+                continue
+            if singles_draw_finished(tournament, kind, today=today):
                 continue
             for player in draw.get("players", []):
                 name = _player_name(player)

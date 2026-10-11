@@ -886,6 +886,74 @@ def test_combined_entry_queue_uses_current_lists_and_keeps_fresh_first_list_valu
     assert entries["w-itf-current#qual"][0]["wtn"] == "9"
 
 
+@pytest.mark.parametrize("kind", ["MDS", "QS"])
+@pytest.mark.parametrize("cached", [False, True])
+def test_finished_draws_do_not_request_profiles_even_for_pending_gm(tmp_path, kind, cached):
+    path = tmp_path / "cache.json"
+    if cached:
+        path.write_text(json.dumps({"8001": {"wtn": 20, "source": "profile", "retrieved_at": "2026-09-01"}}))
+    draw = {"draw_size": 2, "num_rounds": 1,
+            "players": [{"pos": 1, "player_id": "8001", "name": "Alice", "country": "ESP"}],
+            "matches": [{"round": 1, "match_num": 0, "winner_name": "Alice", "score": "60 60"}]}
+    tournament = {"endDate": "2026-10-11", "draws": {kind: draw}}
+
+    def unexpected_fetch(url):
+        pytest.fail(f"Finished draw triggered a profile request: {url}")
+
+    itf_wtn.refresh_draw_wtn(
+        None, {"w-itf-finished": tournament}, path, today=date(2026, 10, 10),
+        main_draws=[("w-itf-finished", tournament)], fetch_source=unexpected_fetch,
+    )
+    if cached:
+        assert draw["players"][0]["wtn"] == "20"
+    if kind == "MDS":
+        from main_draw_wtn import refresh_main_draw_wtn
+
+        refresh_main_draw_wtn(
+            None, [("w-itf-finished", tournament)], tmp_path / "archive.json", path,
+            tmp_path / "errors.json", today=date(2026, 10, 10), fetch_source=unexpected_fetch,
+        )
+
+
+@pytest.mark.parametrize("other_source", ["entry", "main_draw"])
+def test_finished_qualifying_players_can_refresh_for_another_source(tmp_path, other_source):
+    player = {"pos": 1, "player_id": "8001", "name": "Alice", "country": "ESP", "type": "MAIN"}
+    tournament = {"endDate": "2026-10-11", "draws": {"QS": {
+        "num_rounds": 1, "players": [dict(player)],
+        "matches": [{"round": 1, "match_num": 0, "winner_name": "Alice"}],
+    }}}
+    entries = {}
+    if other_source == "entry":
+        entries = {"w-itf-next": [dict(player)]}
+    else:
+        tournament["draws"]["MDS"] = {"players": [dict(player)]}
+    calls = []
+    itf_wtn.refresh_draw_wtn(
+        None, {"w-itf-active": tournament}, tmp_path / "cache.json", today=date(2026, 10, 10),
+        entry_cache=entries, include_entry_players=True, tournament_weeks={"w-itf-next": "2026-10-12"},
+        fetch_source=lambda url: calls.append(url) or 'var props = {"wtnSingles":16};',
+    )
+    assert len(calls) == 1 and "/8001/" in calls[0]
+    assert tournament["draws"]["QS"]["players"][0]["wtn"] == "16.0"
+
+
+def test_partly_finished_qualifying_still_requests_profiles(tmp_path):
+    tournament = {"endDate": "2026-10-11", "draws": {"QS": {
+        "num_rounds": 2, "draw_size": 8,
+        "players": [{"player_id": "8001", "name": "Alice", "country": "ESP"}],
+        "matches": [
+            *[{"round": 1, "match_num": i, "winner_name": "Winner"} for i in range(4)],
+            {"round": 2, "match_num": 0, "winner_name": "Winner"},
+        ],
+    }}}
+    calls = []
+    itf_wtn.refresh_draw_wtn(
+        None, {"w-itf-active": tournament}, tmp_path / "cache.json", today=date(2026, 10, 10),
+        fetch_source=lambda url: calls.append(url) or 'var props = {"wtnSingles":16};',
+    )
+    assert len(calls) == 1
+
+
 def test_success_is_checkpointed_before_the_next_profile_can_block(tmp_path):
     path = tmp_path / "cache.json"
     entries = {"https://wta.example/active": [
