@@ -1109,7 +1109,7 @@
           {"pos": 27, "name": "KORHONEN, Cara", "country": "AUS", "itf_id": "800623314", "wtn": "16.07"},
           {"pos": 28, "seed": "14", "name": "MATTIOLI, Francesca", "country": "ARG", "itf_id": "800583540", "wtn": "13.91"},
           {"pos": 29, "seed": "8", "name": "VAN IMPE, Amelie", "country": "BEL", "itf_id": "800492984", "wtn": "12.28"},
-          {"pos": 30, "name": "RENCHELI, Abigail", "country": "USA", "itf_id": "800442513", "wtn": "14.65"},
+          {"pos": 30, "name": "RENCHELI, Abigail", "country": "USA", "itf_id": "800442513", "wtn": "14.66"},
           {"pos": 31, "entry": "WC", "name": "BATTISTONE, Grace", "country": "USA", "itf_id": "800883977", "wtn": "-"},
           {"pos": 32, "seed": "13", "name": "REED, Lexington", "country": "USA", "itf_id": "800594686", "wtn": "12.63"}
         ],
@@ -1492,7 +1492,9 @@
           {"round": 3, "match_num": 0, "winner_name": "M. Brengle", "score": "76(3) 62"},
           {"round": 3, "match_num": 1, "winner_name": "A. Sharma", "score": "76(5) 64"},
           {"round": 3, "match_num": 2, "winner_name": "A. Rus", "score": "30 RET"},
-          {"round": 3, "match_num": 3, "winner_name": "K. Carnicella", "score": "63 30 RET"}
+          {"round": 3, "match_num": 3, "winner_name": "K. Carnicella", "score": "63 30 RET"},
+          {"round": 4, "match_num": 0, "winner_name": "A. Sharma", "score": "63 62"},
+          {"round": 4, "match_num": 1, "winner_name": "K. Carnicella", "score": "62 36 75"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1670,7 +1672,15 @@
           {"round": 1, "match_num": 12, "winner_name": "A. Bondar", "score": "76(6) 01 RET"},
           {"round": 1, "match_num": 13, "winner_name": "M. Sawangkaew", "score": "46 62 76(3)"},
           {"round": 1, "match_num": 14, "winner_name": "C. Osorio", "score": "67(5) 62 64"},
-          {"round": 1, "match_num": 15, "winner_name": "K. Volynets", "score": "62 61"}
+          {"round": 1, "match_num": 15, "winner_name": "K. Volynets", "score": "62 61"},
+          {"round": 2, "match_num": 0, "winner_name": "H. Shi", "score": "76(2) 61"},
+          {"round": 2, "match_num": 1, "winner_name": "D. Kasatkina", "score": "26 62 61"},
+          {"round": 2, "match_num": 2, "winner_name": "A. Ito", "score": "76(3) 64"},
+          {"round": 2, "match_num": 3, "winner_name": "Z. Sonmez", "score": "62 64"},
+          {"round": 2, "match_num": 4, "winner_name": "Y. Putintseva", "score": "61 63"},
+          {"round": 2, "match_num": 5, "winner_name": "C. McNally", "score": "64 46 61"},
+          {"round": 2, "match_num": 6, "winner_name": "M. Sawangkaew", "score": "76(5) 76(5)"},
+          {"round": 2, "match_num": 7, "winner_name": "K. Volynets", "score": "36 63 64"}
         ],
         "round_labels": [
           "Q1",
@@ -1740,13 +1750,15 @@
           {"pos": 3, "name": "LI, Ann", "country": "USA", "wtn": "8.64"},
           {"pos": 4, "name": "ZHENG, Qinwen", "country": "CHN", "wtn": "8.15"},
           {"pos": 5, "name": "TJEN, Janice", "country": "INA", "wtn": "9.5"},
-          {"pos": 6, "name": "OLIYNYKOVA, Oleksandra", "country": "UKR", "wtn": "9.05"},
+          {"pos": 6, "entry": "Q", "name": "ITO, Aoi", "country": "JPN", "wtn": "10.8"},
           {"pos": 7, "name": "SNIGUR, Daria", "country": "UKR", "wtn": "8.06"},
           {"pos": 8, "seed": "14", "name": "MERTENS, Elise", "country": "BEL", "wtn": "7.94"},
           {"pos": 9, "seed": "9", "name": "BENCIC, Belinda", "country": "SUI", "wtn": "7.2"},
           {"pos": 10, "name": "ZHANG, Shuai", "country": "CHN", "wtn": "9.42"},
           {"pos": 11, "name": "PARRY, Diane", "country": "FRA", "wtn": "8.44"},
           {"pos": 12, "name": "KALINSKAYA, Anna", "wtn": "7.74"},
+          {"pos": 13, "entry": "Q", "name": "SAWANGKAEW, Mananchaya", "country": "THA", "wtn": "9.08"},
+          {"pos": 14, "entry": "LL", "name": "FRECH, Magdalena", "country": "POL", "wtn": "8.78"},
           {"pos": 16, "seed": "7", "name": "SWIATEK, Iga", "country": "POL", "wtn": "6.71"},
           {"pos": 17, "seed": "3", "name": "ANDREEVA, Mirra", "wtn": "7.04"},
           {"pos": 19, "entry": "WC", "name": "YASTREMSKA, Dayana", "country": "UKR", "wtn": "9.37"},
@@ -1766,6 +1778,7 @@
           {"pos": 35, "name": "SINIAKOVA, Katerina", "country": "CZE", "wtn": "8.2"},
           {"pos": 36, "name": "SAMSONOVA, Liudmila", "wtn": "8.12"},
           {"pos": 37, "name": "BIRRELL, Kimberly", "country": "AUS", "wtn": "8.95"},
+          {"pos": 38, "entry": "Q", "name": "VOLYNETS, Katie", "country": "USA", "wtn": "8.13"},
           {"pos": 39, "entry": "WC", "name": "GUO, Hanyu", "country": "CHN", "wtn": "10.63"},
           {"pos": 40, "seed": "12", "name": "CIRSTEA, Sorana", "country": "ROU", "wtn": "7.13"},
           {"pos": 41, "seed": "15", "name": "PAOLINI, Jasmine", "country": "ITA", "wtn": "8.17"},
@@ -1776,12 +1789,17 @@
           {"pos": 46, "name": "KARTAL, Sonay", "country": "GBR", "wtn": "8.04"},
           {"pos": 48, "seed": "4", "name": "NOSKOVA, Linda", "country": "CZE", "wtn": "6.76"},
           {"pos": 49, "seed": "6", "name": "MUCHOVA, Karolina", "country": "CZE", "wtn": "6.81"},
+          {"pos": 51, "entry": "Q", "name": "MCNALLY, Caty", "country": "USA", "wtn": "8.11"},
           {"pos": 52, "name": "STARODUBTSEVA, Yuliia", "country": "UKR", "wtn": "8.92"},
+          {"pos": 53, "entry": "Q", "name": "PUTINTSEVA, Yulia", "country": "KAZ", "wtn": "8.67"},
+          {"pos": 54, "entry": "Q", "name": "SONMEZ, Zeynep", "country": "TUR", "wtn": "9.22"},
           {"pos": 55, "name": "BOULTER, Katie", "country": "GBR", "wtn": "9.14"},
           {"pos": 56, "seed": "11", "name": "SHNAIDER, Diana", "wtn": "7.37"},
           {"pos": 57, "seed": "13", "name": "EALA, Alexandra", "country": "PHI", "wtn": "7.47"},
+          {"pos": 58, "entry": "Q", "name": "SHI, Han", "country": "CHN", "wtn": "10.53"},
           {"pos": 59, "name": "ALEXANDROVA, Ekaterina", "wtn": "8.36"},
           {"pos": 60, "name": "FERNANDEZ, Leylah", "country": "CAN", "wtn": "7.88"},
+          {"pos": 61, "entry": "Q", "name": "KASATKINA, Daria", "country": "AUS", "wtn": "9.59"},
           {"pos": 62, "name": "OSTAPENKO, Jelena", "country": "LAT", "wtn": "8.65"},
           {"pos": 64, "seed": "2", "name": "PEGULA, Jessica", "country": "USA", "wtn": "6.84"}
         ],
@@ -1805,16 +1823,6 @@
           50,
           63
         ],
-        "qualifiers": [
-          13,
-          14,
-          38,
-          51,
-          53,
-          54,
-          58,
-          61
-        ],
         "round_labels": [
           "Round of 64",
           "Round of 32",
@@ -1823,7 +1831,8 @@
           "Semifinals",
           "Final"
         ],
-        "num_rounds": 6
+        "num_rounds": 6,
+        "wtn_gm": 8.2693
       }
     }
   },
