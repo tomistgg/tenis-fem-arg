@@ -1259,6 +1259,11 @@
             #view-tstrength { display: flex; flex-direction: column; align-items: center; width: 100%; margin: 0 auto; }
             .tstrength-wrapper { overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 160px); }
             .ts-controls { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; justify-content: center; }
+            .ts-mode-tabs { display: flex; gap: 0; margin-bottom: 8px; }
+            .ts-mode-tabs button { padding: 6px 12px; border: 1px solid var(--c-primary-strong); background: var(--c-surface); color: var(--c-primary-strong); cursor: pointer; font: inherit; font-size: 11px; }
+            .ts-mode-tabs button:first-child { border-radius: 6px 0 0 6px; }
+            .ts-mode-tabs button:last-child { border-radius: 0 6px 6px 0; }
+            .ts-mode-tabs button.active { background: var(--c-primary-strong); color: #fff; }
             .ts-controls button { padding: 4px 8px; font-size: 11px; border: 1px solid var(--c-primary-strong); border-radius: 6px; cursor: pointer; background: var(--c-primary-strong); color: #fff; font-family: inherit; min-width: 0; }
             .ts-controls button:hover { background: var(--c-primary-hover); border-color: var(--c-primary-hover); }
             .ts-controls select { padding: 3px 18px 3px 4px; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; width: 100px; text-align-last: center; }
@@ -1307,6 +1312,10 @@
                 #tstrength-table th:nth-child(6), #tstrength-table td:nth-child(6) { width: 11%; }
                 #tstrength-table th:nth-child(7), #tstrength-table td:nth-child(7) { width: 12%; }
                 #tstrength-table th:nth-child(8), #tstrength-table td:nth-child(8) { width: 9%; }
+                #tstrength-table.wtn-mode th:nth-child(3), #tstrength-table.wtn-mode td:nth-child(3) { width: 13%; }
+                #tstrength-table.wtn-mode th:nth-child(4), #tstrength-table.wtn-mode td:nth-child(4) { width: 45%; }
+                #tstrength-table.wtn-mode th:nth-child(5), #tstrength-table.wtn-mode td:nth-child(5) { width: 14%; }
+                #tstrength-table.wtn-mode th:nth-child(6), #tstrength-table.wtn-mode td:nth-child(6) { width: 15%; }
             }
 
             /* Series view */
@@ -3109,7 +3118,6 @@
                     border-color: var(--c-primary) !important;
                     background: var(--c-primary-soft);
                     color: var(--c-primary-deep);
-                    box-shadow: inset 3px 0 0 var(--c-primary);
                 }
                 .nav-secondary .nav-icon {
                     filter: none;

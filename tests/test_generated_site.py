@@ -11,6 +11,7 @@ from html_generator import (
     _schedule_position_suffix,
     _schedule_tournament_base_name,
     _week_label_sort_key,
+    _wtn_tstrength_rows,
     country_flag_html,
 )
 from site_renderer import render_site_from_data
@@ -39,6 +40,27 @@ GENERATED_FRONTEND_FILES = (
     "assets/js/tabs/roadtogs.js",
     "assets/js/tabs/tstrength.js",
 )
+
+
+def test_wtn_tournament_strength_rows_include_wta_and_itf_saved_gms():
+    archive = {
+        "https://www.wtatennis.com/tournaments/1168/lisbon-125/2026/player-list": {
+            "name": "WTA 125 Lisbon", "level": "WTA 125", "startDate": "2026-10-05", "wtn_gm": 10.5,
+        },
+        "w-itf-arg-2026-010": {
+            "name": "W15 Trelew", "level": "W15", "startDate": "2026-10-05T00:00:00", "wtn_gm": 17.4,
+        },
+        "no-gm": {"name": "W15 Unknown", "wtn_gm": None},
+    }
+    metadata = {
+        "wta:1168:2026": {"country": "POR", "surface": "Hard"},
+        "itf:w-itf-arg-2026-010": {"country": "ARG", "surface": "Clay"},
+    }
+    rows = _wtn_tstrength_rows(archive, metadata)
+    assert [(row["gm"], row["year"], row["region"], row["surface"]) for row in rows] == [
+        (10.5, "2026", "Europe", "Hard"),
+        (17.4, "2026", "South America", "Clay"),
+    ]
 
 
 def _combined_source(relative_paths):

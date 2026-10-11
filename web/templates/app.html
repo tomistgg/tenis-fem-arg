@@ -16,7 +16,7 @@
         <link href="assets/vendor/select2-4.1.0-rc.0.min.css" rel="stylesheet" />
         <script src="assets/vendor/jquery-3.6.0.min.js"></script>
         <script src="assets/vendor/select2-4.1.0-rc.0.min.js"></script>
-        <link rel="stylesheet" href="assets/app.css?v=20261009-history-filter-size">
+        <link rel="stylesheet" href="assets/app.css?v=20261011-more-selected">
         <link rel="stylesheet" href="assets/language.css?v=20261002-focus-contrast">
     </head>
     <body class="home-mode" onload="renderHistoryTable();">
@@ -408,7 +408,11 @@
 
                 <div id="view-tstrength" class="single-layout" style="display: none;">
                     <div class="header-row">
-                        <h1>WTA Tournament Strength</h1>
+                        <h1>Tournament Strength</h1>
+                    </div>
+                    <div class="ts-mode-tabs" role="group" aria-label="Tournament strength measure">
+                        <button id="ts-mode-wta" type="button" class="active" aria-pressed="true" onclick="tsSetMode('wta')">WTA Rankings</button>
+                        <button id="ts-mode-wtn" type="button" aria-pressed="false" onclick="tsSetMode('wtn')">WTA + ITF WTN GM</button>
                     </div>
                     <div class="ts-controls">
                         <div class="ts-row1"><button id="ts-sort-toggle" onclick="tsToggleSort()">Order by Strength</button>
@@ -424,7 +428,7 @@
                     </div>
                     <div class="tstrength-wrapper">
                         <table id="tstrength-table">
-                            <thead><tr><th>#</th><th>GM</th><th>HM</th><th>Date</th><th>Tournament</th><th>Level</th><th>Region</th><th data-i18n-key="WTA Tournament Strength|Draw">Draw</th></tr></thead>
+                            <thead><tr id="tstrength-headings"><th>#</th><th>GM</th><th>HM</th><th>Date</th><th>Tournament</th><th>Level</th><th>Region</th><th data-i18n-key="WTA Tournament Strength|Draw">Draw</th></tr></thead>
                             <tbody id="tstrength-tbody"></tbody>
                         </table>
                     </div>
@@ -670,15 +674,15 @@
         </div>
         <script src="assets/js/generated-data.js"></script>
         <script src="assets/js/data-loader.js"></script>
-        <script src="assets/js/tabs/tstrength.js?v=20260930-security-1"></script>
+        <script src="assets/js/tabs/tstrength.js?v=20261011-wtn-gm"></script>
         <script src="data/player_aliases_wta_itf_bundle.js"></script>
-        <script src="assets/js/app.js?v=20261009-entry-rank-source"></script>
+        <script src="assets/js/app.js?v=20261011-wtn-gm"></script>
         <script src="assets/js/tabs/roadtogs.js?v=20261001-ui-race-1"></script>
         <script src="assets/js/tabs/draws.js?v=20260930-security-1"></script>
         <script src="assets/anonymous-analytics.js"></script>
     <script src="assets/js/router.js"></script>
     <script src="assets/app-shell.js"></script>
-    <script src="assets/translations.js"></script>
+    <script src="assets/translations.js?v=20261011-wtn-gm"></script>
     <script src="assets/language.js"></script>
     </body>
     </html>

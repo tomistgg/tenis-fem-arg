@@ -13,6 +13,7 @@ from calendar_builder import format_week_label
 from config import (
     CONTINENT_KEYS,
     CONTINENT_LABELS,
+    COUNTRY_TO_CONTINENT,
     GRAND_SLAM_START_DATE_OVERRIDES,
     MOBILE_CONTINENT_LABELS,
     NAME_LOOKUP,
@@ -414,6 +415,38 @@ def _write_frontend_assets(site_root, frontend_data):
         f"window.__WTARG_GENERATED_DATA__ = {serialized};\n",
         encoding="utf-8",
     )
+
+
+def _wtn_tstrength_rows(archive, metadata=None):
+    metadata = metadata or {}
+    region_names = {
+        "south_america": "South America", "north_central_america": "North America",
+        "europe": "Europe", "africa": "Africa", "asia": "Asia", "oceania": "Oceania",
+    }
+    rows = []
+    for key, entry in archive.items():
+        gm = entry.get("wtn_gm")
+        if not isinstance(gm, (int, float)) or not math.isfinite(gm) or gm <= 0:
+            continue
+        wta_match = re.search(r"/tournaments/(\d+)/[^/]+/(\d{4})/", key)
+        lookup_key = f"wta:{wta_match[1]}:{wta_match[2]}" if wta_match else f"itf:{key.lower()}"
+        details = metadata.get(lookup_key, {})
+        country = details.get("country") or (key.split("-")[2].upper() if key.startswith("w-itf-") else "")
+        region = details.get("region") or region_names.get(COUNTRY_TO_CONTINENT.get(country.upper(), ""), "")
+        rows.append({
+            "key": key,
+            "name": display_tournament_name(entry.get("name", key)),
+            "level": entry.get("level", ""),
+            "startDate": str(entry.get("startDate", ""))[:10],
+            "year": str(entry.get("startDate", ""))[:4],
+            "gm": gm,
+            "surface": details.get("surface", ""),
+            "region": region,
+            "playerCount": entry.get("playerCount", 0),
+            "wtnPlayerCount": entry.get("wtnPlayerCount", 0),
+            "status": entry.get("status", "pending"),
+        })
+    return rows
 
 
 IOC_TO_ISO2 = {
@@ -2186,6 +2219,41 @@ def generate_html(
         for t in tstrength_data
         if t.get("gm", 0) > 0
     ]
+    wtn_tstrength_json_list = []
+    wtn_archive_path = os.path.join(source_data_dir, "main_draw_wtn_gm.json")
+    if os.path.exists(wtn_archive_path):
+        with open(wtn_archive_path, encoding="utf-8") as source:
+            wtn_archive = json.load(source)
+        wtn_metadata = {}
+        itf_calendar_path = os.path.join(source_data_dir, "itf_calendar_cache.json")
+        if os.path.exists(itf_calendar_path):
+            with open(itf_calendar_path, encoding="utf-8") as source:
+                for tournament in json.load(source).get("items", []):
+                    key = str(tournament.get("tournamentKey", "")).lower()
+                    if key:
+                        wtn_metadata[f"itf:{key}"] = {
+                            "country": tournament.get("hostNationCode", ""),
+                            "surface": tournament.get("surfaceDesc", ""),
+                        }
+        wta_calendar_path = os.path.join(source_data_dir, "wta_full_calendar_cache.json")
+        if os.path.exists(wta_calendar_path):
+            with open(wta_calendar_path, encoding="utf-8") as source:
+                for tournament in json.load(source).get("items", []):
+                    tournament_id = (tournament.get("tournamentGroup") or {}).get("id")
+                    year = tournament.get("year") or str(tournament.get("startDate", ""))[:4]
+                    if tournament_id and year:
+                        wtn_metadata[f"wta:{tournament_id}:{year}"] = {
+                            "country": tournament.get("country", ""),
+                            "surface": tournament.get("surface", ""),
+                        }
+        for tournament in tstrength_data:
+            key = f"wta:{tournament.get('id')}:{tournament.get('year')}"
+            if key in wtn_metadata or tournament.get("region"):
+                wtn_metadata.setdefault(key, {}).update({
+                    "region": tournament.get("region", ""),
+                    "surface": tournament.get("surface", ""),
+                })
+        wtn_tstrength_json_list = _wtn_tstrength_rows(wtn_archive, wtn_metadata)
 
     # Generate the full HTML template
     frontend_context = {
@@ -2221,6 +2289,7 @@ def generate_html(
     frontend_data = {
         "schemaVersion": 1,
         "tstrength": tstrength_json_list,
+        "wtnTournamentGm": wtn_tstrength_json_list,
         "tournaments": tournament_store,
         "entryWithdrawals": public_withdrawals(
             load_withdrawals(os.path.join(source_data_dir, WITHDRAWALS_FILENAME)), tournament_groups,

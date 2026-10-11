@@ -19,6 +19,8 @@ window.WTARG_TRANSLATIONS = {
         "Match History": "Historial de partidos",
         "Firsts & Points": "Primeros logros y puntos",
         "WTA Tournament Strength": "Nivel Torneos WTA",
+        "Tournament Strength": "Nivel de torneos",
+        "WTA + ITF WTN GM": "GM WTN WTA + ITF",
         "WTA TRN STR": "Nivel Torneos WTA",
         "Dark Mode": "Modo oscuro",
         "Light Mode": "Modo claro",

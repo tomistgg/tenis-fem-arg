@@ -507,15 +507,16 @@
 
             function collectTStrengthUrlState() {
                 const state = {};
+                if (window.__wtargTStrengthMode === 'wtn') state.mode = 'wtn';
                 const year = document.getElementById('ts-filter-year');
                 const level = document.getElementById('ts-filter-level');
                 const surface = document.getElementById('ts-filter-surface');
                 const region = document.getElementById('ts-filter-region');
                 if (year && year.value) state.year = year.value;
                 if (level && level.value) state.level = level.value;
-                if (surface && surface.value) state.surface = surface.value;
-                if (region && region.value) state.region = region.value;
-                if (window.__wtargTStrengthView && window.__wtargTStrengthView !== 'MD') state.draw = window.__wtargTStrengthView;
+                if (!state.mode && surface && surface.value) state.surface = surface.value;
+                if (!state.mode && region && region.value) state.region = region.value;
+                if (!state.mode && window.__wtargTStrengthView && window.__wtargTStrengthView !== 'MD') state.draw = window.__wtargTStrengthView;
                 if (window.__wtargTStrengthSort && window.__wtargTStrengthSort !== 'date') state.sort = window.__wtargTStrengthSort;
                 return state;
             }

@@ -21,7 +21,7 @@
             'type', 'asrank', 'asmode', 'vsrank', 'vsmode'
         ],
         fedbcup: ['view', 'player'],
-        tstrength: ['year', 'level', 'surface', 'region', 'draw', 'sort']
+        tstrength: ['mode', 'year', 'level', 'surface', 'region', 'draw', 'sort']
     };
     var SAFE_FILTER_VALUE_RE = /^[a-z0-9][a-z0-9,.-]*$/;
     var MAX_FILTER_VALUE_LENGTH = 160;

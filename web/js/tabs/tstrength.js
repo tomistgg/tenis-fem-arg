@@ -1,10 +1,14 @@
                     (function() {
                         var tsData = window.WTARG_DATA.tstrength;
+                        var wtnData = window.WTARG_DATA.wtnTournamentGm || [];
+                        var tsMode = 'wta';
                         var tsSort = 'date';
                         var tsView = 'MD'; // 'MD' or 'Q'
                         window.__wtargTStrengthSort = tsSort;
                         window.__wtargTStrengthView = tsView;
-                        var levelColors = {"WTA 1000":"#d946ef55","WTA 500":"#aa00ff88","WTA 250":"#0055ff88","WTA 125":"#ffaa0088"};
+                        window.__wtargTStrengthMode = tsMode;
+                        var levelColors = {"WTA 1000":"#d946ef55","WTA 500":"#aa00ff88","WTA 250":"#0055ff88","WTA 125":"#ffaa0088",
+                            "W100":"#f9731688","W75":"#f59e0b88","W50":"#84cc1688","W35":"#22c55e88","W15":"#06b6d488"};
                         var surfaceColors = {"Hard":"#0055ff88","Clay":"#ff550088","Grass":"#00bb3388","Carpet":"#aa00ff88"};
                         var regionColors = {"Europe":"#0055ff88","North America":"#ff111188","South America":"#00bb3388","Asia":"#ffaa0088","Oceania":"#aa00ff88","Middle East":"#ff660088","Africa":"#ff330088"};
 
@@ -53,7 +57,31 @@
                             tsRender();
                         };
 
+                        window.tsSetMode = function(mode) {
+                            tsMode = mode === 'wtn' ? 'wtn' : 'wta';
+                            window.__wtargTStrengthMode = tsMode;
+                            var year = document.getElementById('ts-filter-year');
+                            var level = document.getElementById('ts-filter-level');
+                            var data = tsMode === 'wtn' ? wtnData : tsData;
+                            var years = [...new Set(data.map(t => t.year).filter(Boolean))].sort().reverse();
+                            var levels = [...new Set(data.map(t => t.level).filter(Boolean))].sort();
+                            year.innerHTML = years.map(y => '<option value="' + tsEscapeHtml(y) + '">' + tsEscapeHtml(y) + '</option>').join('');
+                            level.innerHTML = '<option value="">All Levels</option>' + levels.map(l => '<option value="' + tsEscapeHtml(l) + '">' + tsEscapeHtml(l) + '</option>').join('');
+                            document.getElementById('ts-mode-wta').classList.toggle('active', tsMode === 'wta');
+                            document.getElementById('ts-mode-wtn').classList.toggle('active', tsMode === 'wtn');
+                            document.getElementById('ts-mode-wta').setAttribute('aria-pressed', tsMode === 'wta');
+                            document.getElementById('ts-mode-wtn').setAttribute('aria-pressed', tsMode === 'wtn');
+                            document.getElementById('ts-view-toggle').hidden = tsMode === 'wtn';
+                            document.querySelector('#view-tstrength .ts-explanation').hidden = tsMode === 'wtn';
+                            document.getElementById('tstrength-table').classList.toggle('wtn-mode', tsMode === 'wtn');
+                            document.getElementById('tstrength-headings').innerHTML = tsMode === 'wtn'
+                                ? '<th>#</th><th>GM</th><th>Date</th><th>Tournament</th><th>Level</th><th>Region</th>'
+                                : '<th>#</th><th>GM</th><th>HM</th><th>Date</th><th>Tournament</th><th>Level</th><th>Region</th><th data-i18n-key="WTA Tournament Strength|Draw">Draw</th>';
+                            tsRender();
+                        };
+
                         window.__restoreTStrengthState = function(params) {
+                            window.tsSetMode(params.get('mode'));
                             function setSelectFromParam(id, paramName) {
                                 var el = document.getElementById(id);
                                 if (!el || !params.has(paramName)) return;
@@ -84,11 +112,12 @@
                             var fl = document.getElementById('ts-filter-level').value;
                             var fs = document.getElementById('ts-filter-surface').value;
                             var fr = document.getElementById('ts-filter-region').value;
-                            var filtered = tsData.filter(function(t) {
+                            var filtered = (tsMode === 'wtn' ? wtnData : tsData).filter(function(t) {
                                 if ((t.year || '2025') !== fy) return false;
                                 if (fl && t.level !== fl) return false;
                                 if (fs && t.surface !== fs) return false;
                                 if (fr && t.region !== fr) return false;
+                                if (tsMode === 'wtn') return true;
                                 var d = (t.draw || 'MD');
                                 if (tsView === 'Q') return d === 'Q' || d === 'QUALY';
                                 return d === 'MD' || d === 'M' || d === 'MAIN';
@@ -118,6 +147,26 @@
                                 if (hashMatch && cleaned.indexOf(hashMatch[0]) === -1) cleaned += ' ' + hashMatch[0];
                                 return cleaned;
                             }
+                            if (tsMode === 'wtn') {
+                                for (var j = 0; j < filtered.length; j++) {
+                                    var wt = filtered[j];
+                                    var wtGm = tsGradient(wt.gm, gmMin, gmMax);
+                                    var wtSurface = surfaceColors[wt.surface] || '';
+                                    var wtLevel = levelColors[wt.level] || '';
+                                    var wtRegion = regionColors[wt.region] || '';
+                                    var wtLevelText = isMobile ? wt.level.replace('WTA ', '') : wt.level;
+                                    var wtRegionText = isMobile ? (regionShort[wt.region] || wt.region || '') : (wt.region || '');
+                                    html += '<tr><td class="ts-rank-num">' + (j + 1) + '</td>';
+                                    html += '<td class="ts-gm" style="background:' + wtGm + '">' + tsEscapeHtml(wt.gm.toFixed(2)) + '</td>';
+                                    html += '<td>' + tsEscapeHtml(wt.startDate ? fmtDate(wt.startDate) : '') + '</td>';
+                                    html += '<td class="ts-name" style="background:' + wtSurface + '">' + tsEscapeHtml(wt.name) + '</td>';
+                                    html += '<td style="background:' + wtLevel + '">' + tsEscapeHtml(wtLevelText) + '</td>';
+                                    html += '<td style="background:' + wtRegion + '">' + tsEscapeHtml(wtRegionText) + '</td></tr>';
+                                }
+                                tbody.innerHTML = html || '<tr><td colspan="6">No saved GM values for these filters.</td></tr>';
+                                if (window.syncUrlStateForTab) window.syncUrlStateForTab('tstrength');
+                                return;
+                            }
                             for (var i = 0; i < filtered.length; i++) {
                                 var t = filtered[i];
                                 var lc = levelColors[t.level] || '';
@@ -146,6 +195,6 @@
                             if (window.syncUrlStateForTab) window.syncUrlStateForTab('tstrength');
                         };
                         tsUpdateViewToggle();
-                        tsRender();
+                        window.tsSetMode('wta');
                     })();
                     
