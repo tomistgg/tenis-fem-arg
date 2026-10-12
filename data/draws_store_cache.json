@@ -444,14 +444,18 @@
           {"pos": 7, "name": "PALICOVA, Barbora", "country": "CZE", "wtn": "9.66"},
           {"pos": 8, "seed": "8", "name": "ORTENZI, Jazmin", "country": "ARG", "wtn": "10.44"},
           {"pos": 9, "seed": "4", "name": "SEMENISTAJA, Darja", "country": "LAT", "wtn": "10.37"},
+          {"pos": 10, "entry": "Q", "name": "LOLLIA, Mathilde", "country": "FRA", "wtn": "12.40"},
           {"pos": 11, "name": "BUREL, Clara", "country": "FRA", "wtn": "9.19"},
           {"pos": 12, "name": "GJORCHESKA, Lina", "country": "MKD", "wtn": "10.94"},
           {"pos": 13, "name": "MATOULA, Martha", "country": "GRE", "wtn": "11.38"},
           {"pos": 14, "name": "PEDONE, Giorgia", "country": "ITA", "wtn": "12.01"},
+          {"pos": 15, "entry": "Q", "name": "FEISTEL, Gina", "country": "POL", "wtn": "11.57"},
           {"pos": 16, "seed": "5", "name": "MARISTANY ZULETA DE REALES, Guiomar", "country": "ESP", "wtn": "9.6"},
           {"pos": 17, "seed": "6", "name": "ROMERO GORMAZ, Leyre", "country": "ESP", "wtn": "10.4"},
           {"pos": 18, "name": "RAME, Alice", "country": "FRA", "wtn": "11.71"},
           {"pos": 19, "entry": "WC", "name": "FREITAS, Analu", "country": "POR", "wtn": "17.84"},
+          {"pos": 20, "entry": "Q", "name": "SERBAN, Raluka", "country": "CYP", "wtn": "12.43"},
+          {"pos": 21, "entry": "Q", "name": "NAGY, Adrienn", "country": "HUN", "wtn": "12.72"},
           {"pos": 22, "name": "JANICIJEVIC, Selena", "country": "FRA", "wtn": "12.36"},
           {"pos": 23, "name": "ZANTEDESCHI, Aurora", "country": "ITA", "wtn": "10.85"},
           {"pos": 24, "seed": "3", "name": "FERRO, Fiona", "country": "FRA", "wtn": "8.87"},
@@ -464,11 +468,10 @@
           {"pos": 31, "name": "COLMEGNA, Martina", "country": "ITA", "wtn": "12.18"},
           {"pos": 32, "seed": "2", "name": "JONES, Francesca", "country": "GBR", "wtn": "9.52"}
         ],
-        "qualifiers": [
-          10,
-          15,
-          20,
-          21
+        "matches": [
+          {"round": 1, "match_num": 3, "winner_name": "J. Ortenzi", "score": "64 76(1)"},
+          {"round": 1, "match_num": 5, "winner_name": "C. Burel", "score": "61 63"},
+          {"round": 1, "match_num": 8, "winner_name": "L. Romero Gormaz", "score": "46 62 75"}
         ],
         "round_labels": [
           "Round of 32",
@@ -477,7 +480,8 @@
           "Semifinals",
           "Final"
         ],
-        "num_rounds": 5
+        "num_rounds": 5,
+        "wtn_gm": 11.4923
       },
       "MDD":
       {
@@ -505,6 +509,11 @@
           {"pos": 14, "name": "EBELING KONING, Loes / TSYGOUROVA, Katerina", "country": "NED", "members": [{"name": "EBELING KONING, Loes", "country": "NED", "wtn": "9.91"}, {"name": "TSYGOUROVA, Katerina", "country": "SUI", "wtn": "11.89"}]},
           {"pos": 15, "name": "COLMEGNA, Martina / LIU, Min", "country": "ITA", "members": [{"name": "COLMEGNA, Martina", "country": "ITA", "wtn": "12.18"}, {"name": "LIU, Min", "country": "CHN", "wtn": "16.29"}]},
           {"pos": 16, "seed": "2", "name": "JORGE, Francisca / JORGE, Matilde", "country": "POR", "members": [{"name": "JORGE, Francisca", "country": "POR", "wtn": "10.87"}, {"name": "JORGE, Matilde", "country": "POR", "wtn": "10.15"}]}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 3, "winner_name": "I. Burillo / A. Zantedeschi", "score": "63 62"},
+          {"round": 1, "match_num": 5, "winner_name": "M. Matoula / G. Pedone", "score": "64 06 10-7"},
+          {"round": 1, "match_num": 7, "winner_name": "F. Jorge / M. Jorge", "score": "62 61"}
         ],
         "round_labels": [
           "Round of 16",
@@ -572,6 +581,14 @@
           {"pos": 31, "entry": "Q", "name": "BOSKOVIC, Lea", "country": "CRO", "wtn": "11.76"},
           {"pos": 32, "seed": "2", "name": "SELEKHMETEVA, Oksana", "country": "ESP", "wtn": "10.36"}
         ],
+        "matches": [
+          {"round": 1, "match_num": 2, "winner_name": "H. Tan", "score": "26 64 60"},
+          {"round": 1, "match_num": 4, "winner_name": "L. Pigato", "score": "64 64"},
+          {"round": 1, "match_num": 5, "winner_name": "L. Havlickova", "score": "64 75"},
+          {"round": 1, "match_num": 7, "winner_name": "L. Bronzetti", "score": "36 61 60"},
+          {"round": 1, "match_num": 8, "winner_name": "G. Knutson", "score": "64 63"},
+          {"round": 1, "match_num": 9, "winner_name": "S. Bandecchi", "score": "63 62"}
+        ],
         "round_labels": [
           "Round of 32",
           "Round of 16",
@@ -617,7 +634,11 @@
           {"round": 1, "match_num": 4, "winner_name": "A. Koevermans", "score": "75 64"},
           {"round": 1, "match_num": 5, "winner_name": "C. Werner", "score": "61 61"},
           {"round": 1, "match_num": 6, "winner_name": "A. Friedsam", "score": "60 60"},
-          {"round": 1, "match_num": 7, "winner_name": "T. J. Brockmann", "score": "61 61"}
+          {"round": 1, "match_num": 7, "winner_name": "T. J. Brockmann", "score": "61 61"},
+          {"round": 2, "match_num": 0, "winner_name": "L. Boskovic", "score": "63 62"},
+          {"round": 2, "match_num": 1, "winner_name": "E. Andreeva", "score": "75 01 RET"},
+          {"round": 2, "match_num": 2, "winner_name": "A. Koevermans", "score": "64 75"},
+          {"round": 2, "match_num": 3, "winner_name": "T. J. Brockmann", "score": "75 63"}
         ],
         "round_labels": [
           "Q1",
