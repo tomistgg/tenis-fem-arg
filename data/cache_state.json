@@ -3,16 +3,16 @@
     "wta_full_calendar_cache.json": {
       "from": "2026-09-17",
       "to": "2026-12-31",
-      "fetchedAt": "2026-10-15T02:50:20Z",
-      "lastAttemptAt": "2026-10-15T02:50:20Z",
-      "fetchedRunId": "20261015T024932Z-805fa587f5",
-      "lastAttemptRunId": "20261015T024932Z-805fa587f5"
+      "fetchedAt": "2026-10-15T08:07:03Z",
+      "lastAttemptAt": "2026-10-15T08:07:03Z",
+      "fetchedRunId": "20261015T080614Z-52e1bb2133",
+      "lastAttemptRunId": "20261015T080614Z-52e1bb2133"
     },
     "itf_calendar_cache.json": {
       "year": 2026,
       "count": 636,
-      "fetchedAt": "2026-10-15T02:51:02Z",
-      "lastAttemptAt": "2026-10-15T02:51:02Z"
+      "fetchedAt": "2026-10-15T08:07:45Z",
+      "lastAttemptAt": "2026-10-15T08:07:45Z"
     }
   },
   "entries": {
@@ -219,7 +219,10 @@
       },
       "w-itf-bra-2026-015": {
         "duplicatePlayersAlerted": [
-          "Catarina Melleiro"
+          "Catarina Melleiro",
+          "Larissa Estrela",
+          "Olivia Elliott",
+          "Martina Torrales Tebes"
         ]
       },
       "w-itf-cze-2026-007": {
@@ -261,6 +264,15 @@
       "https://www.wtatennis.com/tournaments/2092/ningbo/2026/player-list": {
         "duplicatePlayersAlerted": [
           "Diane Parry"
+        ]
+      },
+      "w-itf-arg-2026-015": {
+        "duplicatePlayersAlerted": [
+          "Agostina Motta",
+          "Constanza Patriarca",
+          "Camila Bertolini",
+          "Mackenzie Clark",
+          "Jazmin Baier"
         ]
       }
     },
@@ -1102,29 +1114,29 @@
         "completedAt": "2026-10-12T01:21:19Z"
       },
       "https://www.wtatennis.com/tournaments/1075/wuhan/2026/player-list": {
-        "fetchedAt": "2026-10-15T03:07:26Z"
+        "fetchedAt": "2026-10-15T08:24:26Z"
       },
       "https://www.wtatennis.com/tournaments/1128/mallorca-125/2026/player-list": {
-        "fetchedAt": "2026-10-15T03:07:26Z"
+        "fetchedAt": "2026-10-15T08:24:26Z"
       },
       "https://www.wtatennis.com/tournaments/1168/lisbon-125/2026/player-list": {
-        "fetchedAt": "2026-10-15T03:07:26Z"
+        "fetchedAt": "2026-10-15T08:24:26Z"
       },
       "https://www.wtatennis.com/tournaments/1140/rovereto-125/2026/player-list": {
-        "fetchedAt": "2026-10-15T03:07:26Z"
+        "fetchedAt": "2026-10-15T08:24:26Z"
       },
       "w-itf-ita-2026-036": {
         "fetchedAt": "2026-10-13T17:32:31Z",
         "completedAt": "2026-10-14T14:53:10Z"
       },
       "w-itf-bra-2026-008": {
-        "fetchedAt": "2026-10-15T03:09:01Z"
+        "fetchedAt": "2026-10-15T08:25:56Z"
       },
       "w-itf-usa-2026-049": {
-        "fetchedAt": "2026-10-15T03:07:26Z"
+        "fetchedAt": "2026-10-15T08:24:26Z"
       },
       "w-itf-bul-2026-004": {
-        "fetchedAt": "2026-10-15T03:07:51Z"
+        "fetchedAt": "2026-10-15T08:24:45Z"
       }
     }
   }
