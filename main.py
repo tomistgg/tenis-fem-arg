@@ -2023,6 +2023,11 @@ def main():
         action="store_true",
         help="Fetch available ITF acceptance lists except tournaments whose main draw is already published.",
     )
+    parser.add_argument(
+        "--skip-wtn",
+        action="store_true",
+        help="Skip WTN observations, profile requests, and main-draw WTN archiving for this run.",
+    )
     args = parser.parse_args()
 
     if args.verbose:
@@ -2112,16 +2117,17 @@ def main():
         }
         wtn_draw_history_path = os.path.join(DATA_DIR, WTN_DRAW_HISTORY_FILENAME)
         wtn_draw_history = load_cache(wtn_draw_history_path) or {}
-        refresh_entry_list_wtn(
-            driver,
-            entry_cache,
-            ITF_WTN_CACHE_FILE,
-            today=madrid_today(),
-            fetch_profiles=False,
-            tournament_weeks=entry_tournament_weeks,
-            fresh_itf_entry_lists=fresh_itf_entry_lists,
-            recent_draws=wtn_draw_history.items(),
-        )
+        if not args.skip_wtn:
+            refresh_entry_list_wtn(
+                driver,
+                entry_cache,
+                ITF_WTN_CACHE_FILE,
+                today=madrid_today(),
+                fetch_profiles=False,
+                tournament_weeks=entry_tournament_weeks,
+                fresh_itf_entry_lists=fresh_itf_entry_lists,
+                recent_draws=wtn_draw_history.items(),
+            )
 
         # Persist the refreshed entry lists after the tournament pass.
         save_cache(ENTRY_LISTS_CACHE_FILE, entry_cache, formatter=dumps_entry_lists_cache)
@@ -2590,7 +2596,7 @@ def main():
     # WTN history covers all tournaments before website visibility/pruning.
     # Main draws without ARG players are fetched separately from the site's
     # nationality-filtered draw pipeline, including hidden WTA tournaments.
-    if not skip_draws_fetch:
+    if not skip_draws_fetch and not args.skip_wtn:
         from main_draw_wtn import (
             ARCHIVE_FILENAME,
             ERRORS_FILENAME,
@@ -2608,16 +2614,17 @@ def main():
         main_draws = []
 
     profile_failures = {}
-    logger.info("Refreshing singles WTNs for entry lists and all available draws...")
-    refresh_draw_wtn(
-        driver, draws_store, ITF_WTN_CACHE_FILE, entry_cache=entry_cache,
-        main_draws=main_draws, archive_path=os.path.join(DATA_DIR, "main_draw_wtn_gm.json"),
-        include_entry_players=True, profile_failures=profile_failures,
-        tournament_weeks=entry_tournament_weeks, max_profile_fetches=40,
-        require_previous_week_draw=True, recent_draws=wtn_draw_history.items(),
-    )
+    if not args.skip_wtn:
+        logger.info("Refreshing singles WTNs for entry lists and all available draws...")
+        refresh_draw_wtn(
+            driver, draws_store, ITF_WTN_CACHE_FILE, entry_cache=entry_cache,
+            main_draws=main_draws, archive_path=os.path.join(DATA_DIR, "main_draw_wtn_gm.json"),
+            include_entry_players=True, profile_failures=profile_failures,
+            tournament_weeks=entry_tournament_weeks, max_profile_fetches=40,
+            require_previous_week_draw=True, recent_draws=wtn_draw_history.items(),
+        )
 
-    if not skip_draws_fetch:
+    if not skip_draws_fetch and not args.skip_wtn:
         logger.info("Archiving main-draw WTN geometric means for all tournaments...")
         refresh_main_draw_wtn(
             driver,
