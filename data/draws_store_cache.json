@@ -738,7 +738,11 @@
           {"round": 2, "match_num": 4, "winner_name": "G. Knutson", "score": "36 76(4) 76(3)"},
           {"round": 2, "match_num": 5, "winner_name": "M. Kubka", "score": "63 64"},
           {"round": 2, "match_num": 6, "winner_name": "D. Salkova", "score": "26 64 63"},
-          {"round": 2, "match_num": 7, "winner_name": "L. Boskovic", "score": "41 RET"}
+          {"round": 2, "match_num": 7, "winner_name": "L. Boskovic", "score": "41 RET"},
+          {"round": 3, "match_num": 0, "winner_name": "B. Andreescu", "score": "62 75"},
+          {"round": 3, "match_num": 1, "winner_name": "L. Havlickova", "score": "62 64"},
+          {"round": 3, "match_num": 2, "winner_name": "M. Kubka", "score": "75 42 RET"},
+          {"round": 3, "match_num": 3, "winner_name": "D. Salkova", "score": "63 26 63"}
         ],
         "round_labels": [
           "Round of 32",
@@ -831,7 +835,11 @@
           {"round": 1, "match_num": 4, "winner_name": "J. Daniel / A. Wagner", "score": "60 61"},
           {"round": 1, "match_num": 5, "winner_name": "R. Bhosale / L. Salden", "score": "64 75"},
           {"round": 1, "match_num": 6, "winner_name": "K. Novak / I. Sebestova", "score": "64 76(3)"},
-          {"round": 1, "match_num": 7, "winner_name": "D. Salkova / A. Siskova", "score": "63 36 10-6"}
+          {"round": 1, "match_num": 7, "winner_name": "D. Salkova / A. Siskova", "score": "63 36 10-6"},
+          {"round": 1, "match_num": 0, "winner_name": "I. Haverlag / M. Kubka", "score": "76(6) 36 15-13"},
+          {"round": 2, "match_num": 1, "winner_name": "N. Basiletti / G. Maduzzi", "score": "46 61 10-6"},
+          {"round": 2, "match_num": 2, "winner_name": "R. Bhosale / L. Salden", "score": "64 64"},
+          {"round": 2, "match_num": 3, "winner_name": "D. Salkova / A. Siskova", "score": "62 60"}
         ],
         "byes": [
           2
@@ -1003,7 +1011,11 @@
           {"round": 2, "match_num": 4, "winner_name": "J. Estevez", "score": "60 61"},
           {"round": 2, "match_num": 5, "winner_name": "F. Labrana", "score": "63 61"},
           {"round": 2, "match_num": 6, "winner_name": "B. Gatica", "score": "61 61"},
-          {"round": 2, "match_num": 7, "winner_name": "M. Urrutia", "score": "64 63"}
+          {"round": 2, "match_num": 7, "winner_name": "M. Urrutia", "score": "64 63"},
+          {"round": 3, "match_num": 0, "winner_name": "A. Sanchez", "score": "62 36 60"},
+          {"round": 3, "match_num": 1, "winner_name": "L. Cinalli", "score": "75 75"},
+          {"round": 3, "match_num": 2, "winner_name": "J. Estevez", "score": "63 75"},
+          {"round": 3, "match_num": 3, "winner_name": "B. Gatica", "score": "63 57 63"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1078,11 +1090,17 @@
           {"round": 1, "match_num": 7, "winner_name": "J. Pareja", "score": "75 61"},
           {"round": 1, "match_num": 8, "winner_name": "A. Urhobo", "score": "61 63"},
           {"round": 1, "match_num": 9, "winner_name": "A. Herrero Linana", "score": "76(10) 57 61"},
+          {"round": 1, "match_num": 10, "winner_name": "M. Rapolu", "score": "61 46 62"},
           {"round": 1, "match_num": 11, "winner_name": "K. Liutova", "score": "63 60"},
           {"round": 1, "match_num": 12, "winner_name": "Y. Ku", "score": "64 63"},
           {"round": 1, "match_num": 13, "winner_name": "A. Rus", "score": "26 75 62"},
           {"round": 1, "match_num": 14, "winner_name": "T. Frodin", "score": "64 36 76(6)"},
-          {"round": 1, "match_num": 15, "winner_name": "R. Zarazua", "score": "63 61"}
+          {"round": 1, "match_num": 15, "winner_name": "R. Zarazua", "score": "63 61"},
+          {"round": 2, "match_num": 0, "winner_name": "D. Guzman", "score": "64 26 60"},
+          {"round": 2, "match_num": 1, "winner_name": "S. Stephens", "score": "62 63"},
+          {"round": 2, "match_num": 3, "winner_name": "J. Pareja", "score": "62 36 60"},
+          {"round": 2, "match_num": 6, "winner_name": "Y. Ku", "score": "57 76(3) 61"},
+          {"round": 2, "match_num": 7, "winner_name": "R. Zarazua", "score": "63 62"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1177,6 +1195,118 @@
         ],
         "num_rounds": 5,
         "wtn_gm": 13.7759
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/405/osaka/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 250 Osaka",
+      "level": "WTA 250",
+      "week": "Week of October 19",
+      "startDate": "2026-10-19",
+      "endDate": "2026-10-25",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "Kinoshita Group Japan Open",
+        "location": "OSAKA, JPN",
+        "dates": "October 19-25 2026",
+        "prize": "$ 283,347",
+        "surface": "Hard",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 24,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "KRAUS, Sinja", "country": "AUT", "wtn": "8.84"},
+          {"pos": 2, "entry": "WC", "name": "KOBORI, Momoko", "country": "JPN", "wtn": "-"},
+          {"pos": 3, "name": "YAMAGUCHI, Mei", "country": "JPN", "wtn": "12.18"},
+          {"pos": 4, "seed": "9", "name": "KENIN, Sofia", "country": "USA", "wtn": "9.94"},
+          {"pos": 5, "seed": "2", "name": "PRESTON, Taylah", "country": "AUS", "wtn": "9.05"},
+          {"pos": 6, "name": "KAJI, Haruka", "country": "JPN", "wtn": "11.73"},
+          {"pos": 7, "name": "WATSON, Heather", "country": "GBR", "wtn": "9.93"},
+          {"pos": 8, "seed": "8", "name": "JONES, Emerson", "country": "AUS", "wtn": "10.16"},
+          {"pos": 9, "seed": "3", "name": "JOINT, Maya", "country": "AUS", "wtn": "9.32"},
+          {"pos": 10, "name": "OKAMURA, Kyoka", "country": "JPN", "wtn": "10.4"},
+          {"pos": 11, "name": "KOIKE, Ena", "country": "JPN", "wtn": "12.62"},
+          {"pos": 12, "seed": "7", "name": "DAY, Kayla", "country": "USA", "wtn": "8.68"},
+          {"pos": 13, "seed": "4", "name": "LIU, Claire", "country": "USA", "wtn": "8.95"},
+          {"pos": 14, "entry": "WC", "name": "SAWASHIRO, Kanon", "country": "JPN", "wtn": "13.50"},
+          {"pos": 15, "name": "SORRIBES TORMO, Sara", "country": "ESP", "wtn": "9.65"},
+          {"pos": 16, "seed": "10", "name": "INGLIS, Maddison", "country": "AUS", "wtn": "9.35"},
+          {"pos": 17, "seed": "5", "name": "DART, Harriet", "country": "GBR", "wtn": "9.72"},
+          {"pos": 18, "name": "SAIGO, Rina", "country": "JPN", "wtn": "13.15"},
+          {"pos": 19, "name": "ITO, Aoi", "country": "JPN", "wtn": "10.81"},
+          {"pos": 20, "seed": "12", "name": "GRANT, Tyra Caterina", "country": "ITA", "wtn": "9.93"},
+          {"pos": 21, "seed": "6", "name": "STOIANA, Mary", "country": "USA", "wtn": "9.03"},
+          {"pos": 22, "entry": "WC", "name": "MATSUDA, Rinko", "country": "JPN", "wtn": "12.44"},
+          {"pos": 23, "name": "ISHII, Sayaka", "country": "JPN", "wtn": "13.07"},
+          {"pos": 24, "seed": "11", "name": "AVANESYAN, Elina", "country": "ARM", "wtn": "9.55"}
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/2092/ningbo/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 500 Ningbo",
+      "level": "WTA 500",
+      "week": "Week of October 19",
+      "startDate": "2026-10-19",
+      "endDate": "2026-10-25",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "BNB Ningbo Open",
+        "location": "NINGBO, CHN",
+        "dates": "October 19-25 2026",
+        "prize": "$ 1,206,446",
+        "surface": "Hard, Plexipave",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 24,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "SNIGUR, Daria", "country": "UKR", "wtn": "8.06"},
+          {"pos": 2, "entry": "WC", "name": "LIN, Yu Jun", "country": "CHN", "wtn": "13.13"},
+          {"pos": 3, "name": "KAWA, Katarzyna", "country": "POL", "wtn": "10.49"},
+          {"pos": 4, "seed": "12", "name": "VOLYNETS, Katie", "country": "USA", "wtn": "8.09"},
+          {"pos": 5, "seed": "2", "name": "STARODUBTSEVA, Yuliia", "country": "UKR", "wtn": "8.92"},
+          {"pos": 6, "name": "ZAKHAROVA, Anastasia", "wtn": "9.5"},
+          {"pos": 7, "name": "KUDERMETOVA, Polina", "country": "UZB", "wtn": "9.85"},
+          {"pos": 8, "seed": "11", "name": "SAWANGKAEW, Mananchaya", "country": "THA", "wtn": "9.25"},
+          {"pos": 9, "seed": "3", "name": "KALININA, Anhelina", "country": "UKR", "wtn": "9.0"},
+          {"pos": 10, "name": "WALTERT, Simona", "country": "SUI", "wtn": "10.11"},
+          {"pos": 11, "name": "SASNOVICH, Aliaksandra", "wtn": "9.25"},
+          {"pos": 12, "seed": "7", "name": "BONDAR, Anna", "country": "HUN", "wtn": "8.72"},
+          {"pos": 13, "seed": "4", "name": "SHERIF, Mayar", "country": "EGY", "wtn": "8.57"},
+          {"pos": 14, "name": "PROZOROVA, Tatiana", "wtn": "9.49"},
+          {"pos": 15, "name": "YASTREMSKA, Dayana", "country": "UKR", "wtn": "9.01"},
+          {"pos": 16, "seed": "8", "name": "RAKHIMOVA, Kamilla", "country": "UZB", "wtn": "8.9"},
+          {"pos": 17, "seed": "5", "name": "FRECH, Magdalena", "country": "POL", "wtn": "8.98"},
+          {"pos": 18, "entry": "WC", "name": "SHI, Han", "country": "CHN", "wtn": "10.52"},
+          {"pos": 19, "entry": "WC", "name": "DONG, Jiali", "country": "CHN", "wtn": "-"},
+          {"pos": 20, "seed": "9", "name": "KORNEEVA, Alina", "wtn": "8.03"},
+          {"pos": 21, "seed": "6", "name": "PARKS, Alycia", "country": "USA", "wtn": "10.43"},
+          {"pos": 22, "name": "VANDROMME, Jeline", "country": "BEL", "wtn": "9.59"},
+          {"pos": 23, "entry": "WC", "name": "QU, Yihan", "country": "CHN", "wtn": "12.49"},
+          {"pos": 24, "seed": "10", "name": "PUTINTSEVA, Yulia", "country": "KAZ", "wtn": "8.67"}
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
       }
     }
   }
