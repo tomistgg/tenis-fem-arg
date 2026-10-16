@@ -886,6 +886,56 @@ def test_combined_entry_queue_uses_current_lists_and_keeps_fresh_first_list_valu
     assert entries["w-itf-current#qual"][0]["wtn"] == "9"
 
 
+def test_profile_refresh_requires_stale_wtn_and_previous_week_singles_draw(tmp_path):
+    path = tmp_path / "cache.json"
+    path.write_text(json.dumps({
+        pid: {"wtn": 12, "source": "profile", "retrieved_at": retrieved}
+        for pid, retrieved in (("8001", "2026-10-09"), ("8002", "2026-10-09"),
+                               ("8003", "2026-10-13"), ("8004", "2026-10-09"))
+    }))
+    def player(pid):
+        return {"player_id": pid, "name": f"Player {pid}", "country": "ARG", "type": "MAIN"}
+    draws = {
+        "w-itf-last": {"startDate": "2026-10-05", "endDate": "2026-10-11", "draws": {
+            "MDS": {"players": [player("8001"), player("8003")]},
+            "MDD": {"players": [{"members": [player("8004")]}]},
+        }},
+        "w-itf-current": {"startDate": "2026-10-12", "endDate": "2026-10-18", "draws": {
+            "MDS": {"players": [player("8002")]},
+        }},
+    }
+    entries = {"w-itf-next": [player(pid) for pid in ("8001", "8003", "8004")]}
+    fetched = []
+    itf_wtn.refresh_draw_wtn(
+        None, draws, path, entry_cache=entries, include_entry_players=True,
+        today=date(2026, 10, 16), tournament_weeks={"w-itf-next": "2026-10-19"},
+        require_previous_week_draw=True,
+        fetch_source=lambda url: fetched.append(url) or 'var props = {"wtnSingles": 9};',
+    )
+    assert len(fetched) == 1 and "/8001/" in fetched[0]
+    assert entries["w-itf-next"][0]["wtn"] == "9.0"
+    assert draws["w-itf-current"]["draws"]["MDS"]["players"][0]["wtn"] == "12"
+
+
+def test_new_entry_list_wtn_requires_previous_week_singles_draw(tmp_path):
+    path = tmp_path / "cache.json"
+    players = [
+        {"player_id": pid, "name": f"Player {pid}", "country": "ARG", "wtn": "12"}
+        for pid in ("8001", "8002")
+    ]
+    history = {"w-itf-last": {"startDate": "2026-09-30", "endDate": "2026-10-11", "draws": {
+        "MDS": {"players": [players[0]]},
+        "MDD": {"players": [{"members": [players[1]]}]},
+    }}}
+    cache = refresh_entry_list_wtn(
+        None, {"w-itf-next": players}, path, today=date(2026, 10, 16), fetch_profiles=False,
+        fresh_itf_entry_lists={"w-itf-next": players}, tournament_weeks={"w-itf-next": "2026-10-19"},
+        recent_draws=history.items(),
+    )
+    assert "8001" in cache
+    assert "8002" not in cache
+
+
 @pytest.mark.parametrize("kind", ["MDS", "QS"])
 @pytest.mark.parametrize("cached", [False, True])
 def test_finished_draws_do_not_request_profiles_even_for_pending_gm(tmp_path, kind, cached):

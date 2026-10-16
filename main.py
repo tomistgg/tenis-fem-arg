@@ -84,7 +84,13 @@ from itf_drawsheet_cache import (
     tournament_ids_with_published_main_draw,
     tournament_ids_with_published_qualifying_draw,
 )
-from itf_wtn import ITF_WTN_CACHE_FILENAME, propagate_wtn, refresh_draw_wtn, refresh_entry_list_wtn
+from itf_wtn import (
+    ITF_WTN_CACHE_FILENAME,
+    WTN_DRAW_HISTORY_FILENAME,
+    propagate_wtn,
+    refresh_draw_wtn,
+    refresh_entry_list_wtn,
+)
 from itf_wtn import _load_cache as load_wtn_cache
 from itf_wtn import _normalize_cache as normalize_wtn_cache
 from lazy_browser import LazyBrowserSession
@@ -2104,6 +2110,8 @@ def main():
             for tournaments in tournament_groups.values()
             for key, info in tournaments.items()
         }
+        wtn_draw_history_path = os.path.join(DATA_DIR, WTN_DRAW_HISTORY_FILENAME)
+        wtn_draw_history = load_cache(wtn_draw_history_path) or {}
         refresh_entry_list_wtn(
             driver,
             entry_cache,
@@ -2112,6 +2120,7 @@ def main():
             fetch_profiles=False,
             tournament_weeks=entry_tournament_weeks,
             fresh_itf_entry_lists=fresh_itf_entry_lists,
+            recent_draws=wtn_draw_history.items(),
         )
 
         # Persist the refreshed entry lists after the tournament pass.
@@ -2605,6 +2614,7 @@ def main():
         main_draws=main_draws, archive_path=os.path.join(DATA_DIR, "main_draw_wtn_gm.json"),
         include_entry_players=True, profile_failures=profile_failures,
         tournament_weeks=entry_tournament_weeks, max_profile_fetches=40,
+        require_previous_week_draw=True, recent_draws=wtn_draw_history.items(),
     )
 
     if not skip_draws_fetch:
@@ -2620,8 +2630,26 @@ def main():
             profile_failures=profile_failures,
         )
 
-    # Prune draws for tournaments that are definitely over (endDate < today).
+    # Preserve singles rosters for next week's WTN decisions without retaining old website draws.
     today = madrid_today()
+    previous_monday = today - timedelta(days=today.weekday() + 7)
+    previous_monday_text = previous_monday.isoformat()
+    for key, tournament in [*draws_store.items(), *main_draws]:
+        meta = tournament.get("meta") or tournament
+        last_tournament_date = max(str(meta.get("startDate") or "")[:10], str(meta.get("endDate") or "")[:10])
+        if last_tournament_date >= previous_monday_text:
+            wtn_draw_history[key] = {
+                "meta": {"startDate": meta.get("startDate"), "endDate": meta.get("endDate")},
+                "draws": {kind: {"players": draw.get("players", [])}
+                          for kind, draw in (tournament.get("draws") or {}).items() if kind in {"MDS", "QS"}},
+            }
+    wtn_draw_history = {
+        key: tournament for key, tournament in wtn_draw_history.items()
+        if max(str((tournament.get("meta") or tournament).get("startDate") or "")[:10],
+               str((tournament.get("meta") or tournament).get("endDate") or "")[:10]) >= previous_monday_text
+    }
+    save_json_file(wtn_draw_history_path, wtn_draw_history)
+    # Prune draws for tournaments that are definitely over (endDate < today).
     keys_to_delete = []
     for t_key, tdata in (draws_store or {}).items():
         if not isinstance(tdata, dict):
@@ -2697,7 +2725,6 @@ def main():
     # Persist draws cache so a successful draw doesn't disappear on a later failed run.
     propagate_wtn(
         entry_cache, normalize_wtn_cache(load_wtn_cache(ITF_WTN_CACHE_FILE)), draws_store,
-        fresh_singles_only=True,
     )
     save_cache(ENTRY_LISTS_CACHE_FILE, entry_cache, formatter=dumps_entry_lists_cache)
     save_json_file(DRAWS_STORE_CACHE_FILE, draws_store, formatter=dumps_draws_store_cache)

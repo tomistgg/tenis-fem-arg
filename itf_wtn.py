@@ -17,6 +17,7 @@ from utils import save_json_file
 
 logger = get_logger("itf-wtn")
 ITF_WTN_CACHE_FILENAME = "itf_wtn_cache.json"
+WTN_DRAW_HISTORY_FILENAME = "wtn_singles_draw_history.json"
 PROFILE_URL = "https://www.itftennis.com/en/players/{slug}/{player_id}/{country}/wt/s/overview/"
 REQUEST_INTERVAL_SECONDS = 2.0
 PROFILE_BATCH_SIZE = 8
@@ -361,6 +362,28 @@ def singles_draw_finished(tournament, kind, *, today=None):
     return bool(end and end < today.isoformat()) or _draw_is_complete(draw, is_qualifying=kind == "QS")
 
 
+def previous_week_singles_players(draws, today, resolver):
+    """Resolve players in singles draws from the previous Monday through Sunday."""
+    from main_draw_wtn import _resolve_player
+
+    this_monday = today - timedelta(days=today.weekday())
+    previous_monday = this_monday - timedelta(days=7)
+    previous_week = previous_monday.isoformat()
+    player_ids = set()
+    for key, tournament in draws:
+        meta = tournament.get("meta") or tournament
+        start_week = _week_start(meta.get("startDate"))
+        end_date = str(meta.get("endDate") or "")[:10]
+        if not start_week or start_week > previous_week or (start_week < previous_week and end_date < previous_week):
+            continue
+        for kind in ("MDS", "QS"):
+            for player in ((tournament.get("draws") or {}).get(kind) or {}).get("players", []):
+                resolved = _resolve_player(player, key, resolver)
+                if resolved:
+                    player_ids.add(str(resolved["player_id"]))
+    return player_ids
+
+
 def propagate_wtn(
     entry_cache, cache, draws_store=None, *, resolve_itf_player=None, fresh_singles_only=False, today=None
 ):
@@ -507,6 +530,7 @@ def refresh_entry_list_wtn(
     draw_players=None,
     profile_failures=None,
     include_itf_entry_players=False,
+    recent_draws=None,
 ):
     """Refresh and propagate WTNs for WTA and ITF entry-list players."""
     today = today or madrid_today()
@@ -514,6 +538,11 @@ def refresh_entry_list_wtn(
     tournament_weeks = tournament_weeks or {}
     cache = _normalize_cache(_load_cache(cache_path))
     base_resolver = resolve_itf_player or _wta_player_with_itf_id
+    eligible_ids = (
+        previous_week_singles_players(
+            recent_draws, today, _resolver_with_entry_cache_fallback(entry_cache, cache, base_resolver)
+        ) if recent_draws is not None else None
+    )
 
     seen_path = Path(cache_path).with_name(Path(cache_path).stem.removesuffix("_cache") + "_entry_lists_seen.json")
     seen_lists = _load_cache(seen_path)
@@ -531,7 +560,10 @@ def refresh_entry_list_wtn(
         for player in players or []:
             player_id = str(player.get("player_id") or "").strip()
             value = player.get("wtn")
-            if player_id and value not in (None, "", "-"):
+            is_due = eligible_ids is None or (
+                player_id in eligible_ids and not _select_recent_observation(cache.get(player_id, {}), today)
+            )
+            if player_id and value not in (None, "", "-") and is_due:
                 _store_observation(
                     cache,
                     player_id,
@@ -581,7 +613,8 @@ def refresh_entry_list_wtn(
     targets = [
         (player_id, player)
         for player_id, player in players_by_id.items()
-        if not _select_recent_observation(cache.get(player_id, {}), today)
+        if (eligible_ids is None or player_id in eligible_ids)
+        and not _select_recent_observation(cache.get(player_id, {}), today)
         and not _recent_no_wtn_check(cache.get(player_id, {}), today)
     ] if fetch_profiles else []
     targets.sort(key=lambda item: (
@@ -676,7 +709,8 @@ def refresh_entry_list_wtn(
 
 def refresh_draw_wtn(
     driver, draws_store, cache_path, *, entry_cache=None, today=None, resolve_itf_player=None,
-    main_draws=None, archive_path=None, include_entry_players=False, profile_failures=None, **profile_options
+    main_draws=None, archive_path=None, include_entry_players=False, profile_failures=None,
+    require_previous_week_draw=False, recent_draws=None, **profile_options
 ):
     """Refresh stale or missing WTNs for active singles draws, never doubles."""
     from main_draw_wtn import _draw_observation, _player_name, _resolve_player, _roster
@@ -702,10 +736,17 @@ def refresh_draw_wtn(
         previous = archive.get(key, {})
         if previous.get("status") != "complete" or previous.get("rosterHash") != fingerprint:
             pending.append((key, tournament))
-    for key, tournament, for_gm in [
+    all_draws = [
         *((key, tournament, False) for key, tournament in (draws_store or {}).items()),
         *((key, tournament, True) for key, tournament in pending),
-    ]:
+    ]
+    eligible_ids = (
+        previous_week_singles_players(
+            [*((key, tournament) for key, tournament, _ in all_draws), *(recent_draws or [])], today, resolver
+        )
+        if require_previous_week_draw else None
+    )
+    for key, tournament, for_gm in all_draws:
         meta = tournament.get("meta") or tournament
         for kind, draw in (tournament.get("draws") or {}).items():
             if kind not in {"MDS", "QS"} or (for_gm and kind != "MDS"):
@@ -726,6 +767,8 @@ def refresh_draw_wtn(
                     })
                     continue
                 pid = str(resolved["player_id"])
+                if eligible_ids is not None and pid not in eligible_ids:
+                    continue
                 record = cache.get(pid, {})
                 needs_refresh = (not _draw_observation(record, key, today=today) if for_gm
                                  else not _select_recent_observation(record, today))
@@ -740,6 +783,8 @@ def refresh_draw_wtn(
         include_entry_players=include_entry_players, draw_players=list(targets.values()), check_new_entry_lists=False,
         profile_failures=failures,
         include_itf_entry_players=include_entry_players,
+        recent_draws=[*((key, tournament) for key, tournament, _ in all_draws), *(recent_draws or [])]
+        if require_previous_week_draw else None,
         **profile_options,
     )
     if include_entry_players:
@@ -787,6 +832,7 @@ def refresh_draw_wtn(
             severity="degraded", context={"players": unresolved},
         )
     propagate_wtn(
-        entry_cache, cache, draws_store, resolve_itf_player=resolver, fresh_singles_only=True, today=today
+        entry_cache, cache, draws_store, resolve_itf_player=resolver,
+        fresh_singles_only=not require_previous_week_draw, today=today
     )
     return cache

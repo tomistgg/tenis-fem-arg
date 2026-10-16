@@ -12,6 +12,7 @@ if _REPO_ROOT not in sys.path:
 from config import ENTRY_LISTS_CACHE_FILE, PLAYER_IDENTITY_INDEX  # noqa: E402
 from itf_wtn import (  # noqa: E402
     ITF_WTN_CACHE_FILENAME,
+    WTN_DRAW_HISTORY_FILENAME,
     entry_list_wtn_status,
     refresh_entry_list_wtn,
     singles_draw_finished,
@@ -33,6 +34,7 @@ from utils import (  # noqa: E402
 WTN_CACHE_FILE = str(Path(DATA_DIR) / ITF_WTN_CACHE_FILENAME)
 TOURNAMENT_SNAPSHOT_FILE = str(Path(DATA_DIR) / "tournament_snapshot.json")
 DRAWS_STORE_FILE = str(Path(DATA_DIR) / "draws_store_cache.json")
+WTN_DRAW_HISTORY_FILE = str(Path(DATA_DIR) / WTN_DRAW_HISTORY_FILENAME)
 
 
 def load_current_data():
@@ -97,6 +99,7 @@ def refresh_draw_wtn(driver, draws_store, limit):
         fetch_profiles=True,
         max_profile_fetches=limit,
         check_new_entry_lists=False,
+        recent_draws=[*draws_store.items(), *(load_cache(WTN_DRAW_HISTORY_FILE) or {}).items()],
     )
     values = {
         player_id: player.get("wtn")
@@ -136,7 +139,7 @@ def main():
         print_status(entries, weeks)
         return
 
-    draws_store = expand_draws_store_cache(load_cache(DRAWS_STORE_FILE)) if args.draws else None
+    draws_store = expand_draws_store_cache(load_cache(DRAWS_STORE_FILE))
     driver = LazyBrowserSession(create_driver)
     try:
         if args.draws:
@@ -151,6 +154,7 @@ def main():
                 tournament_weeks=weeks,
                 allow_cross_week_fallback=True,
                 max_profile_fetches=args.limit,
+                recent_draws=[*draws_store.items(), *(load_cache(WTN_DRAW_HISTORY_FILE) or {}).items()],
             )
     finally:
         driver.quit()
