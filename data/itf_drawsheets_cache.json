@@ -16652,7 +16652,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183731301, "playStatusCode": "TP",
+                            "matchId": 1183731301, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "JE",
@@ -16678,7 +16678,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183731303, "playStatusCode": "TP",
+                            "matchId": 1183731303, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "DA",
@@ -16704,14 +16704,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183731305, "playStatusCode": "TP",
+                            "matchId": 1183731305, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "entryStatus": "DA",
                                   "player": {"playerId":800460902,"nationality":"BEL","givenName":"Tilwith","familyName":"Di Girolami"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "scores": [1,0], "isWinner": false, "entryStatus": "Q",
                                   "player": {"playerId":800424417,"nationality":"FRA","givenName":"Juliette","familyName":"Mazzoni"}
                                 }
                             ]
@@ -16777,7 +16777,8 @@
                                   "scores": [], "isWinner": false, "entryStatus": null
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "player": {"playerId":800460902,"nationality":"BEL","givenName":"Tilwith","familyName":"Di Girolami"}
                                 }
                             ]
                           },
