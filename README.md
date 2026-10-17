@@ -161,7 +161,13 @@ Every run collects entry lists and all available main draws before refreshing
 WTNs. One combined queue covers current main and qualifying entry players, active singles main and
 qualifying draws, and pending GM draws, including tournaments without ARG
 players and players whose entry lists have already been removed. Missing WTNs
-and observations more than five days old trigger a profile lookup. A fresh
+and observations more than five days old trigger a profile lookup only for
+players recorded in the previous week's singles draws. Players who did not
+play singles that week keep their saved WTN without an expiry alert; their
+observation date is not renewed. Finished singles rosters remain in the next
+week's refresh queue even without an upcoming entry list. A WTN is reusable
+through day five and becomes due on day six when participation makes the
+player eligible. A fresh
 entry-list WTN also satisfies a pending GM. Each player
 is refreshed once per run, then their value is propagated everywhere before
 pending GMs are calculated. ALTs receive entry-list WTNs without profile lookups

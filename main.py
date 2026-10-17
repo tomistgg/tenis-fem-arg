@@ -2635,6 +2635,7 @@ def main():
             entry_cache=entry_cache,
             fetch_profiles=False,
             profile_failures=profile_failures,
+            recent_draws=[*draws_store.items(), *main_draws, *wtn_draw_history.items()],
         )
 
     # Preserve singles rosters for next week's WTN decisions without retaining old website draws.

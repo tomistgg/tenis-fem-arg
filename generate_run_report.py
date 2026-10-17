@@ -491,6 +491,29 @@ def compute_report(before_dir, after_dir):
 
     before_entry = load_json(os.path.join(before_dir, "entry_lists_cache.json")) or {}
     after_entry = load_json(os.path.join(after_dir, "entry_lists_cache.json")) or {}
+    history = load_json(os.path.join(after_dir, "wtn_singles_draw_history.json"))
+    wtn_eligibility = None
+    if history is not None:
+        from itf_wtn import SinglesRefreshEligibility, _resolver_with_entry_cache_fallback
+
+        identities = PlayerIdentityIndex(load_json(aliases_path) or [])
+
+        def resolve_wtn_player(player):
+            identity = identities.resolve("wta", player_id=player.get("player_id"), name=player.get("name"))
+            if identity and identity.itf_id:
+                return {**player, "player_id": identity.itf_id}
+            return None
+
+        resolver = _resolver_with_entry_cache_fallback(
+            after_entry, load_json(os.path.join(after_dir, "itf_wtn_cache.json")) or {}, resolve_wtn_player,
+        )
+        wtn_eligibility = SinglesRefreshEligibility(history.items(), madrid_today(), resolver)
+        report["main_draw_players_missing_wtn"] = [
+            {**group, "players": players}
+            for group in report["main_draw_players_missing_wtn"]
+            if (players := [player for player in group.get("players", [])
+                            if wtn_eligibility.allows(player, group.get("tournament_key", ""))])
+        ]
     before_ranking_status = load_json(os.path.join(before_dir, "wta_ranking_refresh_status.json")) or {}
     ranking_status = load_json(os.path.join(after_dir, "wta_ranking_refresh_status.json")) or {}
     ranking_status_is_accepted = isinstance(ranking_status, dict) and ranking_status.get("status") in {
@@ -553,6 +576,8 @@ def compute_report(before_dir, after_dir):
                     continue
                 name = repair_name_text(row.get("name") or "").strip()
                 if not name or name.startswith("("):
+                    continue
+                if wtn_eligibility is not None and not wtn_eligibility.allows(row, str(t_key)):
                     continue
                 missing_wtn_players.append(
                     {

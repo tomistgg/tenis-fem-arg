@@ -936,6 +936,34 @@ def test_new_entry_list_wtn_requires_previous_week_singles_draw(tmp_path):
     assert "8002" not in cache
 
 
+def test_finished_singles_players_refresh_next_week_without_upcoming_entries(tmp_path):
+    path = tmp_path / "cache.json"
+    path.write_text(json.dumps({
+        pid: {"wtn": 12, "source": "profile", "retrieved_at": "2026-10-14"}
+        for pid in ("8001", "8002", "8003")
+    }))
+    def player(pid):
+        return {"player_id": pid, "name": f"Player {pid}", "country": "ARG"}
+
+    history = {"w-itf-current": {"startDate": "2026-10-12", "endDate": "2026-10-18", "draws": {
+        "MDS": {"players": [player("8001")]},
+        "QS": {"players": [player("8002")]},
+        "MDD": {"players": [player("8003")]},
+    }}}
+    fetched = []
+    for today, expected_count in ((date(2026, 10, 17), 0), (date(2026, 10, 19), 0), (date(2026, 10, 20), 2)):
+        itf_wtn.refresh_draw_wtn(
+            None, {}, path, today=today, recent_draws=history.items(), require_previous_week_draw=True,
+            fetch_source=lambda url: fetched.append(url) or 'var props = {"wtnSingles":9};',
+        )
+        assert len(fetched) == expected_count
+    assert all("/8003/" not in url for url in fetched)
+    cache = json.loads(path.read_text())
+    assert cache["8001"]["retrieved_at"] == "2026-10-20"
+    assert cache["8002"]["retrieved_at"] == "2026-10-20"
+    assert cache["8003"]["retrieved_at"] == "2026-10-14"
+
+
 @pytest.mark.parametrize("kind", ["MDS", "QS"])
 @pytest.mark.parametrize("cached", [False, True])
 def test_finished_draws_do_not_request_profiles_even_for_pending_gm(tmp_path, kind, cached):

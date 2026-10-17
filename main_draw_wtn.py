@@ -15,6 +15,7 @@ from itf_wtn import (
     PROFILE_BATCH_SIZE,
     REQUEST_INTERVAL_SECONDS,
     ITFProfileBlocked,
+    SinglesRefreshEligibility,
     _latest_profile_url,
     _load_cache,
     _normalize_cache,
@@ -226,6 +227,7 @@ def refresh_main_draw_wtn(
     profile_batch_cooldown_seconds=PROFILE_BATCH_COOLDOWN_SECONDS,
     fetch_profiles=True,
     profile_failures=None,
+    recent_draws=None,
 ):
     """Freeze complete roster means; retry missing WTNs and changed rosters.
 
@@ -247,6 +249,7 @@ def refresh_main_draw_wtn(
         profiles,
         resolve_itf_player or _wta_player_with_itf_id,
     )
+    eligibility = SinglesRefreshEligibility(recent_draws, today, resolver) if recent_draws is not None else None
     source_fetcher = fetch_source
     fetched_players = {}
     attempts = 0
@@ -268,12 +271,18 @@ def refresh_main_draw_wtn(
         missing = []
         for player in players:
             name = _player_name(player)
+            refresh_allowed = eligibility is None or eligibility.allows(player, key)
             resolved = _resolve_player(player, key, resolver)
             if not resolved:
-                missing.append({"name": name, "reason": "No unambiguous ITF player ID"})
+                missing.append({"name": name, "reason": "No unambiguous ITF player ID",
+                                "refresh_skipped": not refresh_allowed})
                 continue
             player_id = str(resolved["player_id"])
             observation = _draw_observation(profiles.get(player_id, {}), key, today=today)
+            if not observation and not refresh_allowed:
+                record = profiles.get(player_id, {})
+                if _positive_wtn(record.get("wtn")) is not None:
+                    observation = record
             if observation:
                 profiles[player_id].setdefault("main_draw_observations", {})[key] = {
                     field: observation[field]
@@ -283,6 +292,9 @@ def refresh_main_draw_wtn(
                 wtn = _positive_wtn(observation["wtn"])
                 values.append(wtn)
                 player["wtn"] = str(profiles[player_id].get("wtn", wtn))
+                continue
+            if not refresh_allowed:
+                missing.append({"name": name, "itf_id": player_id, "refresh_skipped": True})
                 continue
             if player_id not in fetched_players:
                 record = profiles.get(player_id, {})
@@ -377,10 +389,13 @@ def refresh_main_draw_wtn(
             "rosterHash": fingerprint,
         }
         draw["wtn_gm"] = archive[key]["wtn_gm"]
-        if missing:
-            errors.append({"tournament_key": key, "tournament_name": tournament.get("name", key), "players": missing})
+        reportable = [player for player in missing if not player.get("refresh_skipped")]
+        if reportable:
+            errors.append({"tournament_key": key, "tournament_name": tournament.get("name", key),
+                           "players": reportable})
             logger.warning(
-                "Main-draw WTN missing for %s: %s", tournament.get("name", key), ", ".join(p["name"] for p in missing)
+                "Main-draw WTN missing for %s: %s", tournament.get("name", key),
+                ", ".join(p["name"] for p in reportable),
             )
         save_json_file(profile_cache_path, profiles)
         save_json_file(archive_path, archive)

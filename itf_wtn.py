@@ -362,14 +362,10 @@ def singles_draw_finished(tournament, kind, *, today=None):
     return bool(end and end < today.isoformat()) or _draw_is_complete(draw, is_qualifying=kind == "QS")
 
 
-def previous_week_singles_players(draws, today, resolver):
-    """Resolve players in singles draws from the previous Monday through Sunday."""
-    from main_draw_wtn import _resolve_player
-
+def _previous_week_singles_roster(draws, today):
     this_monday = today - timedelta(days=today.weekday())
     previous_monday = this_monday - timedelta(days=7)
     previous_week = previous_monday.isoformat()
-    player_ids = set()
     for key, tournament in draws:
         meta = tournament.get("meta") or tournament
         start_week = _week_start(meta.get("startDate"))
@@ -378,10 +374,38 @@ def previous_week_singles_players(draws, today, resolver):
             continue
         for kind in ("MDS", "QS"):
             for player in ((tournament.get("draws") or {}).get(kind) or {}).get("players", []):
+                yield key, player
+
+
+class SinglesRefreshEligibility:
+    """Keep previous-week singles participation separate from observation age."""
+
+    def __init__(self, draws, today, resolver):
+        from main_draw_wtn import _player_name, _resolve_player
+
+        self.resolver = resolver
+        self.players = {}
+        self.names = set()
+        for key, player in _previous_week_singles_roster(draws, today):
+            name = _slug(_player_name(player))
+            if name not in {"player", "qualifier", "bye", "q", "tbd", "available-slot", "special-exempt"}:
+                self.names.add(name)
                 resolved = _resolve_player(player, key, resolver)
                 if resolved:
-                    player_ids.add(str(resolved["player_id"]))
-    return player_ids
+                    self.players[str(resolved["player_id"])] = resolved
+
+    def allows(self, player, key=""):
+        from main_draw_wtn import _player_name, _resolve_player
+
+        resolved = _resolve_player(player, key, self.resolver)
+        if resolved:
+            return str(resolved["player_id"]) in self.players
+        return _slug(_player_name(player)) in self.names
+
+
+def previous_week_singles_players(draws, today, resolver):
+    """Resolve players in singles draws from the previous Monday through Sunday."""
+    return set(SinglesRefreshEligibility(draws, today, resolver).players)
 
 
 def propagate_wtn(
@@ -538,11 +562,12 @@ def refresh_entry_list_wtn(
     tournament_weeks = tournament_weeks or {}
     cache = _normalize_cache(_load_cache(cache_path))
     base_resolver = resolve_itf_player or _wta_player_with_itf_id
-    eligible_ids = (
-        previous_week_singles_players(
+    eligibility = (
+        SinglesRefreshEligibility(
             recent_draws, today, _resolver_with_entry_cache_fallback(entry_cache, cache, base_resolver)
         ) if recent_draws is not None else None
     )
+    eligible_ids = set(eligibility.players) if eligibility is not None else None
 
     seen_path = Path(cache_path).with_name(Path(cache_path).stem.removesuffix("_cache") + "_entry_lists_seen.json")
     seen_lists = _load_cache(seen_path)
@@ -605,6 +630,12 @@ def refresh_entry_list_wtn(
         player_id = str(player["player_id"])
         draw_player_ids.add(player_id)
         players_by_id.setdefault(player_id, player)
+
+    # Finished singles events still make their players due during the following
+    # week, even if they have no upcoming entry list or active draw.
+    if eligibility is not None:
+        for player_id, player in eligibility.players.items():
+            players_by_id.setdefault(player_id, player)
 
     pending_entry_lists = {
         player_id: keys - set(cache.get(player_id, {}).get("entry_lists_checked", {}))
@@ -740,12 +771,13 @@ def refresh_draw_wtn(
         *((key, tournament, False) for key, tournament in (draws_store or {}).items()),
         *((key, tournament, True) for key, tournament in pending),
     ]
-    eligible_ids = (
-        previous_week_singles_players(
+    eligibility = (
+        SinglesRefreshEligibility(
             [*((key, tournament) for key, tournament, _ in all_draws), *(recent_draws or [])], today, resolver
         )
         if require_previous_week_draw else None
     )
+    eligible_ids = set(eligibility.players) if eligibility is not None else None
     for key, tournament, for_gm in all_draws:
         meta = tournament.get("meta") or tournament
         for kind, draw in (tournament.get("draws") or {}).items():
@@ -758,6 +790,8 @@ def refresh_draw_wtn(
                 if not name or name.casefold() in {
                     "qualifier", "bye", "q", "tbd", "(available slot)", "(special exempt)"
                 }:
+                    continue
+                if eligibility is not None and not eligibility.allows(player, key):
                     continue
                 resolved = _resolve_player(player, key, resolver)
                 if not resolved:
@@ -798,6 +832,8 @@ def refresh_draw_wtn(
                 if not name or name.casefold() in {
                     "qualifier", "bye", "q", "tbd", "(available slot)", "(special exempt)"
                 }:
+                    continue
+                if eligibility is not None and not eligibility.allows(player, str(key)):
                     continue
                 resolved = _resolve_player(player, str(key), resolver)
                 pid = str(resolved["player_id"]) if resolved else ""

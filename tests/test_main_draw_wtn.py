@@ -101,6 +101,53 @@ def test_missing_player_prevents_partial_gm_and_retries_then_clears_email_errors
     assert json.loads((tmp_path / "main_draw_wtn_errors.json").read_text()) == []
 
 
+def test_inactive_players_reuse_saved_wtn_without_email_or_renewing_observation(tmp_path, monkeypatch):
+    import generate_run_report
+
+    monkeypatch.setattr(generate_run_report, "madrid_today", lambda: date(2026, 10, 17))
+    draw = tournament(("Alice", "800000001"), ("Unknown", "800000002"))
+    draw["startDate"] = "2026-10-12"
+    (tmp_path / "profiles.json").write_text(json.dumps({
+        "800000001": {"wtn": 8, "source": "profile", "retrieved_at": "2026-10-01"},
+    }))
+    record = refresh(
+        tmp_path, [("w-itf-current", draw)], lambda _: pytest.fail("Inactive player must not be fetched"),
+        today=date(2026, 10, 17), recent_draws=[],
+    )["w-itf-current"]
+    assert record["wtnPlayerCount"] == 1
+    assert record["status"] == "pending"
+    profiles = json.loads((tmp_path / "profiles.json").read_text())
+    assert profiles["800000001"]["retrieved_at"] == "2026-10-01"
+    assert json.loads((tmp_path / "main_draw_wtn_errors.json").read_text()) == []
+    (tmp_path / "wtn_singles_draw_history.json").write_text("{}")
+    (tmp_path / "entry_lists_cache.json").write_text(json.dumps({
+        "https://wta.example/current": [{"name": "Unknown", "country": "USA", "wtn": "-", "type": "QUAL"}],
+    }))
+    before = tmp_path / "before"
+    before.mkdir()
+    report = compute_report(str(before), str(tmp_path))
+    assert report["wta_players_missing_wtn"] == []
+    assert "Singles Players Missing Current WTN" not in render_email_markdown(report)
+
+    # An unresolved player who did play singles last week still needs an alert;
+    # a doubles-only player must not acquire refresh eligibility.
+    (tmp_path / "wtn_singles_draw_history.json").write_text(json.dumps({
+        "https://wta.example/last": {"startDate": "2026-10-05", "endDate": "2026-10-11", "draws": {
+            "QS": {"players": [{"name": "Unknown", "country": "USA"}]},
+            "MDD": {"players": [{"name": "Doubles Only", "country": "USA"}]},
+        }},
+    }))
+    (tmp_path / "entry_lists_cache.json").write_text(json.dumps({
+        "https://wta.example/current": [
+            {"name": name, "country": "USA", "wtn": "-", "type": "QUAL"}
+            for name in ("Unknown", "Doubles Only")
+        ],
+    }))
+    report = compute_report(str(before), str(tmp_path))
+    assert [p["name"] for p in report["wta_players_missing_wtn"][0]["players"]] == ["Unknown"]
+    assert "Singles Players Missing Current WTN" in render_email_markdown(report)
+
+
 def test_blocked_profiles_never_use_old_values_and_notify_for_unattempted_players(tmp_path):
     draw = tournament(("A, Alice", "800000001"), ("B, Bea", "800000002"))
     (tmp_path / "profiles.json").write_text(
