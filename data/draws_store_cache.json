@@ -1286,7 +1286,13 @@
           {"round": 1, "match_num": 8, "winner_name": "H. Dart", "score": "63 61"},
           {"round": 1, "match_num": 9, "winner_name": "A. Ito", "score": "63 64"},
           {"round": 1, "match_num": 10, "winner_name": "M. Stoiana", "score": "63 76(1)"},
-          {"round": 1, "match_num": 11, "winner_name": "S. Ishii", "score": "63 00 RET"}
+          {"round": 1, "match_num": 11, "winner_name": "S. Ishii", "score": "63 00 RET"},
+          {"round": 2, "match_num": 0, "winner_name": "S. Kraus", "score": "76(4) 64"},
+          {"round": 2, "match_num": 1, "winner_name": "E. Jones", "score": "60 00 RET"},
+          {"round": 2, "match_num": 2, "winner_name": "M. Joint", "score": "63 36 63"},
+          {"round": 2, "match_num": 3, "winner_name": "C. Liu", "score": "64 63"},
+          {"round": 2, "match_num": 4, "winner_name": "H. Dart", "score": "63 67(6) 63"},
+          {"round": 2, "match_num": 5, "winner_name": "M. Stoiana", "score": "64 75"}
         ],
         "round_labels": [
           "Q1",
@@ -1306,13 +1312,17 @@
         "draw_size": 32,
         "players": [
           {"pos": 1, "seed": "1", "name": "LI, Ann", "country": "USA", "wtn": "8.31"},
+          {"pos": 2, "entry": "Q", "name": "JONES, Emerson", "country": "AUS", "wtn": "10.16"},
+          {"pos": 3, "entry": "Q", "name": "JOINT, Maya", "country": "AUS", "wtn": "9.32"},
           {"pos": 4, "name": "SONMEZ, Zeynep", "country": "TUR", "wtn": "9.5"},
           {"pos": 5, "name": "VALENTOVA, Tereza", "country": "CZE", "wtn": "8.53"},
           {"pos": 6, "name": "ZHANG, Shuai", "country": "CHN", "wtn": "9.42"},
           {"pos": 7, "name": "TAGGER, Lilli", "country": "AUT", "wtn": "8.67"},
           {"pos": 8, "seed": "5", "name": "SAMSONOVA, Liudmila", "wtn": "8.12"},
           {"pos": 9, "seed": "4", "name": "GIBSON, Talia", "country": "AUS", "wtn": "9.21"},
+          {"pos": 10, "entry": "Q", "name": "DART, Harriet", "country": "GBR", "wtn": "9.72"},
           {"pos": 11, "name": "MCNALLY, Caty", "country": "USA", "wtn": "8.4"},
+          {"pos": 12, "entry": "Q", "name": "KRAUS, Sinja", "country": "AUT", "wtn": "8.84"},
           {"pos": 13, "name": "TARARUDEE, Lanlana", "country": "THA", "wtn": "9.38"},
           {"pos": 14, "name": "QUEVEDO, Kaitlin", "country": "ESP", "wtn": "9.2"},
           {"pos": 15, "name": "KRUEGER, Ashlyn", "country": "USA", "wtn": "8.91"},
@@ -1326,19 +1336,13 @@
           {"pos": 23, "name": "KARTAL, Sonay", "country": "GBR", "wtn": "7.99"},
           {"pos": 24, "seed": "3", "name": "BIRRELL, Kimberly", "country": "AUS", "wtn": "8.95"},
           {"pos": 25, "seed": "7", "name": "OLIYNYKOVA, Oleksandra", "country": "UKR", "wtn": "9.41"},
+          {"pos": 26, "entry": "Q", "name": "STOIANA, Mary", "country": "USA", "wtn": "9.03"},
           {"pos": 27, "entry": "WC", "name": "UCHIJIMA, Moyuka", "country": "JPN", "wtn": "10.28"},
           {"pos": 28, "entry": "WC", "name": "SHIBAHARA, Ena", "country": "JPN", "wtn": "12.24"},
+          {"pos": 29, "entry": "Q", "name": "LIU, Claire", "country": "USA", "wtn": "8.95"},
           {"pos": 30, "name": "LINETTE, Magda", "country": "POL", "wtn": "9.97"},
           {"pos": 31, "name": "SINIAKOVA, Katerina", "country": "CZE", "wtn": "8.2"},
           {"pos": 32, "seed": "2", "name": "STEARNS, Peyton", "country": "USA", "wtn": "8.56"}
-        ],
-        "qualifiers": [
-          2,
-          3,
-          10,
-          12,
-          26,
-          29
         ],
         "round_labels": [
           "Round of 32",
@@ -1347,7 +1351,8 @@
           "Semifinals",
           "Final"
         ],
-        "num_rounds": 5
+        "num_rounds": 5,
+        "wtn_gm": 9.1958
       },
       "MDD":
       {
