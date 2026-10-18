@@ -755,7 +755,8 @@
           {"round": 3, "match_num": 2, "winner_name": "M. Kubka", "score": "75 42 RET"},
           {"round": 3, "match_num": 3, "winner_name": "D. Salkova", "score": "63 26 63"},
           {"round": 4, "match_num": 0, "winner_name": "B. Andreescu", "score": "63 61"},
-          {"round": 4, "match_num": 1, "winner_name": "D. Salkova", "score": "16 75 63"}
+          {"round": 4, "match_num": 1, "winner_name": "D. Salkova", "score": "16 75 63"},
+          {"round": 5, "match_num": 0, "winner_name": "B. Andreescu", "score": "76(2) 62"}
         ],
         "round_labels": [
           "Round of 32",
@@ -854,7 +855,8 @@
           {"round": 2, "match_num": 2, "winner_name": "R. Bhosale / L. Salden", "score": "64 64"},
           {"round": 2, "match_num": 3, "winner_name": "D. Salkova / A. Siskova", "score": "62 60"},
           {"round": 2, "match_num": 0, "winner_name": "I. Haverlag / M. Kubka", "score": "64 57 10-7"},
-          {"round": 3, "match_num": 1, "winner_name": "D. Salkova / A. Siskova", "score": "75 62"}
+          {"round": 3, "match_num": 1, "winner_name": "D. Salkova / A. Siskova", "score": "75 62"},
+          {"round": 3, "match_num": 0, "winner_name": "I. Haverlag / M. Kubka", "score": "61 62"}
         ],
         "byes": [
           2
@@ -1570,6 +1572,66 @@
         ],
         "num_rounds": 5,
         "wtn_gm": 8.3248
+      }
+    }
+  },
+  "w-itf-ita-2026-037":
+  {
+    "meta":
+    {
+      "name": "W35 Santa Margherita di Pula 2",
+      "level": "W35",
+      "week": "Week of October 19",
+      "startDate": "2026-10-19T00:00:00",
+      "endDate": "2026-10-25T00:00:00",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "GENNARO, Camilla", "country": "ITA", "itf_id": "800484146", "wtn": "12.93"},
+          {"pos": 3, "name": "MARGARIA, Elena", "country": "ITA", "itf_id": "800712107", "wtn": "19.31"},
+          {"pos": 4, "seed": "14", "name": "PATERNO, Giulia", "country": "ITA", "itf_id": "800464063", "wtn": "15.49"},
+          {"pos": 5, "seed": "2", "name": "BOHRER MARTINS, Carolina", "country": "BRA", "itf_id": "800667459", "wtn": "13.63"},
+          {"pos": 7, "name": "MOLARO, NICOLE ANDREA", "country": "ITA", "itf_id": "800630125", "wtn": "17.54"},
+          {"pos": 8, "seed": "16", "name": "BILARDO, Federica", "country": "ITA", "itf_id": "800334372", "wtn": "15.17"},
+          {"pos": 9, "seed": "3", "name": "EZZAT, Yasmin", "country": "EGY", "itf_id": "800477541", "wtn": "13.77"},
+          {"pos": 11, "name": "BASSOTTI, Carlotta", "country": "ITA", "itf_id": "800570790", "wtn": "18.01"},
+          {"pos": 12, "seed": "12", "name": "BOEHNER, Laura", "country": "GER", "itf_id": "800401434", "wtn": "14.17"},
+          {"pos": 13, "seed": "4", "name": "LOLLIA, Mathilde", "country": "FRA", "itf_id": "800466642", "wtn": "12.56"},
+          {"pos": 15, "name": "SVEVA FUMAGALLI, Sveva", "country": "ITA", "itf_id": "800594608", "wtn": "15.0"},
+          {"pos": 16, "seed": "11", "name": "ORMAECHEA, Paula", "country": "ARG", "itf_id": "800283071", "wtn": "13.27"},
+          {"pos": 17, "seed": "5", "name": "ARGYROKASTRITI, Marianna", "country": "GRE", "itf_id": "800424202", "wtn": "12.53"},
+          {"pos": 19, "name": "DEIDDA, AURORA", "country": "ITA", "itf_id": "800742739", "wtn": "18.61"},
+          {"pos": 20, "seed": "15", "name": "VALENTE, Denise", "country": "ITA", "itf_id": "800491279", "wtn": "14.24"},
+          {"pos": 21, "seed": "6", "name": "YE, Shiyu", "country": "CHN", "itf_id": "800708996", "wtn": "13.72"},
+          {"pos": 23, "name": "PARENTINI VALLEGA MONTEBRUNO, Ginevra", "country": "ITA", "itf_id": "800479436", "wtn": "16.71"},
+          {"pos": 24, "seed": "10", "name": "SKOOG, Isabel", "country": "SWE", "itf_id": "800581749", "wtn": "14.39"},
+          {"pos": 25, "seed": "7", "name": "MARIANI, Matilde", "country": "ITA", "itf_id": "800419757", "wtn": "13.49"},
+          {"pos": 26, "name": "CHASTANG COOPER, Antoinette", "country": "GBR", "itf_id": "800846610", "wtn": "22.09"},
+          {"pos": 27, "name": "FERRO, Galatea", "country": "ITA", "itf_id": "800575336", "wtn": "14.94"},
+          {"pos": 28, "seed": "9", "name": "TOMA, Maria", "country": "ROU", "itf_id": "800404568", "wtn": "14.11"},
+          {"pos": 29, "seed": "8", "name": "FORNASIERI, Chiara", "country": "ITA", "itf_id": "800484142", "wtn": "14.27"},
+          {"pos": 30, "name": "IVANOVIC, Iva", "country": "SUI", "itf_id": "800681097", "wtn": "16.08"},
+          {"pos": 31, "name": "CICU, Carolina", "country": "ITA", "itf_id": "800736571", "wtn": "19.17"},
+          {"pos": 32, "seed": "13", "name": "DESSOLIS, Barbara", "country": "ITA", "itf_id": "800398012", "wtn": "15.69"}
+        ],
+        "byes": [
+          2,
+          6,
+          10,
+          14,
+          18,
+          22
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16"
+        ],
+        "num_rounds": 2
       }
     }
   }
