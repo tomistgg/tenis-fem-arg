@@ -16,7 +16,8 @@
         <link href="assets/vendor/select2-4.1.0-rc.0.min.css" rel="stylesheet" />
         <script src="assets/vendor/jquery-3.6.0.min.js"></script>
         <script src="assets/vendor/select2-4.1.0-rc.0.min.js"></script>
-        <link rel="stylesheet" href="assets/app.css?v=20261011-more-selected">
+        <link rel="stylesheet" href="assets/app.css?v=20261018-entry">
+        <link rel="stylesheet" href="assets/opportunities.css?v=20261018-entry">
         <link rel="stylesheet" href="assets/language.css?v=20261002-focus-contrast">
     </head>
     <body class="home-mode" onload="renderHistoryTable();">
@@ -89,6 +90,10 @@
                     </div>
                 </div>
 
+                <div id="view-opportunities" class="single-layout" style="display: none;">
+                    <div id="opportunities-root" aria-live="polite"></div>
+                </div>
+
                 <div id="view-upcoming" class="single-layout" style="display: none;">
                     <div class="header-row">
                         <h1>Schedule</h1>
@@ -131,7 +136,7 @@
                                         <tr>
                                             <th class="entry-pos-col" style="width:35px;min-width:35px">#</th>
                                             <th class="entry-player-col">PLAYER</th>
-                                            <th id="entry-seed-header" class="entry-seed-col" style="width:35px;display:none">SEED</th>
+                                            <th id="entry-seed-header" class="entry-seed-col" style="width:35px;display:none">S</th>
                                             <th id="entry-wtn-header" class="entry-wtn-col" style="width:55px;display:none">WTN</th>
                                             <th id="entry-rank-header" class="entry-rank-col" style="width:70px">E-Rank</th>
                                             <th id="entry-date-header" class="entry-date-col" style="width:100px;display:none">DATE</th>
@@ -483,10 +488,9 @@
                         </div>
                         </div>
 
-                        <button type="button" class="calendar-gm-toggle" id="calendar-gm-toggle"
-                                aria-pressed="false" aria-label="Show draw quality values" title="Show draw quality values">
-                            <span class="calendar-toggle-label">Show Quality</span>
-                            <span class="calendar-toggle-arrow" aria-hidden="true"></span>
+                        <button type="button" class="cal-dd-btn calendar-planner-btn" id="calendar-planner-btn"
+                                onclick="switchTab('opportunities')">
+                            <span class="calendar-toggle-label">Tournament Planner</span>
                         </button>
 
                         <button type="button" class="cal-dd-btn calendar-changes-toggle" id="calendar-changes-toggle"
@@ -496,9 +500,6 @@
                             <span class="calendar-toggle-arrow" aria-hidden="true"></span>
                         </button>
 
-                        <div class="cal-gm-legend">
-                            <span class="cal-gm-legend-badge">99.9</span> Draw quality from last year's edition of the tournament.
-                        </div>
                     </div>
 
                     <div class="calendar-changes-panel" id="calendar-changes-panel">
@@ -676,14 +677,16 @@
         <script src="assets/js/data-loader.js"></script>
         <script src="assets/js/tabs/tstrength.js?v=20261011-wtn-gm"></script>
         <script src="data/player_aliases_wta_itf_bundle.js"></script>
-        <script src="assets/js/app.js?v=20261011-wtn-gm"></script>
-        <script src="assets/js/tabs/roadtogs.js?v=20261001-ui-race-1"></script>
+        <script src="assets/js/app.js?v=20261018-entry"></script>
+        <script src="assets/js/tabs/roadtogs.js?v=20261018-planner"></script>
+        <script src="assets/js/tabs/opportunities-points.js?v=20261018-entry"></script>
+        <script src="assets/js/tabs/opportunities.js?v=20261018-entry"></script>
         <script src="assets/js/tabs/draws.js?v=20260930-security-1"></script>
-        <script src="assets/anonymous-analytics.js"></script>
-    <script src="assets/js/router.js"></script>
-    <script src="assets/app-shell.js"></script>
-    <script src="assets/translations.js?v=20261011-wtn-gm"></script>
-    <script src="assets/language.js"></script>
+        <script src="assets/anonymous-analytics.js?v=20261018-planner"></script>
+    <script src="assets/js/router.js?v=20261018-planner"></script>
+    <script src="assets/app-shell.js?v=20261018-planner"></script>
+    <script src="assets/translations.js?v=20261018-entry"></script>
+    <script src="assets/language.js?v=20261018-entry"></script>
     </body>
     </html>
     

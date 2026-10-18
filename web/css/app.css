@@ -171,8 +171,7 @@
 
             .rankings-toggle-btn,
             .entry-menu-toggle-btn,
-            .cal-dd-btn,
-            .calendar-gm-toggle {
+            .cal-dd-btn {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
@@ -192,8 +191,7 @@
                 transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
             }
             .rankings-toggle-btn:hover,
-            .entry-menu-toggle-btn:hover,
-            .calendar-gm-toggle:hover { background: var(--c-surface-alt); }
+            .entry-menu-toggle-btn:hover { background: var(--c-surface-alt); }
             .rankings-toggle-btn:disabled { opacity: 0.35; cursor: default; }
             .rankings-load-btn {
                 display: inline-flex;
@@ -853,23 +851,23 @@
             table { border-collapse: separate; border-spacing: 0; width: 100%; table-layout: fixed; }
             th { position: sticky; top: 0; color: white; font-weight: bold; border-bottom: 2px solid rgba(0,0,0,0.25); border-right: 1px solid rgba(255,255,255,0.25); z-index: 10; text-transform: uppercase; text-align: center; }
             td { border-bottom: 1px solid var(--c-border); text-align: center; font-size: 13px; border-right: 1px solid var(--c-border); }
-            #view-entrylists td { font-size: 12px; padding: 6px 10px; }
-            #view-entrylists table { table-layout: auto; }
-            #entrylists-table .entry-pr-mobile-label { display: none; }
-            #entrylists-table.entry-withdrawals .entry-pos-col {
+            :is(#view-entrylists, .op-entry-preview) td { font-size: 12px; padding: 6px 10px; }
+            :is(#view-entrylists, .op-entry-preview) table { table-layout: auto; }
+            :is(#entrylists-table, .op-entry-table) .entry-pr-mobile-label { display: none; }
+            :is(#entrylists-table, .op-entry-table).entry-withdrawals .entry-pos-col {
                 display: none;
             }
-            #entrylists-table.entry-withdrawals .entry-rank-col {
+            :is(#entrylists-table, .op-entry-table).entry-withdrawals .entry-rank-col {
                 width: 70px !important;
                 min-width: 70px !important;
                 white-space: nowrap;
             }
-            #entrylists-table .entry-wtn-col {
+            :is(#entrylists-table, .op-entry-table) .entry-wtn-col {
                 width: 55px;
                 min-width: 55px;
                 white-space: nowrap;
             }
-            #entrylists-table.entry-withdrawals .entry-date-col {
+            :is(#entrylists-table, .op-entry-table).entry-withdrawals .entry-date-col {
                 width: 100px !important;
                 min-width: 100px !important;
                 white-space: nowrap;
@@ -1510,13 +1508,12 @@
             .calendar-filter-controls { display: contents; }
             .cal-dd { position: relative; }
             .cal-dd-btn { justify-content: flex-start; gap: 8px; padding: 0 var(--sp-3); font-size: var(--fs-lg); user-select: none; background-color: var(--c-surface); }
-            .calendar-gm-toggle { min-width: 96px; gap: 8px; padding: 0 12px; }
+            .calendar-planner-btn { justify-content: center; border: 3px solid #c99a22; font-weight: 800; padding: 0 12px; }
             .calendar-changes-alert { margin-right: 5px; color: var(--c-error); font-size: 1.25em; font-weight: 900; line-height: 1; }
             .calendar-toggle-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
             .calendar-toggle-arrow { width: 6px; height: 6px; flex: 0 0 6px; margin: -3px 1px 0 auto; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform 0.15s, margin 0.15s; }
             .cal-dd.open > .cal-dd-btn .calendar-toggle-arrow,
-            .calendar-changes-toggle[aria-expanded="true"] .calendar-toggle-arrow,
-            .calendar-gm-toggle[aria-pressed="true"] .calendar-toggle-arrow { margin-top: 3px; transform: rotate(225deg); }
+            .calendar-changes-toggle[aria-expanded="true"] .calendar-toggle-arrow { margin-top: 3px; transform: rotate(225deg); }
             .cal-dd-panel { position: absolute; top: calc(100% + 6px); left: 0; width: max-content; min-width: 170px; max-width: min(320px, calc(100vw - 20px)); max-height: 280px; overflow: auto; background: var(--c-surface); border: 2px solid var(--c-border-strong); border-radius: 8px; padding: 6px; box-shadow: var(--shadow-lg); display: none; z-index: 60; }
             .cal-dd.open .cal-dd-panel { display: block; }
             .cal-dd-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; user-select: none; }
@@ -1553,13 +1550,7 @@
             @media (min-width: 769px) {
                 .calendar-tournament img { transform: translateY(-1px) !important; }
             }
-            .cal-gm-badge { display: inline-block; font-size: 8px; font-weight: 700; padding: 0px 3px; border-radius: 2px; margin-left: 4px; vertical-align: middle; color: #1a1a1a; line-height: 13px; }
-            .cal-gm-na { background: #94a3b8; color: #fff; }
             .cal-cutoff-box { display: block; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 2px; margin: 1px 0; background: #374151; color: #fff; white-space: normal; line-height: 1.3; }
-            .cal-gm-legend { font-size: 11px; color: #64748b; padding: 2px 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex: 1; }
-            #view-calendar:not(.quality-visible) .cal-gm-badge,
-            #view-calendar:not(.quality-visible) .cal-gm-legend { display: none; }
-            .cal-gm-legend-badge { display: inline-block; font-size: 8px; font-weight: 700; padding: 0px 3px; border-radius: 2px; background: #e0f2fe; color: #1a1a1a; line-height: 13px; margin: 0 2px; vertical-align: middle; }
             .cal-clay { background: #e8a882; color: #5c2e0e; }
             .cal-hard { background: #88b4e8; color: #1a3a5c; }
             .cal-grass { background: #7cc89a; color: #1a4a2e; }
@@ -1600,7 +1591,6 @@
                     vertical-align: middle;
                 }
                 #view-calendar .cal-cutoff-box { font-size: 10px; }
-                #view-calendar .cal-gm-badge { font-weight: 400; }
             }
             @media (max-width: 768px) {
                 #view-calendar .calendar-table thead th {
@@ -1612,7 +1602,6 @@
                     vertical-align: middle;
                 }
                 #view-calendar .cal-cutoff-box { font-size: 8px; }
-                #view-calendar .cal-gm-badge { font-weight: 400 !important; }
             }
 
             /* Responsive Styles */
@@ -1813,15 +1802,15 @@
                 }
 
                 /* Entry Lists: compact mode */
-                #view-entrylists table {
+                :is(#view-entrylists, .op-entry-preview) table {
                     width: 100% !important;
                     min-width: 100% !important;
                     max-width: 100% !important;
                     table-layout: auto;
                 }
                 #view-entrylists th { font-size: 10px; padding: 3px 4px; }
-                #view-entrylists td { font-size: 10px; padding: 4px 4px; }
-                #entrylists-table .entry-pos-col {
+                :is(#view-entrylists, .op-entry-preview) td { font-size: 10px; padding: 4px 4px; }
+                :is(#entrylists-table, .op-entry-table) .entry-pos-col {
                     box-sizing: border-box;
                     width: 32px !important;
                     min-width: 32px !important;
@@ -1830,7 +1819,7 @@
                     padding-right: 3px;
                     white-space: nowrap;
                 }
-                #entrylists-table .entry-pr-col {
+                :is(#entrylists-table, .op-entry-table) .entry-pr-col {
                     box-sizing: border-box;
                     width: 28px !important;
                     min-width: 28px !important;
@@ -1839,37 +1828,37 @@
                     padding-right: 3px;
                     white-space: nowrap;
                 }
-                #entrylists-table .entry-seed-col {
+                :is(#entrylists-table, .op-entry-table) .entry-seed-col {
                     box-sizing: border-box;
                     width: 40px !important;
                     min-width: 40px !important;
                     max-width: 40px !important;
                     white-space: nowrap;
                 }
-                #entrylists-table .entry-rank-col {
+                :is(#entrylists-table, .op-entry-table) .entry-rank-col {
                     box-sizing: border-box;
                     width: 70px !important;
                     min-width: 70px !important;
                     max-width: 70px !important;
                     white-space: nowrap;
                 }
-                #entrylists-table .entry-wtn-col {
+                :is(#entrylists-table, .op-entry-table) .entry-wtn-col {
                     box-sizing: border-box;
                     width: 50px !important;
                     min-width: 50px !important;
                     max-width: 50px !important;
                     white-space: nowrap;
                 }
-                #entrylists-table .entry-date-col {
+                :is(#entrylists-table, .op-entry-table) .entry-date-col {
                     box-sizing: border-box;
                     width: 90px !important;
                     min-width: 90px !important;
                     max-width: 90px !important;
                     white-space: nowrap;
                 }
-                #entrylists-table .entry-player-col { width: 100% !important; }
-                #entrylists-table .entry-pr-desktop-label { display: none; }
-                #entrylists-table .entry-pr-mobile-label { display: inline; }
+                :is(#entrylists-table, .op-entry-table) .entry-player-col { width: 100% !important; }
+                :is(#entrylists-table, .op-entry-table) .entry-pr-desktop-label { display: none; }
+                :is(#entrylists-table, .op-entry-table) .entry-pr-mobile-label { display: inline; }
                 #view-entrylists .entry-content .header-row {
                     margin-bottom: 8px;
                     flex-direction: row !important;
@@ -2374,13 +2363,11 @@
                 .calendar-filter-controls .cal-dd { flex: 1 1 0; min-width: 0; width: auto; }
                 .calendar-filter-controls .cal-dd > .cal-dd-btn { width: 100%; }
                 .calendar-changes-toggle { order: 2; flex: 1 1 0; min-width: 0; width: auto; }
-                .calendar-gm-toggle { order: 3; flex: 0 0 auto; }
-                .cal-gm-legend { order: 4; font-size: 10px; padding: 3px 4px; gap: 4px; flex: 0 0 100%; width: 100%; }
                 .cal-cutoff-box { font-size: 7px; }
                 .cal-week-header { position: static; }
                 .cal-cont-header { top: unset; }
                 .cal-dd-btn { padding: 6px 24px 6px 8px; font-size: 11px; background-position: right 7px center; }
-                .calendar-gm-toggle { min-width: 82px; padding: 6px 7px; font-size: 10px; }
+                .calendar-planner-btn { order: 3; flex: 2 1 0; min-width: 0; padding: 6px 7px; font-size: 10px; }
                 .calendar-changes-toggle { padding-top: 6px; padding-bottom: 6px; font-size: 10px; }
                 .calendar-changes-panel { width: calc(100% - 8px); margin: 0 4px 8px; padding: 10px; }
                 .calendar-change-date { font-size: 11px; }
@@ -2747,6 +2734,7 @@
             [data-theme="dark"] .cal-dd-btn {
                 background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
             }
+            [data-theme="dark"] .calendar-planner-btn { background-image: none; }
             [data-theme="dark"] .cal-dd-panel { background: var(--c-surface); border-color: var(--c-border-strong); box-shadow: var(--shadow-lg); }
             [data-theme="dark"] .cal-dd-item span { color: var(--c-text); }
             [data-theme="dark"] .calendar-changes-panel { background: var(--c-surface); border-color: var(--c-border); }
@@ -3558,15 +3546,13 @@
             button,
             .btn,
             .rankings-toggle-btn,
-            .cal-dd-btn,
-            .calendar-gm-toggle {
+            .cal-dd-btn {
                 max-width: 100%;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 border-radius: 10px;
             }
             .rankings-toggle-btn.active,
-            .calendar-gm-toggle.active,
             .draw-type-btn.active {
                 background: var(--c-chrome-bg);
                 border-color: var(--c-chrome-bg);

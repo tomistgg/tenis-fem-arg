@@ -25,7 +25,7 @@
 
             const URL_STATE_TABS = new Set([
                 'home', 'upcoming', 'entrylists', 'draws', 'calendar', 'rankings',
-                'roadtogs', 'history', 'fedbcup', 'tstrength', 'information'
+                'roadtogs', 'history', 'fedbcup', 'tstrength', 'information', 'opportunities'
             ]);
             let _currentTabName = 'home';
             let _urlStateApplying = false;
@@ -117,7 +117,7 @@
             function setStateParam(params, key, value, options = {}) {
                 if (value == null) return;
                 if (Array.isArray(value)) {
-                    const items = value.map(v => slugStateValue(v)).filter(Boolean);
+                    const items = value.map(v => options.raw ? String(v).trim() : slugStateValue(v)).filter(Boolean);
                     if (!items.length) return;
                     params.set(key, items.join(','));
                     return;
@@ -133,7 +133,8 @@
                 const params = new URLSearchParams();
                 Object.keys(state || {}).forEach(key => {
                     const value = state[key];
-                    const raw = key === 'q' || key === 'date' || key === 'asrank' || key === 'vsrank' || key === 'type' || key === 'draw';
+                    const raw = key === 'q' || key === 'date' || key === 'asrank' || key === 'vsrank' || key === 'type' || key === 'draw'
+                        || (tab === 'opportunities' && ['compare', 'schedule', 'results'].includes(key));
                     setStateParam(params, key, value, { raw });
                 });
                 let query = params.toString().replace(/%2C/g, ',');
@@ -287,11 +288,9 @@
                 const levels = collectCheckboxGroupState('[data-cal-filter-toggle]', 'data-cal-filter-toggle');
                 const continents = collectCheckboxGroupState('[data-cal-continent-toggle]', 'data-cal-continent-toggle');
                 const surfaces = collectCheckboxGroupState('[data-cal-surface-toggle]', 'data-cal-surface-toggle');
-                const gmToggle = document.getElementById('calendar-gm-toggle');
                 if (levels !== null) state.level = levels;
                 if (continents !== null) state.continent = continents;
                 if (surfaces !== null) state.surface = surfaces;
-                if (gmToggle && gmToggle.getAttribute('aria-pressed') === 'true') state.gm = '1';
                 const changesToggle = document.getElementById('calendar-changes-toggle');
                 if (changesToggle && changesToggle.getAttribute('aria-expanded') === 'false') state.changes = '0';
                 return state;
@@ -301,12 +300,6 @@
                 restoreCheckboxGroupState(params, 'level', '[data-cal-filter-toggle]', 'data-cal-filter-toggle');
                 restoreCheckboxGroupState(params, 'continent', '[data-cal-continent-toggle]', 'data-cal-continent-toggle');
                 restoreCheckboxGroupState(params, 'surface', '[data-cal-surface-toggle]', 'data-cal-surface-toggle');
-                const gmToggle = document.getElementById('calendar-gm-toggle');
-                if (gmToggle) {
-                    const showGm = params.has('gm')
-                        && ['1', 'true', 'yes', 'on'].includes((params.get('gm') || '').toLowerCase());
-                    gmToggle.setAttribute('aria-pressed', showGm ? 'true' : 'false');
-                }
                 setCalendarChangesExpanded(
                     !params.has('changes')
                     || !['0', 'false', 'no', 'closed'].includes((params.get('changes') || '').toLowerCase())
@@ -536,6 +529,7 @@
                     case 'history': return collectHistoryUrlState();
                     case 'fedbcup': return collectFedBjkUrlState();
                     case 'tstrength': return collectTStrengthUrlState();
+                    case 'opportunities': return collectOpportunitiesUrlState();
                     default: return {};
                 }
             }
@@ -554,6 +548,7 @@
                         case 'history': await restoreHistoryUrlState(params); break;
                         case 'fedbcup': restoreFedBjkUrlState(params); break;
                         case 'tstrength': restoreTStrengthUrlState(params); break;
+                        case 'opportunities': await restoreOpportunitiesUrlState(params); break;
                     }
                 } finally {
                     _urlStateApplying = false;
@@ -850,8 +845,7 @@
                 const levelToggles = document.querySelectorAll('[data-cal-filter-toggle]');
                 const continentToggles = document.querySelectorAll('[data-cal-continent-toggle]');
                 const surfaceToggles = document.querySelectorAll('[data-cal-surface-toggle]');
-                const gmToggle = document.getElementById('calendar-gm-toggle');
-                if (!levelToggles.length && !continentToggles.length && !surfaceToggles.length && !gmToggle) return;
+                if (!levelToggles.length && !continentToggles.length && !surfaceToggles.length) return;
 
                 const activeLevels = new Set();
                 levelToggles.forEach(cb => { if (cb.checked) activeLevels.add(cb.dataset.calFilterToggle); });
@@ -881,22 +875,6 @@
                     el.style.display = visible ? '' : 'none';
                 });
 
-                const showGm = !gmToggle || gmToggle.getAttribute('aria-pressed') !== 'false';
-                if (gmToggle) {
-                    const gmAction = showGm ? 'Hide Quality' : 'Show Quality';
-                    gmToggle.classList.toggle('active', showGm);
-                    const gmLabel = gmToggle.querySelector('.calendar-toggle-label');
-                    if (gmLabel) gmLabel.textContent = gmAction;
-                    gmToggle.setAttribute('aria-label', gmAction + ' values');
-                    gmToggle.title = gmAction + ' values';
-                }
-                const calendarView = document.getElementById('view-calendar');
-                if (calendarView) calendarView.classList.toggle('quality-visible', showGm);
-                document.querySelectorAll('#view-calendar .cal-gm-badge').forEach(badge => {
-                    badge.style.display = showGm ? '' : 'none';
-                });
-                const gmLegend = document.querySelector('#view-calendar .cal-gm-legend');
-                if (gmLegend) gmLegend.style.display = showGm ? '' : 'none';
                 syncUrlStateForTab('calendar');
             }
             function initCalendarFilters() {
@@ -908,16 +886,8 @@
                 initCalendarHorizontalScroll();
                 initCalendarChangesPanel();
                 const toggles = document.querySelectorAll('[data-cal-filter-toggle], [data-cal-continent-toggle], [data-cal-surface-toggle]');
-                const gmToggle = document.getElementById('calendar-gm-toggle');
-                if (!toggles.length && !gmToggle) return;
+                if (!toggles.length) return;
                 toggles.forEach(cb => cb.addEventListener('change', applyCalendarFilters));
-                if (gmToggle) {
-                    gmToggle.addEventListener('click', function() {
-                        const showGm = gmToggle.getAttribute('aria-pressed') !== 'true';
-                        gmToggle.setAttribute('aria-pressed', showGm ? 'true' : 'false');
-                        applyCalendarFilters();
-                    });
-                }
                 calendarFiltersInitialized = true;
                 applyCalendarFilters();
             }
@@ -1049,6 +1019,7 @@
                 document.getElementById('view-draws').style.display = (tabName === 'draws') ? 'block' : 'none';
                 document.getElementById('view-tstrength').style.display = (tabName === 'tstrength') ? 'flex' : 'none';
                 document.getElementById('view-information').style.display = (tabName === 'information') ? 'flex' : 'none';
+                document.getElementById('view-opportunities').style.display = (tabName === 'opportunities') ? 'flex' : 'none';
 
                 if (tabName === 'entrylists') {
                     setEntryMenuCollapsed(false);
@@ -1060,6 +1031,7 @@
                 if (tabName === 'rankings') initRankingsIfEmpty();
                 if (tabName === 'roadtogs') initRoadToGS();
                 if (tabName === 'information') initInformationPage();
+                if (tabName === 'opportunities') initOpportunities();
                 if (tabName === 'fedbcup') syncFedBjkSeriesWidths();
 
                 applyMobileHistoryLayout();
@@ -2171,7 +2143,7 @@
                 });
             }
 
-            function renderRows(list, isMain, isITF, renumber, showSeed, seedMap = null) {
+            function renderRows(list, isMain, isITF, renumber, showSeed, seedMap = null, showWtn = _entryWtnVisible) {
                 const prioCell = p => isITF ? `<td class="entry-pr-col">${escapeHtml(p.priority||'')}</td>` : '';
                 const seedCell = p => {
                     if (!showSeed) return '';
@@ -2184,10 +2156,37 @@
                     const bold = isMain ? 'font-weight:bold;' : '';
                     const flag = (p.country && p.country !== '-') ? countryFlag(p.country, false) + ' ' : '';
                     const nameDisplay = p.name.startsWith('(') ? p.name : getDisplayName(p.name.toUpperCase());
-                    const wtnCell = _entryWtnVisible ? `<td class="entry-wtn-col">${escapeHtml(entryWtnDisplay(p))}</td>` : '';
+                    const wtnCell = showWtn ? `<td class="entry-wtn-col">${escapeHtml(entryWtnDisplay(p))}</td>` : '';
                     html += `<tr><td class="entry-pos-col">${escapeHtml(displayPos)}</td><td class="entry-player-col" style="text-align:left;${bold}">${flag}${escapeHtml(nameDisplay)}</td>${seedCell(p)}${wtnCell}<td class="entry-rank-col">${escapeHtml(entryRankDisplay(p))}</td>${prioCell(p)}</tr>`;
                 });
                 return html;
+            }
+
+            function entryListTableMarkup(key) {
+                const players = tournamentData[key];
+                if (!players?.length) return '<p class="op-card-note">No entry list available yet.</p>';
+                const isITF = !key.startsWith('http');
+                const showSeed = players.some(player => Number.isInteger(player.seed));
+                const cols = (isITF ? 4 : 3) + (showSeed ? 1 : 0);
+                const main = players.filter(player => player.type === 'MAIN').sort(entryByPos);
+                const qual = entrySortEL(players.filter(player => player.type === 'QUAL'));
+                const alt = entrySortEL(players.filter(player => player.type === 'ALT'));
+                let rows = renderRows(main, true, isITF, false, showSeed, null, false);
+                if (qual.length) {
+                    if (!key.endsWith('#qual')) rows += `<tr class="divider-row"><td colspan="${cols}">QUALIFYING</td></tr>`;
+                    rows += renderRows(qual, false, isITF, false, showSeed, null, false);
+                }
+                if (alt.length) {
+                    rows += `<tr class="divider-row"><td colspan="${cols}">ALTERNATES</td></tr>`;
+                    rows += renderRows(alt, false, isITF, false, showSeed, null, false);
+                }
+                return '<table class="op-entry-table"><thead><tr>'
+                    + '<th class="entry-pos-col" style="width:35px;min-width:35px">#</th>'
+                    + '<th class="entry-player-col">PLAYER</th>'
+                    + (showSeed ? '<th class="entry-seed-col" style="width:35px">S</th>' : '')
+                    + '<th class="entry-rank-col" style="width:70px">E-Rank</th>'
+                    + (isITF ? '<th class="entry-pr-col" style="width:35px"><span class="entry-pr-desktop-label">PRIO</span><span class="entry-pr-mobile-label">PR</span></th>' : '')
+                    + '</tr></thead><tbody>' + rows + '</tbody></table>';
             }
 
             function updateEntryList(key, name) {

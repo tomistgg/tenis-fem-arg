@@ -26,6 +26,7 @@ from config import (
 )
 from entry_withdrawals import WITHDRAWALS_FILENAME, load_withdrawals, public_withdrawals
 from milestones import build_milestones_data
+from opportunities import build_opportunities_data, planner_slam_deadlines
 from pipeline_errors import DataValidationError
 from ranking_publication import accepted_ranking_dates, load_ranking_status
 from run_state import report_run_issue
@@ -66,6 +67,9 @@ _FRONTEND_ASSETS = {
     "js/tabs/draws.js": "assets/js/tabs/draws.js",
     "js/tabs/roadtogs.js": "assets/js/tabs/roadtogs.js",
     "js/tabs/tstrength.js": "assets/js/tabs/tstrength.js",
+    "js/tabs/opportunities.js": "assets/js/tabs/opportunities.js",
+    "js/tabs/opportunities-points.js": "assets/js/tabs/opportunities-points.js",
+    "css/opportunities.css": "assets/opportunities.css",
 }
 _CSP_PLACEHOLDER = "__WTARG_CSP_META__"
 _CSP_META_RE = re.compile(
@@ -1636,56 +1640,6 @@ def generate_html(
             return "grass"
         return "hard"
 
-    # Build 2025 GM lookup for WTA 125/250/500 only: (level, city_upper) -> [(startDate, gm), ...]
-    _CAL_GM_LEVELS = {"WTA 125", "WTA 250", "WTA 500"}
-    _ts_2025 = [
-        e
-        for e in (tstrength_data or [])
-        if str(e.get("year", "")) == "2025"
-        and e.get("draw", "MD") in ("MD", "M", "MAIN")
-        and e.get("gm", 0) > 0
-        and e.get("level", "") in _CAL_GM_LEVELS
-    ]
-    _gm_lookup = {}
-    for _e in _ts_2025:
-        _key = (_e.get("level", "").upper(), (_e.get("city") or "").upper())
-        _gm_lookup.setdefault(_key, []).append((_e.get("startDate", ""), _e["gm"]))
-    _gm_vals = [g for entries in _gm_lookup.values() for _, g in entries]
-    _gm_min, _gm_max = (min(_gm_vals), max(_gm_vals)) if _gm_vals else (0, 1)
-
-    def _gm_color(gm):
-        if _gm_max <= _gm_min:
-            return "#f1f5f9"
-        t = max(0.0, min(1.0, (gm - _gm_min) / (_gm_max - _gm_min)))
-        if t < 0.5:
-            p = t * 2
-            r, g, b = round(p * 255), round(200 + p * 20), 0
-        else:
-            p = (t - 0.5) * 2
-            r, g, b = round(255 + p * (220 - 255)), round(220 * (1 - p)), 0
-        return f"rgba({r},{g},{b},0.65)"
-
-    def _day_of_year(date_str):
-        try:
-            return datetime.strptime(date_str[:10], "%Y-%m-%d").timetuple().tm_yday
-        except Exception:
-            return 0
-
-    def _get_gm_badge(t_name, t_level, week_monday):
-        if t_level not in _CAL_GM_LEVELS:
-            return ""
-        city_part = t_name[len(t_level) :].strip().split("#")[0].strip().upper()
-        entries = _gm_lookup.get((t_level.upper(), city_part))
-        if not entries:
-            return ""
-        if len(entries) == 1:
-            gm = entries[0][1]
-        else:
-            cal_doy = _day_of_year(week_monday)
-            gm = min(entries, key=lambda x: abs(_day_of_year(x[0]) - cal_doy))[1]
-        color = _gm_color(gm)
-        return f'<span class="cal-gm-badge" style="background:{color}">{gm}</span>'
-
     calendar_column_keys = ("gs", "wta_tour", "wta_125", "itf")
     calendar_column_order = {key: index for index, key in enumerate(calendar_column_keys)}
     bold_calendar_keys = {"gs", "wta_tour", "wta_125"}
@@ -1740,13 +1694,8 @@ def generate_html(
                 flag_prefix = f"{flag} " if flag else ""
                 weight_class = " cal-tournament-bold" if column_key in bold_calendar_keys else ""
                 wta_class = " cal-tournament-wta" if column_key in {"wta_tour", "wta_125"} else ""
-                gm_badge = (
-                    _get_gm_badge(t["name"], t.get("level", ""), week["monday_date"])
-                    if column_key in {"wta_tour", "wta_125"}
-                    else ""
-                )
                 display_name = escape(_display_calendar_tournament_name(t["name"]))
-                calendar_html += f'<span class="calendar-tournament {sc}{weight_class}{wta_class}" data-cal-filter="{fk}" data-cal-continent="{cont}" data-cal-surface="{sk}">{flag_prefix}{display_name}{gm_badge}</span>'
+                calendar_html += f'<span class="calendar-tournament {sc}{weight_class}{wta_class}" data-cal-filter="{fk}" data-cal-continent="{cont}" data-cal-surface="{sk}">{flag_prefix}{display_name}</span>'
             calendar_html += "</td>"
         calendar_html += "</tr>"
 
@@ -2286,8 +2235,35 @@ def generate_html(
         "GS_THRESHOLD_MD": GS_THRESHOLD_MD,
         "DRAWS_DROPDOWN_HTML": draws_dropdown_html,
     }
+    planner_cutoff_names = {}
+    planner_cutoff_draws = {}
+    for key, boxes in _gs_cutoff_boxes.items():
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", key):
+            continue
+        # Calendar sort keys group each Slam's cutoff labels in blocks of three.
+        names = sorted({gs_data[order // 3]["name"] for order, label in boxes if "W50+" in label})
+        if names:
+            planner_cutoff_names[key] = names
+            planner_cutoff_draws[key] = []
+            for order, label in boxes:
+                if "W50+" not in label:
+                    continue
+                draw = re.search(r"\b(MD|Q)\b", label)
+                planner_cutoff_draws[key].append({"name": gs_data[order // 3]["name"],
+                                                 "draw": draw.group(1) if draw else ""})
     frontend_data = {
         "schemaVersion": 1,
+        "opportunities": {
+            **build_opportunities_data(source_data_dir),
+            "gsDeadlines": planner_slam_deadlines(gs_data),
+            "w50CutoffWeeks": sorted(planner_cutoff_names),
+            "w50CutoffNames": planner_cutoff_names,
+            "w50CutoffDraws": planner_cutoff_draws,
+            "regions": {
+                key: {"label": CONTINENT_LABELS[key], "mobileLabel": MOBILE_CONTINENT_LABELS[key]}
+                for key in CONTINENT_KEYS
+            },
+        },
         "tstrength": tstrength_json_list,
         "wtnTournamentGm": wtn_tstrength_json_list,
         "tournaments": tournament_store,
@@ -2382,6 +2358,7 @@ def generate_html(
 """
 
     route_tabs = [
+        "opportunities",
         "upcoming",
         "entrylists",
         "draws",

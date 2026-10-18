@@ -90,17 +90,10 @@ def test_generated_site_loads_rankings_bundle_offline(offline_generated_site):
         assert not changes_panel.is_displayed()
         wait.until(lambda _current: changes_arrow.value_of_css_property("transform") != changes_open_transform)
 
-        quality_toggle = driver.find_element(By.ID, "calendar-gm-toggle")
-        quality_legend = driver.find_element(By.CLASS_NAME, "cal-gm-legend")
-        quality_arrow = quality_toggle.find_element(By.CLASS_NAME, "calendar-toggle-arrow")
-        quality_closed_transform = quality_arrow.value_of_css_property("transform")
-        assert quality_toggle.get_attribute("aria-pressed") == "false"
-        assert not quality_legend.is_displayed()
-
-        quality_toggle.click()
-        wait.until(lambda _current: quality_toggle.get_attribute("aria-pressed") == "true")
-        assert quality_legend.is_displayed()
-        wait.until(lambda _current: quality_arrow.value_of_css_property("transform") != quality_closed_transform)
+        planner_button = driver.find_element(By.ID, "calendar-planner-btn")
+        planner_button.click()
+        wait.until(expected_conditions.visibility_of_element_located((By.ID, "opportunities-root")))
+        driver.execute_script("switchTab('calendar')")
 
         categories_toggle = driver.find_element(
             By.CSS_SELECTOR,

@@ -13,7 +13,7 @@
             // Drop-date and threshold constants â€” single source of truth for the Road-to-GS logic.
             //   2W:      GS / genuine WTA-1000 two-week events drop after 54 weeks.
             //   DEFAULT: every other tournament drops after 53 weeks.
-            //   W15W35_DELAY_DAYS: ITF W15/W35 points go live one Monday AFTER the tournament starts.
+            //   W15W35_DELAY_DAYS: extra ranking-publication week for W15/W35 after the tournament ends.
             //   GS_THRESHOLD_*:    points needed to qualify (Q) / make main draw (MD) at a Grand Slam.
             const _RTGS_DROP_WEEKS_2W = 54;
             const _RTGS_DROP_WEEKS_DEFAULT = 53;
@@ -100,6 +100,10 @@
                 const effectiveMonday = new Date(monday);
                 if (isW15W35) effectiveMonday.setUTCDate(monday.getUTCDate() + _RTGS_W15W35_DELAY_DAYS);
                 const effectiveDateStr = effectiveMonday.toISOString().slice(0, 10);
+                // Keep the expiry anchor separate from the later W15/W35 publication date.
+                const publicationMonday = new Date(effectiveMonday);
+                if (isW15W35) publicationMonday.setUTCDate(publicationMonday.getUTCDate() + 7);
+                const publicationDateStr = publicationMonday.toISOString().slice(0, 10);
                 const is2WeekEvent = t.isGS || (!_RTGS_ITF_CATS_ALL.includes(t.category) && _rtgs_twoWeekNames.some(n => t.tournament.includes(n)));
                 const isConcurrentFreeze = !is2WeekEvent && _rtgs_twoWeekFreezeMondays.has(effectiveDateStr);
                 const dropDate = new Date(effectiveMonday);
@@ -116,7 +120,7 @@
                 } else {
                     dropDate.setUTCDate(effectiveMonday.getUTCDate() + _RTGS_DROP_WEEKS_DEFAULT * 7);
                 }
-                return { effectiveMonday, effectiveDateStr, dropDate, is2WeekEvent, isConcurrentFreeze };
+                return { effectiveMonday, effectiveDateStr, publicationDateStr, dropDate, is2WeekEvent, isConcurrentFreeze };
             }
 
             function _rtgs_keepLatestGrandSlamEditions(entries) {
@@ -242,12 +246,12 @@
                 });
 
                 // Filter: only include tournaments whose points are still live at windowEnd.
-                // effectiveDateStr > windowEndStr â†’ points not yet live at cutoff.
+                // publicationDateStr > windowEndStr means points are not yet live at cutoff.
                 // dropDate > windowEnd â†’ points still on the rolling 12-month ranking.
                 const ts=_rtgs_keepLatestGrandSlamEditions(Array.from(tMap.values())).filter(t => {
                     if (!t.date) return false;
-                    const { effectiveDateStr, dropDate } = _rtgs_computeDropDate(t);
-                    if (effectiveDateStr > windowEndStr) return false;
+                    const { publicationDateStr, dropDate } = _rtgs_computeDropDate(t);
+                    if (publicationDateStr > windowEndStr) return false;
                     return dropDate > windowEnd;
                 });
                 if (!ts.length) return _rtgsEmptyBreakdown();
@@ -313,6 +317,11 @@
                     t.dropDate=dropDate.toISOString().slice(0,10);
                 });
 
+                return _rtgsSelectCountable(ts);
+            }
+
+            // Shared by the points ledger and hypothetical tournament/schedule results.
+            function _rtgsSelectCountable(ts) {
                 const mGS=[],m1000=[],opt=[],rest=[];
                 ts.forEach(t => {
                     const hasMD=!!t.bestMainRound, up=t.tournament.toUpperCase();
@@ -755,25 +764,14 @@
                     }
                 });
 
-                // Remove entries whose tournament monday is in the same week as (or before) 52 weeks ago.
-                // Default: live/current-week window (normal weekly updates).
-                // Exception: if CURRENT week is week 1 of a 2-week freeze event, shift cutoff by +1 week
-                // so we also remove next week's old results (no ranking update next Monday).
-                const _cwMon = (() => { const d = new Date(now); const wd = d.getUTCDay(); d.setUTCDate(d.getUTCDate() - (wd===0?6:wd-1)); d.setUTCHours(0,0,0,0); return d; })();
-                const _nextUpdateMon = new Date(_cwMon);
-                const _cwMonStr = _cwMon.toISOString().slice(0, 10);
-                const _w2Mon = new Date(_cwMon);
-                _w2Mon.setUTCDate(_w2Mon.getUTCDate() + 7);
-                const _w2MonStr = _w2Mon.toISOString().slice(0, 10);
-                const _isFreezeWeek1 = _rtgs_twoWeekFreezeMondays.has(_cwMonStr) && _rtgs_twoWeekFreezeMondays.has(_w2MonStr);
-                if (_isFreezeWeek1) _nextUpdateMon.setUTCDate(_nextUpdateMon.getUTCDate() + 7);
-                const _52wAgoMon = new Date(_nextUpdateMon);
-                _52wAgoMon.setUTCDate(_nextUpdateMon.getUTCDate() - 364);
+                // Use the same publication and expiry rules as dated points breakdowns.
+                const currentDate = now.toISOString().slice(0, 10);
                 tournamentMap.forEach((t, key) => {
                     if (!t.date) return;
-                    const effMon = new Date(t.date + 'T00:00:00Z');
-                    if (t.category === 'W15' || t.category === 'W35') effMon.setUTCDate(effMon.getUTCDate() + _RTGS_W15W35_DELAY_DAYS);
-                    if (effMon <= _52wAgoMon) tournamentMap.delete(key);
+                    const { publicationDateStr, dropDate } = _rtgs_computeDropDate(t);
+                    if (publicationDateStr > currentDate || dropDate <= now) {
+                        tournamentMap.delete(key);
+                    }
                 });
 
                 const tournaments = _rtgs_keepLatestGrandSlamEditions(Array.from(tournamentMap.values()));

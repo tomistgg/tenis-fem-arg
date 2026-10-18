@@ -99,6 +99,14 @@ CSVs, player-alias JSON, and current tournament caches. Run the build command
 above to reproduce all deploy files locally from that pulled data; no network
 access is required for the build.
 
+The Tournament Planner is available at `opportunities/`. It compares existing
+singles entries and future events before their estimated entry deadlines, with
+field coverage, surface records, round-by-round point scenarios, and joint
+schedule calculations. Published lists restrict options to the player's recorded
+entries. Deadline estimates and reconstructed point totals are labelled; the
+planner does not publish unvalidated acceptance or match-winning probabilities.
+It builds from the existing caches without additional network requests.
+
 Validate canonical player, ranking, match, and tournament data:
 
 ```text

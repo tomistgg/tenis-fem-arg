@@ -7,6 +7,7 @@
     var SECONDARY_TABS = ['history', 'draws', 'rankings', 'tstrength', 'fedbcup', 'information'];
     var TAB_LABELS = {
         home: 'Home',
+        opportunities: 'Tournament Planner',
         entrylists: 'Entry Lists',
         roadtogs: 'Points Breakdown',
         calendar: 'Calendar',
@@ -157,6 +158,8 @@
     }
 
     function currentTab() {
+        var planner = document.getElementById('view-opportunities');
+        if (planner && planner.style.display !== 'none') return 'opportunities';
         var active = document.querySelector('.menu-item.active');
         if (active && active.id) return active.id.replace(/^btn-/, '');
         return 'home';

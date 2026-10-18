@@ -22,7 +22,7 @@
     // happens to equal an English dictionary key, e.g. a tournament named "Open").
     const protectedSelector = [
         'script', 'style', 'svg', '[translate="no"]', '[data-no-translate]', '.language-toggle',
-        '.calendar-tournament', '.calendar-change-item strong', 'td.col-name', '#schedule-table tbody b',
+        '.calendar-tournament:not(.op-tournament)', '.calendar-change-item strong', 'td.col-name', '#schedule-table tbody b',
         '.entry-menu-item', '#entry-title', '.entry-player-col:not(th)', '.history-player-name',
         '#rankings-body tr:not(.rankings-system-row) td:nth-child(2)',
         '#history-body tr td:nth-child(2):not([colspan])', '.ts-name', '.draw-player .name:not([data-ui-label])',
@@ -112,7 +112,7 @@
         if (keyedElement && language !== 'en') {
             const keyedValue = (catalog[language] || {})[keyedElement.dataset.i18nKey];
             rendered = keyedValue === undefined ? source : source.replace(source.trim(), keyedValue);
-        } else if (node.parentElement.closest('.cal-week-header, .entry-menu-week')) rendered = translateWeekHeader(source);
+        } else if (node.parentElement.closest('.cal-week-header, .entry-menu-week, .op-week-date')) rendered = translateWeekHeader(source);
         else if (node.parentElement.closest('.gs-cutoff-date')) rendered = translateCutoffDate(source);
         else rendered = translate(source);
         // An option without an explicit value derives its value from its label.

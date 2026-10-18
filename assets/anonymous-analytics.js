@@ -5,10 +5,11 @@
     var COUNTRY_ENDPOINT = 'https://api.country.is/';
     var ANALYTICS_PAGES = new Set([
         'home', 'upcoming', 'entrylists', 'draws', 'calendar', 'rankings',
-        'roadtogs', 'history', 'fedbcup', 'tstrength'
+        'roadtogs', 'history', 'fedbcup', 'tstrength', 'opportunities'
     ]);
     var ANALYTICS_FILTER_PARAMS = {
         home: [],
+        opportunities: [],
         upcoming: ['q'],
         entrylists: ['t', 'prio'],
         draws: ['t', 'type', 'round'],
