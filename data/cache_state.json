@@ -3,16 +3,16 @@
     "wta_full_calendar_cache.json": {
       "from": "2026-09-20",
       "to": "2026-12-31",
-      "fetchedAt": "2026-10-18T17:08:28Z",
-      "lastAttemptAt": "2026-10-18T17:08:28Z",
-      "fetchedRunId": "20261018T170614Z-1e6f226b9e",
-      "lastAttemptRunId": "20261018T170614Z-1e6f226b9e"
+      "fetchedAt": "2026-10-18T20:17:47Z",
+      "lastAttemptAt": "2026-10-18T20:17:47Z",
+      "fetchedRunId": "20261018T200121Z-58b5ef0e4e",
+      "lastAttemptRunId": "20261018T200121Z-58b5ef0e4e"
     },
     "itf_calendar_cache.json": {
       "year": 2026,
-      "count": 636,
+      "count": 603,
       "fetchedAt": "2026-10-18T17:11:20Z",
-      "lastAttemptAt": "2026-10-18T17:11:20Z"
+      "lastAttemptAt": "2026-10-18T20:06:05Z"
     }
   },
   "entries": {
@@ -370,9 +370,6 @@
       "1100203860_M_0": {
         "fetchedAt": "2026-07-13T02:12:20Z"
       },
-      "1100205028_M_0": {
-        "fetchedAt": "2026-10-04T18:17:16Z"
-      },
       "1100204719_Q_0": {
         "fetchedAt": "2026-10-05T07:30:34Z"
       },
@@ -558,6 +555,9 @@
       },
       "1100203516_Q_0": {
         "fetchedAt": "2026-10-18T08:35:58Z"
+      },
+      "1100205218_M_0": {
+        "fetchedAt": "2026-10-18T20:16:14Z"
       }
     },
     "draws_store_cache.json": {
@@ -1123,43 +1123,48 @@
         "completedAt": "2026-10-12T01:21:19Z"
       },
       "https://www.wtatennis.com/tournaments/1075/wuhan/2026/player-list": {
-        "fetchedAt": "2026-10-18T17:13:25Z",
-        "completedAt": "2026-10-18T17:13:25Z"
+        "fetchedAt": "2026-10-18T20:07:00Z",
+        "completedAt": "2026-10-18T20:07:00Z"
       },
       "https://www.wtatennis.com/tournaments/1128/mallorca-125/2026/player-list": {
-        "fetchedAt": "2026-10-18T17:13:25Z",
-        "completedAt": "2026-10-18T17:13:25Z"
+        "fetchedAt": "2026-10-18T20:07:00Z",
+        "completedAt": "2026-10-18T20:07:00Z"
       },
       "https://www.wtatennis.com/tournaments/1168/lisbon-125/2026/player-list": {
-        "fetchedAt": "2026-10-18T17:13:25Z",
-        "completedAt": "2026-10-18T17:13:25Z"
+        "fetchedAt": "2026-10-18T20:07:00Z",
+        "completedAt": "2026-10-18T20:07:00Z"
       },
       "https://www.wtatennis.com/tournaments/1140/rovereto-125/2026/player-list": {
-        "fetchedAt": "2026-10-18T17:13:25Z",
-        "completedAt": "2026-10-18T17:13:25Z"
+        "fetchedAt": "2026-10-18T20:07:00Z",
+        "completedAt": "2026-10-18T20:07:00Z"
       },
       "w-itf-ita-2026-036": {
         "fetchedAt": "2026-10-13T17:32:31Z",
         "completedAt": "2026-10-14T14:53:10Z"
       },
       "w-itf-bra-2026-008": {
-        "fetchedAt": "2026-10-18T17:14:36Z"
+        "fetchedAt": "2026-10-18T20:07:23Z",
+        "completedAt": "2026-10-18T20:07:23Z"
       },
       "w-itf-usa-2026-049": {
-        "fetchedAt": "2026-10-18T17:13:26Z"
+        "fetchedAt": "2026-10-18T20:07:00Z",
+        "completedAt": "2026-10-18T20:07:00Z"
       },
       "w-itf-bul-2026-004": {
         "fetchedAt": "2026-10-18T13:54:16Z",
-        "completedAt": "2026-10-18T17:13:25Z"
+        "completedAt": "2026-10-18T20:06:58Z"
       },
       "https://www.wtatennis.com/tournaments/405/osaka/2026/player-list": {
-        "fetchedAt": "2026-10-18T17:13:25Z"
+        "fetchedAt": "2026-10-18T20:07:00Z"
       },
       "https://www.wtatennis.com/tournaments/2092/ningbo/2026/player-list": {
-        "fetchedAt": "2026-10-18T17:13:25Z"
+        "fetchedAt": "2026-10-18T20:07:00Z"
       },
       "w-itf-ita-2026-037": {
-        "fetchedAt": "2026-10-18T17:17:03Z"
+        "fetchedAt": "2026-10-18T20:11:08Z"
+      },
+      "w-itf-usa-2026-052": {
+        "fetchedAt": "2026-10-18T20:11:28Z"
       }
     }
   }
