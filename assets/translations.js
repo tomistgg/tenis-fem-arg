@@ -319,7 +319,7 @@ window.WTARG_TRANSLATIONS = {
         "Gross points": "Puntos brutos",
         "Countable gain": "Ganancia computable",
         "Compare": "Comparar",
-        "Compare opportunities": "Comparar oportunidades",
+        "Compare tournaments": "Comparar torneos",
         "Clear comparison": "Limpiar comparación",
         "Remove from comparison": "Quitar de la comparación",
         "Access": "Acceso",

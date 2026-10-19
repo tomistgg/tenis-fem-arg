@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    const data = window.WTARG_DATA.opportunities || { events: [], players: [] };
+    const data = window.WTARG_DATA.planner || { events: [], players: [] };
     const events = data.events || [];
     const players = data.players || [];
     const byId = new Map(events.map(event => [event.id, event]));
@@ -11,6 +11,7 @@
     };
     let mounted = false;
     let restoreControlFocus = true;
+    let breakdownExpanded = true;
     let notice = '';
 
     function esc(value) {
@@ -60,8 +61,8 @@
     function eligibleEvents(source, playerId, asOf) {
         return source.filter(event => event.startDate >= asOf && entryRoutes(event, playerId).length > 0);
     }
-    window.opportunitiesEligibleEvents = eligibleEvents;
-    window.opportunitiesEntryRoutes = entryRoutes;
+    window.plannerEligibleEvents = eligibleEvents;
+    window.plannerEntryRoutes = entryRoutes;
     const addDays = (value, days) => {
         const result = new Date(value + 'T00:00:00Z');
         result.setUTCDate(result.getUTCDate() + days);
@@ -131,7 +132,7 @@
         const selected = endingOptions().find(option => option.value === state.ending);
         return selected ? selected.lastWeek : state.ending;
     }
-    window.opportunitiesSlamOptions = slamOptions;
+    window.plannerSlamOptions = slamOptions;
     function rangeIncludes(event) {
         return (!state.starting || weekFor(event) >= state.starting) && (!endingWeek() || weekFor(event) <= endingWeek());
     }
@@ -142,8 +143,8 @@
     function pointEvent(event) { return Object.assign({}, event, { assumedRoute: routeFor(event) }); }
     function finishesFor(event) {
         if (event.rest) return [];
-        return typeof window.opportunitiesPointFinishes === 'function'
-            ? window.opportunitiesPointFinishes(pointEvent(event), routeFor(event)) : [];
+        return typeof window.plannerPointFinishes === 'function'
+            ? window.plannerPointFinishes(pointEvent(event), routeFor(event)) : [];
     }
     function finishFor(event) {
         const finishes = finishesFor(event);
@@ -151,18 +152,18 @@
         return (finishes.find(finish => /^R\d+$/.test(finish.value)) || finishes[0] || {}).value || '';
     }
     function pointDate(event) {
-        return typeof window.opportunitiesPointDate === 'function'
-            ? window.opportunitiesPointDate(event) : (event.endDate || event.startDate);
+        return typeof window.plannerPointDate === 'function'
+            ? window.plannerPointDate(event) : (event.endDate || event.startDate);
     }
     function scenario(event, finish, horizon) {
-        if (typeof window.opportunitiesPointScenario !== 'function' || !selectedPlayer()) return null;
+        if (typeof window.plannerPointScenario !== 'function' || !selectedPlayer()) return null;
         if (!finishesFor(event).length) return null;
-        return window.opportunitiesPointScenario(selectedPlayer().name, pointEvent(event),
+        return window.plannerPointScenario(selectedPlayer().name, pointEvent(event),
             finish || finishFor(event), horizon || endingDate() || pointDate(event));
     }
     function jointScenario(selected, horizon) {
-        if (typeof window.opportunitiesScheduleScenario !== 'function' || !selectedPlayer()) return null;
-        return window.opportunitiesScheduleScenario(selectedPlayer().name, selected.filter(event => !event.rest).map(event => ({
+        if (typeof window.plannerScheduleScenario !== 'function' || !selectedPlayer()) return null;
+        return window.plannerScheduleScenario(selectedPlayer().name, selected.filter(event => !event.rest).map(event => ({
             event: pointEvent(event), finish: finishFor(event), route: routeFor(event)
         })), horizon);
     }
@@ -331,7 +332,7 @@
             ['Replaced tournament:', event => replacedMarkup(scenario(event, null, horizon))]
         ];
         return '<details open class="op-panel op-comparison" aria-labelledby="op-comparison-title"><summary id="op-comparison-title">'
-            + text('Compare opportunities') + '</summary><div class="op-section-head"><small>' + noTranslate(day(horizon)) + '</small>'
+            + text('Compare tournaments') + '</summary><div class="op-section-head"><small>' + noTranslate(day(horizon)) + '</small>'
             + button('clear-compare', '', 'Clear comparison') + '</div><div class="op-table-scroll"><table class="op-compare-table"><thead><tr><th scope="col">'
             + text('Tournament') + '</th>' + selected.map(event => '<th scope="col"><span translate="no">' + esc(eventName(event)) + '</span>'
                 + '<button type="button" class="op-remove" data-action="compare" data-event="' + esc(event.id) + '" aria-label="Remove from comparison">×</button></th>').join('')
@@ -361,7 +362,7 @@
         }
         return conflicts;
     }
-    window.opportunitiesScheduleConflicts = scheduleConflicts;
+    window.plannerScheduleConflicts = scheduleConflicts;
     function summaryMarkup(result, conflicts) {
         const warnings = result && result.warnings || [];
         return '<section class="op-panel op-summary" aria-label="Projected points">'
@@ -378,19 +379,22 @@
         const body = {innerHTML: ''};
         _rtgsRenderBreakdown(body, plan.breakdown, true, result => {
             const label = '<span translate="no">' + _rtgsTournamentLabel(result) + '</span>';
-            return label + (result._opportunity ? ' <span class="op-result-new">(' + text('New') + ')</span>' : '')
-                + (result.replacedBy && !result._opportunity ? ' <span class="op-result-replaced">(' + text('Replaced') + ')</span>' : '');
+            return label + (result._planner ? ' <span class="op-result-new">' + text('New') + '</span>' : '')
+                + (result.replacedBy && !result._planner ? ' <span class="op-result-replaced">' + text('Replaced') + '</span>' : '');
         });
-        return '<section class="op-panel op-breakdown" aria-labelledby="op-breakdown-title">'
-            + '<h2 id="op-breakdown-title">' + text('Points Breakdown') + '</h2>'
-            + '<div class="table-wrapper"><table id="op-breakdown-table">'
+        return '<section class="op-panel op-breakdown" aria-labelledby="op-breakdown-title" data-expanded="' + breakdownExpanded + '">'
+            + '<h2 id="op-breakdown-title"><span class="op-breakdown-heading">' + text('Points Breakdown') + '</span>'
+            + '<button type="button" id="op-breakdown-toggle" data-action="toggle-breakdown"'
+            + ' aria-expanded="' + breakdownExpanded + '" aria-controls="op-breakdown-content">' + text('Points Breakdown')
+            + '<span class="calendar-toggle-arrow" aria-hidden="true"></span></button></h2>'
+            + '<div class="table-wrapper" id="op-breakdown-content"><table id="op-breakdown-table">'
             + '<colgroup><col class="rtgs-col-date"><col class="rtgs-col-tournament"><col class="rtgs-col-round">'
             + '<col class="rtgs-col-points"><col class="rtgs-col-drop-date"></colgroup>'
             + '<thead><tr>' + ['Date', 'Tournament', 'Round', 'PTS', 'Drop Date'].map(label => '<th scope="col">' + text(label) + '</th>').join('')
             + '</tr></thead><tbody id="op-breakdown-body">' + body.innerHTML + '</tbody></table></div></section>';
     }
     function render() {
-        const root = document.getElementById('opportunities-root');
+        const root = document.getElementById('planner-root');
         if (!root) return;
         const player = selectedPlayer();
         if (!players.length) { root.innerHTML = '<p>' + text('No player data is available in this build.') + '</p>'; return; }
@@ -409,13 +413,13 @@
             + '<div class="op-primary-filters">' + filterSelect('player', 'Player', players.map(item => ({value:item.id, label:item.name})), state.player, 'Select Player')
             + filterSelect('starting', 'Starting week', weeks, state.starting)
             + endSelect + '</div></section>'
+            + '<div class="op-calendar-clear">' + button('clear-schedule', '', 'Clear selections', false, !state.schedule.length) + '</div>'
             + '<div class="op-planner">' + summaryMarkup(plan, conflicts)
             + comparisonMarkup() + '</div></div>'
             + (notice ? '<p class="op-notice" role="status">' + text(notice) + '</p>' : '')
-            + (state.schedule.length ? '<div class="op-calendar-clear">' + button('clear-schedule', '', 'Clear selections') + '</div>' : '')
-            + '<section class="op-results" aria-label="Tournaments">'
+            + '<div class="op-body"><section class="op-results" aria-label="Tournaments">'
             + (!player ? '' : shown.length ? calendarMarkup(shown, plan) : '<p class="op-empty">' + text('No matching tournaments') + '</p>')
-            + '</section>' + breakdownMarkup(plan) + '</div>';
+            + '</section>' + breakdownMarkup(plan) + '</div></div>';
         initWeekSelectors();
     }
     function allowedIds() {
@@ -423,12 +427,12 @@
         return new Set(eligibleEvents(calendarEvents(), state.player, data.asOf).filter(rangeIncludes).map(event => event.id));
     }
     function changed() {
-        const root = document.getElementById('opportunities-root');
+        const root = document.getElementById('planner-root');
         const activeId = root && root.contains(document.activeElement) && document.activeElement.id;
         render();
         const replacement = activeId && document.getElementById(activeId);
         if (replacement && restoreControlFocus) replacement.focus({ preventScroll: true });
-        if (typeof window.syncUrlStateForTab === 'function') window.syncUrlStateForTab('opportunities');
+        if (typeof window.syncUrlStateForTab === 'function') window.syncUrlStateForTab('planner');
     }
     function toggleSchedule(id) {
         const event = byId.get(id);
@@ -465,7 +469,8 @@
             if (index >= 0) list.splice(index, 1);
             else if (action === 'compare' && list.length >= 3) notice = 'Compare up to three tournaments. Remove one to add another.';
             else list.push(id);
-        } else if (action === 'clear-compare') state.compare = [];
+        } else if (action === 'toggle-breakdown') breakdownExpanded = !breakdownExpanded;
+        else if (action === 'clear-compare') state.compare = [];
         else if (action === 'clear-schedule') { state.schedule = []; state.target = ''; state.active = ''; }
         changed();
     }
@@ -491,8 +496,8 @@
         else return;
         changed();
     }
-    window.initOpportunities = async function () {
-        const root = document.getElementById('opportunities-root');
+    window.initPlanner = async function () {
+        const root = document.getElementById('planner-root');
         if (!root) return;
         if (typeof ensureHistoryDataLoaded === 'function') {
             if (!mounted) root.innerHTML = '<div class="op-panel op-empty" role="status">' + text('Loading player results…') + '</div>';
@@ -516,7 +521,7 @@
         render();
         return true;
     };
-    window.collectOpportunitiesUrlState = function () {
+    window.collectPlannerUrlState = function () {
         const result = { player: slug((selectedPlayer() || {}).name) };
         for (const key of ['starting', 'ending']) if (state[key]) result[key] = state[key];
         if (state.compare.length) result.compare = state.compare;
@@ -526,8 +531,8 @@
         if (selected.length) result.results = selected.map(id => id + '~' + finishFor(byId.get(id)) + '~' + routeFor(byId.get(id)));
         return result;
     };
-    window.restoreOpportunitiesUrlState = async function (params) {
-        if (!await window.initOpportunities()) return;
+    window.restorePlannerUrlState = async function (params) {
+        if (!await window.initPlanner()) return;
         const player = players.find(item => item.id === params.get('player') || slug(item.name) === slug(params.get('player')));
         if (player) state.player = player.id;
         const weeks = weekOptions();

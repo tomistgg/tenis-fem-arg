@@ -5,12 +5,12 @@
     var COUNTRY_ENDPOINT = 'https://api.country.is/';
     var ANALYTICS_PAGES = new Set([
         'home', 'upcoming', 'entrylists', 'draws', 'calendar', 'rankings',
-        'roadtogs', 'history', 'fedbcup', 'tstrength', 'information', 'opportunities'
+        'roadtogs', 'history', 'fedbcup', 'tstrength', 'information', 'planner'
     ]);
     var ANALYTICS_FILTER_PARAMS = {
         home: [],
         information: [],
-        opportunities: ['player', 'starting', 'ending', 'compare', 'schedule', 'target', 'results'],
+        planner: ['player', 'starting', 'ending', 'compare', 'schedule', 'target', 'results'],
         upcoming: ['q'],
         entrylists: ['t', 'prio', 'view', 'wtn'],
         draws: ['t', 'type', 'round', 'wtn'],

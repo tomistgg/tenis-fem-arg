@@ -25,7 +25,7 @@
 
             const URL_STATE_TABS = new Set([
                 'home', 'upcoming', 'entrylists', 'draws', 'calendar', 'rankings',
-                'roadtogs', 'history', 'fedbcup', 'tstrength', 'information', 'opportunities'
+                'roadtogs', 'history', 'fedbcup', 'tstrength', 'information', 'planner'
             ]);
             let _currentTabName = 'home';
             let _urlStateApplying = false;
@@ -134,7 +134,7 @@
                 Object.keys(state || {}).forEach(key => {
                     const value = state[key];
                     const raw = key === 'q' || key === 'date' || key === 'asrank' || key === 'vsrank' || key === 'type' || key === 'draw'
-                        || (tab === 'opportunities' && ['compare', 'schedule', 'results'].includes(key));
+                        || (tab === 'planner' && ['compare', 'schedule', 'results'].includes(key));
                     setStateParam(params, key, value, { raw });
                 });
                 let query = params.toString().replace(/%2C/g, ',');
@@ -529,7 +529,7 @@
                     case 'history': return collectHistoryUrlState();
                     case 'fedbcup': return collectFedBjkUrlState();
                     case 'tstrength': return collectTStrengthUrlState();
-                    case 'opportunities': return collectOpportunitiesUrlState();
+                    case 'planner': return collectPlannerUrlState();
                     default: return {};
                 }
             }
@@ -548,7 +548,7 @@
                         case 'history': await restoreHistoryUrlState(params); break;
                         case 'fedbcup': restoreFedBjkUrlState(params); break;
                         case 'tstrength': restoreTStrengthUrlState(params); break;
-                        case 'opportunities': await restoreOpportunitiesUrlState(params); break;
+                        case 'planner': await restorePlannerUrlState(params); break;
                     }
                 } finally {
                     _urlStateApplying = false;
@@ -1019,7 +1019,7 @@
                 document.getElementById('view-draws').style.display = (tabName === 'draws') ? 'block' : 'none';
                 document.getElementById('view-tstrength').style.display = (tabName === 'tstrength') ? 'flex' : 'none';
                 document.getElementById('view-information').style.display = (tabName === 'information') ? 'flex' : 'none';
-                document.getElementById('view-opportunities').style.display = (tabName === 'opportunities') ? 'flex' : 'none';
+                document.getElementById('view-planner').style.display = (tabName === 'planner') ? 'flex' : 'none';
 
                 if (tabName === 'entrylists') {
                     setEntryMenuCollapsed(false);
@@ -1031,7 +1031,7 @@
                 if (tabName === 'rankings') initRankingsIfEmpty();
                 if (tabName === 'roadtogs') initRoadToGS();
                 if (tabName === 'information') initInformationPage();
-                if (tabName === 'opportunities') initOpportunities();
+                if (tabName === 'planner') initPlanner();
                 if (tabName === 'fedbcup') syncFedBjkSeriesWidths();
 
                 applyMobileHistoryLayout();

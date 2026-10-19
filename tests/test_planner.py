@@ -6,7 +6,7 @@ from datetime import date
 
 import pytest
 
-from opportunities import build_opportunities_data, entry_deadlines, event_available_to, planner_slam_deadlines
+from planner import build_planner_data, entry_deadlines, event_available_to, planner_slam_deadlines
 
 
 def _write(directory, filename, payload):
@@ -145,7 +145,7 @@ def _fixture(directory):
 
 def test_source_ids_and_seasons_do_not_fall_back_to_matching_names(tmp_path):
     _fixture(tmp_path)
-    data = build_opportunities_data(tmp_path, today=date(2026, 10, 18))
+    data = build_planner_data(tmp_path, today=date(2026, 10, 18))
     event = data["events"][0]
     assert event["entryPublished"]
     assert event_available_to(event, "wta:2")
@@ -177,7 +177,7 @@ def test_latest_ranking_requires_accepted_complete_publication(tmp_path, status,
                         "2000-01-01",
                     ]
                 )
-    data = build_opportunities_data(tmp_path, today=date(2026, 10, 18))
+    data = build_planner_data(tmp_path, today=date(2026, 10, 18))
     assert data["asOfRanking"] == expected
     assert next(player for player in data["players"] if player["id"] == "wta:1")["points"] == 1000
 
@@ -206,7 +206,7 @@ def test_cancelled_events_and_malformed_entry_cache_are_not_actionable(tmp_path)
             ]
         },
     )
-    data = build_opportunities_data(tmp_path, today=date(2026, 11, 1))
+    data = build_planner_data(tmp_path, today=date(2026, 11, 1))
     assert len(data["events"]) == 1
     assert not data["events"][0]["entryPublished"]
     assert not event_available_to(data["events"][0], "wta:1")
@@ -227,7 +227,7 @@ def test_cancelled_wta_season_removes_stale_snapshot_but_keeps_other_editions(tm
         "source": "WTA", "tournamentId": "1169", "name": "WTA 125 MIAMI", "level": "WTA 125",
         "country": "USA", "startDate": "2026-11-02", "endDate": "2026-11-08",
     }])
-    events = build_opportunities_data(tmp_path, today=date(2026, 10, 18))["events"]
+    events = build_planner_data(tmp_path, today=date(2026, 10, 18))["events"]
     assert {event["id"] for event in events} == {"wta:100:2026", "wta:1169:2027"}
 
 
@@ -242,7 +242,7 @@ def test_cancelled_itf_status_removes_stale_snapshot_without_a_cancelled_name(tm
         "source": "ITF", "tournamentKey": row["tournamentKey"], "name": "W35 Test", "level": "W35",
         "startDate": row["startDate"], "endDate": row["endDate"],
     }])
-    events = build_opportunities_data(tmp_path, today=date(2026, 10, 18))["events"]
+    events = build_planner_data(tmp_path, today=date(2026, 10, 18))["events"]
     assert [event["id"] for event in events] == ["wta:100:2026"]
 
 
@@ -258,7 +258,7 @@ def test_historical_fields_keep_qualifying_and_main_draws_at_the_same_level(tmp_
             {**base, "draw": "Q", "level": "WTA 250", "startDate": "2025-11-24", "rankings": [200]},
         ],
     )
-    event = build_opportunities_data(tmp_path, today=date(2026, 10, 18))["events"][0]
+    event = build_planner_data(tmp_path, today=date(2026, 10, 18))["events"][0]
     assert event["historical"]["ranks"] == [100, 150]
     assert event["historical"]["drawSize"] == 3
     assert event["historicalQual"]["ranks"] == [300, 400]

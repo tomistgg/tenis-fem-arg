@@ -21,7 +21,7 @@ def run_points_check(check):
             QF: 11, R16: 6, R32: 1, QLFR: 2, QR2: 1};
         const context = {document: {addEventListener() {}}, console,
             WTARG_DATA: {pointsDistribution: [table], itfDrawSizes: [], wtaDrawSizes: [],
-                opportunities: {asOf: '2026-10-12', players: [{name: 'Test Player', points: 1710}]}}};
+                planner: {asOf: '2026-10-12', players: [{name: 'Test Player', points: 1710}]}}};
         context.window = context;
         vm.createContext(context);
         vm.runInContext(input.ledger, context);
@@ -36,14 +36,14 @@ def run_points_check(check):
         const event = {id: 'next', tournamentId: 'next-id', name: 'Next Tournament', level: 'W50',
             startDate: '2026-10-19', endDate: '2026-10-25', assumedRoute: 'MAIN',
             pointsDescription: table.Description};
-        const scenario = (...args) => context.opportunitiesPointScenario('Test Player', ...args);
-        const schedule = (...args) => context.opportunitiesScheduleScenario('Test Player', ...args);
-        const finish = (round, route) => context.opportunitiesPointFinishes(event, route)
+        const scenario = (...args) => context.plannerPointScenario('Test Player', ...args);
+        const schedule = (...args) => context.plannerScheduleScenario('Test Player', ...args);
+        const finish = (round, route) => context.plannerPointFinishes(event, route)
             .find(item => item.value === round);
     """ + check
     payload = {
         "ledger": (PROJECT_ROOT / "web/js/tabs/roadtogs.js").read_text(encoding="utf-8"),
-        "points": (PROJECT_ROOT / "web/js/tabs/opportunities-points.js").read_text(encoding="utf-8"),
+        "points": (PROJECT_ROOT / "web/js/tabs/planner-points.js").read_text(encoding="utf-8"),
     }
     completed = subprocess.run(
         [NODE, "-e", script], input=json.dumps(payload), text=True, capture_output=True, timeout=20
@@ -70,18 +70,18 @@ def test_projected_breakdown_moves_displaced_results_without_mutating_the_baseli
         assert.equal(value.breakdown.totalPoints, value.total);
         assert.equal(value.breakdown.countable.reduce((sum, row) => sum + row.points, 0), value.total);
         assert.equal(value.breakdown.countable.length, 18);
-        const planned = value.breakdown.countable.find(row => row._opportunityId === event.id);
+        const planned = value.breakdown.countable.find(row => row._plannerId === event.id);
         assert.equal(planned.roundDisplay, 'SF');
         assert.equal(planned.dropDate, '2027-10-25');
         const displaced = value.breakdown.nonCountable.find(row => row.tournamentId === 'past-18');
         assert.equal(displaced.points, 10);
-        assert.equal(displaced.replacedBy._opportunityId, event.id);
+        assert.equal(displaced.replacedBy._plannerId, event.id);
         assert(baseline.every(row => !row.replacedBy));
         const reset = schedule([], '2026-11-02');
         assert.equal(reset.breakdown.countable.length, 18);
         assert.equal(reset.breakdown.totalPoints, 1710);
         assert.equal(reset.breakdown.nonCountable.length, 0);
-        assert(reset.breakdown.countable.every(row => !row._opportunity));
+        assert(reset.breakdown.countable.every(row => !row._planner));
     """)
 
 
@@ -91,9 +91,9 @@ def test_projected_breakdown_resolves_historical_and_planned_replacement_chains(
             startDate: '2026-10-26', endDate: '2026-11-01'};
         const value = schedule([{event, finish: 'SF'}, {event: second, finish: 'W'}], '2026-11-02');
         const historical = value.breakdown.nonCountable.find(row => row.tournamentId === 'past-18');
-        const planned = value.breakdown.nonCountable.find(row => row._opportunityId === event.id);
-        assert.equal(historical.replacedBy._opportunityId, second.id);
-        assert.equal(planned.replacedBy._opportunityId, second.id);
+        const planned = value.breakdown.nonCountable.find(row => row._plannerId === event.id);
+        assert.equal(historical.replacedBy._plannerId, second.id);
+        assert.equal(planned.replacedBy._plannerId, second.id);
         assert.equal(value.breakdown.countable.reduce((sum, row) => sum + row.points, 0), value.total);
         assert.equal(new Set(value.breakdown.nonCountable.map(row => row.tournamentId)).size, 2);
     """)
@@ -101,7 +101,7 @@ def test_projected_breakdown_resolves_historical_and_planned_replacement_chains(
 
 def test_sunday_ao_cutoff_includes_its_ranking_week_without_w15_w35_delay():
     run_points_check("""
-        context.WTARG_DATA.opportunities.gsDeadlines = [{name: 'Australian Open',
+        context.WTARG_DATA.planner.gsDeadlines = [{name: 'Australian Open',
             mdCutoff: '2026-11-15', qCutoff: '2026-11-15'}];
         const finalWeek = {...event, startDate: '2026-11-09', endDate: '2026-11-15'};
         assert.equal(scenario(finalWeek, 'SF', '2026-11-15').gross, 20);
@@ -130,12 +130,12 @@ def test_first_round_awards_use_the_draw_size_and_allow_zero_point_results():
         context.WTARG_DATA.pointsDistribution.push({Description: 'W35 (32M, 64/48/32/24Q)',
             R32: null, R16: 4, QLFR: 1});
         const grandSlam = {...event, level: 'GS', pointsDescription: 'Grand Slam'};
-        const gsFinishes = context.opportunitiesPointFinishes(grandSlam, 'QUAL');
+        const gsFinishes = context.plannerPointFinishes(grandSlam, 'QUAL');
         assert.equal(gsFinishes.find(item => item.value === 'R128').points, 40);
         assert.equal(gsFinishes.find(item => item.value === 'R32').points, 170);
         const lowerTier = {...event, level: 'W35', pointsDescription: 'W35 (32M, 64/48/32/24Q)'};
-        const md = context.opportunitiesPointFinishes(lowerTier, 'MAIN');
-        const qualifying = context.opportunitiesPointFinishes(lowerTier, 'QUAL');
+        const md = context.plannerPointFinishes(lowerTier, 'MAIN');
+        const qualifying = context.plannerPointFinishes(lowerTier, 'QUAL');
         assert.equal(md.find(item => item.value === 'R32').points, 0);
         assert.equal(qualifying.find(item => item.value === 'R32').points, 1);
     """)
@@ -182,9 +182,9 @@ def test_counted_planned_results_get_distinct_replacements_in_date_order():
 
 def test_points_publication_delay_and_target_date():
     run_points_check("""
-        assert.equal(context.opportunitiesPointDate(event), '2026-10-26');
-        assert.equal(context.opportunitiesPointDate({...event, level: 'W15'}), '2026-11-02');
-        assert.equal(context.opportunitiesPointDate({...event, level: 'W35'}), '2026-11-02');
+        assert.equal(context.plannerPointDate(event), '2026-10-26');
+        assert.equal(context.plannerPointDate({...event, level: 'W15'}), '2026-11-02');
+        assert.equal(context.plannerPointDate({...event, level: 'W35'}), '2026-11-02');
         const future = scenario(event, 'SF', '2026-10-25');
         assert.equal(future.gross, 0);
         assert.equal(future.gain, 0);
@@ -206,7 +206,7 @@ def test_a_scenario_replaces_the_existing_result_from_the_same_event():
         assert.equal(value.replaced[0].points, 6);
         assert.equal(value.breakdown.nonCountable.length, 1);
         assert.equal(value.breakdown.nonCountable[0].points, 6);
-        assert.equal(value.breakdown.nonCountable[0].replacedBy._opportunityId, event.id);
+        assert.equal(value.breakdown.nonCountable[0].replacedBy._plannerId, event.id);
     """)
 
 
@@ -240,7 +240,7 @@ def test_same_named_events_with_different_ids_remain_separate_results():
 
 def test_reconstruction_difference_is_retained_without_a_warning_or_ledger_adjustment():
     run_points_check("""
-        context.WTARG_DATA.opportunities.players[0].points = 1800;
+        context.WTARG_DATA.planner.players[0].points = 1800;
         const value = scenario(event, 'SF');
         assert.equal(value.currentTotal, 1710);
         assert.equal(value.officialPoints, 1800);
@@ -267,7 +267,7 @@ def test_recorded_w15_w35_points_wait_until_the_second_monday_without_moving_exp
         assert.equal(published.totalPoints,20);
         assert(published.countable.every(t=>t.dropDate==='2027-10-18'));
         assert.equal(realBreakdown('TEST PLAYER','2027-10-18').totalPoints,0);
-        assert.equal(context.opportunitiesPointDate({level:'W15',endDate:'2026-10-11'}),'2026-10-19');
+        assert.equal(context.plannerPointDate({level:'W15',endDate:'2026-10-11'}),'2026-10-19');
     """)
 
 
@@ -300,12 +300,12 @@ def run_eligibility_check(check):
             addEventListener(type, callback) { handlers[type] = callback; }};
         const context = {document: {getElementById: () => root, querySelector: () => null,
             addEventListener() {}}, console,
-            WTARG_DATA: {opportunities: {asOf: '2026-10-18', events,
+            WTARG_DATA: {planner: {asOf: '2026-10-18', events,
                 players: [{id: 'player-1', name: 'Test Player', rank: 300, points: 200}]}},
             ensureHistoryDataLoaded: async () => {},
-            opportunitiesPointFinishes: () => [{value: 'QF', label: 'Quarterfinal', points: 11}],
-            opportunitiesPointDate: () => '2026-11-09',
-            opportunitiesPointScenario: () => ({gross: 11, gain: 5, replaced: []}),
+            plannerPointFinishes: () => [{value: 'QF', label: 'Quarterfinal', points: 11}],
+            plannerPointDate: () => '2026-11-09',
+            plannerPointScenario: () => ({gross: 11, gain: 5, replaced: []}),
             tournamentData:{}, countryFlag:()=>'', getDisplayName:value=>value};
         context.window = context;
         vm.createContext(context);
@@ -313,14 +313,14 @@ def run_eligibility_check(check):
         vm.runInContext(input.entries, context);
         vm.runInContext(input.ledger, context);
         vm.runInContext(input.frontend, context);
-        const eligible = () => Array.from(context.opportunitiesEligibleEvents(events,
+        const eligible = () => Array.from(context.plannerEligibleEvents(events,
             'player-1', '2026-10-18'), event => event.id);
         const click = (action, id) => handlers.click({target: {closest: () => ({dataset: {action, event: id}})}});
         (async () => {
     """ + check + "\n})().catch(error => {console.error(error); process.exitCode = 1;});"
     app = (PROJECT_ROOT / "web/js/app.js").read_text(encoding="utf-8")
     payload = {
-        "frontend": (PROJECT_ROOT / "web/js/tabs/opportunities.js").read_text(encoding="utf-8"),
+        "frontend": (PROJECT_ROOT / "web/js/tabs/planner.js").read_text(encoding="utf-8"),
         "ledger": (PROJECT_ROOT / "web/js/tabs/roadtogs.js").read_text(encoding="utf-8"),
         "formatter": app[app.index("function _formatTournName("):app.index("function getRoundFilterLabel(")],
         "entries": (
@@ -337,26 +337,26 @@ def run_eligibility_check(check):
 
 def test_planner_starts_without_a_player_and_clears_the_tour_when_deselected():
     run_eligibility_check("""
-        await context.initOpportunities();
-        assert.equal(context.collectOpportunitiesUrlState().player,'');
+        await context.initPlanner();
+        assert.equal(context.collectPlannerUrlState().player,'');
         assert(root.innerHTML.includes('value="" selected>Select Player</option>'));
         assert(!root.innerHTML.includes('data-action="select"'));
         click('select','mine');
-        assert(!context.collectOpportunitiesUrlState().schedule);
+        assert(!context.collectPlannerUrlState().schedule);
         handlers.change({target:{dataset:{filter:'player'},value:'player-1'}});
-        assert.equal(context.collectOpportunitiesUrlState().player,'test-player');
+        assert.equal(context.collectPlannerUrlState().player,'test-player');
         click('select','mine');
-        assert.deepEqual(Array.from(context.collectOpportunitiesUrlState().schedule),['mine']);
+        assert.deepEqual(Array.from(context.collectPlannerUrlState().schedule),['mine']);
         handlers.change({target:{dataset:{filter:'player'},value:''}});
-        assert.equal(context.collectOpportunitiesUrlState().player,'');
-        assert(!context.collectOpportunitiesUrlState().schedule);
+        assert.equal(context.collectPlannerUrlState().player,'');
+        assert(!context.collectPlannerUrlState().schedule);
         assert(!root.innerHTML.includes('data-action="select"'));
     """)
 
 
 def test_touch_selections_do_not_refocus_rebuilt_pickers_but_keyboard_selections_do():
     run_eligibility_check("""
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player'}));
         let focusCount=0;
         root.contains=()=>true;
         root.focus=()=>{focusCount++;};
@@ -380,17 +380,17 @@ def test_all_future_tournaments_allow_wildcards_and_default_to_main_draw():
     run_eligibility_check("""
         assert.deepEqual(eligible(), ['mine','alternate','absent','open','closed',
             'deadline-today','unknown','no-route']);
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player'}));
         assert(!root.innerHTML.includes('op-entry-uncertain'));
         assert(root.innerHTML.includes('Conditional on acceptance or a wildcard.'));
         for (const id of eligible()) {
             click('select',id);
-            assert(context.collectOpportunitiesUrlState().results[0].endsWith('~MAIN'));
+            assert(context.collectPlannerUrlState().results[0].endsWith('~MAIN'));
             if (id !== 'mine') {
                 click('qualy',id);
-                assert(context.collectOpportunitiesUrlState().results[0].endsWith('~QUAL'));
+                assert(context.collectPlannerUrlState().results[0].endsWith('~QUAL'));
                 click('qualy',id);
-                assert(context.collectOpportunitiesUrlState().results[0].endsWith('~MAIN'));
+                assert(context.collectPlannerUrlState().results[0].endsWith('~MAIN'));
             }
             click('clear-schedule','');
         }
@@ -404,14 +404,14 @@ def test_existing_wta_entry_does_not_hide_itf_tournaments_with_open_deadlines():
             {...common, id: 'itf-open', openRoutes: ['MAIN', 'QUAL']},
             {...common, id: 'main-only', source: 'WTA', openRoutes: ['MAIN']},
             {...common, id: 'unlocked', startDate: '2026-11-09', openRoutes: ['MAIN', 'QUAL']});
-        const routes = id => Array.from(context.opportunitiesEntryRoutes(
+        const routes = id => Array.from(context.plannerEntryRoutes(
             events.find(event => event.id === id), 'player-1'));
         assert.deepEqual(routes('mine'), ['MAIN']);
         assert.deepEqual(routes('both-open'), ['MAIN', 'QUAL']);
         assert.deepEqual(routes('itf-open'), ['MAIN', 'QUAL']);
         assert.deepEqual(routes('main-only'), ['MAIN', 'QUAL']);
         assert.deepEqual(routes('unlocked'), ['MAIN', 'QUAL']);
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player'}));
         assert(root.innerHTML.includes('data-event="both-open"'));
         assert(!root.innerHTML.includes('QUALY ONLY'));
         assert(root.innerHTML.includes('data-event="main-only"'));
@@ -425,33 +425,33 @@ def test_unlisted_wta_players_can_assume_main_or_qualifying_as_alternates_after_
     run_eligibility_check("""
         const event = {...common, source: 'WTA', entryPublished: true, openRoutes: ['QUAL'],
             deadlineMain: '2026-10-12', deadlineQual: '2026-10-19'};
-        assert.deepEqual(Array.from(context.opportunitiesEntryRoutes(event, 'player-1')), ['MAIN','QUAL']);
+        assert.deepEqual(Array.from(context.plannerEntryRoutes(event, 'player-1')), ['MAIN','QUAL']);
         event.deadlineQual = '2026-10-18';
         event.deadlineMain = '2026-10-01';
         event.openRoutes = [];
-        assert.deepEqual(Array.from(context.opportunitiesEntryRoutes(event, 'player-1')), ['MAIN','QUAL']);
+        assert.deepEqual(Array.from(context.plannerEntryRoutes(event, 'player-1')), ['MAIN','QUAL']);
         Object.assign(events.find(e=>e.id==='alternate'),event,{id:'alternate',entries:[]});
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player'}));
         click('select','alternate');
-        assert(context.collectOpportunitiesUrlState().results[0].endsWith('~MAIN'));
+        assert(context.collectPlannerUrlState().results[0].endsWith('~MAIN'));
         click('qualy','alternate');
-        assert(context.collectOpportunitiesUrlState().results[0].endsWith('~QUAL'));
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player',
+        assert(context.collectPlannerUrlState().results[0].endsWith('~QUAL'));
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player',
             schedule:'alternate',results:'alternate~QF~QUAL'}));
-        assert(context.collectOpportunitiesUrlState().results[0].endsWith('~QUAL'));
+        assert(context.collectPlannerUrlState().results[0].endsWith('~QUAL'));
     """)
 
 
 def test_delay_markers_appear_only_for_w15_w35_in_w50_cutoff_weeks():
     run_eligibility_check("""
-        context.WTARG_DATA.opportunities.w50CutoffWeeks = ['2026-11-09'];
-        context.WTARG_DATA.opportunities.w50CutoffDraws = {
+        context.WTARG_DATA.planner.w50CutoffWeeks = ['2026-11-09'];
+        context.WTARG_DATA.planner.w50CutoffDraws = {
             '2026-11-09': [{name:'Australian Open',draw:''}]};
         events.push({...common, id: 'earlier', level: 'W35',
                 entries: [{playerKey: 'player-1', type: 'MAIN', position: 8}]},
             {...common, id: 'delayed', level: 'W35', startDate: '2026-11-09'},
             {...common, id: 'on-time', level: 'W50', startDate: '2026-11-09'});
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player'}));
         const button = id => root.innerHTML.match(new RegExp('<button[^>]*data-event="' + id + '".*?</button>'))[0];
         assert(button('delayed').includes('op-delay-badge'));
         assert(button('delayed').includes('>!</span>'));
@@ -462,7 +462,7 @@ def test_delay_markers_appear_only_for_w15_w35_in_w50_cutoff_weeks():
         assert(!root.innerHTML.includes('op-calendar-entry'));
         assert(root.innerHTML.includes('points not added before AO deadline'));
         assert(root.innerHTML.indexOf('op-week-note') < root.innerHTML.lastIndexOf('</h3>'));
-        context.WTARG_DATA.opportunities.w50CutoffDraws['2026-11-09'] = [{name:'Roland Garros',draw:'Q'}];
+        context.WTARG_DATA.planner.w50CutoffDraws['2026-11-09'] = [{name:'Roland Garros',draw:'Q'}];
         click('clear-schedule', '');
         assert(root.innerHTML.includes('points not added before RG Q deadline'));
         const selectable=events.find(event=>event.id==='open');
@@ -481,7 +481,7 @@ def test_category_order_places_wta_before_itf_and_higher_itf_levels_first():
             {...common, id: 'wta125', source: 'WTA', level: 'WTA 125', name: 'WTA 125 City'},
             {...common, id: 'w100', level: 'W100', name: 'W100 City',
                 entries: [{playerKey: 'player-1', type: 'MAIN'}]});
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player'}));
         const position = id => root.innerHTML.indexOf('data-event="' + id + '"');
         assert(position('wta125') < position('w100'));
         assert(position('w100') < position('mine'));
@@ -495,8 +495,8 @@ def test_url_rejects_unknown_or_past_events_and_preserves_an_existing_main_draw_
             compare: 'nonexistent,past,mine,mine',
             schedule: 'nonexistent,past,mine,open,mine',
             results: 'nonexistent~QF~MAIN,mine~QF~QUAL,open~FORGED~MAIN'});
-        await context.restoreOpportunitiesUrlState(query);
-        const state = context.collectOpportunitiesUrlState();
+        await context.restorePlannerUrlState(query);
+        const state = context.collectPlannerUrlState();
         assert.deepEqual(Array.from(state.compare), ['mine']);
         assert.deepEqual(Array.from(state.schedule), ['mine']);
         assert.deepEqual(Array.from(state.results), ['mine~QF~MAIN']);
@@ -505,9 +505,9 @@ def test_url_rejects_unknown_or_past_events_and_preserves_an_existing_main_draw_
 
 def test_calendar_clicks_toggle_the_schedule_and_restore_other_options_in_that_week():
     run_eligibility_check("""
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player'}));
         click('select', 'mine');
-        assert.deepEqual(Array.from(context.collectOpportunitiesUrlState().schedule), ['mine']);
+        assert.deepEqual(Array.from(context.collectPlannerUrlState().schedule), ['mine']);
         assert(!root.innerHTML.includes('data-event="open"'));
         assert(!root.innerHTML.includes('data-event="alternate"'));
         assert(root.innerHTML.includes('aria-pressed="true"'));
@@ -515,13 +515,13 @@ def test_calendar_clicks_toggle_the_schedule_and_restore_other_options_in_that_w
         assert(root.innerHTML.includes('op-choice-finish-mine'));
         assert(!root.innerHTML.includes('op-schedule-events'));
         click('select', 'mine');
-        assert.equal(context.collectOpportunitiesUrlState().schedule, undefined);
+        assert.equal(context.collectPlannerUrlState().schedule, undefined);
         assert(!root.innerHTML.includes('op-choice-finish-mine'));
         assert(root.innerHTML.includes('data-event="open"'));
         click('select', 'open');
-        assert.deepEqual(Array.from(context.collectOpportunitiesUrlState().schedule), ['open']);
+        assert.deepEqual(Array.from(context.collectPlannerUrlState().schedule), ['open']);
         click('schedule', 'open');
-        assert.equal(context.collectOpportunitiesUrlState().schedule, undefined);
+        assert.equal(context.collectPlannerUrlState().schedule, undefined);
         assert(root.innerHTML.includes('data-event="mine"'));
     """)
 
@@ -529,22 +529,22 @@ def test_calendar_clicks_toggle_the_schedule_and_restore_other_options_in_that_w
 def test_rest_reserves_a_week_without_adding_results_or_tournament_controls():
     run_eligibility_check("""
         let scored = [];
-        context.opportunitiesScheduleScenario = (player, selections) => {
+        context.plannerScheduleScenario = (player, selections) => {
             scored = selections;
             return {baseline: 200, gain: selections.length * 11, total: 200 + selections.length * 11};
         };
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player'}));
         const rest = 'rest:2026-11-02';
         assert(root.innerHTML.includes('cal-rest'));
         click('select', rest);
-        assert.deepEqual(Array.from(context.collectOpportunitiesUrlState().schedule), [rest]);
-        assert.equal(context.collectOpportunitiesUrlState().results, undefined);
+        assert.deepEqual(Array.from(context.collectPlannerUrlState().schedule), [rest]);
+        assert.equal(context.collectPlannerUrlState().results, undefined);
         assert.equal(scored.length, 0);
         assert(!root.innerHTML.includes('data-event="mine"'));
         assert(!root.innerHTML.includes('op-inline-controls'));
         assert(!root.innerHTML.includes('Point table unavailable'));
         click('select', rest);
-        assert.equal(context.collectOpportunitiesUrlState().schedule, undefined);
+        assert.equal(context.collectPlannerUrlState().schedule, undefined);
         assert(root.innerHTML.includes('data-event="mine"'));
         click('select', 'mine');
         assert.equal(scored.length, 1);
@@ -558,45 +558,45 @@ def test_rest_reserves_a_week_without_adding_results_or_tournament_controls():
 def test_rest_covers_empty_weeks_and_survives_shared_tour_restore():
     run_eligibility_check("""
         let scored = [];
-        context.opportunitiesScheduleScenario = (player, selections) => { scored = selections; return null; };
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player: 'test-player',
+        context.plannerScheduleScenario = (player, selections) => { scored = selections; return null; };
+        await context.restorePlannerUrlState(new URLSearchParams({player: 'test-player',
             starting: '2026-11-02', ending: '2026-11-16'}));
         assert.equal((root.innerHTML.match(/class="op-week op-panel"/g) || []).length, 3);
         const rest = 'rest:2026-11-09';
         assert(root.innerHTML.includes('data-event="' + rest + '"'));
         click('select', 'mine');
         click('select', rest);
-        const saved = context.collectOpportunitiesUrlState();
+        const saved = context.collectPlannerUrlState();
         assert.deepEqual(Array.from(saved.schedule), ['mine', rest]);
         assert.equal(saved.results.length, 1);
         assert.equal(scored.length, 1);
         const params = new URLSearchParams(saved);
         click('clear-schedule', '');
-        await context.restoreOpportunitiesUrlState(params);
-        assert.deepEqual(Array.from(context.collectOpportunitiesUrlState().schedule), ['mine', rest]);
+        await context.restorePlannerUrlState(params);
+        assert.deepEqual(Array.from(context.collectPlannerUrlState().schedule), ['mine', rest]);
         assert.equal(scored.length, 1);
         handlers.change({target: {dataset: {filter: 'ending'}, value: '2026-11-02'}});
-        assert.deepEqual(Array.from(context.collectOpportunitiesUrlState().schedule), ['mine']);
+        assert.deepEqual(Array.from(context.collectPlannerUrlState().schedule), ['mine']);
         assert(!root.innerHTML.includes('data-event="' + rest + '"'));
     """)
 
 
 def test_planner_breakdown_updates_below_the_calendar_with_escaped_names_and_result_labels():
     run_eligibility_check("""
-        context.opportunitiesPointFinishes = () => [
+        context.plannerPointFinishes = () => [
             {value: 'QF', label: 'Quarterfinal', points: 11}, {value: 'SF', label: 'Semifinal', points: 20}];
         const original = {tournament: 'W35 Past Event', matchType: 'ITF', category: 'W35',
             date: '2026-09-07', roundDisplay: 'QF', points: 8, dropDate: '2027-09-13'};
-        context.opportunitiesScheduleScenario = (player, selections) => {
+        context.plannerScheduleScenario = (player, selections) => {
             const future = {tournament: 'Future', displayName: 'W50 Future <script>alert(1)</script>',
-                category: 'W50', _opportunity: true, date: '2026-11-02', roundDisplay: selections[0]?.finish,
+                category: 'W50', _planner: true, date: '2026-11-02', roundDisplay: selections[0]?.finish,
                 points: 11, dropDate: '2027-11-08'};
             return {baseline: 8, gain: selections.length ? 3 : 0, total: selections.length ? 11 : 8,
                 breakdown: {countable: selections.length ? [future] : [original],
                     nonCountable: selections.length ? [{...original, replacedBy: future},
                         {...future, displayName: 'W50 Earlier', replacedBy: future}] : []}};
         };
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player: 'test-player'}));
+        await context.restorePlannerUrlState(new URLSearchParams({player: 'test-player'}));
         assert(root.innerHTML.includes('id="op-breakdown-table"'));
         assert(root.innerHTML.indexOf('id="op-breakdown-table"') > root.innerHTML.indexOf('op-week-list'));
         assert(!root.innerHTML.includes('op-result-replaced'));
@@ -606,8 +606,8 @@ def test_planner_breakdown_updates_below_the_calendar_with_escaped_names_and_res
         assert(separator > 0);
         assert(table.indexOf('W35 Past Event') > separator);
         assert(table.indexOf('W50 Future') < separator);
-        assert(table.includes('class="op-result-replaced">(<span>Replaced</span>)'));
-        assert(table.includes('class="op-result-new">(<span>New</span>)'));
+        assert(table.includes('class="op-result-replaced"><span>Replaced</span>'));
+        assert(table.includes('class="op-result-new"><span>New</span>'));
         const earlierRow = table.split('W50 Earlier')[1].split('</tr>')[0];
         assert(earlierRow.includes('op-result-new'));
         assert(!earlierRow.includes('op-result-replaced'));
@@ -639,9 +639,9 @@ def test_displaced_results_use_shared_compact_tournament_names_and_point_units()
             {tournament:'W35 Monastir 3', category:'W35', matchType:'ITF', points:8},
             {tournament:'Wimbledon', category:'GS', matchType:'GS', points:10},
         ];
-        context.opportunitiesScheduleScenario = () => ({baseline:200, gain:5, total:205,
+        context.plannerScheduleScenario = () => ({baseline:200, gain:5, total:205,
             replaced, replacementsByEvent:{mine:replaced}});
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player'}));
         click('select', 'mine');
         const rendered = root.innerHTML.replace(/<[^>]*>/g, '');
         assert(rendered.includes('WTA 1000 Cincinnati (2 pts)'));
@@ -658,26 +658,26 @@ def test_displaced_results_use_shared_compact_tournament_names_and_point_units()
 def test_qualy_toggle_updates_rounds_and_respects_fixed_entries():
     run_eligibility_check("""
         events.find(event => event.id === 'open').openRoutes = ['MAIN', 'QUAL'];
-        context.opportunitiesPointFinishes = (_event, route) => route === 'QUAL'
+        context.plannerPointFinishes = (_event, route) => route === 'QUAL'
             ? [{value:'QR1',points:0},{value:'R32',points:2},{value:'QF',points:13}]
             : [{value:'R32',points:1},{value:'QF',points:11}];
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player'}));
         click('select', 'open');
-        assert(context.collectOpportunitiesUrlState().results[0].endsWith('~R32~MAIN'));
+        assert(context.collectPlannerUrlState().results[0].endsWith('~R32~MAIN'));
         handlers.change({target:{dataset:{finish:'open'},value:'QF'}});
-        assert(context.collectOpportunitiesUrlState().results[0].endsWith('~QF~MAIN'));
+        assert(context.collectPlannerUrlState().results[0].endsWith('~QF~MAIN'));
         click('qualy', 'open');
-        assert(context.collectOpportunitiesUrlState().results[0].endsWith('~QF~QUAL'));
+        assert(context.collectPlannerUrlState().results[0].endsWith('~QF~QUAL'));
         assert(root.innerHTML.includes('value="QR1"'));
         assert(root.innerHTML.includes('QF · 13 pts'));
         handlers.change({target:{dataset:{finish:'open'},value:'QR1'}});
         click('qualy', 'open');
-        assert(context.collectOpportunitiesUrlState().results[0].endsWith('~R32~MAIN'));
+        assert(context.collectPlannerUrlState().results[0].endsWith('~R32~MAIN'));
         assert(!root.innerHTML.includes('value="QR1"'));
         click('clear-schedule', '');
         click('select', 'mine');
         click('qualy', 'mine');
-        assert(context.collectOpportunitiesUrlState().results[0].endsWith('~MAIN'));
+        assert(context.collectPlannerUrlState().results[0].endsWith('~MAIN'));
         assert(!root.innerHTML.includes('data-action="qualy"'));
         const rendered=root.innerHTML.replace(/<[^>]*>/g,'');
         assert(!rendered.includes('Assumed access'));
@@ -689,19 +689,19 @@ def test_qualy_toggle_updates_rounds_and_respects_fixed_entries():
         click('clear-schedule', '');
         events.find(event => event.id === 'alternate').entries[0].type = 'QUAL';
         click('select', 'alternate');
-        assert(context.collectOpportunitiesUrlState().results[0].endsWith('~R32~MAIN'));
+        assert(context.collectPlannerUrlState().results[0].endsWith('~R32~MAIN'));
         assert(!root.innerHTML.includes('value="QR1"'));
         click('qualy', 'alternate');
-        assert(context.collectOpportunitiesUrlState().results[0].endsWith('~R32~QUAL'));
+        assert(context.collectPlannerUrlState().results[0].endsWith('~R32~QUAL'));
         assert(root.innerHTML.includes('value="QR1"'));
         click('qualy', 'alternate');
-        assert(context.collectOpportunitiesUrlState().results[0].endsWith('~R32~MAIN'));
+        assert(context.collectPlannerUrlState().results[0].endsWith('~R32~MAIN'));
         assert(!root.innerHTML.includes('value="QR1"'));
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player',
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player',
             schedule:'alternate',results:'alternate~QF~MAIN'}));
-        assert(context.collectOpportunitiesUrlState().results[0].endsWith('~QF~MAIN'));
+        assert(context.collectPlannerUrlState().results[0].endsWith('~QF~MAIN'));
         click('qualy', 'alternate');
-        assert(context.collectOpportunitiesUrlState().results[0].endsWith('~QF~QUAL'));
+        assert(context.collectPlannerUrlState().results[0].endsWith('~QF~QUAL'));
     """)
 
 
@@ -709,13 +709,13 @@ def test_qualy_toggle_updates_rounds_and_respects_fixed_entries():
 def test_new_selection_starts_at_the_first_main_draw_round(round_code):
     run_eligibility_check("""
         const firstRound=""" + json.dumps(round_code) + """;
-        context.opportunitiesPointFinishes=()=>[
+        context.plannerPointFinishes=()=>[
             {value:'QR1',points:0},{value:firstRound,points:1},{value:'QF',points:11}];
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player'}));
         click('select','open');
-        assert(context.collectOpportunitiesUrlState().results[0].endsWith('~'+firstRound+'~MAIN'));
+        assert(context.collectPlannerUrlState().results[0].endsWith('~'+firstRound+'~MAIN'));
         click('qualy','open');
-        assert(context.collectOpportunitiesUrlState().results[0].endsWith('~'+firstRound+'~QUAL'));
+        assert(context.collectPlannerUrlState().results[0].endsWith('~'+firstRound+'~QUAL'));
     """)
 
 
@@ -742,16 +742,16 @@ def test_inline_entry_table_uses_shared_rows_and_escapes_provider_names():
 def test_shared_schedule_keeps_only_one_choice_per_week_and_preserves_other_weeks():
     run_eligibility_check("""
         events.find(event => event.id === 'alternate').startDate = '2026-11-09';
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player',
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player',
             starting:'2026-11-02', ending:'2026-11-09', schedule:'mine,open,alternate'}));
-        assert.deepEqual(Array.from(context.collectOpportunitiesUrlState().schedule), ['mine', 'alternate']);
+        assert.deepEqual(Array.from(context.collectPlannerUrlState().schedule), ['mine', 'alternate']);
         click('select', 'mine');
-        assert.deepEqual(Array.from(context.collectOpportunitiesUrlState().schedule), ['alternate']);
+        assert.deepEqual(Array.from(context.collectPlannerUrlState().schedule), ['alternate']);
         assert(root.innerHTML.includes('data-event="open"'));
         click('select', 'open');
-        assert.deepEqual(Array.from(context.collectOpportunitiesUrlState().schedule), ['alternate', 'open']);
+        assert.deepEqual(Array.from(context.collectPlannerUrlState().schedule), ['alternate', 'open']);
         click('clear-schedule', '');
-        assert.equal(context.collectOpportunitiesUrlState().schedule, undefined);
+        assert.equal(context.collectPlannerUrlState().schedule, undefined);
     """)
 
 
@@ -760,8 +760,8 @@ def test_schedule_detects_overlapping_and_same_day_events():
         const first = {...common, name: 'First', startDate: '2026-11-02', endDate: '2026-11-08'};
         const overlaps = {...common, name: 'Overlap', startDate: '2026-11-08', endDate: '2026-11-15'};
         const following = {...common, name: 'Following', startDate: '2026-11-09', endDate: '2026-11-15'};
-        assert.equal(context.opportunitiesScheduleConflicts([first, following]).length, 0);
-        const conflicts = context.opportunitiesScheduleConflicts([first, overlaps]);
+        assert.equal(context.plannerScheduleConflicts([first, following]).length, 0);
+        const conflicts = context.plannerScheduleConflicts([first, overlaps]);
         assert.equal(conflicts.length, 1);
         assert.deepEqual(Array.from(conflicts[0]), ['First', 'Overlap']);
     """)
@@ -769,15 +769,15 @@ def test_schedule_detects_overlapping_and_same_day_events():
 
 def test_ending_weeks_merge_shared_slam_deadlines_and_preserve_the_points_cutoff():
     run_eligibility_check(r"""
-        context.WTARG_DATA.opportunities.gsDeadlines = [{id:'ao', name:'Australian Open', year:2027,
+        context.WTARG_DATA.planner.gsDeadlines = [{id:'ao', name:'Australian Open', year:2027,
             mdCutoff:'2026-11-15', qCutoff:'2026-11-15'}];
         events.find(event => event.id === 'mine').startDate = '2026-11-09';
         events.find(event => event.id === 'alternate').startDate = '2026-11-16';
         let horizon;
-        context.opportunitiesScheduleScenario = (_player,_selections,target) => {
+        context.plannerScheduleScenario = (_player,_selections,target) => {
             horizon=target; return {baseline:200,gain:0,total:200,replaced:[]};
         };
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player',
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player',
             starting:'2026-11-02', ending:'gs-ao-2027-q'}));
         const endingHtml=root.innerHTML.match(/<select id="op-ending"[^>]*>(.*?)<\/select>/)[1];
         assert(!endingHtml.includes('optgroup'));
@@ -787,8 +787,8 @@ def test_ending_weeks_merge_shared_slam_deadlines_and_preserve_the_points_cutoff
         assert(endingHtml.includes('value="2027-03-01"'));
         assert(!endingHtml.includes('value="2027-03-08"'));
         assert.equal(horizon,'2026-11-15');
-        assert.equal(context.collectOpportunitiesUrlState().ending,'2026-11-09');
-        assert.equal(context.opportunitiesSlamOptions()[0].deadlineLabel,"AO'27");
+        assert.equal(context.collectPlannerUrlState().ending,'2026-11-09');
+        assert.equal(context.plannerSlamOptions()[0].deadlineLabel,"AO'27");
         const startingHtml=root.innerHTML.match(/<select id="op-starting"[^>]*>(.*?)<\/select>/)[1];
         assert(startingHtml.includes('value="2026-11-09">AO&#39;27 · 09/11/2026'));
         assert(root.innerHTML.includes('data-event="mine"'));
@@ -807,18 +807,18 @@ def test_ending_weeks_merge_shared_slam_deadlines_and_preserve_the_points_cutoff
 
 def test_ending_weeks_extend_through_the_next_qualifying_deadline_with_distinct_draws():
     run_eligibility_check(r"""
-        context.WTARG_DATA.opportunities.gsDeadlines = [{id:'rg',name:'Roland Garros',year:2027,
+        context.WTARG_DATA.planner.gsDeadlines = [{id:'rg',name:'Roland Garros',year:2027,
             mdCutoff:'2027-04-12',qCutoff:'2027-04-26'},
             {id:'wim',name:'Wimbledon',year:2027,mdCutoff:'2027-05-17',qCutoff:'2027-05-31'},
             {id:'unknown',name:'Missing dates',year:2027,mdCutoff:'N/A',qCutoff:null}];
-        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player'}));
         const endingHtml=root.innerHTML.match(/<select id="op-ending"[^>]*>(.*?)<\/select>/)[1];
         assert(endingHtml.includes('value="2027-04-05">RG&#39;27 MD · 05/04/2027'));
         assert(endingHtml.includes('value="2027-04-19">RG&#39;27 Q · 19/04/2027'));
         assert(!endingHtml.includes('value="2027-04-26"'));
         assert(!endingHtml.includes('WMB'));
         assert(!endingHtml.includes('Missing dates'));
-        assert.deepEqual(Array.from(context.opportunitiesSlamOptions(), item => item.deadlineLabel),
+        assert.deepEqual(Array.from(context.plannerSlamOptions(), item => item.deadlineLabel),
             ["RG'27 MD", "RG'27 Q", "WMB'27 MD", "WMB'27 Q"]);
     """)
 
@@ -842,10 +842,10 @@ def test_shared_url_writer_preserves_planner_identifiers_and_round_choices():
         const first = 'itf:W-ITF-ARG-2026-001';
         const second = 'wta:125:2026:BUENOS_AIRES';
         const results = [first + '~QF~QUAL', second + '~R16~MAIN'];
-        context.writeUrlStateForTab('opportunities', {player: 'Test Player',
+        context.writeUrlStateForTab('planner', {player: 'Test Player',
             compare: [first], schedule: [first, second], results}, {track: false});
         const params = new URLSearchParams(location.search);
-        assert.equal(location.pathname, '/opportunities/');
+        assert.equal(location.pathname, '/planner/');
         assert.equal(params.get('player'), 'test-player');
         assert.equal(params.get('compare'), first);
         assert.equal(params.get('schedule'), [first, second].join(','));

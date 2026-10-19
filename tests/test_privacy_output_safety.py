@@ -70,7 +70,7 @@ def test_all_site_routes_and_filter_visits_are_accepted_by_analytics_receiver():
                 ['/roadtogs/?player=solana-sierra', 'solana-sierra'],
                 ['/roadtogs/?player=Solana%20Sierra&cutoff=ao-2027',
                     'player=solana-sierra&cutoff=ao-2027'],
-                ['/opportunities/?player=solana-sierra&starting=2026-10-26&ending=2026-11-09'
+                ['/planner/?player=solana-sierra&starting=2026-10-26&ending=2026-11-09'
                     + '&schedule=wta%3A111%3A2026&results=wta%3A111%3A2026~R32~MAIN',
                     'player=solana-sierra&starting=2026-10-26&ending=2026-11-09'
                     + '&schedule=wta:111:2026&results=wta:111:2026~r32~main']
@@ -81,10 +81,10 @@ def test_all_site_routes_and_filter_visits_are_accepted_by_analytics_receiver():
             }
             const page = browser('/calendar/');
             await flush();
-            page.context.history.pushState(null, '', '/opportunities/?player=solana-sierra');
+            page.context.history.pushState(null, '', '/planner/?player=solana-sierra');
             page.context.trackVisit(); // App and history hooks must not double-count.
             await flush();
-            page.context.history.replaceState(null, '', '/opportunities/?player=solana-sierra&ending=2026-11-09');
+            page.context.history.replaceState(null, '', '/planner/?player=solana-sierra&ending=2026-11-09');
             await flush();
             page.context.location = new URL('https://wtarg.com/calendar/');
             page.listeners.popstate();
@@ -93,7 +93,7 @@ def test_all_site_routes_and_filter_visits_are_accepted_by_analytics_receiver():
             page.listeners.hashchange();
             await flush();
             assert.deepEqual(page.events.map(event => event.page_type),
-                ['calendar', 'opportunities', 'opportunities', 'calendar', 'information']);
+                ['calendar', 'planner', 'planner', 'calendar', 'information']);
             const privatePage = browser('/rankings/?scope=arg&email=secret%40example.com');
             await flush();
             assert.equal(privatePage.events[0].content_id, 'scope=arg');
@@ -107,7 +107,7 @@ def test_all_site_routes_and_filter_visits_are_accepted_by_analytics_receiver():
                 assert.equal(excluded.events.length, 0);
             }
             assert.throws(() => accepted({country: 'Argentina', page_type: 'unknown', content_id: ''}));
-            assert.throws(() => accepted({country: 'Argentina', page_type: 'opportunities',
+            assert.throws(() => accepted({country: 'Argentina', page_type: 'planner',
                 content_id: 'schedule=https://example.com'}));
         })().catch(error => { console.error(error); process.exitCode = 1; });
     """

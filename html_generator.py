@@ -26,8 +26,8 @@ from config import (
 )
 from entry_withdrawals import WITHDRAWALS_FILENAME, load_withdrawals, public_withdrawals
 from milestones import build_milestones_data
-from opportunities import build_opportunities_data, planner_slam_deadlines
 from pipeline_errors import DataValidationError
+from planner import build_planner_data, planner_slam_deadlines
 from ranking_publication import accepted_ranking_dates, load_ranking_status
 from run_state import report_run_issue
 from runtime_logging import get_logger
@@ -67,9 +67,9 @@ _FRONTEND_ASSETS = {
     "js/tabs/draws.js": "assets/js/tabs/draws.js",
     "js/tabs/roadtogs.js": "assets/js/tabs/roadtogs.js",
     "js/tabs/tstrength.js": "assets/js/tabs/tstrength.js",
-    "js/tabs/opportunities.js": "assets/js/tabs/opportunities.js",
-    "js/tabs/opportunities-points.js": "assets/js/tabs/opportunities-points.js",
-    "css/opportunities.css": "assets/opportunities.css",
+    "js/tabs/planner.js": "assets/js/tabs/planner.js",
+    "js/tabs/planner-points.js": "assets/js/tabs/planner-points.js",
+    "css/planner.css": "assets/planner.css",
 }
 _CSP_PLACEHOLDER = "__WTARG_CSP_META__"
 _CSP_META_RE = re.compile(
@@ -2253,8 +2253,8 @@ def generate_html(
                                                  "draw": draw.group(1) if draw else ""})
     frontend_data = {
         "schemaVersion": 1,
-        "opportunities": {
-            **build_opportunities_data(source_data_dir),
+        "planner": {
+            **build_planner_data(source_data_dir),
             "gsDeadlines": planner_slam_deadlines(gs_data),
             "w50CutoffWeeks": sorted(planner_cutoff_names),
             "w50CutoffNames": planner_cutoff_names,
@@ -2358,7 +2358,7 @@ def generate_html(
 """
 
     route_tabs = [
-        "opportunities",
+        "planner",
         "upcoming",
         "entrylists",
         "draws",

@@ -11,7 +11,7 @@
                 'fedbcup',
                 'tstrength',
                 'information',
-                'opportunities',
+                'planner',
             ]);
 
             function normalizePath(path) {

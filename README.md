@@ -106,7 +106,7 @@ After changing the receiver, copy the complete `.gs` file into the existing
 Apps Script project and deploy a new version of its web app, retaining the
 existing endpoint URL. Publishing the website alone does not update the receiver.
 
-The Tour Planner is available at `opportunities/`. It compares existing
+The Tour Planner is available at `planner/`. It compares existing
 singles entries and future events before their estimated entry deadlines, with
 field coverage, surface records, round-by-round point scenarios, and joint
 schedule calculations. Published lists restrict options to the player's recorded

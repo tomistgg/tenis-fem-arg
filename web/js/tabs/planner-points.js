@@ -65,10 +65,10 @@
         return distance <= 7 && name(result.tournament) === name(event.name);
     }
     function scheduleScenario(playerName, selections, horizon) {
-        const asOf = global.WTARG_DATA.opportunities?.asOf || new Date().toISOString().slice(0, 10);
+        const asOf = global.WTARG_DATA.planner?.asOf || new Date().toISOString().slice(0, 10);
         const lastPublication = selections.map(item => pointDate(item.event)).filter(Boolean).sort().pop() || asOf;
         horizon = day(horizon || lastPublication);
-        const aoCutoff = (global.WTARG_DATA.opportunities?.gsDeadlines || []).some(gs =>
+        const aoCutoff = (global.WTARG_DATA.planner?.gsDeadlines || []).some(gs =>
             gs.name === 'Australian Open' && (gs.mdCutoff === horizon || gs.qCutoff === horizon));
         // The site's Sunday AO cutoff includes that week's Monday ranking publication.
         const publicationCutoff = aoCutoff && date(horizon).getUTCDay() === 0 ? addDays(horizon, 1) : horizon;
@@ -76,7 +76,7 @@
         const original = breakdown(playerName, horizon);
         const results = [...original.countable, ...original.nonCountable];
         const currentTotal = breakdown(playerName, asOf).totalPoints;
-        const player = (global.WTARG_DATA.opportunities?.players || []).find(p => p.name === playerName);
+        const player = (global.WTARG_DATA.planner?.players || []).find(p => p.name === playerName);
         const officialPoints = Number.isFinite(player?.points) ? player.points : null;
         const reconciliationGap = officialPoints === null ? null : currentTotal - officialPoints;
         let gross = 0;
@@ -100,13 +100,16 @@
             }
             gross += option.points;
             acceptedEvents.push(event);
-            hypothetical.push({date: event.startDate, tournament: event.name, _opportunityId: event.id,
+            const numberedRounds = ['R128', 'R64', 'R32', 'R16'];
+            const roundNumber = numberedRounds.indexOf(finish) - numberedRounds.indexOf(pointTable(event).firstRound);
+            const roundLabel = ['1st', '2nd', '3rd', '4th'][roundNumber] || finish;
+            hypothetical.push({date: event.startDate, tournament: event.name, _plannerId: event.id,
                 displayName: event.displayName || event.name, matchType: event.source,
                 tournamentId: event.tournamentId || event.sourceId || event.id, category: event.level,
                 isGS: event.level === 'GS', bestMainRound: finish.startsWith('QR') ? '' : finish,
-                roundDisplay: finish + (routeFor(event, route) === 'QUAL' && !finish.startsWith('QR') ? ' + QLFR' : ''),
+                roundDisplay: roundLabel + (routeFor(event, route) === 'QUAL' && !finish.startsWith('QR') ? ' + QLFR' : ''),
                 dropDate: addDays(effectiveDate, 364),
-                points: option.points, _opportunity: true});
+                points: option.points, _planner: true});
         }
         const retained = results.filter(result => !acceptedEvents.some(event => sameEvent(result, event)));
         hypothetical.sort((a, b) => a.date.localeCompare(b.date));
@@ -118,19 +121,19 @@
         let previous = original;
         for (const planned of hypothetical) {
             prefix.push(planned);
-            const chosen = acceptedEvents.filter(event => prefix.some(item => item._opportunityId === event.id));
+            const chosen = acceptedEvents.filter(event => prefix.some(item => item._plannerId === event.id));
             const ledger = results.filter(result => !chosen.some(event => sameEvent(result, event)));
             const step = _rtgsSelectCountable([...ledger, ...prefix]);
             const removed = previous.countable.filter(result => !step.countable.includes(result));
             for (const result of removed) replacedBy.set(result, planned);
-            const plannedEvent = acceptedEvents.find(event => event.id === planned._opportunityId);
+            const plannedEvent = acceptedEvents.find(event => event.id === planned._plannerId);
             for (const result of results.filter(result => sameEvent(result, plannedEvent))) {
                 replacedBy.set(result, planned);
             }
-            replacementsByEvent[planned._opportunityId] = removed.flatMap(result =>
-                result._opportunity ? replacementsByEvent[result._opportunityId] || [] : [result]);
+            replacementsByEvent[planned._plannerId] = removed.flatMap(result =>
+                result._planner ? replacementsByEvent[result._plannerId] || [] : [result]);
             for (const result of removed) {
-                if (result._opportunity) replacementsByEvent[result._opportunityId] = [];
+                if (result._planner) replacementsByEvent[result._plannerId] = [];
             }
             previous = step;
         }
@@ -157,10 +160,10 @@
             breakdown: projectedBreakdown,
             replaced, replacementsByEvent, horizon, effectiveDate: lastPublication, warnings: [...new Set(warnings)]};
     }
-    global.opportunitiesPointFinishes = finishes;
-    global.opportunitiesPointDate = pointDate;
-    global.opportunitiesScheduleScenario = scheduleScenario;
-    global.opportunitiesPointScenario = function (playerName, event, finish, horizon, otherEvents = []) {
+    global.plannerPointFinishes = finishes;
+    global.plannerPointDate = pointDate;
+    global.plannerScheduleScenario = scheduleScenario;
+    global.plannerPointScenario = function (playerName, event, finish, horizon, otherEvents = []) {
         return scheduleScenario(playerName, [...otherEvents, {event, finish, route: event.assumedRoute}], horizon);
     };
 })(window);

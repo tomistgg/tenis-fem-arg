@@ -319,7 +319,7 @@ def _player_results(data_dir, index, today):
     return results
 
 
-def build_opportunities_data(data_dir, *, today=None):
+def build_planner_data(data_dir, *, today=None):
     """Build a compact planner payload without fetching or changing stored data."""
     explicit_today = today is not None
     today = today or madrid_today()

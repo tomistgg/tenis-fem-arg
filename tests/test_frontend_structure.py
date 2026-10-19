@@ -18,9 +18,9 @@ STATIC_ASSET_PAIRS = (
     ("web/js/tabs/draws.js", "assets/js/tabs/draws.js"),
     ("web/js/tabs/roadtogs.js", "assets/js/tabs/roadtogs.js"),
     ("web/js/tabs/tstrength.js", "assets/js/tabs/tstrength.js"),
-    ("web/js/tabs/opportunities.js", "assets/js/tabs/opportunities.js"),
-    ("web/js/tabs/opportunities-points.js", "assets/js/tabs/opportunities-points.js"),
-    ("web/css/opportunities.css", "assets/opportunities.css"),
+    ("web/js/tabs/planner.js", "assets/js/tabs/planner.js"),
+    ("web/js/tabs/planner-points.js", "assets/js/tabs/planner-points.js"),
+    ("web/css/planner.css", "assets/planner.css"),
 )
 
 
@@ -79,8 +79,8 @@ def test_generated_app_loads_data_before_static_application_scripts(offline_gene
         "assets/js/tabs/tstrength.js",
         "assets/js/app.js",
         "assets/js/tabs/roadtogs.js",
-        "assets/js/tabs/opportunities-points.js",
-        "assets/js/tabs/opportunities.js",
+        "assets/js/tabs/planner-points.js",
+        "assets/js/tabs/planner.js",
         "assets/js/tabs/draws.js",
         "assets/js/router.js",
     )

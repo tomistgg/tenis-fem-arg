@@ -1,6 +1,6 @@
-#view-opportunities { overflow-y: auto; }
-#opportunities-root { color: var(--c-text-primary); padding: 14px 18px 25px; width: 100%; box-sizing: border-box; }
-#opportunities-root * { box-sizing: border-box; }
+#view-planner { overflow-y: auto; }
+#planner-root { color: var(--c-text-primary); padding: 14px 18px 25px; width: 100%; box-sizing: border-box; }
+#planner-root * { box-sizing: border-box; }
 .op-hero, .op-workspace { max-width: 680px; margin: 0 auto; }
 .op-hero { text-align: center; }
 .op-hero h1 { font-size: 23px; letter-spacing: -.5px; margin: 0 0 12px; font-weight: 800; }
@@ -14,18 +14,19 @@
 .op-filter select:focus-visible, .op-finish select:focus-visible { outline: 2px solid var(--c-focus-ring); outline-offset: 2px; }
 .op-filter option { text-align: center; }
 .op-week-filter { position: relative; }
-#opportunities-root .op-week-filter .select2-container { width: 100% !important; }
-#opportunities-root .op-week-filter > .select2-container--open:not(.select2) { width: 100% !important; left: auto !important; right: 0; z-index: 100; }
-#opportunities-root .op-week-filter .select2-selection--single { height: 30px; padding: 0; border-radius: 10px; border: 1px solid var(--c-border); background: var(--c-surface); }
-#opportunities-root .op-week-filter .select2-selection__rendered { padding: 0 16px 0 4px; line-height: 28px; font-size: 11px; font-weight: 600; text-align: center; color: var(--c-text-primary); }
-#opportunities-root .op-week-filter .select2-selection__arrow { height: 28px; width: 16px; }
-#opportunities-root .op-week-filter .select2-selection:focus-visible { outline: 2px solid var(--c-focus-ring); outline-offset: 2px; }
-#opportunities-root .op-week-menu { width: 100% !important; min-width: 0 !important; border: 1px solid var(--c-border-strong); background: var(--c-surface); }
-#opportunities-root .op-week-menu .select2-results__options { max-height: min(320px, 50vh); }
-#opportunities-root .op-week-menu .select2-results__option { padding: 4px; font-size: 11px; text-align: center; }
+#planner-root .op-week-filter .select2-container { width: 100% !important; }
+#planner-root .op-week-filter > .select2-container--open:not(.select2) { width: 100% !important; left: auto !important; right: 0; z-index: 100; }
+#planner-root .op-week-filter .select2-selection--single { height: 30px; padding: 0; border-radius: 10px; border: 1px solid var(--c-border); background: var(--c-surface); }
+#planner-root .op-week-filter .select2-selection__rendered { padding: 0 16px 0 4px; line-height: 28px; font-size: 11px; font-weight: 600; text-align: center; color: var(--c-text-primary); }
+#planner-root .op-week-filter .select2-selection__arrow { height: 28px; width: 16px; }
+#planner-root .op-week-filter .select2-selection:focus-visible { outline: 2px solid var(--c-focus-ring); outline-offset: 2px; }
+#planner-root .op-week-menu { width: 100% !important; min-width: 0 !important; border: 1px solid var(--c-border-strong); background: var(--c-surface); }
+#planner-root .op-week-menu .select2-results__options { max-height: min(320px, 50vh); }
+#planner-root .op-week-menu .select2-results__option { padding: 4px; font-size: 11px; text-align: center; }
 .op-ending-slam-option { display: flex; flex-direction: column; gap: 3px; border: 2px solid currentColor; border-radius: 5px; padding: 4px; line-height: 1.3; }
 .op-ending-slam-title { font-size: 11px; font-weight: 400; }
 .op-results { min-width: 0; }
+.op-body { display: contents; }
 .op-planner { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; min-width: 0; }
 .op-week-list { display: flex; flex-direction: column; gap: 8px; }
 .op-week { overflow: hidden; }
@@ -49,14 +50,14 @@
 .op-week-replaced { font-size: 9px; font-weight: 400; line-height: 1.4; }
 .op-entry-preview { overflow: auto; max-width: 100%; max-height: 460px; padding: 8px; border-top: 1px solid var(--c-border-soft); }
 .op-entry-table { min-width: 300px; }
-#opportunities-root .calendar-tournament { width: auto; max-width: 100%; display: flex; align-items: center; gap: 5px; margin: 0; padding: 4px 6px; border: 0; font-family: inherit; font-size: 10px; text-align: left; white-space: normal; line-height: 1.4; cursor: pointer; }
-#opportunities-root .calendar-tournament > span:first-child { overflow-wrap: anywhere; }
-#opportunities-root .calendar-tournament.cal-rest { background: #d1d5db; color: #242b35; font-weight: 700; }
-[data-theme="dark"] #opportunities-root .calendar-tournament.cal-rest { background: #4b5563; color: #f3f4f6; }
-#opportunities-root .calendar-tournament:disabled { opacity: .4; cursor: not-allowed; }
-#opportunities-root .calendar-tournament:focus-visible { outline: 3px solid var(--c-focus-ring); outline-offset: 2px; }
-#opportunities-root .calendar-tournament.op-event-active,
-#opportunities-root .calendar-tournament.op-event-selected { font-weight: 700; box-shadow: 0 0 0 2px #123e70; }
+#planner-root .calendar-tournament { width: auto; max-width: 100%; display: flex; align-items: center; gap: 5px; margin: 0; padding: 4px 6px; border: 0; font-family: inherit; font-size: 10px; text-align: left; white-space: normal; line-height: 1.4; cursor: pointer; }
+#planner-root .calendar-tournament > span:first-child { overflow-wrap: anywhere; }
+#planner-root .calendar-tournament.cal-rest { background: #d1d5db; color: #242b35; font-weight: 700; }
+[data-theme="dark"] #planner-root .calendar-tournament.cal-rest { background: #4b5563; color: #f3f4f6; }
+#planner-root .calendar-tournament:disabled { opacity: .4; cursor: not-allowed; }
+#planner-root .calendar-tournament:focus-visible { outline: 3px solid var(--c-focus-ring); outline-offset: 2px; }
+#planner-root .calendar-tournament.op-event-active,
+#planner-root .calendar-tournament.op-event-selected { font-weight: 700; box-shadow: 0 0 0 2px #123e70; }
 .op-delay-badge { flex: 0 0 auto; font-size: 13px; line-height: 1; font-weight: 900; padding: 1px 4px; border-radius: 3px; background: #fff; color: #c00000; }
 .op-compare-table small { display: block; font-size: 9px; font-weight: 400; color: var(--c-text-subtle); line-height: 1.5; margin-top: 3px; }
 .op-finish { flex: 1; font-size: 9px; }
@@ -65,8 +66,8 @@
 .op-route-note { flex: 1; font-size: 9px; color: var(--c-text-subtle); }
 .op-gain { color: var(--c-success-strong) !important; }
 [data-theme="dark"] .op-gain { color: #6ee7b7 !important; }
-#opportunities-root .btn { min-height: 28px; height: auto; font-size: 10px; padding: 5px 8px; }
-#opportunities-root .op-inline-controls .btn { padding: 4px; font-size: 9px; white-space: nowrap; }
+#planner-root .btn { min-height: 28px; height: auto; font-size: 10px; padding: 5px 8px; }
+#planner-root .op-inline-controls .btn { padding: 4px; font-size: 9px; white-space: nowrap; }
 .op-card-note, .op-small-note { margin: 7px 0; font-size: 9px; color: var(--c-text-subtle); line-height: 1.5; }
 .op-notice { background: var(--c-primary-softer); padding: 8px 10px; border-radius: 5px; font-size: 10px; color: var(--c-text-secondary); margin: 0 0 10px; }
 .op-comparison, .op-summary { padding: 12px; }
@@ -82,11 +83,11 @@
 .op-compare-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 10px; }
 .op-compare-table th, .op-compare-table td { border-bottom: 1px solid var(--c-border-soft); padding: 6px; min-width: 115px; vertical-align: top; line-height: 1.5; }
 .op-compare-table th:first-child { min-width: 85px; width: 85px; font-size: 9px; font-weight: 600; }
-#opportunities-root .op-compare-table thead th { background: var(--c-chrome-bg) !important; color: white; font-size: 10px; }
-#opportunities-root .op-compare-table tbody th { background: var(--c-surface) !important; color: var(--c-text-subtle); position: static; text-transform: none; text-align: left; }
-#opportunities-root .op-compare-table thead .op-remove { color: white; }
-#opportunities-root .btn-secondary { background: var(--c-surface); color: var(--c-text-primary); border-color: var(--c-border-strong); }
-#opportunities-root .btn-secondary:hover:not(:disabled) { background: var(--c-surface-alt); }
+#planner-root .op-compare-table thead th { background: var(--c-chrome-bg) !important; color: white; font-size: 10px; }
+#planner-root .op-compare-table tbody th { background: var(--c-surface) !important; color: var(--c-text-subtle); position: static; text-transform: none; text-align: left; }
+#planner-root .op-compare-table thead .op-remove { color: white; }
+#planner-root .btn-secondary { background: var(--c-surface); color: var(--c-text-primary); border-color: var(--c-border-strong); }
+#planner-root .btn-secondary:hover:not(:disabled) { background: var(--c-surface-alt); }
 .op-compare-table .op-finish > span { display: none; }
 .op-remove { border: 0; color: var(--c-text-muted); background: transparent; font: inherit; font-size: 20px; padding: 0 4px; cursor: pointer; line-height: 1; border-radius: 4px; }
 .op-compare-table .op-remove { float: right; margin-left: 4px; }
@@ -99,37 +100,61 @@
 .op-warning ul { margin: 6px 0 0; padding-left: 15px; }
 .op-empty { text-align: center; padding: 24px 12px; font-size: 12px; }
 .op-breakdown { margin-top: 12px; min-width: 0; }
-.op-breakdown h2 { margin: 0; padding: 10px 12px; background: var(--c-chrome-bg); color: #fff; border-radius: 7px 7px 0 0; border-bottom: 2px solid var(--c-primary); font-size: 12px; font-weight: 800; text-align: center; }
+.op-breakdown h2 { margin: 0; font-size: 12px; }
+#op-breakdown-toggle, .op-breakdown-heading { box-sizing: border-box; position: relative; width: 100%; padding: 10px 30px; border: 0; border-radius: 7px 7px 0 0; background: #262626; color: #fff; font: inherit; font-weight: 800; text-align: center; }
+#op-breakdown-toggle { display: block; cursor: pointer; }
+.op-breakdown-heading { display: none; }
+#op-breakdown-toggle[aria-expanded="false"] { border-radius: 7px; }
+#op-breakdown-toggle:focus-visible { outline: 3px solid var(--c-focus-ring); outline-offset: -3px; }
+#op-breakdown-toggle .calendar-toggle-arrow { position: absolute; right: 14px; top: 50%; margin: -4px 0 0; }
+#op-breakdown-toggle[aria-expanded="true"] .calendar-toggle-arrow { margin-top: 0; transform: rotate(225deg); }
 .op-breakdown .table-wrapper { border-radius: 0; }
 #op-breakdown-table { width: 100%; min-width: 0; border-radius: 0 0 7px 7px; }
 #op-breakdown-table td:nth-child(2) { white-space: normal; overflow-wrap: anywhere; }
-.op-result-replaced { color: #c00000; }
-[data-theme="dark"] .op-result-replaced { color: #ff8080; }
-.op-result-new { color: #166534; }
-[data-theme="dark"] .op-result-new { color: #6ee7b7; }
+.op-result-replaced, .op-result-new { display: inline-block; padding: 1px 4px; border-radius: 3px; color: #fff; font-weight: 700; line-height: 1.3; white-space: nowrap; }
+.op-result-replaced { background: #b91c1c; }
+.op-result-new { background: #166534; }
 @media (min-width: 769px) {
-    .op-workspace { max-width: 900px; }
-    .op-toolbar { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: stretch; gap: 12px; margin-bottom: 12px; }
+    #op-breakdown-toggle { display: none; }
+    .op-breakdown-heading { display: block; }
+    #view-planner { width: 100%; max-width: none; }
+    .op-workspace { max-width: none; }
+    .op-toolbar, .op-body { display: grid; grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1fr); column-gap: 16px; }
+    .op-toolbar { align-items: stretch; margin-bottom: 12px; }
+    .op-body { align-items: start; }
+    .op-body .op-results { grid-column: 1; margin: 0; }
+    .op-body .op-breakdown { grid-column: 3; margin-top: 0; }
+    #op-breakdown-table col.rtgs-col-date, #op-breakdown-table col.rtgs-col-drop-date { width: 16%; }
+    #op-breakdown-table col.rtgs-col-round { width: 13%; }
+    #op-breakdown-table col.rtgs-col-points { width: 8%; }
+    #op-breakdown-table th, #op-breakdown-table td { padding: 5px 6px; font-size: 10px; }
     .op-toolbar .op-controls, .op-toolbar .op-planner { min-width: 0; margin-bottom: 0; }
-    .op-primary-filters { grid-template-columns: minmax(0, 1fr) repeat(2, minmax(0, 155px)); gap: 8px; }
+    .op-primary-filters { grid-template-columns: minmax(0, 1.3fr) repeat(2, minmax(0, 1fr)); gap: 8px; }
     .op-summary { display: flex; flex-direction: column; justify-content: center; flex: 1; }
     .op-summary .op-schedule-summary { margin-top: 0; padding-top: 4px; padding-bottom: 4px; }
     .op-summary-actions { display: none; }
-    .op-calendar-clear { display: block; margin: 0 auto 12px; }
-    .op-calendar-clear .btn { width: 100%; }
-    .op-results, .op-notice { margin-left: auto; margin-right: auto; }
-    .op-finish select, #opportunities-root .op-inline-controls .btn { font-size: 10px; }
+    .op-calendar-clear { display: block; align-self: center; }
+    #planner-root .op-calendar-clear .btn { width: 64px; height: 64px; padding: 6px; border-radius: 4px; white-space: normal; text-align: center; }
+    .op-finish select, #planner-root .op-inline-controls .btn { font-size: 10px; }
     .op-week-replaced { font-size: 11px; }
 }
 @media (min-width: 769px) and (max-width: 1099px) {
     .op-primary-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .op-filter:first-child { grid-column: 1 / -1; }
+    #op-breakdown-table th, #op-breakdown-table td { padding: 3px; font-size: 8px; }
 }
 @media (max-width: 768px) {
+    #op-breakdown-toggle { padding-top: 6px; padding-bottom: 6px; }
+    .op-breakdown[data-expanded="false"] #op-breakdown-content { display: none; }
     .op-hero { display: none; }
+    .op-workspace { display: flex; flex-direction: column; }
+    .op-toolbar { display: contents; }
+    .op-controls { order: 0; margin-bottom: 6px; }
+    .op-notice { order: 1; }
+    .op-results { order: 2; }
+    .op-breakdown { order: 4; }
     .op-calendar-row { grid-template-columns: 38px minmax(0, 1fr); }
-    .op-controls { margin-bottom: 6px; }
-    .op-planner { gap: 6px; margin-bottom: 6px; }
+    .op-planner { order: 3; gap: 6px; margin-top: 6px; margin-bottom: 0; }
     .op-summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 6px; padding: 6px; }
     .op-summary .op-schedule-summary { grid-area: 1 / 1; min-width: 0; margin: 0; padding: 4px; gap: 4px; }
     .op-summary-actions { grid-area: 1 / 2; margin: 0; }
@@ -140,23 +165,23 @@
     .op-schedule-summary strong { font-size: 12px; margin-top: 2px; }
     .op-schedule-summary > span { font-size: 10px; }
     .op-summary .op-small-note, .op-summary .op-card-note { font-size: 7px; }
-    #opportunities-root .op-summary .btn { font-size: 9px; }
+    #planner-root .op-summary .btn { font-size: 9px; }
     .op-summary .op-warning { font-size: 9px; }
     .op-week-list { gap: 6px; }
     .op-week-heading { padding: 5px 8px; }
 }
 @media (max-width: 650px) {
-    #opportunities-root { padding: 6px 8px 12px; }
+    #planner-root { padding: 6px 8px 12px; }
     .op-controls { padding: 6px 8px; gap: 5px; }
     .op-primary-filters { grid-template-columns: 1fr .85fr 1.15fr; gap: 5px; }
     .op-filter { font-size: 9px; gap: 2px; }
     .op-filter select { font-size: 10px; height: 28px; padding: 0 3px; }
-    #opportunities-root .op-week-filter .select2-selection--single { height: 28px; }
-    #opportunities-root .op-week-filter .select2-selection__rendered { font-size: 10px; line-height: 26px; }
-    #opportunities-root .op-week-filter .select2-selection__arrow { height: 26px; }
+    #planner-root .op-week-filter .select2-selection--single { height: 28px; }
+    #planner-root .op-week-filter .select2-selection__rendered { font-size: 10px; line-height: 26px; }
+    #planner-root .op-week-filter .select2-selection__arrow { height: 26px; }
     .op-calendar-region { font-size: 8px; padding: 5px 4px; }
     .op-calendar-events { gap: 5px; padding: 4px; }
     .op-calendar-selected .op-choice { flex-wrap: nowrap; }
-    #opportunities-root .op-calendar-selected .op-tournament { flex: 0 1 auto; min-width: 0; }
-    #opportunities-root .calendar-tournament { font-size: 9px; padding: 4px 5px; }
+    #planner-root .op-calendar-selected .op-tournament { flex: 0 1 auto; min-width: 0; }
+    #planner-root .calendar-tournament { font-size: 9px; padding: 4px 5px; }
 }

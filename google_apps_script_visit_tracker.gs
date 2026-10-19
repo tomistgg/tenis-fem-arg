@@ -59,13 +59,13 @@ const ALLOWED_ANALYTICS_PAGES_ = new Set([
   'fedbcup',
   'tstrength',
   'information',
-  'opportunities'
+  'planner'
 ]);
 
 const ANALYTICS_FILTER_PARAMS_ = {
   home: [],
   information: [],
-  opportunities: ['player', 'starting', 'ending', 'compare', 'schedule', 'target', 'results'],
+  planner: ['player', 'starting', 'ending', 'compare', 'schedule', 'target', 'results'],
   upcoming: ['q'],
   entrylists: ['t', 'prio', 'view', 'wtn'],
   draws: ['t', 'type', 'round', 'wtn'],
