@@ -152,7 +152,6 @@ def main():
                 today=madrid_today(),
                 fetch_profiles=True,
                 tournament_weeks=weeks,
-                allow_cross_week_fallback=True,
                 max_profile_fetches=args.limit,
                 recent_draws=[*draws_store.items(), *(load_cache(WTN_DRAW_HISTORY_FILE) or {}).items()],
             )
