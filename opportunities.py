@@ -15,6 +15,7 @@ from itf import _is_cancelled_itf_calendar_item
 from ranking_publication import accepted_ranking_dates, load_ranking_status
 from time_utils import NEW_YORK, madrid_today, new_york_now
 from utils import (
+    compact_tournament_name,
     expand_calendar_snapshot,
     expand_entry_lists_cache,
     expand_itf_calendar_cache,
@@ -349,6 +350,7 @@ def build_opportunities_data(data_dir, *, today=None):
         event["id"] = event_id
         event["calendarKey"] = get_calendar_tournament_key(event)
         event["name"] = fix_encoding_keep_accents(str(event.get("name") or ""))
+        event["displayName"] = compact_tournament_name(event["name"])
         event["week"] = (start - timedelta(days=start.weekday())).isoformat()
         event["continent"] = event.get("continent") or get_continent(event.get("country", ""))
         entry_key = entry_keys.get(event_id, "")

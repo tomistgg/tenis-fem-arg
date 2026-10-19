@@ -7,7 +7,7 @@
     var SECONDARY_TABS = ['history', 'draws', 'rankings', 'tstrength', 'fedbcup', 'information'];
     var TAB_LABELS = {
         home: 'Home',
-        opportunities: 'Tournament Planner',
+        opportunities: 'Tour Planner',
         entrylists: 'Entry Lists',
         roadtogs: 'Points Breakdown',
         calendar: 'Calendar',

@@ -31,6 +31,8 @@ def format_player_name(text):
 
 
 _COMPACT_TOURNAMENT_NAME_REPLACEMENTS = {
+    "NINGBO": "Ningbo",
+    "OSAKA": "Osaka",
     "Alcala de Henares": "Alcala de H.",
     "Campos do Jordao": "Campos do J.",
     "Campos do JordÃ£o": "Campos do J.",

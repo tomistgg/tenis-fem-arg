@@ -305,7 +305,7 @@ window.WTARG_TRANSLATIONS = {
         "Tournament Opportunities": "Oportunidades de torneos",
         "Tournament opportunities": "Oportunidades de torneos",
         "Opportunity Planner": "Planificador de torneos",
-        "Tournament Planner": "Planificador de torneos",
+        "Tour Planner": "Planificador de giras",
         "North and Central America": "Norteamérica y Centroamérica",
         "Opportunities": "Oportunidades",
         "Plan the next step": "Planificar el próximo paso",

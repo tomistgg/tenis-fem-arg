@@ -1,18 +1,18 @@
 {
   "files": {
     "wta_full_calendar_cache.json": {
-      "from": "2026-09-20",
+      "from": "2026-09-21",
       "to": "2026-12-31",
-      "fetchedAt": "2026-10-18T13:49:51Z",
-      "lastAttemptAt": "2026-10-18T13:49:51Z",
-      "fetchedRunId": "20261018T134707Z-e63a668d50",
-      "lastAttemptRunId": "20261018T134707Z-e63a668d50"
+      "fetchedAt": "2026-10-19T08:11:54Z",
+      "lastAttemptAt": "2026-10-19T08:11:54Z",
+      "fetchedRunId": "20261019T081017Z-f4989b91aa",
+      "lastAttemptRunId": "20261019T081017Z-f4989b91aa"
     },
     "itf_calendar_cache.json": {
       "year": 2026,
       "count": 636,
-      "fetchedAt": "2026-10-18T13:52:41Z",
-      "lastAttemptAt": "2026-10-18T13:52:41Z"
+      "fetchedAt": "2026-10-19T08:14:26Z",
+      "lastAttemptAt": "2026-10-19T08:14:26Z"
     }
   },
   "entries": {
@@ -370,24 +370,6 @@
       "1100203860_M_0": {
         "fetchedAt": "2026-07-13T02:12:20Z"
       },
-      "1100205028_M_0": {
-        "fetchedAt": "2026-10-04T18:17:16Z"
-      },
-      "1100204719_Q_0": {
-        "fetchedAt": "2026-10-05T07:30:34Z"
-      },
-      "1100204719_M_0": {
-        "fetchedAt": "2026-10-05T07:30:46Z"
-      },
-      "1100204811_Q_0": {
-        "fetchedAt": "2026-10-05T07:31:00Z"
-      },
-      "1100204811_M_0": {
-        "fetchedAt": "2026-10-05T07:31:13Z"
-      },
-      "1100205046_Q_0": {
-        "fetchedAt": "2026-10-05T07:31:37Z"
-      },
       "1100203960_Q_0": {
         "fetchedAt": "2026-10-05T19:05:17Z"
       },
@@ -558,6 +540,15 @@
       },
       "1100203516_Q_0": {
         "fetchedAt": "2026-10-18T08:35:58Z"
+      },
+      "1100205218_M_0": {
+        "fetchedAt": "2026-10-18T20:16:14Z"
+      },
+      "1100205189_Q_0": {
+        "fetchedAt": "2026-10-19T02:53:39Z"
+      },
+      "1100205189_M_0": {
+        "fetchedAt": "2026-10-19T02:53:52Z"
       }
     },
     "draws_store_cache.json": {
@@ -1123,39 +1114,51 @@
         "completedAt": "2026-10-12T01:21:19Z"
       },
       "https://www.wtatennis.com/tournaments/1075/wuhan/2026/player-list": {
-        "fetchedAt": "2026-10-18T13:53:55Z",
-        "completedAt": "2026-10-18T13:53:55Z"
+        "fetchedAt": "2026-10-18T20:07:00Z",
+        "completedAt": "2026-10-18T22:40:04Z"
       },
       "https://www.wtatennis.com/tournaments/1128/mallorca-125/2026/player-list": {
-        "fetchedAt": "2026-10-18T13:53:55Z",
-        "completedAt": "2026-10-18T13:53:55Z"
+        "fetchedAt": "2026-10-18T20:07:00Z",
+        "completedAt": "2026-10-18T22:40:04Z"
       },
       "https://www.wtatennis.com/tournaments/1168/lisbon-125/2026/player-list": {
-        "fetchedAt": "2026-10-18T13:53:55Z",
-        "completedAt": "2026-10-18T13:53:55Z"
+        "fetchedAt": "2026-10-18T20:07:00Z",
+        "completedAt": "2026-10-18T22:40:04Z"
       },
       "https://www.wtatennis.com/tournaments/1140/rovereto-125/2026/player-list": {
-        "fetchedAt": "2026-10-18T13:53:55Z"
+        "fetchedAt": "2026-10-18T20:07:00Z",
+        "completedAt": "2026-10-18T22:40:04Z"
       },
       "w-itf-ita-2026-036": {
         "fetchedAt": "2026-10-13T17:32:31Z",
         "completedAt": "2026-10-14T14:53:10Z"
       },
       "w-itf-bra-2026-008": {
-        "fetchedAt": "2026-10-18T13:55:29Z"
+        "fetchedAt": "2026-10-18T20:07:23Z",
+        "completedAt": "2026-10-18T22:40:04Z"
       },
       "w-itf-usa-2026-049": {
-        "fetchedAt": "2026-10-18T13:53:55Z"
+        "fetchedAt": "2026-10-18T20:07:00Z",
+        "completedAt": "2026-10-18T22:40:04Z"
       },
       "w-itf-bul-2026-004": {
         "fetchedAt": "2026-10-18T13:54:16Z",
-        "completedAt": "2026-10-18T13:54:16Z"
+        "completedAt": "2026-10-18T22:40:04Z"
       },
       "https://www.wtatennis.com/tournaments/405/osaka/2026/player-list": {
-        "fetchedAt": "2026-10-18T13:53:55Z"
+        "fetchedAt": "2026-10-19T08:33:36Z"
       },
       "https://www.wtatennis.com/tournaments/2092/ningbo/2026/player-list": {
-        "fetchedAt": "2026-10-18T13:53:55Z"
+        "fetchedAt": "2026-10-19T08:33:36Z"
+      },
+      "w-itf-ita-2026-037": {
+        "fetchedAt": "2026-10-19T08:35:10Z"
+      },
+      "w-itf-usa-2026-052": {
+        "fetchedAt": "2026-10-19T08:33:37Z"
+      },
+      "w-itf-usa-2026-057": {
+        "fetchedAt": "2026-10-19T08:36:37Z"
       }
     }
   }

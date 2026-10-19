@@ -99,7 +99,7 @@ CSVs, player-alias JSON, and current tournament caches. Run the build command
 above to reproduce all deploy files locally from that pulled data; no network
 access is required for the build.
 
-The Tournament Planner is available at `opportunities/`. It compares existing
+The Tour Planner is available at `opportunities/`. It compares existing
 singles entries and future events before their estimated entry deadlines, with
 field coverage, surface records, round-by-round point scenarios, and joint
 schedule calculations. Published lists restrict options to the player's recorded

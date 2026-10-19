@@ -20,7 +20,7 @@
     function text(value) { return '<span>' + esc(value) + '</span>'; }
     function noTranslate(value) { return '<span translate="no">' + esc(value) + '</span>'; }
     function weekFor(event) { return event.week || event.startDate; }
-    function eventName(event) { return event.name === event.level ? event.name : event.name.replace(/\s+\d+$/, ''); }
+    function eventName(event) { return event.displayName || (event.name === event.level ? event.name : event.name.replace(/\s+\d+$/, '')); }
     function shortDate(value) {
         return new Date(value + 'T00:00:00Z').toLocaleDateString('en-US', {month: 'long', day: 'numeric', timeZone: 'UTC'});
     }
@@ -87,6 +87,13 @@
             week: monday(addDays(route === 'md' ? gs.mdCutoff : gs.qCutoff, -1)),
             date: route === 'md' ? gs.mdCutoff : gs.qCutoff
         }))).filter(option => option.date >= data.asOf).sort((a, b) => a.date.localeCompare(b.date));
+    }
+    function startingOptions() {
+        const slams = slamOptions();
+        return weekOptions().map(value => {
+            const cutoff = slams.find(slam => slam.week === value);
+            return {value, label: cutoff ? cutoff.label : day(value), deadlineLabel: cutoff ? cutoff.deadlineLabel : ''};
+        });
     }
     function endingOptions() {
         const thisMonday = monday(data.asOf);
@@ -179,7 +186,7 @@
         if (!$ || !$.fn.select2) return;
         for (const key of ['starting', 'ending']) {
             const select = $('#op-' + key);
-            const choices = key === 'ending' ? endingOptions() : [];
+            const choices = key === 'ending' ? endingOptions() : startingOptions();
             select.select2({
                 width: '100%', minimumResultsForSearch: Infinity,
                 dropdownParent: select.parent(), dropdownCssClass: 'op-week-menu op-' + key + '-menu',
@@ -359,12 +366,12 @@
         const conflicts = scheduleConflicts(planned);
         const horizon = endingDate() || state.target || planned.map(pointDate).sort().pop() || data.asOf;
         const plan = !player || conflicts.length ? null : jointScenario(planned, horizon);
-        const weeks = weekOptions().map(value => ({value, label: day(value)}));
+        const weeks = startingOptions();
         const endSelect = filterSelect('ending', 'Ending week', endingOptions(), state.ending);
         if (window.jQuery) window.jQuery('#op-starting, #op-ending').each(function () {
             if (window.jQuery(this).data('select2')) window.jQuery(this).select2('destroy');
         });
-        root.innerHTML = '<header class="op-hero"><h1>' + text('Tournament Planner') + '</h1></header><div class="op-workspace"><div class="op-toolbar">'
+        root.innerHTML = '<header class="op-hero"><h1>' + text('Tour Planner') + '</h1></header><div class="op-workspace"><div class="op-toolbar">'
             + '<section class="op-panel op-controls" aria-label="Planner filters">'
             + '<div class="op-primary-filters">' + filterSelect('player', 'Player', players.map(item => ({value:item.id, label:item.name})), state.player, 'Select Player')
             + filterSelect('starting', 'Starting week', weeks, state.starting)

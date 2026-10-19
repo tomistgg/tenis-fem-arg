@@ -618,13 +618,16 @@ def test_ending_weeks_merge_shared_slam_deadlines_and_preserve_the_points_cutoff
         assert.equal(horizon,'2026-11-15');
         assert.equal(context.collectOpportunitiesUrlState().ending,'2026-11-09');
         assert.equal(context.opportunitiesSlamOptions()[0].deadlineLabel,"AO'27");
+        const startingHtml=root.innerHTML.match(/<select id="op-starting"[^>]*>(.*?)<\/select>/)[1];
+        assert(startingHtml.includes('value="2026-11-09">AO&#39;27 · 09/11/2026'));
         assert(root.innerHTML.includes('data-event="mine"'));
         assert(!root.innerHTML.includes('data-event="alternate"'));
         handlers.change({target:{dataset:{filter:'ending'},value:'2026-11-23'}});
         assert(root.innerHTML.includes('data-event="alternate"'));
         assert.equal(horizon,'2026-11-30');
         handlers.change({target:{dataset:{filter:'starting'},value:'2026-11-16'}});
-        assert(!root.innerHTML.includes('AO&#39;27'));
+        const laterEndingHtml=root.innerHTML.match(/<select id="op-ending"[^>]*>(.*?)<\/select>/)[1];
+        assert(!laterEndingHtml.includes('AO&#39;27'));
         handlers.change({target:{dataset:{filter:'starting'},value:'2026-10-19'}});
         const fullEndingHtml=root.innerHTML.match(/<select id="op-ending"[^>]*>(.*?)<\/select>/)[1];
         assert.equal((fullEndingHtml.match(/<option /g)||[]).length,20);

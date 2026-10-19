@@ -1,43 +1,11 @@
 {
-  "from": "2026-09-20",
+  "from": "2026-09-21",
   "to": "2026-12-31",
-  "fetchedAt": "2026-10-18T13:49:51Z",
-  "lastAttemptAt": "2026-10-18T13:49:51Z",
-  "fetchedRunId": "20261018T134707Z-e63a668d50",
-  "lastAttemptRunId": "20261018T134707Z-e63a668d50",
+  "fetchedAt": "2026-10-19T08:11:54Z",
+  "lastAttemptAt": "2026-10-19T08:11:54Z",
+  "fetchedRunId": "20261019T081017Z-f4989b91aa",
+  "lastAttemptRunId": "20261019T081017Z-f4989b91aa",
   "items": [
-    {
-      "tournamentGroup": { "id": 2061, "name": "VALENCIA 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-09-14", "endDate": "2026-09-20",
-      "title": "BBVA Open Internacional de Valencia - Valencia, ESP", "level": "WTA 125",
-      "surface": "Clay", "inOutdoor": "O",
-      "city": "VALENCIA", "country": "ESP",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 2044, "name": "LJUBLJANA 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-09-14", "endDate": "2026-09-20",
-      "title": "Zavarovalnica Triglav Ljubljana - Ljubljana, SLO", "level": "WTA 125",
-      "surface": "Clay", "inOutdoor": "O",
-      "city": "LJUBLJANA", "country": "SLO",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 1139, "name": "SAO PAULO", "level": "WTA 250" },
-      "year": 2026, "startDate": "2026-09-14", "endDate": "2026-09-20",
-      "title": "SP Open - Sao Paulo, BRA", "level": "WTA 250",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "SAO PAULO", "country": "BRA",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 1136, "name": "CALDAS DA RAINHA 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-09-14", "endDate": "2026-09-20",
-      "title": "Caldas da Rainha Ladies Open - Caldas Da Rainha, POR", "level": "WTA 125",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "CALDAS DA RAINHA", "country": "POR",
-      "singlesDrawSize": 32
-    },
     {
       "tournamentGroup": { "id": 1024, "name": "SEOUL", "level": "WTA 500" },
       "year": 2026, "startDate": "2026-09-21", "endDate": "2026-09-27",
@@ -63,19 +31,19 @@
       "singlesDrawSize": 28
     },
     {
-      "tournamentGroup": { "id": 1133, "name": "TOLENTINO 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-09-21", "endDate": "2026-09-27",
-      "title": "Delta Motors Tolentino Open - Tolentino, ITA", "level": "WTA 125",
-      "surface": "Clay", "inOutdoor": "O",
-      "city": "TOLENTINO", "country": "ITA",
-      "singlesDrawSize": 32
-    },
-    {
       "tournamentGroup": { "id": 1135, "name": "PORTO 125", "level": "WTA 125" },
       "year": 2026, "startDate": "2026-09-21", "endDate": "2026-09-27",
       "title": "Eupago Porto Open - Porto, POR", "level": "WTA 125",
       "surface": "Hard", "inOutdoor": "O",
       "city": "PORTO", "country": "POR",
+      "singlesDrawSize": 32
+    },
+    {
+      "tournamentGroup": { "id": 1133, "name": "TOLENTINO 125", "level": "WTA 125" },
+      "year": 2026, "startDate": "2026-09-21", "endDate": "2026-09-27",
+      "title": "Delta Motors Tolentino Open - Tolentino, ITA", "level": "WTA 125",
+      "surface": "Clay", "inOutdoor": "O",
+      "city": "TOLENTINO", "country": "ITA",
       "singlesDrawSize": 32
     },
     {
@@ -103,6 +71,14 @@
       "singlesDrawSize": 96
     },
     {
+      "tournamentGroup": { "id": 1147, "name": "SUZHOU 125", "level": "WTA 125" },
+      "year": 2026, "startDate": "2026-10-05", "endDate": "2026-10-11",
+      "title": "Suzhou Open - Suzhou, CHN", "level": "WTA 125",
+      "surface": "Hard", "inOutdoor": "O",
+      "city": "SUZHOU", "country": "CHN",
+      "singlesDrawSize": 32
+    },
+    {
       "tournamentGroup": { "id": 1149, "name": "SAMSUN 125", "level": "WTA 125" },
       "year": 2026, "startDate": "2026-10-05", "endDate": "2026-10-11",
       "title": "Samsun Open - Samsun, TUR", "level": "WTA 125",
@@ -111,11 +87,19 @@
       "singlesDrawSize": 32
     },
     {
-      "tournamentGroup": { "id": 1147, "name": "SUZHOU 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-10-05", "endDate": "2026-10-11",
-      "title": "Suzhou Open - Suzhou, CHN", "level": "WTA 125",
+      "tournamentGroup": { "id": 1075, "name": "WUHAN", "level": "WTA 1000" },
+      "year": 2026, "startDate": "2026-10-12", "endDate": "2026-10-18",
+      "title": "Dongfeng · Voyah Wuhan Open - Wuhan, CHN", "level": "WTA 1000",
       "surface": "Hard", "inOutdoor": "O",
-      "city": "SUZHOU", "country": "CHN",
+      "city": "WUHAN", "country": "CHN",
+      "singlesDrawSize": 56
+    },
+    {
+      "tournamentGroup": { "id": 1140, "name": "ROVERETO 125", "level": "WTA 125" },
+      "year": 2026, "startDate": "2026-10-12", "endDate": "2026-10-18",
+      "title": "RoveretOpen Città della Pace - Rovereto, ITA", "level": "WTA 125",
+      "surface": "Hard", "inOutdoor": "I",
+      "city": "ROVERETO", "country": "ITA",
       "singlesDrawSize": 32
     },
     {
@@ -135,35 +119,11 @@
       "singlesDrawSize": 32
     },
     {
-      "tournamentGroup": { "id": 1140, "name": "ROVERETO 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-10-12", "endDate": "2026-10-18",
-      "title": "RoveretOpen Città della Pace - Rovereto, ITA", "level": "WTA 125",
-      "surface": "Hard", "inOutdoor": "I",
-      "city": "ROVERETO", "country": "ITA",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 1075, "name": "WUHAN", "level": "WTA 1000" },
-      "year": 2026, "startDate": "2026-10-12", "endDate": "2026-10-18",
-      "title": "Dongfeng · Voyah Wuhan Open - Wuhan, CHN", "level": "WTA 1000",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "WUHAN", "country": "CHN",
-      "singlesDrawSize": 56
-    },
-    {
       "tournamentGroup": { "id": 1150, "name": "RIO DE JANEIRO 125", "level": "WTA 125", "metadata": {"cancelledSeasons": "2026"} },
       "year": 2026, "startDate": "2026-10-19", "endDate": "2026-10-25",
       "title": "Río Ladies Open by MundoTênis Tours  - Rio De Janeiro, BRA", "level": "WTA 125",
       "surface": "Clay", "inOutdoor": "O",
       "city": "RIO DE JANEIRO", "country": "BRA",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 405, "name": "OSAKA", "level": "WTA 250" },
-      "year": 2026, "startDate": "2026-10-19", "endDate": "2026-10-25",
-      "title": "Kinoshita Group Japan Open - Osaka, JPN", "level": "WTA 250",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "OSAKA", "country": "JPN",
       "singlesDrawSize": 32
     },
     {
@@ -175,27 +135,19 @@
       "singlesDrawSize": 28
     },
     {
+      "tournamentGroup": { "id": 405, "name": "OSAKA", "level": "WTA 250" },
+      "year": 2026, "startDate": "2026-10-19", "endDate": "2026-10-25",
+      "title": "Kinoshita Group Japan Open - Osaka, JPN", "level": "WTA 250",
+      "surface": "Hard", "inOutdoor": "O",
+      "city": "OSAKA", "country": "JPN",
+      "singlesDrawSize": 32
+    },
+    {
       "tournamentGroup": { "id": 1145, "name": "QUERETARO 125", "level": "WTA 125" },
       "year": 2026, "startDate": "2026-10-26", "endDate": "2026-11-01",
       "title": "Queretaro Open - Queretaro, MEX", "level": "WTA 125",
       "surface": "Clay", "inOutdoor": "O",
       "city": "QUERETARO", "country": "MEX",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 1174, "name": "COURMAYEUR 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-10-26", "endDate": "2026-11-01",
-      "title": "Valle D'Aosta Ladies Open - Courmayeur, ITA", "level": "WTA 125",
-      "surface": "Hard", "inOutdoor": "I",
-      "city": "COURMAYEUR", "country": "ITA",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 1023, "name": "GUANGZHOU", "level": "WTA 250" },
-      "year": 2026, "startDate": "2026-10-26", "endDate": "2026-11-01",
-      "title": "Guangzhou Open - Guangzhou, CHN", "level": "WTA 250",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "GUANGZHOU", "country": "CHN",
       "singlesDrawSize": 32
     },
     {
@@ -207,6 +159,14 @@
       "singlesDrawSize": 32
     },
     {
+      "tournamentGroup": { "id": 1023, "name": "GUANGZHOU", "level": "WTA 250" },
+      "year": 2026, "startDate": "2026-10-26", "endDate": "2026-11-01",
+      "title": "Guangzhou Open - Guangzhou, CHN", "level": "WTA 250",
+      "surface": "Hard", "inOutdoor": "O",
+      "city": "GUANGZHOU", "country": "CHN",
+      "singlesDrawSize": 32
+    },
+    {
       "tournamentGroup": { "id": 1056, "name": "TOKYO", "level": "WTA 500" },
       "year": 2026, "startDate": "2026-10-26", "endDate": "2026-11-01",
       "title": "Toray Pan Pacific Open Tennis - Tokyo, JPN", "level": "WTA 500",
@@ -215,27 +175,19 @@
       "singlesDrawSize": 28
     },
     {
+      "tournamentGroup": { "id": 1174, "name": "COURMAYEUR 125", "level": "WTA 125" },
+      "year": 2026, "startDate": "2026-10-26", "endDate": "2026-11-01",
+      "title": "Valle D'Aosta Ladies Open - Courmayeur, ITA", "level": "WTA 125",
+      "surface": "Hard", "inOutdoor": "I",
+      "city": "COURMAYEUR", "country": "ITA",
+      "singlesDrawSize": 32
+    },
+    {
       "tournamentGroup": { "id": 1148, "name": "CHENNAI", "level": "WTA 250" },
       "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-08",
       "title": "Chennai Open - Chennai, IND", "level": "WTA 250",
       "surface": "Hard", "inOutdoor": "O",
       "city": "CHENNAI", "country": "IND",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 1110, "name": "CALI 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-07",
-      "title": "Cali Open - Cali, COL", "level": "WTA 125",
-      "surface": "Clay", "inOutdoor": "O",
-      "city": "CALI", "country": "COL",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 1169, "name": "MIAMI 125", "level": "WTA 125", "metadata": {"cancelledSeasons": "2026"} },
-      "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-08",
-      "title": "American Tennis Open Miami - Miami, FL, USA", "level": "WTA 125",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "MIAMI", "country": "USA",
       "singlesDrawSize": 32
     },
     {
@@ -247,11 +199,27 @@
       "singlesDrawSize": 32
     },
     {
+      "tournamentGroup": { "id": 1169, "name": "MIAMI 125", "level": "WTA 125", "metadata": {"cancelledSeasons": "2026"} },
+      "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-08",
+      "title": "American Tennis Open Miami - Miami, FL, USA", "level": "WTA 125",
+      "surface": "Hard", "inOutdoor": "O",
+      "city": "MIAMI", "country": "USA",
+      "singlesDrawSize": 32
+    },
+    {
       "tournamentGroup": { "id": 1074, "name": "HONG KONG", "level": "WTA 250" },
       "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-08",
       "title": "Prudential Hong Kong Tennis Open - Hong Kong, China", "level": "WTA 250",
       "surface": "Hard", "inOutdoor": "O",
       "city": "HONG KONG", "country": "HKG",
+      "singlesDrawSize": 32
+    },
+    {
+      "tournamentGroup": { "id": 1110, "name": "CALI 125", "level": "WTA 125" },
+      "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-07",
+      "title": "Cali Open - Cali, COL", "level": "WTA 125",
+      "surface": "Clay", "inOutdoor": "O",
+      "city": "CALI", "country": "COL",
       "singlesDrawSize": 32
     },
     {
@@ -287,19 +255,19 @@
       "singlesDrawSize": 32
     },
     {
-      "tournamentGroup": { "id": 2056, "name": "ANGERS 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-11-30", "endDate": "2026-12-06",
-      "title": "Open Angers Loire Trélazé - Angers, FRA", "level": "WTA 125",
-      "surface": "Hard", "inOutdoor": "I",
-      "city": "ANGERS", "country": "FRA",
-      "singlesDrawSize": 32
-    },
-    {
       "tournamentGroup": { "id": 1118, "name": "QUITO 125", "level": "WTA 125" },
       "year": 2026, "startDate": "2026-11-30", "endDate": "2026-12-06",
       "title": "Quito Open - Quito, ECU", "level": "WTA 125",
       "surface": "Clay", "inOutdoor": "O",
       "city": "QUITO", "country": "ECU",
+      "singlesDrawSize": 32
+    },
+    {
+      "tournamentGroup": { "id": 2056, "name": "ANGERS 125", "level": "WTA 125" },
+      "year": 2026, "startDate": "2026-11-30", "endDate": "2026-12-06",
+      "title": "Open Angers Loire Trélazé - Angers, FRA", "level": "WTA 125",
+      "surface": "Hard", "inOutdoor": "I",
+      "city": "ANGERS", "country": "FRA",
       "singlesDrawSize": 32
     },
     {
