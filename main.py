@@ -2400,13 +2400,11 @@ def main():
     if not skip_draws_fetch and not args.skip_wtn:
         logger.info("Archiving main-draw WTN geometric means for all tournaments...")
         refresh_main_draw_wtn(
-            driver,
             main_draws,
             os.path.join(DATA_DIR, ARCHIVE_FILENAME),
             ITF_WTN_CACHE_FILE,
             os.path.join(DATA_DIR, ERRORS_FILENAME),
             entry_cache=entry_cache,
-            fetch_profiles=False,
             profile_failures=profile_failures,
             recent_draws=[*draws_store.items(), *main_draws, *wtn_draw_history.items()],
         )

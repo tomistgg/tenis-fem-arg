@@ -10,7 +10,7 @@ import itf
 import main_draw_wtn
 from draws import _parse_itf_draw
 from generate_run_report import compute_report, render_email_markdown
-from itf_wtn import ITFProfileBlocked
+from itf_wtn import ITFProfileBlocked, refresh_draw_wtn
 from utils import dumps_draws_store_cache, expand_draws_store_cache
 
 
@@ -31,16 +31,27 @@ def tournament(*players, qualifiers=None):
     }
 
 
-def refresh(tmp_path, tournaments, fetch, **options):
+def refresh(tmp_path, tournaments, fetch=None, **options):
+    today = options.pop("today", date(2026, 10, 4))
+    failures = options.pop("profile_failures", {})
+    tournaments = list(tournaments)
+    if fetch is not None:
+        refresh_draw_wtn(
+            None, {}, tmp_path / "profiles.json",
+            main_draws=tournaments, archive_path=tmp_path / "archive.json",
+            entry_cache=options.get("entry_cache"), today=today,
+            resolve_itf_player=options.get("resolve_itf_player"), profile_failures=failures,
+            require_previous_week_draw=options.get("recent_draws") is not None,
+            recent_draws=options.get("recent_draws"), fetch_source=fetch,
+            profile_batch_cooldown_seconds=0,
+        )
     return main_draw_wtn.refresh_main_draw_wtn(
-        None,
         tournaments,
         tmp_path / "archive.json",
         tmp_path / "profiles.json",
         tmp_path / "main_draw_wtn_errors.json",
-        today=options.pop("today", date(2026, 10, 4)),
-        fetch_source=fetch,
-        profile_batch_cooldown_seconds=0,
+        today=today,
+        profile_failures=failures,
         **options,
     )
 
@@ -233,7 +244,7 @@ def test_another_tournament_reuses_fresh_profile_then_refreshes_after_five_days(
     assert record["wtn_gm"] == 16
 
 
-def test_pending_gm_uses_latest_fresh_profile_and_never_expired_draw_observations(tmp_path):
+def test_pending_gm_uses_latest_fresh_profile_and_never_expired_draw_observations(tmp_path, monkeypatch):
     draw = tournament(("Alice", "800000001"), ("Bea", "800000002"))
     refresh(tmp_path, [("one", draw)], lambda url: 'var props = {"wtnSingles":%s};' % (
         4 if "800000001" in url else "null"
@@ -242,13 +253,11 @@ def test_pending_gm_uses_latest_fresh_profile_and_never_expired_draw_observation
     profiles = json.loads(path.read_text())
     profiles["800000001"].update(wtn=9, retrieved_at="2026-10-05")
     path.write_text(json.dumps(profiles))
-    record = refresh(tmp_path, [("one", draw)],
-                     lambda _: pytest.fail("Archive must not fetch after combined pass"),
-                     fetch_profiles=False, today=date(2026, 10, 5))["one"]
+    monkeypatch.setattr("itf_wtn._profile_source", lambda *_: pytest.fail("Archive must never fetch profiles"))
+    record = refresh(tmp_path, [("one", draw)], today=date(2026, 10, 5))["one"]
     assert record["wtnPlayerCount"] == 1
     assert json.loads(path.read_text())["800000001"]["main_draw_observations"]["one"]["wtn"] == 9
-    record = refresh(tmp_path, [("one", draw)], lambda _: pytest.fail("No second lookup pass"),
-                     fetch_profiles=False, today=date(2026, 10, 13))["one"]
+    record = refresh(tmp_path, [("one", draw)], today=date(2026, 10, 13))["one"]
     assert record["status"] == "pending" and record["wtnPlayerCount"] == 0
     assert record["wtn_gm"] == 30
 
@@ -297,9 +306,7 @@ def test_shared_player_fetched_once_per_run_and_unmapped_player_is_reported(tmp_
     assert error["players"][0]["reason"] == "No unambiguous ITF player ID"
 
 
-def test_combined_queue_covers_hidden_main_draws_entries_and_qualifying_without_gm_refetch(tmp_path):
-    from itf_wtn import refresh_draw_wtn
-
+def test_combined_queue_covers_hidden_main_draws_entries_and_qualifying_without_gm_refetch(tmp_path, monkeypatch):
     calls = []
     hidden = tournament(("Alice", "800000001"), ("Bea", "800000002"))
     visible = tournament(("Alice", "800000001"))
@@ -318,9 +325,9 @@ def test_combined_queue_covers_hidden_main_draws_entries_and_qualifying_without_
     )
     assert len(calls) == 3
     assert all("800000004" not in url for url in calls)
+    monkeypatch.setattr("itf_wtn._profile_fetcher", lambda *_: pytest.fail("Archive must never fetch profiles"))
     archive = refresh(
         tmp_path, [("w-itf-hidden", hidden), ("w-itf-visible", visible)],
-        lambda _: pytest.fail("GM archive must not repeat profile lookups"), fetch_profiles=False,
         profile_failures=failures,
     )
     assert all(record["wtn_gm"] == 9 for record in archive.values())
@@ -328,8 +335,6 @@ def test_combined_queue_covers_hidden_main_draws_entries_and_qualifying_without_
 
 
 def test_gm_accepts_fresh_entry_wtn_without_profile_lookup(tmp_path):
-    from itf_wtn import refresh_draw_wtn
-
     (tmp_path / "profiles.json").write_text(json.dumps({
         "800000001": {"wtn": 4, "source": "entry_list", "retrieved_at": "2026-10-04"},
         "800000002": {"wtn": 16, "source": "profile", "retrieved_at": "2026-10-04"},
@@ -345,9 +350,7 @@ def test_gm_accepts_fresh_entry_wtn_without_profile_lookup(tmp_path):
         profile_failures=failures,
     )
     assert calls == []
-    record = refresh(tmp_path, [("w-itf-hidden", draw)],
-                     lambda _: pytest.fail("Fresh entry-list WTN must avoid a profile request"),
-                     fetch_profiles=False, profile_failures=failures)["w-itf-hidden"]
+    record = refresh(tmp_path, [("w-itf-hidden", draw)], profile_failures=failures)["w-itf-hidden"]
     assert record["status"] == "complete" and record["wtnPlayerCount"] == 2
     assert record["wtn_gm"] == 8
     assert json.loads((tmp_path / "main_draw_wtn_errors.json").read_text()) == []
@@ -498,7 +501,7 @@ def test_hidden_wta_tournaments_are_collected_and_finished_cache_is_captured(mon
 def test_corrupt_archive_is_not_overwritten(tmp_path):
     (tmp_path / "archive.json").write_text("broken")
     with pytest.raises(json.JSONDecodeError):
-        refresh(tmp_path, [], lambda _: "")
+        refresh(tmp_path, [])
     assert (tmp_path / "archive.json").read_text() == "broken"
 
 

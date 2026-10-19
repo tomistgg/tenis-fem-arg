@@ -988,8 +988,8 @@ def test_finished_draws_do_not_request_profiles_even_for_pending_gm(tmp_path, ki
         from main_draw_wtn import refresh_main_draw_wtn
 
         refresh_main_draw_wtn(
-            None, [("w-itf-finished", tournament)], tmp_path / "archive.json", path,
-            tmp_path / "errors.json", today=date(2026, 10, 10), fetch_source=unexpected_fetch,
+            [("w-itf-finished", tournament)], tmp_path / "archive.json", path,
+            tmp_path / "errors.json", today=date(2026, 10, 10),
         )
 
 

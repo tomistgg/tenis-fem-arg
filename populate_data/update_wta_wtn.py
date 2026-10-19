@@ -9,13 +9,13 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from config import ENTRY_LISTS_CACHE_FILE, PLAYER_IDENTITY_INDEX  # noqa: E402
+from config import ENTRY_LISTS_CACHE_FILE  # noqa: E402
 from itf_wtn import (  # noqa: E402
     ITF_WTN_CACHE_FILENAME,
     WTN_DRAW_HISTORY_FILENAME,
     entry_list_wtn_status,
+    refresh_draw_wtn,
     refresh_entry_list_wtn,
-    singles_draw_finished,
 )
 from lazy_browser import LazyBrowserSession  # noqa: E402
 from main import create_driver  # noqa: E402
@@ -56,75 +56,6 @@ def print_status(entries, weeks):
     print(f"  No ITF ID mapping: {counts['unmapped']}")
 
 
-def _draw_profile_players(draws_store):
-    players_by_id = {}
-    name_to_itf_id = {}
-    for tournament in (draws_store or {}).values():
-        draws = tournament.get("draws", tournament) if isinstance(tournament, dict) else {}
-        for draw_type in ("MDS", "QS"):
-            if singles_draw_finished({**tournament, "draws": draws}, draw_type):
-                continue
-            for player in (draws.get(draw_type) or {}).get("players", []):
-                name = str(player.get("name") or "").strip()
-                if "," in name:
-                    last_name, first_name = name.split(",", 1)
-                    name = f"{first_name} {last_name}".strip()
-                identity = PLAYER_IDENTITY_INDEX.resolve("wta", name=name)
-                player_id = str(player.get("itf_id") or (identity.itf_id if identity else "")).strip()
-                if not player_id:
-                    continue
-                players_by_id[player_id] = {
-                    "player_id": player_id,
-                    "name": name,
-                    "country": str(player.get("country") or (identity.country if identity else "")),
-                    "type": "MAIN",
-                }
-                # Map normalized name to ITF ID for later matching
-                name_key = name.casefold().strip()
-                name_to_itf_id[name_key] = player_id
-    return players_by_id, name_to_itf_id
-
-
-def refresh_draw_wtn(driver, draws_store, limit):
-    players_by_id, name_to_itf_id = _draw_profile_players(draws_store)
-    if not players_by_id:
-        return 0
-    profile_entries = {"https://draws.local": list(players_by_id.values())}
-    refresh_entry_list_wtn(
-        driver,
-        profile_entries,
-        WTN_CACHE_FILE,
-        today=madrid_today(),
-        resolve_itf_player=lambda player: player,
-        fetch_profiles=True,
-        max_profile_fetches=limit,
-        check_new_entry_lists=False,
-        recent_draws=[*draws_store.items(), *(load_cache(WTN_DRAW_HISTORY_FILE) or {}).items()],
-    )
-    values = {
-        player_id: player.get("wtn")
-        for player_id, player in players_by_id.items()
-        if player.get("wtn") not in (None, "", "-")
-    }
-    updated = 0
-    for tournament in (draws_store or {}).values():
-        draws = tournament.get("draws", tournament) if isinstance(tournament, dict) else {}
-        for draw_type in ("MDS", "QS"):
-            for player in (draws.get(draw_type) or {}).get("players", []):
-                name = str(player.get("name") or "").strip()
-                if "," in name:
-                    last_name, first_name = name.split(",", 1)
-                    name = f"{first_name} {last_name}".strip()
-                name_key = name.casefold().strip()
-                player_id = name_to_itf_id.get(name_key)
-                if player_id:
-                    value = values.get(player_id)
-                    if value is not None and player.get("wtn") != str(value):
-                        player["wtn"] = str(value)
-                        updated += 1
-    return updated
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--status", action="store_true", help="Report coverage without fetching profiles.")
@@ -143,7 +74,23 @@ def main():
     driver = LazyBrowserSession(create_driver)
     try:
         if args.draws:
-            draw_updates = refresh_draw_wtn(driver, draws_store, args.limit)
+            singles_wtns_before = [
+                (player, player.get("wtn"))
+                for tournament in (draws_store or {}).values()
+                for kind in ("MDS", "QS")
+                for player in ((tournament.get("draws") or {}).get(kind) or {}).get("players", [])
+            ]
+            refresh_draw_wtn(
+                driver,
+                draws_store,
+                WTN_CACHE_FILE,
+                entry_cache=entries,
+                today=madrid_today(),
+                max_profile_fetches=args.limit,
+                require_previous_week_draw=True,
+                recent_draws=(load_cache(WTN_DRAW_HISTORY_FILE) or {}).items(),
+            )
+            draw_updates = sum(player.get("wtn") != previous for player, previous in singles_wtns_before)
         else:
             refresh_entry_list_wtn(
                 driver,
