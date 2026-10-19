@@ -428,16 +428,16 @@
             }
             .roadtogs-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
             #roadtogs-points-total { color: var(--c-text-primary); }
-            #roadtogs-table { width: 100%; }
+            :is(#roadtogs-table, #op-breakdown-table) { width: 100%; }
             #view-roadtogs .content-card { max-width: 900px; margin: 0 auto; }
-            #roadtogs-table { max-width: 900px; margin: 0 auto; }
-            #roadtogs-table th, #roadtogs-table td { padding: 8px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; }
-            #roadtogs-table th:nth-child(1), #roadtogs-table td:nth-child(1) { text-align: center; }
-            #roadtogs-table th:nth-child(2) { text-align: center; }
-            #roadtogs-table td:nth-child(2) { white-space: normal; word-break: break-word; }
-            #roadtogs-table th:nth-child(3), #roadtogs-table td:nth-child(3) { text-align: center; }
-            #roadtogs-table th:nth-child(4), #roadtogs-table td:nth-child(4) { text-align: center; }
-            #roadtogs-table th:nth-child(5), #roadtogs-table td:nth-child(5) { text-align: center; }
+            :is(#roadtogs-table, #op-breakdown-table) { max-width: 900px; margin: 0 auto; }
+            :is(#roadtogs-table, #op-breakdown-table) th, :is(#roadtogs-table, #op-breakdown-table) td { padding: 8px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; }
+            :is(#roadtogs-table, #op-breakdown-table) th:nth-child(1), :is(#roadtogs-table, #op-breakdown-table) td:nth-child(1) { text-align: center; }
+            :is(#roadtogs-table, #op-breakdown-table) th:nth-child(2) { text-align: center; }
+            :is(#roadtogs-table, #op-breakdown-table) td:nth-child(2) { white-space: normal; word-break: break-word; }
+            :is(#roadtogs-table, #op-breakdown-table) th:nth-child(3), :is(#roadtogs-table, #op-breakdown-table) td:nth-child(3) { text-align: center; }
+            :is(#roadtogs-table, #op-breakdown-table) th:nth-child(4), :is(#roadtogs-table, #op-breakdown-table) td:nth-child(4) { text-align: center; }
+            :is(#roadtogs-table, #op-breakdown-table) th:nth-child(5), :is(#roadtogs-table, #op-breakdown-table) td:nth-child(5) { text-align: center; }
             .roadtogs-separator td { background: var(--c-chrome-bg) !important; color: white; text-align: center !important; font-weight: 400; font-size: 11px; line-height: 1.1; letter-spacing: 0; padding: 5px 12px !important; }
             .roadtogs-category-separator td { background: #6b7280 !important; color: white; text-align: center !important; font-weight: 400; font-size: 11px; line-height: 1.1; letter-spacing: 0; padding: 5px 12px !important; }
             tr.roadtogs-category-separator:hover td { background: #6b7280 !important; }
@@ -670,25 +670,25 @@
                 overflow: visible !important;
                 box-sizing: border-box;
             }
-            #roadtogs-table { table-layout: fixed !important; }
-            #roadtogs-table col.rtgs-col-date { width: 102px; }
-            #roadtogs-table col.rtgs-col-round { width: 102px; }
-            #roadtogs-table col.rtgs-col-points { width: 47px; }
-            #roadtogs-table col.rtgs-col-drop-date { width: 103px; }
-            #roadtogs-table th:nth-child(1),
-            #roadtogs-table td:nth-child(1),
-            #roadtogs-table th:nth-child(3),
-            #roadtogs-table td:nth-child(3),
-            #roadtogs-table th:nth-child(4),
-            #roadtogs-table td:nth-child(4),
-            #roadtogs-table th:nth-child(5),
-            #roadtogs-table td:nth-child(5) {
+            :is(#roadtogs-table, #op-breakdown-table) { table-layout: fixed !important; }
+            :is(#roadtogs-table, #op-breakdown-table) col.rtgs-col-date { width: 102px; }
+            :is(#roadtogs-table, #op-breakdown-table) col.rtgs-col-round { width: 102px; }
+            :is(#roadtogs-table, #op-breakdown-table) col.rtgs-col-points { width: 47px; }
+            :is(#roadtogs-table, #op-breakdown-table) col.rtgs-col-drop-date { width: 103px; }
+            :is(#roadtogs-table, #op-breakdown-table) th:nth-child(1),
+            :is(#roadtogs-table, #op-breakdown-table) td:nth-child(1),
+            :is(#roadtogs-table, #op-breakdown-table) th:nth-child(3),
+            :is(#roadtogs-table, #op-breakdown-table) td:nth-child(3),
+            :is(#roadtogs-table, #op-breakdown-table) th:nth-child(4),
+            :is(#roadtogs-table, #op-breakdown-table) td:nth-child(4),
+            :is(#roadtogs-table, #op-breakdown-table) th:nth-child(5),
+            :is(#roadtogs-table, #op-breakdown-table) td:nth-child(5) {
                 width: auto !important;
                 white-space: nowrap;
             }
-            #roadtogs-table th:nth-child(2),
-            #roadtogs-table td:nth-child(2) { width: auto !important; }
-            #roadtogs-table thead th {
+            :is(#roadtogs-table, #op-breakdown-table) th:nth-child(2),
+            :is(#roadtogs-table, #op-breakdown-table) td:nth-child(2) { width: auto !important; }
+            :is(#roadtogs-table, #op-breakdown-table) thead th {
                 background: #0a3366 !important;
                 color: #f8fafc !important;
                 border-right: 1px solid rgba(255, 255, 255, 0.14);
@@ -698,12 +698,12 @@
                 letter-spacing: 0.06em;
                 text-shadow: none;
             }
-            #roadtogs-table thead th:last-child { border-right: 0; }
+            :is(#roadtogs-table, #op-breakdown-table) thead th:last-child { border-right: 0; }
             @media (max-width: 768px) {
-                #roadtogs-table col.rtgs-col-date { width: 54px; }
-                #roadtogs-table col.rtgs-col-round { width: 55px; }
-                #roadtogs-table col.rtgs-col-points { width: 24px; }
-                #roadtogs-table col.rtgs-col-drop-date { width: 61px; }
+                :is(#roadtogs-table, #op-breakdown-table) col.rtgs-col-date { width: 54px; }
+                :is(#roadtogs-table, #op-breakdown-table) col.rtgs-col-round { width: 55px; }
+                :is(#roadtogs-table, #op-breakdown-table) col.rtgs-col-points { width: 24px; }
+                :is(#roadtogs-table, #op-breakdown-table) col.rtgs-col-drop-date { width: 61px; }
             }
             @media (min-width: 769px) {
                 #view-roadtogs .roadtogs-controls {
@@ -752,7 +752,7 @@
                 #view-roadtogs .gs-cutoff-table col.gs-col-cutoff { width: 27%; }
                 #view-roadtogs .gs-cutoff-table col.gs-col-acc { width: 28%; }
                 #view-roadtogs .gs-cutoff-table col.gs-col-est { width: 31%; }
-                #roadtogs-table thead th {
+                :is(#roadtogs-table, #op-breakdown-table) thead th {
                     height: 28px !important;
                     padding: 2px 3px !important;
                     box-sizing: border-box;
@@ -817,7 +817,7 @@
                 #view-roadtogs .gs-cutoff-table col.gs-col-cutoff { width: 28% !important; }
                 #view-roadtogs .gs-cutoff-table col.gs-col-acc { width: 28% !important; }
                 #view-roadtogs .gs-cutoff-table col.gs-col-est { width: 32% !important; }
-                #roadtogs-table thead th {
+                :is(#roadtogs-table, #op-breakdown-table) thead th {
                     height: 20px !important;
                     padding: 2px 3px !important;
                     box-sizing: border-box;
@@ -2449,19 +2449,19 @@
                 #view-roadtogs .table-wrapper {
                     overflow-x: hidden;
                 }
-                #roadtogs-table {
+                :is(#roadtogs-table, #op-breakdown-table) {
                     width: 100%;
                     min-width: 0;
                 }
-                #roadtogs-table th,
-                #roadtogs-table td {
+                :is(#roadtogs-table, #op-breakdown-table) th,
+                :is(#roadtogs-table, #op-breakdown-table) td {
                     font-size: 8px;
                     padding: 3px 3px;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
                 }
-                #roadtogs-table th:nth-child(2) { text-align: center !important; }
+                :is(#roadtogs-table, #op-breakdown-table) th:nth-child(2) { text-align: center !important; }
                 .roadtogs-separator td, .roadtogs-category-separator td { font-size: 7px !important; padding: 2px 3px !important; line-height: 1.15 !important; }
                 .rtgs-lock {
                     font-size: 0 !important;
@@ -2640,8 +2640,8 @@
                 .draw-no-draws { font-size: 9px; padding: 20px; }
 
                 /* Points Breakdown extra-small */
-                #roadtogs-table th,
-                #roadtogs-table td {
+                :is(#roadtogs-table, #op-breakdown-table) th,
+                :is(#roadtogs-table, #op-breakdown-table) td {
                     font-size: 7px;
                     padding: 2px 2px;
                 }

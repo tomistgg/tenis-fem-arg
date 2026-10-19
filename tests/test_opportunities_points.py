@@ -64,6 +64,41 @@ def test_points_gain_replaces_the_weakest_counted_result():
     """)
 
 
+def test_projected_breakdown_moves_displaced_results_without_mutating_the_baseline():
+    run_points_check("""
+        const value = scenario(event, 'SF');
+        assert.equal(value.breakdown.totalPoints, value.total);
+        assert.equal(value.breakdown.countable.reduce((sum, row) => sum + row.points, 0), value.total);
+        assert.equal(value.breakdown.countable.length, 18);
+        const planned = value.breakdown.countable.find(row => row._opportunityId === event.id);
+        assert.equal(planned.roundDisplay, 'SF');
+        assert.equal(planned.dropDate, '2027-10-25');
+        const displaced = value.breakdown.nonCountable.find(row => row.tournamentId === 'past-18');
+        assert.equal(displaced.points, 10);
+        assert.equal(displaced.replacedBy._opportunityId, event.id);
+        assert(baseline.every(row => !row.replacedBy));
+        const reset = schedule([], '2026-11-02');
+        assert.equal(reset.breakdown.countable.length, 18);
+        assert.equal(reset.breakdown.totalPoints, 1710);
+        assert.equal(reset.breakdown.nonCountable.length, 0);
+        assert(reset.breakdown.countable.every(row => !row._opportunity));
+    """)
+
+
+def test_projected_breakdown_resolves_historical_and_planned_replacement_chains():
+    run_points_check("""
+        const second = {...event, id: 'second', tournamentId: 'second-id', name: 'Second Tournament',
+            startDate: '2026-10-26', endDate: '2026-11-01'};
+        const value = schedule([{event, finish: 'SF'}, {event: second, finish: 'W'}], '2026-11-02');
+        const historical = value.breakdown.nonCountable.find(row => row.tournamentId === 'past-18');
+        const planned = value.breakdown.nonCountable.find(row => row._opportunityId === event.id);
+        assert.equal(historical.replacedBy._opportunityId, second.id);
+        assert.equal(planned.replacedBy._opportunityId, second.id);
+        assert.equal(value.breakdown.countable.reduce((sum, row) => sum + row.points, 0), value.total);
+        assert.equal(new Set(value.breakdown.nonCountable.map(row => row.tournamentId)).size, 2);
+    """)
+
+
 def test_sunday_ao_cutoff_includes_its_ranking_week_without_w15_w35_delay():
     run_points_check("""
         context.WTARG_DATA.opportunities.gsDeadlines = [{name: 'Australian Open',
@@ -169,6 +204,9 @@ def test_a_scenario_replaces_the_existing_result_from_the_same_event():
         assert.equal(value.gain, 14);
         assert.equal(value.replaced.length, 1);
         assert.equal(value.replaced[0].points, 6);
+        assert.equal(value.breakdown.nonCountable.length, 1);
+        assert.equal(value.breakdown.nonCountable[0].points, 6);
+        assert.equal(value.breakdown.nonCountable[0].replacedBy._opportunityId, event.id);
     """)
 
 
@@ -182,6 +220,9 @@ def test_unpublished_scenarios_do_not_remove_existing_event_results():
         assert.equal(value.gain, 0);
         assert.equal(value.total, 6);
         assert.equal(value.replaced.length, 0);
+        assert.equal(value.breakdown.countable.length, 1);
+        assert.equal(value.breakdown.countable[0].points, 6);
+        assert.equal(value.breakdown.nonCountable.length, 0);
     """)
 
 
@@ -257,7 +298,8 @@ def run_eligibility_check(check):
         const handlers = {};
         const root = {innerHTML: '', contains: () => false,
             addEventListener(type, callback) { handlers[type] = callback; }};
-        const context = {document: {getElementById: () => root, querySelector: () => null}, console,
+        const context = {document: {getElementById: () => root, querySelector: () => null,
+            addEventListener() {}}, console,
             WTARG_DATA: {opportunities: {asOf: '2026-10-18', events,
                 players: [{id: 'player-1', name: 'Test Player', rank: 300, points: 200}]}},
             ensureHistoryDataLoaded: async () => {},
@@ -269,6 +311,7 @@ def run_eligibility_check(check):
         vm.createContext(context);
         vm.runInContext(input.formatter, context);
         vm.runInContext(input.entries, context);
+        vm.runInContext(input.ledger, context);
         vm.runInContext(input.frontend, context);
         const eligible = () => Array.from(context.opportunitiesEligibleEvents(events,
             'player-1', '2026-10-18'), event => event.id);
@@ -278,6 +321,7 @@ def run_eligibility_check(check):
     app = (PROJECT_ROOT / "web/js/app.js").read_text(encoding="utf-8")
     payload = {
         "frontend": (PROJECT_ROOT / "web/js/tabs/opportunities.js").read_text(encoding="utf-8"),
+        "ledger": (PROJECT_ROOT / "web/js/tabs/roadtogs.js").read_text(encoding="utf-8"),
         "formatter": app[app.index("function _formatTournName("):app.index("function getRoundFilterLabel(")],
         "entries": (
             app[app.index("function entryByPos("):app.index("function entryDrawStrengthGM(")]
@@ -534,6 +578,56 @@ def test_rest_covers_empty_weeks_and_survives_shared_tour_restore():
         handlers.change({target: {dataset: {filter: 'ending'}, value: '2026-11-02'}});
         assert.deepEqual(Array.from(context.collectOpportunitiesUrlState().schedule), ['mine']);
         assert(!root.innerHTML.includes('data-event="' + rest + '"'));
+    """)
+
+
+def test_planner_breakdown_updates_below_the_calendar_with_escaped_names_and_result_labels():
+    run_eligibility_check("""
+        context.opportunitiesPointFinishes = () => [
+            {value: 'QF', label: 'Quarterfinal', points: 11}, {value: 'SF', label: 'Semifinal', points: 20}];
+        const original = {tournament: 'W35 Past Event', matchType: 'ITF', category: 'W35',
+            date: '2026-09-07', roundDisplay: 'QF', points: 8, dropDate: '2027-09-13'};
+        context.opportunitiesScheduleScenario = (player, selections) => {
+            const future = {tournament: 'Future', displayName: 'W50 Future <script>alert(1)</script>',
+                category: 'W50', _opportunity: true, date: '2026-11-02', roundDisplay: selections[0]?.finish,
+                points: 11, dropDate: '2027-11-08'};
+            return {baseline: 8, gain: selections.length ? 3 : 0, total: selections.length ? 11 : 8,
+                breakdown: {countable: selections.length ? [future] : [original],
+                    nonCountable: selections.length ? [{...original, replacedBy: future},
+                        {...future, displayName: 'W50 Earlier', replacedBy: future}] : []}};
+        };
+        await context.restoreOpportunitiesUrlState(new URLSearchParams({player: 'test-player'}));
+        assert(root.innerHTML.includes('id="op-breakdown-table"'));
+        assert(root.innerHTML.indexOf('id="op-breakdown-table"') > root.innerHTML.indexOf('op-week-list'));
+        assert(!root.innerHTML.includes('op-result-replaced'));
+        click('select', 'mine');
+        let table = root.innerHTML.split('id="op-breakdown-table"')[1];
+        const separator = table.indexOf('NON-COUNTABLE TOURNAMENTS');
+        assert(separator > 0);
+        assert(table.indexOf('W35 Past Event') > separator);
+        assert(table.indexOf('W50 Future') < separator);
+        assert(table.includes('class="op-result-replaced">(<span>Replaced</span>)'));
+        assert(table.includes('class="op-result-new">(<span>New</span>)'));
+        const earlierRow = table.split('W50 Earlier')[1].split('</tr>')[0];
+        assert(earlierRow.includes('op-result-new'));
+        assert(!earlierRow.includes('op-result-replaced'));
+        assert(table.includes('W50 Future &lt;script&gt;alert(1)&lt;/script&gt;'));
+        assert(!table.includes('<script>'));
+        assert(table.includes('<td>QF</td>'));
+        handlers.change({target: {dataset: {finish: 'mine'}, value: 'SF'}});
+        table = root.innerHTML.split('id="op-breakdown-table"')[1];
+        assert(table.includes('<td>SF</td>'));
+        click('clear-schedule', '');
+        table = root.innerHTML.split('id="op-breakdown-table"')[1];
+        assert(table.includes('W35 Past Event'));
+        assert(!table.includes('W50 Future'));
+        assert(!table.includes('op-result-replaced'));
+        assert(!table.includes('op-result-new'));
+        click('select', 'rest:2026-11-02');
+        assert(!root.innerHTML.includes('op-result-replaced'));
+        handlers.change({target: {dataset: {filter: 'player'}, value: ''}});
+        assert(!root.innerHTML.includes('id="op-breakdown-table"'));
+        assert(!original.replacedBy);
     """)
 
 

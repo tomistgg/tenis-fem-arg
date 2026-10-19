@@ -101,8 +101,11 @@
             gross += option.points;
             acceptedEvents.push(event);
             hypothetical.push({date: event.startDate, tournament: event.name, _opportunityId: event.id,
+                displayName: event.displayName || event.name, matchType: event.source,
                 tournamentId: event.tournamentId || event.sourceId || event.id, category: event.level,
                 isGS: event.level === 'GS', bestMainRound: finish.startsWith('QR') ? '' : finish,
+                roundDisplay: finish + (routeFor(event, route) === 'QUAL' && !finish.startsWith('QR') ? ' + QLFR' : ''),
+                dropDate: addDays(effectiveDate, 364),
                 points: option.points, _opportunity: true});
         }
         const retained = results.filter(result => !acceptedEvents.some(event => sameEvent(result, event)));
@@ -110,6 +113,7 @@
         const total = _rtgsSelectCountable([...retained, ...hypothetical]);
         const replaced = original.countable.filter(result => !total.countable.includes(result));
         const replacementsByEvent = {};
+        const replacedBy = new Map();
         const prefix = [];
         let previous = original;
         for (const planned of hypothetical) {
@@ -118,6 +122,11 @@
             const ledger = results.filter(result => !chosen.some(event => sameEvent(result, event)));
             const step = _rtgsSelectCountable([...ledger, ...prefix]);
             const removed = previous.countable.filter(result => !step.countable.includes(result));
+            for (const result of removed) replacedBy.set(result, planned);
+            const plannedEvent = acceptedEvents.find(event => event.id === planned._opportunityId);
+            for (const result of results.filter(result => sameEvent(result, plannedEvent))) {
+                replacedBy.set(result, planned);
+            }
             replacementsByEvent[planned._opportunityId] = removed.flatMap(result =>
                 result._opportunity ? replacementsByEvent[result._opportunityId] || [] : [result]);
             for (const result of removed) {
@@ -133,8 +142,19 @@
                 return true;
             });
         }
+        const nonCountable = [...new Set([...total.nonCountable, ...results.filter(result => !retained.includes(result))])];
+        const projectedBreakdown = {
+            countable: total.countable.map(result => ({...result})),
+            nonCountable: nonCountable.map(result => {
+                let replacement = replacedBy.get(result);
+                while (replacement && replacedBy.has(replacement)) replacement = replacedBy.get(replacement);
+                return {...result, replacedBy: replacement};
+            }).sort((a, b) => b.points - a.points),
+            totalPoints: total.totalPoints
+        };
         return {gross, gain: total.totalPoints - original.totalPoints, total: total.totalPoints,
             baseline: original.totalPoints, currentTotal, officialPoints, reconciliationGap,
+            breakdown: projectedBreakdown,
             replaced, replacementsByEvent, horizon, effectiveDate: lastPublication, warnings: [...new Set(warnings)]};
     }
     global.opportunitiesPointFinishes = finishes;

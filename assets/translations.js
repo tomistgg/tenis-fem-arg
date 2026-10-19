@@ -291,6 +291,8 @@ window.WTARG_TRANSLATIONS = {
         "Firsts and points icon": "Icono de primeros logros y puntos",
         "Tour Planner": "Planificador de giras",
         "Rest": "Descanso",
+        "Replaced": "Reemplazado",
+        "New": "Nuevo",
         "North and Central America": "Norteamérica y Centroamérica",
         "Planner filters": "Filtros del planificador",
         "Starting week": "Semana inicial",

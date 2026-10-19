@@ -373,6 +373,22 @@
             + warnings.map(warning => '<p class="op-card-note">' + text(warning) + '</p>').join('')
             + (state.schedule.length ? '<div class="op-summary-actions">' + button('clear-schedule', '', 'Clear selections') + '</div>' : '') + '</section>';
     }
+    function breakdownMarkup(plan) {
+        if (!plan || !plan.breakdown || typeof _rtgsRenderBreakdown !== 'function') return '';
+        const body = {innerHTML: ''};
+        _rtgsRenderBreakdown(body, plan.breakdown, true, result => {
+            const label = '<span translate="no">' + _rtgsTournamentLabel(result) + '</span>';
+            return label + (result._opportunity ? ' <span class="op-result-new">(' + text('New') + ')</span>' : '')
+                + (result.replacedBy && !result._opportunity ? ' <span class="op-result-replaced">(' + text('Replaced') + ')</span>' : '');
+        });
+        return '<section class="op-panel op-breakdown" aria-labelledby="op-breakdown-title">'
+            + '<h2 id="op-breakdown-title">' + text('Points Breakdown') + '</h2>'
+            + '<div class="table-wrapper"><table id="op-breakdown-table">'
+            + '<colgroup><col class="rtgs-col-date"><col class="rtgs-col-tournament"><col class="rtgs-col-round">'
+            + '<col class="rtgs-col-points"><col class="rtgs-col-drop-date"></colgroup>'
+            + '<thead><tr>' + ['Date', 'Tournament', 'Round', 'PTS', 'Drop Date'].map(label => '<th scope="col">' + text(label) + '</th>').join('')
+            + '</tr></thead><tbody id="op-breakdown-body">' + body.innerHTML + '</tbody></table></div></section>';
+    }
     function render() {
         const root = document.getElementById('opportunities-root');
         if (!root) return;
@@ -399,7 +415,7 @@
             + (state.schedule.length ? '<div class="op-calendar-clear">' + button('clear-schedule', '', 'Clear selections') + '</div>' : '')
             + '<section class="op-results" aria-label="Tournaments">'
             + (!player ? '' : shown.length ? calendarMarkup(shown, plan) : '<p class="op-empty">' + text('No matching tournaments') + '</p>')
-            + '</section></div>';
+            + '</section>' + breakdownMarkup(plan) + '</div>';
         initWeekSelectors();
     }
     function allowedIds() {

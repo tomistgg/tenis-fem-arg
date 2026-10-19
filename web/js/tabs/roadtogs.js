@@ -437,14 +437,14 @@
             }
 
             function _rtgsTournamentLabel(t) {
-                const name = _formatTournName(t.tournament, t.category, t.matchType);
+                const name = t.displayName || _formatTournName(t.tournament, t.category, t.matchType);
                 if (!name) return '';
                 const safeName = escapeHtml(name);
                 if (!_rtgsIsLocked(t)) return safeName;
                 return `${safeName} <span class="rtgs-lock" title="Locked tournament" aria-label="Locked tournament">&#128274;&#65038;</span>`;
             }
 
-            function _rtgsAppendCategories(parts, list) {
+            function _rtgsAppendCategories(parts, list, tournamentLabel = _rtgsTournamentLabel) {
                 const order = ['GS', 'WTA 1000', 'WTA 500', 'WTA 250', 'WTA 125', 'ITF', 'OTHER'];
                 const groups = new Map();
                 list.forEach(t => {
@@ -457,22 +457,22 @@
                     if (!rows.length) return;
                     parts.push(`<tr class="roadtogs-category-separator"><td colspan="5">${_rtgsCategoryLabel(key)}</td></tr>`);
                     rows.forEach(t => {
-                        parts.push(`<tr><td>${escapeHtml(t.date)}</td><td>${_rtgsTournamentLabel(t)}</td><td>${escapeHtml(t.roundDisplay)}</td><td>${escapeHtml(t.points)}</td><td${_rtgsDropClass(t.dropDate)}>${escapeHtml(t.dropDate)}</td></tr>`);
+                        parts.push(`<tr><td>${escapeHtml(t.date)}</td><td>${tournamentLabel(t)}</td><td>${escapeHtml(t.roundDisplay)}</td><td>${escapeHtml(t.points)}</td><td${_rtgsDropClass(t.dropDate)}>${escapeHtml(t.dropDate)}</td></tr>`);
                     });
                 });
             }
 
-            function _rtgsRenderBreakdown(tbody, breakdown, includeNonCountable) {
+            function _rtgsRenderBreakdown(tbody, breakdown, includeNonCountable, tournamentLabel = _rtgsTournamentLabel) {
                 if (!breakdown.countable.length) {
                     tbody.innerHTML = '<tr><td colspan="5" class="cell-state-info">No countable tournaments found for this cutoff.</td></tr>';
                     return;
                 }
                 const parts = [];
-                _rtgsAppendCategories(parts, breakdown.countable);
+                _rtgsAppendCategories(parts, breakdown.countable, tournamentLabel);
                 if (includeNonCountable && breakdown.nonCountable.length) {
                     parts.push('<tr class="roadtogs-separator"><td colspan="5">NON-COUNTABLE TOURNAMENTS</td></tr>');
                     breakdown.nonCountable.forEach(t => {
-                        parts.push(`<tr><td>${escapeHtml(t.date)}</td><td>${_rtgsTournamentLabel(t)}</td><td>${escapeHtml(t.roundDisplay)}</td><td>${escapeHtml(t.points)}</td><td${_rtgsDropClass(t.dropDate)}>${escapeHtml(t.dropDate)}</td></tr>`);
+                        parts.push(`<tr><td>${escapeHtml(t.date)}</td><td>${tournamentLabel(t)}</td><td>${escapeHtml(t.roundDisplay)}</td><td>${escapeHtml(t.points)}</td><td${_rtgsDropClass(t.dropDate)}>${escapeHtml(t.dropDate)}</td></tr>`);
                     });
                 }
                 tbody.innerHTML = parts.join('');

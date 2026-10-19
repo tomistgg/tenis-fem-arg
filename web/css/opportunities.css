@@ -98,6 +98,15 @@
 .op-warning { padding: 9px; border: 1px solid #d5a341; border-radius: 5px; font-size: 10px; line-height: 1.5; }
 .op-warning ul { margin: 6px 0 0; padding-left: 15px; }
 .op-empty { text-align: center; padding: 24px 12px; font-size: 12px; }
+.op-breakdown { margin-top: 12px; min-width: 0; }
+.op-breakdown h2 { margin: 0; padding: 10px 12px; background: var(--c-chrome-bg); color: #fff; border-radius: 7px 7px 0 0; border-bottom: 2px solid var(--c-primary); font-size: 12px; font-weight: 800; text-align: center; }
+.op-breakdown .table-wrapper { border-radius: 0; }
+#op-breakdown-table { width: 100%; min-width: 0; border-radius: 0 0 7px 7px; }
+#op-breakdown-table td:nth-child(2) { white-space: normal; overflow-wrap: anywhere; }
+.op-result-replaced { color: #c00000; }
+[data-theme="dark"] .op-result-replaced { color: #ff8080; }
+.op-result-new { color: #166534; }
+[data-theme="dark"] .op-result-new { color: #6ee7b7; }
 @media (min-width: 769px) {
     .op-workspace { max-width: 900px; }
     .op-toolbar { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: stretch; gap: 12px; margin-bottom: 12px; }
