@@ -451,6 +451,7 @@
           {"pos": 1, "seed": "1", "entry": "WC", "name": "STEPHENS, Sloane", "country": "USA", "itf_id": "800277557", "wtn": "9.16"},
           {"pos": 2, "name": "LAHEY, Ashley", "country": "USA", "itf_id": "800409566", "wtn": "12.63"},
           {"pos": 3, "name": "GOTO, Reina", "country": "JPN", "itf_id": "800651762", "wtn": "12.41"},
+          {"pos": 4, "entry": "Q", "name": "FRODIN, Thea", "country": "USA", "itf_id": "800702416", "wtn": "11.88"},
           {"pos": 5, "name": "JOHNSON, Sofia", "country": "GBR", "itf_id": "800486846", "wtn": "10.61"},
           {"pos": 6, "name": "REASCO GONZALEZ, Mell Elizabeth", "country": "ECU", "itf_id": "800486399", "wtn": "11.63"},
           {"pos": 7, "entry": "WC", "name": "CABALLERO CHICA, Raquel", "country": "ESP", "itf_id": "800557573", "wtn": "14.47"},
@@ -458,7 +459,10 @@
           {"pos": 9, "seed": "4", "name": "PALICOVA, Barbora", "country": "CZE", "itf_id": "800488201", "wtn": "9.7"},
           {"pos": 10, "entry": "WC", "name": "PERRY, Luciana", "country": "USA", "itf_id": "800648275", "wtn": "11.51"},
           {"pos": 11, "name": "RAPOLU, Malaika", "country": "USA", "itf_id": "800500748", "wtn": "10.05"},
+          {"pos": 12, "entry": "Q", "name": "LINCER, Olivia", "country": "USA", "itf_id": "800562670", "wtn": "13.21"},
           {"pos": 13, "name": "CAPURRO TABORDA, Martina", "country": "ARG", "itf_id": "800389099", "wtn": "12.58"},
+          {"pos": 14, "entry": "Q", "name": "LEPCHENKO, Varvara", "country": "USA", "itf_id": "800215835", "wtn": "10.9"},
+          {"pos": 15, "entry": "Q", "name": "CROSSLEY, Mayu", "country": "JPN", "itf_id": "800544710", "wtn": "12.82"},
           {"pos": 16, "seed": "8", "name": "MANDLIK, Elizabeth", "country": "USA", "itf_id": "800472664", "wtn": "11.28"},
           {"pos": 17, "seed": "7", "name": "GAO, Xinyu", "country": "CHN", "itf_id": "800361114", "wtn": "10.65"},
           {"pos": 18, "name": "OSUIGWE, Whitney", "country": "USA", "itf_id": "800468387", "wtn": "11.55"},
@@ -469,9 +473,19 @@
           {"pos": 23, "name": "RUS, Arantxa", "country": "NED", "itf_id": "800260520", "wtn": "10.69"},
           {"pos": 24, "seed": "3", "name": "KU, Yeonwoo", "country": "KOR", "itf_id": "800454354", "wtn": "10.35"},
           {"pos": 25, "seed": "6", "name": "SHYMANOVICH, Iryna", "country": "BLR", "itf_id": "800332400", "wtn": "10.02"},
+          {"pos": 26, "entry": "Q", "name": "MCDONALD, Ella", "country": "GBR", "itf_id": "800512247", "wtn": "10.87"},
+          {"pos": 27, "entry": "Q", "name": "NIJKAMP, Rose Marie", "country": "NED", "itf_id": "800508457", "wtn": "12.78"},
           {"pos": 28, "name": "NILSSON, Lea", "country": "SWE", "itf_id": "800636563", "wtn": "11.96"},
+          {"pos": 29, "entry": "Q", "name": "VAN IMPE, Amelie", "country": "BEL", "itf_id": "800492984", "wtn": "11.0"},
           {"pos": 30, "name": "BROADUS, Savannah", "country": "USA", "itf_id": "800479503", "wtn": "11.85"},
+          {"pos": 31, "entry": "Q", "name": "MUNK MORTENSEN, Rebecca", "country": "DEN", "itf_id": "800519998", "wtn": "13.26"},
           {"pos": 32, "seed": "2", "name": "URHOBO, Akasha", "country": "USA", "itf_id": "800635509", "wtn": "11.03"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 3, "winner_name": "M. Brengle", "score": "60 75"},
+          {"round": 1, "match_num": 4, "winner_name": "B. Palicova", "score": "62 64"},
+          {"round": 1, "match_num": 9, "winner_name": "A. Tikhonova", "score": "76(6) 63"},
+          {"round": 1, "match_num": 10, "winner_name": "K. Collins", "score": "63 61"}
         ],
         "round_labels": [
           "Round of 32",
@@ -480,7 +494,8 @@
           "Semifinals",
           "Final"
         ],
-        "num_rounds": 5
+        "num_rounds": 5,
+        "wtn_gm": 11.471
       }
     }
   },
@@ -533,6 +548,16 @@
           {"pos": 30, "name": "WALKER, Brandy", "country": "USA", "itf_id": "800483063", "wtn": "15.31"},
           {"pos": 31, "entry": "WC", "name": "LANTON, Addison", "country": "USA", "itf_id": "800716512", "wtn": "14.27"},
           {"pos": 32, "seed": "14", "name": "LEONG, Shihomi Li Xuan", "country": "MAS", "itf_id": "800548146", "wtn": "13.42"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "A. Sharma", "score": "63 61"},
+          {"round": 1, "match_num": 1, "winner_name": "D. Letzel", "score": "62 75"},
+          {"round": 1, "match_num": 2, "winner_name": "D. Soke", "score": "61 61"},
+          {"round": 1, "match_num": 3, "winner_name": "I. Haddad", "score": "60 60"},
+          {"round": 1, "match_num": 6, "winner_name": "J. Hossam Salah", "score": "36 60 10-7"},
+          {"round": 1, "match_num": 7, "winner_name": "C. Allegre", "score": "63 63"},
+          {"round": 1, "match_num": 9, "winner_name": "M. Angel", "score": "64 60"},
+          {"round": 1, "match_num": 10, "winner_name": "M. Torres Murcia", "score": "63 67 10-6"}
         ],
         "round_labels": [
           "Round of 32",

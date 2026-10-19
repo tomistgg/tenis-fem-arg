@@ -3,16 +3,16 @@
     "wta_full_calendar_cache.json": {
       "from": "2026-09-21",
       "to": "2026-12-31",
-      "fetchedAt": "2026-10-19T19:31:04Z",
-      "lastAttemptAt": "2026-10-19T19:31:04Z",
-      "fetchedRunId": "20261019T191156Z-5e0cd56657",
-      "lastAttemptRunId": "20261019T191156Z-5e0cd56657"
+      "fetchedAt": "2026-10-19T22:27:44Z",
+      "lastAttemptAt": "2026-10-19T22:27:44Z",
+      "fetchedRunId": "20261019T215759Z-0151374d7a",
+      "lastAttemptRunId": "20261019T215759Z-0151374d7a"
     },
     "itf_calendar_cache.json": {
       "year": 2026,
-      "count": 636,
+      "count": 603,
       "fetchedAt": "2026-10-19T19:15:12Z",
-      "lastAttemptAt": "2026-10-19T19:15:12Z"
+      "lastAttemptAt": "2026-10-19T22:00:03Z"
     }
   },
   "entries": {
@@ -370,15 +370,6 @@
       "1100203860_M_0": {
         "fetchedAt": "2026-07-13T02:12:20Z"
       },
-      "1100204941_Q_0": {
-        "fetchedAt": "2026-10-05T22:20:26Z"
-      },
-      "1100203959_Q_0": {
-        "fetchedAt": "2026-10-05T22:22:11Z"
-      },
-      "1100205028_Q_0": {
-        "fetchedAt": "2026-10-05T22:24:10Z"
-      },
       "1100205029_Q_0": {
         "fetchedAt": "2026-10-10T16:51:29Z"
       },
@@ -549,6 +540,15 @@
       },
       "1100205092_Q_0": {
         "fetchedAt": "2026-10-19T19:13:46Z"
+      },
+      "1100205059_Q_0": {
+        "fetchedAt": "2026-10-19T22:16:54Z"
+      },
+      "1100205218_Q_0": {
+        "fetchedAt": "2026-10-19T22:20:37Z"
+      },
+      "1100205050_Q_0": {
+        "fetchedAt": "2026-10-19T22:21:42Z"
       }
     },
     "draws_store_cache.json": {
@@ -1146,25 +1146,25 @@
         "completedAt": "2026-10-18T22:40:04Z"
       },
       "https://www.wtatennis.com/tournaments/405/osaka/2026/player-list": {
-        "fetchedAt": "2026-10-19T19:23:43Z"
+        "fetchedAt": "2026-10-19T22:16:20Z"
       },
       "https://www.wtatennis.com/tournaments/2092/ningbo/2026/player-list": {
-        "fetchedAt": "2026-10-19T19:23:43Z"
+        "fetchedAt": "2026-10-19T22:16:20Z"
       },
       "w-itf-ita-2026-037": {
-        "fetchedAt": "2026-10-19T19:25:05Z"
+        "fetchedAt": "2026-10-19T22:23:32Z"
       },
       "w-itf-usa-2026-052": {
-        "fetchedAt": "2026-10-19T19:23:43Z"
+        "fetchedAt": "2026-10-19T22:23:49Z"
       },
       "w-itf-usa-2026-057": {
-        "fetchedAt": "2026-10-19T19:26:28Z"
+        "fetchedAt": "2026-10-19T22:20:02Z"
       },
       "w-itf-sgp-2026-004": {
-        "fetchedAt": "2026-10-19T19:27:08Z"
+        "fetchedAt": "2026-10-19T22:18:30Z"
       },
       "w-itf-bra-2026-015": {
-        "fetchedAt": "2026-10-19T19:26:48Z"
+        "fetchedAt": "2026-10-19T22:16:20Z"
       }
     }
   }
