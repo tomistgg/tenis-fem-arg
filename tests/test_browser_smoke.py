@@ -92,7 +92,7 @@ def test_generated_site_loads_rankings_bundle_offline(offline_generated_site):
 
         planner_button = driver.find_element(By.ID, "calendar-planner-btn")
         planner_button.click()
-        wait.until(expected_conditions.visibility_of_element_located((By.ID, "opportunities-root")))
+        wait.until(expected_conditions.visibility_of_element_located((By.ID, "planner-root")))
         driver.execute_script("switchTab('calendar')")
 
         categories_toggle = driver.find_element(
