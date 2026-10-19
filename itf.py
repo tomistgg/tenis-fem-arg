@@ -784,32 +784,6 @@ def _parse_acceptance_html_sections(page_html):
     return parsed
 
 
-def _build_name_map(entry_classifications):
-    name_map = {}
-    for classification in entry_classifications or []:
-        desc = classification.get("entryClassification", "").upper()
-        code = classification.get("entryClassificationCode", "")
-        if "WITHDRAWAL" in desc:
-            continue
-
-        for entry in classification.get("entries") or []:
-            pos = entry.get("positionDisplay", "")
-            suffix = (
-                ""
-                if code in ("MDA", "CA", "JR", "JA", "SE", "WC")
-                else (f" (ALT {pos})" if code in ("ALT", "A") or "ALTERNATE" in desc else " (Q)")
-            )
-            players = entry.get("players") or []
-            for p in players:
-                full_name = f"{p.get('givenName', '')} {p.get('familyName', '')}".strip()
-                player_id = str(
-                    p.get("playerId") or p.get("playerID") or p.get("id") or p.get("player_id") or ""
-                ).strip()
-                matched_name = resolve_player_display_name("itf", player_id=player_id, name=full_name).upper()
-                name_map[matched_name] = suffix
-    return name_map
-
-
 def _itf_calendar_item_identity(item):
     """Return a stable identity for one raw ITF calendar row."""
     if not isinstance(item, dict):
@@ -1126,11 +1100,10 @@ def get_itf_players(tournament_key, driver):
                     severity="partial",
                 )
 
-        name_map = _build_name_map(root_data)
-        return root_data, name_map
+        return root_data
     except (WebDriverException, Urllib3HTTPError, AttributeError, KeyError, TypeError, ValueError) as e:
         logger.error(f"Error en {tournament_key}: {e}")
-        return [], {}
+        return []
 
 
 def get_dynamic_itf_calendar(driver, num_weeks=3):

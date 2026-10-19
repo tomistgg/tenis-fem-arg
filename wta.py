@@ -787,7 +787,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
         soup = BeautifulSoup(r.text, "html.parser")
     except PipelineError as e:
         logger.error(f"Error scraping {url}: {e}")
-        return [], {}
+        return []
     except Exception as e:
         report_run_issue(
             "wta",
@@ -797,23 +797,7 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
             context={"url": str(url)},
         )
         logger.debug(f"Error scraping {url}: {e}")
-        return [], {}
-
-    def _suffix_map_from_players(players):
-        suffix_map = {}
-        for p in players or []:
-            name = str(p.get("name") or "").strip().upper()
-            if not name:
-                continue
-            p_type = p.get("type", "")
-            if p_type == "MAIN":
-                suffix_map[name] = ""
-            elif p_type == "QUAL":
-                suffix_map[name] = " (Q)"
-            else:
-                pos = str(p.get("pos") or "").strip()
-                suffix_map[name] = f" (ALT {pos})" if pos else " (ALT)"
-        return suffix_map
+        return []
 
     def _extract_player_list_state_from_jsonld(soup_obj):
         """Return a lightweight view of the player-list JSON-LD if present."""
@@ -873,8 +857,8 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
         if singles_count == 0 and (qual_count in (0, None)) and (doubles_count or 0) > 0:
             if cached_entries:
                 logger.warning(f"Using cached WTA entry list for {url} (live page shows doubles only)")
-                return list(cached_entries), _suffix_map_from_players(cached_entries)
-            return [], {}
+                return list(cached_entries)
+            return []
 
     # 1. Read player IDs/slugs from HTML
     main_entries, qual_entries = [], []
@@ -946,9 +930,6 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
             time.sleep(0.05)
 
     # 4. Fill the table
-    main_draw_names = set()
-    qualifying_names = set()
-
     def parse_rank_num(value):
         try:
             return int(str(value).strip())
@@ -965,7 +946,6 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
         p_info = player_cache[pid]
         name_key = p_info["name"].strip().upper()
         matched_name = resolve_player_display_name("wta", player_id=pid, name=name_key).upper()
-        main_draw_names.add(matched_name)
         rank_info = get_p_rank(matched_name, md_rankings)
         md_list.append(
             {
@@ -989,7 +969,6 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
                 continue
             cached_pid = str(p.get("player_id") or "").strip()
             matched_name = resolve_player_display_name("wta", player_id=cached_pid, name=name_key).upper()
-            main_draw_names.add(matched_name)
             rank_num = p.get("rank_num")
             if not isinstance(rank_num, int):
                 rank_num = parse_rank_num(p.get("rank"))
@@ -1020,7 +999,6 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
         p_info = player_cache[pid]
         name_key = p_info["name"].strip().upper()
         matched_name = resolve_player_display_name("wta", player_id=pid, name=name_key).upper()
-        qualifying_names.add(matched_name)
         rank_info = get_p_rank(matched_name, qual_rankings)
         qual_list.append(
             {
@@ -1061,7 +1039,4 @@ def scrape_tournament_players(url, md_rankings, qual_rankings, cached_entries=No
             ) if entries and (count is None or count == len(entries) or combined_singles)
         ]
 
-    suffix_map = dict.fromkeys(main_draw_names, "")
-    suffix_map.update(dict.fromkeys(qualifying_names, " (Q)"))
-
-    return final_tourney_list, suffix_map
+    return final_tourney_list
