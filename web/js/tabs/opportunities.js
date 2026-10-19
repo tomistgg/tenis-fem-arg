@@ -10,6 +10,7 @@
         compare: [], schedule: [], finishes: {}, routes: {}, target: '', active: ''
     };
     let mounted = false;
+    let restoreControlFocus = true;
     let notice = '';
 
     function esc(value) {
@@ -198,10 +199,12 @@
                 }
             }).on('change', function () {
                 const value = this.value;
-                Promise.resolve().then(() => {
+                const restoreFocus = restoreControlFocus;
+                // Let the picker finish closing before replacing its controls.
+                setTimeout(() => {
                     handleChange({target: {dataset: {filter: key}, value}});
-                    $('#op-' + key).next('.select2').find('.select2-selection').trigger('focus');
-                });
+                    if (restoreFocus) $('#op-' + key).next('.select2').find('.select2-selection').trigger('focus');
+                }, 0);
             });
             select.next('.select2').find('.select2-selection').attr('aria-label', key === 'starting' ? 'Starting week' : 'Ending week');
         }
@@ -394,7 +397,7 @@
         const activeId = root && root.contains(document.activeElement) && document.activeElement.id;
         render();
         const replacement = activeId && document.getElementById(activeId);
-        if (replacement) replacement.focus({ preventScroll: true });
+        if (replacement && restoreControlFocus) replacement.focus({ preventScroll: true });
         if (typeof window.syncUrlStateForTab === 'function') window.syncUrlStateForTab('opportunities');
     }
     function toggleSchedule(id) {
@@ -470,6 +473,8 @@
             }
         }
         if (!mounted) {
+            root.addEventListener('pointerdown', event => { restoreControlFocus = event.pointerType === 'mouse'; }, true);
+            root.addEventListener('keydown', () => { restoreControlFocus = true; }, true);
             root.addEventListener('click', handleClick);
             root.addEventListener('change', handleChange);
             mounted = true;

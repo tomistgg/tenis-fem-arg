@@ -310,6 +310,28 @@ def test_planner_starts_without_a_player_and_clears_the_tour_when_deselected():
     """)
 
 
+def test_touch_selections_do_not_refocus_rebuilt_pickers_but_keyboard_selections_do():
+    run_eligibility_check("""
+        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
+        let focusCount=0;
+        root.contains=()=>true;
+        root.focus=()=>{focusCount++;};
+        context.document.activeElement={id:'op-player'};
+        handlers.pointerdown?.({pointerType:'touch'});
+        handlers.change({target:{dataset:{filter:'player'},value:'player-1'}});
+        assert.equal(focusCount,0,'Touch selection must not refocus the native player picker');
+        context.document.activeElement={id:'op-ending'};
+        handlers.change({target:{dataset:{filter:'ending'},value:'2026-11-09'}});
+        assert.equal(focusCount,0,'Touch selection must not refocus the week picker');
+        handlers.keydown?.({key:'ArrowDown'});
+        handlers.change({target:{dataset:{filter:'ending'},value:'2026-11-16'}});
+        assert.equal(focusCount,1,'Keyboard users must retain focus after selection');
+        handlers.pointerdown?.({pointerType:'mouse'});
+        handlers.change({target:{dataset:{filter:'starting'},value:'2026-11-02'}});
+        assert.equal(focusCount,2,'Mouse users retain the existing focus behavior');
+    """)
+
+
 def test_all_future_tournaments_allow_wildcards_and_default_to_main_draw():
     run_eligibility_check("""
         assert.deepEqual(eligible(), ['mine','alternate','absent','open','closed',
