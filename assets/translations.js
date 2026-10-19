@@ -290,6 +290,7 @@ window.WTARG_TRANSLATIONS = {
         "Argentina flag icon": "Bandera argentina",
         "Firsts and points icon": "Icono de primeros logros y puntos",
         "Tour Planner": "Planificador de giras",
+        "Rest": "Descanso",
         "North and Central America": "Norteamérica y Centroamérica",
         "Planner filters": "Filtros del planificador",
         "Starting week": "Semana inicial",

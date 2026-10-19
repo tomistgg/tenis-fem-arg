@@ -2731,10 +2731,6 @@
             [data-theme="dark"] .draws-tournament-option.selected { background: #1e3a5c; color: #bfdbfe; }
             [data-theme="dark"] #roadtogs-points-total { color: var(--c-text) !important; }
             [data-theme="dark"] .calendar-toolbar { background: var(--c-bg); border-bottom-color: var(--c-border); }
-            [data-theme="dark"] .cal-dd-btn {
-                background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            }
-            [data-theme="dark"] .calendar-planner-btn { background-image: none; }
             [data-theme="dark"] .cal-dd-panel { background: var(--c-surface); border-color: var(--c-border-strong); box-shadow: var(--shadow-lg); }
             [data-theme="dark"] .cal-dd-item span { color: var(--c-text); }
             [data-theme="dark"] .calendar-changes-panel { background: var(--c-surface); border-color: var(--c-border); }

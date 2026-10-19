@@ -57,27 +57,31 @@ const ALLOWED_ANALYTICS_PAGES_ = new Set([
   'roadtogs',
   'history',
   'fedbcup',
-  'tstrength'
+  'tstrength',
+  'information',
+  'opportunities'
 ]);
 
 const ANALYTICS_FILTER_PARAMS_ = {
   home: [],
+  information: [],
+  opportunities: ['player', 'starting', 'ending', 'compare', 'schedule', 'target', 'results'],
   upcoming: ['q'],
-  entrylists: ['t', 'prio'],
-  draws: ['t', 'type', 'round'],
-  calendar: ['level', 'continent', 'surface'],
+  entrylists: ['t', 'prio', 'view', 'wtn'],
+  draws: ['t', 'type', 'round', 'wtn'],
+  calendar: ['level', 'continent', 'surface', 'changes'],
   rankings: ['q', 'scope', 'date'],
-  roadtogs: ['player'],
+  roadtogs: ['player', 'cutoff'],
   history: [
     'page', 'mcat', 'qualy', 'player', 'surface', 'round', 'result',
     'year', 't', 'category', 'opp', 'oppcountry', 'entry', 'seed',
     'type', 'asrank', 'asmode', 'vsrank', 'vsmode'
   ],
   fedbcup: ['view', 'player'],
-  tstrength: ['year', 'level', 'surface', 'region', 'draw', 'sort']
+  tstrength: ['mode', 'year', 'level', 'surface', 'region', 'draw', 'sort']
 };
 
-const SAFE_CONTENT_PART_RE_ = /^([a-z][a-z0-9]*)=([a-z0-9][a-z0-9,.-]{0,159})$/;
+const SAFE_CONTENT_PART_RE_ = /^([a-z][a-z0-9]*)=([a-z0-9][a-z0-9,.~:-]{0,159})$/;
 const SAFE_LEGACY_PLAYER_SLUG_RE_ = /^[a-z0-9](?:[a-z0-9-]{0,79})?$/;
 const MAX_CONTENT_ID_LENGTH_ = 1024;
 const UNSAFE_COUNTRY_RE_ = /[\u0000-\u001f<>|]/;

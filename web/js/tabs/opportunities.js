@@ -52,6 +52,7 @@
         return (event.entries || []).find(entry => entry.playerKey === playerId);
     }
     function entryRoutes(event, playerId) {
+        if (event.rest) return ['MAIN'];
         const entry = entryFor(event, playerId);
         if (entry && entry.type === 'MAIN') return ['MAIN'];
         return ['MAIN', 'QUAL'];
@@ -117,6 +118,15 @@
         const selected = endingOptions().find(option => option.value === state.ending);
         return selected ? selected.date : state.ending ? addDays(state.ending, 7) : '';
     }
+    function calendarEvents() {
+        const rests = endingOptions().map(option => {
+            const id = 'rest:' + option.value;
+            if (!byId.has(id)) byId.set(id, {id, rest: true, name: 'Rest', level: 'REST', surface: 'Rest',
+                continent: 'rest', week: option.value, startDate: option.value, endDate: addDays(option.value, 6)});
+            return byId.get(id);
+        });
+        return futureEvents().concat(rests);
+    }
     function endingWeek() {
         const selected = endingOptions().find(option => option.value === state.ending);
         return selected ? selected.lastWeek : state.ending;
@@ -131,6 +141,7 @@
     }
     function pointEvent(event) { return Object.assign({}, event, { assumedRoute: routeFor(event) }); }
     function finishesFor(event) {
+        if (event.rest) return [];
         return typeof window.opportunitiesPointFinishes === 'function'
             ? window.opportunitiesPointFinishes(pointEvent(event), routeFor(event)) : [];
     }
@@ -151,7 +162,7 @@
     }
     function jointScenario(selected, horizon) {
         if (typeof window.opportunitiesScheduleScenario !== 'function' || !selectedPlayer()) return null;
-        return window.opportunitiesScheduleScenario(selectedPlayer().name, selected.map(event => ({
+        return window.opportunitiesScheduleScenario(selectedPlayer().name, selected.filter(event => !event.rest).map(event => ({
             event: pointEvent(event), finish: finishFor(event), route: routeFor(event)
         })), horizon);
     }
@@ -167,7 +178,7 @@
         const chosen = new Map(state.schedule.map(id => [weekFor(byId.get(id)), id]));
         const categories = ['GS', 'Grand Slam', 'WTA 1000', 'WTA 500', 'WTA 250', 'WTA 125', 'W100', 'W75', 'W50', 'W35', 'W15'];
         const categoryRank = event => categories.includes(event.level) ? categories.indexOf(event.level) : categories.length;
-        return futureEvents().filter(event =>
+        return calendarEvents().filter(event =>
             rangeIncludes(event)
             && (!chosen.has(weekFor(event)) || chosen.get(weekFor(event)) === event.id)
         ).sort((a, b) => weekFor(a).localeCompare(weekFor(b)) || categoryRank(a) - categoryRank(b) || eventName(a).localeCompare(eventName(b)));
@@ -250,6 +261,7 @@
                 : '<p>' + text('No entry list available yet.') + '</p>') + '</div>';
     }
     function tournamentLabel(event) {
+        if (event.rest) return text('Rest');
         const flag = typeof countryFlag === 'function' ? countryFlag(event.country, false) : noTranslate(event.country);
         return '<span translate="no">' + flag + esc(eventName(event)) + '</span>'
             + (delayedPoints(event) ? '<span class="op-delay-badge" title="These W15/W35 points are added after the Grand Slam cutoff." aria-label="Points added after the Grand Slam cutoff">!</span>' : '');
@@ -270,7 +282,7 @@
             + '"' + (available ? '' : ' disabled title="Entries closed"') + ' aria-pressed="' + state.schedule.includes(event.id) + '"'
             + (available && uncertain ? ' title="Conditional on acceptance or a wildcard."' : '') + '>'
             + tournamentLabel(event)
-            + '</button>' + (scheduled ? '<div class="op-inline-controls">' + routeSelector(event, 'op-choice-route')
+            + '</button>' + (scheduled && !event.rest ? '<div class="op-inline-controls">' + routeSelector(event, 'op-choice-route')
                 + finishSelector(event, 'op-choice-finish') + button('entries', event.id, 'Entry List', active) + '</div>' : '')
             + '</div>';
     }
@@ -296,8 +308,9 @@
                 + '<span class="op-week-date">' + esc(shortDate(week)) + '</span>'
                 + (warning || replaced ? '<span class="op-week-meta">' + warning + replaced + '</span>' : '') + '</h3>'
                 + (chosen ? '<div class="op-calendar-row op-calendar-selected"><div class="op-calendar-events">' + calendarEvent(chosen) + '</div></div>'
-                    : regions.map(region => '<div class="op-calendar-row"><h4 class="op-calendar-region">' + regionLabel(region)
-                        + '</h4><div class="op-calendar-events">' + tournaments.filter(event => (event.continent || '') === region).map(calendarEvent).join('') + '</div></div>').join(''))
+                    : regions.map(region => '<div class="op-calendar-row' + (region === 'rest' ? ' op-calendar-rest' : '') + '">'
+                        + (region === 'rest' ? '' : '<h4 class="op-calendar-region">' + regionLabel(region) + '</h4>')
+                        + '<div class="op-calendar-events">' + tournaments.filter(event => (event.continent || '') === region).map(calendarEvent).join('') + '</div></div>').join(''))
                 + (chosen && state.active === chosen.id ? entryListMarkup(chosen) : '') + '</section>';
         }).join('') + '</div>';
     }
@@ -336,6 +349,7 @@
         }).join('<br>') : text('None');
     }
     function scheduleConflicts(selected) {
+        selected = selected.filter(event => !event.rest);
         const conflicts = [];
         for (let i = 0; i < selected.length; i++) {
             for (let j = i + 1; j < selected.length; j++) {
@@ -390,7 +404,7 @@
     }
     function allowedIds() {
         if (!selectedPlayer()) return new Set();
-        return new Set(eligibleEvents(events, state.player, data.asOf).filter(rangeIncludes).map(event => event.id));
+        return new Set(eligibleEvents(calendarEvents(), state.player, data.asOf).filter(rangeIncludes).map(event => event.id));
     }
     function changed() {
         const root = document.getElementById('opportunities-root');
@@ -404,7 +418,7 @@
         const event = byId.get(id);
         if (state.schedule.includes(id)) state.schedule = state.schedule.filter(value => value !== id);
         else {
-            if (!finishesFor(event).length) { notice = 'Point table unavailable'; return; }
+            if (!event.rest && !finishesFor(event).length) { notice = 'Point table unavailable'; return; }
             state.schedule = state.schedule.filter(value => weekFor(byId.get(value)) !== weekFor(event));
             state.schedule.push(id);
         }
@@ -429,7 +443,7 @@
             if (!state.schedule.includes(id)) return;
             state.active = state.active === id ? '' : id;
         } else if (action === 'compare') {
-            if (!allowedIds().has(id)) return;
+            if (!allowedIds().has(id) || byId.get(id).rest) return;
             const list = state[action];
             const index = list.indexOf(id);
             if (index >= 0) list.splice(index, 1);
@@ -492,7 +506,7 @@
         if (state.compare.length) result.compare = state.compare;
         if (state.schedule.length) result.schedule = state.schedule;
         if (state.target) result.target = state.target;
-        const selected = [...new Set(state.compare.concat(state.schedule))];
+        const selected = [...new Set(state.compare.concat(state.schedule))].filter(id => !byId.get(id).rest);
         if (selected.length) result.results = selected.map(id => id + '~' + finishFor(byId.get(id)) + '~' + routeFor(byId.get(id)));
         return result;
     };
@@ -508,7 +522,7 @@
         if (endingWeek() < state.starting) state.ending = state.starting;
         const allowed = allowedIds();
         const list = key => [...new Set((params.get(key) || '').split(',').filter(id => allowed.has(id)))];
-        state.compare = list('compare').slice(0, 3);
+        state.compare = list('compare').filter(id => !byId.get(id).rest).slice(0, 3);
         const scheduledWeeks = new Set();
         state.schedule = list('schedule').filter(id => {
             const week = weekFor(byId.get(id));

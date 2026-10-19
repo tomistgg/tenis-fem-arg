@@ -5,17 +5,18 @@
     var COUNTRY_ENDPOINT = 'https://api.country.is/';
     var ANALYTICS_PAGES = new Set([
         'home', 'upcoming', 'entrylists', 'draws', 'calendar', 'rankings',
-        'roadtogs', 'history', 'fedbcup', 'tstrength', 'opportunities'
+        'roadtogs', 'history', 'fedbcup', 'tstrength', 'information', 'opportunities'
     ]);
     var ANALYTICS_FILTER_PARAMS = {
         home: [],
-        opportunities: [],
+        information: [],
+        opportunities: ['player', 'starting', 'ending', 'compare', 'schedule', 'target', 'results'],
         upcoming: ['q'],
-        entrylists: ['t', 'prio'],
-        draws: ['t', 'type', 'round'],
-        calendar: ['level', 'continent', 'surface'],
+        entrylists: ['t', 'prio', 'view', 'wtn'],
+        draws: ['t', 'type', 'round', 'wtn'],
+        calendar: ['level', 'continent', 'surface', 'changes'],
         rankings: ['q', 'scope', 'date'],
-        roadtogs: ['player'],
+        roadtogs: ['player', 'cutoff'],
         history: [
             'page', 'mcat', 'qualy', 'player', 'surface', 'round', 'result',
             'year', 't', 'category', 'opp', 'oppcountry', 'entry', 'seed',
@@ -24,10 +25,10 @@
         fedbcup: ['view', 'player'],
         tstrength: ['mode', 'year', 'level', 'surface', 'region', 'draw', 'sort']
     };
-    var SAFE_FILTER_VALUE_RE = /^[a-z0-9][a-z0-9,.-]*$/;
+    var SAFE_FILTER_VALUE_RE = /^[a-z0-9][a-z0-9,.~:-]*$/;
     var MAX_FILTER_VALUE_LENGTH = 160;
     var MAX_CONTENT_ID_LENGTH = 1024;
-    var lastAggregateKey = '';
+    var lastTrackedUrl = '';
     var countryPromise = null;
 
     function analyticsSlug(value) {
@@ -52,6 +53,7 @@
         var parts = [];
         allowedKeys.forEach(function (key) {
             var value = (url.searchParams.get(key) || '').trim().toLowerCase();
+            if (key === 'wtn' && url.searchParams.has(key)) value = '1';
             if (!value || value.length > MAX_FILTER_VALUE_LENGTH || !SAFE_FILTER_VALUE_RE.test(value)) return;
             parts.push(key + '=' + value);
         });
@@ -68,16 +70,21 @@
         }
 
         var segments = url.pathname.split('/').filter(Boolean);
+        if (segments[segments.length - 1] === 'index.html') segments.pop();
         var pageType = segments.length ? segments[segments.length - 1].toLowerCase() : 'home';
         if (pageType === 'app.html' || pageType === 'index.html') pageType = '';
         var hashTab = (url.hash || '').replace(/^#/, '').split(/[?&/]/)[0].toLowerCase();
-        if (!ANALYTICS_PAGES.has(pageType) && ANALYTICS_PAGES.has(hashTab)) pageType = hashTab;
+        if (ANALYTICS_PAGES.has(hashTab)) pageType = hashTab;
         if (!ANALYTICS_PAGES.has(pageType)) pageType = 'home';
 
         var contentId = canonicalFilterContentId(url, pageType);
         if (pageType === 'roadtogs') {
             var playerSlug = analyticsSlug(url.searchParams.get('player') || '');
-            contentId = analyticsPlayerSlugs.has(playerSlug) ? playerSlug : '';
+            if (analyticsPlayerSlugs.has(playerSlug)) url.searchParams.set('player', playerSlug);
+            else url.searchParams.delete('player');
+            contentId = url.searchParams.get('cutoff')
+                ? canonicalFilterContentId(url, pageType)
+                : (analyticsPlayerSlugs.has(playerSlug) ? playerSlug : '');
         }
         return { page_type: pageType, content_id: contentId };
     }
@@ -153,11 +160,15 @@
 
     function trackVisit(pageOverride) {
         if (isLikelyAutomatedVisit() || analyticsOptedOut()) return;
-        var page = normalizedAggregatePage(pageOverride);
-        var aggregateKey = page.page_type + ':' + page.content_id;
-        if (lastAggregateKey === aggregateKey) return;
-        sendAggregatePage(page);
-        lastAggregateKey = aggregateKey;
+        var url;
+        try {
+            url = new URL(pageOverride || location.href, location.href).href;
+        } catch (error) {
+            url = location.href;
+        }
+        if (lastTrackedUrl === url) return;
+        sendAggregatePage(normalizedAggregatePage(url));
+        lastTrackedUrl = url;
     }
     window.trackVisit = trackVisit;
 

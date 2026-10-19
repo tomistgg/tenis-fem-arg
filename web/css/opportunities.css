@@ -35,6 +35,7 @@
 .op-week-note strong { color: #c00000; background: white; border-radius: 2px; padding: 0 3px; font-size: 11px; font-weight: 900; }
 .op-calendar-row { display: grid; grid-template-columns: 85px minmax(0, 1fr); }
 .op-calendar-row.op-calendar-selected { grid-template-columns: minmax(0, 1fr); }
+.op-calendar-rest .op-calendar-events { grid-column: 2; }
 .op-calendar-row + .op-calendar-row { border-top: 1px solid var(--c-border); }
 .op-calendar-region { margin: 0; padding: 7px 5px; display: flex; align-items: center; justify-content: center; background: var(--c-surface-alt); color: var(--c-text-subtle); border-right: 1px solid var(--c-border); text-align: center; font-size: 9px; line-height: 1.4; }
 .op-calendar-events { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 6px; padding: 6px; }
@@ -50,6 +51,8 @@
 .op-entry-table { min-width: 300px; }
 #opportunities-root .calendar-tournament { width: auto; max-width: 100%; display: flex; align-items: center; gap: 5px; margin: 0; padding: 4px 6px; border: 0; font-family: inherit; font-size: 10px; text-align: left; white-space: normal; line-height: 1.4; cursor: pointer; }
 #opportunities-root .calendar-tournament > span:first-child { overflow-wrap: anywhere; }
+#opportunities-root .calendar-tournament.cal-rest { background: #d1d5db; color: #242b35; font-weight: 700; }
+[data-theme="dark"] #opportunities-root .calendar-tournament.cal-rest { background: #4b5563; color: #f3f4f6; }
 #opportunities-root .calendar-tournament:disabled { opacity: .4; cursor: not-allowed; }
 #opportunities-root .calendar-tournament:focus-visible { outline: 3px solid var(--c-focus-ring); outline-offset: 2px; }
 #opportunities-root .calendar-tournament.op-event-active,

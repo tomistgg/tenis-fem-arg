@@ -99,6 +99,13 @@ CSVs, player-alias JSON, and current tournament caches. Run the build command
 above to reproduce all deploy files locally from that pulled data; no network
 access is required for the build.
 
+Website visits are sent by `assets/anonymous-analytics.js` to the spreadsheet-bound
+receiver in `google_apps_script_visit_tracker.gs`, which aggregates them in
+`Anonymous Page Views`. Both files must allow the same pages and filter keys.
+After changing the receiver, copy the complete `.gs` file into the existing
+Apps Script project and deploy a new version of its web app, retaining the
+existing endpoint URL. Publishing the website alone does not update the receiver.
+
 The Tour Planner is available at `opportunities/`. It compares existing
 singles entries and future events before their estimated entry deadlines, with
 field coverage, surface records, round-by-round point scenarios, and joint

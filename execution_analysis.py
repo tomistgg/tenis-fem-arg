@@ -293,9 +293,10 @@ def analyze_execution(
 
 
 def wtn_alert_lines(run_state: dict[str, Any] | None, main_draw_errors=None) -> list[str]:
-    """Retain actionable player details in normal and fallback email reports."""
+    """Summarize deferred updates and retain details for other WTN failures."""
     lines = []
     seen = set()
+    deferred = {}
     issues = list((run_state or {}).get("issues") or [])
     issues.extend({"component": "main-draw-wtn", "context": {"players": [
         {**player, "tournament": item.get("tournament_key"),
@@ -312,6 +313,12 @@ def wtn_alert_lines(run_state: dict[str, Any] | None, main_draw_errors=None) -> 
                 player.get("draw"), "singles draw"
             )
             reason = _clean(player.get("reason")) or "WTN unavailable"
+            limit = re.fullmatch(r"Deferred by (\d+)-profile run limit", reason)
+            if limit:
+                players, tournaments = deferred.setdefault(limit.group(1), (set(), set()))
+                players.add(str(player.get("itf_id") or player.get("profile_url") or name.casefold()))
+                tournaments.add(_clean(player.get("tournament")) or tournament.casefold())
+                continue
             key = (name.casefold(), tournament.casefold(), draw)
             if key in seen:
                 continue
@@ -319,9 +326,16 @@ def wtn_alert_lines(run_state: dict[str, Any] | None, main_draw_errors=None) -> 
             profile = player.get("profile_url")
             label = f"[{name}]({profile})" if profile else name
             lines.append(f"- {tournament} ({draw}) — {label}: {reason}.")
-    if lines:
-        return ["## Singles Players Missing Current WTN", *lines, ""]
-    return []
+    alerts = ["## Singles Players Missing Current WTN", *lines, ""] if lines else []
+    for limit, (players, tournaments) in deferred.items():
+        player_label = "singles player" if len(players) == 1 else "singles players"
+        tournament_label = "tournament" if len(tournaments) == 1 else "tournaments"
+        alerts.extend([
+            f"**WTN updates deferred:** {len(players)} {player_label} across "
+            f"{len(tournaments)} {tournament_label}. The {limit}-profile run limit was reached.",
+            "",
+        ])
+    return alerts
 
 
 def render_status_markdown(

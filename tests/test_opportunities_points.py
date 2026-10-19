@@ -482,6 +482,61 @@ def test_calendar_clicks_toggle_the_schedule_and_restore_other_options_in_that_w
     """)
 
 
+def test_rest_reserves_a_week_without_adding_results_or_tournament_controls():
+    run_eligibility_check("""
+        let scored = [];
+        context.opportunitiesScheduleScenario = (player, selections) => {
+            scored = selections;
+            return {baseline: 200, gain: selections.length * 11, total: 200 + selections.length * 11};
+        };
+        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
+        const rest = 'rest:2026-11-02';
+        assert(root.innerHTML.includes('cal-rest'));
+        click('select', rest);
+        assert.deepEqual(Array.from(context.collectOpportunitiesUrlState().schedule), [rest]);
+        assert.equal(context.collectOpportunitiesUrlState().results, undefined);
+        assert.equal(scored.length, 0);
+        assert(!root.innerHTML.includes('data-event="mine"'));
+        assert(!root.innerHTML.includes('op-inline-controls'));
+        assert(!root.innerHTML.includes('Point table unavailable'));
+        click('select', rest);
+        assert.equal(context.collectOpportunitiesUrlState().schedule, undefined);
+        assert(root.innerHTML.includes('data-event="mine"'));
+        click('select', 'mine');
+        assert.equal(scored.length, 1);
+        assert.equal(scored[0].event.id, 'mine');
+        assert(!root.innerHTML.includes('data-event="' + rest + '"'));
+        click('clear-schedule', '');
+        assert(root.innerHTML.includes('data-event="' + rest + '"'));
+    """)
+
+
+def test_rest_covers_empty_weeks_and_survives_shared_tour_restore():
+    run_eligibility_check("""
+        let scored = [];
+        context.opportunitiesScheduleScenario = (player, selections) => { scored = selections; return null; };
+        await context.restoreOpportunitiesUrlState(new URLSearchParams({player: 'test-player',
+            starting: '2026-11-02', ending: '2026-11-16'}));
+        assert.equal((root.innerHTML.match(/class="op-week op-panel"/g) || []).length, 3);
+        const rest = 'rest:2026-11-09';
+        assert(root.innerHTML.includes('data-event="' + rest + '"'));
+        click('select', 'mine');
+        click('select', rest);
+        const saved = context.collectOpportunitiesUrlState();
+        assert.deepEqual(Array.from(saved.schedule), ['mine', rest]);
+        assert.equal(saved.results.length, 1);
+        assert.equal(scored.length, 1);
+        const params = new URLSearchParams(saved);
+        click('clear-schedule', '');
+        await context.restoreOpportunitiesUrlState(params);
+        assert.deepEqual(Array.from(context.collectOpportunitiesUrlState().schedule), ['mine', rest]);
+        assert.equal(scored.length, 1);
+        handlers.change({target: {dataset: {filter: 'ending'}, value: '2026-11-02'}});
+        assert.deepEqual(Array.from(context.collectOpportunitiesUrlState().schedule), ['mine']);
+        assert(!root.innerHTML.includes('data-event="' + rest + '"'));
+    """)
+
+
 def test_displaced_results_use_shared_compact_tournament_names_and_point_units():
     run_eligibility_check("""
         const replaced = [
