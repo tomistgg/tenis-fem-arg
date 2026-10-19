@@ -106,7 +106,7 @@
           {"pos": 20, "entry": "WC", "name": "HONTAMA, Mai", "country": "JPN", "wtn": "10.5"},
           {"pos": 21, "name": "BADOSA, Paula", "country": "ESP", "wtn": "8.26"},
           {"pos": 22, "name": "RUZIC, Antonia", "country": "CRO", "wtn": "9.91"},
-          {"pos": 23, "name": "KARTAL, Sonay", "country": "GBR", "wtn": "7.99"},
+          {"pos": 23, "entry": "LL", "name": "DAY, Kayla", "country": "USA", "wtn": "8.68"},
           {"pos": 24, "seed": "3", "name": "BIRRELL, Kimberly", "country": "AUS", "wtn": "8.95"},
           {"pos": 25, "seed": "7", "name": "OLIYNYKOVA, Oleksandra", "country": "UKR", "wtn": "9.41"},
           {"pos": 26, "entry": "Q", "name": "STOIANA, Mary", "country": "USA", "wtn": "9.03"},
@@ -125,7 +125,7 @@
           "Final"
         ],
         "num_rounds": 5,
-        "wtn_gm": 9.1958
+        "wtn_gm": 9.2196
       },
       "MDD":
       {
@@ -447,6 +447,64 @@
           "Final"
         ],
         "num_rounds": 5
+      }
+    }
+  },
+  "w-itf-usa-2026-057":
+  {
+    "meta":
+    {
+      "name": "W35 Bakersfield, CA",
+      "level": "W35",
+      "week": "Week of October 19",
+      "startDate": "2026-10-19T00:00:00",
+      "endDate": "2026-10-25T00:00:00",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "SHARMA, Astra", "country": "AUS", "itf_id": "800158716", "wtn": "10.5"},
+          {"pos": 2, "name": "ICHIOKA, Azuna", "country": "JPN", "itf_id": "800640605", "wtn": "14.68"},
+          {"pos": 3, "entry": "WC", "name": "LETZEL, Delaney", "country": "USA", "itf_id": "800763104", "wtn": "14.3"},
+          {"pos": 4, "seed": "16", "name": "AYTOYAN, Maria", "country": "USA", "itf_id": "800679224", "wtn": "14.06"},
+          {"pos": 5, "seed": "2", "name": "SOKE, Duru", "country": "TUR", "itf_id": "800537711", "wtn": "12.37"},
+          {"pos": 6, "name": "YOURI, Ekua", "country": "BOT", "itf_id": "800492818", "wtn": "15.45"},
+          {"pos": 7, "entry": "WC", "name": "GILBERT, Gianna", "country": "USA", "itf_id": "800813518", "wtn": "-"},
+          {"pos": 8, "seed": "9", "name": "HADDAD, Imogen", "country": "GBR", "itf_id": "800515993", "wtn": "14.05"},
+          {"pos": 9, "seed": "3", "name": "DAS, Aishi", "country": "NZL", "itf_id": "800652356", "wtn": "13.51"},
+          {"pos": 10, "name": "KHA, Natalie", "country": "USA", "itf_id": "800736552", "wtn": "13.63"},
+          {"pos": 11, "name": "JURAVLIOVA, Elvira", "country": "MDA", "itf_id": "800330175", "wtn": "16.52"},
+          {"pos": 12, "seed": "10", "name": "KELLER, Kelly", "country": "USA", "itf_id": "800537641", "wtn": "15.30"},
+          {"pos": 13, "seed": "4", "name": "HOSSAM SALAH, Jana", "country": "EGY", "itf_id": "800649504", "wtn": "14.00"},
+          {"pos": 14, "name": "FAIRCLOUGH, Lily", "country": "AUS", "itf_id": "800564098", "wtn": "15.99"},
+          {"pos": 15, "name": "GOODMAN, Elena", "country": "USA", "itf_id": "800537385", "wtn": "16.51"},
+          {"pos": 16, "seed": "12", "name": "ALLEGRE, Camille", "country": "USA", "itf_id": "800737888", "wtn": "15.92"},
+          {"pos": 17, "seed": "5", "name": "DRUGDOVA, Salma", "country": "SVK", "itf_id": "800515293", "wtn": "14.63"},
+          {"pos": 18, "name": "SINGEORZAN, Juliana Nicole", "country": "USA", "itf_id": "800687474", "wtn": "15.57"},
+          {"pos": 19, "entry": "WC", "name": "PANDIT, Yuktaa", "country": "USA", "itf_id": "800854747", "wtn": "-"},
+          {"pos": 20, "seed": "11", "name": "ANGEL, Marianne", "country": "MEX", "itf_id": "800655687", "wtn": "15.0"},
+          {"pos": 21, "seed": "6", "name": "TORRES MURCIA, Maria Camila", "country": "COL", "itf_id": "800531500", "wtn": "15.50"},
+          {"pos": 22, "name": "WONG, Isabella", "country": "GBR", "itf_id": "800570053", "wtn": "15.72"},
+          {"pos": 23, "entry": "WC", "name": "CHANG, Karissa", "country": "USA", "itf_id": "800813884", "wtn": "14.40"},
+          {"pos": 24, "seed": "13", "name": "SOHNS, Margaret", "country": "USA", "itf_id": "800737952", "wtn": "14.43"},
+          {"pos": 25, "seed": "7", "name": "MATTIOLI, Francesca", "country": "ARG", "itf_id": "800583540", "wtn": "12.93"},
+          {"pos": 26, "name": "MUSHIKA, Mao", "country": "JPN", "itf_id": "800531534", "wtn": "14.3"},
+          {"pos": 27, "name": "SUH, Sophie", "country": "USA", "itf_id": "800732660", "wtn": "14.85"},
+          {"pos": 28, "seed": "15", "name": "BUSH, Tegan", "country": "GBR", "itf_id": "800668639", "wtn": "14.79"},
+          {"pos": 29, "seed": "8", "name": "RENCHELI, Abigail", "country": "USA", "itf_id": "800442513", "wtn": "14.69"},
+          {"pos": 30, "name": "WALKER, Brandy", "country": "USA", "itf_id": "800483063", "wtn": "15.31"},
+          {"pos": 31, "entry": "WC", "name": "LANTON, Addison", "country": "USA", "itf_id": "800716512", "wtn": "14.27"},
+          {"pos": 32, "seed": "14", "name": "LEONG, Shihomi Li Xuan", "country": "MAS", "itf_id": "800548146", "wtn": "13.42"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16"
+        ],
+        "num_rounds": 2
       }
     }
   }
