@@ -291,11 +291,30 @@ def run_eligibility_check(check):
     assert completed.returncode == 0, completed.stderr
 
 
+def test_planner_starts_without_a_player_and_clears_the_tour_when_deselected():
+    run_eligibility_check("""
+        await context.initOpportunities();
+        assert.equal(context.collectOpportunitiesUrlState().player,'');
+        assert(root.innerHTML.includes('value="" selected>Select Player</option>'));
+        assert(!root.innerHTML.includes('data-action="select"'));
+        click('select','mine');
+        assert(!context.collectOpportunitiesUrlState().schedule);
+        handlers.change({target:{dataset:{filter:'player'},value:'player-1'}});
+        assert.equal(context.collectOpportunitiesUrlState().player,'test-player');
+        click('select','mine');
+        assert.deepEqual(Array.from(context.collectOpportunitiesUrlState().schedule),['mine']);
+        handlers.change({target:{dataset:{filter:'player'},value:''}});
+        assert.equal(context.collectOpportunitiesUrlState().player,'');
+        assert(!context.collectOpportunitiesUrlState().schedule);
+        assert(!root.innerHTML.includes('data-action="select"'));
+    """)
+
+
 def test_all_future_tournaments_allow_wildcards_and_default_to_main_draw():
     run_eligibility_check("""
         assert.deepEqual(eligible(), ['mine','alternate','absent','open','closed',
             'deadline-today','unknown','no-route']);
-        await context.initOpportunities();
+        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
         assert(!root.innerHTML.includes('op-entry-uncertain'));
         assert(root.innerHTML.includes('Conditional on acceptance or a wildcard.'));
         for (const id of eligible()) {
@@ -326,7 +345,7 @@ def test_existing_wta_entry_does_not_hide_itf_tournaments_with_open_deadlines():
         assert.deepEqual(routes('itf-open'), ['MAIN', 'QUAL']);
         assert.deepEqual(routes('main-only'), ['MAIN', 'QUAL']);
         assert.deepEqual(routes('unlocked'), ['MAIN', 'QUAL']);
-        await context.initOpportunities();
+        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
         assert(root.innerHTML.includes('data-event="both-open"'));
         assert(!root.innerHTML.includes('QUALY ONLY'));
         assert(root.innerHTML.includes('data-event="main-only"'));
@@ -346,7 +365,7 @@ def test_unlisted_wta_players_can_assume_main_or_qualifying_as_alternates_after_
         event.openRoutes = [];
         assert.deepEqual(Array.from(context.opportunitiesEntryRoutes(event, 'player-1')), ['MAIN','QUAL']);
         Object.assign(events.find(e=>e.id==='alternate'),event,{id:'alternate',entries:[]});
-        await context.initOpportunities();
+        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
         click('select','alternate');
         assert(context.collectOpportunitiesUrlState().results[0].endsWith('~MAIN'));
         click('qualy','alternate');
@@ -366,7 +385,7 @@ def test_delay_markers_appear_only_for_w15_w35_in_w50_cutoff_weeks():
                 entries: [{playerKey: 'player-1', type: 'MAIN', position: 8}]},
             {...common, id: 'delayed', level: 'W35', startDate: '2026-11-09'},
             {...common, id: 'on-time', level: 'W50', startDate: '2026-11-09'});
-        await context.initOpportunities();
+        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
         const button = id => root.innerHTML.match(new RegExp('<button[^>]*data-event="' + id + '".*?</button>'))[0];
         assert(button('delayed').includes('op-delay-badge'));
         assert(button('delayed').includes('>!</span>'));
@@ -396,7 +415,7 @@ def test_category_order_places_wta_before_itf_and_higher_itf_levels_first():
             {...common, id: 'wta125', source: 'WTA', level: 'WTA 125', name: 'WTA 125 City'},
             {...common, id: 'w100', level: 'W100', name: 'W100 City',
                 entries: [{playerKey: 'player-1', type: 'MAIN'}]});
-        await context.initOpportunities();
+        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
         const position = id => root.innerHTML.indexOf('data-event="' + id + '"');
         assert(position('wta125') < position('w100'));
         assert(position('w100') < position('mine'));
@@ -420,7 +439,7 @@ def test_url_rejects_unknown_or_past_events_and_preserves_an_existing_main_draw_
 
 def test_calendar_clicks_toggle_the_schedule_and_restore_other_options_in_that_week():
     run_eligibility_check("""
-        await context.initOpportunities();
+        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
         click('select', 'mine');
         assert.deepEqual(Array.from(context.collectOpportunitiesUrlState().schedule), ['mine']);
         assert(!root.innerHTML.includes('data-event="open"'));
@@ -451,7 +470,7 @@ def test_displaced_results_use_shared_compact_tournament_names_and_point_units()
         ];
         context.opportunitiesScheduleScenario = () => ({baseline:200, gain:5, total:205,
             replaced, replacementsByEvent:{mine:replaced}});
-        await context.initOpportunities();
+        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
         click('select', 'mine');
         const rendered = root.innerHTML.replace(/<[^>]*>/g, '');
         assert(rendered.includes('WTA 1000 Cincinnati (2 pts)'));
@@ -471,7 +490,7 @@ def test_qualy_toggle_updates_rounds_and_respects_fixed_entries():
         context.opportunitiesPointFinishes = (_event, route) => route === 'QUAL'
             ? [{value:'QR1',points:0},{value:'R32',points:2},{value:'QF',points:13}]
             : [{value:'R32',points:1},{value:'QF',points:11}];
-        await context.initOpportunities();
+        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
         click('select', 'open');
         assert(context.collectOpportunitiesUrlState().results[0].endsWith('~R32~MAIN'));
         handlers.change({target:{dataset:{finish:'open'},value:'QF'}});
@@ -521,7 +540,7 @@ def test_new_selection_starts_at_the_first_main_draw_round(round_code):
         const firstRound=""" + json.dumps(round_code) + """;
         context.opportunitiesPointFinishes=()=>[
             {value:'QR1',points:0},{value:firstRound,points:1},{value:'QF',points:11}];
-        await context.initOpportunities();
+        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
         click('select','open');
         assert(context.collectOpportunitiesUrlState().results[0].endsWith('~'+firstRound+'~MAIN'));
         click('qualy','open');
@@ -592,11 +611,13 @@ def test_ending_weeks_merge_shared_slam_deadlines_and_preserve_the_points_cutoff
         const endingHtml=root.innerHTML.match(/<select id="op-ending"[^>]*>(.*?)<\/select>/)[1];
         assert(!endingHtml.includes('optgroup'));
         assert.equal((endingHtml.match(/AO&#39;27/g)||[]).length,1);
-        assert(endingHtml.includes('AO&#39;27 · 16/11/2026'));
-        assert(endingHtml.includes('value="2026-12-21"'));
-        assert(!endingHtml.includes('value="2026-12-28"'));
+        assert(endingHtml.includes('value="2026-11-09" selected>AO&#39;27 · 09/11/2026'));
+        assert(endingHtml.includes('value="2026-11-16">16/11/2026'));
+        assert(endingHtml.includes('value="2027-03-01"'));
+        assert(!endingHtml.includes('value="2027-03-08"'));
         assert.equal(horizon,'2026-11-15');
-        assert.equal(context.collectOpportunitiesUrlState().ending,'2026-11-16');
+        assert.equal(context.collectOpportunitiesUrlState().ending,'2026-11-09');
+        assert.equal(context.opportunitiesSlamOptions()[0].deadlineLabel,"AO'27");
         assert(root.innerHTML.includes('data-event="mine"'));
         assert(!root.innerHTML.includes('data-event="alternate"'));
         handlers.change({target:{dataset:{filter:'ending'},value:'2026-11-23'}});
@@ -604,6 +625,9 @@ def test_ending_weeks_merge_shared_slam_deadlines_and_preserve_the_points_cutoff
         assert.equal(horizon,'2026-11-30');
         handlers.change({target:{dataset:{filter:'starting'},value:'2026-11-16'}});
         assert(!root.innerHTML.includes('AO&#39;27'));
+        handlers.change({target:{dataset:{filter:'starting'},value:'2026-10-19'}});
+        const fullEndingHtml=root.innerHTML.match(/<select id="op-ending"[^>]*>(.*?)<\/select>/)[1];
+        assert.equal((fullEndingHtml.match(/<option /g)||[]).length,20);
     """)
 
 
@@ -613,14 +637,15 @@ def test_ending_weeks_extend_through_the_next_qualifying_deadline_with_distinct_
             mdCutoff:'2027-04-12',qCutoff:'2027-04-26'},
             {id:'wim',name:'Wimbledon',year:2027,mdCutoff:'2027-05-17',qCutoff:'2027-05-31'},
             {id:'unknown',name:'Missing dates',year:2027,mdCutoff:'N/A',qCutoff:null}];
-        await context.initOpportunities();
+        await context.restoreOpportunitiesUrlState(new URLSearchParams({player:'test-player'}));
         const endingHtml=root.innerHTML.match(/<select id="op-ending"[^>]*>(.*?)<\/select>/)[1];
-        assert(endingHtml.includes('RG&#39;27 MD · 12/04/2027'));
-        assert(endingHtml.includes('RG&#39;27 Q · 26/04/2027'));
-        assert(endingHtml.includes('value="2027-04-26"'));
-        assert(!endingHtml.includes('value="2027-05-03"'));
+        assert(endingHtml.includes('value="2027-04-05">RG&#39;27 MD · 05/04/2027'));
+        assert(endingHtml.includes('value="2027-04-19">RG&#39;27 Q · 19/04/2027'));
+        assert(!endingHtml.includes('value="2027-04-26"'));
         assert(!endingHtml.includes('WMB'));
         assert(!endingHtml.includes('Missing dates'));
+        assert.deepEqual(Array.from(context.opportunitiesSlamOptions(), item => item.deadlineLabel),
+            ["RG'27 MD", "RG'27 Q", "WMB'27 MD", "WMB'27 Q"]);
     """)
 
 

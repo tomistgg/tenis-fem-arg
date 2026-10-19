@@ -81,8 +81,10 @@
             value: ('gs-' + gs.id + '-' + gs.year + '-' + route).toLowerCase(),
             label: slamShortName(gs.name) + "'" + String(gs.year).slice(-2)
                 + (gs.mdCutoff === gs.qCutoff ? '' : route === 'md' ? ' MD' : ' Q')
-                + ' · ' + day(monday(addDays(route === 'md' ? gs.mdCutoff : gs.qCutoff, 6))),
-            week: monday(addDays(route === 'md' ? gs.mdCutoff : gs.qCutoff, 6)),
+                + ' · ' + day(monday(addDays(route === 'md' ? gs.mdCutoff : gs.qCutoff, -1))),
+            deadlineLabel: slamShortName(gs.name) + "'" + String(gs.year).slice(-2)
+                + (gs.mdCutoff === gs.qCutoff ? '' : route === 'md' ? ' MD' : ' Q'),
+            week: monday(addDays(route === 'md' ? gs.mdCutoff : gs.qCutoff, -1)),
             date: route === 'md' ? gs.mdCutoff : gs.qCutoff
         }))).filter(option => option.date >= data.asOf).sort((a, b) => a.date.localeCompare(b.date));
     }
@@ -91,12 +93,13 @@
         const firstWeek = thisMonday < data.asOf ? addDays(thisMonday, 7) : thisMonday;
         const nextQualifying = (data.gsDeadlines || []).map(gs => gs.qCutoff)
             .filter(date => /^\d{4}-\d{2}-\d{2}$/.test(date) && date >= data.asOf).sort()[0];
-        const lastWeek = [addDays(firstWeek, 63), nextQualifying ? monday(addDays(nextQualifying, 6)) : '', state.starting].sort().pop();
+        const lastWeek = [addDays(firstWeek, 133), nextQualifying ? monday(addDays(nextQualifying, -1)) : '', state.starting].sort().pop();
         const slams = slamOptions();
         const options = [];
         for (let week = state.starting || firstWeek; week <= lastWeek; week = addDays(week, 7)) {
             const cutoff = slams.find(slam => slam.week === week && monday(addDays(slam.date, -1)) >= (state.starting || firstWeek));
             options.push({value: week, label: cutoff ? cutoff.label : day(week),
+                deadlineLabel: cutoff ? cutoff.deadlineLabel : '',
                 date: cutoff ? cutoff.date : addDays(week, 7),
                 lastWeek: cutoff ? monday(addDays(cutoff.date, -1)) : week});
         }
@@ -165,11 +168,36 @@
         return '<option value="' + esc(value) + '"' + (value === selected ? ' selected' : '') + '>' + esc(label) + '</option>';
     }
     function filterSelect(id, label, values, selected, allLabel) {
-        return '<label class="op-filter" for="op-' + id + '">' + text(label)
+        return '<div class="op-filter' + (['starting', 'ending'].includes(id) ? ' op-week-filter op-' + id + '-filter' : '') + '"><label for="op-' + id + '">' + text(label) + '</label>'
             + '<select id="op-' + id + '" data-filter="' + id + '">'
             + (allLabel ? option('', allLabel, selected) : '')
             + values.map(value => option(value.value || value, value.label || value, selected)).join('')
-            + '</select></label>';
+            + '</select></div>';
+    }
+    function initWeekSelectors() {
+        const $ = window.jQuery;
+        if (!$ || !$.fn.select2) return;
+        for (const key of ['starting', 'ending']) {
+            const select = $('#op-' + key);
+            const choices = key === 'ending' ? endingOptions() : [];
+            select.select2({
+                width: '100%', minimumResultsForSearch: Infinity,
+                dropdownParent: select.parent(), dropdownCssClass: 'op-week-menu op-' + key + '-menu',
+                templateResult: item => {
+                    const choice = choices.find(choice => choice.value === item.id);
+                    if (!choice || !choice.deadlineLabel) return item.text;
+                    return $('<span class="op-ending-slam-option"><span class="op-ending-slam-title">' + noTranslate(choice.deadlineLabel)
+                        + ' ' + text('Last Week') + '</span><span>' + esc(day(choice.value)) + '</span></span>');
+                }
+            }).on('change', function () {
+                const value = this.value;
+                Promise.resolve().then(() => {
+                    handleChange({target: {dataset: {filter: key}, value}});
+                    $('#op-' + key).next('.select2').find('.select2-selection').trigger('focus');
+                });
+            });
+            select.next('.select2').find('.select2-selection').attr('aria-label', key === 'starting' ? 'Starting week' : 'Ending week');
+        }
     }
     function button(action, id, label, active, disabled) {
         const unavailable = action === 'entries' && !(window.WTARG_DATA.tournaments || {})[byId.get(id)?.entryKey || '']?.length;
@@ -325,17 +353,20 @@
         const root = document.getElementById('opportunities-root');
         if (!root) return;
         const player = selectedPlayer();
-        if (!player) { root.innerHTML = '<p>' + text('No player data is available in this build.') + '</p>'; return; }
-        const shown = filteredEvents();
+        if (!players.length) { root.innerHTML = '<p>' + text('No player data is available in this build.') + '</p>'; return; }
+        const shown = player ? filteredEvents() : [];
         const planned = state.schedule.map(id => byId.get(id)).filter(Boolean).sort((a, b) => a.startDate.localeCompare(b.startDate));
         const conflicts = scheduleConflicts(planned);
         const horizon = endingDate() || state.target || planned.map(pointDate).sort().pop() || data.asOf;
-        const plan = conflicts.length ? null : jointScenario(planned, horizon);
+        const plan = !player || conflicts.length ? null : jointScenario(planned, horizon);
         const weeks = weekOptions().map(value => ({value, label: day(value)}));
         const endSelect = filterSelect('ending', 'Ending week', endingOptions(), state.ending);
+        if (window.jQuery) window.jQuery('#op-starting, #op-ending').each(function () {
+            if (window.jQuery(this).data('select2')) window.jQuery(this).select2('destroy');
+        });
         root.innerHTML = '<header class="op-hero"><h1>' + text('Tournament Planner') + '</h1></header><div class="op-workspace"><div class="op-toolbar">'
             + '<section class="op-panel op-controls" aria-label="Planner filters">'
-            + '<div class="op-primary-filters">' + filterSelect('player', 'Player', players.map(item => ({value:item.id, label:item.name})), state.player)
+            + '<div class="op-primary-filters">' + filterSelect('player', 'Player', players.map(item => ({value:item.id, label:item.name})), state.player, 'Select Player')
             + filterSelect('starting', 'Starting week', weeks, state.starting)
             + endSelect + '</div></section>'
             + '<div class="op-planner">' + summaryMarkup(plan, conflicts)
@@ -343,10 +374,12 @@
             + (notice ? '<p class="op-notice" role="status">' + text(notice) + '</p>' : '')
             + (state.schedule.length ? '<div class="op-calendar-clear">' + button('clear-schedule', '', 'Clear selections') + '</div>' : '')
             + '<section class="op-results" aria-label="Tournaments">'
-            + (shown.length ? calendarMarkup(shown, plan) : '<p class="op-empty">' + text('No matching tournaments') + '</p>')
+            + (!player ? '' : shown.length ? calendarMarkup(shown, plan) : '<p class="op-empty">' + text('No matching tournaments') + '</p>')
             + '</section></div>';
+        initWeekSelectors();
     }
     function allowedIds() {
+        if (!selectedPlayer()) return new Set();
         return new Set(eligibleEvents(events, state.player, data.asOf).filter(rangeIncludes).map(event => event.id));
     }
     function changed() {
@@ -428,10 +461,6 @@
                 root.innerHTML = '<div class="op-panel op-empty" role="alert">' + text('Player results could not be loaded. Reload the page to retry.') + '</div>';
                 return false;
             }
-        }
-        if (!state.player) {
-            const withEntries = players.find(player => eligibleEvents(events, player.id, data.asOf).length);
-            state.player = (withEntries || players[0] || {}).id || '';
         }
         if (!mounted) {
             root.addEventListener('click', handleClick);
