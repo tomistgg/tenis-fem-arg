@@ -1096,27 +1096,18 @@ def build_all_tournament_groups(driver):
     return tournament_groups, monday_map
 
 
-def fetch_arg_players():
-    """Fetch WTA rankings and return ranked ARG players."""
+def fetch_ranking_data_status():
+    """Fetch WTA rankings and return their freshness status."""
     eastern_now = new_york_now()
     ranking_monday = effective_wta_ranking_date(eastern_now, load_ranking_status(DATA_DIR)).isoformat()
 
-    all_wta_players, wta_status = get_wta_rankings_cached(ranking_monday, nationality=None, with_status=True)
-    wta_players_arg = [
-        p for p in all_wta_players
-        if p["Country"] == "ARG" and str(p.get("Rank") or "").isdigit()
-    ]
-    players_data = wta_players_arg
-    arg_names_set = {p["Player"] for p in players_data}
-
-    data_status = {
+    _, wta_status = get_wta_rankings_cached(ranking_monday, nationality=None, with_status=True)
+    return {
         "generatedAt": utc_now_iso(),
         "sources": {
             "wtaRankings": wta_status,
         },
     }
-
-    return players_data, arg_names_set, all_wta_players, data_status
 
 
 def log_data_status_warnings(data_status):
@@ -1217,7 +1208,6 @@ def process_tournaments(
     driver,
     tournament_groups,
     monday_map,
-    arg_names_set,
     entry_cache,
     force_itf_acceptance=False,
     qualifying_draw_available_keys=None,
@@ -1225,13 +1215,9 @@ def process_tournaments(
     itf_main_draw_available_keys=None,
     fresh_itf_entry_lists=None,
 ):
-    """Process WTA & ITF tournaments: scrape entry lists, build schedule map."""
-    schedule_map = {}
+    """Refresh WTA and ITF entry lists, seeds, and withdrawal state."""
     tournament_store = {}
     ranking_cache = {}
-    unranked_schedule = {}
-    itf_schedule_pending = {}
-    unranked_itf_pending = {}
 
     _utc_now = utc_now()
     _now = _utc_now.astimezone(MADRID)
@@ -1256,81 +1242,6 @@ def process_tournaments(
     main_draw_available_keys = {_canonical_draw_store_key(key) for key in supplied_main_draw_keys}
     if force_itf_acceptance:
         logger.info("Forcing refresh of all open ITF acceptance lists.")
-
-    def _priority_num(value):
-        text = str(value or "").strip()
-        if text.isdigit():
-            return int(text)
-        return 9999
-
-    def _entry_type_rank(entry_type):
-        et = str(entry_type or "").upper()
-        if et == "MAIN":
-            return 0
-        if et == "QUAL":
-            return 1
-        if et == "ALT":
-            return 2
-        return 3
-
-    def _safe_pos_num(value):
-        try:
-            return int(value)
-        except (TypeError, ValueError):
-            return 9999
-
-    def _suffix_from_itf_player(player_row):
-        p_type = (player_row or {}).get("type", "")
-        if p_type == "MAIN":
-            return ""
-        if p_type == "QUAL":
-            return " (Q)"
-        pos = (player_row or {}).get("pos", "")
-        return f" (ALT {pos})" if pos else " (ALT)"
-
-    def _queue_itf_entry(
-        container, player_key, week_label, tournament_key, tournament_name, suffix, priority, entry_type, pos_num
-    ):
-        if not player_key or not week_label:
-            return
-        by_week = container.setdefault(player_key, {})
-        items = by_week.setdefault(week_label, [])
-        if any(item.get("tournament_key") == tournament_key for item in items):
-            return
-        items.append(
-            {
-                "tournament_key": tournament_key,
-                "name": tournament_name,
-                "suffix": suffix or "",
-                "priority": priority,
-                "entry_type": entry_type,
-                "pos_num": _safe_pos_num(pos_num),
-            }
-        )
-
-    def _itf_item_sort_key(item):
-        return (
-            _priority_num(item.get("priority")),
-            _entry_type_rank(item.get("entry_type")),
-            _safe_pos_num(item.get("pos_num")),
-            str(item.get("name") or "").lower(),
-        )
-
-    def _flush_itf_pending(target_map, pending_map):
-        for p_key, weeks_map in pending_map.items():
-            if p_key not in target_map:
-                target_map[p_key] = {}
-            for week_label, items in weeks_map.items():
-                if not items:
-                    continue
-                sorted_items = sorted(items, key=_itf_item_sort_key)
-                formatted = "<br>".join(
-                    html.escape(f"{it['name']}{it['suffix']}", quote=True) for it in sorted_items
-                )
-                if week_label in target_map[p_key] and target_map[p_key][week_label]:
-                    target_map[p_key][week_label] += f"<br>{formatted}"
-                else:
-                    target_map[p_key][week_label] = formatted
 
     def _apply_argless_itf_entry_policy(store_key, players, week_monday):
         nonlocal acceptance_state_dirty
@@ -1375,7 +1286,6 @@ def process_tournaments(
         # WTA tournaments
         for key, t_info in list(tourneys.items()):
             t_name = t_info["name"]
-            schedule_name = _schedule_tournament_name(key, t_name)
             if key.startswith("http"):
                 if _is_excluded_entry_list_tournament(key, t_info):
                     continue
@@ -1403,22 +1313,9 @@ def process_tournaments(
                         draw_name = "main" if main_draw_available else "qualifying"
                         logger.debug(f"  WTA {draw_name} draw published, entry list closed: {t_name}")
                     t_list = copy.deepcopy(cached_players)
-                    status_dict = {}
-                    for _p in t_list:
-                        _p_name = str(_p.get("name") or "").strip().upper()
-                        if not _p_name:
-                            continue
-                        _p_type = str(_p.get("type") or "").upper()
-                        if _p_type == "MAIN":
-                            status_dict[_p_name] = ""
-                        elif _p_type == "QUAL":
-                            status_dict[_p_name] = " (Q)"
-                        else:
-                            _p_pos = str(_p.get("pos") or "").strip()
-                            status_dict[_p_name] = f" (ALT {_p_pos})" if _p_pos else " (ALT)"
                 else:
                     observation = {}
-                    t_list, status_dict = scrape_tournament_players(
+                    t_list = scrape_tournament_players(
                         key,
                         ranking_cache[md_date],
                         ranking_cache[q_date],
@@ -1436,20 +1333,6 @@ def process_tournaments(
                 t_list = _remove_duplicate_entry_players(t_list, key, t_name)
                 entry_cache[key] = t_list
                 tournament_store[key] = t_list
-                # If the live WTA page disappears or only partially loads, rebuild
-                # the schedule labels from the merged cached list so players saved
-                # in Entry Lists still appear in Schedule.
-                merged_status_dict = dict(status_dict or {})
-                for _p in t_list:
-                    if _p.get("type") not in ("MAIN", "QUAL"):
-                        continue
-                    _p_name = str(_p.get("name") or "").strip()
-                    if not _p_name:
-                        continue
-                    _p_key = _p_name.upper()
-                    if _p_key in merged_status_dict:
-                        continue
-                    merged_status_dict[_p_key] = "" if _p.get("type") == "MAIN" else " (Q)"
 
                 # Compute seeds for WTA tournaments based on level and draw size.
                 # Grand Slams: 32 seeds for main draw and qualifying independently.
@@ -1504,22 +1387,6 @@ def process_tournaments(
                             _sv = _qual_seed_map.get(_p["name"])
                             _p["seed"] = _sv if _sv is not None else ""
 
-                for p_name, suffix in merged_status_dict.items():
-                    p_key = p_name.upper()
-                    if p_key not in arg_names_set:
-                        continue
-                    _append_schedule_label(schedule_map, p_key, week, f"{schedule_name}{suffix}", style="append_div")
-                for p in t_list:
-                    p_upper = p["name"].upper()
-                    if p_upper in arg_names_set:
-                        continue
-                    if p.get("country", "") != "ARG":
-                        continue
-                    suffix = "" if p.get("type") == "MAIN" else " (Q)"
-                    _append_schedule_label(
-                        unranked_schedule, p_upper, week, f"{schedule_name}{suffix}", style="append_div"
-                    )
-
         # ITF tournaments
         for key, t_info in list(tourneys.items()):
             t_name = t_info["name"]
@@ -1571,17 +1438,14 @@ def process_tournaments(
                     # Never fetch this tournament's acceptance list again.
                     logger.debug(f"  ITF main draw published, acceptance list closed: {t_name}")
                     tourney_players_list = list(cached_players)
-                    itf_name_map = {}
                 elif qualifying_draw_available:
                     # Qualifying publication freezes the acceptance list. Keep
                     # showing the last cached list until the main draw replaces it.
                     logger.debug(f"  ITF qualifying draw published, acceptance list closed: {t_name}")
                     tourney_players_list = list(cached_players)
-                    itf_name_map = {}
                 elif already_updated_today and not force_itf_acceptance and not withdrawals_need_refresh:
                     logger.debug(f"  ITF acceptance list already updated today, skipping fetch: {t_name}")
                     tourney_players_list = list(cached_players)
-                    itf_name_map = {}
                 elif (
                     not force_itf_acceptance
                     and not withdrawals_need_refresh
@@ -1596,14 +1460,16 @@ def process_tournaments(
                     else:
                         logger.debug(f"  ITF acceptance list unchanged through noon UTC, skipping: {t_name}")
                     tourney_players_list = list(cached_players)
-                    itf_name_map = {}
                 elif not list_available:
                     # Entry list not published yet (before Friday 3 weeks prior)
                     tourney_players_list = list(cached_players)
-                    itf_name_map = {}
                 else:
-                    itf_entries, itf_name_map = get_itf_players(key, driver)
-                    fresh_players = parse_itf_entry_list(itf_entries)
+                    itf_entries = get_itf_players(key, driver)
+                    try:
+                        fresh_players = parse_itf_entry_list(itf_entries)
+                    except (AttributeError, KeyError, TypeError, ValueError) as exc:
+                        logger.error(f"Error parsing ITF acceptance list for {key}: {exc}")
+                        itf_entries = []
                     if fresh_players and fresh_itf_entry_lists is not None:
                         fresh_itf_entry_lists[key] = copy.deepcopy(fresh_players)
                     # Record the fetch attempt (success or failure) so we can
@@ -1637,7 +1503,7 @@ def process_tournaments(
                 )
 
                 # Preserve the saved cache when ITF returns nothing. We still
-                # use a working copy for ranking/seeding/schedule generation,
+                # use a working copy for ranking and seeding,
                 # but we only write back when the live fetch actually produced
                 # rows.
                 if not fresh_players and not cached_players:
@@ -1688,94 +1554,10 @@ def process_tournaments(
                         _sv = _seed_map.get(_p["name"])
                         _p["seed"] = _sv if _sv is not None else ""
 
-                itf_player_meta = {}
-                for p in tourney_players_list:
-                    raw_upper = p.get("name", "").upper()
-                    p_key = NAME_LOOKUP.get(raw_upper, raw_upper)
-                    candidate = {
-                        "priority": str(p.get("priority", "")).strip(),
-                        "entry_type": p.get("type", ""),
-                        "pos_num": p.get("pos_num", 9999),
-                    }
-                    prev = itf_player_meta.get(p_key)
-                    if not prev:
-                        itf_player_meta[p_key] = candidate
-                        continue
-                    prev_key = (
-                        _entry_type_rank(prev.get("entry_type")),
-                        _priority_num(prev.get("priority")),
-                        _safe_pos_num(prev.get("pos_num")),
-                    )
-                    cand_key = (
-                        _entry_type_rank(candidate.get("entry_type")),
-                        _priority_num(candidate.get("priority")),
-                        _safe_pos_num(candidate.get("pos_num")),
-                    )
-                    if cand_key < prev_key:
-                        itf_player_meta[p_key] = candidate
-
-                for p_name, suffix in itf_name_map.items():
-                    if p_name not in arg_names_set:
-                        continue
-                    suffix_text = suffix.get("suffix", "") if isinstance(suffix, dict) else str(suffix or "")
-                    p_meta = itf_player_meta.get(p_name, {})
-                    _queue_itf_entry(
-                        itf_schedule_pending,
-                        p_name,
-                        week,
-                        key,
-                        t_name,
-                        suffix_text,
-                        p_meta.get("priority", ""),
-                        p_meta.get("entry_type", ""),
-                        p_meta.get("pos_num", 9999),
-                    )
-                if not itf_name_map:
-                    for p in tourney_players_list:
-                        raw_upper = p.get("name", "").upper()
-                        p_key = NAME_LOOKUP.get(raw_upper, raw_upper)
-                        if p_key not in arg_names_set:
-                            continue
-                        p_meta = itf_player_meta.get(p_key, {})
-                        _queue_itf_entry(
-                            itf_schedule_pending,
-                            p_key,
-                            week,
-                            key,
-                            t_name,
-                            _suffix_from_itf_player(p),
-                            p_meta.get("priority", ""),
-                            p_meta.get("entry_type", ""),
-                            p_meta.get("pos_num", 9999),
-                        )
-                for p in tourney_players_list:
-                    raw_upper = p["name"].upper()
-                    p_key = NAME_LOOKUP.get(raw_upper, raw_upper)
-                    if p_key in arg_names_set:
-                        continue
-                    if p.get("country", "") != "ARG":
-                        continue
-                    p_type = p.get("type", "")
-                    suffix = _suffix_from_itf_player(p)
-                    _queue_itf_entry(
-                        unranked_itf_pending,
-                        p_key,
-                        week,
-                        key,
-                        t_name,
-                        suffix,
-                        str(p.get("priority", "")).strip(),
-                        p_type,
-                        p.get("pos_num", 9999),
-                    )
-
     if acceptance_state_dirty:
         _save_acceptance_state(acceptance_state)
     if withdrawal_state != previous_withdrawal_state:
         save_json_file(ENTRY_WITHDRAWALS_FILE, withdrawal_state)
-
-    _flush_itf_pending(schedule_map, itf_schedule_pending)
-    _flush_itf_pending(unranked_schedule, unranked_itf_pending)
 
     # Remove tournaments no longer in the visible Schedule/Entry Lists window.
     active_keys = set()
@@ -1797,7 +1579,7 @@ def process_tournaments(
 
     entry_cache = {k: v for k, v in entry_cache.items() if k in active_keys}
 
-    return schedule_map, tournament_store, entry_cache, unranked_schedule
+    return tournament_store, entry_cache
 
 
 def normalize_history_round(raw_round, draw_type):
@@ -2080,9 +1862,8 @@ def main():
                 if t_draws:
                     prefetched_itf_draws[_canonical_draw_store_key(t_key)] = t_draws
 
-        # 3. Fetch ARG player rankings
-        players_data, arg_names_set, all_wta_players, data_status = fetch_arg_players()
-        log_data_status_warnings(data_status)
+        # 3. Check ranking freshness.
+        log_data_status_warnings(fetch_ranking_data_status())
 
         # 4. Process all entry lists.
         entry_cache = expand_entry_lists_cache(load_cache(ENTRY_LISTS_CACHE_FILE))
@@ -2098,11 +1879,10 @@ def main():
             prefetched_itf_draws,
         )
         fresh_itf_entry_lists = {}
-        schedule_map, tournament_store, entry_cache, unranked_schedule = process_tournaments(
+        tournament_store, entry_cache = process_tournaments(
             driver,
             tournament_groups,
             monday_map,
-            arg_names_set,
             entry_cache,
             force_itf_acceptance=args.force_itf_acceptance,
             qualifying_draw_available_keys=qualifying_draw_available_keys,
@@ -2160,13 +1940,6 @@ def main():
                 if _p.get("type") == "QUAL":
                     _sv = _gs_seed_map.get(_p["name"])
                     _p["seed"] = _sv if _sv is not None else ""
-
-        # Add ARG players without a WTA rank when they appear in entry lists.
-        existing_player_keys = {p["Player"] for p in players_data}
-        for name_upper, weeks in unranked_schedule.items():
-            schedule_map[name_upper] = weeks
-            if name_upper not in existing_player_keys:
-                players_data.append({"Player": name_upper, "Key": name_upper, "Rank": "-"})
 
     except Exception:
         _quit_driver(driver, "quit browser after pipeline failure")

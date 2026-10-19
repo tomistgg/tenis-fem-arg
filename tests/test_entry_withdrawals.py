@@ -237,9 +237,10 @@ def test_wta_scraper_exposes_raw_ids_and_checks_provider_counts(monkeypatch, dec
     html += '<a href="/players/90001/first-player"></a><a href="/players/90002/second-player"></a>'
     monkeypatch.setattr(wta, "get_with_retry", lambda *args, **kwargs: SimpleNamespace(text=html))
     observation = {}
-    wta.scrape_tournament_players(
+    entries = wta.scrape_tournament_players(
         "https://example.com/player-list", [], [], [player(90001), player(90002)], observation=observation
     )
+    assert sorted((row["player_id"], row["type"]) for row in entries) == [("90001", "MAIN"), ("90002", "MAIN")]
     assert observation["player_ids"] == ["90001", "90002"]
     assert observation["section_player_ids"] == {"MAIN": ["90001", "90002"], "QUAL": []}
     assert observation["complete_sections"] == expected_sections
@@ -259,10 +260,13 @@ def test_wta_scraper_accepts_combined_main_and_qualifying_count(monkeypatch):
     monkeypatch.setattr(wta, "get_with_retry", lambda *args, **kwargs: SimpleNamespace(text=html))
     observation = {}
 
-    wta.scrape_tournament_players(
+    entries = wta.scrape_tournament_players(
         "https://example.com/player-list", [], [], cached, observation=observation
     )
 
+    assert sorted((row["player_id"], row["type"]) for row in entries) == [
+        ("90001", "MAIN"), ("90002", "MAIN"), ("90003", "QUAL"), ("90004", "QUAL"),
+    ]
     assert observation["complete_sections"] == ["MAIN", "QUAL"]
 
 
@@ -277,14 +281,13 @@ def test_tournament_pass_persists_wta_withdrawal_before_replacing_entry_cache(mo
 
     def fetch(*args, observation, **kwargs):
         observation.update(complete_sections=["MAIN"], player_ids=["90001"])
-        return [old[0]], {}
+        return [old[0]]
 
     monkeypatch.setattr(main, "scrape_tournament_players", fetch)
-    _, _, updated, _ = main.process_tournaments(
+    _, updated = main.process_tournaments(
         None,
         {"Week": {key: {"name": "WTA 250 Example", "level": "WTA 250", "startDate": "2026-09-28"}}},
         {"2026-09-28": "Week"},
-        set(),
         {key: old},
     )
     assert [row["player_id"] for row in updated[key]] == ["90001"]
@@ -302,14 +305,13 @@ def test_tournament_pass_preserves_an_incomplete_wta_section(monkeypatch, tmp_pa
 
     def fetch(*args, observation, **kwargs):
         observation.update(complete_sections=[], player_ids=["90001"])
-        return [old[0]], {}
+        return [old[0]]
 
     monkeypatch.setattr(main, "scrape_tournament_players", fetch)
-    _, _, updated, _ = main.process_tournaments(
+    _, updated = main.process_tournaments(
         None,
         {"Week": {key: {"name": "WTA 250 Example", "level": "WTA 250", "startDate": "2026-09-28"}}},
         {"2026-09-28": "Week"},
-        set(),
         {key: old},
     )
 
@@ -333,12 +335,12 @@ def test_itf_initial_withdrawal_fetch_is_not_skipped_by_acceptance_polling(monke
 
     def fetch(*args):
         fetches.append(args)
-        return [{"entryClassificationCode": "W", "entries": [withdrawal(90001, "W 16 Sep 2026")]}], {}
+        return [{"entryClassificationCode": "W", "entries": [withdrawal(90001, "W 16 Sep 2026")]}]
 
     monkeypatch.setattr(main, "get_itf_players", fetch)
     groups = {"Week": {key: {"name": "W15 Example", "level": "W15", "startDate": "2026-09-28"}}}
-    main.process_tournaments(None, groups, {"2026-09-28": "Week"}, set(), {key: previous})
+    main.process_tournaments(None, groups, {"2026-09-28": "Week"}, {key: previous})
     assert len(fetches) == 1
     assert load_withdrawals(path)[key]["withdrawals"][0]["date"] == "2026-09-16"
-    main.process_tournaments(None, groups, {"2026-09-28": "Week"}, set(), {key: current})
+    main.process_tournaments(None, groups, {"2026-09-28": "Week"}, {key: current})
     assert len(fetches) == 1

@@ -202,12 +202,12 @@ def test_current_week_acceptance_is_refetched_and_withdrawal_removed(monkeypatch
 
     def fetch_players(key, driver):
         fetches.append(key)
-        return ["fresh acceptance response"], {"LAN MI": ""}
+        return ["fresh acceptance response"]
 
     monkeypatch.setattr(main, "get_itf_players", fetch_players)
 
     fresh_itf_entry_lists = {}
-    _, tournament_store, updated_cache, _ = main.process_tournaments(
+    tournament_store, updated_cache = main.process_tournaments(
         driver=None,
         tournament_groups={
             week: {
@@ -222,7 +222,6 @@ def test_current_week_acceptance_is_refetched_and_withdrawal_removed(monkeypatch
             }
         },
         monday_map={"2026-08-10": week},
-        arg_names_set={"CARLA MARKUS"},
         entry_cache={tournament_key: cached_players},
         fresh_itf_entry_lists=fresh_itf_entry_lists,
     )
@@ -233,6 +232,56 @@ def test_current_week_acceptance_is_refetched_and_withdrawal_removed(monkeypatch
     assert fresh_itf_entry_lists[tournament_key][0]["name"] == "Lan Mi"
     assert "seed_rank" not in fresh_itf_entry_lists[tournament_key][0]
     assert fresh_itf_entry_lists[tournament_key] is not fresh_players
+
+
+@pytest.mark.parametrize("include_valid_rows", [False, True])
+def test_malformed_itf_acceptance_preserves_cached_players_and_withdrawals(monkeypatch, include_valid_rows):
+    key = "w-itf-arg-2026-fixture"
+    cached_players = [{
+        "player_id": "800999001", "name": "Saved Player", "country": "ARG",
+        "pos": "1", "pos_num": 1, "type": "MAIN", "rank": "123",
+    }]
+    saved_withdrawals = [{
+        "player_id": "800999003", "name": "Earlier Withdrawal", "country": "ARG",
+        "pos": "2", "type": "QUAL", "rank": "400", "date": "2026-09-16",
+    }]
+    utils.save_json_file(main.ENTRY_WITHDRAWALS_FILE, {
+        key: {"withdrawals": saved_withdrawals, "last_seen": {}, "last_checked_date": "2026-09-16"},
+    })
+    classifications = []
+    if include_valid_rows:
+        classifications = [
+            {"entryClassificationCode": "MDA", "entries": [{"positionDisplay": "1", "players": [{
+                "playerId": "800999002", "givenName": "Partial", "familyName": "Player",
+                "nationalityCode": "ARG",
+            }]}]},
+            {"entryClassificationCode": "W", "entries": [{"information": "W 17 Sep 2026", "players": [{
+                "playerId": "800999001", "givenName": "Saved", "familyName": "Player",
+                "nationalityCode": "ARG",
+            }]}]},
+        ]
+    classifications.append(None)
+    monkeypatch.setattr(main, "utc_now", lambda: datetime(2026, 9, 17, 10, tzinfo=UTC))
+    monkeypatch.setattr(main, "_load_acceptance_state", lambda: {})
+    monkeypatch.setattr(main, "_save_acceptance_state", lambda state: None)
+    monkeypatch.setattr(main, "get_wta_rankings_cached", lambda *args, **kwargs: [])
+    monkeypatch.setattr(itf, "_fetch_itf_json", lambda *args, **kwargs: {"entryClassifications": classifications})
+    fresh_itf_entry_lists = {}
+
+    tournament_store, updated_cache = main.process_tournaments(
+        None,
+        {"Week": {key: {"name": "W15 Example", "level": "W15", "startDate": "2026-09-28"}}},
+        {"2026-09-28": "Week"},
+        {key: cached_players},
+        fresh_itf_entry_lists=fresh_itf_entry_lists,
+    )
+
+    assert updated_cache[key] == cached_players
+    assert [(row["player_id"], row["name"]) for row in tournament_store[key]] == [("800999001", "Saved Player")]
+    assert fresh_itf_entry_lists == {}
+    withdrawal_state = main.load_withdrawals(main.ENTRY_WITHDRAWALS_FILE)[key]
+    assert withdrawal_state["withdrawals"] == saved_withdrawals
+    assert withdrawal_state["last_checked_date"] == "2026-09-16"
 
 
 def test_published_main_draw_permanently_closes_acceptance_refresh(monkeypatch):
@@ -278,7 +327,6 @@ def test_published_main_draw_permanently_closes_acceptance_refresh(monkeypatch):
         "driver": None,
         "tournament_groups": tournament_groups,
         "monday_map": {"2026-08-10": week},
-        "arg_names_set": {"CARLA MARKUS"},
         "entry_cache": {tournament_key: cached_players},
         "force_itf_acceptance": True,
         "fresh_itf_entry_lists": {},
@@ -323,7 +371,7 @@ def test_published_qualifying_draw_closes_acceptance_but_keeps_cached_list(monke
         ),
     )
 
-    _, tournament_store, updated_cache, _ = main.process_tournaments(
+    tournament_store, updated_cache = main.process_tournaments(
         driver=None,
         tournament_groups={
             week: {
@@ -338,7 +386,6 @@ def test_published_qualifying_draw_closes_acceptance_but_keeps_cached_list(monke
             }
         },
         monday_map={"2026-08-10": week},
-        arg_names_set={"CARLA MARKUS"},
         entry_cache={tournament_key: cached_players},
         force_itf_acceptance=True,
         qualifying_draw_available_keys={tournament_key},
@@ -371,9 +418,9 @@ def test_argless_entry_list_is_marked_for_removal_on_start_monday(monkeypatch):
     monkeypatch.setattr(main, "_load_acceptance_state", lambda: acceptance_state)
     monkeypatch.setattr(main, "_save_acceptance_state", lambda state: None)
     monkeypatch.setattr(main, "get_wta_rankings_cached", lambda *args, **kwargs: [])
-    monkeypatch.setattr(main, "get_itf_players", lambda *args, **kwargs: ([], {}))
+    monkeypatch.setattr(main, "get_itf_players", lambda *args, **kwargs: [])
 
-    _, tournament_store, _, _ = main.process_tournaments(
+    tournament_store, _ = main.process_tournaments(
         driver=None,
         tournament_groups={
             week: {
@@ -388,7 +435,6 @@ def test_argless_entry_list_is_marked_for_removal_on_start_monday(monkeypatch):
             }
         },
         monday_map={"2026-08-10": week},
-        arg_names_set=set(),
         entry_cache={tournament_key: players},
         qualifying_draw_available_keys={tournament_key},
         main_draw_available_keys={tournament_key},
@@ -425,7 +471,7 @@ def test_wta_argless_list_still_refreshes_until_qualifying_draw(monkeypatch):
         ),
     )
 
-    _, tournament_store, _, _ = main.process_tournaments(
+    tournament_store, _ = main.process_tournaments(
         driver=None,
         tournament_groups={
             week: {
@@ -440,7 +486,6 @@ def test_wta_argless_list_still_refreshes_until_qualifying_draw(monkeypatch):
             }
         },
         monday_map={"2026-08-10": week},
-        arg_names_set=set(),
         entry_cache={tournament_key: cached_players},
         qualifying_draw_available_keys={tournament_key},
     )
@@ -1022,7 +1067,7 @@ def test_itf_acceptance_reports_only_unrecovered_failure(
         def get_cookies(self):
             return []
 
-    entries, _ = itf.get_itf_players("w-test", AcceptanceDriver())
+    entries = itf.get_itf_players("w-test", AcceptanceDriver())
 
     assert bool(entries) is html_recovered
     state = load_run_state(status_path)
