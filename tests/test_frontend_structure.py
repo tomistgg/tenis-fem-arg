@@ -24,6 +24,16 @@ STATIC_ASSET_PAIRS = (
 )
 
 
+def test_spanish_translation_keys_are_unique():
+    source = (PROJECT_ROOT / "assets/translations.js").read_text(encoding="utf-8")
+    dictionary = source.split("es:", 1)[1].rsplit("}", 1)[0].strip()
+    entries = json.loads(dictionary, object_pairs_hook=list)
+    seen = set()
+    for key, _value in entries:
+        assert key not in seen, f"Duplicate Spanish translation key: {key}"
+        seen.add(key)
+
+
 def test_frontend_sources_are_separate_from_python_generator():
     generator_path = PROJECT_ROOT / "html_generator.py"
     source = generator_path.read_text(encoding="utf-8-sig")
