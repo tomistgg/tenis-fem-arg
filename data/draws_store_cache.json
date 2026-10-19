@@ -311,7 +311,7 @@
           {"pos": 25, "seed": "8", "name": "CIRSTEA, Sorana", "country": "ROU", "wtn": "7.13"},
           {"pos": 26, "entry": "Q", "name": "SHI, Han", "country": "CHN", "wtn": "10.52"},
           {"pos": 27, "name": "BEJLEK, Sara", "country": "CZE", "wtn": "8.31"},
-          {"pos": 28, "entry": "WC", "name": "WANG, Xiyu", "country": "CHN", "wtn": "8.02"},
+          {"pos": 28, "entry": "LL", "name": "PARKS, Alycia", "country": "USA", "wtn": "10.43"},
           {"pos": 29, "entry": "Q", "name": "RAKHIMOVA, Kamilla", "country": "UZB", "wtn": "8.9"},
           {"pos": 30, "name": "BOUZKOVA, Marie", "country": "CZE", "wtn": "7.72"},
           {"pos": 32, "seed": "2", "name": "SWIATEK, Iga", "country": "POL", "wtn": "6.71"}
@@ -319,7 +319,9 @@
         "matches": [
           {"round": 1, "match_num": 0, "winner_name": "E. Rybakina"},
           {"round": 1, "match_num": 4, "winner_name": "I. Jovic"},
+          {"round": 1, "match_num": 8, "winner_name": "L. Fernandez", "score": "26 63 75"},
           {"round": 1, "match_num": 11, "winner_name": "M. Kostyuk"},
+          {"round": 1, "match_num": 12, "winner_name": "S. Cirstea", "score": "63 62"},
           {"round": 1, "match_num": 15, "winner_name": "I. Swiatek"}
         ],
         "byes": [
@@ -336,7 +338,7 @@
           "Final"
         ],
         "num_rounds": 5,
-        "wtn_gm": 8.3073
+        "wtn_gm": 8.3856
       }
     }
   },
@@ -511,6 +513,68 @@
           "Round of 16"
         ],
         "num_rounds": 2
+      }
+    }
+  },
+  "w-itf-sgp-2026-004":
+  {
+    "meta":
+    {
+      "name": "W15 Singapore 1",
+      "level": "W15",
+      "week": "Week of October 19",
+      "startDate": "2026-10-19T00:00:00",
+      "endDate": "2026-10-25T00:00:00",
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":false,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "MDS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "CHANTA, Anchisa", "country": "THA", "itf_id": "800504636", "wtn": "14.04"},
+          {"pos": 2, "entry": "Q", "name": "APISAH, Violet", "country": "PNG", "itf_id": "800835337", "wtn": "14.87"},
+          {"pos": 3, "entry": "Q", "name": "SHIN, Jiho", "country": "KOR", "itf_id": "800461107", "wtn": "15.53"},
+          {"pos": 4, "entry": "WC", "name": "LIM, Lynelle En Tong", "country": "SGP", "itf_id": "800467386", "wtn": "20.70"},
+          {"pos": 5, "entry": "JR", "name": "HONG, Yeri", "country": "KOR", "itf_id": "800665797", "wtn": "14.51"},
+          {"pos": 6, "name": "MOON, Jeong", "country": "KOR", "itf_id": "800452079", "wtn": "16.7"},
+          {"pos": 7, "name": "OHASHI, Remika", "country": "JPN", "itf_id": "800528654", "wtn": "15.68"},
+          {"pos": 8, "seed": "7", "name": "SUN, Yingqun", "country": "CHN", "itf_id": "800592495", "wtn": "14.23"},
+          {"pos": 9, "seed": "4", "name": "SAGANDYKOVA, Aruzhan", "country": "KAZ", "itf_id": "800492077", "wtn": "13.71"},
+          {"pos": 10, "entry": "Q", "name": "CHIKARAISHI, Yui", "country": "JPN", "itf_id": "800425422", "wtn": "16.97"},
+          {"pos": 11, "entry": "Q", "name": "MIYATA, Moeka", "country": "JPN", "itf_id": "800631517", "wtn": "16.97"},
+          {"pos": 12, "entry": "WC", "name": "CHEA, Jesy", "country": "SGP", "itf_id": "800584388", "wtn": "24.15"},
+          {"pos": 13, "name": "YULDASHEVA, Sevil", "country": "UZB", "itf_id": "800396634", "wtn": "15.06"},
+          {"pos": 14, "name": "ITAYA, Rion", "country": "JPN", "itf_id": "800499541", "wtn": "15.8"},
+          {"pos": 15, "name": "LIN, Fang An", "country": "TPE", "itf_id": "800570036", "wtn": "14.42"},
+          {"pos": 16, "seed": "5", "name": "YODPETCH, Kamonwan", "country": "THA", "itf_id": "800563856", "wtn": "14.23"},
+          {"pos": 17, "seed": "6", "name": "KOLODYNSKA, Jana", "country": "BLR", "itf_id": "800442894", "wtn": "12.12"},
+          {"pos": 18, "name": "HAYASAKA, Kurea", "country": "JPN", "itf_id": "800681499", "wtn": "13.62"},
+          {"pos": 19, "entry": "Q", "name": "PODGORICHANI, Lidia", "country": "THA", "itf_id": "800562380", "wtn": "15.76"},
+          {"pos": 20, "entry": "WC", "name": "NG, Kai Ning Chanya", "country": "SGP", "itf_id": "800580907", "wtn": "18.97"},
+          {"pos": 21, "name": "LU, Jing-Jing", "country": "CHN", "itf_id": "800274830", "wtn": "15.66"},
+          {"pos": 22, "entry": "Q", "name": "MATSUMOTO, Yuka", "country": "JPN", "itf_id": "800426850", "wtn": "15.01"},
+          {"pos": 23, "name": "NAGATA, Anri", "country": "JPN", "itf_id": "800433185", "wtn": "16.35"},
+          {"pos": 24, "seed": "3", "name": "WONG, Hong Yi Cody", "country": "HKG", "itf_id": "800402342", "wtn": "12.29"},
+          {"pos": 25, "seed": "8", "name": "PATIL, Sonal", "country": "IND", "itf_id": "800546820", "wtn": "16.80"},
+          {"pos": 26, "entry": "JR", "name": "MALOVA, Alexandra", "country": "RUS", "itf_id": "800635479", "wtn": "15.5"},
+          {"pos": 27, "entry": "SR", "name": "KRYWOJ, Melany Solange", "country": "ARG", "itf_id": "800430742", "wtn": "15.44"},
+          {"pos": 28, "entry": "WC", "name": "GIAM, Hannah", "country": "SGP", "itf_id": "800690880", "wtn": "23.02"},
+          {"pos": 29, "name": "VARAKSINA, Arina", "country": "RUS", "itf_id": "800603104", "wtn": "14.88"},
+          {"pos": 30, "entry": "Q", "name": "KHODZHAEVA, Ekaterina", "country": "RUS", "itf_id": "800573020", "wtn": "17.33"},
+          {"pos": 31, "entry": "Q", "name": "RAWAT, Aditi", "country": "IND", "itf_id": "800660632", "wtn": "16.57"},
+          {"pos": 32, "seed": "2", "name": "NAKLO, Thasaporn", "country": "THA", "itf_id": "800452280", "wtn": "13.93"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5,
+        "wtn_gm": 15.7765
       }
     }
   }
