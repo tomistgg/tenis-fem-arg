@@ -109,6 +109,7 @@ NAME_OVERRIDE_BY_ITF_ID = {
     "800727285": ("Ginebra Domínguez", "Ginebra Domínguez"),
     "800728344": ("Agustina Di Lucente", "Agustina Di Lucente"),
     "800753197": ("Ornela Mondati", "Ornela Mondati"),
+    "800788004": ("Ángela Medinaceli", "Ángela Medinaceli"),
     "800812081": ("Scarlet Panijan", "Scarlet Panijan"),
     "800828603": ("María José Escobar", "María José Escobar"),
     # User-curated public names for players with long source names.
@@ -276,6 +277,7 @@ WTA_BY_ITF_ID = {
     "800520051": "331078",  # Sarafina Olivia Hansen / Sarafina Hansen
     "800179171": "30082",   # Silvana Casaretto
     "800311509": "319000",  # Simone Pratt
+    "800553125": "330758",  # Sofía Madrid / Maria Madrid Rocca
     "800192053": "100096",  # Stephanie Johnson (1971)
     "800393420": "324984",  # Stephanie Johnson (younger profile)
     "800513617": "332130",  # Sun Min Ha
