@@ -263,3 +263,167 @@ def test_historical_fields_keep_qualifying_and_main_draws_at_the_same_level(tmp_
     assert event["historical"]["drawSize"] == 3
     assert event["historicalQual"]["ranks"] == [300, 400]
     assert event["historicalQual"]["drawSize"] == 2
+
+
+def _current_draw(directory, draws):
+    _fixture(directory)
+    _write(directory, "entry_lists_cache.json", {})
+    _write(directory, "draws_store_cache.json", {
+        "https://www.wtatennis.com/tournaments/100/test/2026/player-list": {
+            "meta": {"name": "Test"}, "draws": draws,
+        },
+    })
+
+
+@pytest.mark.parametrize(("score", "completed"), [("44 00", False), ("64 64", True)])
+def test_live_singles_rounds_stop_at_pending_match_or_completed_loss(tmp_path, score, completed):
+    _current_draw(tmp_path, {
+        "MDS": {
+            "draw_size": 32,
+            "players": [{"pos": 1, "name": "ONE, Player", "country": "ARG"},
+                        {"pos": 5, "name": "RIVAL, Rival", "country": "FRA"}],
+            "matches": [{"round": 1, "match_num": 0, "winner_name": "P. One", "score": "63 60"},
+                        {"round": 2, "match_num": 0, "winner_name": "P. One", "score": "63 60"},
+                        {"round": 3, "match_num": 0, "winner_name": "R. Rival", "score": score}],
+        },
+        "MDD": {"draw_size": 32, "players": [{"pos": 1, "name": "TWO, Player", "country": "ARG"}]},
+    })
+    data = build_planner_data(tmp_path, today=date(2026, 11, 18))
+    event = data["events"][0]
+    assert event["progress"] == {"wta:1": {"round": "QF", "route": "MAIN", "completed": completed,
+                                           "played": True}}
+    assert event_available_to(event, "wta:1")
+    assert not event_available_to(event, "wta:2")
+    assert next(player for player in data["players"] if player["id"] == "wta:1")["listedEventIds"] == [event["id"]]
+
+
+def test_finished_tournament_stays_in_current_week_with_title_locked(tmp_path):
+    _current_draw(tmp_path, {"MDS": {
+        "draw_size": 32, "players": [{"pos": 1, "name": "ONE, Player", "country": "ARG"}],
+        "matches": [{"round": number, "match_num": 0, "winner_name": "P. One", "score": "63 60"}
+                    for number in range(1, 6)],
+    }})
+    calendar = json.loads((tmp_path / "wta_full_calendar_cache.json").read_text(encoding="utf-8"))
+    calendar["items"][0]["endDate"] = "2026-11-17"
+    _write(tmp_path, "wta_full_calendar_cache.json", calendar)
+    data = build_planner_data(tmp_path, today=date(2026, 11, 18))
+    assert data["events"][0]["progress"]["wta:1"] == {
+        "round": "W", "route": "MAIN", "completed": True, "played": True,
+    }
+    assert build_planner_data(tmp_path, today=date(2026, 11, 23))["events"] == []
+
+
+def test_bye_advances_current_round_without_claiming_a_played_result(tmp_path):
+    _current_draw(tmp_path, {"MDS": {
+        "draw_size": 32, "players": [{"pos": 1, "name": "ONE, Player", "country": "ARG"}],
+        "byes": [2], "matches": [{"round": 1, "match_num": 0, "winner_name": "P. One"}],
+    }})
+    progress = build_planner_data(tmp_path, today=date(2026, 11, 18))["events"][0]["progress"]["wta:1"]
+    assert progress == {"round": "R16", "route": "MAIN", "completed": False, "played": False}
+
+
+@pytest.mark.parametrize(("won", "qualifying_round"), [(True, None), (False, "QR2")])
+def test_main_draw_preserves_qualifying_or_lucky_loser_points_route(tmp_path, won, qualifying_round):
+    _current_draw(tmp_path, {
+        "QS": {"draw_size": 16, "round_labels": ["Q1", "Q2", "Qualifier"],
+               "players": [{"pos": 1, "name": "ONE, Player", "country": "ARG"},
+                           {"pos": 3, "name": "RIVAL, Rival", "country": "FRA"}],
+               "matches": [{"round": 1, "match_num": 0, "winner_name": "P. One", "score": "63 60"},
+                           {"round": 2, "match_num": 0, "winner_name": "P. One" if won else "R. Rival",
+                            "score": "64 64"}]},
+        "MDS": {"draw_size": 32, "players": [{"pos": 1, "name": "ONE, Player", "country": "ARG",
+                                               "entry": "Q" if won else "LL"}]},
+    })
+    progress = build_planner_data(tmp_path, today=date(2026, 11, 18))["events"][0]["progress"]["wta:1"]
+    assert (progress["round"], progress["route"], progress["completed"]) == ("R32", "QUAL", False)
+    assert progress.get("qualifyingRound") == qualifying_round
+    assert progress["played"]
+
+
+def test_recorded_matches_update_stale_draw_progress_using_exact_tournament_ids(tmp_path):
+    _current_draw(tmp_path, {"MDS": {
+        "draw_size": 32, "players": [{"pos": 1, "name": "ONE, Player", "country": "ARG"}],
+    }})
+    fields = ["date", "tournamentId", "roundName", "draw", "result", "winnerId", "winnerName", "winnerCountry",
+              "loserId", "loserName", "loserCountry"]
+    with (tmp_path / "wta_matches_arg.csv").open("w", encoding="utf-8", newline="") as target:
+        writer = csv.DictWriter(target, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows([
+            {"date": "2026-11-16", "tournamentId": "100", "roundName": "1st Round", "draw": "M",
+             "result": "6-3 6-0", "winnerId": "1", "winnerName": "Player One", "winnerCountry": "ARG",
+             "loserId": "77", "loserName": "Foreign Player", "loserCountry": "FRA"},
+            {"date": "2026-11-17", "tournamentId": "100", "roundName": "2nd Round", "draw": "M",
+             "result": "6-3 6-0", "winnerId": "1", "winnerName": "Player One", "winnerCountry": "ARG",
+             "loserId": "77", "loserName": "Foreign Player", "loserCountry": "FRA"},
+            {"date": "2026-11-18", "tournamentId": "999", "roundName": "Semi-finals", "draw": "M",
+             "result": "6-3 6-0", "winnerId": "1", "winnerName": "Player One", "winnerCountry": "ARG",
+             "loserId": "77", "loserName": "Foreign Player", "loserCountry": "FRA"},
+        ])
+    progress = build_planner_data(tmp_path, today=date(2026, 11, 18))["events"][0]["progress"]["wta:1"]
+    assert progress == {"round": "QF", "route": "MAIN", "completed": False, "played": True}
+
+
+def test_itf_recorded_result_uses_cached_numeric_id_when_the_draw_is_missing(tmp_path):
+    _fixture(tmp_path)
+    _write(tmp_path, "itf_calendar_cache.json", {"items": [{
+        "tournamentKey": "w-itf-arg-2026-001", "tournamentName": "W35 Test", "category": "W35",
+        "startDate": "2026-11-16", "endDate": "2026-11-22",
+    }]})
+    _write(tmp_path, "itf_event_filters_cache.json", {"w-itf-arg-2026-001": 1100000001})
+    with (tmp_path / "itf_matches_arg.csv").open("w", encoding="utf-8", newline="") as target:
+        writer = csv.writer(target)
+        writer.writerow(["date", "tournamentId", "roundName", "draw", "result", "winnerId", "winnerName",
+                         "winnerCountry", "loserId", "loserName", "loserCountry"])
+        writer.writerow(["2026-11-16", "1100000001", "1st Round", "M", "6-3 6-0", "800000001", "Player One",
+                         "ARG", "800000002", "Player Two", "ARG"])
+    data = build_planner_data(tmp_path, today=date(2026, 11, 18))
+    event = next(event for event in data["events"] if event["source"] == "ITF")
+    assert event["tournamentId"] == "1100000001"
+    assert event["progress"]["wta:1"] == {
+        "round": "R16", "route": "MAIN", "completed": False, "played": True,
+    }
+    assert event["progress"]["wta:2"] == {
+        "round": "R32", "route": "MAIN", "completed": True, "played": True,
+    }
+    assert event["listedPlayerIds"] == ["wta:1", "wta:2"]
+
+
+def test_qualifying_final_uses_points_table_when_qualifying_draw_is_missing(tmp_path):
+    _fixture(tmp_path)
+    calendar = json.loads((tmp_path / "wta_full_calendar_cache.json").read_text(encoding="utf-8"))
+    calendar["items"][0]["level"] = "W50"
+    _write(tmp_path, "wta_full_calendar_cache.json", calendar)
+    _write(tmp_path, "points_distribution.json", [{"Description": "W50 (32M, 32Q)", "QR2": 1, "QLFR": 2}])
+    with (tmp_path / "wta_matches_arg.csv").open("w", encoding="utf-8", newline="") as target:
+        writer = csv.writer(target)
+        writer.writerow(["date", "tournamentId", "roundName", "draw", "result", "winnerId", "winnerName",
+                         "winnerCountry", "loserId", "loserName", "loserCountry"])
+        writer.writerow(["2026-11-16", "100", "QR2", "Q", "6-3 6-0", "1", "Player One", "ARG",
+                         "77", "Foreign Player", "FRA"])
+    progress = build_planner_data(tmp_path, today=date(2026, 11, 18))["events"][0]["progress"]["wta:1"]
+    assert progress == {"round": "R32", "route": "QUAL", "completed": False, "played": True}
+
+
+def test_main_draw_qualifier_entry_proves_qualifying_points_even_without_qualifying_results(tmp_path):
+    _current_draw(tmp_path, {"MDS": {
+        "draw_size": 32, "players": [{"pos": 1, "name": "ONE, Player", "country": "ARG", "entry": "Q"}],
+    }})
+    progress = build_planner_data(tmp_path, today=date(2026, 11, 18))["events"][0]["progress"]["wta:1"]
+    assert progress == {"round": "R32", "route": "QUAL", "completed": False, "played": True}
+
+
+def test_recorded_qualifying_loss_preserves_lucky_loser_bonus_after_main_draw_advancement(tmp_path):
+    _current_draw(tmp_path, {"MDS": {
+        "draw_size": 32, "players": [{"pos": 1, "name": "ONE, Player", "country": "ARG", "entry": "LL"}],
+        "matches": [{"round": 1, "match_num": 0, "winner_name": "P. One", "score": "63 60"}],
+    }})
+    with (tmp_path / "wta_matches_arg.csv").open("w", encoding="utf-8", newline="") as target:
+        writer = csv.writer(target)
+        writer.writerow(["date", "tournamentId", "roundName", "draw", "result", "winnerId", "winnerName",
+                         "winnerCountry", "loserId", "loserName", "loserCountry"])
+        writer.writerow(["2026-11-16", "100", "QR2", "Q", "6-3 6-0", "77", "Foreign Player", "FRA",
+                         "1", "Player One", "ARG"])
+    progress = build_planner_data(tmp_path, today=date(2026, 11, 18))["events"][0]["progress"]["wta:1"]
+    assert progress == {"round": "R16", "route": "QUAL", "qualifyingRound": "QR2", "completed": False,
+                        "played": True}

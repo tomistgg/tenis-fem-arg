@@ -30,19 +30,22 @@
         return {row: rows.find(row => row.Description === description), firstRound};
     }
     function routeFor(event, route) {
-        return route || event.assumedRoute || 'MAIN';
+        return event.currentProgress?.route || route || event.assumedRoute || 'MAIN';
     }
     function finishes(event, route) {
         const {row, firstRound} = pointTable(event);
         if (!row) return [];
+        const progress = event.currentProgress;
         const qualifying = routeFor(event, route) === 'QUAL';
-        const bonus = qualifying ? Number(row.QLFR) || 0 : 0;
+        const bonus = qualifying ? Number(row[progress?.qualifyingRound || 'QLFR']) || 0 : 0;
         return rounds.filter(key => (qualifying || !key.startsWith('QR')) &&
             (key === firstRound || (qualifying && key === 'QR1') ||
                 (row[key] !== null && row[key] !== undefined && row[key] !== '')))
             .map(key => ({value: key, label: labels[key],
                 points: (qualifying && key === firstRound ? 0 : Number(row[key]) || 0) +
-                    (key.startsWith('QR') ? 0 : bonus)}));
+                    (key.startsWith('QR') ? 0 : bonus)}))
+            .filter(option => !progress || (progress.completed ? option.value === progress.round
+                : rounds.indexOf(option.value) >= rounds.indexOf(progress.round)));
     }
     function pointDate(event) {
         if (!event.endDate) return '';
@@ -59,10 +62,23 @@
         const name = (value) => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
             .toUpperCase().replace(/[^A-Z0-9]/g, '');
         const distance = Math.abs(date(result.date) - date(event.startDate)) / 86400000;
-        if (event.tournamentId && result.tournamentId) {
-            return distance <= 21 && String(result.tournamentId) === String(event.tournamentId);
+        const tournamentId = event.tournamentId || (event.source === 'WTA' ? event.sourceId : '');
+        if (tournamentId && result.tournamentId) {
+            return distance <= 21 && String(result.tournamentId) === String(tournamentId);
         }
         return distance <= 7 && name(result.tournament) === name(event.name);
+    }
+    function resultFor(event, finish, route, points) {
+        const numberedRounds = ['R128', 'R64', 'R32', 'R16'];
+        const roundNumber = numberedRounds.indexOf(finish) - numberedRounds.indexOf(pointTable(event).firstRound);
+        const roundLabel = ['1st', '2nd', '3rd', '4th'][roundNumber] || finish;
+        return {date: event.startDate, tournament: event.name, _plannerId: event.id,
+            displayName: event.displayName || event.name, matchType: event.source,
+            tournamentId: event.tournamentId || event.sourceId || event.id, category: event.level,
+            isGS: event.level === 'GS', bestMainRound: finish.startsWith('QR') ? '' : finish,
+            roundDisplay: roundLabel + (routeFor(event, route) === 'QUAL' && !finish.startsWith('QR')
+                ? ' + ' + (event.currentProgress?.qualifyingRound || 'QLFR') : ''),
+            dropDate: addDays(pointDate(event), 364), points};
     }
     function scheduleScenario(playerName, selections, horizon) {
         const asOf = global.WTARG_DATA.planner?.asOf || new Date().toISOString().slice(0, 10);
@@ -73,18 +89,35 @@
         // The site's Sunday AO cutoff includes that week's Monday ranking publication.
         const publicationCutoff = aoCutoff && date(horizon).getUTCDay() === 0 ? addDays(horizon, 1) : horizon;
         const warnings = [];
-        const original = breakdown(playerName, horizon);
-        const results = [...original.countable, ...original.nonCountable];
+        const recorded = breakdown(playerName, horizon);
+        let results = [...recorded.countable, ...recorded.nonCountable];
         const currentTotal = breakdown(playerName, asOf).totalPoints;
         const player = (global.WTARG_DATA.planner?.players || []).find(p => p.name === playerName);
         const officialPoints = Number.isFinite(player?.points) ? player.points : null;
         const reconciliationGap = officialPoints === null ? null : currentTotal - officialPoints;
+        const events = new Map([...(global.WTARG_DATA.planner?.events || []), ...selections.map(item => item.event)]
+            .map(event => [event.id, event]));
+        for (const event of events.values()) {
+            const progress = event.currentProgress || event.progress?.[player?.id];
+            if (!progress || progress.played === false) continue;
+            const effectiveDate = pointDate(event);
+            if (!effectiveDate || effectiveDate > publicationCutoff || addDays(effectiveDate, 364) <= horizon) continue;
+            const current = {...event, assumedRoute: progress.route, currentProgress: progress};
+            const option = finishes(current, progress.route).find(option => option.value === progress.round);
+            if (!option) continue;
+            const existing = results.filter(result => sameEvent(result, event));
+            if (existing.some(result => result.points >= option.points)) continue;
+            results = results.filter(result => !existing.includes(result));
+            results.push(resultFor(current, progress.round, progress.route, option.points));
+        }
+        const original = _rtgsSelectCountable(results);
         let gross = 0;
         const hypothetical = [];
         const acceptedEvents = [];
         const unique = new Set();
         for (const item of selections) {
-            const {event, finish, route} = item;
+            const {finish, route} = item;
+            const event = {...item.event, currentProgress: item.event.currentProgress || item.event.progress?.[player?.id]};
             if (unique.has(event.id)) continue;
             unique.add(event.id);
             const option = finishes(event, route).find(option => option.value === finish);
@@ -100,16 +133,7 @@
             }
             gross += option.points;
             acceptedEvents.push(event);
-            const numberedRounds = ['R128', 'R64', 'R32', 'R16'];
-            const roundNumber = numberedRounds.indexOf(finish) - numberedRounds.indexOf(pointTable(event).firstRound);
-            const roundLabel = ['1st', '2nd', '3rd', '4th'][roundNumber] || finish;
-            hypothetical.push({date: event.startDate, tournament: event.name, _plannerId: event.id,
-                displayName: event.displayName || event.name, matchType: event.source,
-                tournamentId: event.tournamentId || event.sourceId || event.id, category: event.level,
-                isGS: event.level === 'GS', bestMainRound: finish.startsWith('QR') ? '' : finish,
-                roundDisplay: roundLabel + (routeFor(event, route) === 'QUAL' && !finish.startsWith('QR') ? ' + QLFR' : ''),
-                dropDate: addDays(effectiveDate, 364),
-                points: option.points, _planner: true});
+            hypothetical.push({...resultFor(event, finish, route, option.points), _planner: true});
         }
         const retained = results.filter(result => !acceptedEvents.some(event => sameEvent(result, event)));
         hypothetical.sort((a, b) => a.date.localeCompare(b.date));

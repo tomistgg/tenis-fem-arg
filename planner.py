@@ -11,14 +11,17 @@ from pathlib import Path
 
 from calendar_builder import get_calendar_tournament_key
 from canonical_data import MATCH_SOURCES, PlayerIdentityIndex, normalized_name
+from draws import _is_completed_score, _player_name_matches_winner
 from itf import _is_cancelled_itf_calendar_item
 from ranking_publication import accepted_ranking_dates, load_ranking_status
 from time_utils import NEW_YORK, madrid_today, new_york_now
 from utils import (
     compact_tournament_name,
     expand_calendar_snapshot,
+    expand_draws_store_cache,
     expand_entry_lists_cache,
     expand_itf_calendar_cache,
+    expand_points_distribution,
     expand_tournament_draw_sizes,
     expand_tstrength_cache,
     expand_wta_calendar_cache,
@@ -268,7 +271,7 @@ def _surface(value):
     return next((name for name in ("Clay", "Hard", "Grass", "Carpet") if name.casefold() in value), "Unknown")
 
 
-def _player_results(data_dir, index, today):
+def _player_results(data_dir, index, today, live_matches=None):
     results = defaultdict(list)
     cutoff = (today - timedelta(days=365)).isoformat()
     seen = set()
@@ -285,6 +288,8 @@ def _player_results(data_dir, index, today):
                 score = re.sub(r"[^a-z]", "", str(row.get("result") or "").casefold())
                 if str(row.get("draw", "")).upper().startswith("D") or "double" in status:
                     continue
+                if live_matches is not None and played >= (today - timedelta(days=21)).isoformat():
+                    live_matches.append(row)
                 if "walkover" in status or score in {"wo", "walkover", "bye"}:
                     continue
                 if any(
@@ -319,6 +324,155 @@ def _player_results(data_dir, index, today):
     return results
 
 
+_PROGRESS_ROUNDS = ["QR1", "QR2", "QR3", "R128", "R64", "R32", "R16", "QF", "SF", "F", "W"]
+
+
+def _main_round(draw_size, number):
+    remaining = (1 << (int(draw_size or 32) - 1).bit_length()) // (2 ** (number - 1))
+    return {1: "W", 2: "F", 4: "SF", 8: "QF"}.get(remaining, f"R{remaining}")
+
+
+def _qualifying_rounds(draw, event=None, point_tables=()):
+    labels = [label for label in draw.get("round_labels", []) if str(label).casefold() != "qualifier"]
+    known = len(labels) or _rank(draw.get("num_rounds"))
+    if known or event is None:
+        return known
+    description = event.get("pointsDescription")
+    table = next((row for row in point_tables if row.get("Description") == description), None)
+    if table is None:
+        table = next((row for row in point_tables
+                      if str(row.get("Description") or "").startswith(event["level"] + " (")), {})
+    for number in (3, 2, 1):
+        if table.get(f"QR{number}") not in (None, ""):
+            return number
+    if event.get("level") in {"GS", "Grand Slam"}:
+        return 3
+    qualifying_size = event.get("qualifyingSize") or 32
+    if event["level"] == "WTA 125" and qualifying_size <= 8:
+        return 1
+    return 3 if qualifying_size > 32 else 2
+
+
+def _update_progress(progress, key, value):
+    previous = progress.get(key)
+    if previous:
+        if value["route"] == "QUAL":
+            previous["route"] = "QUAL"
+            if value["round"].startswith("QR") and value["completed"] and not previous["round"].startswith("QR"):
+                previous["qualifyingRound"] = value["round"]
+        previous["played"] = previous["played"] or value["played"]
+        old_round = _PROGRESS_ROUNDS.index(previous["round"])
+        new_round = _PROGRESS_ROUNDS.index(value["round"])
+        if old_round > new_round or (old_round == new_round and previous["completed"]):
+            return
+        if previous["route"] == "QUAL":
+            value["route"] = "QUAL"
+            if previous["round"].startswith("QR") and previous["completed"]:
+                value["qualifyingRound"] = previous["round"]
+        if previous.get("qualifyingRound"):
+            value["qualifyingRound"] = previous["qualifyingRound"]
+        value["played"] = value["played"] or previous["played"]
+    progress[key] = value
+
+
+def _draw_progress(event, draws, index):
+    progress, participants = {}, {}
+    for draw_type in ("QS", "MDS"):
+        draw = draws.get(draw_type) or {}
+        qualifying = draw_type == "QS"
+        size = _rank(draw.get("draw_size")) or event.get("drawSize") or 32
+        rounds = _qualifying_rounds(draw) if qualifying else (int(size) - 1).bit_length()
+        if not rounds:
+            continue
+        players = [row for row in draw.get("players", []) if _rank(row.get("pos"))]
+        matches = {(row.get("round"), row.get("match_num")): row for row in draw.get("matches", [])}
+        byes = set(draw.get("byes", []))
+        for player in players:
+            raw_name = str(player.get("name") or "")
+            if not raw_name or "/" in raw_name:
+                continue
+            family, comma, given = raw_name.partition(",")
+            name = f"{given.strip()} {family.strip()}" if comma else raw_name
+            source = "ITF" if player.get("itf_id") else event["source"]
+            identifier = player.get("itf_id") or player.get("wta_id") or ""
+            key, name = _player(index, source, identifier, name)
+            record = index.by_key.get(key)
+            if str(player.get("country") or (record.country if record else "")).upper() != "ARG":
+                continue
+            participants[key] = {"name": name, "source": source, "player_id": identifier}
+            pos = int(player["pos"])
+            route = "QUAL" if qualifying or player.get("entry") in {"Q", "LL"} else "MAIN"
+            value = {"round": "QR1" if qualifying else _main_round(size, 1),
+                     "route": route, "completed": False, "played": not qualifying and player.get("entry") == "Q"}
+            for number in range(1, rounds + 1):
+                value["round"] = f"QR{number}" if qualifying else _main_round(size, number)
+                match_number = (pos - 1) // (2 ** number)
+                match = matches.get((number, match_number), {})
+                bye = number == 1 and (pos + 1 if pos % 2 else pos - 1) in byes
+                if not bye:
+                    if not _is_completed_score(str(match.get("score") or "")):
+                        break
+                    candidates = [row for row in players
+                                  if (int(row["pos"]) - 1) // (2 ** number) == match_number
+                                  and _player_name_matches_winner(row["name"], match.get("winner_name", ""))]
+                    if len(candidates) != 1:
+                        break
+                    value["played"] = True
+                    if int(candidates[0]["pos"]) != pos:
+                        value["completed"] = True
+                        break
+                if number == rounds:
+                    value["round"] = _main_round(event.get("drawSize"), 1) if qualifying else "W"
+                    value["completed"] = not qualifying
+            _update_progress(progress, key, value)
+    return progress, participants
+
+
+def _match_progress(event, matches, index, progress, participants, draws, point_tables):
+    start = _date(event["startDate"])
+    end = _date(event.get("endDate")) or start
+    for row in sorted(matches, key=lambda row: str(row.get("date") or "")):
+        played = _date(row.get("date"))
+        if (str(row.get("tournamentId")) != str(event.get("tournamentId") or event["sourceId"])
+                or not played or not start - timedelta(days=7) <= played <= end):
+            continue
+        if not (row.get("result") or row.get("resultStatusDesc")) or any(
+            str(row.get(f"{side}Name") or "").casefold() in {"bye", "unknown", ""}
+            for side in ("winner", "loser")
+        ):
+            continue
+        raw_round = str(row.get("roundName") or "")
+        qualifying = str(row.get("draw") or "").upper() == "Q"
+        number = re.search(r"\d+", raw_round)
+        if qualifying:
+            if not number or int(number[0]) > 3:
+                continue
+            number = int(number[0])
+            current = f"QR{number}"
+            final_qualifying = _qualifying_rounds(draws.get("QS") or {}, event, point_tables)
+            following = _main_round(event.get("drawSize"), 1) if number >= final_qualifying else f"QR{number + 1}"
+        else:
+            named = {"quarter": "QF", "semi": "SF", "final": "F"}
+            current = next((value for label, value in named.items() if label in raw_round.casefold()), None)
+            if current is None and number:
+                current = _main_round(event.get("drawSize"), int(number[0]))
+            if current not in _PROGRESS_ROUNDS:
+                continue
+            following = _PROGRESS_ROUNDS[_PROGRESS_ROUNDS.index(current) + 1]
+        for side in ("winner", "loser"):
+            if row.get(f"{side}Country") != "ARG" or "/" in str(row.get(f"{side}Name") or ""):
+                continue
+            identifier, name = row.get(f"{side}Id"), row.get(f"{side}Name")
+            source = "ITF" if str(identifier).startswith("800") else event["source"]
+            key, name = _player(index, source, identifier, name)
+            participants[key] = {"name": name, "source": source, "player_id": identifier}
+            won = side == "winner"
+            _update_progress(progress, key, {"round": following if won else current,
+                                           "route": "QUAL" if qualifying or row.get(f"{side}Entry") in {"Q", "LL"}
+                                           else "MAIN",
+                                           "completed": not won or following == "W", "played": True})
+
+
 def build_planner_data(data_dir, *, today=None):
     """Build a compact planner payload without fetching or changing stored data."""
     explicit_today = today is not None
@@ -330,23 +484,31 @@ def build_planner_data(data_dir, *, today=None):
     entry_keys = {_event_id(*identity): key for key in entry_lists if (identity := _entry_identity(key))}
     strength = expand_tstrength_cache(_load(data_dir, "tstrength_cache.json", []))
     draw_sizes = expand_tournament_draw_sizes(_load(data_dir, "tournament_draw_sizes.json", []))
+    point_tables = expand_points_distribution(_load(data_dir, "points_distribution.json", []))
+    draw_cache = expand_draws_store_cache(_load(data_dir, "draws_store_cache.json", {}))
+    draw_keys = {_event_id(*identity): key for key in draw_cache if (identity := _entry_identity(key))}
+    itf_ids = _load(data_dir, "itf_event_filters_cache.json", {})
     wtn_cache = _load(data_dir, "itf_wtn_cache.json", {})
-    results = _player_results(data_dir, index, today)
+    live_matches = []
+    results = _player_results(data_dir, index, today, live_matches)
     ranking_date, ranks = _rankings(data_dir, index, today, explicit_today=explicit_today)
     arg_entries = {}
     output_events = []
+    current_week = today - timedelta(days=today.weekday())
     for event_id, raw_event in events.items():
         start = _date(raw_event.get("startDate"))
         end = _date(raw_event.get("endDate")) or start
         if (
             not start
             or not end
-            or end < today
+            or end < current_week
             or raw_event.get("level") in {"WTAFinals", "BJKC"}
             or "cancel" in str(raw_event.get("name", "")).casefold()
         ):
             continue
         event = dict(raw_event)
+        if event["source"] == "ITF" and event["sourceId"] in itf_ids:
+            event["tournamentId"] = str(itf_ids[event["sourceId"]])
         event["id"] = event_id
         event["calendarKey"] = get_calendar_tournament_key(event)
         event["name"] = fix_encoding_keep_accents(str(event.get("name") or ""))
@@ -383,15 +545,33 @@ def build_planner_data(data_dir, *, today=None):
             "qual": _field([row for row in event["entries"] if row["type"] == "QUAL"]),
         }
         event["entries"] = [entry for entry in event["entries"] if entry["country"] == "ARG"]
-        event["listedPlayerIds"] = sorted({entry["playerKey"] for entry in event["entries"]})
         sizes = [
             row
             for row in draw_sizes
             if str(row.get("source", "")).upper() == event["source"]
-            and str(row.get("tournamentId", "")).lower() == event["sourceId"]
+            and str(row.get("tournamentId", "")).lower() in {event["sourceId"], str(event.get("tournamentId") or "")}
             and str(row.get("date", ""))[:4] == event["season"]
         ]
         event["drawSize"] = event.get("drawSize") or (sizes[-1].get("mainDrawSize") if sizes else None)
+        if sizes:
+            event["pointsDescription"] = sizes[-1].get("description")
+            event["qualifyingSize"] = sizes[-1].get("qualifyingSize")
+        draws = (draw_cache.get(draw_keys.get(event_id)) or {}).get("draws") or {}
+        event["drawSize"] = event.get("drawSize") or (draws.get("MDS") or {}).get("draw_size")
+        progress, participants = _draw_progress(event, draws, index)
+        _match_progress(event, live_matches, index, progress, participants, draws, point_tables)
+        event["progress"] = progress
+        listed = {entry["playerKey"] for entry in event["entries"]}
+        for key, participant in participants.items():
+            arg_entries[key] = participant
+            if key not in listed:
+                event["entries"].append({
+                    "playerKey": key, "name": participant["name"], "country": "ARG",
+                    "type": "QUAL" if progress[key]["round"].startswith("QR") else "MAIN",
+                    "position": None, "priority": None, "rank": None, "rankType": "", "wtn": None,
+                })
+        event["listedPlayerIds"] = sorted(listed | set(participants))
+        event["entryPublished"] = event["entryPublished"] or bool(participants)
         event["historical"] = _historical_field(event, strength)
         event["historicalQual"] = _historical_field(event, strength, draw="Q")
         output_events.append(event)

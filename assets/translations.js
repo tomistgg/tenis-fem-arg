@@ -299,6 +299,7 @@ window.WTARG_TRANSLATIONS = {
         "Ending week": "Semana final",
         "Last Week": "Última semana",
         "Entries closed": "Inscripciones cerradas",
+        "Tournament fixed for this week": "Torneo fijado para esta semana",
         "These W15/W35 points are added after the Grand Slam cutoff.": "Estos puntos de W15/W35 se suman después del cierre de inscripción del Grand Slam.",
         "Points added after the Grand Slam cutoff": "Puntos sumados después del cierre de inscripción del Grand Slam",
         "WTA rank": "Ranking WTA",

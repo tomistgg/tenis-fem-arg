@@ -21,7 +21,11 @@
     }
     function text(value) { return '<span>' + esc(value) + '</span>'; }
     function noTranslate(value) { return '<span translate="no">' + esc(value) + '</span>'; }
-    function weekFor(event) { return event.week || event.startDate; }
+    function weekFor(event) {
+        const week = event.week || event.startDate;
+        const currentWeek = monday(data.asOf);
+        return week && week < currentWeek && event.endDate >= currentWeek ? currentWeek : week;
+    }
     function eventName(event) { return event.displayName || (event.name === event.level ? event.name : event.name.replace(/\s+\d+$/, '')); }
     function shortDate(value) {
         return new Date(value + 'T00:00:00Z').toLocaleDateString('en-US', {month: 'long', day: 'numeric', timeZone: 'UTC'});
@@ -54,12 +58,32 @@
     }
     function entryRoutes(event, playerId) {
         if (event.rest) return ['MAIN'];
+        const progress = (event.progress || {})[playerId];
+        if (progress) return [progress.route];
         const entry = entryFor(event, playerId);
         if (entry && entry.type === 'MAIN') return ['MAIN'];
         return ['MAIN', 'QUAL'];
     }
+    function lockedWeeks(playerId) {
+        const locked = new Map();
+        for (const event of events) {
+            const progress = (event.progress || {})[playerId];
+            if (!progress || (event.endDate || event.startDate) < monday(data.asOf)) continue;
+            const week = weekFor(event);
+            const previous = byId.get(locked.get(week));
+            const previousProgress = previous && previous.progress[playerId];
+            if (!previous || (previousProgress.completed && !progress.completed)
+                || (previousProgress.completed === progress.completed && event.startDate >= previous.startDate)) {
+                locked.set(week, event.id);
+            }
+        }
+        return locked;
+    }
     function eligibleEvents(source, playerId, asOf) {
-        return source.filter(event => event.startDate >= asOf && entryRoutes(event, playerId).length > 0);
+        const locked = lockedWeeks(playerId);
+        return source.filter(event => (event.endDate || event.startDate) >= monday(asOf)
+            && (!locked.has(weekFor(event)) || locked.get(weekFor(event)) === event.id)
+            && entryRoutes(event, playerId).length > 0);
     }
     window.plannerEligibleEvents = eligibleEvents;
     window.plannerEntryRoutes = entryRoutes;
@@ -72,8 +96,8 @@
         const date = new Date(value + 'T00:00:00Z');
         return addDays(value, -(date.getUTCDay() + 6) % 7);
     }
-    function futureEvents() { return events.filter(event => event.startDate >= data.asOf); }
-    function weekOptions() { return [...new Set(futureEvents().map(weekFor))].sort(); }
+    function upcomingEvents() { return eligibleEvents(events, state.player, data.asOf); }
+    function weekOptions() { return [...new Set([monday(data.asOf), ...upcomingEvents().map(weekFor)])].sort(); }
     function slamShortName(name) {
         return ({'Australian Open':'AO', 'Roland Garros':'RG', 'Wimbledon':'WMB', 'US Open':'USO'})[name] || name;
     }
@@ -99,11 +123,10 @@
         });
     }
     function endingOptions() {
-        const thisMonday = monday(data.asOf);
-        const firstWeek = thisMonday < data.asOf ? addDays(thisMonday, 7) : thisMonday;
+        const firstWeek = monday(data.asOf);
         const nextQualifying = (data.gsDeadlines || []).map(gs => gs.qCutoff)
             .filter(date => /^\d{4}-\d{2}-\d{2}$/.test(date) && date >= data.asOf).sort()[0];
-        const lastWeek = [addDays(firstWeek, 133), nextQualifying ? monday(addDays(nextQualifying, -1)) : '', state.starting].sort().pop();
+        const lastWeek = [addDays(firstWeek, 140), nextQualifying ? monday(addDays(nextQualifying, -1)) : '', state.starting].sort().pop();
         const slams = slamOptions();
         const options = [];
         for (let week = state.starting || firstWeek; week <= lastWeek; week = addDays(week, 7)) {
@@ -126,7 +149,7 @@
                 continent: 'rest', week: option.value, startDate: option.value, endDate: addDays(option.value, 6)});
             return byId.get(id);
         });
-        return futureEvents().concat(rests);
+        return eligibleEvents(events.concat(rests), state.player, data.asOf);
     }
     function endingWeek() {
         const selected = endingOptions().find(option => option.value === state.ending);
@@ -140,7 +163,9 @@
         const routes = entryRoutes(event, state.player);
         return routes.includes(state.routes[event.id]) ? state.routes[event.id] : routes[0] || 'MAIN';
     }
-    function pointEvent(event) { return Object.assign({}, event, { assumedRoute: routeFor(event) }); }
+    function pointEvent(event) {
+        return Object.assign({}, event, { assumedRoute: routeFor(event), currentProgress: (event.progress || {})[state.player] });
+    }
     function finishesFor(event) {
         if (event.rest) return [];
         return typeof window.plannerPointFinishes === 'function'
@@ -149,6 +174,8 @@
     function finishFor(event) {
         const finishes = finishesFor(event);
         if (finishes.some(finish => finish.value === state.finishes[event.id])) return state.finishes[event.id];
+        const progress = (event.progress || {})[state.player];
+        if (progress && finishes.some(finish => finish.value === progress.round)) return progress.round;
         return (finishes.find(finish => /^R\d+$/.test(finish.value)) || finishes[0] || {}).value || '';
     }
     function pointDate(event) {
@@ -275,13 +302,15 @@
         const uncertain = entry ? entry.type === 'ALT' : event.entryPublished;
         const scheduled = state.schedule.includes(event.id);
         const selected = state.compare.includes(event.id) || scheduled;
+        const locked = lockedWeeks(state.player).get(weekFor(event)) === event.id;
         const tourClass = event.level.startsWith('WTA') ? ' cal-tournament-bold cal-tournament-wta' : event.level === 'GS' ? ' cal-tournament-bold' : '';
         return '<div class="op-calendar-item' + (scheduled ? ' op-choice' : '') + '"><button type="button" id="op-pick-' + esc(event.id)
             + '" class="calendar-tournament op-tournament cal-' + slug(event.surface) + tourClass + (selected ? ' op-event-selected' : '')
             + (active ? ' op-event-active' : '')
             + '" data-action="select" data-event="' + esc(event.id)
-            + '"' + (available ? '' : ' disabled title="Entries closed"') + ' aria-pressed="' + state.schedule.includes(event.id) + '"'
-            + (available && uncertain ? ' title="Conditional on acceptance or a wildcard."' : '') + '>'
+            + '"' + (locked ? ' disabled title="Tournament fixed for this week"' : available ? '' : ' disabled title="Entries closed"')
+            + ' aria-pressed="' + state.schedule.includes(event.id) + '"'
+            + (available && uncertain && !locked ? ' title="Conditional on acceptance or a wildcard."' : '') + '>'
             + tournamentLabel(event)
             + '</button>' + (scheduled && !event.rest ? '<div class="op-inline-controls">' + routeSelector(event, 'op-choice-route')
                 + finishSelector(event, 'op-choice-finish') + button('entries', event.id, 'Entry List', active) + '</div>' : '')
@@ -398,6 +427,12 @@
         if (!root) return;
         const player = selectedPlayer();
         if (!players.length) { root.innerHTML = '<p>' + text('No player data is available in this build.') + '</p>'; return; }
+        const locked = lockedWeeks(state.player);
+        state.schedule = state.schedule.filter(id => !locked.has(weekFor(byId.get(id)))
+            || locked.get(weekFor(byId.get(id))) === id);
+        for (const id of locked.values()) {
+            if (rangeIncludes(byId.get(id)) && !state.schedule.includes(id)) state.schedule.push(id);
+        }
         const shown = player ? filteredEvents() : [];
         const planned = state.schedule.map(id => byId.get(id)).filter(Boolean).sort((a, b) => a.startDate.localeCompare(b.startDate));
         const conflicts = scheduleConflicts(planned);
@@ -436,6 +471,7 @@
     }
     function toggleSchedule(id) {
         const event = byId.get(id);
+        if (lockedWeeks(state.player).get(weekFor(event)) === id) return;
         if (state.schedule.includes(id)) state.schedule = state.schedule.filter(value => value !== id);
         else {
             if (!event.rest && !finishesFor(event).length) { notice = 'Point table unavailable'; return; }
@@ -515,7 +551,7 @@
             mounted = true;
         }
         const weeks = weekOptions();
-        if (!state.starting) state.starting = weekFor(eligibleEvents(events, state.player, data.asOf)[0] || {}) || weeks[0] || '';
+        if (!state.starting) state.starting = weeks[0] || '';
         if (!state.ending) state.ending = weeks[Math.min(weeks.indexOf(state.starting) + 3, weeks.length - 1)] || '';
         if (!endingOptions().some(item => item.value === state.ending)) state.ending = (endingOptions().slice(-1)[0] || {}).value || '';
         render();
