@@ -1,18 +1,18 @@
 {
   "files": {
     "wta_full_calendar_cache.json": {
-      "from": "2026-09-23",
+      "from": "2026-09-24",
       "to": "2026-12-31",
-      "fetchedAt": "2026-10-21T21:11:06Z",
-      "lastAttemptAt": "2026-10-21T21:11:06Z",
-      "fetchedRunId": "20261021T210954Z-c66fa7cfa0",
-      "lastAttemptRunId": "20261021T210954Z-c66fa7cfa0"
+      "fetchedAt": "2026-10-22T09:25:36Z",
+      "lastAttemptAt": "2026-10-22T09:25:36Z",
+      "fetchedRunId": "20261022T092420Z-b6c1a338fb",
+      "lastAttemptRunId": "20261022T092420Z-b6c1a338fb"
     },
     "itf_calendar_cache.json": {
       "year": 2026,
       "count": 636,
-      "fetchedAt": "2026-10-21T21:12:05Z",
-      "lastAttemptAt": "2026-10-21T21:12:05Z"
+      "fetchedAt": "2026-10-22T09:27:07Z",
+      "lastAttemptAt": "2026-10-22T09:27:07Z"
     }
   },
   "entries": {
@@ -278,6 +278,12 @@
       "https://www.wtatennis.com/tournaments/1176/luanda-125/2026/player-list": {
         "duplicatePlayersAlerted": [
           "Kristina Novak"
+        ]
+      },
+      "w-itf-arg-2026-014": {
+        "duplicatePlayersAlerted": [
+          "Divine Dasam Nweke",
+          "Tara Kruppa"
         ]
       }
     },
@@ -1151,25 +1157,25 @@
         "completedAt": "2026-10-18T22:40:04Z"
       },
       "https://www.wtatennis.com/tournaments/405/osaka/2026/player-list": {
-        "fetchedAt": "2026-10-21T21:21:06Z"
+        "fetchedAt": "2026-10-22T09:43:06Z"
       },
       "https://www.wtatennis.com/tournaments/2092/ningbo/2026/player-list": {
-        "fetchedAt": "2026-10-21T21:21:06Z"
+        "fetchedAt": "2026-10-22T09:43:06Z"
       },
       "w-itf-ita-2026-037": {
-        "fetchedAt": "2026-10-21T21:21:35Z"
+        "fetchedAt": "2026-10-22T09:44:11Z"
       },
       "w-itf-usa-2026-052": {
-        "fetchedAt": "2026-10-21T21:21:07Z"
+        "fetchedAt": "2026-10-22T09:43:06Z"
       },
       "w-itf-usa-2026-057": {
         "fetchedAt": "2026-10-21T07:55:51Z"
       },
       "w-itf-sgp-2026-004": {
-        "fetchedAt": "2026-10-21T21:22:52Z"
+        "fetchedAt": "2026-10-22T09:44:32Z"
       },
       "w-itf-bra-2026-015": {
-        "fetchedAt": "2026-10-21T21:22:35Z"
+        "fetchedAt": "2026-10-22T09:44:55Z"
       }
     }
   }
