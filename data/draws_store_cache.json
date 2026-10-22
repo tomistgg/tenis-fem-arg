@@ -26,7 +26,7 @@
           {"pos": 2, "entry": "WC", "name": "KOBORI, Momoko", "country": "JPN", "wtn": "-"},
           {"pos": 3, "name": "YAMAGUCHI, Mei", "country": "JPN", "wtn": "12.18"},
           {"pos": 4, "seed": "9", "name": "KENIN, Sofia", "country": "USA", "wtn": "10.05"},
-          {"pos": 5, "seed": "2", "name": "PRESTON, Taylah", "country": "AUS", "wtn": "9.05"},
+          {"pos": 5, "seed": "2", "name": "PRESTON, Taylah", "country": "AUS", "wtn": "9.16"},
           {"pos": 6, "name": "KAJI, Haruka", "country": "JPN", "wtn": "11.73"},
           {"pos": 7, "name": "WATSON, Heather", "country": "GBR", "wtn": "9.93"},
           {"pos": 8, "seed": "8", "name": "JONES, Emerson", "country": "AUS", "wtn": "10.16"},
@@ -41,7 +41,7 @@
           {"pos": 17, "seed": "5", "name": "DART, Harriet", "country": "GBR", "wtn": "9.72"},
           {"pos": 18, "name": "SAIGO, Rina", "country": "JPN", "wtn": "13.15"},
           {"pos": 19, "name": "ITO, Aoi", "country": "JPN", "wtn": "10.99"},
-          {"pos": 20, "seed": "12", "name": "GRANT, Tyra Caterina", "country": "ITA", "wtn": "9.93"},
+          {"pos": 20, "seed": "12", "name": "GRANT, Tyra Caterina", "country": "ITA", "wtn": "9.86"},
           {"pos": 21, "seed": "6", "name": "STOIANA, Mary", "country": "USA", "wtn": "9.03"},
           {"pos": 22, "entry": "WC", "name": "MATSUDA, Rinko", "country": "JPN", "wtn": "12.44"},
           {"pos": 23, "name": "ISHII, Sayaka", "country": "JPN", "wtn": "13.07"},
@@ -98,7 +98,7 @@
           {"pos": 12, "entry": "Q", "name": "KRAUS, Sinja", "country": "AUT", "wtn": "8.85"},
           {"pos": 13, "name": "TARARUDEE, Lanlana", "country": "THA", "wtn": "8.98"},
           {"pos": 14, "name": "QUEVEDO, Kaitlin", "country": "ESP", "wtn": "9.2"},
-          {"pos": 15, "name": "KRUEGER, Ashlyn", "country": "USA", "wtn": "8.91"},
+          {"pos": 15, "name": "KRUEGER, Ashlyn", "country": "USA", "wtn": "8.67"},
           {"pos": 16, "seed": "6", "name": "TJEN, Janice", "country": "INA", "wtn": "9.13"},
           {"pos": 17, "seed": "8", "name": "BOULTER, Katie", "country": "GBR", "wtn": "9.07"},
           {"pos": 18, "entry": "WC", "name": "SAKATSUME, Himeno", "country": "JPN", "wtn": "9.8"},
@@ -134,11 +134,14 @@
           {"round": 1, "match_num": 13, "winner_name": "M. Uchijima", "score": "64 67(7) 63"},
           {"round": 1, "match_num": 14, "winner_name": "M. Linette", "score": "64 63"},
           {"round": 1, "match_num": 15, "winner_name": "K. Siniakova", "score": "64 06 40 RET"},
+          {"round": 2, "match_num": 0, "winner_name": "A. Li", "score": "63 61"},
           {"round": 2, "match_num": 1, "winner_name": "L. Tagger", "score": "75 63"},
           {"round": 2, "match_num": 2, "winner_name": "T. Gibson", "score": "62 61"},
           {"round": 2, "match_num": 3, "winner_name": "A. Krueger", "score": "63 61"},
           {"round": 2, "match_num": 4, "winner_name": "K. Boulter", "score": "62 61"},
-          {"round": 2, "match_num": 5, "winner_name": "A. Ruzic", "score": "64 00 RET"}
+          {"round": 2, "match_num": 5, "winner_name": "A. Ruzic", "score": "64 00 RET"},
+          {"round": 2, "match_num": 6, "winner_name": "M. Stoiana", "score": "62 26 63"},
+          {"round": 2, "match_num": 7, "winner_name": "K. Siniakova", "score": "64 61"}
         ],
         "round_labels": [
           "Round of 32",
@@ -185,7 +188,12 @@
           {"round": 1, "match_num": 4, "winner_name": "J. Maleckova / M. Skoch", "score": "63 64"},
           {"round": 1, "match_num": 5, "winner_name": "C. Liu / K. Quevedo", "score": "76(5) 75"},
           {"round": 1, "match_num": 6, "winner_name": "M. Kobori / A. Shimizu", "score": "64 63"},
-          {"round": 1, "match_num": 7, "winner_name": "H. Chan / M. Kato", "score": "64 64"}
+          {"round": 1, "match_num": 7, "winner_name": "H. Chan / M. Kato", "score": "64 64"},
+          {"round": 2, "match_num": 0, "winner_name": "S. Hunter / J. Tjen", "score": "46 63 10-6"},
+          {"round": 2, "match_num": 1, "winner_name": "I. Haverlag / L. Tagger", "score": "63 76(4)"},
+          {"round": 2, "match_num": 2, "winner_name": "J. Maleckova / M. Skoch", "score": "63 67(5) 10-8"},
+          {"round": 2, "match_num": 3, "winner_name": "H. Chan / M. Kato", "score": "63 67(5) 11-9"},
+          {"round": 3, "match_num": 1, "winner_name": "J. Maleckova / M. Skoch", "score": "26 63 10-5"}
         ],
         "round_labels": [
           "Round of 16",
@@ -527,7 +535,8 @@
           {"round": 1, "match_num": 11, "winner_name": "C. Hennemann", "score": "60 64"},
           {"round": 1, "match_num": 12, "winner_name": "G. Pedone", "score": "64 62"},
           {"round": 1, "match_num": 13, "winner_name": "I. Pistola", "score": "63 64"},
-          {"round": 1, "match_num": 14, "winner_name": "K. Tsygourova", "score": "36 63 63"}
+          {"round": 1, "match_num": 14, "winner_name": "K. Tsygourova", "score": "36 63 63"},
+          {"round": 2, "match_num": 5, "winner_name": "N. Radovanovic", "score": "64 64"}
         ],
         "round_labels": [
           "Round of 32",
