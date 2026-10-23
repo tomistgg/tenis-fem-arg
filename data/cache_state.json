@@ -1,18 +1,18 @@
 {
   "files": {
     "wta_full_calendar_cache.json": {
-      "from": "2026-09-24",
+      "from": "2026-09-25",
       "to": "2026-12-31",
-      "fetchedAt": "2026-10-22T09:25:36Z",
-      "lastAttemptAt": "2026-10-22T09:25:36Z",
-      "fetchedRunId": "20261022T092420Z-b6c1a338fb",
-      "lastAttemptRunId": "20261022T092420Z-b6c1a338fb"
+      "fetchedAt": "2026-10-23T19:48:10Z",
+      "lastAttemptAt": "2026-10-23T19:48:10Z",
+      "fetchedRunId": "20261023T194658Z-3a145dbec4",
+      "lastAttemptRunId": "20261023T194658Z-3a145dbec4"
     },
     "itf_calendar_cache.json": {
       "year": 2026,
       "count": 636,
-      "fetchedAt": "2026-10-22T09:27:07Z",
-      "lastAttemptAt": "2026-10-22T09:27:07Z"
+      "fetchedAt": "2026-10-23T19:48:57Z",
+      "lastAttemptAt": "2026-10-23T19:48:57Z"
     }
   },
   "entries": {
@@ -284,6 +284,14 @@
         "duplicatePlayersAlerted": [
           "Divine Dasam Nweke",
           "Tara Kruppa"
+        ]
+      },
+      "w-itf-mex-2026-011": {
+        "duplicatePlayersAlerted": [
+          "Kennedy Gibbs",
+          "Luciana Sainz",
+          "Jennifer Sabrina Moreno Rodriguez",
+          "Imperia Martinez Mora"
         ]
       }
     },
@@ -1157,25 +1165,26 @@
         "completedAt": "2026-10-18T22:40:04Z"
       },
       "https://www.wtatennis.com/tournaments/405/osaka/2026/player-list": {
-        "fetchedAt": "2026-10-22T09:43:06Z"
+        "fetchedAt": "2026-10-23T19:57:43Z"
       },
       "https://www.wtatennis.com/tournaments/2092/ningbo/2026/player-list": {
-        "fetchedAt": "2026-10-22T09:43:06Z"
+        "fetchedAt": "2026-10-23T19:57:43Z"
       },
       "w-itf-ita-2026-037": {
-        "fetchedAt": "2026-10-22T09:44:11Z"
+        "fetchedAt": "2026-10-23T19:58:57Z"
       },
       "w-itf-usa-2026-052": {
-        "fetchedAt": "2026-10-22T09:43:06Z"
+        "fetchedAt": "2026-10-23T19:57:43Z"
       },
       "w-itf-usa-2026-057": {
-        "fetchedAt": "2026-10-21T07:55:51Z"
+        "fetchedAt": "2026-10-21T07:55:51Z",
+        "completedAt": "2026-10-23T03:00:48Z"
       },
       "w-itf-sgp-2026-004": {
-        "fetchedAt": "2026-10-22T09:44:32Z"
+        "fetchedAt": "2026-10-23T19:59:26Z"
       },
       "w-itf-bra-2026-015": {
-        "fetchedAt": "2026-10-22T09:44:55Z"
+        "fetchedAt": "2026-10-23T19:59:54Z"
       }
     }
   }
