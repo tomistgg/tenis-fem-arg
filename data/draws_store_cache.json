@@ -238,7 +238,7 @@
           {"pos": 3, "name": "KAWA, Katarzyna", "country": "POL", "wtn": "10.49"},
           {"pos": 4, "seed": "12", "name": "VOLYNETS, Katie", "country": "USA", "wtn": "8.09"},
           {"pos": 5, "seed": "2", "name": "STARODUBTSEVA, Yuliia", "country": "UKR", "wtn": "9.05"},
-          {"pos": 6, "name": "ZAKHAROVA, Anastasia", "wtn": "9.55"},
+          {"pos": 6, "name": "ZAKHAROVA, Anastasia", "wtn": "9.7"},
           {"pos": 7, "name": "KUDERMETOVA, Polina", "country": "UZB", "wtn": "9.89"},
           {"pos": 8, "seed": "11", "name": "SAWANGKAEW, Mananchaya", "country": "THA", "wtn": "9.08"},
           {"pos": 9, "seed": "3", "name": "KALININA, Anhelina", "country": "UKR", "wtn": "9.16"},
@@ -366,7 +366,7 @@
           {"pos": 28, "entry": "LL", "name": "PARKS, Alycia", "country": "USA", "wtn": "10.61"},
           {"pos": 29, "entry": "Q", "name": "RAKHIMOVA, Kamilla", "country": "UZB", "wtn": "8.9"},
           {"pos": 30, "name": "BOUZKOVA, Marie", "country": "CZE", "wtn": "7.73"},
-          {"pos": 32, "entry": "LL", "name": "ZAKHAROVA, Anastasia", "wtn": "9.55"}
+          {"pos": 32, "entry": "LL", "name": "ZAKHAROVA, Anastasia", "wtn": "9.7"}
         ],
         "matches": [
           {"round": 1, "match_num": 0, "winner_name": "E. Rybakina"},
@@ -932,6 +932,118 @@
         ],
         "num_rounds": 5,
         "wtn_gm": 16.7168
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/1023/guangzhou/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 250 Guangzhou",
+      "level": "WTA 250",
+      "week": "Week of October 26",
+      "startDate": "2026-10-26",
+      "endDate": "2026-11-01",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "Guangzhou Open",
+        "location": "GUANGZHOU, CHN",
+        "dates": "October 26-1 2026",
+        "prize": "$ 283,347",
+        "surface": "Hard, Qunyan",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 24,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "YASTREMSKA, Dayana", "country": "UKR", "wtn": "8.99"},
+          {"pos": 2, "name": "YOU, Xiaodi", "country": "CHN", "wtn": "10.85"},
+          {"pos": 3, "entry": "WC", "name": "WONG, Hong Yi Cody", "country": "HKG", "wtn": "12.29"},
+          {"pos": 4, "seed": "9", "name": "JONES, Emerson", "country": "AUS", "wtn": "10.16"},
+          {"pos": 5, "seed": "2", "name": "KUDERMETOVA, Polina", "country": "UZB", "wtn": "9.89"},
+          {"pos": 6, "name": "IBRAGIMOVA, Alevtina", "wtn": "10.51"},
+          {"pos": 7, "name": "IATCENKO, Polina", "wtn": "9.77"},
+          {"pos": 8, "seed": "10", "name": "SHUBLADZE, Alexandra", "wtn": "9.36"},
+          {"pos": 9, "seed": "3", "name": "ZAKHAROVA, Anastasia", "wtn": "9.7"},
+          {"pos": 10, "entry": "WC", "name": "ZHANG, Ruien", "country": "CHN", "wtn": "12.24"},
+          {"pos": 11, "entry": "WC", "name": "QU, Yihan", "country": "CHN", "wtn": "12.49"},
+          {"pos": 12, "seed": "11", "name": "KOSTOVIC, Teodora", "country": "SRB", "wtn": "9.3"},
+          {"pos": 13, "seed": "4", "name": "DART, Harriet", "country": "GBR", "wtn": "9.72"},
+          {"pos": 14, "entry": "WC", "name": "SHEK, Cheuk Ying", "country": "HKG", "wtn": "13.41"},
+          {"pos": 15, "name": "FRUHVIRTOVA, Linda", "country": "CZE", "wtn": "10.66"},
+          {"pos": 16, "seed": "7", "name": "KAWA, Katarzyna", "country": "POL", "wtn": "10.49"},
+          {"pos": 17, "seed": "5", "name": "PROZOROVA, Tatiana", "wtn": "9.49"},
+          {"pos": 18, "name": "GORGODZE, Ekaterine", "country": "GEO", "wtn": "10.07"},
+          {"pos": 19, "name": "GARLAND, Joanna", "country": "TPE", "wtn": "9.83"},
+          {"pos": 20, "seed": "8", "name": "INGLIS, Maddison", "country": "AUS", "wtn": "9.35"},
+          {"pos": 21, "seed": "6", "name": "VANDROMME, Jeline", "country": "BEL", "wtn": "9.59"},
+          {"pos": 22, "name": "LEE, Carol Young Suh", "country": "USA", "wtn": "9.78"},
+          {"pos": 23, "name": "PRIDANKINA, Elena", "wtn": "9.99"},
+          {"pos": 24, "seed": "12", "name": "GRANT, Tyra Caterina", "country": "ITA", "wtn": "9.86"}
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/1056/tokyo/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 500 Tokyo",
+      "level": "WTA 500",
+      "week": "Week of October 26",
+      "startDate": "2026-10-26",
+      "endDate": "2026-11-01",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "Toray Pan Pacific Open Tennis",
+        "location": "TOKYO, JPN",
+        "dates": "October 26-1 2026",
+        "prize": "$ 1,206,446",
+        "surface": "Hard, DecoTurf",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 24,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "WANG, Xinyu", "country": "CHN", "wtn": "8.84"},
+          {"pos": 2, "name": "VALENTOVA, Tereza", "country": "CZE", "wtn": "8.53"},
+          {"pos": 3, "name": "DAY, Kayla", "country": "USA", "wtn": "8.68"},
+          {"pos": 4, "seed": "12", "name": "ZHANG, Shuai", "country": "CHN", "wtn": "9.44"},
+          {"pos": 5, "seed": "2", "name": "BIRRELL, Kimberly", "country": "AUS", "wtn": "8.98"},
+          {"pos": 6, "entry": "WC", "name": "ITO, Aoi", "country": "JPN", "wtn": "10.99"},
+          {"pos": 7, "name": "MA, Yexin", "country": "CHN", "wtn": "11.28"},
+          {"pos": 8, "seed": "10", "name": "KASATKINA, Daria", "country": "AUS", "wtn": "9.44"},
+          {"pos": 9, "seed": "3", "name": "SAMSONOVA, Liudmila", "wtn": "8.16"},
+          {"pos": 10, "name": "WATSON, Heather", "country": "GBR", "wtn": "9.93"},
+          {"pos": 11, "entry": "WC", "name": "SHIBAHARA, Ena", "country": "JPN", "wtn": "12.24"},
+          {"pos": 12, "seed": "7", "name": "PARKS, Alycia", "country": "USA", "wtn": "10.61"},
+          {"pos": 13, "seed": "4", "name": "STARODUBTSEVA, Yuliia", "country": "UKR", "wtn": "9.05"},
+          {"pos": 14, "name": "SASNOVICH, Aliaksandra", "wtn": "9.25"},
+          {"pos": 15, "entry": "WC", "name": "TSUJIOKA, Shiho", "country": "JPN", "wtn": "14.69"},
+          {"pos": 16, "seed": "9", "name": "RAKHIMOVA, Kamilla", "country": "UZB", "wtn": "8.9"},
+          {"pos": 17, "seed": "5", "name": "BOULTER, Katie", "country": "GBR", "wtn": "9.07"},
+          {"pos": 18, "entry": "WC", "name": "ISHII, Sayaka", "country": "JPN", "wtn": "13.07"},
+          {"pos": 19, "entry": "ALT", "name": "KINOSHITA, Hayu", "country": "JPN", "wtn": "12.03"},
+          {"pos": 20, "seed": "8", "name": "PUTINTSEVA, Yulia", "country": "KAZ", "wtn": "8.39"},
+          {"pos": 21, "seed": "6", "name": "OLIYNYKOVA, Oleksandra", "country": "UKR", "wtn": "9.41"},
+          {"pos": 22, "name": "HONTAMA, Mai", "country": "JPN", "wtn": "10.5"},
+          {"pos": 23, "name": "JOINT, Maya", "country": "AUS", "wtn": "9.32"},
+          {"pos": 24, "seed": "11", "name": "GOLUBIC, Viktorija", "country": "SUI", "wtn": "8.85"}
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
       }
     }
   }
