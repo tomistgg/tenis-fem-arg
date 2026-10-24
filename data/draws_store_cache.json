@@ -660,7 +660,8 @@
           {"round": 3, "match_num": 2, "winner_name": "A. Tikhonova", "score": "16 75 63"},
           {"round": 3, "match_num": 3, "winner_name": "E. McDonald", "score": "46 75 61"},
           {"round": 4, "match_num": 0, "winner_name": "M. Brengle", "score": "75 26 62"},
-          {"round": 4, "match_num": 1, "winner_name": "E. McDonald", "score": "62 36 62"}
+          {"round": 4, "match_num": 1, "winner_name": "E. McDonald", "score": "62 36 62"},
+          {"round": 5, "match_num": 0, "winner_name": "E. McDonald", "score": "75 61"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1303,6 +1304,45 @@
           "Qualifier"
         ],
         "num_rounds": 3
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/1180/curitiba-125/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 125 Curitiba",
+      "level": "WTA 125",
+      "week": "Week of October 26",
+      "startDate": "2026-10-26",
+      "endDate": "2026-11-01",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "Curitiba Open",
+        "location": "CURITIBA, BRA",
+        "dates": "25 October - 1 November 2026",
+        "prize": "$ 115,000",
+        "surface": "Clay",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 8,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "LABRANA, Fernanda", "country": "CHI", "wtn": "14.07"},
+          {"pos": 2, "entry": "WC", "name": "MENDONCA BERNARDES, Bianca", "country": "BRA", "wtn": "18.58"},
+          {"pos": 3, "seed": "2", "name": "BONARDI, Berta", "country": "ARG", "wtn": "16.05"},
+          {"pos": 4, "name": "IBIARABA MELLEIRO, Catarina Mellei BRA", "wtn": "-"},
+          {"pos": 5, "seed": "3", "name": "CINALLI, Luna Maria", "country": "ARG", "wtn": "14.63"},
+          {"pos": 6, "name": "DOURADO, Jennifer", "country": "BRA", "wtn": "17.41"},
+          {"pos": 7, "seed": "4", "name": "AYALA, Lourdes", "country": "ARG", "wtn": "15.05"},
+          {"pos": 8, "entry": "WC", "name": "GULIN, Georgia", "country": "BRA", "wtn": "-"}
+        ],
+        "round_labels": [
+          "Q1"
+        ],
+        "num_rounds": 1
       }
     }
   }

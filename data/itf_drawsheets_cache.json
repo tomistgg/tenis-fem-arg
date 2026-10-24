@@ -13569,27 +13569,27 @@
                       "roundDesc": "Semi-finals", "roundNumber": 4,
                       "matches": [
                           {
-                            "matchId": 1183740872, "playStatusCode": "TP",
+                            "matchId": 1183740872, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 8, "entryStatus": "DA",
+                                  "scores": [3,6,6], "isWinner": true, "seeding": 8, "entryStatus": "DA",
                                   "player": {"playerId":800342601,"nationality":"UKR","givenName":"Katarina","familyName":"Zavatska"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [6,3,2], "isWinner": false, "entryStatus": "DA",
                                   "player": {"playerId":800388364,"nationality":"FRA","givenName":"Manon","familyName":"Leonard"}
                                 }
                             ]
                           },
                           {
-                            "matchId": 1183740873, "playStatusCode": "TP",
+                            "matchId": 1183740873, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [2,5], "isWinner": false, "entryStatus": "DA",
                                   "player": {"playerId":800341823,"nationality":"GEO","givenName":"Mariam","familyName":"Bolkvadze"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 5, "entryStatus": "DA",
+                                  "scores": [6,7], "isWinner": true, "seeding": 5, "entryStatus": "DA",
                                   "player": {"playerId":800337472,"nationality":"FRA","givenName":"Harmony","familyName":"Tan"}
                                 }
                             ]
@@ -13604,10 +13604,12 @@
                             "matchId": 1183740871, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 8, "entryStatus": "DA",
+                                  "player": {"playerId":800342601,"nationality":"UKR","givenName":"Katarina","familyName":"Zavatska"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 5, "entryStatus": "DA",
+                                  "player": {"playerId":800337472,"nationality":"FRA","givenName":"Harmony","familyName":"Tan"}
                                 }
                             ]
                           }
@@ -16349,27 +16351,27 @@
                       "roundDesc": "Semi-finals", "roundNumber": 4,
                       "matches": [
                           {
-                            "matchId": 1183741556, "playStatusCode": "TP",
+                            "matchId": 1183741556, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "entryStatus": "DA",
                                   "player": {"playerId":800537726,"nationality":"USA","givenName":"Reese","familyName":"Brantmeier"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [1,3], "isWinner": false, "entryStatus": "DA",
                                   "player": {"playerId":800581960,"nationality":"JPN","givenName":"Hiromi","familyName":"Abe"}
                                 }
                             ]
                           },
                           {
-                            "matchId": 1183741557, "playStatusCode": "TP",
+                            "matchId": 1183741557, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [4,4], "isWinner": false, "entryStatus": "DA",
                                   "player": {"playerId":800416292,"nationality":"CAN","givenName":"Ariana","familyName":"Arseneault"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "entryStatus": "DA",
                                   "player": {"playerId":800474178,"nationality":"JPN","givenName":"Yuki","familyName":"Naito"}
                                 }
                             ]
@@ -16384,10 +16386,12 @@
                             "matchId": 1183741555, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "player": {"playerId":800537726,"nationality":"USA","givenName":"Reese","familyName":"Brantmeier"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "player": {"playerId":800474178,"nationality":"JPN","givenName":"Yuki","familyName":"Naito"}
                                 }
                             ]
                           }
@@ -17148,14 +17152,14 @@
                       "roundDesc": "Final", "roundNumber": 5,
                       "matches": [
                           {
-                            "matchId": 1183741632, "playStatusCode": "TP",
+                            "matchId": 1183741632, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 5, "entryStatus": "DA",
+                                  "scores": [5,1], "isWinner": false, "seeding": 5, "entryStatus": "DA",
                                   "player": {"playerId":800249049,"nationality":"USA","givenName":"Madison","familyName":"Brengle"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "scores": [7,6], "isWinner": true, "entryStatus": "Q",
                                   "player": {"playerId":800512247,"nationality":"GBR","givenName":"Ella","familyName":"McDonald"}
                                 }
                             ]
@@ -26119,6 +26123,1931 @@
                                 {
                                   "player": {"playerId":800373339,"nationality":"EGY","givenName":"Lamis","familyName":"Alhussein Abdel Aziz"},
                                   "scores": [0,6,2], "isWinner": false, "seeding": 2, "entryStatus": "DA"
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    }
+                ]
+              }
+          ],
+          "rrGroups": null
+        }
+    },
+  "1100203964_M_0":
+    {
+      "data":
+        {
+          "eventId": 1100706673, "drawsheetStructure": "KO",
+          "koGroups": [
+              {
+                "rounds": [
+                    {
+                      "roundDesc": "1st Round", "roundNumber": 1,
+                      "matches": [
+                          {
+                            "matchId": 1183754896, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754897, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754898, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754899, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754900, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754901, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754902, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754903, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754904, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754905, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754906, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754907, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754908, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754909, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754910, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754911, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "2nd Round", "roundNumber": 2,
+                      "matches": [
+                          {
+                            "matchId": 1183754888, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754889, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754890, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754891, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754892, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754893, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754894, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754895, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "Quarter-finals", "roundNumber": 3,
+                      "matches": [
+                          {
+                            "matchId": 1183754884, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754885, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754886, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754887, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "Semi-finals", "roundNumber": 4,
+                      "matches": [
+                          {
+                            "matchId": 1183754882, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754883, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "Final", "roundNumber": 5,
+                      "matches": [
+                          {
+                            "matchId": 1183754881, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    }
+                ]
+              }
+          ],
+          "rrGroups": null
+        }
+    },
+  "1100203759_M_0":
+    {
+      "data":
+        {
+          "eventId": 1100704663, "drawsheetStructure": "KO",
+          "koGroups": [
+              {
+                "rounds": [
+                    {
+                      "roundDesc": "1st Round", "roundNumber": 1,
+                      "matches": [
+                          {
+                            "matchId": 1183754936, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754937, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754938, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754939, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754940, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754941, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754942, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754943, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754944, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754945, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754946, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754947, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754948, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754949, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754950, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754951, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "2nd Round", "roundNumber": 2,
+                      "matches": [
+                          {
+                            "matchId": 1183754952, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754953, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754954, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754955, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754956, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754957, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754958, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754959, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "Quarter-finals", "roundNumber": 3,
+                      "matches": [
+                          {
+                            "matchId": 1183754960, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754961, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754962, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754963, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "Semi-finals", "roundNumber": 4,
+                      "matches": [
+                          {
+                            "matchId": 1183754964, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754965, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "Final", "roundNumber": 5,
+                      "matches": [
+                          {
+                            "matchId": 1183754966, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    }
+                ]
+              }
+          ],
+          "rrGroups": null
+        }
+    },
+  "1100205161_M_0":
+    {
+      "data":
+        {
+          "eventId": 1100724067, "drawsheetStructure": "KO",
+          "koGroups": [
+              {
+                "rounds": [
+                    {
+                      "roundDesc": "1st Round", "roundNumber": 1,
+                      "matches": [
+                          {
+                            "matchId": 1183754542, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754543, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754544, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754545, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754546, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754547, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754548, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754549, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754550, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754551, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754552, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754553, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754554, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754555, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754556, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754557, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "2nd Round", "roundNumber": 2,
+                      "matches": [
+                          {
+                            "matchId": 1183754558, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754559, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754560, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754561, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754562, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754563, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754564, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754565, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "Quarter-finals", "roundNumber": 3,
+                      "matches": [
+                          {
+                            "matchId": 1183754566, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754567, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754568, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754569, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "Semi-finals", "roundNumber": 4,
+                      "matches": [
+                          {
+                            "matchId": 1183754570, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183754571, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "Final", "roundNumber": 5,
+                      "matches": [
+                          {
+                            "matchId": 1183754572, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    }
+                ]
+              }
+          ],
+          "rrGroups": null
+        }
+    },
+  "1100205133_M_0":
+    {
+      "data":
+        {
+          "eventId": 1100723756, "drawsheetStructure": "KO",
+          "koGroups": [
+              {
+                "rounds": [
+                    {
+                      "roundDesc": "1st Round", "roundNumber": 1,
+                      "matches": [
+                          {
+                            "matchId": 1183755235, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755236, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755237, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755238, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755239, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755240, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755241, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755242, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755243, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755244, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755245, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755246, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755247, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755248, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755249, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755250, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "2nd Round", "roundNumber": 2,
+                      "matches": [
+                          {
+                            "matchId": 1183755227, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755228, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755229, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755230, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755231, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755232, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755233, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755234, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "Quarter-finals", "roundNumber": 3,
+                      "matches": [
+                          {
+                            "matchId": 1183755223, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755224, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755225, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755226, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "Semi-finals", "roundNumber": 4,
+                      "matches": [
+                          {
+                            "matchId": 1183755221, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755222, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "Final", "roundNumber": 5,
+                      "matches": [
+                          {
+                            "matchId": 1183755220, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    }
+                ]
+              }
+          ],
+          "rrGroups": null
+        }
+    },
+  "1100205052_M_0":
+    {
+      "data":
+        {
+          "eventId": 1100722039, "drawsheetStructure": "KO",
+          "koGroups": [
+              {
+                "rounds": [
+                    {
+                      "roundDesc": "1st Round", "roundNumber": 1,
+                      "matches": [
+                          {
+                            "matchId": 1183755093, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755094, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755095, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755096, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755097, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755098, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755099, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755100, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755101, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755102, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755103, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755104, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755105, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755106, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755107, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755108, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "2nd Round", "roundNumber": 2,
+                      "matches": [
+                          {
+                            "matchId": 1183755085, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755086, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755087, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755088, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755089, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755090, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755091, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755092, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "Quarter-finals", "roundNumber": 3,
+                      "matches": [
+                          {
+                            "matchId": 1183755081, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755082, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755083, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755084, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "Semi-finals", "roundNumber": 4,
+                      "matches": [
+                          {
+                            "matchId": 1183755079, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          },
+                          {
+                            "matchId": 1183755080, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                }
+                            ]
+                          }
+                      ],
+                      "ties": null
+                    },
+                    {
+                      "roundDesc": "Final", "roundNumber": 5,
+                      "matches": [
+                          {
+                            "matchId": 1183755078, "playStatusCode": "TP",
+                            "teams": [
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
+                                },
+                                {
+                                  "scores": [], "isWinner": false, "entryStatus": null
                                 }
                             ]
                           }
