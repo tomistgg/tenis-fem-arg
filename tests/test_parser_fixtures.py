@@ -4,8 +4,9 @@ from datetime import date
 from pathlib import Path
 
 import fitz
+import pytest
 
-from draws import parse_draw_pdf
+from draws import _parse_page, parse_draw_pdf
 from itf import parse_itf_entry_list
 from itf_wtn import propagate_wtn
 from populate_data import itf_load_new
@@ -60,6 +61,19 @@ def test_saved_pdf_fixture_parser():
     assert [player["country"] for player in parsed["players"]] == ["ARG", "ESP"]
     assert parsed["matches"][0]["winner_name"] == "A. Playera"
     assert parsed["matches"][0]["score"] == "64 63"
+
+
+@pytest.mark.parametrize("entry", ["4\n", "4 WC ", "4 WC 2 "])
+@pytest.mark.parametrize("country_suffix", ["BRA", " BRA", "\nBRA"])
+def test_wta_singles_pdf_extracts_country_from_name_line(entry, country_suffix):
+    players, *_ = _parse_page(f"{entry}IBIARABA MELLEIRO, Catarina Mellei{country_suffix}\nQ1")
+
+    assert len(players) == 1
+    assert players[0]["pos"] == 4
+    assert players[0]["name"] == "IBIARABA MELLEIRO, Catarina Mellei"
+    assert players[0]["country"] == "BRA"
+    assert players[0]["entry"] == ("WC" if "WC" in entry else "")
+    assert players[0]["seed"] == ("2" if "2" in entry else "")
 
 
 def test_wta_doubles_pdf_groups_two_players_per_team_and_wrapped_match_tiebreaks():

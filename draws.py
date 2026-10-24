@@ -289,7 +289,7 @@ def _parse_page(text):
                 name = combo_match.group(4).strip()
                 country = ""
                 inline_country = re.match(r"^(.+?)([A-Z]{3})$", name)
-                if inline_country and re.match(r".*[a-z]$", inline_country.group(1)):
+                if inline_country and re.match(r".*[a-z]$", inline_country.group(1).rstrip()):
                     name = inline_country.group(1).strip()
                     country = inline_country.group(2)
                 if not country and i < len(lines):
@@ -348,9 +348,9 @@ def _parse_page(text):
                 current_seed = name_match.group(1) or ""
                 name = name_match.group(2).strip()
                 country = ""
-                # Country code may be concatenated at end of name (e.g. "TiantsoaFRA")
+                # Country code may share the name line, with or without a separating space.
                 inline_country = re.match(r"^(.+?)([A-Z]{3})$", name)
-                if inline_country and re.match(r".*[a-z]$", inline_country.group(1)):
+                if inline_country and re.match(r".*[a-z]$", inline_country.group(1).rstrip()):
                     name = inline_country.group(1).strip()
                     country = inline_country.group(2)
                 # Or country might be on the next line
