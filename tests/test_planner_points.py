@@ -99,17 +99,17 @@ def test_projected_breakdown_resolves_historical_and_planned_replacement_chains(
     """)
 
 
-def test_sunday_ao_cutoff_includes_its_ranking_week_without_w15_w35_delay():
+def test_monday_ao_cutoff_includes_published_points_with_w15_w35_delay():
     run_points_check("""
         context.WTARG_DATA.planner.gsDeadlines = [{name: 'Australian Open',
-            mdCutoff: '2026-11-15', qCutoff: '2026-11-15'}];
+            mdCutoff: '2026-11-16', qCutoff: '2026-11-16'}];
         const finalWeek = {...event, startDate: '2026-11-09', endDate: '2026-11-15'};
-        assert.equal(scenario(finalWeek, 'SF', '2026-11-15').gross, 20);
+        assert.equal(scenario(finalWeek, 'SF', '2026-11-16').gross, 20);
         const delayed = {...finalWeek, level: 'W35'};
-        assert.equal(scenario(delayed, 'SF', '2026-11-15').gross, 0);
+        assert.equal(scenario(delayed, 'SF', '2026-11-16').gross, 0);
         const earlier = {...delayed, startDate: '2026-11-02', endDate: '2026-11-08'};
-        assert.equal(scenario(earlier, 'SF', '2026-11-15').gross, 20);
-        assert.equal(scenario(finalWeek, 'SF', '2026-11-14').gross, 0);
+        assert.equal(scenario(earlier, 'SF', '2026-11-16').gross, 20);
+        assert.equal(scenario(finalWeek, 'SF', '2026-11-15').gross, 0);
     """)
 
 
@@ -1008,7 +1008,7 @@ def test_schedule_detects_overlapping_and_same_day_events():
 def test_ending_weeks_merge_shared_slam_deadlines_and_preserve_the_points_cutoff():
     run_eligibility_check(r"""
         context.WTARG_DATA.planner.gsDeadlines = [{id:'ao', name:'Australian Open', year:2027,
-            mdCutoff:'2026-11-15', qCutoff:'2026-11-15'}];
+            mdCutoff:'2026-11-16', qCutoff:'2026-11-16'}];
         events.find(event => event.id === 'mine').startDate = '2026-11-09';
         events.find(event => event.id === 'alternate').startDate = '2026-11-16';
         let horizon;
@@ -1024,7 +1024,7 @@ def test_ending_weeks_merge_shared_slam_deadlines_and_preserve_the_points_cutoff
         assert(endingHtml.includes('value="2026-11-16">16/11/2026'));
         assert(endingHtml.includes('value="2027-03-01"'));
         assert(!endingHtml.includes('value="2027-03-08"'));
-        assert.equal(horizon,'2026-11-15');
+        assert.equal(horizon,'2026-11-16');
         assert.equal(context.collectPlannerUrlState().ending,'2026-11-09');
         assert.equal(context.plannerSlamOptions()[0].deadlineLabel,"AO'27");
         const startingHtml=root.innerHTML.match(/<select id="op-starting"[^>]*>(.*?)<\/select>/)[1];

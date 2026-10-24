@@ -10,9 +10,11 @@ import wta
 from data_quality import _validate_json_schema
 from entry_withdrawals import (
     load_withdrawals,
+    promote_wta_qualifying_entries,
     public_withdrawals,
     record_itf_withdrawals,
     record_wta_withdrawals,
+    remove_wta_draw_absences,
     withdrawal_deadline,
 )
 from utils import save_json_file
@@ -27,6 +29,121 @@ def player(identifier, name="Example Player", position="3", draw="QUAL", rank="1
         "country": "ARG",
         "rank": rank,
     }
+
+
+def test_wta_draw_promotions_use_entry_ranks_and_do_not_create_withdrawals():
+    main_player = player(99000001, "Existing Main", draw="MAIN", rank="200")
+    justina = {**player(99000002, "Justina Example", rank="440"), "wtn": "14.0"}
+    florencia = player(99000003, "Florencia Example", rank="444")
+    best_qualifier = {**player(99000004, "Fernanda Example", rank="462"), "seed_rank": 400}
+    worse = player(99000005, "Worse Entry", rank="471")
+    previous = [main_player, justina, florencia, best_qualifier, worse]
+    current = [dict(main_player), dict(best_qualifier)]
+    history = {"withdrawals": [], "last_seen": {}}
+    draw = {"players": [{"name": "EXAMPLE, Fernanda", "seed": "1", "rank": "400"}]}
+    updated = promote_wta_qualifying_entries(previous, current, draw, history, "2026-10-24")
+    record_wta_withdrawals(
+        {"event": history}, "event", previous, updated,
+        {"complete_sections": ["MAIN", "QUAL"], "player_ids": ["99000001", "99000004"]}, "2026-10-24",
+    )
+    assert [p["player_id"] for p in updated if p["type"] == "MAIN"] == ["99000001", "99000002", "99000003"]
+    assert next(p for p in updated if p["player_id"] == "99000002")["wtn"] == "14.0"
+    assert [p["player_id"] for p in history["withdrawals"]] == ["99000005"]
+
+
+@pytest.mark.parametrize("rank", ["462", "471", "-", "WTN 12.00", "0"])
+def test_wta_draw_promotions_require_a_strictly_better_numeric_entry_rank(rank):
+    candidate = player(99000001, "Absent Player", rank=rank)
+    qualifying = player(99000002, "Draw Player", rank="462")
+    current = [qualifying]
+    assert promote_wta_qualifying_entries(
+        [candidate, qualifying], current, {"players": [{"name": "PLAYER, Draw"}]}, {}, "2026-10-24",
+    ) == current
+
+
+def test_wta_draw_promotions_recover_only_draw_day_absences_and_need_known_entry_ranks():
+    recent = {**player(99000001, "Recent Absence", rank="440"), "date": "2026-10-24"}
+    earlier = {**player(99000002, "Earlier Withdrawal", rank="430"), "date": "2026-10-16"}
+    qualifier = player(99000003, "Draw Player", rank="462")
+    history = {"withdrawals": [recent, earlier], "last_seen": {}}
+    assert promote_wta_qualifying_entries(
+        [], [qualifier], {"players": [
+            {"name": "Unknown Player", "seed": "1"}, {"name": "PLAYER, Draw"},
+        ]}, history, "2026-10-24",
+    ) == [qualifier]
+    updated = promote_wta_qualifying_entries(
+        [], [qualifier], {"players": [{"name": "PLAYER, Draw"}]}, history, "2026-10-24",
+    )
+    assert [(p["player_id"], p["type"]) for p in updated] == [("99000001", "MAIN"), ("99000003", "QUAL")]
+    assert history["withdrawals"] == [earlier]
+    assert "date" not in updated[0]
+    assert promote_wta_qualifying_entries(
+        updated, updated, {"players": [{"name": "PLAYER, Draw"}]}, history, "2026-10-24",
+    ) == updated
+
+
+@pytest.mark.parametrize("draw_type", ["MAIN", "QUAL"])
+def test_wta_draw_publication_stops_inferring_withdrawals_from_missing_entries(draw_type):
+    old = player(99000001, "Earlier Withdrawal", draw=draw_type)
+    absent = player(99000002, "Possible Wildcard", draw=draw_type)
+    state = {"event": {"withdrawals": [{**old, "date": "2026-10-23"}], "last_seen": {}}}
+    record_wta_withdrawals(
+        state, "event", [absent], [], {"complete_sections": [draw_type]}, "2026-10-24",
+        qualifying_draw_date="2026-10-24",
+    )
+    assert [p["player_id"] for p in state["event"]["withdrawals"]] == [old["player_id"]]
+    assert state["event"]["last_seen"]["id:99000002"]["name"] == "Possible Wildcard"
+
+
+def test_wta_draw_absence_cleanup_preserves_earlier_withdrawals_and_promotion_evidence():
+    earlier = {**player(99000001, "Earlier Withdrawal", rank="430"), "date": "2026-10-23"}
+    unknown = player(99000002, "Possible Wildcard", rank="471")
+    better = player(99000003, "Possible Promotion", rank="440")
+    history = {"withdrawals": [earlier, *[{**p, "date": "2026-10-24"} for p in [unknown, better]]],
+               "last_seen": {"id:99000002": unknown, "id:99000003": better}}
+    remove_wta_draw_absences(history, "2026-10-24")
+    assert history["withdrawals"] == [earlier]
+    qualifier = player(99000004, "Draw Player", rank="462")
+    updated = promote_wta_qualifying_entries(
+        [], [qualifier], {"players": [{"name": "PLAYER, Draw"}]}, history, "2026-10-24",
+    )
+    assert [(p["player_id"], p["type"]) for p in updated] == [("99000003", "MAIN"), ("99000004", "QUAL")]
+    assert history["withdrawals"] == [earlier]
+
+
+def test_published_wta_qualifying_draw_restores_promotions_to_entries_and_schedule(monkeypatch, tmp_path):
+    from site_renderer import _entry_inputs
+
+    key = "https://www.wtatennis.com/tournaments/1180/example/2026/player-list"
+    qualifiers = [player(99000001, "First Promotion", rank="440"), player(99000002, "Second Promotion", rank="444")]
+    possible_wildcard = {**player(99000005, "Possible Wildcard", rank="471"), "date": "2026-10-24"}
+    history = {"withdrawals": [{**p, "date": "2026-10-24"} for p in qualifiers] + [possible_wildcard],
+               "last_seen": {}}
+    path = tmp_path / "entry_withdrawals.json"
+    save_json_file(path, {key: history})
+    monkeypatch.setattr(main, "ENTRY_WITHDRAWALS_FILE", str(path))
+    monkeypatch.setattr(main, "utc_now", lambda: datetime(2026, 10, 25, 10, tzinfo=UTC))
+    monkeypatch.setattr(main, "_load_acceptance_state", lambda: {
+        key: {"qualifying_draw_available_date": "2026-10-24"},
+    })
+    monkeypatch.setattr(main, "get_wta_rankings_cached", lambda *args, **kwargs: [])
+    monkeypatch.setattr(main, "scrape_tournament_players", lambda *args, **kwargs: pytest.fail("Polling is closed"))
+    groups = {"Week": {key: {"name": "WTA 125 Example", "level": "WTA 125", "startDate": "2026-10-26"}}}
+    draw = {"QS": {"players": [{"name": "PLAYER, Draw", "country": "CHI"}]}}
+    store, cache = main.process_tournaments(
+        None, groups, {"2026-10-26": "Week"}, {key: [player(99000003, "Draw Player", rank="462")]},
+        wta_draws={key: {"draws": draw}},
+    )
+    assert {p["name"] for p in store[key] if p["type"] == "MAIN"} == {p["name"] for p in qualifiers}
+    assert load_withdrawals(path)[key]["withdrawals"] == []
+    save_json_file(tmp_path / "entry_lists_cache.json", cache)
+    _, schedule, _ = _entry_inputs(tmp_path, groups, {key: {"draws": draw}})
+    for p in qualifiers:
+        assert schedule[p["name"].upper()]["Week"] == "WTA 125 Example"
+    # A main draw is authoritative; the inference applies only while it is pending.
+    assert main._promote_wta_entries_for_draws(
+        key, qualifiers, [], {**draw, "MDS": {"players": [{"name": "Other Player"}]}}, {}, "2026-10-24",
+    ) == []
 
 
 def withdrawal(identifier, information, position="98", *, wta_rank="", itf_rank=""):

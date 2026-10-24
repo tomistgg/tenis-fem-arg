@@ -6,6 +6,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from config import resolve_player_presentation_name
+from utils import normalize_player_name
 
 WITHDRAWALS_FILENAME = "entry_withdrawals.json"
 DRAW_LABELS = {"MAIN": "MD", "QUAL": "Q", "ALT": "ALT"}
@@ -58,12 +59,95 @@ def _real_players(players):
     return [p for p in players if p.get("name") and not p["name"].startswith("(")]
 
 
-def record_wta_withdrawals(state, key, previous, current, observation, observed_date):
+def remove_wta_draw_absences(history, published_date):
+    """A roster replacement after qualifying publication cannot prove withdrawal."""
+    if published_date:
+        history["withdrawals"] = [
+            p for p in history.get("withdrawals", []) if p.get("date", "") < published_date
+        ]
+
+
+def promote_wta_qualifying_entries(previous, current, qualifying_draw, history, published_date):
+    """Retain missing qualifying entrants ranked above the published qualifying field."""
+    draw_players = qualifying_draw.get("players") or []
+    if not draw_players:
+        return current
+
+    def name_key(player):
+        name = str(player.get("name") or "")
+        if "," in name:
+            surname, given = name.split(",", 1)
+            name = f"{given.strip()} {surname.strip()}"
+        return normalize_player_name(resolve_player_presentation_name(
+            "wta", player_id=player.get("player_id", ""), name=name,
+        ))
+
+    def entry_rank(player):
+        value = str(player.get("rank") or "").strip()
+        return int(value) if value.isdigit() and int(value) > 0 else None
+
+    known = [*history.get("last_seen", {}).values(), *previous, *current]
+    by_name = {name_key(player): player for player in known if name_key(player)}
+    by_id = {str(player["player_id"]): player for player in known if player.get("player_id")}
+    draw_names = {name_key(player) for player in draw_players}
+    draw_ids = {str(player["player_id"]) for player in draw_players if player.get("player_id")}
+    ranks = []
+    for player in draw_players:
+        entry = by_id.get(str(player.get("player_id") or "")) or by_name.get(name_key(player))
+        rank = entry_rank(entry or {})
+        if str(player.get("seed") or "").strip() == "1" and rank is None:
+            return current
+        if rank is not None:
+            ranks.append(rank)
+    if not ranks:
+        return current
+    best_entry_rank = min(ranks)
+
+    # Recover only absences first recorded when the draw appeared, never older withdrawals.
+    candidates = {_player_key(player): player for player in previous if player.get("type") == "QUAL"}
+    earlier_withdrawals = {
+        _player_key(player) for player in history.get("withdrawals", [])
+        if not published_date or player.get("date", "") < published_date
+    }
+    if published_date:
+        for player in history.get("last_seen", {}).values():
+            if player.get("type") == "QUAL" and _player_key(player) not in earlier_withdrawals:
+                candidates.setdefault(_player_key(player), player)
+    for player in history.get("withdrawals", []):
+        if player.get("type") == "QUAL" and published_date and player.get("date", "") >= published_date:
+            candidates.setdefault(_player_key(player), player)
+    main_names = {name_key(player) for player in current if player.get("type") == "MAIN"}
+    promoted = {}
+    for key, player in candidates.items():
+        rank = entry_rank(player)
+        if (rank is None or rank >= best_entry_rank or name_key(player) in draw_names
+                or str(player.get("player_id") or "") in draw_ids or name_key(player) in main_names):
+            continue
+        promoted[key] = {**player, "type": "MAIN", "entry": "", "seed": ""}
+        promoted[key].pop("date", None)
+    if not promoted:
+        return current
+
+    result = [player for player in current if _player_key(player) not in promoted]
+    result.extend(promoted.values())
+    main = sorted((p for p in result if p.get("type") == "MAIN"), key=lambda p: entry_rank(p) or 99999)
+    for position, player in enumerate(main, 1):
+        player["pos"], player["pos_num"] = str(position), position
+    history["withdrawals"] = [p for p in history.get("withdrawals", []) if _player_key(p) not in promoted]
+    for key, player in promoted.items():
+        history.setdefault("last_seen", {})[key] = _snapshot(player)
+    return main + [player for player in result if player.get("type") != "MAIN"]
+
+
+def record_wta_withdrawals(state, key, previous, current, observation, observed_date, *, qualifying_draw_date=None):
     """Infer absence only in successfully parsed, nonempty provider sections."""
     tournament = state.setdefault(key, {"withdrawals": [], "last_seen": {}})
     last_seen = tournament["last_seen"]
     for player in _real_players(previous):
         last_seen.setdefault(_player_key(player), _snapshot(player))
+    if qualifying_draw_date and observed_date >= qualifying_draw_date:
+        remove_wta_draw_absences(tournament, qualifying_draw_date)
+        return
     sections = set(observation.get("complete_sections", []))
     if not sections:
         return

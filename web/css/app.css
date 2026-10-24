@@ -1195,7 +1195,7 @@
             #view-upcoming .calendar-tournament { white-space: normal; overflow: visible; overflow-wrap: anywhere; word-break: normal; text-overflow: clip; }
             #view-upcoming .calendar-tournament.cal-tournament-bold { font-weight: 700 !important; }
             @media (min-width: 769px) {
-                #view-upcoming .calendar-tournament { font-size: 10px; padding: 2px 6px; }
+                #view-upcoming .calendar-tournament { font-size: 11px; padding: 2px 6px; }
                 #view-upcoming .schedule-tournament-name { font-size: 11px; }
                 #view-upcoming #schedule-table thead th { font-size: 10px !important; font-weight: 700 !important; }
                 #view-upcoming * { font-weight: 400 !important; }

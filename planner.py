@@ -119,7 +119,7 @@ def event_available_to(event, player_key):
 
 
 def planner_slam_deadlines(slams):
-    """Share entry cutoffs with Points Breakdown, including its November 15 AO cutoff."""
+    """Share entry cutoffs with Points Breakdown, including its November 16 AO cutoff."""
     deadlines = []
     for slam in slams:
         main, qualifying = _date(slam.get("mdCutoff")), _date(slam.get("qCutoff"))

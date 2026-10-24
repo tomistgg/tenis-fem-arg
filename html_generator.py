@@ -222,10 +222,10 @@ def _apply_gs_start_date_overrides(gs_data):
 
 
 def _apply_special_gs_cutoff_overrides(gs_name, gs_year, q_cutoff, md_cutoff):
-    """Keep the Australian Open fixed at the Nov 15 entry cutoff."""
+    """Keep the Australian Open fixed at the Nov 16 entry cutoff."""
 
     if gs_name == "Australian Open" and isinstance(gs_year, int):
-        fixed_cutoff = datetime(gs_year - 1, 11, 15).strftime("%Y-%m-%d")
+        fixed_cutoff = datetime(gs_year - 1, 11, 16).strftime("%Y-%m-%d")
         return fixed_cutoff, fixed_cutoff
     return q_cutoff, md_cutoff
 

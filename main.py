@@ -66,8 +66,10 @@ from draws import (
 from entry_withdrawals import (
     WITHDRAWALS_FILENAME,
     load_withdrawals,
+    promote_wta_qualifying_entries,
     record_itf_withdrawals,
     record_wta_withdrawals,
+    remove_wta_draw_absences,
     withdrawal_deadline,
 )
 from itf import (
@@ -1204,6 +1206,19 @@ def _record_entry_draw_availability(
     return state
 
 
+def _promote_wta_entries_for_draws(key, previous, current, draws, withdrawal_state, published_date):
+    if _is_manual_entry_list_tournament(key):
+        return current
+    if not (draws.get("QS") or {}).get("players"):
+        return current
+    history = withdrawal_state.setdefault(key, {"withdrawals": [], "last_seen": {}})
+    updated = current
+    if not (draws.get("MDS") or {}).get("players"):
+        updated = promote_wta_qualifying_entries(previous, current, draws["QS"], history, published_date)
+    remove_wta_draw_absences(history, published_date)
+    return updated
+
+
 def process_tournaments(
     driver,
     tournament_groups,
@@ -1214,6 +1229,7 @@ def process_tournaments(
     main_draw_available_keys=None,
     itf_main_draw_available_keys=None,
     fresh_itf_entry_lists=None,
+    wta_draws=None,
 ):
     """Refresh WTA and ITF entry lists, seeds, and withdrawal state."""
     tournament_store = {}
@@ -1307,12 +1323,18 @@ def process_tournaments(
                     acceptance_state_dirty = True
                     main_draw_available = True
                 is_manual_entry = _is_manual_entry_list_tournament(key)
+                published_draws = ((wta_draws or {}).get(store_key) or {}).get("draws") or {}
+
                 entry_refresh_closed = qualifying_draw_available or main_draw_available
                 if is_manual_entry or entry_refresh_closed:
                     if entry_refresh_closed:
                         draw_name = "main" if main_draw_available else "qualifying"
                         logger.debug(f"  WTA {draw_name} draw published, entry list closed: {t_name}")
                     t_list = copy.deepcopy(cached_players)
+                    t_list = _promote_wta_entries_for_draws(
+                        key, cached_players, t_list, published_draws, withdrawal_state,
+                        state_entry.get("qualifying_draw_available_date") or today_str,
+                    )
                 else:
                     observation = {}
                     t_list = scrape_tournament_players(
@@ -1322,12 +1344,24 @@ def process_tournaments(
                         cached_players,
                         observation=observation,
                     )
+                    t_list = _promote_wta_entries_for_draws(
+                        key, cached_players, t_list, published_draws, withdrawal_state,
+                        state_entry.get("qualifying_draw_available_date") or today_str,
+                    )
                     record_wta_withdrawals(
                         withdrawal_state, key, cached_players, t_list, observation, today_str,
+                        qualifying_draw_date=(
+                            state_entry.get("qualifying_draw_available_date")
+                            or (today_str if (published_draws.get("QS") or {}).get("players") else None)
+                        ),
                     )
                     complete_sections = set(observation.get("complete_sections", []))
                     t_list = [p for p in t_list if p.get("type") in complete_sections]
                     t_list = merge_entry_list(cached_players, t_list)
+                    t_list = _promote_wta_entries_for_draws(
+                        key, cached_players, t_list, published_draws, withdrawal_state,
+                        state_entry.get("qualifying_draw_available_date") or today_str,
+                    )
                 if not is_manual_entry:
                     _canonicalize_player_names(t_list, source="wta", names_only=True)
                 t_list = _remove_duplicate_entry_players(t_list, key, t_name)
@@ -1888,6 +1922,7 @@ def main():
             qualifying_draw_available_keys=qualifying_draw_available_keys,
             main_draw_available_keys=main_draw_available_keys,
             fresh_itf_entry_lists=fresh_itf_entry_lists,
+            wta_draws=_normalize_draws_store_keys(cached_draws_for_acceptance),
         )
 
         entry_tournament_weeks = {
@@ -2486,11 +2521,29 @@ def main():
             )
         )
     }
-    _record_entry_draw_availability(
+    draw_acceptance_state = _record_entry_draw_availability(
         qualifying_draw_available_keys,
         main_draw_available_keys,
         observed_date=today.isoformat(),
     )
+
+    withdrawal_state = load_withdrawals(ENTRY_WITHDRAWALS_FILE)
+    previous_withdrawals = copy.deepcopy(withdrawal_state)
+    for key, players in entry_cache.items():
+        if not key.startswith("http") or _is_manual_entry_list_tournament(key):
+            continue
+        draw_entry = (draws_store.get(_canonical_draw_store_key(key)) or {}).get("draws") or {}
+        if not (draw_entry.get("QS") or {}).get("players"):
+            continue
+        publication = draw_acceptance_state.get(_canonical_draw_store_key(key), {}).get(
+            "qualifying_draw_available_date"
+        )
+        updated = _promote_wta_entries_for_draws(key, players, players, draw_entry, withdrawal_state, publication)
+        entry_cache[key] = updated
+        if key in tournament_store:
+            tournament_store[key] = updated
+    if withdrawal_state != previous_withdrawals:
+        save_json_file(ENTRY_WITHDRAWALS_FILE, withdrawal_state)
 
     # Remove any ITF draw entries that do not contain ARG players.
     argless_draw_keys = [

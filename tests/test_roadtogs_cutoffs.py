@@ -2,8 +2,21 @@ from datetime import date
 
 from html_generator import (
     _apply_gs_start_date_overrides,
+    _apply_special_gs_cutoff_overrides,
+    _build_gs_cutoff_boxes,
     _roll_forward_passed_gs_cutoffs,
 )
+
+
+def test_ao_cutoff_is_monday_november_16_with_matching_points_weeks():
+    qualifying, main = _apply_special_gs_cutoff_overrides("Australian Open", 2027, "N/A", "N/A")
+    assert qualifying == main == "2026-11-16"
+    assert date.fromisoformat(main).weekday() == 0
+    boxes = _build_gs_cutoff_boxes([
+        {"name": "Australian Open", "year": 2027, "qCutoff": qualifying, "mdCutoff": main},
+    ], set())
+    assert "Last week for AO in W50+" in [label for _, label in boxes["2026-11-09"]]
+    assert "Last week for AO in W15/35" in [label for _, label in boxes["2026-11-02"]]
 
 
 def _us_open_2026():
