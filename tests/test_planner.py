@@ -71,9 +71,9 @@ def test_published_wta_main_draw_can_leave_qualifying_entry_open():
 
 def test_planner_reuses_australian_open_deadlines_from_points_breakdown():
     actual = planner_slam_deadlines([{"id": "AO", "name": "Australian Open", "year": 2027,
-                                     "mdCutoff": "2026-11-15", "qCutoff": "2026-11-15"}])
-    assert actual[0]["mdCutoff"] == "2026-11-15"
-    assert actual[0]["qCutoff"] == "2026-11-15"
+                                     "mdCutoff": "2026-12-07", "qCutoff": "2026-12-21"}])
+    assert actual[0]["mdCutoff"] == "2026-12-07"
+    assert actual[0]["qCutoff"] == "2026-12-21"
 
 
 def _fixture(directory):

@@ -84,10 +84,7 @@
         const asOf = global.WTARG_DATA.planner?.asOf || new Date().toISOString().slice(0, 10);
         const lastPublication = selections.map(item => pointDate(item.event)).filter(Boolean).sort().pop() || asOf;
         horizon = day(horizon || lastPublication);
-        const aoCutoff = (global.WTARG_DATA.planner?.gsDeadlines || []).some(gs =>
-            gs.name === 'Australian Open' && (gs.mdCutoff === horizon || gs.qCutoff === horizon));
-        // The site's Sunday AO cutoff includes that week's Monday ranking publication.
-        const publicationCutoff = aoCutoff && date(horizon).getUTCDay() === 0 ? addDays(horizon, 1) : horizon;
+        const publicationCutoff = horizon;
         const warnings = [];
         const recorded = breakdown(playerName, horizon);
         let results = [...recorded.countable, ...recorded.nonCountable];

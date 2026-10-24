@@ -2,8 +2,30 @@ from datetime import date
 
 from html_generator import (
     _apply_gs_start_date_overrides,
+    _apply_special_gs_cutoff_overrides,
+    _build_gs_cutoff_boxes,
     _roll_forward_passed_gs_cutoffs,
 )
+
+
+def test_ao_uses_separate_december_cutoffs_and_calendar_points_weeks():
+    qualifying, main = _apply_special_gs_cutoff_overrides("Australian Open", 2027, "N/A", "N/A")
+    assert (qualifying, main) == ("2026-12-21", "2026-12-07")
+    slams = [{"name": "Australian Open", "year": 2027, "qCutoff": qualifying, "mdCutoff": main}]
+    boxes = _build_gs_cutoff_boxes(slams, set())
+    for week, label in [
+        ("2026-11-30", "Last week for AO MD in W50+"),
+        ("2026-11-23", "Last week for AO MD in W15/W35"),
+        ("2026-12-14", "Last week for AO Q in W50+"),
+        ("2026-12-07", "Last week for AO Q in W15/W35"),
+    ]:
+        assert label in [label for _, label in boxes[week]]
+    _roll_forward_passed_gs_cutoffs(slams, date(2026, 12, 8))
+    assert slams[0]["year"] == 2027
+    _roll_forward_passed_gs_cutoffs(slams, date(2026, 12, 22))
+    assert (slams[0]["year"], slams[0]["qCutoff"], slams[0]["mdCutoff"]) == (
+        2028, "2027-12-21", "2027-12-07"
+    )
 
 
 def _us_open_2026():
