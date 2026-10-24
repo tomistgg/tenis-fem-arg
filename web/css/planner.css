@@ -1,5 +1,4 @@
-/* Week menus extend below the short view before a player is selected. */
-#view-planner { overflow: visible; }
+#view-planner { overflow-y: auto; }
 #planner-root { color: var(--c-text-primary); padding: 14px 18px 25px; width: 100%; box-sizing: border-box; }
 #planner-root * { box-sizing: border-box; }
 .op-hero, .op-workspace { max-width: 680px; margin: 0 auto; }

@@ -207,9 +207,6 @@ def _roll_forward_passed_gs_cutoffs(gs_data, today):
         gs["mdCutoff"] = (datetime.strptime(gs["mdCutoff"], "%Y-%m-%d") + timedelta(weeks=52)).strftime("%Y-%m-%d")
         if isinstance(gs.get("year"), int):
             gs["year"] += 1
-        gs["qCutoff"], gs["mdCutoff"] = _apply_special_gs_cutoff_overrides(
-            gs.get("name"), gs.get("year"), gs["qCutoff"], gs["mdCutoff"]
-        )
 
 
 def _apply_gs_start_date_overrides(gs_data):
@@ -225,10 +222,11 @@ def _apply_gs_start_date_overrides(gs_data):
 
 
 def _apply_special_gs_cutoff_overrides(gs_name, gs_year, q_cutoff, md_cutoff):
-    """Use December 21 qualifying and December 7 main-draw AO entry cutoffs."""
+    """Keep the Australian Open fixed at the Nov 15 entry cutoff."""
 
     if gs_name == "Australian Open" and isinstance(gs_year, int):
-        return f"{gs_year - 1}-12-21", f"{gs_year - 1}-12-07"
+        fixed_cutoff = datetime(gs_year - 1, 11, 15).strftime("%Y-%m-%d")
+        return fixed_cutoff, fixed_cutoff
     return q_cutoff, md_cutoff
 
 
@@ -268,18 +266,10 @@ def _build_gs_cutoff_boxes(gs_data, frozen_mondays):
         )
 
         if gs.get("name") == "Australian Open":
-            for di, draw_type in enumerate(("MD", "Q")):
-                cutoff_str = gs.get("mdCutoff" if draw_type == "MD" else "qCutoff")
-                if cutoff_str in (None, "N/A", ""):
-                    continue
-                cutoff_dt = datetime.strptime(cutoff_str, "%Y-%m-%d")
-                last_dt = cutoff_dt - timedelta(days=cutoff_dt.weekday(), weeks=1)
-                if cutoff_str in frozen_mondays:
-                    last_dt -= timedelta(weeks=1)
-                _register_cutoff_box(boxes, last_dt.strftime("%Y-%m-%d"), gi * 3 + di * 2,
-                                     f"Last week for AO {draw_type} in W50+")
-                _register_cutoff_box(boxes, (last_dt - timedelta(weeks=1)).strftime("%Y-%m-%d"),
-                                     gi * 3 + di * 2 + 1, f"Last week for AO {draw_type} in W15/W35")
+            default_year = gs.get("year") or madrid_today().year
+            ao_dt = datetime.strptime(f"{default_year - 1}-11-09", "%Y-%m-%d")
+            _register_cutoff_box(boxes, (ao_dt - timedelta(weeks=1)).strftime("%Y-%m-%d"), gi * 3, "Last week for AO in W15/35")
+            _register_cutoff_box(boxes, ao_dt.strftime("%Y-%m-%d"), gi * 3, "Last week for AO in W50+")
             continue
 
         start_dt = datetime.strptime(gs["mdCutoff"], "%Y-%m-%d") + timedelta(weeks=6)

@@ -3292,31 +3292,6 @@
                 margin: -2px 0 4px; font-size: 14px; color: #334155; text-align: center;
             }
             .home-note strong { color: #75AADB; }
-            .home-announcement {
-                order: 1;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                max-width: 100%;
-                box-sizing: border-box;
-                margin: 0;
-                padding: 10px 14px;
-                border: 1px solid rgba(255,255,255,.24);
-                border-radius: 16px;
-                background: #fff;
-                color: #000;
-                box-shadow: 0 12px 30px rgba(0,0,0,.14);
-                font-size: clamp(7px, .8vw, 11px);
-                line-height: 1.5;
-                text-align: center;
-            }
-            .home-announcement::before { content: "!"; flex-shrink: 0; color: #c00000; font-size: 20px; font-weight: 900; }
-            .home-announcement-text { white-space: nowrap; }
-            @media (max-width: 900px) {
-                .home-announcement { width: min(100%, 34em); padding: 8px 10px; gap: 6px; border-radius: 13px; font-size: clamp(8px, 2.35vw, 10px); }
-                .home-announcement-text { white-space: normal; }
-                html:lang(es) .home-announcement { width: min(100%, 40em); }
-            }
             .home-icon { width: 28px; height: 28px; stroke: #1e293b; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
             .home-btn .home-icon { margin-left: 6px; }
             .home-btn .home-icon-img { margin-left: 6px; }

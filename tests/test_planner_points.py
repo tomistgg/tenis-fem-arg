@@ -99,21 +99,17 @@ def test_projected_breakdown_resolves_historical_and_planned_replacement_chains(
     """)
 
 
-def test_ao_cutoffs_include_published_points_with_w15_w35_delay():
+def test_sunday_ao_cutoff_includes_its_ranking_week_without_w15_w35_delay():
     run_points_check("""
         context.WTARG_DATA.planner.gsDeadlines = [{name: 'Australian Open',
-            mdCutoff: '2026-12-07', qCutoff: '2026-12-21'}];
-        for (const [cutoff, start, end, earlierStart, earlierEnd] of [
-            ['2026-12-07', '2026-11-30', '2026-12-06', '2026-11-23', '2026-11-29'],
-            ['2026-12-21', '2026-12-14', '2026-12-20', '2026-12-07', '2026-12-13']]) {
-            const finalWeek = {...event, startDate: start, endDate: end};
-            assert.equal(scenario(finalWeek, 'SF', cutoff).gross, 20);
-            const delayed = {...finalWeek, level: 'W35'};
-            assert.equal(scenario(delayed, 'SF', cutoff).gross, 0);
-            const earlier = {...delayed, startDate: earlierStart, endDate: earlierEnd};
-            assert.equal(scenario(earlier, 'SF', cutoff).gross, 20);
-            assert.equal(scenario(finalWeek, 'SF', finalWeek.endDate).gross, 0);
-        }
+            mdCutoff: '2026-11-15', qCutoff: '2026-11-15'}];
+        const finalWeek = {...event, startDate: '2026-11-09', endDate: '2026-11-15'};
+        assert.equal(scenario(finalWeek, 'SF', '2026-11-15').gross, 20);
+        const delayed = {...finalWeek, level: 'W35'};
+        assert.equal(scenario(delayed, 'SF', '2026-11-15').gross, 0);
+        const earlier = {...delayed, startDate: '2026-11-02', endDate: '2026-11-08'};
+        assert.equal(scenario(earlier, 'SF', '2026-11-15').gross, 20);
+        assert.equal(scenario(finalWeek, 'SF', '2026-11-14').gross, 0);
     """)
 
 
@@ -687,7 +683,7 @@ def test_delay_markers_appear_only_for_w15_w35_in_w50_cutoff_weeks():
     run_eligibility_check("""
         context.WTARG_DATA.planner.w50CutoffWeeks = ['2026-11-09'];
         context.WTARG_DATA.planner.w50CutoffDraws = {
-            '2026-11-09': [{name:'Roland Garros',draw:''}]};
+            '2026-11-09': [{name:'Australian Open',draw:''}]};
         events.push({...common, id: 'earlier', level: 'W35',
                 entries: [{playerKey: 'player-1', type: 'MAIN', position: 8}]},
             {...common, id: 'delayed', level: 'W35', startDate: '2026-11-09'},
@@ -701,7 +697,7 @@ def test_delay_markers_appear_only_for_w15_w35_in_w50_cutoff_weeks():
         assert(!root.innerHTML.includes('+1w'));
         assert(!root.innerHTML.includes('Main draw #8'));
         assert(!root.innerHTML.includes('op-calendar-entry'));
-        assert(root.innerHTML.includes('points not added before RG deadline'));
+        assert(root.innerHTML.includes('points not added before AO deadline'));
         assert(root.innerHTML.indexOf('op-week-note') < root.innerHTML.lastIndexOf('</h3>'));
         context.WTARG_DATA.planner.w50CutoffDraws['2026-11-09'] = [{name:'Roland Garros',draw:'Q'}];
         click('clear-schedule', '');
@@ -1011,7 +1007,7 @@ def test_schedule_detects_overlapping_and_same_day_events():
 
 def test_ending_weeks_merge_shared_slam_deadlines_and_preserve_the_points_cutoff():
     run_eligibility_check(r"""
-        context.WTARG_DATA.planner.gsDeadlines = [{id:'rg', name:'Roland Garros', year:2027,
+        context.WTARG_DATA.planner.gsDeadlines = [{id:'ao', name:'Australian Open', year:2027,
             mdCutoff:'2026-11-15', qCutoff:'2026-11-15'}];
         events.find(event => event.id === 'mine').startDate = '2026-11-09';
         events.find(event => event.id === 'alternate').startDate = '2026-11-16';
@@ -1020,19 +1016,19 @@ def test_ending_weeks_merge_shared_slam_deadlines_and_preserve_the_points_cutoff
             horizon=target; return {baseline:200,gain:0,total:200,replaced:[]};
         };
         await context.restorePlannerUrlState(new URLSearchParams({player:'test-player',
-            starting:'2026-11-02', ending:'gs-rg-2027-q'}));
+            starting:'2026-11-02', ending:'gs-ao-2027-q'}));
         const endingHtml=root.innerHTML.match(/<select id="op-ending"[^>]*>(.*?)<\/select>/)[1];
         assert(!endingHtml.includes('optgroup'));
-        assert.equal((endingHtml.match(/RG&#39;27/g)||[]).length,1);
-        assert(endingHtml.includes('value="2026-11-09" selected>RG&#39;27 · 09/11/2026'));
+        assert.equal((endingHtml.match(/AO&#39;27/g)||[]).length,1);
+        assert(endingHtml.includes('value="2026-11-09" selected>AO&#39;27 · 09/11/2026'));
         assert(endingHtml.includes('value="2026-11-16">16/11/2026'));
         assert(endingHtml.includes('value="2027-03-01"'));
         assert(!endingHtml.includes('value="2027-03-08"'));
         assert.equal(horizon,'2026-11-15');
         assert.equal(context.collectPlannerUrlState().ending,'2026-11-09');
-        assert.equal(context.plannerSlamOptions()[0].deadlineLabel,"RG'27");
+        assert.equal(context.plannerSlamOptions()[0].deadlineLabel,"AO'27");
         const startingHtml=root.innerHTML.match(/<select id="op-starting"[^>]*>(.*?)<\/select>/)[1];
-        assert(startingHtml.includes('value="2026-11-09">RG&#39;27 · 09/11/2026'));
+        assert(startingHtml.includes('value="2026-11-09">AO&#39;27 · 09/11/2026'));
         assert(root.innerHTML.includes('data-event="mine"'));
         assert(!root.innerHTML.includes('data-event="alternate"'));
         handlers.change({target:{dataset:{filter:'ending'},value:'2026-11-23'}});
@@ -1040,42 +1036,28 @@ def test_ending_weeks_merge_shared_slam_deadlines_and_preserve_the_points_cutoff
         assert.equal(horizon,'2026-11-30');
         handlers.change({target:{dataset:{filter:'starting'},value:'2026-11-16'}});
         const laterEndingHtml=root.innerHTML.match(/<select id="op-ending"[^>]*>(.*?)<\/select>/)[1];
-        assert(!laterEndingHtml.includes('RG&#39;27'));
+        assert(!laterEndingHtml.includes('AO&#39;27'));
         handlers.change({target:{dataset:{filter:'starting'},value:'2026-10-19'}});
         const fullEndingHtml=root.innerHTML.match(/<select id="op-ending"[^>]*>(.*?)<\/select>/)[1];
         assert.equal((fullEndingHtml.match(/<option /g)||[]).length,20);
     """)
 
 
-def test_ao_deadlines_preserve_the_default_ending_week_range_with_distinct_draws():
-    run_eligibility_check(r"""
-        context.WTARG_DATA.planner.gsDeadlines = [{id:'ao',name:'Australian Open',year:2027,
-            mdCutoff:'2026-12-07',qCutoff:'2026-12-21'},
-            {id:'wim',name:'Wimbledon',year:2027,mdCutoff:'2027-05-17',qCutoff:'2027-05-31'},
-            {id:'unknown',name:'Missing dates',year:2027,mdCutoff:'N/A',qCutoff:null}];
-        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player'}));
-        const endingHtml=root.innerHTML.match(/<select id="op-ending"[^>]*>(.*?)<\/select>/)[1];
-        assert(endingHtml.includes('value="2026-11-30">AO&#39;27 MD · 30/11/2026'));
-        assert(endingHtml.includes('value="2026-12-14">AO&#39;27 Q · 14/12/2026'));
-        assert(endingHtml.includes('value="2026-12-21">21/12/2026'));
-        assert(endingHtml.includes('value="2027-03-01"'));
-        assert(!endingHtml.includes('value="2027-03-08"'));
-        assert(!endingHtml.includes('WMB'));
-        assert(!endingHtml.includes('Missing dates'));
-        assert.deepEqual(Array.from(context.plannerSlamOptions(), item => item.deadlineLabel),
-            ["AO'27 MD", "AO'27 Q", "WMB'27 MD", "WMB'27 Q"]);
-    """)
-
-
 def test_ending_weeks_extend_through_the_next_qualifying_deadline_with_distinct_draws():
     run_eligibility_check(r"""
         context.WTARG_DATA.planner.gsDeadlines = [{id:'rg',name:'Roland Garros',year:2027,
-            mdCutoff:'2027-04-12',qCutoff:'2027-04-26'}];
+            mdCutoff:'2027-04-12',qCutoff:'2027-04-26'},
+            {id:'wim',name:'Wimbledon',year:2027,mdCutoff:'2027-05-17',qCutoff:'2027-05-31'},
+            {id:'unknown',name:'Missing dates',year:2027,mdCutoff:'N/A',qCutoff:null}];
         await context.restorePlannerUrlState(new URLSearchParams({player:'test-player'}));
         const endingHtml=root.innerHTML.match(/<select id="op-ending"[^>]*>(.*?)<\/select>/)[1];
         assert(endingHtml.includes('value="2027-04-05">RG&#39;27 MD · 05/04/2027'));
         assert(endingHtml.includes('value="2027-04-19">RG&#39;27 Q · 19/04/2027'));
         assert(!endingHtml.includes('value="2027-04-26"'));
+        assert(!endingHtml.includes('WMB'));
+        assert(!endingHtml.includes('Missing dates'));
+        assert.deepEqual(Array.from(context.plannerSlamOptions(), item => item.deadlineLabel),
+            ["RG'27 MD", "RG'27 Q", "WMB'27 MD", "WMB'27 Q"]);
     """)
 
 

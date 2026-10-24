@@ -21,14 +21,6 @@
     .home-hero { width: 100%; min-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 8px 12px; box-sizing: border-box; }
     .home-title { margin: 0; text-align: center; line-height: 0; }
     .home-logo { display: block; width: min(240px, 58vw); height: auto; }
-    .home-announcement { display: flex; align-items: center; gap: 8px; max-width: 100%; box-sizing: border-box; margin: 0; padding: 10px 14px; border: 1px solid rgba(255,255,255,.24); border-radius: 16px; background: #fff; color: #000; box-shadow: 0 12px 30px rgba(0,0,0,.14); font-size: clamp(7px, .8vw, 11px); line-height: 1.5; text-align: center; }
-    .home-announcement::before { content: "!"; flex-shrink: 0; color: #c00000; font-size: 20px; font-weight: 900; }
-    .home-announcement-text { white-space: nowrap; }
-    @media (max-width: 900px) {
-      .home-announcement { width: min(100%, 34em); padding: 8px 10px; gap: 6px; border-radius: 13px; font-size: clamp(8px, 2.35vw, 10px); }
-      .home-announcement-text { white-space: normal; }
-      html:lang(es) .home-announcement { width: min(100%, 40em); }
-    }
     .home-note { margin: -2px 0 4px; font-size: 14px; color: #334155; text-align: center; }
     .home-note strong { color: #75AADB; }
     .home-grid { width: 100%; max-width: 1200px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 0 auto; justify-items: center; }
@@ -112,7 +104,6 @@
 <body>
   <div class="home-hero">
     <h1 class="home-title"><img class="home-logo" src="assets/wtarg-app-icon.png" alt="Women's Tennis Argentina"></h1>
-    <p class="home-announcement"><span class="home-announcement-text">Changed Australian Open cut off dates to December 7th (Main Draw) and December 21st (Qualifying) after confirmation from official Fact Sheet.</span></p>
     <div class="home-grid">
       <a class="home-btn" href="app.html#entrylists"><img class="home-icon-img" src="assets/files.png" alt="Files icon"><span class="home-label">Entry Lists</span></a>
       <a class="home-btn" href="app.html#roadtogs"><img class="home-icon-img" src="assets/data.png" alt="Data icon"><span class="home-label">Points Breakdown</span></a>
@@ -144,7 +135,7 @@
     }
   </script>
   <script src="assets/anonymous-analytics.js?v=20261019-planner-route"></script>
-  <script src="assets/translations.js?v=20261024-ao-notice"></script>
+  <script src="assets/translations.js?v=20261019-planner-route"></script>
   <script src="assets/language.js"></script>
 </body>
 </html>
