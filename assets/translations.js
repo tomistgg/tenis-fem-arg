@@ -3,6 +3,7 @@
 window.WTARG_TRANSLATIONS = {
     es: {
         "Home": "Inicio",
+        "Changed Australian Open cut off dates to December 7th (Main Draw) and December 21st (Qualifying) after confirmation from official Fact Sheet.": "Se cambiaron las fechas de corte del Australian Open al 7 de diciembre (cuadro principal) y al 21 de diciembre (clasificación), tras la confirmación en la ficha técnica oficial.",
         "Top pages": "Páginas principales",
         "Explore": "Explorar",
         "More": "Más",

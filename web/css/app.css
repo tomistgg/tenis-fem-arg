@@ -3292,6 +3292,15 @@
                 margin: -2px 0 4px; font-size: 14px; color: #334155; text-align: center;
             }
             .home-note strong { color: #75AADB; }
+            .home-announcement {
+                order: 1;
+                max-width: 850px;
+                margin: 0;
+                color: #fff;
+                font-size: 14px;
+                line-height: 1.6;
+                text-align: center;
+            }
             .home-icon { width: 28px; height: 28px; stroke: #1e293b; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
             .home-btn .home-icon { margin-left: 6px; }
             .home-btn .home-icon-img { margin-left: 6px; }
