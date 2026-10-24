@@ -1128,11 +1128,26 @@
           {"pos": 23, "name": "JOINT, Maya", "country": "AUS", "wtn": "9.32"},
           {"pos": 24, "seed": "11", "name": "GOLUBIC, Viktorija", "country": "SUI", "wtn": "8.85"}
         ],
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "T. Valentova", "score": "62 36 62"},
+          {"round": 1, "match_num": 1, "winner_name": "S. Zhang", "score": "63 36 75"},
+          {"round": 1, "match_num": 2, "winner_name": "K. Birrell", "score": "64 62"},
+          {"round": 1, "match_num": 3, "winner_name": "D. Kasatkina", "score": "62 62"},
+          {"round": 1, "match_num": 4, "winner_name": "H. Watson", "score": "26 75 76(3)"},
+          {"round": 1, "match_num": 5, "winner_name": "A. Parks", "score": "26 76(7) 76(5)"},
+          {"round": 1, "match_num": 6, "winner_name": "A. Sasnovich", "score": "64 75"},
+          {"round": 1, "match_num": 7, "winner_name": "K. Rakhimova", "score": "75 61"},
+          {"round": 1, "match_num": 8, "winner_name": "S. Ishii", "score": "64 63"},
+          {"round": 1, "match_num": 9, "winner_name": "Y. Putintseva", "score": "75 62"},
+          {"round": 1, "match_num": 10, "winner_name": "M. Hontama", "score": "63 61"},
+          {"round": 1, "match_num": 11, "winner_name": "M. Joint", "score": "67(4) 64 75"}
+        ],
         "round_labels": [
           "Q1",
-          "Q2"
+          "Q2",
+          "Qualifier"
         ],
-        "num_rounds": 2
+        "num_rounds": 3
       },
       "MDS":
       {
@@ -1230,6 +1245,64 @@
           "Final"
         ],
         "num_rounds": 4
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/1174/courmayeur-125/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 125 Courmayeur",
+      "level": "WTA 125",
+      "week": "Week of October 26",
+      "startDate": "2026-10-26",
+      "endDate": "2026-11-01",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "Valle D'Aosta Ladies Open",
+        "location": "COURMAYEUR, ITA",
+        "dates": "October 25- November 1 2026",
+        "prize": "€ 100,000",
+        "surface": "Hard, Mapei",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 16,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "LI, Zongyu", "country": "CHN", "wtn": "12.06"},
+          {"pos": 3, "entry": "WC", "name": "MATUELLA, Finja", "country": "ITA", "wtn": "20.27"},
+          {"pos": 4, "seed": "6", "entry": "WC", "name": "MADUZZI, Gaia", "country": "ITA", "wtn": "11.8"},
+          {"pos": 5, "seed": "2", "name": "KOTLIAR, Yelyzaveta", "country": "UKR", "wtn": "12.63"},
+          {"pos": 7, "name": "MORDERGER, Tayisiya", "country": "GER", "wtn": "15.22"},
+          {"pos": 8, "seed": "8", "name": "SENICA, Alja", "country": "SLO", "wtn": "13.94"},
+          {"pos": 9, "seed": "3", "name": "NAGY, Adrienn", "country": "HUN", "wtn": "12.13"},
+          {"pos": 12, "seed": "5", "name": "YESYPCHUK, Daria", "country": "UKR", "wtn": "11.99"},
+          {"pos": 13, "seed": "4", "name": "SAKELLARIDI, Sapfo", "country": "GRE", "wtn": "13.63"},
+          {"pos": 15, "name": "MORDERGER, Yana", "country": "GER", "wtn": "15.71"},
+          {"pos": 16, "seed": "7", "name": "CHIESA, Enola", "country": "ITA", "wtn": "13.37"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "Z. Li"},
+          {"round": 1, "match_num": 2, "winner_name": "Y. Kotliar"},
+          {"round": 1, "match_num": 4, "winner_name": "A. Nagy"},
+          {"round": 1, "match_num": 5, "winner_name": "D. Yesypchuk"},
+          {"round": 1, "match_num": 6, "winner_name": "S. Sakellaridi"}
+        ],
+        "byes": [
+          2,
+          6,
+          10,
+          11,
+          14
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2",
+          "Qualifier"
+        ],
+        "num_rounds": 3
       }
     }
   }
