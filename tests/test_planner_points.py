@@ -1047,7 +1047,7 @@ def test_ending_weeks_merge_shared_slam_deadlines_and_preserve_the_points_cutoff
     """)
 
 
-def test_ending_weeks_extend_through_the_next_qualifying_deadline_with_distinct_draws():
+def test_ao_deadlines_preserve_the_default_ending_week_range_with_distinct_draws():
     run_eligibility_check(r"""
         context.WTARG_DATA.planner.gsDeadlines = [{id:'ao',name:'Australian Open',year:2027,
             mdCutoff:'2026-12-07',qCutoff:'2026-12-21'},
@@ -1057,11 +1057,25 @@ def test_ending_weeks_extend_through_the_next_qualifying_deadline_with_distinct_
         const endingHtml=root.innerHTML.match(/<select id="op-ending"[^>]*>(.*?)<\/select>/)[1];
         assert(endingHtml.includes('value="2026-11-30">AO&#39;27 MD · 30/11/2026'));
         assert(endingHtml.includes('value="2026-12-14">AO&#39;27 Q · 14/12/2026'));
-        assert(!endingHtml.includes('value="2026-12-21"'));
+        assert(endingHtml.includes('value="2026-12-21">21/12/2026'));
+        assert(endingHtml.includes('value="2027-03-01"'));
+        assert(!endingHtml.includes('value="2027-03-08"'));
         assert(!endingHtml.includes('WMB'));
         assert(!endingHtml.includes('Missing dates'));
         assert.deepEqual(Array.from(context.plannerSlamOptions(), item => item.deadlineLabel),
             ["AO'27 MD", "AO'27 Q", "WMB'27 MD", "WMB'27 Q"]);
+    """)
+
+
+def test_ending_weeks_extend_through_the_next_qualifying_deadline_with_distinct_draws():
+    run_eligibility_check(r"""
+        context.WTARG_DATA.planner.gsDeadlines = [{id:'rg',name:'Roland Garros',year:2027,
+            mdCutoff:'2027-04-12',qCutoff:'2027-04-26'}];
+        await context.restorePlannerUrlState(new URLSearchParams({player:'test-player'}));
+        const endingHtml=root.innerHTML.match(/<select id="op-ending"[^>]*>(.*?)<\/select>/)[1];
+        assert(endingHtml.includes('value="2027-04-05">RG&#39;27 MD · 05/04/2027'));
+        assert(endingHtml.includes('value="2027-04-19">RG&#39;27 Q · 19/04/2027'));
+        assert(!endingHtml.includes('value="2027-04-26"'));
     """)
 
 
