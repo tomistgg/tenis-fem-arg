@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from calendar_builder import get_monday_from_date
-from config import CONTINENT_KEYS
+from config import CONTINENT_KEYS, resolve_player_display_name
 from html_generator import generate_html
 from main import (
     _append_schedule_label,
@@ -113,12 +113,12 @@ def _entry_inputs(
     unranked_arg_names: set[str] = set()
 
     def draw_player_key(name: Any) -> str:
-        """Normalize entry-list and draw names to their shared First Last form."""
+        """Resolve entry-list and draw aliases to the same canonical name."""
         value = str(name or "").strip()
         if "," in value:
             last_name, first_name = value.split(",", 1)
             value = f"{first_name.strip()} {last_name.strip()}"
-        return normalize_player_name(value)
+        return normalize_player_name(resolve_player_display_name("wta", name=value))
 
     def published_draw_players(tournament_key: str, draw_type: str) -> set[str]:
         draw_entry = (draws_store or {}).get(tournament_key)

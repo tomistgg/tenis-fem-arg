@@ -2,6 +2,8 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+import pytest
+
 import site_renderer
 from site_renderer import _entry_inputs, _ranking_inputs, _tournament_inputs, _visible_schedule_monday_map
 from time_utils import NEW_YORK
@@ -217,3 +219,35 @@ def test_schedule_places_wta_before_itf_regardless_of_player_priority(tmp_path: 
     _, schedule_map, _ = _entry_inputs(tmp_path, tournament_groups)
 
     assert schedule_map["JULIA RIERA"][week] == "WTA 125 Ankara<br>W50 Berkeley, CA"
+
+
+@pytest.mark.parametrize(
+    "name,entry_type,draw_type,draw_name,suffix",
+    [
+        ("Lourdes Carlé", "MAIN", "MDS", "CARLE, Maria Lourdes", ""),
+        ("Florencia Urrutia", "MAIN", "MDS", "URRUTIA, Maria", ""),
+        ("Luna Cinalli", "QUAL", "QS", "CINALLI, Luna Maria", " (Q)"),
+        ("Florencia Urrutia", "ALT", "MDS", "URRUTIA, Maria", " (ALT 2)"),
+    ],
+)
+def test_schedule_matches_published_singles_draw_aliases(tmp_path, name, entry_type, draw_type, draw_name, suffix):
+    key = "https://www.wtatennis.com/tournaments/1180/curitiba-125/2026/player-list"
+    week = "Week of October 26"
+    groups = {week: {key: {"name": "WTA 125 Curitiba", "level": "WTA 125"}}}
+    entries = [
+        {"name": name, "country": "ARG", "type": entry_type, "pos": "2"},
+        {"name": "Absent Player", "country": "ARG", "type": entry_type},
+        {"name": "Doubles Only", "country": "ARG", "type": "MAIN"},
+    ]
+    (tmp_path / "entry_lists_cache.json").write_text(json.dumps({key: entries}), encoding="utf-8")
+    draws = {
+        "MDS": {"players": [{"name": "Other Main Player"}]},
+        "QS": {"players": [{"name": "Other Qualifier"}]},
+        "MDD": {"players": [{"name": "ONLY, Doubles", "country": "ARG"}]},
+    }
+    draws[draw_type]["players"].append({"name": draw_name, "country": "ARG"})
+
+    _, schedule, names = _entry_inputs(tmp_path, groups, {key: {"draws": draws}})
+
+    assert schedule == {name.upper(): {week: f"WTA 125 Curitiba{suffix}"}}
+    assert names == {name.upper()}

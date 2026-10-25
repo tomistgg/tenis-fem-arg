@@ -33,12 +33,12 @@
                 <button type="button" class="menu-item" id="btn-draws" onclick="switchTab('draws')">Draws</button>
                 <button type="button" class="menu-item" id="btn-calendar" onclick="switchTab('calendar')">Calendar</button>
                 <button type="button" class="menu-item" id="btn-rankings" onclick="switchTab('rankings')"><span class="desktop-only">WTA Rankings</span><span class="mobile-only">WTA Ranks</span></button>
-                <button type="button" class="menu-item" id="btn-ao27mdrace" onclick="switchTab('ao27mdrace')">AO27 MD RACE</button>
                 <button type="button" class="menu-item" id="btn-roadtogs" onclick="switchTab('roadtogs')"><span class="desktop-only">Points Breakdown</span><span class="mobile-only">Points Breakd.</span></button>
                 <button type="button" class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</button>
                 <button type="button" class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</button>
                 <button type="button" class="menu-item" id="btn-tstrength" onclick="switchTab('tstrength')">WTA TRN STR</button>
                 <button type="button" class="menu-item" id="btn-information" onclick="switchTab('information')">Firsts &amp; Points</button>
+                <button type="button" class="menu-item" id="btn-ao27mdrace" onclick="switchTab('ao27mdrace')">AO27 MD RACE</button>
             </nav>
 
             <div class="main-content">
@@ -66,10 +66,6 @@
                                 <img class="home-icon-img" src="assets/list.png" alt="List icon" />
                                 <span class="home-label">WTA Rankings</span>
                             </button>
-                            <button class="home-btn" onclick="switchTab('ao27mdrace')">
-                                <img class="home-icon-img" src="assets/trophy.png" alt="Trophy icon" />
-                                <span class="home-label">AO27 MD RACE</span>
-                            </button>
                             <button class="home-btn" onclick="switchTab('roadtogs')">
                                 <img class="home-icon-img" src="assets/data.png" alt="Data icon" />
                                 <span class="home-label">Points Breakdown</span>
@@ -89,6 +85,10 @@
                             <button class="home-btn" onclick="switchTab('information')">
                                 <img class="home-icon-img" src="assets/podium.png" alt="Firsts and points icon" />
                                 <span class="home-label">Firsts &amp; Points</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('ao27mdrace')">
+                                <img class="home-icon-img" src="assets/ranking.png" alt="Ranking icon" />
+                                <span class="home-label">AO27 MD RACE</span>
                             </button>
                         </div>
                         <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()"><svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg><svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><span id="home-dark-label">Dark Mode</span></button>
@@ -713,7 +713,7 @@
         <script src="assets/js/tabs/draws.js?v=20260930-security-1"></script>
         <script src="assets/anonymous-analytics.js?v=20261025-ao27-race"></script>
     <script src="assets/js/router.js?v=20261025-ao27-race"></script>
-    <script src="assets/app-shell.js?v=20261025-ao27-race"></script>
+    <script src="assets/app-shell.js?v=20261025-ao27-ranking-icon"></script>
     <script src="assets/translations.js?v=20261025-ao27-mobile-headers"></script>
     <script src="assets/language.js?v=20261018-entry"></script>
     </body>

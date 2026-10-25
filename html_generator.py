@@ -739,7 +739,7 @@ def _render_ao27_race_rows(data_dir):
         matchup = (
             '<span class="race-matchup" translate="no">vs '
             f'{country_flag_html(player["opponentCountry"], show_code=False)} '
-            f'{escape(player["opponent"].rsplit(" ", 1)[-1])}</span>'
+            f'{escape(player.get("opponentMobileName") or player["opponent"].rsplit(" ", 1)[-1])}</span>'
             if player["opponent"] else ""
         )
         points_if_win = "" if player["pointsIfWin"] is None else str(player["pointsIfWin"])
@@ -755,7 +755,7 @@ def _render_ao27_race_rows(data_dir):
             f'<td class="race-player">{player_name}</td>'
             f'<td class="race-points">{escape(str(player["points"]))}</td>'
             f'<td class="race-playing">{tournament_html(player["playing"])}{matchup}</td>'
-            f'<td class="race-opponent">{player_html(player["opponent"], player["opponentCountry"])}</td>'
+            f'<td class="race-opponent">{player_html(player["opponent"], player["opponentCountry"], player.get("opponentMobileName"))}</td>'
             f'<td class="race-points">{escape(points_if_win)}</td>'
             f'<td class="race-next">{next_weeks}</td></tr>'
         )
