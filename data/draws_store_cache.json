@@ -1437,10 +1437,17 @@
           {"pos": 7, "seed": "4", "name": "AYALA, Lourdes", "country": "ARG", "wtn": "15.05"},
           {"pos": 8, "entry": "WC", "name": "GULIN, Georgia", "country": "BRA", "wtn": "-"}
         ],
-        "round_labels": [
-          "Q1"
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "F. Labrana", "score": "60 60"},
+          {"round": 1, "match_num": 1, "winner_name": "B. Bonardi", "score": "60 63"},
+          {"round": 1, "match_num": 2, "winner_name": "L. M. Cinalli", "score": "61 61"},
+          {"round": 1, "match_num": 3, "winner_name": "L. Ayala", "score": "76(7) 63"}
         ],
-        "num_rounds": 1
+        "round_labels": [
+          "Q1",
+          "Qualifier"
+        ],
+        "num_rounds": 2
       },
       "MDS":
       {
@@ -1506,7 +1513,7 @@
       "week": "Week of October 26",
       "startDate": "2026-10-26",
       "endDate": "2026-11-01",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":false,"has_arg_any":true}
     },
     "draws":
     {
@@ -1542,6 +1549,60 @@
           "Q2"
         ],
         "num_rounds": 2
+      },
+      "MDS":
+      {
+        "tournament_name": "Queretaro Open",
+        "location": "QUERETARO, MEX",
+        "dates": "October 26 - November 1 2026",
+        "prize": "$ 115,000",
+        "surface": "Clay",
+        "draw_type": "SINGLES MAIN DRAW",
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "MARIA, Tatjana", "country": "GER", "wtn": "8.01"},
+          {"pos": 2, "entry": "WC", "name": "GARIBAY ROMERO, Carlota", "country": "MEX", "wtn": "-"},
+          {"pos": 3, "name": "COLMEGNA, Martina", "country": "ITA", "wtn": "12.5"},
+          {"pos": 4, "name": "PAWLIKOWSKA, Zuzanna", "country": "POL", "wtn": "12.26"},
+          {"pos": 5, "name": "HERCOG, Polona", "country": "SLO", "wtn": "11.12"},
+          {"pos": 6, "name": "CAPURRO TABORDA, Martina", "country": "ARG", "wtn": "13.59"},
+          {"pos": 8, "seed": "6", "name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "10.84"},
+          {"pos": 9, "seed": "3", "name": "FERRO, Fiona", "country": "FRA", "wtn": "9.18"},
+          {"pos": 10, "name": "JOHNSON, Sofia", "country": "GBR", "wtn": "10.61"},
+          {"pos": 11, "entry": "WC", "name": "REAMI, Adriana", "country": "USA", "wtn": "13.62"},
+          {"pos": 12, "name": "MI, Lan", "country": "CHN", "wtn": "13.56"},
+          {"pos": 13, "name": "JANICIJEVIC, Selena", "country": "FRA", "wtn": "12.41"},
+          {"pos": 14, "name": "GRUBOR, Ana", "country": "CAN", "wtn": "14.05"},
+          {"pos": 15, "name": "MANDLIK, Elizabeth", "country": "USA", "wtn": "11.28"},
+          {"pos": 16, "seed": "7", "name": "ARANGO, Emiliana", "country": "COL", "wtn": "11.24"},
+          {"pos": 17, "seed": "5", "name": "ZIDANSEK, Tamara", "country": "SLO", "wtn": "10.24"},
+          {"pos": 18, "name": "SCOTT, Katrina", "country": "USA", "wtn": "11.75"},
+          {"pos": 20, "name": "HERRERO LINANA, Alicia", "country": "ESP", "wtn": "9.68"},
+          {"pos": 21, "name": "REASCO GONZALEZ, Mell", "country": "ECU", "wtn": "12.04"},
+          {"pos": 22, "name": "CHERUBINI, Diletta", "country": "ITA", "wtn": "13.0"},
+          {"pos": 23, "entry": "WC", "name": "HUI, Katherine", "country": "USA", "wtn": "13.85"},
+          {"pos": 24, "seed": "4", "name": "ANDREESCU, Bianca", "country": "CAN", "wtn": "8.62"},
+          {"pos": 25, "seed": "8", "name": "PODOROSKA, Nadia", "country": "ARG", "wtn": "9.65"},
+          {"pos": 26, "name": "RAME, Alice", "country": "FRA", "wtn": "11.43"},
+          {"pos": 28, "name": "BULGARU, Miriam", "country": "ROU", "wtn": "11.76"},
+          {"pos": 29, "entry": "WC", "name": "GOMEZ PEZUELA CANO, Marian", "country": "MEX", "wtn": "17.40"},
+          {"pos": 31, "name": "MONNET, Carole", "country": "FRA", "wtn": "11.01"},
+          {"pos": 32, "seed": "2", "name": "JEANJEAN, Leolia", "country": "FRA", "wtn": "9.54"}
+        ],
+        "qualifiers": [
+          7,
+          19,
+          27,
+          30
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
       }
     }
   },
@@ -1583,6 +1644,11 @@
           {"pos": 28, "seed": "9", "name": "SIMON PADROS, Felicitas", "country": "ARG", "itf_id": "800724658", "wtn": "20.59"},
           {"pos": 29, "seed": "8", "name": "BAIER, Jazmin", "country": "ARG", "itf_id": "800756214", "wtn": "27.27"},
           {"pos": 32, "seed": "11", "entry": "WC", "name": "FINCHELSTEIN, Sofia", "country": "ARG", "itf_id": "800750602", "wtn": "-"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 3, "winner_name": "M. Garay", "score": "75 64"},
+          {"round": 1, "match_num": 5, "winner_name": "C. Kilapi", "score": "46 61 10-7"},
+          {"round": 1, "match_num": 7, "winner_name": "S. Nappi", "score": "46 63 10-5"}
         ],
         "byes": [
           2,
