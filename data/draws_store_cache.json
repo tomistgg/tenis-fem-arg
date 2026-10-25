@@ -1335,7 +1335,7 @@
           {"pos": 1, "seed": "1", "name": "LABRANA, Fernanda", "country": "CHI", "wtn": "14.07"},
           {"pos": 2, "entry": "WC", "name": "MENDONCA BERNARDES, Bianca", "country": "BRA", "wtn": "18.46"},
           {"pos": 3, "seed": "2", "name": "BONARDI, Berta", "country": "ARG", "wtn": "16.05"},
-          {"pos": 4, "name": "IBIARABA MELLEIRO, Catarina Mellei", "country": "BRA", "wtn": "-"},
+          {"pos": 4, "name": "IBIARABA MELLEIRO, Catarina Mellei", "country": "BRA", "wtn": "18.23"},
           {"pos": 5, "seed": "3", "name": "CINALLI, Luna Maria", "country": "ARG", "wtn": "14.63"},
           {"pos": 6, "name": "DOURADO, Jennifer", "country": "BRA", "wtn": "17.45"},
           {"pos": 7, "seed": "4", "name": "AYALA, Lourdes", "country": "ARG", "wtn": "15.05"},
@@ -1364,8 +1364,8 @@
       "QS":
       {
         "tournament_name": "Queretaro Open",
-        "location": "QUERETARO",
-        "dates": "October 26-1 2026",
+        "location": "QUERETARO, MEX",
+        "dates": "October 26 - November 1 2026",
         "prize": "$ 115,000",
         "surface": "Clay",
         "draw_type": "SINGLES QUALIFYING DRAW",
@@ -1387,7 +1387,12 @@
           {"pos": 14, "name": "HERAZO, Maria", "country": "COL", "wtn": "13.3"},
           {"pos": 15, "name": "OSBORNE, Alexandra", "country": "AUS", "wtn": "14.86"},
           {"pos": 16, "seed": "8", "name": "HINOJOSA GOMEZ, Jessica", "country": "MEX", "wtn": "13.07"}
-        ]
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2"
+        ],
+        "num_rounds": 2
       }
     }
   },
