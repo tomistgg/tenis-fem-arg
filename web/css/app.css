@@ -2815,7 +2815,7 @@
             /* Navigation: base styles, themes, and responsive variants. */
             .sidebar,
             .mobile-app-header { --c-focus-ring: #9bd5ff; }
-            .menu-item { width: 100%; cursor: pointer; font-family: inherit; background: transparent; text-decoration: none; }
+            .menu-item { width: 100%; cursor: pointer; font-family: inherit; background: transparent; text-decoration: none; box-sizing: border-box; }
             .mobile-menu-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 1000; background: var(--c-chrome-bg); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 18px; }
             .sidebar.mobile-hidden { transform: translateX(-100%); }
             .dark-mode-btn:hover { background: rgba(255,255,255,0.22); }
@@ -3353,6 +3353,8 @@
             }
             .home-btn {
                 font-family: inherit; font-size: 14px; font-weight: bold; color: #1e293b; cursor: pointer; display: flex; align-items: center; justify-content: flex-start; gap: 10px; white-space: normal; line-height: 1.2; overflow: hidden; width: 100%; transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+                text-decoration: none;
+                box-sizing: border-box;
                 flex: 0 1 calc((100% - 48px) / 5);
                 min-height: 92px;
                 padding: 14px 12px;

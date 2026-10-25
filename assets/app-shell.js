@@ -140,7 +140,7 @@
         var order = PRIMARY_TABS.concat(SECONDARY_TABS);
         order.forEach(function (tab, index) {
             var button = Array.prototype.find.call(grid.children, function (item) {
-                return (item.getAttribute('onclick') || '').indexOf("'" + tab + "'") !== -1;
+                return item.dataset.tab === tab;
             });
             if (!button) return;
             button.classList.toggle('home-priority', index < PRIMARY_TABS.length);
@@ -238,6 +238,14 @@
             new MutationObserver(function () { updateShell(currentTab()); })
                 .observe(sidebar, { subtree: true, attributes: true, attributeFilter: ['class'] });
         }
+
+        document.addEventListener('click', function (event) {
+            if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+            var link = event.target.closest('a[data-tab]');
+            if (!link || (link.target && link.target !== '_self') || link.hasAttribute('download')) return;
+            event.preventDefault();
+            window.switchTab(link.dataset.tab);
+        });
 
         document.addEventListener('keydown', function (event) {
             if (!document.body.classList.contains('mobile-more-open')) return;
