@@ -99,6 +99,10 @@ CSVs, player-alias JSON, and current tournament caches. Run the build command
 above to reproduce all deploy files locally from that pulled data; no network
 access is required for the build.
 
+The `AO27 MD RACE` page is available at `ao27mdrace/`. Its table uses the supplied
+race snapshot in `data/ao27_md_race.json`; edit that file to update the points,
+opponents, and tournament plans. The normal site build renders those changes.
+
 Website visits are sent by `assets/anonymous-analytics.js` to the spreadsheet-bound
 receiver in `google_apps_script_visit_tracker.gs`, which aggregates them in
 `Anonymous Page Views`. Both files must allow the same pages and filter keys.

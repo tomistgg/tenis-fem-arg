@@ -16,7 +16,7 @@
         <link href="assets/vendor/select2-4.1.0-rc.0.min.css" rel="stylesheet" />
         <script src="assets/vendor/jquery-3.6.0.min.js"></script>
         <script src="assets/vendor/select2-4.1.0-rc.0.min.js"></script>
-        <link rel="stylesheet" href="assets/app.css?v=20261019-breakdown">
+        <link rel="stylesheet" href="assets/app.css?v=20261025-ao27-next-weeks">
         <link rel="stylesheet" href="assets/planner.css?v=20261019-compact-breakdown">
         <link rel="stylesheet" href="assets/language.css?v=20261002-focus-contrast">
     </head>
@@ -33,6 +33,7 @@
                 <button type="button" class="menu-item" id="btn-draws" onclick="switchTab('draws')">Draws</button>
                 <button type="button" class="menu-item" id="btn-calendar" onclick="switchTab('calendar')">Calendar</button>
                 <button type="button" class="menu-item" id="btn-rankings" onclick="switchTab('rankings')"><span class="desktop-only">WTA Rankings</span><span class="mobile-only">WTA Ranks</span></button>
+                <button type="button" class="menu-item" id="btn-ao27mdrace" onclick="switchTab('ao27mdrace')">AO27 MD RACE</button>
                 <button type="button" class="menu-item" id="btn-roadtogs" onclick="switchTab('roadtogs')"><span class="desktop-only">Points Breakdown</span><span class="mobile-only">Points Breakd.</span></button>
                 <button type="button" class="menu-item" id="btn-history" onclick="switchTab('history')">Match History</button>
                 <button type="button" class="menu-item" id="btn-fedbcup" onclick="switchTab('fedbcup')">Fed/BJK Cup</button>
@@ -64,6 +65,10 @@
                             <button class="home-btn" onclick="switchTab('rankings')">
                                 <img class="home-icon-img" src="assets/list.png" alt="List icon" />
                                 <span class="home-label">WTA Rankings</span>
+                            </button>
+                            <button class="home-btn" onclick="switchTab('ao27mdrace')">
+                                <img class="home-icon-img" src="assets/trophy.png" alt="Trophy icon" />
+                                <span class="home-label">AO27 MD RACE</span>
                             </button>
                             <button class="home-btn" onclick="switchTab('roadtogs')">
                                 <img class="home-icon-img" src="assets/data.png" alt="Data icon" />
@@ -182,6 +187,30 @@
                                     </tr>
                                 </thead>
                                 <tbody id="rankings-body">@@WTARG_RANKINGS_ROWS@@</tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-ao27mdrace" class="single-layout" style="display: none;">
+                    <div class="header-row">
+                        <h1>AO27 MD RACE</h1>
+                    </div>
+                    <div class="content-card">
+                        <div class="table-wrapper" tabindex="0" aria-label="AO27 main draw race table">
+                            <table id="ao27-race-table">
+                                <thead>
+                                    <tr>
+                                        <th class="race-rank" scope="col">RK</th>
+                                        <th class="race-player" scope="col">PLAYER</th>
+                                        <th class="race-points" scope="col">PTS <span class="race-points-detail">NOV 15</span></th>
+                                        <th class="race-playing" scope="col">PLAYING</th>
+                                        <th class="race-opponent" scope="col">OPPONENT</th>
+                                        <th class="race-points" scope="col">PTS <span class="race-points-detail">IF WIN</span></th>
+                                        <th class="race-next" scope="col">NEXT WEEKS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>@@WTARG_AO27_RACE_ROWS@@</tbody>
                             </table>
                         </div>
                     </div>
@@ -677,15 +706,15 @@
         <script src="assets/js/data-loader.js"></script>
         <script src="assets/js/tabs/tstrength.js?v=20261011-wtn-gm"></script>
         <script src="data/player_aliases_wta_itf_bundle.js"></script>
-        <script src="assets/js/app.js?v=20261019-planner-route"></script>
+        <script src="assets/js/app.js?v=20261025-ao27-race"></script>
         <script src="assets/js/tabs/roadtogs.js?v=20261019-breakdown"></script>
         <script src="assets/js/tabs/planner-points.js?v=20261019-breakdown-rounds"></script>
         <script src="assets/js/tabs/planner.js?v=20261019-breakdown-badges"></script>
         <script src="assets/js/tabs/draws.js?v=20260930-security-1"></script>
-        <script src="assets/anonymous-analytics.js?v=20261019-planner-route"></script>
-    <script src="assets/js/router.js?v=20261019-planner-route"></script>
-    <script src="assets/app-shell.js?v=20261019-planner-route"></script>
-    <script src="assets/translations.js?v=20261019-planner-route"></script>
+        <script src="assets/anonymous-analytics.js?v=20261025-ao27-race"></script>
+    <script src="assets/js/router.js?v=20261025-ao27-race"></script>
+    <script src="assets/app-shell.js?v=20261025-ao27-race"></script>
+    <script src="assets/translations.js?v=20261025-ao27-mobile-headers"></script>
     <script src="assets/language.js?v=20261018-entry"></script>
     </body>
     </html>

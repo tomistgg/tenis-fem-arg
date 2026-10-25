@@ -6,6 +6,7 @@
                 'draws',
                 'calendar',
                 'rankings',
+                'ao27mdrace',
                 'roadtogs',
                 'history',
                 'fedbcup',

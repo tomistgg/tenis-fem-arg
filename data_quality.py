@@ -50,6 +50,7 @@ GENERATED_SITE_FILES = (
     "draws/index.html",
     "calendar/index.html",
     "rankings/index.html",
+    "ao27mdrace/index.html",
     "roadtogs/index.html",
     "history/index.html",
     "fedbcup/index.html",

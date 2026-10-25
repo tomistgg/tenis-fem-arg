@@ -4,7 +4,7 @@
     'use strict';
 
     var PRIMARY_TABS = ['entrylists', 'roadtogs', 'calendar', 'upcoming'];
-    var SECONDARY_TABS = ['history', 'draws', 'rankings', 'tstrength', 'fedbcup', 'information'];
+    var SECONDARY_TABS = ['history', 'draws', 'rankings', 'ao27mdrace', 'tstrength', 'fedbcup', 'information'];
     var TAB_LABELS = {
         home: 'Home',
         planner: 'Tour Planner',
@@ -15,6 +15,7 @@
         history: 'Match History',
         draws: 'Draws',
         rankings: 'WTA Rankings',
+        ao27mdrace: 'AO27 MD RACE',
         tstrength: 'WTA Tournament Strength',
         fedbcup: 'Fed / BJK Cup',
         information: 'Firsts & Points'
@@ -27,6 +28,7 @@
         history: 'assets/tennis-player.png',
         draws: 'assets/tournament.png',
         rankings: 'assets/list.png',
+        ao27mdrace: 'assets/trophy.png',
         tstrength: 'assets/score-board.png',
         fedbcup: 'assets/argentina.png',
         information: 'assets/podium.png'

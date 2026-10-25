@@ -24,7 +24,7 @@
             }
 
             const URL_STATE_TABS = new Set([
-                'home', 'upcoming', 'entrylists', 'draws', 'calendar', 'rankings',
+                'home', 'upcoming', 'entrylists', 'draws', 'calendar', 'rankings', 'ao27mdrace',
                 'roadtogs', 'history', 'fedbcup', 'tstrength', 'information', 'planner'
             ]);
             let _currentTabName = 'home';
@@ -1012,6 +1012,7 @@
                 document.getElementById('view-entrylists').style.display = (tabName === 'entrylists') ? 'flex' : 'none';
 
                 document.getElementById('view-rankings').style.display = (tabName === 'rankings') ? 'flex' : 'none';
+                document.getElementById('view-ao27mdrace').style.display = (tabName === 'ao27mdrace') ? 'flex' : 'none';
                 document.getElementById('view-history').style.display = (tabName === 'history') ? 'flex' : 'none';
                 document.getElementById('view-fedbcup').style.display = (tabName === 'fedbcup') ? 'flex' : 'none';
                 document.getElementById('view-calendar').style.display = (tabName === 'calendar') ? 'flex' : 'none';

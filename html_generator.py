@@ -693,6 +693,75 @@ def country_flag_html(code, show_code=True):
     return f"{img}{safe_code}" if show_code else img
 
 
+def _render_ao27_race_rows(data_dir):
+    path = Path(data_dir) / "ao27_md_race.json"
+    if not path.exists():
+        return '<tr><td colspan="7">Race data not available.</td></tr>'
+    with path.open(encoding="utf-8") as source:
+        race = json.load(source)
+
+    def player_html(name, country, mobile_name=None):
+        if not name:
+            return ""
+        mobile_name = mobile_name or name.rsplit(" ", 1)[-1]
+        label = (
+            f'<span class="desktop-only">{escape(name)}</span>'
+            f'<span class="mobile-only">{escape(mobile_name)}</span>'
+        )
+        return (
+            '<span class="race-player-name" translate="no">'
+            f'{country_flag_html(country, show_code=False)}<span>{label}</span></span>'
+        )
+
+    def tournament_html(key):
+        if not key:
+            return ""
+        tournament = race["tournaments"][key]
+        classes = get_surface_class(tournament["surface"])
+        if tournament["name"].startswith("WTA "):
+            classes += " cal-tournament-bold cal-tournament-wta"
+        flag = country_flag_html(tournament["country"], show_code=False)
+        label = f'{flag}{escape(tournament["name"])}'
+        category_match = re.match(r"^(WTA\s+(?:\d+|Finals)|W\d+|Grand Slam)\s+(.+)$", tournament["name"], re.I)
+        if category_match:
+            category, name = category_match.groups()
+            classes += " schedule-tournament-split"
+            label = (
+                f'<span class="schedule-tournament-heading">{flag}{escape(category)}</span>'
+                f'<span class="schedule-tournament-name"> {escape(name)}</span>'
+            )
+        return f'<span class="calendar-tournament {classes}">{label}</span>'
+
+    rows = []
+    for player in race["rows"]:
+        row_class = ' class="race-argentine"' if player["country"] == "ARG" else ""
+        player_name = player_html(player["player"], player["country"], player.get("mobileName"))
+        matchup = (
+            '<span class="race-matchup" translate="no">vs '
+            f'{country_flag_html(player["opponentCountry"], show_code=False)} '
+            f'{escape(player["opponent"].rsplit(" ", 1)[-1])}</span>'
+            if player["opponent"] else ""
+        )
+        points_if_win = "" if player["pointsIfWin"] is None else str(player["pointsIfWin"])
+        next_weeks = "".join(
+            '<div class="race-week">'
+            + ('<span class="race-alternative">/</span>'.join(tournament_html(key) for key in week) or "-")
+            + "</div>"
+            for week in player["nextWeeks"]
+        )
+        rows.append(
+            f'<tr{row_class}>'
+            f'<td class="race-rank">{escape(str(player["rank"]))}</td>'
+            f'<td class="race-player">{player_name}</td>'
+            f'<td class="race-points">{escape(str(player["points"]))}</td>'
+            f'<td class="race-playing">{tournament_html(player["playing"])}{matchup}</td>'
+            f'<td class="race-opponent">{player_html(player["opponent"], player["opponentCountry"])}</td>'
+            f'<td class="race-points">{escape(points_if_win)}</td>'
+            f'<td class="race-next">{next_weeks}</td></tr>'
+        )
+    return "".join(rows)
+
+
 def _render_calendar_changes(change_history):
     sections = []
     for change_group in change_history or []:
@@ -2211,6 +2280,7 @@ def generate_html(
         "ENTRY_MENU_HTML": entry_menu_html,
         "RANKINGS_YEAR_OPTIONS": rankings_year_options,
         "RANKINGS_ROWS": rankings_rows,
+        "AO27_RACE_ROWS": _render_ao27_race_rows(source_data_dir),
         "HISTORY_PLAYER_OPTIONS": "".join(
             f'<option value="{escape(name, quote=True)}">{escape(name)}</option>'
             for name in history_players_sorted
@@ -2364,6 +2434,7 @@ def generate_html(
         "draws",
         "calendar",
         "rankings",
+        "ao27mdrace",
         "roadtogs",
         "history",
         "fedbcup",
