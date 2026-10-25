@@ -96,7 +96,7 @@
                 }
                 try {
                     const saved = localStorage.getItem('lastTab');
-                    if (saved && VALID_TABS.has(saved) && saved !== 'home') {
+                    if (saved && VALID_TABS.has(saved) && saved !== 'home' && saved !== 'ao27mdrace') {
                         window.switchTab(saved);
                         return;
                     }

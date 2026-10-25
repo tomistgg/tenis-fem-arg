@@ -4,7 +4,7 @@
     'use strict';
 
     var PRIMARY_TABS = ['entrylists', 'roadtogs', 'calendar', 'upcoming'];
-    var SECONDARY_TABS = ['history', 'draws', 'rankings', 'tstrength', 'fedbcup', 'information', 'ao27mdrace'];
+    var SECONDARY_TABS = ['history', 'draws', 'rankings', 'tstrength', 'fedbcup', 'information'];
     var TAB_LABELS = {
         home: 'Home',
         planner: 'Tour Planner',
@@ -28,7 +28,6 @@
         history: 'assets/tennis-player.png',
         draws: 'assets/tournament.png',
         rankings: 'assets/list.png',
-        ao27mdrace: 'assets/ranking.png',
         tstrength: 'assets/score-board.png',
         fedbcup: 'assets/argentina.png',
         information: 'assets/podium.png'
@@ -162,6 +161,8 @@
     function currentTab() {
         var planner = document.getElementById('view-planner');
         if (planner && planner.style.display !== 'none') return 'planner';
+        var race = document.getElementById('view-ao27mdrace');
+        if (race && race.style.display !== 'none') return 'ao27mdrace';
         var active = document.querySelector('.menu-item.active');
         if (active && active.id) return active.id.replace(/^btn-/, '');
         return 'home';

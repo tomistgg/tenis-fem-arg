@@ -1038,7 +1038,7 @@
                 applyMobileHistoryLayout();
                 syncEntryMenuToggle();
 
-                if (tabName !== 'home') {
+                if (tabName !== 'home' && tabName !== 'ao27mdrace') {
                     try { localStorage.setItem('lastTab', tabName); } catch(e) {}
                 }
 
