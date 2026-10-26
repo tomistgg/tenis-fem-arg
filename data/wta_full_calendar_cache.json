@@ -1,51 +1,11 @@
 {
-  "from": "2026-09-27",
+  "from": "2026-09-28",
   "to": "2026-12-31",
-  "fetchedAt": "2026-10-25T22:30:48Z",
-  "lastAttemptAt": "2026-10-25T22:30:48Z",
-  "fetchedRunId": "20261025T221624Z-f90c3d7f16",
-  "lastAttemptRunId": "20261025T221624Z-f90c3d7f16",
+  "fetchedAt": "2026-10-26T02:46:47Z",
+  "lastAttemptAt": "2026-10-26T02:46:47Z",
+  "fetchedRunId": "20261026T024536Z-a2005a93c0",
+  "lastAttemptRunId": "20261026T024536Z-a2005a93c0",
   "items": [
-    {
-      "tournamentGroup": { "id": 1024, "name": "SEOUL", "level": "WTA 500" },
-      "year": 2026, "startDate": "2026-09-21", "endDate": "2026-09-27",
-      "title": "Korea Open - Seoul, KOR", "level": "WTA 250",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "SEOUL", "country": "KOR",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 1178, "name": "ANKARA 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-09-21", "endDate": "2026-09-27",
-      "title": "Turk Telekom Ankara Open - Ankara, TUR", "level": "WTA 125",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "ANKARA", "country": "TUR",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 1152, "name": "SINGAPORE", "level": "WTA 500" },
-      "year": 2026, "startDate": "2026-09-21", "endDate": "2026-09-27",
-      "title": "Singapore Tennis Open presented by BNP Paribas - Singapore, SGP", "level": "WTA 500",
-      "surface": "Hard", "inOutdoor": "I",
-      "city": "SINGAPORE", "country": "SGP",
-      "singlesDrawSize": 28
-    },
-    {
-      "tournamentGroup": { "id": 1135, "name": "PORTO 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-09-21", "endDate": "2026-09-27",
-      "title": "Eupago Porto Open - Porto, POR", "level": "WTA 125",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "PORTO", "country": "POR",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 1133, "name": "TOLENTINO 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-09-21", "endDate": "2026-09-27",
-      "title": "Delta Motors Tolentino Open - Tolentino, ITA", "level": "WTA 125",
-      "surface": "Clay", "inOutdoor": "O",
-      "city": "TOLENTINO", "country": "ITA",
-      "singlesDrawSize": 32
-    },
     {
       "tournamentGroup": { "id": 1179, "name": "ADANA 125", "level": "WTA 125" },
       "year": 2026, "startDate": "2026-09-28", "endDate": "2026-10-04",
@@ -71,14 +31,6 @@
       "singlesDrawSize": 96
     },
     {
-      "tournamentGroup": { "id": 1147, "name": "SUZHOU 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-10-05", "endDate": "2026-10-11",
-      "title": "Suzhou Open - Suzhou, CHN", "level": "WTA 125",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "SUZHOU", "country": "CHN",
-      "singlesDrawSize": 32
-    },
-    {
       "tournamentGroup": { "id": 1149, "name": "SAMSUN 125", "level": "WTA 125" },
       "year": 2026, "startDate": "2026-10-05", "endDate": "2026-10-11",
       "title": "Samsun Open - Samsun, TUR", "level": "WTA 125",
@@ -87,27 +39,11 @@
       "singlesDrawSize": 32
     },
     {
-      "tournamentGroup": { "id": 1075, "name": "WUHAN", "level": "WTA 1000" },
-      "year": 2026, "startDate": "2026-10-12", "endDate": "2026-10-18",
-      "title": "Dongfeng · Voyah Wuhan Open - Wuhan, CHN", "level": "WTA 1000",
+      "tournamentGroup": { "id": 1147, "name": "SUZHOU 125", "level": "WTA 125" },
+      "year": 2026, "startDate": "2026-10-05", "endDate": "2026-10-11",
+      "title": "Suzhou Open - Suzhou, CHN", "level": "WTA 125",
       "surface": "Hard", "inOutdoor": "O",
-      "city": "WUHAN", "country": "CHN",
-      "singlesDrawSize": 56
-    },
-    {
-      "tournamentGroup": { "id": 1140, "name": "ROVERETO 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-10-12", "endDate": "2026-10-18",
-      "title": "RoveretOpen Città della Pace - Rovereto, ITA", "level": "WTA 125",
-      "surface": "Hard", "inOutdoor": "I",
-      "city": "ROVERETO", "country": "ITA",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 1128, "name": "MALLORCA 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-10-12", "endDate": "2026-10-18",
-      "title": "Vanda Pharmaceuticals Mallorca Women's Championships - Mallorca, ESP", "level": "WTA 125",
-      "surface": "Clay", "inOutdoor": "O",
-      "city": "MALLORCA", "country": "ESP",
+      "city": "SUZHOU", "country": "CHN",
       "singlesDrawSize": 32
     },
     {
@@ -119,11 +55,27 @@
       "singlesDrawSize": 32
     },
     {
-      "tournamentGroup": { "id": 1150, "name": "RIO DE JANEIRO 125", "level": "WTA 125", "metadata": {"cancelledSeasons": "2026"} },
-      "year": 2026, "startDate": "2026-10-19", "endDate": "2026-10-25",
-      "title": "Río Ladies Open by MundoTênis Tours  - Rio De Janeiro, BRA", "level": "WTA 125",
+      "tournamentGroup": { "id": 1075, "name": "WUHAN", "level": "WTA 1000" },
+      "year": 2026, "startDate": "2026-10-12", "endDate": "2026-10-18",
+      "title": "Dongfeng · Voyah Wuhan Open - Wuhan, CHN", "level": "WTA 1000",
+      "surface": "Hard", "inOutdoor": "O",
+      "city": "WUHAN", "country": "CHN",
+      "singlesDrawSize": 56
+    },
+    {
+      "tournamentGroup": { "id": 1128, "name": "MALLORCA 125", "level": "WTA 125" },
+      "year": 2026, "startDate": "2026-10-12", "endDate": "2026-10-18",
+      "title": "Vanda Pharmaceuticals Mallorca Women's Championships - Mallorca, ESP", "level": "WTA 125",
       "surface": "Clay", "inOutdoor": "O",
-      "city": "RIO DE JANEIRO", "country": "BRA",
+      "city": "MALLORCA", "country": "ESP",
+      "singlesDrawSize": 32
+    },
+    {
+      "tournamentGroup": { "id": 1140, "name": "ROVERETO 125", "level": "WTA 125" },
+      "year": 2026, "startDate": "2026-10-12", "endDate": "2026-10-18",
+      "title": "RoveretOpen Città della Pace - Rovereto, ITA", "level": "WTA 125",
+      "surface": "Hard", "inOutdoor": "I",
+      "city": "ROVERETO", "country": "ITA",
       "singlesDrawSize": 32
     },
     {
@@ -140,6 +92,14 @@
       "title": "Kinoshita Group Japan Open - Osaka, JPN", "level": "WTA 250",
       "surface": "Hard", "inOutdoor": "O",
       "city": "OSAKA", "country": "JPN",
+      "singlesDrawSize": 32
+    },
+    {
+      "tournamentGroup": { "id": 1150, "name": "RIO DE JANEIRO 125", "level": "WTA 125", "metadata": {"cancelledSeasons": "2026"} },
+      "year": 2026, "startDate": "2026-10-19", "endDate": "2026-10-25",
+      "title": "Río Ladies Open by MundoTênis Tours  - Rio De Janeiro, BRA", "level": "WTA 125",
+      "surface": "Clay", "inOutdoor": "O",
+      "city": "RIO DE JANEIRO", "country": "BRA",
       "singlesDrawSize": 32
     },
     {
@@ -167,6 +127,14 @@
       "singlesDrawSize": 32
     },
     {
+      "tournamentGroup": { "id": 1174, "name": "COURMAYEUR 125", "level": "WTA 125" },
+      "year": 2026, "startDate": "2026-10-26", "endDate": "2026-11-01",
+      "title": "Valle D'Aosta Ladies Open - Courmayeur, ITA", "level": "WTA 125",
+      "surface": "Hard", "inOutdoor": "I",
+      "city": "COURMAYEUR", "country": "ITA",
+      "singlesDrawSize": 32
+    },
+    {
       "tournamentGroup": { "id": 1056, "name": "TOKYO", "level": "WTA 500" },
       "year": 2026, "startDate": "2026-10-26", "endDate": "2026-11-01",
       "title": "Toray Pan Pacific Open Tennis - Tokyo, JPN", "level": "WTA 500",
@@ -175,11 +143,19 @@
       "singlesDrawSize": 28
     },
     {
-      "tournamentGroup": { "id": 1174, "name": "COURMAYEUR 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-10-26", "endDate": "2026-11-01",
-      "title": "Valle D'Aosta Ladies Open - Courmayeur, ITA", "level": "WTA 125",
-      "surface": "Hard", "inOutdoor": "I",
-      "city": "COURMAYEUR", "country": "ITA",
+      "tournamentGroup": { "id": 1074, "name": "HONG KONG", "level": "WTA 250" },
+      "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-08",
+      "title": "Prudential Hong Kong Tennis Open - Hong Kong, China", "level": "WTA 250",
+      "surface": "Hard", "inOutdoor": "O",
+      "city": "HONG KONG", "country": "HKG",
+      "singlesDrawSize": 32
+    },
+    {
+      "tournamentGroup": { "id": 1169, "name": "MIAMI 125", "level": "WTA 125", "metadata": {"cancelledSeasons": "2026"} },
+      "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-08",
+      "title": "American Tennis Open Miami - Miami, FL, USA", "level": "WTA 125",
+      "surface": "Hard", "inOutdoor": "O",
+      "city": "MIAMI", "country": "USA",
       "singlesDrawSize": 32
     },
     {
@@ -199,25 +175,9 @@
       "singlesDrawSize": 32
     },
     {
-      "tournamentGroup": { "id": 1169, "name": "MIAMI 125", "level": "WTA 125", "metadata": {"cancelledSeasons": "2026"} },
-      "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-08",
-      "title": "American Tennis Open Miami - Miami, FL, USA", "level": "WTA 125",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "MIAMI", "country": "USA",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 1074, "name": "HONG KONG", "level": "WTA 250" },
-      "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-08",
-      "title": "Prudential Hong Kong Tennis Open - Hong Kong, China", "level": "WTA 250",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "HONG KONG", "country": "HKG",
-      "singlesDrawSize": 32
-    },
-    {
       "tournamentGroup": { "id": 1110, "name": "CALI 125", "level": "WTA 125" },
       "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-07",
-      "title": "Cali Open - Cali, COL", "level": "WTA 125",
+      "title": "Reto Win Tennis Cali Open - Cali, COL", "level": "WTA 125",
       "surface": "Clay", "inOutdoor": "O",
       "city": "CALI", "country": "COL",
       "singlesDrawSize": 32
@@ -225,7 +185,7 @@
     {
       "tournamentGroup": { "id": 808, "name": "WTA FINALS", "level": "Finals" },
       "year": 2026, "startDate": "2026-11-08", "endDate": "2026-11-15",
-      "title": "WTA Finals Indian Wells", "level": "Finals",
+      "title": "FAGE WTA Finals Indian Wells", "level": "Finals",
       "surface": "Hard", "inOutdoor": "O",
       "city": "INDIAN WELLS", "country": "USA",
       "singlesDrawSize": 8
@@ -233,7 +193,7 @@
     {
       "tournamentGroup": { "id": 1181, "name": "SOPO 125", "level": "WTA 125" },
       "year": 2026, "startDate": "2026-11-09", "endDate": "2026-11-14",
-      "title": "Cundinamarca Open - Sopo, COL", "level": "WTA 125",
+      "title": "DIRECTV Open Presentado por Compesar - Sopo, COL", "level": "WTA 125",
       "surface": "Clay", "inOutdoor": "O",
       "city": "SOPO", "country": "COL",
       "singlesDrawSize": 32
