@@ -432,6 +432,7 @@
           {"pos": 10, "entry": "WC", "name": "SERBAN, Isabella Maria", "country": "ITA", "wtn": "12.52"},
           {"pos": 11, "name": "ZAAR, Lisa", "country": "SWE", "wtn": "10.95"},
           {"pos": 12, "name": "AKSU, Ayla", "country": "TUR", "wtn": "9.64"},
+          {"pos": 13, "entry": "Q", "name": "MADUZZI, Gaia", "country": "ITA", "wtn": "11.8"},
           {"pos": 14, "name": "KLIMOVICOVA, Linda", "country": "POL", "wtn": "11.51"},
           {"pos": 15, "entry": "WC", "name": "KOVINIC, Danka", "country": "MNE", "wtn": "11.60"},
           {"pos": 16, "seed": "6", "name": "NOHA AKUGUE, Noma", "country": "GER", "wtn": "10.01"},
@@ -441,19 +442,19 @@
           {"pos": 20, "name": "WERNER, Caroline", "country": "GER", "wtn": "11.5"},
           {"pos": 21, "entry": "WC", "name": "PIERI, Jessica", "country": "ITA", "wtn": "11.17"},
           {"pos": 22, "name": "YANEVA, Elizara", "country": "BUL", "wtn": "9.97"},
+          {"pos": 23, "entry": "Q", "name": "NAGY, Adrienn", "country": "HUN", "wtn": "12.13"},
           {"pos": 24, "seed": "3", "name": "SELEKHMETEVA, Oksana", "country": "ESP", "wtn": "10.47"},
           {"pos": 25, "seed": "7", "name": "BASSOLS RIBERA, Marina", "country": "ESP", "wtn": "9.86"},
           {"pos": 26, "name": "JIMENEZ KASINTSEVA, Victoria", "country": "AND", "wtn": "10.93"},
+          {"pos": 27, "entry": "Q", "name": "KOTLIAR, Yelyzaveta", "country": "UKR", "wtn": "12.63"},
           {"pos": 28, "name": "ANDREEVA, Erika", "wtn": "10.25"},
           {"pos": 29, "name": "DENCHEVA, Rositsa", "country": "BUL", "wtn": "9.74"},
           {"pos": 30, "name": "KNUTSON, Gabriela", "country": "CZE", "wtn": "9.63"},
+          {"pos": 31, "entry": "Q", "name": "CHIESA, Enola", "country": "ITA", "wtn": "13.3"},
           {"pos": 32, "seed": "2", "name": "CHARAEVA, Alina", "country": "ARM", "wtn": "8.63"}
         ],
-        "qualifiers": [
-          13,
-          23,
-          27,
-          31
+        "matches": [
+          {"round": 1, "match_num": 5, "winner_name": "A. Aksu", "score": "64 63"}
         ],
         "round_labels": [
           "Round of 32",
@@ -462,7 +463,8 @@
           "Semifinals",
           "Final"
         ],
-        "num_rounds": 5
+        "num_rounds": 5,
+        "wtn_gm": 10.5471
       }
     }
   },
@@ -826,10 +828,14 @@
         ],
         "matches": [
           {"round": 1, "match_num": 3, "winner_name": "D. Koreshkova", "score": "W/O"},
+          {"round": 1, "match_num": 4, "winner_name": "Y. Saffar", "score": "61 63"},
+          {"round": 1, "match_num": 6, "winner_name": "C. Anson Sanchez", "score": "60 63"},
           {"round": 1, "match_num": 8, "winner_name": "L. Thomas Iglesias", "score": "60 76(6)"},
+          {"round": 1, "match_num": 9, "winner_name": "A. Smejkalova", "score": "64 76(2)"},
           {"round": 1, "match_num": 10, "winner_name": "M. Rowinska", "score": "63 60"},
           {"round": 1, "match_num": 11, "winner_name": "J. Dunyon", "score": "61 60"},
           {"round": 1, "match_num": 12, "winner_name": "A. Soulie", "score": "61 61"},
+          {"round": 1, "match_num": 13, "winner_name": "O. De Los Reyes", "score": "63 64"},
           {"round": 1, "match_num": 14, "winner_name": "J. Singeorzan", "score": "64 64"},
           {"round": 1, "match_num": 15, "winner_name": "I. Manchala", "score": "60 62"}
         ],
