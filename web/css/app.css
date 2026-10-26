@@ -3654,6 +3654,18 @@
             [data-theme="dark"] .history-wl-counter { color: #e2e8f0; }
 
             #view-ao27mdrace .header-row h1 { width: 100%; text-align: center; }
+            #view-ao27mdrace .race-ranking-note {
+                width: 100%;
+                container-type: inline-size;
+                margin: 0 auto 12px;
+                color: var(--c-text-subtle);
+                font-size: 12px;
+                line-height: 1.5;
+                text-align: center;
+                white-space: nowrap;
+            }
+            #view-ao27mdrace .race-note-line { font-size: min(12px, 1.5cqi); }
+            html[lang="es"] #view-ao27mdrace .race-note-line { font-size: min(12px, 1.2cqi); }
             #view-ao27mdrace .content-card { width: fit-content; max-width: 100%; margin: 0 auto; }
             #view-ao27mdrace .table-wrapper {
                 overflow-x: auto !important;
@@ -3691,6 +3703,8 @@
             #ao27-race-table tr.race-argentine td { background: var(--c-arg-tint) !important; }
             #ao27-race-table tr.race-argentine .race-player { font-weight: 700; }
             @media (max-width: 768px) {
+                #view-ao27mdrace .race-note-line { display: block; font-size: min(12px, 2.9cqi); }
+                html[lang="es"] #view-ao27mdrace .race-note-line { font-size: min(12px, 2.3cqi); }
                 #ao27-race-table { max-width: 100% !important; }
                 #ao27-race-table th, #ao27-race-table td { padding-left: 2px; padding-right: 2px; }
                 #ao27-race-table .race-opponent { display: none; }

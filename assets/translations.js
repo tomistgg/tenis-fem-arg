@@ -67,6 +67,8 @@ window.WTARG_TRANSLATIONS = {
         "NEXT WEEKS": "PRÓXIMAS SEMANAS",
         "Race data not available.": "Datos de la carrera no disponibles.",
         "AO27 main draw race table": "Tabla de la carrera al cuadro principal del AO27",
+        "This is a predicted live ranking for the week of November 16,": "Este es un ranking en vivo previsto para la semana del 16 de noviembre,",
+        "it is not the same as the weekly live ranking you see in most apps.": "no es el mismo ranking semanal en vivo que ves en la mayoría de las aplicaciones.",
         "Seed": "Seed",
         "SEED": "SEED",
         "E-Rank": "E-RANK",
