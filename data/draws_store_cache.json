@@ -778,5 +778,67 @@
         "num_rounds": 2
       }
     }
+  },
+  "w-itf-sgp-2026-003":
+  {
+    "meta":
+    {
+      "name": "W15 Singapore",
+      "level": "W15",
+      "week": "Week of October 26",
+      "startDate": "2026-10-26T00:00:00",
+      "endDate": "2026-11-01T00:00:00",
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":false,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "MDS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "CHANTA, Anchisa", "country": "THA", "itf_id": "800504636", "wtn": "14.91"},
+          {"pos": 2, "entry": "Q", "name": "KANG, Na Hyun", "country": "KOR", "itf_id": "800525247", "wtn": "17.34"},
+          {"pos": 3, "entry": "Q", "name": "MIYATA, Moeka", "country": "JPN", "itf_id": "800631517", "wtn": "16.9"},
+          {"pos": 4, "name": "VARAKSINA, Arina", "country": "RUS", "itf_id": "800603104", "wtn": "15.27"},
+          {"pos": 5, "entry": "Q", "name": "PODGORICHANI, Lidia", "country": "THA", "itf_id": "800562380", "wtn": "15.69"},
+          {"pos": 6, "entry": "WC", "name": "NG, Kai Ning Chanya", "country": "SGP", "itf_id": "800580907", "wtn": "18.9"},
+          {"pos": 7, "name": "HONG, Yeri", "country": "KOR", "itf_id": "800665797", "wtn": "14.76"},
+          {"pos": 8, "seed": "7", "name": "KIM, Yujin", "country": "KOR", "itf_id": "800519951", "wtn": "13.18"},
+          {"pos": 9, "seed": "4", "name": "SAGANDYKOVA, Aruzhan", "country": "KAZ", "itf_id": "800492077", "wtn": "13.26"},
+          {"pos": 10, "name": "LIN, Fang An", "country": "TPE", "itf_id": "800570036", "wtn": "14.01"},
+          {"pos": 11, "entry": "WC", "name": "CHUA, Sophie Ashley", "country": "SGP", "itf_id": "800649647", "wtn": "20.17"},
+          {"pos": 12, "entry": "SE", "name": "APISAH, Violet", "country": "PNG", "itf_id": "800835337", "wtn": "14.79"},
+          {"pos": 13, "entry": "Q", "name": "THAKKAR, Saily Prashantkumar", "country": "IND", "itf_id": "800656679", "wtn": "17.86"},
+          {"pos": 14, "entry": "WC", "name": "GIAM, Hannah", "country": "SGP", "itf_id": "800690880", "wtn": "22.95"},
+          {"pos": 15, "entry": "SR", "name": "KRYWOJ, Melany Solange", "country": "ARG", "itf_id": "800430742", "wtn": "15.37"},
+          {"pos": 16, "seed": "6", "name": "HANATANI, Nagi", "country": "JPN", "itf_id": "800314241", "wtn": "15.61"},
+          {"pos": 17, "seed": "8", "name": "PATIL, Sonal", "country": "IND", "itf_id": "800546820", "wtn": "16.74"},
+          {"pos": 18, "name": "MALOVA, Alexandra", "country": "RUS", "itf_id": "800635479", "wtn": "15.43"},
+          {"pos": 19, "entry": "Q", "name": "MATSUMOTO, Yuka", "country": "JPN", "itf_id": "800426850", "wtn": "15.08"},
+          {"pos": 20, "entry": "Q", "name": "RAWAT, Aditi", "country": "IND", "itf_id": "800660632", "wtn": "16.9"},
+          {"pos": 21, "name": "HAYASAKA, Kurea", "country": "JPN", "itf_id": "800681499", "wtn": "13.39"},
+          {"pos": 22, "name": "MOON, Jeong", "country": "KOR", "itf_id": "800452079", "wtn": "16.7"},
+          {"pos": 23, "name": "LU, Jing-Jing", "country": "CHN", "itf_id": "800274830", "wtn": "15.57"},
+          {"pos": 24, "seed": "3", "name": "YODPETCH, Kamonwan", "country": "THA", "itf_id": "800563856", "wtn": "14.23"},
+          {"pos": 25, "seed": "5", "name": "SUN, Yingqun", "country": "CHN", "itf_id": "800592495", "wtn": "14.68"},
+          {"pos": 26, "name": "NAGATA, Anri", "country": "JPN", "itf_id": "800433185", "wtn": "16.28"},
+          {"pos": 27, "entry": "WC", "name": "LIM, Lynelle En Tong", "country": "SGP", "itf_id": "800467386", "wtn": "20.63"},
+          {"pos": 28, "name": "OHASHI, Remika", "country": "JPN", "itf_id": "800528654", "wtn": "15.68"},
+          {"pos": 29, "entry": "Q", "name": "CHIKARAISHI, Yui", "country": "JPN", "itf_id": "800425422", "wtn": "17.56"},
+          {"pos": 30, "name": "YULDASHEVA, Sevil", "country": "UZB", "itf_id": "800396634", "wtn": "15.13"},
+          {"pos": 31, "entry": "Q", "name": "KHODZHAEVA, Ekaterina", "country": "RUS", "itf_id": "800573020", "wtn": "17.26"},
+          {"pos": 32, "seed": "2", "name": "NAKLO, Thasaporn", "country": "THA", "itf_id": "800452280", "wtn": "13.84"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5,
+        "wtn_gm": 15.9932
+      }
+    }
   }
 }
