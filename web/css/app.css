@@ -3708,11 +3708,12 @@
                 #view-ao27mdrace .race-note-line { display: block; font-size: min(12px, 2.9cqi); }
                 html[lang="es"] #view-ao27mdrace .race-note-line { font-size: min(12px, 2.3cqi); }
                 #ao27-race-table { max-width: 100% !important; }
-                #ao27-race-table th, #ao27-race-table td { padding-left: 2px; padding-right: 2px; }
+                #ao27-race-table th, #ao27-race-table td { padding-left: 2px; padding-right: 2px; font-size: 9px; }
+                #ao27-race-table .calendar-tournament { font-size: 9px; }
                 #ao27-race-table .race-opponent { display: none; }
                 #ao27-race-table th.race-next { white-space: normal; }
                 #ao27-race-table .race-week { flex-direction: column; gap: 2px; }
-                #ao27-race-table .race-matchup { display: block; }
+                #ao27-race-table .race-matchup { display: block; font-size: 9px; }
                 #ao27-race-table .race-points-detail { display: block; }
                 #ao27-race-table .race-player-name { flex-direction: column; gap: 2px; }
                 #ao27-race-table .schedule-tournament-heading { display: inline-flex; align-items: center; justify-content: center; }
@@ -3721,7 +3722,6 @@
             @media (max-width: 380px) {
                 #ao27-race-table th, #ao27-race-table td { padding-left: 1px; padding-right: 1px; }
                 #ao27-race-table th { font-size: 8px; }
-                #ao27-race-table td, #ao27-race-table .race-matchup { font-size: 10px; }
-                #ao27-race-table .calendar-tournament { font-size: 9px; padding-left: 2px; padding-right: 2px; }
+                #ao27-race-table .calendar-tournament { padding-left: 2px; padding-right: 2px; }
                 #ao27-race-table .calendar-tournament img { width: 13px !important; height: 9px !important; }
             }
