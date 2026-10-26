@@ -3673,6 +3673,7 @@
                 -webkit-overflow-scrolling: touch;
             }
             #ao27-race-table {
+                --c-arg-tint: #bae6fd;
                 width: max-content !important;
                 min-width: 0 !important;
                 max-width: none !important;
@@ -3680,6 +3681,7 @@
                 border-radius: 0;
                 overflow: visible;
             }
+            [data-theme="dark"] #ao27-race-table { --c-arg-tint: #1e4d78; }
             #ao27-race-table th, #ao27-race-table td {
                 padding: 5px 7px;
                 text-align: center;
