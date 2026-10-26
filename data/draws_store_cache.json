@@ -748,6 +748,8 @@
         "players": [
           {"pos": 1, "seed": "1", "name": "MOYANO, Luciana", "country": "ARG", "itf_id": "800547910", "wtn": "14.41"},
           {"pos": 2, "name": "MARUCA, Melina Maria", "country": "ARG", "itf_id": "800518949", "wtn": "18.19"},
+          {"pos": 3, "entry": "Q", "name": "TEJADA, Aiken", "country": "ARG", "itf_id": "800717434", "wtn": "20.23"},
+          {"pos": 4, "entry": "Q", "name": "SIMON PADROS, Sofia", "country": "ARG", "itf_id": "800724660", "wtn": "19.51"},
           {"pos": 5, "name": "DUARTE, Agustina Daniela", "country": "ARG", "itf_id": "800721196", "wtn": "17.75"},
           {"pos": 6, "name": "BRUNO, Valentina Abril", "country": "ARG", "itf_id": "800659656", "wtn": "16.39"},
           {"pos": 7, "entry": "WC", "name": "MEDINACELI LOBOS, Angela Morena", "country": "ARG", "itf_id": "800788004", "wtn": "-"},
@@ -756,10 +758,13 @@
           {"pos": 10, "name": "VEGA GUDINO, CAIRA DELFINA", "country": "ARG", "itf_id": "800721891", "wtn": "17.91"},
           {"pos": 11, "name": "ZORNADA, Emily", "country": "ARG", "itf_id": "800778119", "wtn": "16.01"},
           {"pos": 12, "name": "MARKUS, Camila", "country": "ARG", "itf_id": "800659813", "wtn": "17.72"},
+          {"pos": 13, "entry": "Q", "name": "DOLDAN, Zoe", "country": "PAR", "itf_id": "800661516", "wtn": "17.2"},
           {"pos": 14, "entry": "WC", "name": "MORINI, Luna", "country": "ARG", "itf_id": "800533407", "wtn": "17.07"},
+          {"pos": 15, "entry": "Q", "name": "KILAPI, Camila Eluney", "country": "ARG", "itf_id": "800811993", "wtn": "27.1"},
           {"pos": 16, "seed": "5", "name": "DANILOVA, Alisa", "country": "RUS", "itf_id": "800296943", "wtn": "16.74"},
           {"pos": 17, "seed": "7", "name": "MEABE, Sofia", "country": "ARG", "itf_id": "800595363", "wtn": "15.23"},
           {"pos": 18, "name": "MORON, Florencia Belen", "country": "ARG", "itf_id": "800580593", "wtn": "18.53"},
+          {"pos": 19, "entry": "Q", "name": "LOPEZ OCAMPOS, Ana Julieta", "country": "PAR", "itf_id": "800654700", "wtn": "18.37"},
           {"pos": 20, "entry": "WC", "name": "PAJELLO, Abril", "country": "ARG", "itf_id": "800677652", "wtn": "19.86"},
           {"pos": 21, "name": "LARRAYA GUIDI, Sol Ailin", "country": "ARG", "itf_id": "800659876", "wtn": "14.52"},
           {"pos": 22, "name": "ARABARCO, Isabel", "country": "ARG", "itf_id": "800686416", "wtn": "19.60"},
@@ -767,8 +772,11 @@
           {"pos": 24, "seed": "3", "name": "SANCHEZ URIBE, Maria Jose", "country": "COL", "itf_id": "800603762", "wtn": "15.27"},
           {"pos": 25, "seed": "8", "name": "GOBBI MONLLAU, Ana Victoria", "country": "ARG", "itf_id": "800364268", "wtn": "16.36"},
           {"pos": 26, "entry": "WC", "name": "MADRID ROCCA, Maria Sofia", "country": "ARG", "itf_id": "800553125", "wtn": "16.33"},
+          {"pos": 27, "entry": "Q", "name": "NAPPI, Sofia Nahiara", "country": "ARG", "itf_id": "800743416", "wtn": "19.16"},
+          {"pos": 28, "entry": "Q", "name": "FINCHELSTEIN, Sofia", "country": "ARG", "itf_id": "800750602", "wtn": "-"},
           {"pos": 29, "name": "SOSA, Carola Celina", "country": "ARG", "itf_id": "800694207", "wtn": "19.48"},
           {"pos": 30, "name": "BOYDEN, Melissa", "country": "GBR", "itf_id": "800478425", "wtn": "16.78"},
+          {"pos": 31, "entry": "Q", "name": "AGUDELO, Luciana", "country": "ARG", "itf_id": "800692785", "wtn": "16.91"},
           {"pos": 32, "seed": "2", "name": "ESTEVEZ, Josefina", "country": "ARG", "itf_id": "800602639", "wtn": "15.73"}
         ],
         "round_labels": [
@@ -778,7 +786,8 @@
           "Semifinals",
           "Final"
         ],
-        "num_rounds": 5
+        "num_rounds": 5,
+        "wtn_gm": 18.1358
       }
     }
   },
@@ -833,6 +842,7 @@
         ],
         "matches": [
           {"round": 1, "match_num": 0, "winner_name": "P. Bartha", "score": "60 60"},
+          {"round": 1, "match_num": 1, "winner_name": "A. Battesti", "score": "64 63"},
           {"round": 1, "match_num": 2, "winner_name": "C. Di Genova", "score": "60 61"},
           {"round": 1, "match_num": 3, "winner_name": "D. Koreshkova", "score": "W/O"},
           {"round": 1, "match_num": 4, "winner_name": "Y. Saffar", "score": "61 63"},
