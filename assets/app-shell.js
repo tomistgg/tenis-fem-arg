@@ -4,7 +4,7 @@
     'use strict';
 
     var PRIMARY_TABS = ['entrylists', 'roadtogs', 'calendar', 'upcoming'];
-    var SECONDARY_TABS = ['history', 'draws', 'rankings', 'tstrength', 'fedbcup', 'information'];
+    var SECONDARY_TABS = ['history', 'draws', 'rankings', 'tstrength', 'fedbcup', 'information', 'ao27mdrace'];
     var TAB_LABELS = {
         home: 'Home',
         planner: 'Tour Planner',
@@ -30,7 +30,8 @@
         rankings: 'assets/list.png',
         tstrength: 'assets/score-board.png',
         fedbcup: 'assets/argentina.png',
-        information: 'assets/podium.png'
+        information: 'assets/podium.png',
+        ao27mdrace: 'assets/ranking.png'
     };
 
     function tabButton(tab) {
