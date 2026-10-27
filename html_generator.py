@@ -725,10 +725,19 @@ def _render_ao27_race_rows(data_dir):
         category_match = re.match(r"^(WTA\s+(?:\d+|Finals)|W\d+|Grand Slam)\s+(.+)$", tournament["name"], re.I)
         if category_match:
             category, name = category_match.groups()
+            mobile_category = category.removeprefix("WTA ").removeprefix("W")
+            mobile_name = {"Hong Kong": "HK", "New Braunfels": "N. Braunfels"}.get(name, name)
+            name_label = (
+                f'<span class="desktop-only">{escape(name)}</span>'
+                f'<span class="mobile-only">{escape(mobile_name)}</span>'
+                if mobile_name != name else escape(name)
+            )
             classes += " schedule-tournament-split"
             label = (
-                f'<span class="schedule-tournament-heading">{flag}{escape(category)}</span>'
-                f'<span class="schedule-tournament-name"> {escape(name)}</span>'
+                f'<span class="schedule-tournament-heading">{flag}'
+                f'<span class="desktop-only">{escape(category)}</span>'
+                f'<span class="mobile-only">{escape(mobile_category)}</span></span>'
+                f'<span class="schedule-tournament-name"> {name_label}</span>'
             )
         return f'<span class="calendar-tournament {classes}">{label}</span>'
 
