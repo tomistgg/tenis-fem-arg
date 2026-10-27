@@ -14437,14 +14437,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183754220, "playStatusCode": "IP",
+                            "matchId": 1183754220, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [5,6,6], "isWinner": true, "entryStatus": "DA",
                                   "player": {"playerId":800665797,"nationality":"KOR","givenName":"Yeri","familyName":"Hong"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 7, "entryStatus": "DA",
+                                  "scores": [7,4,3], "isWinner": false, "seeding": 7, "entryStatus": "DA",
                                   "player": {"playerId":800519951,"nationality":"KOR","givenName":"Yujin","familyName":"Kim"}
                                 }
                             ]
@@ -14629,7 +14629,8 @@
                                   "scores": [], "isWinner": false, "entryStatus": null
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "player": {"playerId":800665797,"nationality":"KOR","givenName":"Yeri","familyName":"Hong"}
                                 }
                             ]
                           },
