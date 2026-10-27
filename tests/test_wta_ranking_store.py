@@ -7,7 +7,7 @@ import pytest
 
 import wta
 from html_generator import _write_wta_ranking_bundles
-from time_utils import NEW_YORK
+from time_utils import MADRID, NEW_YORK
 from wta import WtaRankingsCsvStore
 
 HEADER = "week_date,id,rank,points,player,country,dob\n"
@@ -196,7 +196,7 @@ def test_cached_unaccepted_week_uses_previous_without_fetching(tmp_path, monkeyp
     store = WtaRankingsCsvStore([path])
     monkeypatch.setattr(wta, "WTA_RANKINGS_CSV", str(path))
     monkeypatch.setattr(wta, "_load_wta_csv", lambda: store)
-    monkeypatch.setattr(wta, "new_york_now", lambda: datetime(2026, 7, 27, hour, 1, tzinfo=NEW_YORK))
+    monkeypatch.setattr(wta, "new_york_now", lambda: datetime(2026, 7, 27, hour, 1, tzinfo=MADRID))
     monkeypatch.setattr(wta, "get_rankings", lambda *args, **kwargs: pytest.fail("Unaccepted week was fetched"))
 
     players, freshness = wta.get_wta_rankings_cached("2026-07-27", with_status=True)

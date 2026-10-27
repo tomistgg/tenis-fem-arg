@@ -14,7 +14,7 @@ from canonical_data import MATCH_SOURCES, PlayerIdentityIndex, normalized_name
 from draws import _is_completed_score, _player_name_matches_winner
 from itf import _is_cancelled_itf_calendar_item
 from ranking_publication import accepted_ranking_dates, load_ranking_status
-from time_utils import NEW_YORK, madrid_today, new_york_now
+from time_utils import MADRID, madrid_today, new_york_now
 from utils import (
     compact_tournament_name,
     expand_calendar_snapshot,
@@ -255,7 +255,7 @@ def _rankings(data_dir, index, today, *, explicit_today):
                         "DOB": row.get("dob"),
                     }
                 )
-    instant = datetime.combine(today, time(23, 59), NEW_YORK) if explicit_today else new_york_now()
+    instant = datetime.combine(today, time(23, 59), MADRID) if explicit_today else new_york_now()
     accepted = accepted_ranking_dates(weeks, instant, load_ranking_status(data_dir))
     latest = max(accepted, default=None)
     ranks = {}

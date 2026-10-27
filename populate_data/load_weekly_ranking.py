@@ -20,7 +20,7 @@ from ranking_publication import (
 )
 from run_state import report_run_issue
 from runtime_logging import get_logger
-from time_utils import new_york_now
+from time_utils import madrid_now
 from transactional_io import atomic_write_csv
 from utils import save_json_file
 from wta import get_rankings
@@ -83,8 +83,8 @@ def save_status(status):
     return True
 
 
-def now_eastern():
-    return new_york_now()
+def now_madrid():
+    return madrid_now()
 
 
 def rewrite_csv(by_date):
@@ -151,8 +151,8 @@ def fetch_from_api(date_str):
 
 def main():
     by_date = load_csv_by_date()
-    eastern_now = now_eastern()
-    this_monday = str(eastern_now.date() - timedelta(days=eastern_now.weekday()))
+    publication_now = now_madrid()
+    this_monday = str(publication_now.date() - timedelta(days=publication_now.weekday()))
     previous_monday = str(date.fromisoformat(this_monday) - timedelta(days=7))
     status_before = load_status()
     needs_rewrite = False
@@ -163,26 +163,26 @@ def main():
         and status_before.get("status") in ACCEPTED_RANKING_STATUSES
         and ranking_is_valid(by_date.get(this_monday))
     )
-    publication_is_open = publication_window_is_open(eastern_now)
+    publication_is_open = publication_window_is_open(publication_now)
     try:
         last_checked_at = datetime.fromisoformat(status_before.get("last_checked_at", ""))
         if last_checked_at.tzinfo is None:
             last_checked_at = None
     except (TypeError, ValueError):
         last_checked_at = None
-    daily_cutoff = eastern_now.replace(hour=12, minute=0, second=0, microsecond=0)
+    daily_cutoff = publication_now.replace(hour=12, minute=0, second=0, microsecond=0)
     retry_due = (
         status_is_accepted
-        and eastern_now.weekday() <= 4
-        and (status_before.get("status") == "confirmed_frozen" or eastern_now.weekday() == 4)
-        and eastern_now >= daily_cutoff
+        and publication_now.weekday() <= 4
+        and (status_before.get("status") == "confirmed_frozen" or publication_now.weekday() == 4)
+        and publication_now >= daily_cutoff
         and (last_checked_at is None or last_checked_at < daily_cutoff)
     )
 
     # --- Step 1: re-fetch CSV dates missing points/dob ---
     for date_str in sorted(by_date):
         # Step 2 exclusively owns an unaccepted current week so that the generic
-        # repair pass cannot fetch or publish it before Monday noon Eastern.
+        # repair pass cannot fetch or publish it before Monday noon Madrid time.
         if date_str == this_monday and not status_is_accepted:
             continue
         if csv_date_is_complete(by_date[date_str]):
@@ -203,7 +203,7 @@ def main():
 
         if not publication_is_open:
             # Never expose an unaccepted current-week copy before the first
-            # refresh at or after Monday noon Eastern.
+            # refresh at or after Monday noon Madrid time.
             if this_monday in by_date:
                 by_date.pop(this_monday, None)
                 needs_rewrite = True
@@ -213,7 +213,7 @@ def main():
                 "status": "pending_publication",
                 "comparison": "not_checked_before_cutoff",
                 "cutoff": PUBLICATION_CUTOFF_LABEL,
-                "message": "Waiting until Monday noon Eastern before checking the new WTA ranking.",
+                "message": "Waiting until Monday noon Europe/Madrid before checking the new WTA ranking.",
             }
             logger.info(status["message"])
         else:
@@ -247,7 +247,7 @@ def main():
                     "status": new_status,
                     "comparison": "same_as_previous_week" if same_as_previous else "different_from_previous_week",
                     "cutoff": PUBLICATION_CUTOFF_LABEL,
-                    "last_checked_at": eastern_now.isoformat(),
+                    "last_checked_at": publication_now.isoformat(),
                     "message": (
                         "Ranking unchanged after the publication cutoff."
                         if same_as_previous

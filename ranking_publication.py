@@ -7,8 +7,10 @@ from collections.abc import Mapping
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
+from time_utils import madrid_now
+
 PUBLICATION_CUTOFF = time(12, 0)
-PUBLICATION_CUTOFF_LABEL = "Monday 12:00 America/New_York"
+PUBLICATION_CUTOFF_LABEL = "Monday 12:00 Europe/Madrid"
 ACCEPTED_RANKING_STATUSES = {"confirmed_changed", "confirmed_frozen"}
 MIN_CURRENT_WEEK_ROWS = 1000
 
@@ -42,32 +44,34 @@ def ranking_is_valid(rows) -> bool:
     )
 
 
-def publication_cutoff_at(eastern_now: datetime) -> datetime:
-    """Return this week's Monday-noon WTA publication boundary in New York."""
+def publication_cutoff_at(now: datetime) -> datetime:
+    """Return this week's Monday-noon WTA publication boundary in Madrid."""
 
-    monday = eastern_now.date() - timedelta(days=eastern_now.weekday())
-    return datetime.combine(monday, PUBLICATION_CUTOFF, tzinfo=eastern_now.tzinfo)
-
-
-def publication_window_is_open(eastern_now: datetime) -> bool:
-    """Allow the week's first ranking check at or after Monday noon Eastern."""
-
-    return eastern_now >= publication_cutoff_at(eastern_now)
+    local_now = madrid_now(now)
+    monday = local_now.date() - timedelta(days=local_now.weekday())
+    return datetime.combine(monday, PUBLICATION_CUTOFF, tzinfo=local_now.tzinfo)
 
 
-def ranking_date_is_accepted(date_str: str, eastern_now: datetime, status: Mapping[str, object]) -> bool:
+def publication_window_is_open(now: datetime) -> bool:
+    """Allow the week's first ranking check at or after Monday noon Madrid time."""
+
+    return now >= publication_cutoff_at(now)
+
+
+def ranking_date_is_accepted(date_str: str, now: datetime, status: Mapping[str, object]) -> bool:
     """Keep an unconfirmed or future ranking week out of shared caches and output."""
 
     try:
         ranking_date = date.fromisoformat(date_str)
     except (TypeError, ValueError):
         return False
-    current_monday = eastern_now.date() - timedelta(days=eastern_now.weekday())
+    local_now = madrid_now(now)
+    current_monday = local_now.date() - timedelta(days=local_now.weekday())
     if ranking_date > current_monday:
         return False
     if ranking_date == current_monday:
         return (
-            publication_window_is_open(eastern_now)
+            publication_window_is_open(local_now)
             and status.get("requested_date") == date_str
             and status.get("status") in ACCEPTED_RANKING_STATUSES
         )
@@ -77,23 +81,24 @@ def ranking_date_is_accepted(date_str: str, eastern_now: datetime, status: Mappi
     )
 
 
-def accepted_ranking_dates(rankings_by_date: Mapping, eastern_now: datetime, status: Mapping[str, object]) -> list[str]:
+def accepted_ranking_dates(rankings_by_date: Mapping, now: datetime, status: Mapping[str, object]) -> list[str]:
     """Return publishable dates, checking the accepted week's stored rows too."""
 
     return [
         week
         for week in rankings_by_date
-        if ranking_date_is_accepted(week, eastern_now, status)
+        if ranking_date_is_accepted(week, now, status)
         and (week != status.get("requested_date") or ranking_is_valid(rankings_by_date[week]))
     ]
 
 
-def effective_wta_ranking_date(eastern_now: datetime, status: Mapping[str, object] | None = None) -> date:
+def effective_wta_ranking_date(now: datetime, status: Mapping[str, object] | None = None) -> date:
     """Choose the newest WTA ranking date that the pipeline may publish.
 
     The current Monday becomes eligible only after the refresh accepts it.
     """
 
-    requested = eastern_now.date() - timedelta(days=eastern_now.weekday())
+    local_now = madrid_now(now)
+    requested = local_now.date() - timedelta(days=local_now.weekday())
     previous = requested - timedelta(days=7)
-    return requested if ranking_date_is_accepted(requested.isoformat(), eastern_now, status or {}) else previous
+    return requested if ranking_date_is_accepted(requested.isoformat(), local_now, status or {}) else previous

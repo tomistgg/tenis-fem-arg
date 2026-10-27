@@ -20,7 +20,7 @@ from http_client import request_with_retry
 from pipeline_errors import DataPromotionError, SourceRequestError
 from populate_data.load_weekly_ranking import csv_date_is_complete
 from run_state import initialize_run_state, load_run_state, record_run_issue
-from time_utils import NEW_YORK
+from time_utils import MADRID
 from transactional_io import atomic_write_csv, atomic_write_dataframe
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
@@ -58,8 +58,8 @@ def test_new_week_ranking_sync_uses_player_table_path(tmp_path, monkeypatch):
     monkeypatch.setattr(weekly_ranking, "load_status", lambda: {})
     monkeypatch.setattr(
         weekly_ranking,
-        "now_eastern",
-        lambda: datetime(2026, 7, 27, 12, 1, tzinfo=NEW_YORK),
+        "now_madrid",
+        lambda: datetime(2026, 7, 27, 12, 1, tzinfo=MADRID),
     )
     monkeypatch.setattr(weekly_ranking, "fetch_from_api", lambda date_str: current_rows)
     monkeypatch.setattr(weekly_ranking, "ranking_is_valid", lambda rows: True)
@@ -79,16 +79,16 @@ def test_new_week_ranking_sync_uses_player_table_path(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize(
-    ("eastern_now", "expected"),
+    ("publication_now", "expected"),
     [
-        (datetime(2026, 7, 27, 11, 59, tzinfo=NEW_YORK), False),
-        (datetime(2026, 7, 27, 12, 0, tzinfo=NEW_YORK), True),
+        (datetime(2026, 7, 27, 11, 59, tzinfo=MADRID), False),
+        (datetime(2026, 7, 27, 12, 0, tzinfo=MADRID), True),
         # The boundary is Monday noon, not noon on every later run day.
-        (datetime(2026, 7, 28, 9, 0, tzinfo=NEW_YORK), True),
+        (datetime(2026, 7, 28, 9, 0, tzinfo=MADRID), True),
     ],
 )
-def test_weekly_ranking_publication_window_starts_monday_noon(eastern_now, expected):
-    assert weekly_ranking.publication_window_is_open(eastern_now) is expected
+def test_weekly_ranking_publication_window_starts_monday_noon(publication_now, expected):
+    assert weekly_ranking.publication_window_is_open(publication_now) is expected
 
 
 def test_weekly_ranking_does_not_fetch_or_publish_before_monday_noon(monkeypatch):
@@ -105,8 +105,8 @@ def test_weekly_ranking_does_not_fetch_or_publish_before_monday_noon(monkeypatch
     monkeypatch.setattr(weekly_ranking, "load_status", lambda: {})
     monkeypatch.setattr(
         weekly_ranking,
-        "now_eastern",
-        lambda: datetime(2026, 7, 27, 11, 59, tzinfo=NEW_YORK),
+        "now_madrid",
+        lambda: datetime(2026, 7, 27, 11, 59, tzinfo=MADRID),
     )
 
     def unexpected_fetch(date_str):
@@ -122,7 +122,7 @@ def test_weekly_ranking_does_not_fetch_or_publish_before_monday_noon(monkeypatch
     assert current_date not in captured["rewritten"]
     assert captured["status"]["status"] == "pending_publication"
     assert captured["status"]["comparison"] == "not_checked_before_cutoff"
-    assert captured["status"]["cutoff"] == "Monday 12:00 America/New_York"
+    assert captured["status"]["cutoff"] == "Monday 12:00 Europe/Madrid"
 
 
 def test_weekly_ranking_accepts_unchanged_post_cutoff_result_as_frozen(monkeypatch):
@@ -145,8 +145,8 @@ def test_weekly_ranking_accepts_unchanged_post_cutoff_result_as_frozen(monkeypat
     monkeypatch.setattr(weekly_ranking, "load_status", lambda: {})
     monkeypatch.setattr(
         weekly_ranking,
-        "now_eastern",
-        lambda: datetime(2026, 7, 27, 12, 0, tzinfo=NEW_YORK),
+        "now_madrid",
+        lambda: datetime(2026, 7, 27, 12, 0, tzinfo=MADRID),
     )
     monkeypatch.setattr(weekly_ranking, "fetch_from_api", lambda date_str: current_rows)
     monkeypatch.setattr(weekly_ranking, "ranking_is_valid", lambda rows: True)
@@ -162,14 +162,14 @@ def test_weekly_ranking_accepts_unchanged_post_cutoff_result_as_frozen(monkeypat
 
 
 @pytest.mark.parametrize(
-    ("eastern_now", "accepted_status"),
+    ("publication_now", "accepted_status"),
     [
-        (datetime(2026, 7, 28, 9, tzinfo=NEW_YORK), "confirmed_frozen"),
-        (datetime(2026, 8, 1, 13, tzinfo=NEW_YORK), "confirmed_frozen"),
-        (datetime(2026, 7, 28, 13, tzinfo=NEW_YORK), "confirmed_changed"),
+        (datetime(2026, 7, 28, 9, tzinfo=MADRID), "confirmed_frozen"),
+        (datetime(2026, 8, 1, 13, tzinfo=MADRID), "confirmed_frozen"),
+        (datetime(2026, 7, 28, 13, tzinfo=MADRID), "confirmed_changed"),
     ],
 )
-def test_weekly_ranking_does_not_refetch_an_accepted_week(monkeypatch, eastern_now, accepted_status):
+def test_weekly_ranking_does_not_refetch_an_accepted_week(monkeypatch, publication_now, accepted_status):
     previous_date = "2026-07-20"
     current_date = "2026-07-27"
     by_date = {
@@ -186,8 +186,8 @@ def test_weekly_ranking_does_not_refetch_an_accepted_week(monkeypatch, eastern_n
     monkeypatch.setattr(weekly_ranking, "load_status", lambda: accepted)
     monkeypatch.setattr(
         weekly_ranking,
-        "now_eastern",
-        lambda: eastern_now,
+        "now_madrid",
+        lambda: publication_now,
     )
 
     def unexpected_fetch(date_str):
@@ -213,7 +213,7 @@ def test_weekly_ranking_refetches_a_corrupt_accepted_week(monkeypatch):
 
     monkeypatch.setattr(weekly_ranking, "load_csv_by_date", lambda: by_date)
     monkeypatch.setattr(weekly_ranking, "load_status", lambda: accepted)
-    monkeypatch.setattr(weekly_ranking, "now_eastern", lambda: datetime(2026, 7, 28, 9, tzinfo=NEW_YORK))
+    monkeypatch.setattr(weekly_ranking, "now_madrid", lambda: datetime(2026, 7, 28, 9, tzinfo=MADRID))
     monkeypatch.setattr(weekly_ranking, "ranking_is_valid", lambda rows: len(rows or []) > 1)
     monkeypatch.setattr(weekly_ranking, "fetch_from_api", lambda date_str: fetched.append(date_str) or repaired)
     monkeypatch.setattr(weekly_ranking, "sync_wta_players", lambda path, rows: 0)
@@ -238,18 +238,18 @@ def test_frozen_ranking_rechecks_daily_and_accepts_late_publication(monkeypatch)
         "previous_date": previous_date,
         "status": "confirmed_frozen",
         "comparison": "same_as_previous_week",
-        "cutoff": "Monday 12:00 America/New_York",
-        "last_checked_at": "2026-07-27T12:00:00-04:00",
+        "cutoff": "Monday 12:00 Europe/Madrid",
+        "last_checked_at": "2026-07-27T12:00:00+02:00",
         "message": "Ranking unchanged after the publication cutoff.",
     }
-    clock = {"now": datetime(2026, 7, 28, 12, 0, tzinfo=NEW_YORK)}
+    clock = {"now": datetime(2026, 7, 28, 11, 59, tzinfo=MADRID)}
     fetched = []
     rewrites = []
     responses = iter((frozen_rows, changed_rows))
 
     monkeypatch.setattr(weekly_ranking, "load_csv_by_date", lambda: by_date)
     monkeypatch.setattr(weekly_ranking, "load_status", lambda: dict(status))
-    monkeypatch.setattr(weekly_ranking, "now_eastern", lambda: clock["now"])
+    monkeypatch.setattr(weekly_ranking, "now_madrid", lambda: clock["now"])
     monkeypatch.setattr(weekly_ranking, "ranking_is_valid", lambda rows: len(rows or []) == 2)
     monkeypatch.setattr(weekly_ranking, "sync_wta_players", lambda path, rows: 0)
     monkeypatch.setattr(weekly_ranking, "fetch_from_api", lambda day: fetched.append(day) or next(responses))
@@ -263,16 +263,21 @@ def test_frozen_ranking_rechecks_daily_and_accepts_late_publication(monkeypatch)
     monkeypatch.setattr(weekly_ranking, "save_status", remember)
 
     weekly_ranking.main()
+    assert fetched == []
+    assert status["last_checked_at"] == "2026-07-27T12:00:00+02:00"
+
+    clock["now"] = datetime(2026, 7, 28, 12, 0, tzinfo=MADRID)
+    weekly_ranking.main()
     assert fetched == [current_date]
     assert status["status"] == "confirmed_frozen"
-    assert status["last_checked_at"] == "2026-07-28T12:00:00-04:00"
+    assert status["last_checked_at"] == "2026-07-28T12:00:00+02:00"
     assert rewrites == []
 
-    clock["now"] = datetime(2026, 7, 28, 14, 0, tzinfo=NEW_YORK)
+    clock["now"] = datetime(2026, 7, 28, 14, 0, tzinfo=MADRID)
     weekly_ranking.main()
     assert fetched == [current_date]
 
-    clock["now"] = datetime(2026, 7, 29, 12, 0, tzinfo=NEW_YORK)
+    clock["now"] = datetime(2026, 7, 29, 12, 0, tzinfo=MADRID)
     weekly_ranking.main()
     assert fetched == [current_date, current_date]
     assert by_date[current_date] == changed_rows
@@ -298,17 +303,17 @@ def test_friday_ranking_recheck_preserves_accepted_data_on_partial_responses(mon
         "previous_date": previous_date,
         "status": "confirmed_changed",
         "comparison": "different_from_previous_week",
-        "cutoff": "Monday 12:00 America/New_York",
+        "cutoff": "Monday 12:00 Europe/Madrid",
         "message": "New WTA ranking accepted after the publication cutoff.",
     }
-    clock = {"now": datetime(2026, 7, 31, 11, 59, tzinfo=NEW_YORK)}
+    clock = {"now": datetime(2026, 7, 31, 11, 59, tzinfo=MADRID)}
     fetched = []
     rewrites = []
     responses = iter((current_rows[:1], current_rows[:1000], corrected_rows))
 
     monkeypatch.setattr(weekly_ranking, "load_csv_by_date", lambda: by_date)
     monkeypatch.setattr(weekly_ranking, "load_status", lambda: dict(status))
-    monkeypatch.setattr(weekly_ranking, "now_eastern", lambda: clock["now"])
+    monkeypatch.setattr(weekly_ranking, "now_madrid", lambda: clock["now"])
     monkeypatch.setattr(weekly_ranking, "sync_wta_players", lambda path, rows: 0)
     monkeypatch.setattr(weekly_ranking, "fetch_from_api", lambda day: fetched.append(day) or next(responses))
     monkeypatch.setattr(weekly_ranking, "rewrite_csv", lambda rows: rewrites.append(dict(rows)))
@@ -323,7 +328,7 @@ def test_friday_ranking_recheck_preserves_accepted_data_on_partial_responses(mon
     weekly_ranking.main()
     assert fetched == []
 
-    clock["now"] = datetime(2026, 7, 31, 12, 0, tzinfo=NEW_YORK)
+    clock["now"] = datetime(2026, 7, 31, 12, 0, tzinfo=MADRID)
     weekly_ranking.main()
     assert fetched == [current_date]
     assert by_date[current_date] == current_rows
@@ -331,23 +336,23 @@ def test_friday_ranking_recheck_preserves_accepted_data_on_partial_responses(mon
     assert "last_checked_at" not in status
     assert rewrites == []
 
-    clock["now"] = datetime(2026, 7, 31, 14, 0, tzinfo=NEW_YORK)
+    clock["now"] = datetime(2026, 7, 31, 14, 0, tzinfo=MADRID)
     weekly_ranking.main()
     assert fetched == [current_date, current_date]
     assert by_date[current_date] == current_rows
     assert "last_checked_at" not in status
     assert rewrites == []
 
-    clock["now"] = datetime(2026, 7, 31, 16, 0, tzinfo=NEW_YORK)
+    clock["now"] = datetime(2026, 7, 31, 16, 0, tzinfo=MADRID)
     weekly_ranking.main()
     assert fetched == [current_date, current_date, current_date]
     assert by_date[current_date] == corrected_rows
-    assert status["last_checked_at"] == "2026-07-31T16:00:00-04:00"
+    assert status["last_checked_at"] == "2026-07-31T16:00:00+02:00"
     assert len(rewrites) == 1
 
-    clock["now"] = datetime(2026, 7, 31, 18, 0, tzinfo=NEW_YORK)
+    clock["now"] = datetime(2026, 7, 31, 18, 0, tzinfo=MADRID)
     weekly_ranking.main()
-    clock["now"] = datetime(2026, 8, 1, 12, 0, tzinfo=NEW_YORK)
+    clock["now"] = datetime(2026, 8, 1, 12, 0, tzinfo=MADRID)
     weekly_ranking.main()
     assert fetched == [current_date, current_date, current_date]
 

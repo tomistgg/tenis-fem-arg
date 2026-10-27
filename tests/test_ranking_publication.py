@@ -1,5 +1,5 @@
 import shutil
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -7,17 +7,49 @@ import pytest
 import html_generator
 import main
 import tstrength
-from ranking_publication import accepted_ranking_dates, effective_wta_ranking_date, ranking_date_is_accepted
-from time_utils import NEW_YORK
+from ranking_publication import (
+    accepted_ranking_dates,
+    effective_wta_ranking_date,
+    publication_cutoff_at,
+    publication_window_is_open,
+    ranking_date_is_accepted,
+)
+from time_utils import MADRID, NEW_YORK
 
 
 @pytest.mark.parametrize(
-    ("eastern_now", "status", "expected"),
+    ("now", "expected"),
     [
-        (datetime(2026, 8, 17, 11, 59, tzinfo=NEW_YORK), {}, "2026-08-10"),
-        (datetime(2026, 8, 17, 12, 0, tzinfo=NEW_YORK), {}, "2026-08-10"),
+        (datetime(2026, 7, 27, 9, 59, tzinfo=UTC), False),
+        (datetime(2026, 7, 27, 10, 0, tzinfo=UTC), True),
+        (datetime(2026, 1, 19, 10, 59, tzinfo=UTC), False),
+        (datetime(2026, 1, 19, 11, 0, tzinfo=UTC), True),
+        # New York and Madrid change daylight-saving time on different dates.
+        (datetime(2026, 3, 16, 6, 59, tzinfo=NEW_YORK), False),
+        (datetime(2026, 3, 16, 7, 0, tzinfo=NEW_YORK), True),
+        (datetime(2026, 10, 26, 6, 59, tzinfo=NEW_YORK), False),
+        (datetime(2026, 10, 26, 7, 0, tzinfo=NEW_YORK), True),
+    ],
+)
+def test_publication_window_uses_noon_in_madrid(now, expected):
+    assert publication_window_is_open(now) is expected
+
+
+def test_publication_week_uses_madrid_when_new_york_is_still_sunday():
+    now = datetime(2026, 7, 26, 18, 30, tzinfo=NEW_YORK)
+
+    assert publication_cutoff_at(now) == datetime(2026, 7, 27, 12, 0, tzinfo=MADRID)
+    assert not publication_window_is_open(now)
+    assert effective_wta_ranking_date(now).isoformat() == "2026-07-20"
+
+
+@pytest.mark.parametrize(
+    ("now", "status", "expected"),
+    [
+        (datetime(2026, 8, 17, 11, 59, tzinfo=MADRID), {}, "2026-08-10"),
+        (datetime(2026, 8, 17, 12, 0, tzinfo=MADRID), {}, "2026-08-10"),
         (
-            datetime(2026, 8, 17, 12, 1, tzinfo=NEW_YORK),
+            datetime(2026, 8, 17, 12, 1, tzinfo=MADRID),
             {
                 "requested_date": "2026-08-17",
                 "previous_date": "2026-08-10",
@@ -26,7 +58,12 @@ from time_utils import NEW_YORK
             "2026-08-10",
         ),
         (
-            datetime(2026, 8, 17, 12, 1, tzinfo=NEW_YORK),
+            datetime(2026, 8, 17, 11, 59, tzinfo=MADRID),
+            {"requested_date": "2026-08-17", "status": "confirmed_changed"},
+            "2026-08-10",
+        ),
+        (
+            datetime(2026, 8, 17, 12, 0, tzinfo=MADRID),
             {
                 "requested_date": "2026-08-17",
                 "previous_date": "2026-08-10",
@@ -36,12 +73,12 @@ from time_utils import NEW_YORK
         ),
     ],
 )
-def test_effective_wta_ranking_date_respects_publication_state(eastern_now, status, expected):
-    assert effective_wta_ranking_date(eastern_now, status).isoformat() == expected
+def test_effective_wta_ranking_date_respects_publication_state(now, status, expected):
+    assert effective_wta_ranking_date(now, status).isoformat() == expected
 
 
 def test_unaccepted_or_future_ranking_dates_are_never_publishable():
-    now = datetime(2026, 8, 17, 12, 1, tzinfo=NEW_YORK)
+    now = datetime(2026, 8, 17, 12, 1, tzinfo=MADRID)
     pending = {"requested_date": "2026-08-17", "status": "pending_publication"}
     accepted = {"requested_date": "2026-08-17", "status": "confirmed_changed"}
 
@@ -77,7 +114,7 @@ def test_generated_site_excludes_pending_ranking_from_all_bundles(tmp_path, monk
     for filename in ("bjkc_matches_arg.csv", "manually_added_matches.csv"):
         (data_dir / filename).write_text(match_columns, encoding="utf-8")
     shutil.copytree(Path(__file__).resolve().parents[1] / "assets", site_dir / "assets")
-    monkeypatch.setattr(html_generator, "new_york_now", lambda: datetime(2026, 7, 27, 12, 1, tzinfo=NEW_YORK))
+    monkeypatch.setattr(html_generator, "new_york_now", lambda: datetime(2026, 7, 27, 12, 1, tzinfo=MADRID))
     monkeypatch.setattr(html_generator, "load_player_mapping", lambda: {})
 
     html_generator.generate_html(
@@ -108,7 +145,7 @@ def test_strength_and_match_history_ignore_pending_ranking(tmp_path, monkeypatch
         '{"requested_date":"2026-07-27","status":"pending_publication"}', encoding="utf-8"
     )
     def now():
-        return datetime(2026, 7, 27, 12, 1, tzinfo=NEW_YORK)
+        return datetime(2026, 7, 27, 12, 1, tzinfo=MADRID)
     monkeypatch.setattr(tstrength, "RANKINGS_CSV", str(ranking_file))
     monkeypatch.setattr(tstrength, "new_york_now", now)
     monkeypatch.setattr(main, "new_york_now", now)
