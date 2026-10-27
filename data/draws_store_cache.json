@@ -119,11 +119,20 @@
         ],
         "matches": [
           {"round": 1, "match_num": 0, "winner_name": "A. Bondar", "score": "64 62"},
+          {"round": 1, "match_num": 1, "winner_name": "K. Quevedo", "score": "64 67(5) 64"},
+          {"round": 1, "match_num": 2, "winner_name": "J. Teichmann", "score": "75 62"},
+          {"round": 1, "match_num": 3, "winner_name": "Z. Sonmez", "score": "61 46 62"},
+          {"round": 1, "match_num": 4, "winner_name": "L. Tagger", "score": "62 62"},
+          {"round": 1, "match_num": 5, "winner_name": "M. Linette", "score": "76(6) 64"},
           {"round": 1, "match_num": 6, "winner_name": "H. Shi", "score": "64 64"},
+          {"round": 1, "match_num": 7, "winner_name": "D. Yastremska", "score": "75 16 76(7)"},
           {"round": 1, "match_num": 8, "winner_name": "M. Timofeeva", "score": "64 61"},
+          {"round": 1, "match_num": 9, "winner_name": "X. Sun", "score": "63 64"},
+          {"round": 1, "match_num": 10, "winner_name": "C. Liu", "score": "46 76(5) 64"},
           {"round": 1, "match_num": 12, "winner_name": "P. Badosa", "score": "61 64"},
           {"round": 1, "match_num": 13, "winner_name": "S. Kraus", "score": "64 62"},
-          {"round": 1, "match_num": 14, "winner_name": "H. Dart", "score": "64 26 62"}
+          {"round": 1, "match_num": 14, "winner_name": "H. Dart", "score": "64 26 62"},
+          {"round": 1, "match_num": 15, "winner_name": "J. Tjen", "score": "62 62"}
         ],
         "round_labels": [
           "Round of 32",
@@ -165,7 +174,10 @@
         "matches": [
           {"round": 1, "match_num": 0, "winner_name": "M. Kozyreva / M. Lumsden", "score": "63 63"},
           {"round": 1, "match_num": 1, "winner_name": "I. Haverlag / Z. Kulambayeva", "score": "63 46 10-5"},
-          {"round": 1, "match_num": 6, "winner_name": "J. Tjen / Ve. Williams", "score": "60 75"}
+          {"round": 1, "match_num": 3, "winner_name": "I. Cho / Y. Cho", "score": "62 76(6)"},
+          {"round": 1, "match_num": 5, "winner_name": "E. Hozumi / A. Klepac", "score": "36 62 10-5"},
+          {"round": 1, "match_num": 6, "winner_name": "J. Tjen / Ve. Williams", "score": "60 75"},
+          {"round": 1, "match_num": 7, "winner_name": "L. Kichenok / M. Ninomiya", "score": "36 64 10-8"}
         ],
         "round_labels": [
           "Round of 16",
@@ -473,8 +485,18 @@
           {"pos": 32, "seed": "2", "name": "CHARAEVA, Alina", "country": "ARM", "wtn": "8.86"}
         ],
         "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "A. Blinkova", "score": "63 62"},
+          {"round": 1, "match_num": 2, "winner_name": "M. Kubka", "score": "63 76(4)"},
+          {"round": 1, "match_num": 4, "winner_name": "L. Stefanini", "score": "63 62"},
           {"round": 1, "match_num": 5, "winner_name": "A. Aksu", "score": "64 63"},
-          {"round": 1, "match_num": 14, "winner_name": "G. Knutson", "score": "75 36 60"}
+          {"round": 1, "match_num": 6, "winner_name": "L. Klimovicova", "score": "64 62"},
+          {"round": 1, "match_num": 7, "winner_name": "N. Noha Akugue", "score": "76(4) 61"},
+          {"round": 1, "match_num": 8, "winner_name": "S. Bandecchi", "score": "63 62"},
+          {"round": 1, "match_num": 10, "winner_name": "E. Yaneva", "score": "62 62"},
+          {"round": 1, "match_num": 11, "winner_name": "O. Selekhmeteva", "score": "64 62"},
+          {"round": 1, "match_num": 12, "winner_name": "M. Bassols Ribera", "score": "63 63"},
+          {"round": 1, "match_num": 14, "winner_name": "G. Knutson", "score": "75 36 60"},
+          {"round": 1, "match_num": 15, "winner_name": "A. Charaeva", "score": "64 61"}
         ],
         "round_labels": [
           "Round of 32",
@@ -485,6 +507,32 @@
         ],
         "num_rounds": 5,
         "wtn_gm": 10.5471
+      },
+      "MDD":
+      {
+        "tournament_name": "Valle D'Aosta Ladies Open",
+        "location": "COURMAYEUR, ITA",
+        "dates": "October 25- November 1 2026",
+        "prize": "€ 100,000",
+        "surface": "Hard, Mapei",
+        "draw_type": "DOUBLES MAIN DRAW",
+        "draw_size": 8,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "HARRISON, Catherine / HEWITT, Dalayna", "country": "USA", "members": [{"name": "HARRISON, Catherine", "country": "USA", "wtn": "-"}, {"name": "HEWITT, Dalayna", "country": "USA", "wtn": "12.52"}]},
+          {"pos": 2, "name": "SOBOLIEVA, Anastasiia / YANEVA, Elizara", "country": "UKR", "members": [{"name": "SOBOLIEVA, Anastasiia", "country": "UKR", "wtn": "9.21"}, {"name": "YANEVA, Elizara", "country": "BUL", "wtn": "9.97"}]},
+          {"pos": 3, "name": "KUWATA, Hiroko / RAINA, Ankita", "country": "JPN", "members": [{"name": "KUWATA, Hiroko", "country": "JPN", "wtn": "15.93"}, {"name": "RAINA, Ankita", "country": "IND", "wtn": "14.04"}]},
+          {"pos": 4, "entry": "WC", "name": "MAIR, Laura / SERBAN, Isabella Maria", "country": "ITA", "members": [{"name": "MAIR, Laura", "country": "ITA", "wtn": "13.26"}, {"name": "SERBAN, Isabella Maria", "country": "ITA", "wtn": "12.52"}]},
+          {"pos": 5, "name": "CHIESA, Enola / DENCHEVA, Rositsa", "country": "ITA", "members": [{"name": "CHIESA, Enola", "country": "ITA", "wtn": "13.3"}, {"name": "DENCHEVA, Rositsa", "country": "BUL", "wtn": "9.74"}]},
+          {"pos": 6, "name": "BANDECCHI, Susan / PIGATO, Lisa", "country": "SUI", "members": [{"name": "BANDECCHI, Susan", "country": "SUI", "wtn": "9.73"}, {"name": "PIGATO, Lisa", "country": "ITA", "wtn": "9.38"}]},
+          {"pos": 7, "name": "NAGY, Adrienn / SAKELLARIDI, Sapfo", "country": "HUN", "members": [{"name": "NAGY, Adrienn", "country": "HUN", "wtn": "12.13"}, {"name": "SAKELLARIDI, Sapfo", "country": "GRE", "wtn": "14.06"}]},
+          {"pos": 8, "seed": "2", "name": "BROOKS, Madeleine / ZAAR, Lisa", "country": "GBR", "members": [{"name": "BROOKS, Madeleine", "country": "GBR", "wtn": "-"}, {"name": "ZAAR, Lisa", "country": "SWE", "wtn": "10.95"}]}
+        ],
+        "round_labels": [
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 3
       }
     }
   },
@@ -594,6 +642,32 @@
         ],
         "num_rounds": 5,
         "wtn_gm": 12.2511
+      },
+      "MDD":
+      {
+        "tournament_name": "Curitiba Open",
+        "location": "CURITIBA, BRA",
+        "dates": "25 October - 1 November 2026",
+        "prize": "$ 115,000",
+        "surface": "Clay",
+        "draw_type": "DOUBLES MAIN DRAW",
+        "draw_size": 8,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "JAKUPOVIC, Dalila / RADISIC, Nika", "country": "SLO", "members": [{"name": "JAKUPOVIC, Dalila", "country": "SLO", "wtn": "11.7"}, {"name": "RADISIC, Nika", "country": "SLO", "wtn": "12.88"}]},
+          {"pos": 2, "name": "FULLANA, Luiza / PEREIRA, Rebeca", "country": "BRA", "members": [{"name": "FULLANA, Luiza", "country": "BRA", "wtn": "13.54"}, {"name": "PEREIRA, Rebeca", "country": "BRA", "wtn": "17.18"}]},
+          {"pos": 3, "name": "CARLE, Maria Lourdes / RIERA, Julia", "country": "ARG", "members": [{"name": "CARLE, Maria Lourdes", "country": "ARG", "wtn": "10.99"}, {"name": "RIERA, Julia", "country": "ARG", "wtn": "10.42"}]},
+          {"pos": 4, "name": "BRONZETTI, Lucia / GRABHER, Julia", "country": "ITA", "members": [{"name": "BRONZETTI, Lucia", "country": "ITA", "wtn": "10.24"}, {"name": "GRABHER, Julia", "country": "AUT", "wtn": "9.63"}]},
+          {"pos": 5, "entry": "WC", "name": "KONISHI CAMARGO SILVA, Julia / SOUZA, Marjorie", "country": "BRA", "members": [{"name": "KONISHI CAMARGO SILVA, Julia", "country": "BRA", "wtn": "16.12"}, {"name": "SOUZA, Marjorie", "country": "BRA", "wtn": "14.41"}]},
+          {"pos": 6, "name": "LEME DA SILVA, Nauhany Vitoria / PIGOSSI, Laura", "country": "BRA", "members": [{"name": "LEME DA SILVA, Nauhany Vitoria", "country": "BRA", "wtn": "12.58"}, {"name": "PIGOSSI, Laura", "country": "BRA", "wtn": "10.96"}]},
+          {"pos": 7, "name": "GONZALEZ DANIELE, Justina / VERGARA RIVERA, Antonia", "country": "ARG", "members": [{"name": "GONZALEZ DANIELE, Justina", "country": "ARG", "wtn": "13.92"}, {"name": "VERGARA RIVERA, Antonia", "country": "CHI", "wtn": "13.92"}]},
+          {"pos": 8, "seed": "2", "name": "CANDIOTTO, Ana / PAPAMICHAIL, Despina", "country": "BRA", "members": [{"name": "CANDIOTTO, Ana", "country": "BRA", "wtn": "14.71"}, {"name": "PAPAMICHAIL, Despina", "country": "GRE", "wtn": "12.08"}]}
+        ],
+        "round_labels": [
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 3
       }
     }
   },
@@ -821,6 +895,14 @@
           {"pos": 31, "entry": "Q", "name": "AGUDELO, Luciana", "country": "ARG", "itf_id": "800692785", "wtn": "16.91"},
           {"pos": 32, "seed": "2", "name": "ESTEVEZ, Josefina", "country": "ARG", "itf_id": "800602639", "wtn": "15.15"}
         ],
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "L. Moyano", "score": "61 62"},
+          {"round": 1, "match_num": 2, "winner_name": "V. Bruno", "score": "36 63 62"},
+          {"round": 1, "match_num": 3, "winner_name": "A. Medinaceli Lobos", "score": "63 62"},
+          {"round": 1, "match_num": 4, "winner_name": "P. Lopez", "score": "67 61 61"},
+          {"round": 1, "match_num": 11, "winner_name": "M. Sanchez Uribe", "score": "62 75"},
+          {"round": 1, "match_num": 12, "winner_name": "A. Gobbi Monllau", "score": "64 61"}
+        ],
         "round_labels": [
           "Round of 32",
           "Round of 16",
@@ -898,7 +980,14 @@
           {"round": 1, "match_num": 12, "winner_name": "A. Soulie", "score": "61 61"},
           {"round": 1, "match_num": 13, "winner_name": "O. De Los Reyes", "score": "63 64"},
           {"round": 1, "match_num": 14, "winner_name": "J. Singeorzan", "score": "64 64"},
-          {"round": 1, "match_num": 15, "winner_name": "I. Manchala", "score": "60 62"}
+          {"round": 1, "match_num": 15, "winner_name": "I. Manchala", "score": "60 62"},
+          {"round": 2, "match_num": 0, "winner_name": "A. Battesti", "score": "36 63 10-7"},
+          {"round": 2, "match_num": 1, "winner_name": "C. Di Genova", "score": "60 16 10-4"},
+          {"round": 2, "match_num": 2, "winner_name": "M. Robinson", "score": "36 63 11-9"},
+          {"round": 2, "match_num": 4, "winner_name": "A. Smejkalova", "score": "62 61"},
+          {"round": 2, "match_num": 5, "winner_name": "M. Rowinska", "score": "61 62"},
+          {"round": 2, "match_num": 6, "winner_name": "A. Soulie", "score": "62 64"},
+          {"round": 2, "match_num": 7, "winner_name": "J. Singeorzan", "score": "26 76(5) 14-12"}
         ],
         "round_labels": [
           "Round of 32",
