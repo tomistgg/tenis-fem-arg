@@ -2,10 +2,10 @@
   "fields": ["column","continent","name","level","surface","country","startDate","endDate","source","tournamentKey","tournamentId","calendarKey"],
   "weeks": {
     "Week of November 2": [
-      ["wta_tour","asia","WTA 250 Hong Kong","WTA 250","Hard","HKG","2026-11-02","2026-11-08","WTA","",1074,"wta:1074"],
-      ["wta_tour","asia","WTA 250 Chennai","WTA 250","Hard","IND","2026-11-02","2026-11-08","WTA","",1148,"wta:1148"],
-      ["wta_125","south_america","WTA 125 Cali","WTA 125","Clay","COL","2026-11-02","2026-11-07","WTA","",1110,"wta:1110"],
-      ["wta_125","africa","WTA 125 Luanda","WTA 125","Hard","ANG","2026-11-02","2026-11-08","WTA","",1176,"wta:1176"],
+      ["wta_tour","asia","WTA 250 Hong Kong","WTA 250","Hard","HKG","2026-11-02","2026-11-08","WTA","",1074,"wta:1074:2026"],
+      ["wta_tour","asia","WTA 250 Chennai","WTA 250","Hard","IND","2026-11-02","2026-11-08","WTA","",1148,"wta:1148:2026"],
+      ["wta_125","south_america","WTA 125 Cali","WTA 125","Clay","COL","2026-11-02","2026-11-07","WTA","",1110,"wta:1110:2026"],
+      ["wta_125","africa","WTA 125 Luanda","WTA 125","Hard","ANG","2026-11-02","2026-11-08","WTA","",1176,"wta:1176:2026"],
       ["itf","south_america","W15 Neuquén 2","W15","Clay","ARG","2026-11-02","2026-11-08","ITF","w-itf-arg-2026-014","","itf:w-itf-arg-2026-014"],
       ["itf","north_central_america","W50 Huamantla","W50","Hard","MEX","2026-11-02","2026-11-08","ITF","w-itf-mex-2026-010","","itf:w-itf-mex-2026-010"],
       ["itf","north_central_america","W35 Orlando, FL 1","W35","Hard","USA","2026-11-02","2026-11-08","ITF","w-itf-usa-2026-064","","itf:w-itf-usa-2026-064"],
@@ -22,8 +22,8 @@
       ["itf","asia","W15 Maanshan 8","W15","Hard","CHN","2026-11-02","2026-11-08","ITF","w-itf-chn-2026-038","","itf:w-itf-chn-2026-038"]
     ],
     "Week of November 9": [
-      ["wta_tour","north_central_america","WTA Finals","Finals","Hard","USA","2026-11-08","2026-11-15","WTA","",808,"wta:808"],
-      ["wta_125","south_america","WTA 125 Sopo","WTA 125","Clay","COL","2026-11-09","2026-11-14","WTA","",1181,"wta:1181"],
+      ["wta_tour","north_central_america","WTA Finals","Finals","Hard","USA","2026-11-08","2026-11-15","WTA","",808,"wta:808:2026"],
+      ["wta_125","south_america","WTA 125 Sopo","WTA 125","Clay","COL","2026-11-09","2026-11-14","WTA","",1181,"wta:1181:2026"],
       ["itf","south_america","W15 São Carlos","W15","Clay","BRA","2026-11-09","2026-11-15","ITF","w-itf-bra-2026-019","","itf:w-itf-bra-2026-019"],
       ["itf","north_central_america","W50 Chihuahua 2","W50","Clay","MEX","2026-11-09","2026-11-15","ITF","w-itf-mex-2026-008","","itf:w-itf-mex-2026-008"],
       ["itf","north_central_america","W35 Weston, FL 2","W35","Clay","USA","2026-11-09","2026-11-15","ITF","w-itf-usa-2026-061","","itf:w-itf-usa-2026-061"],
@@ -40,7 +40,7 @@
     ],
     "Week of November 16": [
       ["wta_tour","asia","BJKC Playoffs","WTAFinals","Hard","JPN","2026-11-16","2026-11-22","","","","bjkc playoffs|wtafinals|JPN|hard|2026-11-16|2026-11-22"],
-      ["wta_125","south_america","WTA 125 Colina","WTA 125","Clay","CHI","2026-11-16","2026-11-22","WTA","",2076,"wta:2076"],
+      ["wta_125","south_america","WTA 125 Colina","WTA 125","Clay","CHI","2026-11-16","2026-11-22","WTA","",2076,"wta:2076:2026"],
       ["itf","south_america","W35 Sao Paulo 2","W35","Clay","BRA","2026-11-16","2026-11-22","ITF","w-itf-bra-2026-014","","itf:w-itf-bra-2026-014"],
       ["itf","north_central_america","W35 Orlando, FL 2","W35","Clay","USA","2026-11-16","2026-11-22","ITF","w-itf-usa-2026-058","","itf:w-itf-usa-2026-058"],
       ["itf","europe","W75 Trnava 4","W75","Hard","SVK","2026-11-16","2026-11-22","ITF","w-itf-svk-2026-005","","itf:w-itf-svk-2026-005"],
@@ -54,7 +54,7 @@
       ["itf","oceania","W75 Sydney","W75","Hard","AUS","2026-11-16","2026-11-22","ITF","w-itf-aus-2026-014","","itf:w-itf-aus-2026-014"]
     ],
     "Week of November 23": [
-      ["wta_125","south_america","WTA 125 Buenos Aires","WTA 125","Clay","ARG","2026-11-23","2026-11-29","WTA","",2052,"wta:2052"],
+      ["wta_125","south_america","WTA 125 Buenos Aires","WTA 125","Clay","ARG","2026-11-23","2026-11-29","WTA","",2052,"wta:2052:2026"],
       ["itf","south_america","W75 Florianópolis","W75","Clay","BRA","2026-11-23","2026-11-29","ITF","w-itf-bra-2026-016","","itf:w-itf-bra-2026-016"],
       ["itf","europe","W75 Trnava 5","W75","Hard","SVK","2026-11-23","2026-11-29","ITF","w-itf-svk-2026-006","","itf:w-itf-svk-2026-006"],
       ["itf","europe","W50 Ortisei","W50","Hard","ITA","2026-11-23","2026-11-29","ITF","w-itf-ita-2026-030","","itf:w-itf-ita-2026-030"],
@@ -67,8 +67,8 @@
       ["itf","oceania","W75 Playford","W75","Hard","AUS","2026-11-23","2026-11-29","ITF","w-itf-aus-2026-013","","itf:w-itf-aus-2026-013"]
     ],
     "Week of November 30": [
-      ["wta_125","south_america","WTA 125 Quito","WTA 125","Clay","ECU","2026-11-30","2026-12-06","WTA","",1118,"wta:1118"],
-      ["wta_125","europe","WTA 125 Angers","WTA 125","Hard","FRA","2026-11-30","2026-12-06","WTA","",2056,"wta:2056"],
+      ["wta_125","south_america","WTA 125 Quito","WTA 125","Clay","ECU","2026-11-30","2026-12-06","WTA","",1118,"wta:1118:2026"],
+      ["wta_125","europe","WTA 125 Angers","WTA 125","Hard","FRA","2026-11-30","2026-12-06","WTA","",2056,"wta:2056:2026"],
       ["itf","south_america","W15 Lima 1","W15","Clay","PER","2026-11-30","2026-12-06","ITF","w-itf-per-2026-001","","itf:w-itf-per-2026-001"],
       ["itf","north_central_america","W50 Punta Cana 1","W50","Clay","DOM","2026-11-30","2026-12-06","ITF","w-itf-dom-2026-001","","itf:w-itf-dom-2026-001"],
       ["itf","north_central_america","W35 Boca Raton, FL 4","W35","Clay","USA","2026-11-30","2026-12-06","ITF","w-itf-usa-2026-062","","itf:w-itf-usa-2026-062"],
@@ -94,7 +94,7 @@
       ["itf","oceania","W15 Hamilton","W15","Hard","NZL","2026-12-07","2026-12-13","ITF","w-itf-nzl-2026-002","","itf:w-itf-nzl-2026-002"]
     ],
     "Week of December 14": [
-      ["wta_125","europe","WTA 125 Limoges","WTA 125","Hard","FRA","2026-12-14","2026-12-20","WTA","",1072,"wta:1072"],
+      ["wta_125","europe","WTA 125 Limoges","WTA 125","Hard","FRA","2026-12-14","2026-12-20","WTA","",1072,"wta:1072:2026"],
       ["itf","south_america","W35 Lima","W35","Clay","PER","2026-12-14","2026-12-20","ITF","w-itf-per-2026-003","","itf:w-itf-per-2026-003"],
       ["itf","south_america","W15 Mogi das Cruzes 2","W15","Clay","BRA","2026-12-14","2026-12-20","ITF","w-itf-bra-2026-018","","itf:w-itf-bra-2026-018"],
       ["itf","north_central_america","W50 Punta Cana 3","W50","Clay","DOM","2026-12-14","2026-12-20","ITF","w-itf-dom-2026-003","","itf:w-itf-dom-2026-003"],
@@ -110,6 +110,170 @@
     ],
     "Week of December 28": [
       ["itf","africa","W15 Monastir 38","W15","Hard","TUN","2026-12-28","2027-01-03","ITF","w-itf-tun-2026-048","","itf:w-itf-tun-2026-048"]
+    ],
+    "Week of January 4": [
+      ["wta_tour","oceania","WTA 500 Perth + Sydney","WTA 500","Hard","AUS","2027-01-01","2027-01-10","WTA","",2084,"wta:2084:2027"],
+      ["wta_tour","oceania","WTA 500 Brisbane","WTA 500","Hard","AUS","2027-01-03","2027-01-10","WTA","",800,"wta:800:2027"],
+      ["wta_tour","oceania","WTA 250 Auckland","WTA 250","Hard","NZL","2027-01-04","2027-01-10","WTA","",1049,"wta:1049:2027"],
+      ["wta_125","oceania","WTA 125 Canberra","WTA 125","Hard","AUS","2027-01-04","2027-01-09","WTA","",2096,"wta:2096:2027"],
+      ["itf","north_central_america","W35 Port St. Lucie","W35","Hard","USA","2027-01-04","2027-01-10","ITF","w-itf-usa-2027-001","","itf:w-itf-usa-2027-001"],
+      ["itf","europe","W50 Stockholm","W50","Hard","SWE","2027-01-04","2027-01-10","ITF","w-itf-swe-2027-001","","itf:w-itf-swe-2027-001"]
+    ],
+    "Week of January 11": [
+      ["gs","oceania","Australian Open Qualifying","Grand Slam","Hard","AUS","2027-01-10","2027-01-16","WTA","",901,"wta:901:2027|qualifying"],
+      ["wta_tour","oceania","WTA 500 Adelaide","WTA 500","Hard","AUS","2027-01-11","2027-01-16","WTA","",2014,"wta:2014:2027"],
+      ["wta_tour","oceania","WTA 250 Hobart","WTA 250","Hard","AUS","2027-01-11","2027-01-16","WTA","",1050,"wta:1050:2027"]
+    ],
+    "Week of January 18": [
+      ["gs","oceania","Australian Open","Grand Slam","Hard","AUS","2027-01-17","2027-01-31","WTA","",901,"wta:901:2027"]
+    ],
+    "Week of January 25": [
+      ["gs","oceania","Australian Open","Grand Slam","Hard","AUS","2027-01-17","2027-01-31","WTA","",901,"wta:901:2027"],
+      ["wta_125","asia","WTA 125 Manila","WTA 125","Hard","PHI","2027-01-25","2027-01-30","WTA","",1153,"wta:1153:2027"]
+    ],
+    "Week of February 1": [
+      ["wta_tour","europe","WTA 250 Cluj-Napoca","WTA 250","Hard","ROU","2027-01-31","2027-02-06","WTA","",2050,"wta:2050:2027"],
+      ["wta_tour","europe","WTA 250 Ostrava","WTA 250","Hard","CZE","2027-01-31","2027-02-06","WTA","",1154,"wta:1154:2027"],
+      ["wta_tour","asia","WTA 500 Abu Dhabi","WTA 500","Hard","UAE","2027-01-31","2027-02-06","WTA","",2088,"wta:2088:2027"]
+    ],
+    "Week of February 8": [
+      ["wta_tour","asia","WTA 1000 Doha","WTA 1000","Hard","QAT","2027-02-07","2027-02-13","WTA","",1003,"wta:1003:2027"]
+    ],
+    "Week of February 15": [
+      ["wta_tour","asia","WTA 1000 Dubai","WTA 1000","Hard","UAE","2027-02-14","2027-02-20","WTA","",718,"wta:718:2027"]
+    ],
+    "Week of February 22": [
+      ["wta_tour","north_central_america","WTA 500 Mérida","WTA 500","Hard","MEX","2027-02-22","2027-02-28","WTA","",2085,"wta:2085:2027"],
+      ["wta_tour","north_central_america","WTA 250 Austin","WTA 250","Hard","USA","2027-02-22","2027-02-28","WTA","",2082,"wta:2082:2027"]
+    ],
+    "Week of March 1": [
+      ["wta_tour","north_central_america","WTA 1000 Indian Wells","WTA 1000","Hard","USA","2027-03-03","2027-03-14","WTA","",609,"wta:609:2027"]
+    ],
+    "Week of March 8": [
+      ["wta_tour","north_central_america","WTA 1000 Indian Wells","WTA 1000","Hard","USA","2027-03-03","2027-03-14","WTA","",609,"wta:609:2027"]
+    ],
+    "Week of March 15": [
+      ["wta_tour","north_central_america","WTA 1000 Miami","WTA 1000","Hard","USA","2027-03-16","2027-03-28","WTA","",902,"wta:902:2027"]
+    ],
+    "Week of March 22": [
+      ["wta_tour","north_central_america","WTA 1000 Miami","WTA 1000","Hard","USA","2027-03-16","2027-03-28","WTA","",902,"wta:902:2027"]
+    ],
+    "Week of March 29": [
+      ["wta_tour","south_america","WTA 250 Bogota","WTA 250","Clay","COL","2027-03-29","2027-04-04","WTA","",894,"wta:894:2027"],
+      ["wta_tour","north_central_america","WTA 500 Charleston","WTA 500","Clay","USA","2027-03-29","2027-04-04","WTA","",804,"wta:804:2027"]
+    ],
+    "Week of April 5": [
+      ["wta_tour","europe","WTA 500 Linz","WTA 500","Clay","AUT","2027-04-05","2027-04-11","WTA","",528,"wta:528:2027"]
+    ],
+    "Week of April 12": [
+      ["wta_tour","europe","WTA 500 Stuttgart","WTA 500","Clay","GER","2027-04-12","2027-04-18","WTA","",1051,"wta:1051:2027"],
+      ["wta_tour","europe","WTA 250 Rouen","WTA 250","Clay","FRA","2027-04-12","2027-04-18","WTA","",2066,"wta:2066:2027"]
+    ],
+    "Week of April 19": [
+      ["wta_tour","europe","WTA 1000 Madrid","WTA 1000","Clay","ESP","2027-04-20","2027-05-02","WTA","",1038,"wta:1038:2027"]
+    ],
+    "Week of April 26": [
+      ["wta_tour","europe","WTA 1000 Madrid","WTA 1000","Clay","ESP","2027-04-20","2027-05-02","WTA","",1038,"wta:1038:2027"],
+      ["wta_tour","africa","WTA 250 Rabat","WTA 250","Clay","MAR","2027-04-27","2027-05-02","WTA","",1005,"wta:1005:2027"]
+    ],
+    "Week of May 3": [
+      ["wta_tour","europe","WTA 1000 Rome","WTA 1000","Clay","ITA","2027-05-04","2027-05-16","WTA","",709,"wta:709:2027"]
+    ],
+    "Week of May 10": [
+      ["wta_tour","europe","WTA 1000 Rome","WTA 1000","Clay","ITA","2027-05-04","2027-05-16","WTA","",709,"wta:709:2027"]
+    ],
+    "Week of May 17": [
+      ["gs","europe","Roland Garros Qualifying","Grand Slam","Clay","FRA","2027-05-16","2027-05-22","WTA","",903,"wta:903:2027|qualifying"],
+      ["wta_tour","europe","WTA 500 Strasbourg","WTA 500","Clay","FRA","2027-05-16","2027-05-22","WTA","",406,"wta:406:2027"]
+    ],
+    "Week of May 24": [
+      ["gs","europe","Roland Garros","Grand Slam","Clay","FRA","2027-05-23","2027-06-06","WTA","",903,"wta:903:2027"]
+    ],
+    "Week of May 31": [
+      ["gs","europe","Roland Garros","Grand Slam","Clay","FRA","2027-05-23","2027-06-06","WTA","",903,"wta:903:2027"]
+    ],
+    "Week of June 7": [
+      ["wta_tour","europe","WTA 500 London","WTA 500","Grass","GBR","2027-06-07","2027-06-13","WTA","",1111,"wta:1111:2027"],
+      ["wta_tour","europe","WTA 250 'S-Hertogenbosch","WTA 250","Grass","NED","2027-06-07","2027-06-13","WTA","",822,"wta:822:2027"]
+    ],
+    "Week of June 14": [
+      ["wta_tour","europe","WTA 500 Berlin","WTA 500","Grass","GER","2027-06-14","2027-06-20","WTA","",2012,"wta:2012:2027"],
+      ["wta_tour","europe","WTA 250 Nottingham","WTA 250","Grass","GBR","2027-06-14","2027-06-20","WTA","",1080,"wta:1080:2027"]
+    ],
+    "Week of June 21": [
+      ["gs","europe","Wimbledon Qualifying","Grand Slam","Grass","GBR","2027-06-21","2027-06-27","WTA","",904,"wta:904:2027|qualifying"],
+      ["wta_tour","europe","WTA 500 Bad Homburg","WTA 500","Grass","GER","2027-06-20","2027-06-26","WTA","",2017,"wta:2017:2027"],
+      ["wta_tour","europe","WTA 250 Eastbourne","WTA 250","Grass","GBR","2027-06-21","2027-06-26","WTA","",710,"wta:710:2027"]
+    ],
+    "Week of June 28": [
+      ["gs","europe","Wimbledon","Grand Slam","Grass","GBR","2027-06-28","2027-07-11","WTA","",904,"wta:904:2027"]
+    ],
+    "Week of July 5": [
+      ["gs","europe","Wimbledon","Grand Slam","Grass","GBR","2027-06-28","2027-07-11","WTA","",904,"wta:904:2027"]
+    ],
+    "Week of July 12": [
+      ["wta_tour","europe","WTA 250 Athens","WTA 250","Hard","GRE","2027-07-12","2027-07-18","WTA","",1175,"wta:1175:2027"],
+      ["wta_tour","europe","WTA 250 Hamburg","WTA 250","Clay","GER","2027-07-12","2027-07-18","WTA","",2042,"wta:2042:2027"]
+    ],
+    "Week of July 19": [
+      ["wta_tour","europe","WTA 250 Iasi","WTA 250","Clay","ROU","2027-07-19","2027-07-25","WTA","",2063,"wta:2063:2027"],
+      ["wta_tour","europe","WTA 250 Prague","WTA 250","Hard","CZE","2027-07-19","2027-07-25","WTA","",1082,"wta:1082:2027"]
+    ],
+    "Week of July 26": [
+      ["wta_tour","north_central_america","WTA 500 Washington DC","WTA 500","Hard","USA","2027-07-26","2027-08-01","WTA","",1045,"wta:1045:2027"],
+      ["wta_tour","north_central_america","WTA 250 Memphis","WTA 250","Hard","USA","2027-07-26","2027-08-01","WTA","",1167,"wta:1167:2027"]
+    ],
+    "Week of August 2": [
+      ["wta_tour","north_central_america","WTA 1000 Montreal","WTA 1000","Hard","CAN","2027-08-01","2027-08-12","WTA","",806,"wta:806:2027"]
+    ],
+    "Week of August 9": [
+      ["wta_tour","north_central_america","WTA 1000 Montreal","WTA 1000","Hard","CAN","2027-08-01","2027-08-12","WTA","",806,"wta:806:2027"],
+      ["wta_tour","north_central_america","WTA 1000 Cincinnati","WTA 1000","Hard","USA","2027-08-12","2027-08-22","WTA","",1017,"wta:1017:2027"]
+    ],
+    "Week of August 16": [
+      ["wta_tour","north_central_america","WTA 1000 Cincinnati","WTA 1000","Hard","USA","2027-08-12","2027-08-22","WTA","",1017,"wta:1017:2027"]
+    ],
+    "Week of August 23": [
+      ["gs","north_central_america","US Open Qualifying","Grand Slam","Hard","USA","2027-08-22","2027-08-28","WTA","",905,"wta:905:2027|qualifying"],
+      ["wta_tour","north_central_america","WTA 500 Monterrey","WTA 500","Hard","MEX","2027-08-22","2027-08-28","WTA","",1039,"wta:1039:2027"]
+    ],
+    "Week of August 30": [
+      ["gs","north_central_america","US Open","Grand Slam","Hard","USA","2027-08-29","2027-09-12","WTA","",905,"wta:905:2027"]
+    ],
+    "Week of September 6": [
+      ["gs","north_central_america","US Open","Grand Slam","Hard","USA","2027-08-29","2027-09-12","WTA","",905,"wta:905:2027"]
+    ],
+    "Week of September 13": [
+      ["wta_tour","south_america","WTA 250 Sao Paulo","WTA 250","Hard","BRA","2027-09-13","2027-09-19","WTA","",1139,"wta:1139:2027"],
+      ["wta_tour","north_central_america","WTA 500 Guadalajara","WTA 500","Hard","MEX","2027-09-12","2027-09-18","WTA","",2075,"wta:2075:2027"]
+    ],
+    "Week of September 20": [
+      ["wta_tour","asia","WTA 500 Singapore","WTA 500","Hard","SGP","2027-09-20","2027-09-26","WTA","",1152,"wta:1152:2027"],
+      ["wta_tour","asia","WTA 250 Seoul","WTA 250","Hard","KOR","2027-09-20","2027-09-26","WTA","",1024,"wta:1024:2027"]
+    ],
+    "Week of September 27": [
+      ["wta_tour","asia","WTA 1000 Beijing","WTA 1000","Hard","CHN","2027-09-29","2027-10-10","WTA","",1020,"wta:1020:2027"]
+    ],
+    "Week of October 4": [
+      ["wta_tour","asia","WTA 1000 Beijing","WTA 1000","Hard","CHN","2027-09-29","2027-10-10","WTA","",1020,"wta:1020:2027"]
+    ],
+    "Week of October 11": [
+      ["wta_tour","asia","WTA 1000 Wuhan","WTA 1000","Hard","CHN","2027-10-11","2027-10-17","WTA","",1075,"wta:1075:2027"]
+    ],
+    "Week of October 18": [
+      ["wta_tour","asia","WTA 500 Ningbo","WTA 500","Hard","CHN","2027-10-18","2027-10-24","WTA","",2092,"wta:2092:2027"],
+      ["wta_tour","asia","WTA 250 Osaka","WTA 250","Hard","JPN","2027-10-18","2027-10-24","WTA","",405,"wta:405:2027"]
+    ],
+    "Week of October 25": [
+      ["wta_tour","asia","WTA 500 Tokyo","WTA 500","Hard","JPN","2027-10-25","2027-10-31","WTA","",1056,"wta:1056:2027"],
+      ["wta_tour","asia","WTA 250 Guangzhou","WTA 250","Hard","CHN","2027-10-25","2027-10-31","WTA","",1023,"wta:1023:2027"]
+    ],
+    "Week of November 1": [
+      ["wta_tour","asia","WTA 250 Manila","WTA 250","Hard","PHI","2027-11-01","2027-11-07","WTA","",1183,"wta:1183:2027"],
+      ["wta_tour","asia","WTA 250 Hong Kong","WTA 250","Hard","HKG","2027-11-01","2027-11-07","WTA","",1074,"wta:1074:2027"]
+    ],
+    "Week of November 8": [
+      ["wta_tour","north_central_america","WTA Finals","Finals","Hard","USA","2027-11-10","2027-11-14","WTA","",808,"wta:808:2027"]
     ]
   }
 }
