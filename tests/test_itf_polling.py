@@ -1169,6 +1169,111 @@ def test_itf_calendar_refresh_uses_cached_items_as_degraded_fallback(monkeypatch
     assert refresh_calls[0]["failure_severity"] == "degraded"
 
 
+@pytest.mark.parametrize("fresh_cache", [False, True])
+def test_itf_calendar_refresh_includes_next_season(monkeypatch, fresh_cache):
+    cached = {"tournamentKey": "w-itf-tun-2026-048", "startDate": "2026-12-28"}
+    published = {"tournamentKey": "w-itf-tun-2027-001", "startDate": "2027-01-04"}
+    calls = []
+    saves = []
+    monkeypatch.setattr(itf, "madrid_today", lambda: date(2026, 10, 27))
+    monkeypatch.setattr(itf, "_itf_calendar_raw", None)
+    monkeypatch.setattr(
+        itf,
+        "_load_itf_calendar_disk_cache",
+        lambda target_year, max_age_seconds=None: [cached] if fresh_cache or max_age_seconds is None else [],
+    )
+    monkeypatch.setattr(itf, "_save_itf_calendar_disk_cache", lambda *args, **kwargs: saves.append((args, kwargs)))
+
+    def refresh(_driver, date_from, date_to, **kwargs):
+        calls.append((date_from, date_to))
+        return [cached, published], 2, True
+
+    monkeypatch.setattr(itf, "_fetch_itf_calendar_range", refresh)
+
+    assert itf._fetch_itf_calendar_raw(None) == [cached, published]
+    assert calls == [("2026-10-27" if fresh_cache else "2026-01-01", "2027-12-31")]
+    assert saves[0][0] == ([cached, published], 2026)
+    assert saves[0][1].get("complete", False) is not fresh_cache
+
+
+def test_itf_calendar_partial_refresh_preserves_cache_and_next_season(monkeypatch):
+    cached = {"tournamentKey": "cached-event", "startDate": "2026-12-21"}
+    published = {"tournamentKey": "new-event", "startDate": "2027-01-04"}
+    calls = []
+    monkeypatch.setattr(itf, "madrid_today", lambda: date(2026, 10, 27))
+    monkeypatch.setattr(itf, "_itf_calendar_raw", None)
+    monkeypatch.setattr(
+        itf,
+        "_load_itf_calendar_disk_cache",
+        lambda target_year, max_age_seconds=None: [cached] if max_age_seconds is None else [],
+    )
+    monkeypatch.setattr(itf, "_save_itf_calendar_disk_cache", lambda *args, **kwargs: None)
+
+    def partial_refresh(_driver, date_from, date_to, **kwargs):
+        calls.append((date_from, date_to))
+        return ([], 0, False) if kwargs["ascending"] else ([published], 1, True)
+
+    monkeypatch.setattr(itf, "_fetch_itf_calendar_range", partial_refresh)
+
+    assert itf._fetch_itf_calendar_raw(None) == [cached, published]
+    assert calls == [("2026-01-01", "2027-12-31"), ("2026-10-27", "2027-12-31")]
+
+
+def test_itf_calendar_old_single_season_cache_requires_wider_refresh(monkeypatch, tmp_path):
+    cache_path = tmp_path / "itf_calendar_cache.json"
+    cached = {"tournamentKey": "cached-event", "startDate": "2026-12-21"}
+    cache_path.write_text(json.dumps({"year": 2026, "items": [cached]}), encoding="utf-8")
+    monkeypatch.setattr(itf, "ITF_CALENDAR_CACHE_FILE", str(cache_path))
+    monkeypatch.setattr(utils, "_CACHE_STATE_FILE", str(tmp_path / "cache_state.json"))
+    monkeypatch.setattr(utils, "_CACHE_STATE_CACHE", None)
+    monkeypatch.setattr(itf, "utc_now", lambda: datetime(2026, 10, 27, 12, tzinfo=UTC))
+    monkeypatch.setattr(itf, "utc_now_iso", lambda: "2026-10-27T12:00:00Z")
+    utils.set_cache_file_meta(cache_path, year=2026, fetchedAt="2026-10-27T12:00:00Z")
+
+    assert itf._load_itf_calendar_disk_cache(target_year=2026) == [cached]
+    assert itf._load_itf_calendar_disk_cache(target_year=2026, max_age_seconds=itf._ITF_CALENDAR_CACHE_TTL) == []
+
+    itf._save_itf_calendar_disk_cache([cached], 2026, complete=True)
+    assert utils.get_cache_file_meta(cache_path)["endYear"] == 2027
+    assert itf._load_itf_calendar_disk_cache(target_year=2026, max_age_seconds=itf._ITF_CALENDAR_CACHE_TTL) == [cached]
+
+
+def test_full_itf_calendar_numbers_duplicates_per_season(monkeypatch):
+    rows = [
+        {"tournamentName": "W15 Monastir", "startDate": "2026-11-02", "tournamentKey": "w-itf-tun-2026-040"},
+        {"tournamentName": "W15 Monastir", "startDate": "2026-12-21", "tournamentKey": "w-itf-tun-2026-047"},
+        {"tournamentName": "W15 Monastir", "startDate": "2026-12-28", "tournamentKey": "w-itf-tun-2027-001"},
+        {"tournamentName": "W15 Monastir", "startDate": "2027-01-04", "tournamentKey": "w-itf-tun-2027-002"},
+        {"tournamentName": "W75 Porto", "startDate": "2026-11-02", "tournamentKey": "w-itf-por-2026-001"},
+        {"tournamentName": "W75 Porto", "startDate": "2027-01-04", "tournamentKey": "w-itf-por-2027-001"},
+    ]
+    monkeypatch.setattr(itf, "madrid_today", lambda: date(2026, 10, 27))
+    monkeypatch.setattr(itf, "_fetch_itf_calendar_raw", lambda _driver: rows)
+
+    assert [item["name"] for item in itf.get_full_itf_calendar(None)] == [
+        "W15 Monastir 1", "W15 Monastir 2", "W15 Monastir 1", "W15 Monastir 2", "W75 Porto", "W75 Porto",
+    ]
+
+
+def test_itf_calendar_rollover_preserves_published_events_when_refresh_fails(monkeypatch, tmp_path):
+    cache_path = tmp_path / "itf_calendar_cache.json"
+    past = {"tournamentKey": "past-event", "startDate": "2026-12-21", "endDate": "2026-12-27"}
+    ongoing = {"tournamentKey": "ongoing-event", "startDate": "2026-12-28", "endDate": "2027-01-03"}
+    published = {"tournamentKey": "published-event", "startDate": "2027-01-04"}
+    monkeypatch.setattr(itf, "ITF_CALENDAR_CACHE_FILE", str(cache_path))
+    monkeypatch.setattr(utils, "_CACHE_STATE_FILE", str(tmp_path / "cache_state.json"))
+    monkeypatch.setattr(utils, "_CACHE_STATE_CACHE", None)
+    itf._save_itf_calendar_disk_cache([past, ongoing, published], 2026, complete=True)
+    monkeypatch.setattr(itf, "madrid_today", lambda: date(2027, 1, 1))
+    monkeypatch.setattr(itf, "_itf_calendar_raw", None)
+    monkeypatch.setattr(itf, "_fetch_itf_calendar_range", lambda *args, **kwargs: ([], 0, False))
+
+    assert itf._load_itf_calendar_disk_cache(target_year=2027) == [ongoing, published]
+    assert itf._fetch_itf_calendar_raw(None) == [ongoing, published]
+    assert utils.get_cache_file_meta(cache_path)["year"] == 2026
+    assert itf._load_itf_calendar_disk_cache(target_year=2027, max_age_seconds=itf._ITF_CALENDAR_CACHE_TTL) == []
+
+
 def test_itf_calendar_fallback_does_not_renew_release_freshness(monkeypatch, tmp_path):
     cache_path = tmp_path / "itf_calendar_cache.json"
     monkeypatch.setattr(itf, "ITF_CALENDAR_CACHE_FILE", str(cache_path))

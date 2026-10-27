@@ -169,8 +169,9 @@ def build_calendar_data(tournaments):
             }
         )
 
-    end_of_year = date(next_monday.year, 12, 31)
-    total_weeks = ((end_of_year - next_monday).days // 7) + 1
+    last_tournament_end = max((t["end"].date() for t in parsed), default=next_monday)
+    calendar_end = max(date(next_monday.year, 12, 31), last_tournament_end)
+    total_weeks = ((calendar_end - next_monday).days // 7) + 1
 
     column_keys = ["gs", "wta_tour", "wta_125", "itf"]
     calendar_weeks = []

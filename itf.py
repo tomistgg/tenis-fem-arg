@@ -116,7 +116,7 @@ def _is_cancelled_itf_calendar_item(item):
 
 
 def _number_duplicate_itf_names(items, *, source_field, target_field, sort_key=None):
-    """Assign stable numeric suffixes to duplicate ITF tournament names.
+    """Assign stable numeric suffixes to duplicate ITF tournament names per season.
 
     The helper is shared by the full-calendar and draw-list flows so both use
     the same numbering rule.
@@ -129,21 +129,28 @@ def _number_duplicate_itf_names(items, *, source_field, target_field, sort_key=N
         def sort_key(item):
             return item.get("startDate", "") if isinstance(item, dict) else ""
 
-    name_counts: dict[str, int] = {}
+    def name_key(item):
+        key = str(item.get("tournamentKey") or item.get("tournamentLink") or "")
+        season = re.search(r"-(\d{4})-\d+(?:/|$)", key)
+        year = season.group(1) if season else str(item.get("startDate") or "")[:4]
+        return str(item.get(source_field) or ""), year
+
+    name_counts: dict[tuple[str, str], int] = {}
     for item in items:
         if not isinstance(item, dict):
             continue
-        name = str(item.get(source_field) or "")
-        name_counts[name] = name_counts.get(name, 0) + 1
+        key = name_key(item)
+        name_counts[key] = name_counts.get(key, 0) + 1
 
-    name_seq: dict[str, int] = {}
+    name_seq: dict[tuple[str, str], int] = {}
     for item in sorted(items, key=sort_key):
         if not isinstance(item, dict):
             continue
-        name = str(item.get(source_field) or "")
-        if name_counts.get(name, 0) > 1:
-            name_seq[name] = name_seq.get(name, 0) + 1
-            item[target_field] = f"{name} {name_seq[name]}"
+        key = name_key(item)
+        name = key[0]
+        if name_counts.get(key, 0) > 1:
+            name_seq[key] = name_seq.get(key, 0) + 1
+            item[target_field] = f"{name} {name_seq[key]}"
         else:
             item[target_field] = name
 
@@ -298,10 +305,22 @@ def _load_itf_calendar_disk_cache(target_year=None, max_age_seconds=None):
 
     cache_year = payload.get("year")
     if target_year and cache_year and str(cache_year) != str(target_year):
-        return []
+        if max_age_seconds is not None:
+            return []
+        # Keep overlapping published events available as a stale fallback at New Year.
+        items = [
+            item
+            for item in items
+            if isinstance(item, dict)
+            and str(item.get("endDate") or item.get("startDate") or "")[:10] >= f"{int(target_year)}-01-01"
+            and str(item.get("startDate") or "")[:10] <= f"{int(target_year) + 1}-12-31"
+        ]
 
     if max_age_seconds is not None:
-        if target_year and get_cache_file_meta(ITF_CALENDAR_CACHE_FILE).get("year") != int(target_year):
+        cache_meta = get_cache_file_meta(ITF_CALENDAR_CACHE_FILE)
+        if target_year and (
+            cache_meta.get("year") != int(target_year) or cache_meta.get("endYear") != int(target_year) + 1
+        ):
             return []
         fetched_at_str = get_cache_timestamp(ITF_CALENDAR_CACHE_FILE, payload=payload)
         if not fetched_at_str:
@@ -326,13 +345,14 @@ def _save_itf_calendar_disk_cache(items, year, *, complete=False):
         "items": items,
     }
     save_json_file(ITF_CALENDAR_CACHE_FILE, payload, formatter=dumps_itf_calendar_cache)
-    # Fallbacks can update cached items, but only a complete year fetch verifies
+    # Fallbacks can update cached items, but only a complete range fetch verifies
     # the source. Keep its timestamp and year separate from later attempts.
     if complete or get_cache_file_meta(ITF_CALENDAR_CACHE_FILE).get("fetchedAt"):
         attempted_at = utc_now_iso()
         set_cache_file_meta(
             ITF_CALENDAR_CACHE_FILE,
             year=int(year) if complete else None,
+            endYear=int(year) + 1 if complete else None,
             count=len(items),
             lastAttemptAt=attempted_at,
             fetchedAt=attempted_at if complete else None,
@@ -916,7 +936,7 @@ def _fetch_itf_calendar_range(
 
 
 def _fetch_itf_calendar_raw(driver):
-    """Fetch all raw ITF calendar items for the full year (single Selenium call, cached)."""
+    """Fetch raw ITF calendar items for this season and the next (cached)."""
     global _itf_calendar_raw
     if _itf_calendar_raw is not None:
         return _itf_calendar_raw
@@ -924,7 +944,7 @@ def _fetch_itf_calendar_raw(driver):
     today = madrid_today()
     current_year = today.year
     date_from = f"{current_year}-01-01"
-    date_to = f"{current_year}-12-31"
+    date_to = f"{current_year + 1}-12-31"
     cached_items = _load_itf_calendar_disk_cache(target_year=current_year)
 
     # Use the disk cache when it was written within the last 3 hours — itf_load_new.py
@@ -1005,7 +1025,7 @@ def _fetch_itf_calendar_raw(driver):
 
 
 def get_full_itf_calendar(driver):
-    """Get all ITF tournaments for the full year. Numbers duplicates across the whole year."""
+    """Get future ITF tournaments for this season and the next, numbered per season."""
     today = madrid_today()
 
     all_items = _fetch_itf_calendar_raw(driver)
@@ -1107,7 +1127,7 @@ def get_itf_players(tournament_key, driver):
 
 
 def get_dynamic_itf_calendar(driver, num_weeks=3):
-    """Get ITF calendar for the next N weeks, filtered from the full-year cache.
+    """Get ITF calendar for the next N weeks, filtered from the shared calendar cache.
 
     Also includes current-week tournaments when today is Monday.
     """
