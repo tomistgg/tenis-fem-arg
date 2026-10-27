@@ -130,6 +130,7 @@ window.WTARG_TRANSLATIONS = {
         "Calendar table": "Tabla del calendario",
         "No calendar changes in the last 3 days.": "No hubo cambios en el calendario en los últimos 3 días.",
         "Added": "Añadido",
+        "Added WTA 2027 tournaments": "Se añadieron los torneos WTA 2027",
         "Cancelled": "Cancelado",
         "Start date removed": "Fecha de inicio eliminada",
         "Moved to {value}": "Trasladado al {value}",

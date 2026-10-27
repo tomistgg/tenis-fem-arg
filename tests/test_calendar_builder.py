@@ -3,6 +3,7 @@ from datetime import date
 import pytest
 
 import calendar_builder
+import wta
 
 
 def test_w35_sao_paulo_is_rendered_in_start_week_only(monkeypatch):
@@ -89,3 +90,34 @@ def test_cross_year_tournaments_keep_four_day_overlap_and_trim_empty_weeks(monke
 
     assert [week["monday_date"] for week in weeks] == expected_mondays
     assert all(week["has_any"] for week in weeks)
+
+
+def test_wta_calendar_keeps_repeated_tournament_groups_in_different_seasons(monkeypatch):
+    monkeypatch.setattr(wta, "madrid_today", lambda: date(2026, 12, 20))
+    monkeypatch.setattr(calendar_builder, "get_next_monday", lambda: date(2026, 12, 21))
+    raw = [
+        {
+            "tournamentGroup": {"id": 7, "name": "Example"},
+            "year": year,
+            "level": "WTA 250",
+            "city": "Buenos Aires",
+            "countryCode": "ARG",
+            "startDate": start,
+            "endDate": end,
+        }
+        for year, start, end in [
+            (2026, "2026-12-21", "2026-12-27"),
+            (2027, "2026-12-28", "2027-01-03"),
+        ]
+    ]
+    monkeypatch.setattr(wta, "_fetch_wta_tournaments_raw", lambda **kwargs: raw)
+
+    tournaments = wta.get_full_wta_calendar()
+    weeks = calendar_builder.build_calendar_data(tournaments)
+
+    assert {item["calendarKey"] for item in tournaments} == {"wta:7:2026", "wta:7:2027"}
+    assert [week["monday_date"] for week in weeks] == ["2026-12-21", "2026-12-28"]
+    assert [week["columns"]["wta_tour"]["south_america"][0]["calendarKey"] for week in weeks] == [
+        "wta:7:2026",
+        "wta:7:2027",
+    ]

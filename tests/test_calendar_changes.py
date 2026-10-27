@@ -1,6 +1,8 @@
 from datetime import date
 
-from calendar_changes import update_calendar_change_history
+import pytest
+
+from calendar_changes import diff_calendar_tournaments, update_calendar_change_history
 from html_generator import _render_calendar_changes
 
 
@@ -147,3 +149,22 @@ def test_calendar_change_history_includes_additions_but_not_initial_snapshot():
     assert "W15 Monastir 31" not in rendered
     assert "Added" in rendered
     assert update_calendar_change_history([], [], [added], detected_on=date(2026, 9, 9)) == []
+
+
+@pytest.mark.parametrize("suffix", ["", "|qualifying"])
+def test_wta_season_keys_preserve_legacy_snapshot_changes_and_new_season_additions(suffix):
+    before = {"calendarKey": f"wta:7{suffix}", "name": "WTA Example", "startDate": "2026-11-02"}
+    moved = {**before, "calendarKey": f"wta:7:2026{suffix}", "startDate": "2026-11-09"}
+    next_season = {**before, "calendarKey": f"wta:7:2027{suffix}", "startDate": "2027-11-01"}
+
+    added, changed, cancelled = diff_calendar_tournaments([before], [moved, next_season], today=date(2026, 10, 27))
+
+    assert added == [next_season]
+    assert cancelled == []
+    assert changed == [
+        {
+            "before": before,
+            "after": moved,
+            "changes": [{"field": "startDate", "label": "Start date", "before": "2026-11-02", "after": "2026-11-09"}],
+        }
+    ]

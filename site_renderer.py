@@ -53,8 +53,15 @@ def _load_json(path: Path, default: Any) -> Any:
         return default
 
 
-def _monday_from_date(value: str) -> str:
+def _monday_from_date(value: str, week_label: str = "") -> str:
     parsed = datetime.strptime(str(value or "")[:10], "%Y-%m-%d")
+    candidates = []
+    # A tournament can span two weeks or cross New Year; keep its displayed week.
+    for year in range(parsed.year - 1, parsed.year + 2):
+        with contextlib.suppress(ValueError):
+            candidates.append(datetime.strptime(f"{week_label} {year}", "Week of %B %d %Y"))
+    if candidates:
+        return min(candidates, key=lambda candidate: abs(candidate - parsed)).strftime("%Y-%m-%d")
     return (parsed - timedelta(days=parsed.weekday())).strftime("%Y-%m-%d")
 
 
@@ -295,7 +302,7 @@ def _calendar_inputs(data_dir: Path) -> list[dict[str, Any]]:
         week["has_any"] = True
         if not week["monday_date"]:
             with contextlib.suppress(ValueError):
-                week["monday_date"] = _monday_from_date(row.get("startDate", ""))
+                week["monday_date"] = _monday_from_date(row.get("startDate", ""), week_label)
     return [week for week in weeks.values() if week.get("monday_date")]
 
 

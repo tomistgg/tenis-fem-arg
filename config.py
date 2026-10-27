@@ -293,6 +293,7 @@ HEADERS = {
 }
 
 TOURNAMENT_NAME_OVERRIDES = {
+    "Grand Slam Melbourne": "Australian Open",
     "Grand Slam Paris": "Roland Garros",
     "Grand Slam Wimbledon": "Wimbledon",
     "Grand Slam New York": "US Open",

@@ -783,6 +783,10 @@ def _render_calendar_changes(change_history):
 
         items = []
         for change in changes:
+            summary = str(change.get("summary") or "").strip()
+            if summary:
+                items.append(f'<li class="calendar-change-item"><span>{escape(summary)}</span></li>')
+                continue
             actions = "; ".join(
                 f'<span class="calendar-change-action">{escape(display_tournament_name(action))}</span>'
                 for action in (change.get("actions") or []) if str(action).strip()
@@ -1771,7 +1775,7 @@ def generate_html(
                 flag = country_flag_html(t.get("country", ""), show_code=False)
                 flag_prefix = f"{flag} " if flag else ""
                 weight_class = " cal-tournament-bold" if column_key in bold_calendar_keys else ""
-                wta_class = " cal-tournament-wta" if column_key in {"wta_tour", "wta_125"} else ""
+                wta_class = " cal-tournament-wta" if column_key in bold_calendar_keys else ""
                 display_name = escape(_display_calendar_tournament_name(t["name"]))
                 calendar_html += f'<span class="calendar-tournament {sc}{weight_class}{wta_class}" data-cal-filter="{fk}" data-cal-continent="{cont}" data-cal-surface="{sk}">{flag_prefix}{display_name}</span>'
             calendar_html += "</td>"

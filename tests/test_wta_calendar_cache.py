@@ -2,6 +2,8 @@ import json
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
+import pytest
+
 import wta
 import wta_calendar_cache
 from utils import compress_wta_calendar_cache, expand_wta_calendar_cache
@@ -18,7 +20,7 @@ class FakeResponse:
 def _tournament(tournament_id, start_date, *, level="WTA 250"):
     return {
         "tournamentGroup": {"id": tournament_id, "name": f"EVENT {tournament_id}"},
-        "year": 2026,
+        "year": int(start_date[:4]),
         "startDate": start_date,
         "endDate": start_date,
         "title": f"Event {tournament_id}",
@@ -70,6 +72,7 @@ def test_shared_calendar_is_fetched_once_and_filtered_for_each_consumer(monkeypa
         _tournament(1150, "2026-10-19"),
     ]
     calendar[-1]["tournamentGroup"]["metadata"] = {"cancelledSeasons": "2026"}
+    calendar.append(_tournament(2, "2027-08-23"))
 
     def fake_get(url, **kwargs):
         requests.append((url, kwargs))
@@ -93,10 +96,14 @@ def test_shared_calendar_is_fetched_once_and_filtered_for_each_consumer(monkeypa
         "2026-09-14",
         component="wta-loader",
     )
+    full_calendar = wta_calendar_cache.get_shared_wta_calendar(component="wta")
 
     assert [item["tournamentGroup"]["id"] for item in results_window] == [1, 2]
     assert [item["tournamentGroup"]["id"] for item in future_window] == [2, 3, 4]
     assert quiet_window == []
+    assert [(item["tournamentGroup"]["id"], item["year"]) for item in full_calendar] == [
+        (1, 2026), (2, 2026), (3, 2026), (4, 2026), (2, 2027),
+    ]
     assert len(requests) == 1
     assert requests[0][0] == wta_calendar_cache.WTA_CALENDAR_URL
     assert requests[0][1]["params"] == {
@@ -104,11 +111,11 @@ def test_shared_calendar_is_fetched_once_and_filtered_for_each_consumer(monkeypa
         "pageSize": 500,
         "excludeLevels": "ITF",
         "from": "2026-07-22",
-        "to": "2026-12-31",
+        "to": "2027-12-31",
     }
     saved = json.loads(cache_file.read_text(encoding="utf-8"))
     assert saved["from"] == "2026-07-22"
-    assert saved["to"] == "2026-12-31"
+    assert saved["to"] == "2027-12-31"
     assert saved["lastAttemptRunId"] == "run-20260819"
 
 
@@ -116,7 +123,7 @@ def test_fresh_disk_calendar_is_used_before_any_live_request(monkeypatch, tmp_pa
     cache_file = _isolate_cache(monkeypatch, tmp_path)
     payload = {
         "from": "2026-07-22",
-        "to": "2026-12-31",
+        "to": "2027-12-31",
         "fetchedAt": "2026-08-19T15:30:00Z",
         "items": [_tournament(10, "2026-09-07")],
     }
@@ -134,7 +141,7 @@ def test_force_refresh_ignores_fresh_disk_calendar(monkeypatch, tmp_path):
     cache_file = _isolate_cache(monkeypatch, tmp_path)
     payload = {
         "from": "2026-07-22",
-        "to": "2026-12-31",
+        "to": "2027-12-31",
         "fetchedAt": "2026-08-19T15:30:00Z",
         "items": [_tournament(1150, "2026-10-19")],
     }
@@ -149,6 +156,69 @@ def test_force_refresh_ignores_fresh_disk_calendar(monkeypatch, tmp_path):
     result = wta_calendar_cache.get_shared_wta_calendar(component="wta", force_refresh=True)
 
     assert [item["tournamentGroup"]["id"] for item in result] == [1174]
+
+
+def test_single_season_cache_is_refreshed_to_include_next_year(monkeypatch, tmp_path):
+    cache_file = _isolate_cache(monkeypatch, tmp_path)
+    current = _tournament(1074, "2026-11-02")
+    upcoming = _tournament(1074, "2027-11-01")
+    cache_file.write_text(
+        json.dumps({
+            "from": "2026-07-22", "to": "2026-12-31", "fetchedAt": "2026-08-19T15:30:00Z", "items": [current],
+        }),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        wta_calendar_cache,
+        "get_with_retry",
+        lambda *_args, **_kwargs: FakeResponse({"content": [current, upcoming], "last": True}),
+    )
+
+    assert wta_calendar_cache.get_shared_wta_calendar(component="wta") == [current, upcoming]
+    assert json.loads(cache_file.read_text(encoding="utf-8"))["to"] == "2027-12-31"
+
+
+def test_shared_calendar_fetches_all_pages_before_saving(monkeypatch, tmp_path):
+    cache_file = _isolate_cache(monkeypatch, tmp_path)
+    current = _tournament(1074, "2026-11-02")
+    upcoming = _tournament(1074, "2027-11-01")
+    requests = []
+
+    def paginated_get(_url, **kwargs):
+        page = kwargs["params"]["page"]
+        requests.append(page)
+        return FakeResponse({
+            "content": [[current], [upcoming]][page],
+            "pageInfo": {"page": page, "pageSize": 1, "numPages": 0, "numEntries": 2},
+        })
+
+    monkeypatch.setattr(wta_calendar_cache, "get_with_retry", paginated_get)
+
+    assert wta_calendar_cache.get_shared_wta_calendar(component="wta") == [current, upcoming]
+    assert requests == [0, 1]
+    assert expand_wta_calendar_cache(json.loads(cache_file.read_text(encoding="utf-8")))["items"] == [current, upcoming]
+
+
+@pytest.mark.parametrize("second_page", [[], [_tournament(1074, "2027-11-01")]])
+def test_incomplete_or_repeated_calendar_page_preserves_previous_cache(monkeypatch, tmp_path, second_page):
+    cache_file = _isolate_cache(monkeypatch, tmp_path)
+    cached = _tournament(1074, "2026-11-02")
+    cache_file.write_text(json.dumps({
+        "from": "2026-07-22", "to": "2026-12-31", "fetchedAt": "2026-08-19T12:00:00Z", "items": [cached],
+    }), encoding="utf-8")
+    responses = iter((
+        {"content": [cached], "pageInfo": {"page": 0, "numEntries": 2}},
+        {"content": second_page, "pageInfo": {"page": 0, "numEntries": 2}},
+    ))
+    monkeypatch.setattr(
+        wta_calendar_cache, "get_with_retry", lambda *_args, **_kwargs: FakeResponse(next(responses)),
+    )
+
+    assert wta_calendar_cache.get_shared_wta_calendar(component="wta") == [cached]
+    saved = expand_wta_calendar_cache(json.loads(cache_file.read_text(encoding="utf-8")))
+    assert saved["items"] == [cached]
+    assert saved["fetchedAt"] == "2026-08-19T12:00:00Z"
+    assert saved["to"] == "2026-12-31"
 
 
 def test_cancelled_season_is_preserved_in_cache_and_filtered():
@@ -185,7 +255,7 @@ def test_shared_range_expands_when_tournament_strength_needs_catch_up(monkeypatc
 
     assert wta_calendar_cache.canonical_wta_calendar_range(date(2026, 8, 19)) == (
         "2026-05-11",
-        "2026-12-31",
+        "2027-12-31",
     )
 
 

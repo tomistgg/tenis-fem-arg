@@ -76,13 +76,13 @@ def _tstrength_required_calendar_start(current):
 
 
 def canonical_wta_calendar_range(today=None):
-    """Return the normal shared-cache coverage: four weeks ago through year-end."""
+    """Return shared-cache coverage from the lookback through the end of next year."""
     current = today or madrid_today()
     normal_start = current - timedelta(days=WTA_CALENDAR_LOOKBACK_DAYS)
     recovery_start = _tstrength_required_calendar_start(current)
     return (
         min(normal_start, recovery_start).isoformat(),
-        date(current.year, 12, 31).isoformat(),
+        date(current.year + 1, 12, 31).isoformat(),
     )
 
 
@@ -175,28 +175,39 @@ def _record_failed_attempt(payload, from_date, to_date):
 
 
 def _fetch_calendar_once(from_date, to_date, component):
-    response = get_with_retry(
-        WTA_CALENDAR_URL,
-        component=component,
-        attempts=4,
-        headers=WTA_CALENDAR_HEADERS,
-        params={
-            "page": 0,
-            "pageSize": 500,
-            "excludeLevels": "ITF",
-            "from": from_date,
-            "to": to_date,
-        },
-        timeout=(10, 20),
-        failure_status="degraded",
-    )
-    data = response.json()
-    items = data.get("content", []) if isinstance(data, dict) else []
-    if not isinstance(items, list) or not items:
-        raise ValueError("WTA calendar returned no tournaments")
-    if data.get("last") is False:
-        raise ValueError("WTA calendar exceeded the shared 500-tournament request")
-    return items
+    items = []
+    page = 0
+    while True:
+        response = get_with_retry(
+            WTA_CALENDAR_URL,
+            component=component,
+            attempts=4,
+            headers=WTA_CALENDAR_HEADERS,
+            params={
+                "page": page,
+                "pageSize": 500,
+                "excludeLevels": "ITF",
+                "from": from_date,
+                "to": to_date,
+            },
+            timeout=(10, 20),
+            failure_status="degraded",
+        )
+        data = response.json()
+        batch = data.get("content", []) if isinstance(data, dict) else []
+        if not isinstance(batch, list) or not batch:
+            raise ValueError("WTA calendar returned an empty or incomplete response")
+        page_info = data.get("pageInfo") or {}
+        if int(page_info.get("page", page)) != page:
+            raise ValueError("WTA calendar returned the wrong page")
+        items.extend(batch)
+        # The API caps pages at 100 even when pageSize=500; numPages can remain zero.
+        expected_total = int(page_info.get("numEntries") or len(items))
+        if len(items) >= expected_total and data.get("last") is not False:
+            return items
+        if len(items) >= 500:
+            raise ValueError("WTA calendar exceeded the shared 500-tournament request")
+        page += 1
 
 
 def get_shared_wta_calendar(

@@ -5,8 +5,40 @@ from pathlib import Path
 import pytest
 
 import site_renderer
-from site_renderer import _entry_inputs, _ranking_inputs, _tournament_inputs, _visible_schedule_monday_map
+from site_renderer import (
+    _calendar_inputs,
+    _entry_inputs,
+    _ranking_inputs,
+    _tournament_inputs,
+    _visible_schedule_monday_map,
+)
 from time_utils import NEW_YORK
+from utils import compress_calendar_snapshot
+
+
+@pytest.mark.parametrize(
+    ("week_label", "start_date", "expected_monday"),
+    [
+        ("Week of January 18", "2027-01-17", "2027-01-18"),
+        ("Week of January 25", "2027-01-17", "2027-01-25"),
+        ("Week of May 31", "2027-05-23", "2027-05-31"),
+        ("Week of December 29", "2026-01-01", "2025-12-29"),
+        ("Week of January 4", "2026-12-31", "2027-01-04"),
+        ("Legacy week", "2026-11-04", "2026-11-02"),
+    ],
+)
+def test_calendar_uses_displayed_week_instead_of_tournament_start(tmp_path, week_label, start_date, expected_monday):
+    snapshot = [{
+        "week_label": week_label, "column": "gs", "continent": "europe",
+        "name": "Grand Slam", "startDate": start_date,
+    }]
+    (tmp_path / "calendar_snapshot.json").write_text(
+        json.dumps(compress_calendar_snapshot(snapshot)), encoding="utf-8"
+    )
+
+    weeks = _calendar_inputs(tmp_path)
+
+    assert [(week["week_label"], week["monday_date"]) for week in weeks] == [(week_label, expected_monday)]
 
 
 def test_schedule_starts_with_wta_ranked_players_only(tmp_path: Path, monkeypatch):

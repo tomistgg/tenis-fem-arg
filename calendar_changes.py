@@ -38,6 +38,10 @@ def _calendar_identity_key(row):
     """Return a provider-backed identity that survives calendar field changes."""
     calendar_key = normalize_exact_name(row.get("calendarKey", ""))
     if calendar_key:
+        legacy_wta_key = re.fullmatch(r"(WTA:[^:|]+)(\|QUALIFYING)?", calendar_key)
+        year = str(row.get("startDate") or "")[:4]
+        if legacy_wta_key and re.fullmatch(r"\d{4}", year):
+            calendar_key = f"{legacy_wta_key[1]}:{year}{legacy_wta_key[2] or ''}"
         return ("calendarKey", calendar_key)
 
     source = normalize_exact_name(row.get("source", ""))

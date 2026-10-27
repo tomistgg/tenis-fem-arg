@@ -234,7 +234,7 @@ def get_draws_tournament_list():
 
 
 def get_full_wta_calendar():
-    """Get all WTA tournaments from now until end of year for the calendar view."""
+    """Get published upcoming WTA tournaments for the calendar view."""
     today = madrid_today()
     today_str = today.strftime("%Y-%m-%d")
 
@@ -288,7 +288,7 @@ def get_full_wta_calendar():
                 "endDate": t.get("endDate", None),
                 "source": "WTA",
                 "tournamentId": tournament_id,
-                "calendarKey": f"wta:{tournament_id}",
+                "calendarKey": f"wta:{tournament_id}:{t.get('year') or start_date[:4]}",
             }
         )
 
