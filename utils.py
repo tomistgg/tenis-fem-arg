@@ -44,6 +44,8 @@ _COMPACT_TOURNAMENT_NAME_REPLACEMENTS = {
     "Hilton Head Island, SC": "Hilton H.I., SC",
     "Kursumlijska Banja": "K. Banja",
     "New Braunfels, TX": "N. Braunfels, TX",
+    "Port St. Lucie, FL": "Port SL",
+    "Port St. Lucie": "Port SL",
     "Saint-Palais-sur-Mer": "Saint-Palais",
     "Santa Margherita di Pula": "Santa Marg.",
     "Sharm ElSheikh": "Sharm ES.",
