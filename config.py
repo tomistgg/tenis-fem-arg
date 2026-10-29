@@ -293,6 +293,7 @@ HEADERS = {
 }
 
 TOURNAMENT_NAME_OVERRIDES = {
+    "WTA 500 Perth + Sydney": "United Cup",
     "Grand Slam Melbourne": "Australian Open",
     "Grand Slam Paris": "Roland Garros",
     "Grand Slam Wimbledon": "Wimbledon",
