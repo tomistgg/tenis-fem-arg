@@ -160,20 +160,6 @@ def _schedule_position_suffix(entry):
     return " (Q)" if match.group(1).upper() == "Q" else " (A)"
 
 
-def _display_calendar_tournament_name(name):
-    """Return the compact label shown in the Calendar."""
-    display_name = compact_tournament_name(name)
-    return {
-        "W35+H Cayenne (French Guiana)": "W35+H Cayenne",
-        "W35 Le Lamentin (Martinique)": "W35 Le Lamentin",
-        "W35 Petit-Bourg (Guadeloupe)": "W35 Petit-Bourg",
-        "Australian Open Qualifying": "Australian Open [Q]",
-        "Roland Garros Qualifying": "Roland Garros [Q]",
-        "Wimbledon Qualifying": "Wimbledon [Q]",
-        "US Open Qualifying": "US Open [Q]",
-    }.get(display_name, display_name)
-
-
 _INLINE_SCRIPT_RE = re.compile(
     r"<script\b(?![^>]*\bsrc\s*=)[^>]*>(.*?)</script>",
     re.IGNORECASE | re.DOTALL,
@@ -1787,7 +1773,7 @@ def generate_html(
                 flag_prefix = f"{flag} " if flag else ""
                 weight_class = " cal-tournament-bold" if column_key in bold_calendar_keys else ""
                 wta_class = " cal-tournament-wta" if column_key in bold_calendar_keys else ""
-                display_name = escape(_display_calendar_tournament_name(t["name"]))
+                display_name = escape(compact_tournament_name(t["name"]))
                 calendar_html += f'<span class="calendar-tournament {sc}{weight_class}{wta_class}" data-cal-filter="{fk}" data-cal-continent="{cont}" data-cal-surface="{sk}">{flag_prefix}{display_name}</span>'
             calendar_html += "</td>"
         calendar_html += "</tr>"
