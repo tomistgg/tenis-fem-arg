@@ -19504,7 +19504,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183755224, "playStatusCode": "PS",
+                            "matchId": 1183755224, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [6,1], "isWinner": false, "entryStatus": "DA",
@@ -23695,7 +23695,7 @@
                       "roundDesc": "Quarter-finals", "roundNumber": 3,
                       "matches": [
                           {
-                            "matchId": 1183756673, "playStatusCode": "TP",
+                            "matchId": 1183756673, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
@@ -23721,14 +23721,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183756675, "playStatusCode": "TP",
+                            "matchId": 1183756675, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 6, "entryStatus": "DA",
+                                  "scores": [4,3], "isWinner": false, "seeding": 6, "entryStatus": "DA",
                                   "player": {"playerId":800278792,"nationality":"LTU","givenName":"Iveta","familyName":"Dapkute"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "entryStatus": "DA",
                                   "player": {"playerId":800629808,"nationality":"SWE","givenName":"Iva","familyName":"Marinkovic"}
                                 }
                             ]
@@ -23768,7 +23768,8 @@
                             "matchId": 1183756672, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "player": {"playerId":800629808,"nationality":"SWE","givenName":"Iva","familyName":"Marinkovic"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "seeding": 5, "entryStatus": "DA",
