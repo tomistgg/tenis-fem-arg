@@ -30,7 +30,7 @@
           {"pos": 6, "name": "IBRAGIMOVA, Alevtina", "wtn": "10.51"},
           {"pos": 7, "name": "IATCENKO, Polina", "wtn": "9.77"},
           {"pos": 8, "seed": "10", "name": "SHUBLADZE, Alexandra", "wtn": "9.36"},
-          {"pos": 9, "seed": "3", "name": "ZAKHAROVA, Anastasia", "wtn": "9.7"},
+          {"pos": 9, "seed": "3", "name": "ZAKHAROVA, Anastasia", "wtn": "9.81"},
           {"pos": 10, "entry": "WC", "name": "ZHANG, Ruien", "country": "CHN", "wtn": "12.24"},
           {"pos": 11, "entry": "WC", "name": "QU, Yihan", "country": "CHN", "wtn": "12.38"},
           {"pos": 12, "seed": "11", "name": "KOSTOVIC, Teodora", "country": "SRB", "wtn": "9.3"},
@@ -94,7 +94,7 @@
           {"pos": 8, "seed": "6", "name": "SONMEZ, Zeynep", "country": "TUR", "wtn": "8.99"},
           {"pos": 9, "seed": "4", "name": "TAGGER, Lilli", "country": "AUT", "wtn": "8.61"},
           {"pos": 10, "entry": "WC", "name": "WILLIAMS, Venus", "country": "USA", "wtn": "-"},
-          {"pos": 11, "entry": "LL", "name": "ZAKHAROVA, Anastasia", "wtn": "9.7"},
+          {"pos": 11, "entry": "LL", "name": "ZAKHAROVA, Anastasia", "wtn": "9.81"},
           {"pos": 12, "name": "LINETTE, Magda", "country": "POL", "wtn": "10.25"},
           {"pos": 13, "entry": "WC", "name": "SHI, Han", "country": "CHN", "wtn": "9.73"},
           {"pos": 14, "entry": "Q", "name": "IBRAGIMOVA, Alevtina", "wtn": "10.51"},
@@ -151,7 +151,7 @@
           "Final"
         ],
         "num_rounds": 5,
-        "wtn_gm": 9.585
+        "wtn_gm": 9.5884
       },
       "MDD":
       {
@@ -689,11 +689,14 @@
           {"round": 1, "match_num": 13, "winner_name": "A. Vergara Rivera", "score": "63 64"},
           {"round": 1, "match_num": 14, "winner_name": "M. L. Carle", "score": "75 60"},
           {"round": 1, "match_num": 15, "winner_name": "J. Grabher", "score": "75 76(1)"},
+          {"round": 2, "match_num": 0, "winner_name": "F. Jones", "score": "64 63"},
           {"round": 2, "match_num": 1, "winner_name": "N. V. Leme Da Silv...", "score": "64 64"},
           {"round": 2, "match_num": 2, "winner_name": "A. Tubello", "score": "64 63"},
           {"round": 2, "match_num": 3, "winner_name": "J. Ortenzi", "score": "60 62"},
+          {"round": 2, "match_num": 4, "winner_name": "J. Riera", "score": "62 64"},
           {"round": 2, "match_num": 5, "winner_name": "S. Sierra", "score": "76(2) 36 64"},
-          {"round": 2, "match_num": 6, "winner_name": "L. Romero Gormaz", "score": "75 62"}
+          {"round": 2, "match_num": 6, "winner_name": "L. Romero Gormaz", "score": "75 62"},
+          {"round": 2, "match_num": 7, "winner_name": "J. Grabher", "score": "75 75"}
         ],
         "round_labels": [
           "Round of 32",
@@ -726,7 +729,9 @@
         ],
         "matches": [
           {"round": 1, "match_num": 0, "winner_name": "D. Jakupovic / N. Radisic", "score": "62 61"},
-          {"round": 1, "match_num": 1, "winner_name": "M. L. Carle / J. Riera", "score": "26 64 10-5"}
+          {"round": 1, "match_num": 1, "winner_name": "M. L. Carle / J. Riera", "score": "26 64 10-5"},
+          {"round": 1, "match_num": 2, "winner_name": "N. V. Leme Da Silva / L. Pigossi", "score": "62 75"},
+          {"round": 1, "match_num": 3, "winner_name": "A. Candiotto / D. Papamichail", "score": "60 64"}
         ],
         "round_labels": [
           "Quarterfinals",
