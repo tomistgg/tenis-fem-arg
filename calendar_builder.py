@@ -4,6 +4,7 @@ import pandas as pd
 
 from config import (
     CALENDAR_END_DATE_OVERRIDES,
+    CALENDAR_TERRITORY_COUNTRIES,
     CONTINENT_KEYS,
 )
 from time_utils import madrid_today
@@ -132,13 +133,18 @@ def build_calendar_data(tournaments):
         start = pd.to_datetime(t.get("startDate"))
         end_str = CALENDAR_END_DATE_OVERRIDES.get(calendar_key, t.get("endDate"))
         end = pd.to_datetime(end_str) if end_str else start + timedelta(days=6)
-        continent = get_continent(t.get("country", ""))
+        country = t.get("country", "")
+        for territory, territory_country in CALENDAR_TERRITORY_COUNTRIES.items():
+            if territory in t["name"]:
+                country = territory_country
+                break
+        continent = get_continent(country)
         parsed.append(
             {
                 "name": t["name"],
                 "level": t["level"],
                 "surface": t.get("surface", ""),
-                "country": t.get("country", ""),
+                "country": country,
                 "continent": continent,
                 "start": start,
                 "end": end,

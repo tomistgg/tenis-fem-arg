@@ -161,8 +161,17 @@ def _schedule_position_suffix(entry):
 
 
 def _display_calendar_tournament_name(name):
-    """Return the compact Calendar-only label without edition numbers."""
-    return compact_tournament_name(name)
+    """Return the compact label shown in the Calendar."""
+    display_name = compact_tournament_name(name)
+    return {
+        "W35+H Cayenne (French Guiana)": "W35+H Cayenne",
+        "W35 Le Lamentin (Martinique)": "W35 Le Lamentin",
+        "W35 Petit-Bourg (Guadeloupe)": "W35 Petit-Bourg",
+        "Australian Open Qualifying": "Australian Open [Q]",
+        "Roland Garros Qualifying": "Roland Garros [Q]",
+        "Wimbledon Qualifying": "Wimbledon [Q]",
+        "US Open Qualifying": "US Open [Q]",
+    }.get(display_name, display_name)
 
 
 _INLINE_SCRIPT_RE = re.compile(
@@ -517,6 +526,7 @@ IOC_TO_ISO2 = {
     "GRE": "gr",
     "GRC": "gr",
     "GUA": "gt",
+    "GUF": "gf",
     "HAI": "ht",
     "HKG": "hk",
     "HON": "hn",
@@ -556,6 +566,7 @@ IOC_TO_ISO2 = {
     "MNE": "me",
     "MON": "mc",
     "MRI": "mu",
+    "MTQ": "mq",
     "MOZ": "mz",
     "NAM": "na",
     "NCA": "ni",
@@ -663,8 +674,8 @@ _BJKC_TIE_COUNTRY_CODES = {
     }.items()
 }
 
-# Dissolved countries with local SVG flags
-LOCAL_FLAGS = {"AHO", "YUG", "SCG", "CIS", "URS"}
+# Local SVG flags, including Guadeloupe's regional flag instead of the French tricolour.
+LOCAL_FLAGS = {"AHO", "YUG", "SCG", "CIS", "URS", "GLP"}
 
 FLAG_STYLE = "display:inline-block;box-sizing:border-box;vertical-align:middle;margin-right:3px;width:18px;height:13px;border:0.5px solid #000;transform:translateY(-1px)"
 

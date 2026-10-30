@@ -275,6 +275,13 @@ CALENDAR_END_DATE_OVERRIDES = {
     "itf:w-itf-bra-2026-014": "2026-11-22",  # W35 Sao Paulo
 }
 
+# ITF lists these overseas tournaments under France; display their local territories.
+CALENDAR_TERRITORY_COUNTRIES = {
+    "(French Guiana)": "GUF",
+    "(Martinique)": "MTQ",
+    "(Guadeloupe)": "GLP",
+}
+
 # Published 2027 Grand Slam main-draw start dates used while the WTA calendar
 # does not yet contain the next season.  These prevent the 52-week projection
 # from shifting a Slam when its week moves between seasons.
@@ -317,6 +324,7 @@ COUNTRY_TO_CONTINENT = {
     "BOL": "south_america",
     "PAR": "south_america",
     "GUY": "south_america",
+    "GUF": "south_america",
     "SUR": "south_america",
     # North and Central America
     "USA": "north_central_america",
@@ -340,6 +348,8 @@ COUNTRY_TO_CONTINENT = {
     "BER": "north_central_america",
     "AHO": "north_central_america",
     "ARU": "north_central_america",
+    "MTQ": "north_central_america",
+    "GLP": "north_central_america",
     # Europe
     "FRA": "europe",
     "GBR": "europe",
