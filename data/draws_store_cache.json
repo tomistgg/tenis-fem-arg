@@ -1770,5 +1770,104 @@
         "num_rounds": 5
       }
     }
+  },
+  "https://www.wtatennis.com/tournaments/1110/cali-125/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 125 Cali",
+      "level": "WTA 125",
+      "week": "Week of November 2",
+      "startDate": "2026-11-02",
+      "endDate": "2026-11-07",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "Reto Win Tennis Cali Open",
+        "location": "CALI, COL",
+        "dates": "November 1-7 2026",
+        "prize": "$ 115,000",
+        "surface": "Clay",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 8,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "HERCOG, Polona", "country": "SLO", "wtn": "11.12"},
+          {"pos": 2, "entry": "WC", "name": "RICO SANCHEZ, Maria Jose", "country": "COL", "wtn": "21.27"},
+          {"pos": 3, "seed": "2", "name": "MANDLIK, Elizabeth", "country": "USA", "wtn": "11.3"},
+          {"pos": 4, "name": "JANICIJEVIC, Selena", "country": "FRA", "wtn": "12.41"},
+          {"pos": 5, "seed": "3", "name": "PIGOSSI, Laura", "country": "BRA", "wtn": "10.96"},
+          {"pos": 6, "name": "SCOTT, Katrina", "country": "USA", "wtn": "11.75"},
+          {"pos": 7, "seed": "4", "name": "ALVES, Carolina", "country": "BRA", "wtn": "12.21"},
+          {"pos": 8, "entry": "WC", "name": "PEREZ GARCIA, Maria Paulina", "country": "COL", "wtn": "-"}
+        ],
+        "round_labels": [
+          "Q1"
+        ],
+        "num_rounds": 1
+      }
+    }
+  },
+  "w-itf-arg-2026-014":
+  {
+    "meta":
+    {
+      "name": "W15 Neuquén 2",
+      "level": "W15",
+      "week": "Week of November 2",
+      "startDate": "2026-11-02T00:00:00",
+      "endDate": "2026-11-08T00:00:00",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "KAWANO CHO, Gabriela", "country": "BRA", "itf_id": "800595741", "wtn": "17.67"},
+          {"pos": 3, "name": "CLARK, Mackenzie", "country": "USA", "itf_id": "800459496", "wtn": "17.68"},
+          {"pos": 4, "name": "BERTOLINI, Camila", "country": "ARG", "itf_id": "800842696", "wtn": "27.30"},
+          {"pos": 5, "seed": "2", "name": "LOPEZ OCAMPOS, Ana Julieta", "country": "PAR", "itf_id": "800654700", "wtn": "18.37"},
+          {"pos": 7, "name": "GARAY, Maiten", "country": "ARG", "itf_id": "800787566", "wtn": "23.77"},
+          {"pos": 8, "name": "MARQUEZ, Daphne Belen", "country": "ARG", "itf_id": "800631187", "wtn": "-"},
+          {"pos": 9, "seed": "3", "name": "DOLDAN, Zoe", "country": "PAR", "itf_id": "800661516", "wtn": "17.2"},
+          {"pos": 11, "name": "PORTOMAN, Angela", "country": "ARG", "itf_id": "800548355", "wtn": "-"},
+          {"pos": 12, "name": "GRINBERG, Lucia", "country": "ARG", "itf_id": "800720191", "wtn": "20.41"},
+          {"pos": 13, "seed": "4", "name": "TARANTOLA, Agustina", "country": "ARG", "itf_id": "800778870", "wtn": "17.87"},
+          {"pos": 16, "seed": "11", "name": "BAIER, Jazmin", "country": "ARG", "itf_id": "800756214", "wtn": "27.27"},
+          {"pos": 17, "seed": "5", "name": "SIMON PADROS, Sofia", "country": "ARG", "itf_id": "800724660", "wtn": "19.51"},
+          {"pos": 19, "name": "NAPPI, Sofia Nahiara", "country": "ARG", "itf_id": "800743416", "wtn": "19.16"},
+          {"pos": 20, "seed": "13", "name": "MONDATI, Ornela Luisana", "country": "ARG", "itf_id": "800753197", "wtn": "20.95"},
+          {"pos": 21, "seed": "6", "name": "TEJADA, Aiken", "country": "ARG", "itf_id": "800717434", "wtn": "20.23"},
+          {"pos": 24, "seed": "9", "name": "AGUDELO, Luciana", "country": "ARG", "itf_id": "800692785", "wtn": "16.91"},
+          {"pos": 25, "seed": "7", "name": "DA SILVA, Pilar", "country": "ARG", "itf_id": "800758169", "wtn": "18.99"},
+          {"pos": 28, "seed": "12", "name": "SIMON PADROS, Felicitas", "country": "ARG", "itf_id": "800724658", "wtn": "20.59"},
+          {"pos": 29, "seed": "8", "name": "MORINI, Luna", "country": "ARG", "itf_id": "800533407", "wtn": "17.07"},
+          {"pos": 32, "seed": "10", "name": "PAJELLO, Abril", "country": "ARG", "itf_id": "800677652", "wtn": "19.86"}
+        ],
+        "byes": [
+          2,
+          6,
+          10,
+          14,
+          15,
+          18,
+          22,
+          23,
+          26,
+          27,
+          30,
+          31
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16"
+        ],
+        "num_rounds": 2
+      }
+    }
   }
 }
