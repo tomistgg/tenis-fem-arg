@@ -351,7 +351,9 @@
           {"round": 3, "match_num": 0, "winner_name": "L. Fernandez", "score": "WO"},
           {"round": 3, "match_num": 1, "winner_name": "K. Rakhimova", "score": "75 57 61"},
           {"round": 3, "match_num": 2, "winner_name": "D. Shnaider", "score": "26 76(5) 64"},
-          {"round": 3, "match_num": 3, "winner_name": "M. Pohankova", "score": "76(3) 63"}
+          {"round": 3, "match_num": 3, "winner_name": "M. Pohankova", "score": "76(3) 63"},
+          {"round": 4, "match_num": 0, "winner_name": "L. Fernandez", "score": "75 63"},
+          {"round": 4, "match_num": 1, "winner_name": "D. Shnaider", "score": "64 76(7)"}
         ],
         "byes": [
           2,
@@ -892,7 +894,11 @@
           {"round": 2, "match_num": 4, "winner_name": "A. Herrero Linana", "score": "67(3) 62 76(3)"},
           {"round": 2, "match_num": 5, "winner_name": "B. Andreescu", "score": "62 63"},
           {"round": 2, "match_num": 6, "winner_name": "N. Podoroska", "score": "61 61"},
-          {"round": 2, "match_num": 7, "winner_name": "C. Monnet", "score": "62 61"}
+          {"round": 2, "match_num": 7, "winner_name": "C. Monnet", "score": "62 61"},
+          {"round": 3, "match_num": 0, "winner_name": "T. Maria", "score": "76(2) 63"},
+          {"round": 3, "match_num": 1, "winner_name": "F. Ferro", "score": "62 67(5) 64"},
+          {"round": 3, "match_num": 2, "winner_name": "B. Andreescu", "score": "61 61"},
+          {"round": 3, "match_num": 3, "winner_name": "C. Monnet", "score": "26 63 62"}
         ],
         "round_labels": [
           "Round of 32",
@@ -927,7 +933,9 @@
           {"round": 1, "match_num": 0, "winner_name": "S. Costoulas / V. Strakhova", "score": "76(3) 63"},
           {"round": 1, "match_num": 1, "winner_name": "S. Johnson / M. Reasco Gonzalez", "score": "63 76(4)"},
           {"round": 1, "match_num": 2, "winner_name": "M. Bulgaru / P. Hercog", "score": "63 64"},
-          {"round": 1, "match_num": 3, "winner_name": "M. Gomez Pezuela Cano / N. Podoroska", "score": "57 63 10-8"}
+          {"round": 1, "match_num": 3, "winner_name": "M. Gomez Pezuela Cano / N. Podoroska", "score": "57 63 10-8"},
+          {"round": 2, "match_num": 0, "winner_name": "S. Costoulas / V. Strakhova", "score": "63 63"},
+          {"round": 2, "match_num": 1, "winner_name": "M. Gomez Pezuela Cano / N. Podoroska", "score": "WO"}
         ],
         "round_labels": [
           "Quarterfinals",
@@ -1323,7 +1331,9 @@
           {"round": 3, "match_num": 0, "winner_name": "Y. Hong", "score": "62 76(5)"},
           {"round": 3, "match_num": 1, "winner_name": "V. Apisah", "score": "62 60"},
           {"round": 3, "match_num": 2, "winner_name": "A. Malova", "score": "64 64"},
-          {"round": 3, "match_num": 3, "winner_name": "T. Naklo", "score": "36 61 62"}
+          {"round": 3, "match_num": 3, "winner_name": "T. Naklo", "score": "36 61 62"},
+          {"round": 4, "match_num": 0, "winner_name": "V. Apisah", "score": "61 63"},
+          {"round": 4, "match_num": 1, "winner_name": "T. Naklo", "score": "26 62 41 RET"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1430,6 +1440,60 @@
           "Q2"
         ],
         "num_rounds": 2
+      },
+      "MDS":
+      {
+        "tournament_name": "Prudential Hong Kong Tennis Open",
+        "location": "HONG KONG, CHN",
+        "dates": "November 2-8 2026",
+        "prize": "$ 283,347",
+        "surface": "Hard, Greenset",
+        "draw_type": "SINGLES MAIN DRAW",
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "CIRSTEA, Sorana", "country": "ROU", "wtn": "7.32"},
+          {"pos": 2, "name": "TIMOFEEVA, Maria", "country": "UZB", "wtn": "8.14"},
+          {"pos": 3, "entry": "WC", "name": "WILLIAMS, Venus", "country": "USA", "wtn": "-"},
+          {"pos": 4, "name": "STOIANA, Mary", "country": "USA", "wtn": "8.95"},
+          {"pos": 5, "name": "QUEVEDO, Kaitlin", "country": "ESP", "wtn": "9.12"},
+          {"pos": 6, "name": "BADOSA, Paula", "country": "ESP", "wtn": "8.19"},
+          {"pos": 8, "seed": "7", "name": "SAMSONOVA, Liudmila", "wtn": "8.03"},
+          {"pos": 9, "seed": "3", "name": "FERNANDEZ, Leylah", "country": "CAN", "wtn": "7.92"},
+          {"pos": 10, "name": "KENIN, Sofia", "country": "USA", "wtn": "10.05"},
+          {"pos": 11, "name": "YASTREMSKA, Dayana", "country": "UKR", "wtn": "8.99"},
+          {"pos": 12, "name": "SONMEZ, Zeynep", "country": "TUR", "wtn": "8.99"},
+          {"pos": 13, "name": "LIU, Claire", "country": "USA", "wtn": "9.09"},
+          {"pos": 15, "name": "GOLUBIC, Viktorija", "country": "SUI", "wtn": "8.93"},
+          {"pos": 16, "seed": "8", "name": "BOULTER, Katie", "country": "GBR", "wtn": "9.13"},
+          {"pos": 17, "seed": "5", "name": "GIBSON, Talia", "country": "AUS", "wtn": "9.39"},
+          {"pos": 18, "name": "OLIYNYKOVA, Oleksandra", "country": "UKR", "wtn": "9.31"},
+          {"pos": 19, "name": "VOLYNETS, Katie", "country": "USA", "wtn": "8.09"},
+          {"pos": 21, "entry": "WC", "name": "INGLIS, Maddison", "country": "AUS", "wtn": "9.27"},
+          {"pos": 22, "name": "JOINT, Maya", "country": "AUS", "wtn": "9.32"},
+          {"pos": 24, "seed": "4", "name": "SAKKARI, Maria", "country": "GRE", "wtn": "8.36"},
+          {"pos": 25, "seed": "6", "name": "WANG, Xinyu", "country": "CHN", "wtn": "8.84"},
+          {"pos": 26, "entry": "WC", "name": "KARUNARATNE, Adithya", "country": "HKG", "wtn": "11.78"},
+          {"pos": 27, "name": "RUZIC, Antonia", "country": "CRO", "wtn": "9.7"},
+          {"pos": 28, "name": "CHARAEVA, Alina", "country": "ARM", "wtn": "8.86"},
+          {"pos": 29, "entry": "WC", "name": "SUN, Xinran", "country": "CHN", "wtn": "9.81"},
+          {"pos": 30, "name": "VALENTOVA, Tereza", "country": "CZE", "wtn": "8.47"},
+          {"pos": 31, "name": "PARKS, Alycia", "country": "USA", "wtn": "10.61"},
+          {"pos": 32, "seed": "2", "name": "EALA, Alexandra", "country": "PHI", "wtn": "7.68"}
+        ],
+        "qualifiers": [
+          7,
+          14,
+          20,
+          23
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
       }
     }
   }
