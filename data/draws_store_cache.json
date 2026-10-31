@@ -1084,7 +1084,8 @@
           {"round": 3, "match_num": 0, "winner_name": "L. Moyano", "score": "75 62"},
           {"round": 3, "match_num": 1, "winner_name": "E. Zornada", "score": "76(2) 64"},
           {"round": 3, "match_num": 2, "winner_name": "S. Larraya Guidi", "score": "62 63"},
-          {"round": 3, "match_num": 3, "winner_name": "J. Estevez", "score": "46 75 62"}
+          {"round": 3, "match_num": 3, "winner_name": "J. Estevez", "score": "46 75 62"},
+          {"round": 4, "match_num": 0, "winner_name": "L. Moyano", "score": "61 61"}
         ],
         "round_labels": [
           "Round of 32",
@@ -1645,6 +1646,65 @@
           "Final"
         ],
         "num_rounds": 4
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/1176/luanda-125/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 125 Luanda",
+      "level": "WTA 125",
+      "week": "Week of November 2",
+      "startDate": "2026-11-02",
+      "endDate": "2026-11-08",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "Angola Ladies Open",
+        "location": "LUANDA, ANG",
+        "dates": "November 1-8 2026",
+        "prize": "$ 115,000",
+        "surface": "Hard, Lisonda",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 16,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "SÁNCHEZ, Ana Sofia", "country": "MEX", "wtn": "13.59"},
+          {"pos": 3, "entry": "WC", "name": "VOSLOO, Abigayel", "country": "RSA", "wtn": "18.59"},
+          {"pos": 4, "seed": "8", "name": "VIG, Saumya", "country": "IND", "wtn": "18.35"},
+          {"pos": 5, "seed": "2", "name": "SZIEDAT, Franziska", "country": "GER", "wtn": "13.5"},
+          {"pos": 8, "seed": "5", "name": "SAWANT, Madhurima", "country": "IND", "wtn": "16.37"},
+          {"pos": 9, "seed": "3", "name": "SUVIRDJONKOVA, Darja", "country": "SRB", "wtn": "15.25"},
+          {"pos": 12, "seed": "6", "name": "VAN POPPEL, Emma", "country": "NED", "wtn": "17.57"},
+          {"pos": 13, "seed": "4", "name": "BOHNER, Laura", "country": "GER", "wtn": "14.36"},
+          {"pos": 15, "name": "RACHAPUDI, Prathyusha", "country": "IND", "wtn": "16.66"},
+          {"pos": 16, "seed": "7", "name": "EASWARAMURTHI, Ashmitha", "country": "IND", "wtn": "19.30"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "A. S. Sánchez"},
+          {"round": 1, "match_num": 2, "winner_name": "F. Sziedat"},
+          {"round": 1, "match_num": 3, "winner_name": "M. Sawant"},
+          {"round": 1, "match_num": 4, "winner_name": "D. Suvirdjonkova"},
+          {"round": 1, "match_num": 5, "winner_name": "E. Van Poppel"},
+          {"round": 1, "match_num": 6, "winner_name": "L. Bohner"}
+        ],
+        "byes": [
+          2,
+          6,
+          7,
+          10,
+          11,
+          14
+        ],
+        "round_labels": [
+          "Q1",
+          "Q2",
+          "Qualifier"
+        ],
+        "num_rounds": 3
       }
     }
   }

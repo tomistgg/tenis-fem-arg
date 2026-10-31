@@ -17907,27 +17907,27 @@
                       "roundDesc": "Semi-finals", "roundNumber": 4,
                       "matches": [
                           {
-                            "matchId": 1183755221, "playStatusCode": "TP",
+                            "matchId": 1183755221, "playStatusCode": "PS",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
+                                  "scores": [0], "isWinner": false, "seeding": 1, "entryStatus": "DA",
                                   "player": {"playerId":800509472,"nationality":"ITA","givenName":"Federica","familyName":"Urgesi"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [2], "isWinner": false, "entryStatus": "DA",
                                   "player": {"playerId":800331141,"nationality":"GRE","givenName":"Valentini","familyName":"Grammatikopoulou"}
                                 }
                             ]
                           },
                           {
-                            "matchId": 1183755222, "playStatusCode": "IP",
+                            "matchId": 1183755222, "playStatusCode": "PS",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 6, "entryStatus": "DA",
+                                  "scores": [2], "isWinner": false, "seeding": 6, "entryStatus": "DA",
                                   "player": {"playerId":800404215,"nationality":"SLO","givenName":"Pia","familyName":"Lovric"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 2, "entryStatus": "DA",
+                                  "scores": [4], "isWinner": false, "seeding": 2, "entryStatus": "DA",
                                   "player": {"playerId":800525732,"nationality":"POL","givenName":"Weronika","familyName":"Ewald"}
                                 }
                             ]
@@ -19126,14 +19126,14 @@
                       "roundDesc": "Semi-finals", "roundNumber": 4,
                       "matches": [
                           {
-                            "matchId": 1183755677, "playStatusCode": "TP",
+                            "matchId": 1183755677, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "seeding": 1, "entryStatus": "DA",
                                   "player": {"playerId":800547910,"nationality":"ARG","givenName":"Luciana","familyName":"Moyano"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [1,1], "isWinner": false, "entryStatus": "DA",
                                   "player": {"playerId":800778119,"nationality":"ARG","givenName":"Emily","familyName":"Zornada"}
                                 }
                             ]
@@ -19161,7 +19161,8 @@
                             "matchId": 1183755679, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
+                                  "player": {"playerId":800547910,"nationality":"ARG","givenName":"Luciana","familyName":"Moyano"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": null
