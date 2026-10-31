@@ -1,18 +1,18 @@
 {
   "files": {
     "wta_full_calendar_cache.json": {
-      "from": "2026-10-02",
+      "from": "2026-10-03",
       "to": "2027-12-31",
-      "fetchedAt": "2026-10-30T22:40:24Z",
-      "lastAttemptAt": "2026-10-30T22:40:24Z",
-      "fetchedRunId": "20261030T222715Z-afb79a3f0b",
-      "lastAttemptRunId": "20261030T222715Z-afb79a3f0b"
+      "fetchedAt": "2026-10-31T00:57:26Z",
+      "lastAttemptAt": "2026-10-31T00:57:26Z",
+      "fetchedRunId": "20261031T002643Z-97a3592fcb",
+      "lastAttemptRunId": "20261031T002643Z-97a3592fcb"
     },
     "itf_calendar_cache.json": {
       "year": 2026,
-      "count": 642,
+      "count": 609,
       "fetchedAt": "2026-10-30T22:28:48Z",
-      "lastAttemptAt": "2026-10-30T22:28:48Z",
+      "lastAttemptAt": "2026-10-31T00:28:30Z",
       "endYear": 2027
     }
   },
@@ -293,6 +293,34 @@
           "Luciana Sainz",
           "Jennifer Sabrina Moreno Rodriguez",
           "Imperia Martinez Mora"
+        ]
+      },
+      "w-itf-tun-2026-040": {
+        "duplicatePlayersAlerted": [
+          "Mubaraka Al-Naimi",
+          "Sunayana Nayak",
+          "NELL MILLER",
+          "Sofia Eva Gatti"
+        ]
+      },
+      "w-itf-egy-2026-032": {
+        "duplicatePlayersAlerted": [
+          "Malak Fouad",
+          "Vlada Pikhlik",
+          "Iliia Dashkevich",
+          "ANASTASIA ZHILINA",
+          "Malaka Salem"
+        ]
+      },
+      "w-itf-jpn-2026-022": {
+        "duplicatePlayersAlerted": [
+          "Ichina Miyashita",
+          "SUZU NAKAHARA",
+          "Sayuki Nagatomo",
+          "OTOHA FUKUMOTO",
+          "Pei-Chi Lee",
+          "Mei Yamada",
+          "Yuna Ota"
         ]
       }
     },
@@ -1218,28 +1246,34 @@
         "completedAt": "2026-10-26T03:07:09Z"
       },
       "https://www.wtatennis.com/tournaments/1023/guangzhou/2026/player-list": {
-        "fetchedAt": "2026-10-30T22:35:44Z"
+        "fetchedAt": "2026-10-31T00:45:02Z"
       },
       "https://www.wtatennis.com/tournaments/1056/tokyo/2026/player-list": {
-        "fetchedAt": "2026-10-30T22:35:44Z"
+        "fetchedAt": "2026-10-31T00:45:02Z"
       },
       "https://www.wtatennis.com/tournaments/1174/courmayeur-125/2026/player-list": {
-        "fetchedAt": "2026-10-30T22:35:44Z"
+        "fetchedAt": "2026-10-31T00:45:02Z"
       },
       "https://www.wtatennis.com/tournaments/1180/curitiba-125/2026/player-list": {
-        "fetchedAt": "2026-10-30T22:35:44Z"
+        "fetchedAt": "2026-10-31T00:45:02Z"
       },
       "https://www.wtatennis.com/tournaments/1145/queretaro-125/2026/player-list": {
-        "fetchedAt": "2026-10-30T22:35:44Z"
+        "fetchedAt": "2026-10-31T00:45:02Z"
       },
       "w-itf-arg-2026-015": {
-        "fetchedAt": "2026-10-30T22:36:28Z"
+        "fetchedAt": "2026-10-31T00:45:02Z"
       },
       "w-itf-usa-2026-055": {
-        "fetchedAt": "2026-10-30T22:36:04Z"
+        "fetchedAt": "2026-10-31T00:45:51Z"
       },
       "w-itf-sgp-2026-003": {
-        "fetchedAt": "2026-10-30T22:35:45Z"
+        "fetchedAt": "2026-10-31T00:45:32Z"
+      },
+      "https://www.wtatennis.com/tournaments/1148/chennai/2026/player-list": {
+        "fetchedAt": "2026-10-31T00:45:02Z"
+      },
+      "https://www.wtatennis.com/tournaments/1074/hong-kong/2026/player-list": {
+        "fetchedAt": "2026-10-31T00:45:02Z"
       }
     }
   }
