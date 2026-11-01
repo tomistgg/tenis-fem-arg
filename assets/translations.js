@@ -64,7 +64,7 @@ window.WTARG_TRANSLATIONS = {
         "PLAYING": "JUGANDO",
         "PTS IF WIN": "PTS SI GANA",
         "IF WIN": "SI GANA",
-        "NEXT WEEKS": "PRÓXIMAS SEMANAS",
+        "LAST WEEK": "ÚLTIMA SEMANA",
         "Race data not available.": "Datos de la carrera no disponibles.",
         "AO27 main draw race table": "Tabla de la carrera al cuadro principal del AO27",
         "This is a projected ranking for the week of November 16.": "Este es un ranking proyectado para la semana del 16 de noviembre.",
