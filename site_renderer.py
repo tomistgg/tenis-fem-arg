@@ -119,13 +119,17 @@ def _entry_inputs(
     schedule_entries: dict[str, dict[str, list[dict[str, Any]]]] = {}
     unranked_arg_names: set[str] = set()
 
-    def draw_player_key(name: Any) -> str:
-        """Resolve entry-list and draw aliases to the same canonical name."""
+    def draw_player_display_name(name: Any) -> str:
+        """Resolve a draw's LAST, First name to the project's display name."""
         value = str(name or "").strip()
         if "," in value:
             last_name, first_name = value.split(",", 1)
             value = f"{first_name.strip()} {last_name.strip()}"
-        return normalize_player_name(resolve_player_display_name("wta", name=value))
+        return resolve_player_display_name("wta", name=value)
+
+    def draw_player_key(name: Any) -> str:
+        """Resolve entry-list and draw aliases to the same canonical name."""
+        return normalize_player_name(draw_player_display_name(name))
 
     def published_draw_players(tournament_key: str, draw_type: str) -> set[str]:
         draw_entry = (draws_store or {}).get(tournament_key)
@@ -198,6 +202,45 @@ def _entry_inputs(
                 }
             )
             unranked_arg_names.add(player_key)
+
+    # Draws can publish late entrants who never appeared on the Entry List.
+    # Add Argentine singles players from either published draw directly to
+    # Schedule, while leaving doubles draws out of this path entirely.
+    for week, tournaments in tournament_groups.items():
+        for tournament_key, tournament_info in tournaments.items():
+            if _is_excluded_entry_list_tournament(tournament_key, tournament_info):
+                continue
+            if not week:
+                continue
+            tournament_name = _schedule_tournament_name(tournament_key, tournament_info.get("name", tournament_key))
+            draw_entry = (draws_store or {}).get(tournament_key)
+            if not isinstance(draw_entry, dict):
+                continue
+            for draw_type in ("MDS", "QS"):
+                draw = (draw_entry.get("draws") or {}).get(draw_type)
+                if not isinstance(draw, dict):
+                    continue
+                for player in draw.get("players") or []:
+                    if not isinstance(player, dict) or str(player.get("country", "")).upper() != "ARG":
+                        continue
+                    resolved_name = draw_player_display_name(player.get("name", ""))
+                    player_key = str(resolved_name or "").strip().upper()
+                    if not player_key:
+                        continue
+                    label = f"{tournament_name}{' (Q)' if draw_type == 'QS' else ''}"
+                    entries = schedule_entries.setdefault(player_key, {}).setdefault(week, [])
+                    if any(entry["label"] == label for entry in entries):
+                        continue
+                    entries.append(
+                        {
+                            "label": label,
+                            "tour_rank": 0 if tournament_key.startswith("http") else 1,
+                            "priority": "",
+                            "entry_type": "QUAL" if draw_type == "QS" else "MAIN",
+                            "pos_num": player.get("pos", 9999),
+                        }
+                    )
+                    unranked_arg_names.add(player_key)
 
     def numeric_sort_value(value: Any) -> int:
         text = str(value or "").strip()

@@ -283,3 +283,5 @@ def test_schedule_matches_published_singles_draw_aliases(tmp_path, name, entry_t
 
     assert schedule == {name.upper(): {week: f"WTA 125 Curitiba{suffix}"}}
     assert names == {name.upper()}
+
+
