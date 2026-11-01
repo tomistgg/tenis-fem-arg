@@ -1316,7 +1316,7 @@
           {"pos": 18, "name": "MALOVA, Alexandra", "country": "RUS", "itf_id": "800635479", "wtn": "14.44"},
           {"pos": 19, "entry": "Q", "name": "MATSUMOTO, Yuka", "country": "JPN", "itf_id": "800426850", "wtn": "15.18"},
           {"pos": 20, "entry": "Q", "name": "RAWAT, Aditi", "country": "IND", "itf_id": "800660632", "wtn": "16.75"},
-          {"pos": 21, "name": "HAYASAKA, Kurea", "country": "JPN", "itf_id": "800681499", "wtn": "13.39"},
+          {"pos": 21, "name": "HAYASAKA, Kurea", "country": "JPN", "itf_id": "800681499", "wtn": "13.68"},
           {"pos": 22, "name": "MOON, Jeong", "country": "KOR", "itf_id": "800452079", "wtn": "16.31"},
           {"pos": 23, "name": "LU, Jing-Jing", "country": "CHN", "itf_id": "800274830", "wtn": "14.07"},
           {"pos": 24, "seed": "3", "name": "YODPETCH, Kamonwan", "country": "THA", "itf_id": "800563856", "wtn": "14.03"},
@@ -1856,15 +1856,24 @@
           {"pos": 2, "entry": "WC", "name": "RICO SANCHEZ, Maria Jose", "country": "COL", "wtn": "21.27"},
           {"pos": 3, "seed": "2", "name": "MANDLIK, Elizabeth", "country": "USA", "wtn": "11.3"},
           {"pos": 4, "name": "JANICIJEVIC, Selena", "country": "FRA", "wtn": "12.41"},
-          {"pos": 5, "seed": "3", "name": "PIGOSSI, Laura", "country": "BRA", "wtn": "10.96"},
+          {"pos": 5, "entry": "ALT", "name": "HERAZO, Maria", "country": "COL", "wtn": "13.3"},
           {"pos": 6, "name": "SCOTT, Katrina", "country": "USA", "wtn": "11.75"},
-          {"pos": 7, "seed": "4", "name": "ALVES, Carolina", "country": "BRA", "wtn": "12.21"},
-          {"pos": 8, "entry": "WC", "name": "PEREZ GARCIA, Maria Paulina", "country": "COL", "wtn": "-"}
+          {"pos": 7, "seed": "4", "name": "ALVES, Carolina", "country": "BRA", "wtn": "12.21"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "P. Hercog", "score": "60 60"},
+          {"round": 1, "match_num": 1, "winner_name": "S. Janicijevic", "score": "63 57 62"},
+          {"round": 1, "match_num": 2, "winner_name": "M. Herazo", "score": "76(2) 64"},
+          {"round": 1, "match_num": 3, "winner_name": "C. Alves"}
+        ],
+        "byes": [
+          8
         ],
         "round_labels": [
-          "Q1"
+          "Q1",
+          "Qualifier"
         ],
-        "num_rounds": 1
+        "num_rounds": 2
       },
       "MDS":
       {
@@ -1878,6 +1887,7 @@
         "players": [
           {"pos": 1, "seed": "1", "name": "JEANJEAN, Leolia", "country": "FRA", "wtn": "9.54"},
           {"pos": 2, "name": "BRONZETTI, Lucia", "country": "ITA", "wtn": "10.24"},
+          {"pos": 3, "entry": "Q", "name": "ALVES, Carolina", "country": "BRA", "wtn": "12.21"},
           {"pos": 4, "entry": "WC", "name": "PEREZ GARCIA, Maria Paulina", "country": "COL", "wtn": "-"},
           {"pos": 5, "name": "MASAROVA, Rebeka", "country": "SUI", "wtn": "10.22"},
           {"pos": 6, "entry": "SE", "name": "TUBELLO, Alice", "country": "FRA", "wtn": "9.83"},
@@ -1888,13 +1898,16 @@
           {"pos": 11, "entry": "WC", "name": "TORRES MURCIA, Maria", "country": "COL", "wtn": "15.35"},
           {"pos": 12, "name": "GIOVANNINI, Luisina", "country": "ARG", "wtn": "10.65"},
           {"pos": 13, "name": "ORTENZI, Jazmin", "country": "ARG", "wtn": "10.16"},
-          {"pos": 14, "name": "DOLEHIDE, Caroline", "country": "USA", "wtn": "9.82"},
+          {"pos": 14, "entry": "LL", "name": "MANDLIK, Elizabeth", "country": "USA", "wtn": "11.3"},
           {"pos": 15, "name": "ZIDANSEK, Tamara", "country": "SLO", "wtn": "10.24"},
           {"pos": 16, "seed": "8", "name": "ANDREESCU, Bianca", "country": "CAN", "wtn": "8.62"},
           {"pos": 17, "seed": "5", "name": "SAMSON, Laura", "country": "CZE", "wtn": "9.6"},
           {"pos": 18, "entry": "WC", "name": "LIZARAZO, Yuliana", "country": "COL", "wtn": "13.90"},
           {"pos": 19, "name": "MONNET, Carole", "country": "FRA", "wtn": "11.01"},
+          {"pos": 20, "entry": "Q", "name": "HERAZO, Maria", "country": "COL", "wtn": "13.3"},
+          {"pos": 21, "entry": "Q", "name": "HERCOG, Polona", "country": "SLO", "wtn": "11.12"},
           {"pos": 22, "name": "ROMERO GORMAZ, Leyre", "country": "ESP", "wtn": "9.84"},
+          {"pos": 23, "entry": "Q", "name": "JANICIJEVIC, Selena", "country": "FRA", "wtn": "12.41"},
           {"pos": 24, "seed": "3", "name": "SIERRA, Solana", "country": "ARG", "wtn": "10.12"},
           {"pos": 25, "seed": "6", "name": "GRABHER, Julia", "country": "AUT", "wtn": "9.63"},
           {"pos": 26, "name": "PIGOSSI, Laura", "country": "BRA", "wtn": "10.96"},
@@ -1905,12 +1918,6 @@
           {"pos": 31, "name": "PODOROSKA, Nadia", "country": "ARG", "wtn": "9.65"},
           {"pos": 32, "seed": "2", "name": "ZARAZUA, Renata", "country": "MEX", "wtn": "9.85"}
         ],
-        "qualifiers": [
-          3,
-          20,
-          21,
-          23
-        ],
         "round_labels": [
           "Round of 32",
           "Round of 16",
@@ -1918,7 +1925,8 @@
           "Semifinals",
           "Final"
         ],
-        "num_rounds": 5
+        "num_rounds": 5,
+        "wtn_gm": 11.221
       }
     }
   },
