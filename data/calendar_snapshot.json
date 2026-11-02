@@ -1,26 +1,6 @@
 {
   "fields": ["column","continent","name","level","surface","country","startDate","endDate","source","tournamentKey","tournamentId","calendarKey"],
   "weeks": {
-    "Week of November 2": [
-      ["wta_tour","asia","WTA 250 Hong Kong","WTA 250","Hard","HKG","2026-11-02","2026-11-08","WTA","",1074,"wta:1074:2026"],
-      ["wta_tour","asia","WTA 250 Chennai","WTA 250","Hard","IND","2026-11-02","2026-11-08","WTA","",1148,"wta:1148:2026"],
-      ["wta_125","south_america","WTA 125 Cali","WTA 125","Clay","COL","2026-11-02","2026-11-07","WTA","",1110,"wta:1110:2026"],
-      ["wta_125","africa","WTA 125 Luanda","WTA 125","Hard","ANG","2026-11-02","2026-11-08","WTA","",1176,"wta:1176:2026"],
-      ["itf","south_america","W15 Neuquén 2","W15","Clay","ARG","2026-11-02","2026-11-08","ITF","w-itf-arg-2026-014","","itf:w-itf-arg-2026-014"],
-      ["itf","north_central_america","W50 Huamantla","W50","Hard","MEX","2026-11-02","2026-11-08","ITF","w-itf-mex-2026-010","","itf:w-itf-mex-2026-010"],
-      ["itf","north_central_america","W35 Orlando, FL 1","W35","Hard","USA","2026-11-02","2026-11-08","ITF","w-itf-usa-2026-064","","itf:w-itf-usa-2026-064"],
-      ["itf","north_central_america","W15 Hilton Head Island, SC","W15","Clay","USA","2026-11-02","2026-11-08","ITF","w-itf-usa-2026-059","","itf:w-itf-usa-2026-059"],
-      ["itf","europe","W75 Petange","W75","Hard","LUX","2026-11-02","2026-11-08","ITF","w-itf-lux-2026-001","","itf:w-itf-lux-2026-001"],
-      ["itf","europe","W50 Heraklion 3","W50","Clay","GRE","2026-11-02","2026-11-08","ITF","w-itf-gre-2026-006","","itf:w-itf-gre-2026-006"],
-      ["itf","europe","W35 Liberec","W35","Hard","CZE","2026-11-02","2026-11-08","ITF","w-itf-cze-2026-005","","itf:w-itf-cze-2026-005"],
-      ["itf","europe","W15 Szabolcsveresmart","W15","Hard","HUN","2026-11-02","2026-11-08","ITF","w-itf-hun-2026-005","","itf:w-itf-hun-2026-005"],
-      ["itf","europe","W15 Antalya 5","W15","Clay","TUR","2026-11-02","2026-11-08","ITF","w-itf-tur-2026-027","","itf:w-itf-tur-2026-027"],
-      ["itf","africa","W15 Sharm ElSheikh 18","W15","Hard","EGY","2026-11-02","2026-11-08","ITF","w-itf-egy-2026-032","","itf:w-itf-egy-2026-032"],
-      ["itf","africa","W15 Monastir 30","W15","Hard","TUN","2026-11-02","2026-11-08","ITF","w-itf-tun-2026-040","","itf:w-itf-tun-2026-040"],
-      ["itf","asia","W100 Incheon","W100","Hard","KOR","2026-11-02","2026-11-08","ITF","w-itf-kor-2026-007","","itf:w-itf-kor-2026-007"],
-      ["itf","asia","W35 Hamamatsu","W35","Carpet","JPN","2026-11-02","2026-11-08","ITF","w-itf-jpn-2026-022","","itf:w-itf-jpn-2026-022"],
-      ["itf","asia","W15 Maanshan 8","W15","Hard","CHN","2026-11-02","2026-11-08","ITF","w-itf-chn-2026-038","","itf:w-itf-chn-2026-038"]
-    ],
     "Week of November 9": [
       ["wta_tour","north_central_america","WTA Finals","Finals","Hard","USA","2026-11-08","2026-11-15","WTA","",808,"wta:808:2026"],
       ["wta_125","south_america","WTA 125 Sopo","WTA 125","Clay","COL","2026-11-09","2026-11-14","WTA","",1181,"wta:1181:2026"],
@@ -59,8 +39,8 @@
       ["itf","europe","W75 Trnava 5","W75","Hard","SVK","2026-11-23","2026-11-29","ITF","w-itf-svk-2026-006","","itf:w-itf-svk-2026-006"],
       ["itf","europe","W50 Ortisei","W50","Hard","ITA","2026-11-23","2026-11-29","ITF","w-itf-ita-2026-030","","itf:w-itf-ita-2026-030"],
       ["itf","europe","W35 Heraklion 4","W35","Clay","GRE","2026-11-23","2026-11-29","ITF","w-itf-gre-2026-007","","itf:w-itf-gre-2026-007"],
-      ["itf","europe","W15 Lousada 1","W15","Hard","POR","2026-11-23","2026-11-29","ITF","w-itf-por-2026-018","","itf:w-itf-por-2026-018"],
       ["itf","europe","W15 Antalya 8","W15","Clay","TUR","2026-11-23","2026-11-29","ITF","w-itf-tur-2026-030","","itf:w-itf-tur-2026-030"],
+      ["itf","europe","W15 Lousada 1","W15","Hard","POR","2026-11-23","2026-11-29","ITF","w-itf-por-2026-018","","itf:w-itf-por-2026-018"],
       ["itf","africa","W15 Monastir 33","W15","Hard","TUN","2026-11-23","2026-11-29","ITF","w-itf-tun-2026-043","","itf:w-itf-tun-2026-043"],
       ["itf","africa","W15 Sharm ElSheikh 21","W15","Hard","EGY","2026-11-23","2026-11-29","ITF","w-itf-egy-2026-035","","itf:w-itf-egy-2026-035"],
       ["itf","asia","W15 Kolkata","W15","Hard","IND","2026-11-23","2026-11-29","ITF","w-itf-ind-2026-014","","itf:w-itf-ind-2026-014"],
@@ -74,8 +54,8 @@
       ["itf","north_central_america","W35 Boca Raton, FL 4","W35","Clay","USA","2026-11-30","2026-12-06","ITF","w-itf-usa-2026-062","","itf:w-itf-usa-2026-062"],
       ["itf","europe","W50 Heraklion 5","W50","Clay","GRE","2026-11-30","2026-12-06","ITF","w-itf-gre-2026-012","","itf:w-itf-gre-2026-012"],
       ["itf","europe","W50 Selva Gardena","W50","Hard","ITA","2026-11-30","2026-12-06","ITF","w-itf-ita-2026-031","","itf:w-itf-ita-2026-031"],
-      ["itf","europe","W15 Lousada 2","W15","Hard","POR","2026-11-30","2026-12-06","ITF","w-itf-por-2026-019","","itf:w-itf-por-2026-019"],
       ["itf","europe","W15 Antalya 9","W15","Clay","TUR","2026-11-30","2026-12-06","ITF","w-itf-tur-2026-031","","itf:w-itf-tur-2026-031"],
+      ["itf","europe","W15 Lousada 2","W15","Hard","POR","2026-11-30","2026-12-06","ITF","w-itf-por-2026-019","","itf:w-itf-por-2026-019"],
       ["itf","europe","W15 Melilla","W15","Clay","ESP","2026-11-30","2026-12-06","ITF","w-itf-esp-2026-034","","itf:w-itf-esp-2026-034"],
       ["itf","africa","W15 Monastir 34","W15","Hard","TUN","2026-11-30","2026-12-06","ITF","w-itf-tun-2026-044","","itf:w-itf-tun-2026-044"],
       ["itf","africa","W15 Sharm ElSheikh 22","W15","Hard","EGY","2026-11-30","2026-12-06","ITF","w-itf-egy-2026-036","","itf:w-itf-egy-2026-036"],
@@ -220,8 +200,8 @@
       ["gs","europe","Wimbledon","Grand Slam","Grass","GBR","2027-06-28","2027-07-11","WTA","",904,"wta:904:2027"]
     ],
     "Week of July 12": [
-      ["wta_tour","europe","WTA 250 Athens","WTA 250","Hard","GRE","2027-07-12","2027-07-18","WTA","",1175,"wta:1175:2027"],
-      ["wta_tour","europe","WTA 250 Hamburg","WTA 250","Clay","GER","2027-07-12","2027-07-18","WTA","",2042,"wta:2042:2027"]
+      ["wta_tour","europe","WTA 250 Hamburg","WTA 250","Clay","GER","2027-07-12","2027-07-18","WTA","",2042,"wta:2042:2027"],
+      ["wta_tour","europe","WTA 250 Athens","WTA 250","Hard","GRE","2027-07-12","2027-07-18","WTA","",1175,"wta:1175:2027"]
     ],
     "Week of July 19": [
       ["wta_tour","europe","WTA 250 Iasi","WTA 250","Clay","ROU","2027-07-19","2027-07-25","WTA","",2063,"wta:2063:2027"],
