@@ -20,25 +20,25 @@ from time_utils import MADRID, NEW_YORK
 @pytest.mark.parametrize(
     ("now", "expected"),
     [
-        (datetime(2026, 7, 27, 9, 59, tzinfo=UTC), False),
-        (datetime(2026, 7, 27, 10, 0, tzinfo=UTC), True),
-        (datetime(2026, 1, 19, 10, 59, tzinfo=UTC), False),
-        (datetime(2026, 1, 19, 11, 0, tzinfo=UTC), True),
+        (datetime(2026, 7, 27, 7, 59, tzinfo=UTC), False),
+        (datetime(2026, 7, 27, 8, 0, tzinfo=UTC), True),
+        (datetime(2026, 1, 19, 8, 59, tzinfo=UTC), False),
+        (datetime(2026, 1, 19, 9, 0, tzinfo=UTC), True),
         # New York and Madrid change daylight-saving time on different dates.
-        (datetime(2026, 3, 16, 6, 59, tzinfo=NEW_YORK), False),
-        (datetime(2026, 3, 16, 7, 0, tzinfo=NEW_YORK), True),
-        (datetime(2026, 10, 26, 6, 59, tzinfo=NEW_YORK), False),
-        (datetime(2026, 10, 26, 7, 0, tzinfo=NEW_YORK), True),
+        (datetime(2026, 3, 16, 4, 59, tzinfo=NEW_YORK), False),
+        (datetime(2026, 3, 16, 5, 0, tzinfo=NEW_YORK), True),
+        (datetime(2026, 10, 26, 4, 59, tzinfo=NEW_YORK), False),
+        (datetime(2026, 10, 26, 5, 0, tzinfo=NEW_YORK), True),
     ],
 )
-def test_publication_window_uses_noon_in_madrid(now, expected):
+def test_publication_window_uses_10am_in_madrid(now, expected):
     assert publication_window_is_open(now) is expected
 
 
 def test_publication_week_uses_madrid_when_new_york_is_still_sunday():
     now = datetime(2026, 7, 26, 18, 30, tzinfo=NEW_YORK)
 
-    assert publication_cutoff_at(now) == datetime(2026, 7, 27, 12, 0, tzinfo=MADRID)
+    assert publication_cutoff_at(now) == datetime(2026, 7, 27, 10, 0, tzinfo=MADRID)
     assert not publication_window_is_open(now)
     assert effective_wta_ranking_date(now).isoformat() == "2026-07-20"
 
@@ -46,10 +46,10 @@ def test_publication_week_uses_madrid_when_new_york_is_still_sunday():
 @pytest.mark.parametrize(
     ("now", "status", "expected"),
     [
-        (datetime(2026, 8, 17, 11, 59, tzinfo=MADRID), {}, "2026-08-10"),
-        (datetime(2026, 8, 17, 12, 0, tzinfo=MADRID), {}, "2026-08-10"),
+        (datetime(2026, 8, 17, 9, 59, tzinfo=MADRID), {}, "2026-08-10"),
+        (datetime(2026, 8, 17, 10, 0, tzinfo=MADRID), {}, "2026-08-10"),
         (
-            datetime(2026, 8, 17, 12, 1, tzinfo=MADRID),
+            datetime(2026, 8, 17, 10, 1, tzinfo=MADRID),
             {
                 "requested_date": "2026-08-17",
                 "previous_date": "2026-08-10",
@@ -58,12 +58,12 @@ def test_publication_week_uses_madrid_when_new_york_is_still_sunday():
             "2026-08-10",
         ),
         (
-            datetime(2026, 8, 17, 11, 59, tzinfo=MADRID),
+            datetime(2026, 8, 17, 9, 59, tzinfo=MADRID),
             {"requested_date": "2026-08-17", "status": "confirmed_changed"},
             "2026-08-10",
         ),
         (
-            datetime(2026, 8, 17, 12, 0, tzinfo=MADRID),
+            datetime(2026, 8, 17, 10, 0, tzinfo=MADRID),
             {
                 "requested_date": "2026-08-17",
                 "previous_date": "2026-08-10",
@@ -78,7 +78,7 @@ def test_effective_wta_ranking_date_respects_publication_state(now, status, expe
 
 
 def test_unaccepted_or_future_ranking_dates_are_never_publishable():
-    now = datetime(2026, 8, 17, 12, 1, tzinfo=MADRID)
+    now = datetime(2026, 8, 17, 10, 1, tzinfo=MADRID)
     pending = {"requested_date": "2026-08-17", "status": "pending_publication"}
     accepted = {"requested_date": "2026-08-17", "status": "confirmed_changed"}
 

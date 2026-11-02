@@ -81,17 +81,17 @@ def test_new_week_ranking_sync_uses_player_table_path(tmp_path, monkeypatch):
 @pytest.mark.parametrize(
     ("publication_now", "expected"),
     [
-        (datetime(2026, 7, 27, 11, 59, tzinfo=MADRID), False),
-        (datetime(2026, 7, 27, 12, 0, tzinfo=MADRID), True),
-        # The boundary is Monday noon, not noon on every later run day.
+        (datetime(2026, 7, 27, 9, 59, tzinfo=MADRID), False),
+        (datetime(2026, 7, 27, 10, 0, tzinfo=MADRID), True),
+        # The boundary is Monday 10:00, not 10:00 on every later run day.
         (datetime(2026, 7, 28, 9, 0, tzinfo=MADRID), True),
     ],
 )
-def test_weekly_ranking_publication_window_starts_monday_noon(publication_now, expected):
+def test_weekly_ranking_publication_window_starts_monday_at_10am(publication_now, expected):
     assert weekly_ranking.publication_window_is_open(publication_now) is expected
 
 
-def test_weekly_ranking_does_not_fetch_or_publish_before_monday_noon(monkeypatch):
+def test_weekly_ranking_does_not_fetch_or_publish_before_monday_10am(monkeypatch):
     previous_date = "2026-07-20"
     current_date = "2026-07-27"
     by_date = {
@@ -106,7 +106,7 @@ def test_weekly_ranking_does_not_fetch_or_publish_before_monday_noon(monkeypatch
     monkeypatch.setattr(
         weekly_ranking,
         "now_madrid",
-        lambda: datetime(2026, 7, 27, 11, 59, tzinfo=MADRID),
+        lambda: datetime(2026, 7, 27, 9, 59, tzinfo=MADRID),
     )
 
     def unexpected_fetch(date_str):
@@ -122,7 +122,7 @@ def test_weekly_ranking_does_not_fetch_or_publish_before_monday_noon(monkeypatch
     assert current_date not in captured["rewritten"]
     assert captured["status"]["status"] == "pending_publication"
     assert captured["status"]["comparison"] == "not_checked_before_cutoff"
-    assert captured["status"]["cutoff"] == "Monday 12:00 Europe/Madrid"
+    assert captured["status"]["cutoff"] == "Monday 10:00 Europe/Madrid"
 
 
 def test_weekly_ranking_accepts_unchanged_post_cutoff_result_as_frozen(monkeypatch):
@@ -238,7 +238,7 @@ def test_frozen_ranking_rechecks_daily_and_accepts_late_publication(monkeypatch)
         "previous_date": previous_date,
         "status": "confirmed_frozen",
         "comparison": "same_as_previous_week",
-        "cutoff": "Monday 12:00 Europe/Madrid",
+        "cutoff": "Monday 10:00 Europe/Madrid",
         "last_checked_at": "2026-07-27T12:00:00+02:00",
         "message": "Ranking unchanged after the publication cutoff.",
     }
@@ -303,7 +303,7 @@ def test_friday_ranking_recheck_preserves_accepted_data_on_partial_responses(mon
         "previous_date": previous_date,
         "status": "confirmed_changed",
         "comparison": "different_from_previous_week",
-        "cutoff": "Monday 12:00 Europe/Madrid",
+        "cutoff": "Monday 10:00 Europe/Madrid",
         "message": "New WTA ranking accepted after the publication cutoff.",
     }
     clock = {"now": datetime(2026, 7, 31, 11, 59, tzinfo=MADRID)}

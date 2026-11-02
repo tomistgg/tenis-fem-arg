@@ -182,7 +182,7 @@ def main():
     # --- Step 1: re-fetch CSV dates missing points/dob ---
     for date_str in sorted(by_date):
         # Step 2 exclusively owns an unaccepted current week so that the generic
-        # repair pass cannot fetch or publish it before Monday noon Madrid time.
+        # repair pass cannot fetch or publish it before Monday 10:00 Madrid time.
         if date_str == this_monday and not status_is_accepted:
             continue
         if csv_date_is_complete(by_date[date_str]):
@@ -203,7 +203,7 @@ def main():
 
         if not publication_is_open:
             # Never expose an unaccepted current-week copy before the first
-            # refresh at or after Monday noon Madrid time.
+            # refresh at or after Monday 10:00 Madrid time.
             if this_monday in by_date:
                 by_date.pop(this_monday, None)
                 needs_rewrite = True
@@ -213,7 +213,7 @@ def main():
                 "status": "pending_publication",
                 "comparison": "not_checked_before_cutoff",
                 "cutoff": PUBLICATION_CUTOFF_LABEL,
-                "message": "Waiting until Monday noon Europe/Madrid before checking the new WTA ranking.",
+                "message": "Waiting until Monday 10:00 Europe/Madrid before checking the new WTA ranking.",
             }
             logger.info(status["message"])
         else:

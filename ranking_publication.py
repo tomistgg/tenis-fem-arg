@@ -9,8 +9,8 @@ from pathlib import Path
 
 from time_utils import madrid_now
 
-PUBLICATION_CUTOFF = time(12, 0)
-PUBLICATION_CUTOFF_LABEL = "Monday 12:00 Europe/Madrid"
+PUBLICATION_CUTOFF = time(10, 0)
+PUBLICATION_CUTOFF_LABEL = "Monday 10:00 Europe/Madrid"
 ACCEPTED_RANKING_STATUSES = {"confirmed_changed", "confirmed_frozen"}
 MIN_CURRENT_WEEK_ROWS = 1000
 
@@ -53,7 +53,7 @@ def publication_cutoff_at(now: datetime) -> datetime:
 
 
 def publication_window_is_open(now: datetime) -> bool:
-    """Allow the week's first ranking check at or after Monday noon Madrid time."""
+    """Allow the week's first ranking check at or after Monday 10:00 Madrid time."""
 
     return now >= publication_cutoff_at(now)
 
