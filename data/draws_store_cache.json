@@ -560,8 +560,15 @@
           {"pos": 28, "name": "RIERA, Julia", "country": "ARG", "wtn": "10.31"},
           {"pos": 29, "name": "CARLE, Maria Lourdes", "country": "ARG", "wtn": "10.98"},
           {"pos": 30, "name": "PAPAMICHAIL, Despina", "country": "GRE", "wtn": "12.08"},
-          {"pos": 31, "name": "PODOROSKA, Nadia", "country": "ARG", "wtn": "9.8"},
+          {"pos": 31, "entry": "LL", "name": "SCOTT, Katrina", "country": "USA", "wtn": "11.57"},
           {"pos": 32, "seed": "2", "name": "ZARAZUA, Renata", "country": "MEX", "wtn": "9.44"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "L. Jeanjean", "score": "67(2) 64 63"},
+          {"round": 1, "match_num": 1, "winner_name": "C. Alves", "score": "61 60"},
+          {"round": 1, "match_num": 5, "winner_name": "L. Giovannini", "score": "63 60"},
+          {"round": 1, "match_num": 8, "winner_name": "L. Samson", "score": "64 63"},
+          {"round": 1, "match_num": 11, "winner_name": "S. Sierra", "score": "64 62"}
         ],
         "round_labels": [
           "Round of 32",
@@ -571,7 +578,7 @@
           "Final"
         ],
         "num_rounds": 5,
-        "wtn_gm": 11.1293
+        "wtn_gm": 11.1872
       }
     }
   },
