@@ -25,6 +25,7 @@ from utils import (
     expand_tournament_draw_sizes,
     expand_tstrength_cache,
     expand_wta_calendar_cache,
+    fix_display_name,
     fix_encoding_keep_accents,
     get_continent,
 )
@@ -153,7 +154,9 @@ def _calendar(data_dir):
             events.pop(event_id, None)
             continue
         item = {
-            "name": f"{row.get('level', '')} {row.get('city') or group.get('name') or ''}".strip(),
+            "name": fix_display_name(
+                f"{row.get('level', '')} {str(row.get('city') or group.get('name') or '').title()}".strip()
+            ),
             "source": "WTA",
             "sourceId": source_id,
             "season": season,
