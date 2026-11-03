@@ -64,10 +64,16 @@ _COMPACT_TOURNAMENT_NAME_REPLACEMENTS = {
 
 def display_tournament_name(name):
     """Return a public tournament name without provider relocation notes."""
+    name = re.sub(
+        r"\s+-\s+(?:Carribean|Caribbean) Islands(?=\))",
+        "",
+        str(name or ""),
+        flags=re.IGNORECASE,
+    )
     return re.sub(
         r"\s*\(\s*moved\s+from\b[^)]*\)",
         "",
-        str(name or ""),
+        name,
         flags=re.IGNORECASE,
     ).strip()
 

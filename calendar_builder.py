@@ -8,7 +8,7 @@ from config import (
     CONTINENT_KEYS,
 )
 from time_utils import madrid_today
-from utils import get_calendar_column, get_continent, get_tournament_sort_order
+from utils import display_tournament_name, get_calendar_column, get_continent, get_tournament_sort_order
 
 
 def _collapse_calendar_text(value):
@@ -133,15 +133,16 @@ def build_calendar_data(tournaments):
         start = pd.to_datetime(t.get("startDate"))
         end_str = CALENDAR_END_DATE_OVERRIDES.get(calendar_key, t.get("endDate"))
         end = pd.to_datetime(end_str) if end_str else start + timedelta(days=6)
+        name = display_tournament_name(t.get("name", ""))
         country = t.get("country", "")
         for territory, territory_country in CALENDAR_TERRITORY_COUNTRIES.items():
-            if territory in t["name"]:
+            if territory in name:
                 country = territory_country
                 break
         continent = get_continent(country)
         parsed.append(
             {
-                "name": t["name"],
+                "name": name,
                 "level": t["level"],
                 "surface": t.get("surface", ""),
                 "country": country,
