@@ -20,6 +20,10 @@ _TOURNAMENT_CATEGORY_PREFIX_RE = re.compile(
     r"^(?:WTA\s*\d+|W\s*\d+|GRAND\s+SLAM)\s+",
     flags=re.IGNORECASE,
 )
+_CARIBBEAN_TERRITORY_CHANGE_KEYS = {
+    ("W35 LE LAMENTIN (MARTINIQUE)", "2027-01-11"),
+    ("W35 PETIT-BOURG (GUADELOUPE)", "2027-01-18"),
+}
 
 
 def normalize_exact_name(value):
@@ -233,6 +237,34 @@ def summarize_calendar_cancellation(item):
     return summary
 
 
+def _remove_false_caribbean_territory_actions(change):
+    name = re.sub(
+        r"\s+-\s+(?:Carribean|Caribbean) Islands(?=\))",
+        "",
+        repair_name_text(str(change.get("name") or "")),
+        flags=re.IGNORECASE,
+    )
+    normalized_name = normalize_exact_name(name)
+    start_date = str(change.get("startDate") or "").strip()[:10]
+    if (normalized_name, start_date) not in _CARIBBEAN_TERRITORY_CHANGE_KEYS:
+        return change
+
+    actions = []
+    for action in change.get("actions") or []:
+        action_text = repair_name_text(str(action or "")).strip()
+        normalized_action = normalize_exact_name(action_text)
+        renamed_to = re.match(r"RENAMED TO\s+(.+)", normalized_action)
+        if renamed_to and normalize_exact_name(renamed_to.group(1)) == normalized_name:
+            continue
+        if normalized_action == "COUNTRY CHANGED TO FRA":
+            continue
+        actions.append(action)
+
+    if not actions:
+        return None
+    return {**change, "actions": actions}
+
+
 def update_calendar_change_history(existing_history, before_rows, after_rows, *, detected_on=None):
     """Merge newly detected changes and retain the current day plus two prior days."""
     detected_on = detected_on or madrid_today()
@@ -249,12 +281,25 @@ def update_calendar_change_history(existing_history, before_rows, after_rows, *,
             continue
         if not cutoff <= group_date <= detected_on:
             continue
-        changes = [change for change in (group.get("changes") or []) if isinstance(change, dict)]
+        changes = []
+        for change in (group.get("changes") or []):
+            if not isinstance(change, dict):
+                continue
+            filtered = _remove_false_caribbean_territory_actions(change)
+            if filtered is not None:
+                changes.append(filtered)
         if changes:
             groups.setdefault(date_text, []).extend(changes)
 
     added, raw_changes, cancelled = diff_calendar_tournaments(before_rows, after_rows, today=detected_on)
-    new_changes = [summary for item in raw_changes if (summary := summarize_calendar_change(item))]
+    new_changes = []
+    for item in raw_changes:
+        summary = summarize_calendar_change(item)
+        if summary is None:
+            continue
+        filtered = _remove_false_caribbean_territory_actions(summary)
+        if filtered is not None:
+            new_changes.append(filtered)
     # An empty previous snapshot means the feature is being initialized, not
     # that every tournament on the current calendar was just added.
     if before_rows:
