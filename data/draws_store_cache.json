@@ -590,6 +590,32 @@
         ],
         "num_rounds": 5,
         "wtn_gm": 11.1992
+      },
+      "MDD":
+      {
+        "tournament_name": "Reto Win Tennis Cali Open",
+        "location": "CALI, COL",
+        "dates": "November 1-7 2026",
+        "prize": "$ 115,000",
+        "surface": "Clay",
+        "draw_type": "DOUBLES MAIN DRAW",
+        "draw_size": 8,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "JAKUPOVIC, Dalila / RADISIC, Nika", "country": "SLO", "members": [{"name": "JAKUPOVIC, Dalila", "country": "SLO", "wtn": "11.7"}, {"name": "RADISIC, Nika", "country": "SLO", "wtn": "12.88"}]},
+          {"pos": 2, "name": "BURILLO, Irene / RIERA, Julia", "country": "ESP", "members": [{"name": "BURILLO, Irene", "country": "ESP", "wtn": "10.2"}, {"name": "RIERA, Julia", "country": "ARG", "wtn": "10.31"}]},
+          {"pos": 3, "name": "CARLE, Maria Lourdes / PIGOSSI, Laura", "country": "ARG", "members": [{"name": "CARLE, Maria Lourdes", "country": "ARG", "wtn": "10.98"}, {"name": "PIGOSSI, Laura", "country": "BRA", "wtn": "10.96"}]},
+          {"pos": 4, "name": "COSTOULAS, Sofia / PAPAMICHAIL, Despina", "country": "BEL", "members": [{"name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "10.72"}, {"name": "PAPAMICHAIL, Despina", "country": "GRE", "wtn": "12.49"}]},
+          {"pos": 5, "name": "MCGIFFIN, Tenika / OSBORNE, Alexandra", "country": "AUS", "members": [{"name": "MCGIFFIN, Tenika", "country": "AUS", "wtn": "-"}, {"name": "OSBORNE, Alexandra", "country": "AUS", "wtn": "14.86"}]},
+          {"pos": 6, "entry": "WC", "name": "MEDIORREAL ARIAS, Valentina / PEREZ GARCIA, Maria Paulina", "country": "COL", "members": [{"name": "MEDIORREAL ARIAS, Valentina", "country": "COL", "wtn": "16.11"}, {"name": "PEREZ GARCIA, Maria Paulina", "country": "COL", "wtn": "-"}]},
+          {"pos": 7, "name": "SAMSON, Laura / ZIDANSEK, Tamara", "country": "CZE", "members": [{"name": "SAMSON, Laura", "country": "CZE", "wtn": "9.6"}, {"name": "ZIDANSEK, Tamara", "country": "SLO", "wtn": "9.77"}]},
+          {"pos": 8, "seed": "2", "name": "ROGERS, Anna / ZAMARRIPA, Allura", "country": "USA", "members": [{"name": "ROGERS, Anna", "country": "USA", "wtn": "12.39"}, {"name": "ZAMARRIPA, Allura", "country": "USA", "wtn": "12.81"}]}
+        ],
+        "round_labels": [
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 3
       }
     }
   },
@@ -703,7 +729,11 @@
           {"pos": 32, "seed": "2", "name": "GONZALEZ DANIELE, Justina Maria", "country": "ARG", "itf_id": "800643592", "wtn": "13.45"}
         ],
         "matches": [
-          {"round": 1, "match_num": 1, "winner_name": "S. Meabe", "score": "61 61"}
+          {"round": 1, "match_num": 0, "winner_name": "V. Bosio", "score": "61 61"},
+          {"round": 1, "match_num": 1, "winner_name": "S. Meabe", "score": "61 61"},
+          {"round": 1, "match_num": 2, "winner_name": "F. Moron", "score": "46 64 60"},
+          {"round": 1, "match_num": 3, "winner_name": "C. Romero", "score": "64 63"},
+          {"round": 1, "match_num": 9, "winner_name": "S. Larraya Guidi", "score": "62 60"}
         ],
         "round_labels": [
           "Round of 32",
@@ -766,6 +796,9 @@
           {"pos": 30, "entry": "Q", "name": "CASTILLO MEZA, Midori", "country": "MEX", "itf_id": "800491691", "wtn": "14.35"},
           {"pos": 31, "name": "SHOLOKHOVA, Maria", "country": "RUS", "itf_id": "800464428", "wtn": "12.48"},
           {"pos": 32, "seed": "2", "name": "CAPURRO TABORDA, Martina", "country": "ARG", "itf_id": "800389099", "wtn": "13.21"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 8, "winner_name": "S. Johnson", "score": "63 63"}
         ],
         "round_labels": [
           "Round of 32",
