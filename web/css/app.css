@@ -3709,14 +3709,32 @@
                 .ao27-race-view .race-note-line { display: block; font-size: min(12px, 2.9cqi); }
                 html[lang="es"] .ao27-race-view .race-note-line { font-size: min(12px, 2.3cqi); }
                 .ao27-race-view .content-card { width: 100%; box-sizing: border-box; }
-                .ao27-race-table { width: 100% !important; max-width: 100% !important; }
-                .ao27-race-table th, .ao27-race-table td { padding-left: 2px; padding-right: 2px; font-size: 9px; }
+                .ao27-race-view .ao27-race-table { width: 100% !important; max-width: 100% !important; table-layout: auto; }
+                .ao27-race-view .ao27-race-table th,
+                .ao27-race-view .ao27-race-table td {
+                    padding-left: 2px;
+                    padding-right: 2px;
+                    font-size: 9px;
+                    max-width: none;
+                    overflow: visible;
+                    overflow-wrap: normal;
+                    text-overflow: clip;
+                }
                 .ao27-race-table .calendar-tournament { font-size: 9px; }
                 .ao27-race-table .race-player-name img { width: 17px !important; height: 12px !important; }
                 .ao27-race-table .calendar-tournament img, .ao27-race-table .race-matchup img { width: 16px !important; height: 11px !important; }
                 .ao27-race-table .race-opponent { display: none; }
-                .ao27-race-table .race-playing { width: 32%; }
-                .ao27-race-table .race-next { width: 28%; }
+                .ao27-race-table .race-rank,
+                .ao27-race-table .race-points {
+                    width: 1%;
+                    min-width: 0;
+                    padding-left: 1px;
+                    padding-right: 1px;
+                    white-space: nowrap;
+                }
+                .ao27-race-table .race-player { width: max-content; }
+                .ao27-race-table .race-playing { width: 30%; }
+                .ao27-race-table .race-next { width: 24%; }
                 .ao27-race-table th.race-next { white-space: normal; }
                 .ao27-race-table .race-week { flex-direction: column; gap: 2px; }
                 .ao27-race-table .race-matchup { display: block; font-size: 9px; }
@@ -3736,8 +3754,10 @@
                 }
             }
             @media (max-width: 380px) {
-                .ao27-race-table th, .ao27-race-table td { padding-left: 1px; padding-right: 1px; }
-                .ao27-race-table th { font-size: 8px; }
+                .ao27-race-view .ao27-race-table th, .ao27-race-view .ao27-race-table td { padding-left: 1px; padding-right: 1px; }
+                .ao27-race-view .ao27-race-table th { font-size: 8px; }
+                .ao27-race-table .race-playing { width: 27%; }
+                .ao27-race-table .race-next { width: 22%; }
                 .ao27-race-table .calendar-tournament { padding-left: 2px; padding-right: 2px; }
                 .ao27-race-table .calendar-tournament img, .ao27-race-table .race-matchup img { width: 12px !important; height: 8px !important; }
             }
