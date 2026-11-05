@@ -690,8 +690,8 @@ def country_flag_html(code, show_code=True):
     return f"{img}{safe_code}" if show_code else img
 
 
-def _render_ao27_race_rows(data_dir):
-    path = Path(data_dir) / "ao27_md_race.json"
+def _render_ao27_race_rows(data_dir, filename="ao27_md_race.json"):
+    path = Path(data_dir) / filename
     if not path.exists():
         return '<tr><td colspan="7">Race data not available.</td></tr>'
     with path.open(encoding="utf-8") as source:
@@ -2291,6 +2291,7 @@ def generate_html(
         "RANKINGS_YEAR_OPTIONS": rankings_year_options,
         "RANKINGS_ROWS": rankings_rows,
         "AO27_RACE_ROWS": _render_ao27_race_rows(source_data_dir),
+        "AO27_Q_RACE_ROWS": _render_ao27_race_rows(source_data_dir, "ao27_q_race.json"),
         "HISTORY_PLAYER_OPTIONS": "".join(
             f'<option value="{escape(name, quote=True)}">{escape(name)}</option>'
             for name in history_players_sorted
@@ -2445,6 +2446,7 @@ def generate_html(
         "calendar",
         "rankings",
         "ao27mdrace",
+        "ao27qrace",
         "roadtogs",
         "history",
         "fedbcup",

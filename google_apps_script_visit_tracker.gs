@@ -55,6 +55,7 @@ const ALLOWED_ANALYTICS_PAGES_ = new Set([
   'calendar',
   'rankings',
   'ao27mdrace',
+  'ao27qrace',
   'roadtogs',
   'history',
   'fedbcup',
@@ -73,6 +74,7 @@ const ANALYTICS_FILTER_PARAMS_ = {
   calendar: ['level', 'continent', 'surface', 'changes'],
   rankings: ['q', 'scope', 'date'],
   ao27mdrace: [],
+  ao27qrace: [],
   roadtogs: ['player', 'cutoff'],
   history: [
     'page', 'mcat', 'qualy', 'player', 'surface', 'round', 'result',

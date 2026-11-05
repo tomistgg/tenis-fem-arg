@@ -103,6 +103,9 @@ The `AO27 MD RACE` page is available at `ao27mdrace/`. Its table uses the suppli
 race snapshot in `data/ao27_md_race.json`; edit that file to update the points,
 opponents, and tournament plans. The normal site build renders those changes.
 
+The `AO27 Q RACE` page is available at `ao27qrace/`. Its table uses
+`data/ao27_q_race.json` and follows the main-draw race layout.
+
 Website visits are sent by `assets/anonymous-analytics.js` to the spreadsheet-bound
 receiver in `google_apps_script_visit_tracker.gs`, which aggregates them in
 `Anonymous Page Views`. Both files must allow the same pages and filter keys.

@@ -24,7 +24,7 @@
             }
 
             const URL_STATE_TABS = new Set([
-                'home', 'upcoming', 'entrylists', 'draws', 'calendar', 'rankings', 'ao27mdrace',
+                'home', 'upcoming', 'entrylists', 'draws', 'calendar', 'rankings', 'ao27mdrace', 'ao27qrace',
                 'roadtogs', 'history', 'fedbcup', 'tstrength', 'information', 'planner'
             ]);
             let _currentTabName = 'home';
@@ -1013,6 +1013,7 @@
 
                 document.getElementById('view-rankings').style.display = (tabName === 'rankings') ? 'flex' : 'none';
                 document.getElementById('view-ao27mdrace').style.display = (tabName === 'ao27mdrace') ? 'flex' : 'none';
+                document.getElementById('view-ao27qrace').style.display = (tabName === 'ao27qrace') ? 'flex' : 'none';
                 document.getElementById('view-history').style.display = (tabName === 'history') ? 'flex' : 'none';
                 document.getElementById('view-fedbcup').style.display = (tabName === 'fedbcup') ? 'flex' : 'none';
                 document.getElementById('view-calendar').style.display = (tabName === 'calendar') ? 'flex' : 'none';
@@ -1038,7 +1039,7 @@
                 applyMobileHistoryLayout();
                 syncEntryMenuToggle();
 
-                if (tabName !== 'home' && tabName !== 'ao27mdrace') {
+                if (tabName !== 'home' && tabName !== 'ao27mdrace' && tabName !== 'ao27qrace') {
                     try { localStorage.setItem('lastTab', tabName); } catch(e) {}
                 }
 

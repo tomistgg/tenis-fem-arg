@@ -51,6 +51,7 @@ GENERATED_SITE_FILES = (
     "calendar/index.html",
     "rankings/index.html",
     "ao27mdrace/index.html",
+    "ao27qrace/index.html",
     "roadtogs/index.html",
     "history/index.html",
     "fedbcup/index.html",
