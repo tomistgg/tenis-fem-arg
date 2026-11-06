@@ -20,6 +20,7 @@ from html_generator import generate_html
 from main import (
     _append_schedule_label,
     _filter_itf_draws_for_website,
+    _is_excluded_draw_tournament,
     _is_excluded_entry_list_tournament,
     _schedule_tournament_name,
     enrich_history_with_wta_ranks,
@@ -377,7 +378,13 @@ def render_site_from_data(data_dir: str | Path, site_root: str | Path) -> None:
         all_wta_players,
         national_team_data=load_csv_rows(data_dir / "national_team_order.csv", delimiter=";"),
         captains_data=load_csv_rows(data_dir / "captains.csv"),
-        draws_data=_filter_itf_draws_for_website(draws_store),
+        draws_data=_filter_itf_draws_for_website(
+            {
+                key: entry
+                for key, entry in draws_store.items()
+                if not _is_excluded_draw_tournament(key, entry)
+            }
+        ),
         calendar_changes=calendar_change_history,
         tstrength_data=tstrength_data,
         monday_map=monday_map,

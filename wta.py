@@ -198,6 +198,8 @@ def get_draws_tournament_list():
 
         year = tournament["year"]
         level = tournament["level"]
+        if level.lower().replace(" ", "") in ("finals", "wtafinals"):
+            continue
         city = tournament["city"].title()
         start_date = tournament["startDate"]
         end_date = tournament.get("endDate", None)

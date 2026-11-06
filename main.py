@@ -308,9 +308,16 @@ def _is_excluded_draw_tournament(t_key, t_info=None):
     """Return True when a tournament should be hidden from Draws."""
     key_text = str(t_key or "").lower()
     name_text = str((t_info or {}).get("name") or "").lower()
+    level_text = str((t_info or {}).get("level") or "").lower().replace(" ", "")
     if any(f"/tournaments/{tid}/" in key_text for tid in EXCLUDED_DRAWS_TOURNAMENT_IDS):
         return True
-    return bool("roland garros" in name_text or "wimbledon" in name_text or "us open" in name_text)
+    return bool(
+        "roland garros" in name_text
+        or "wimbledon" in name_text
+        or "us open" in name_text
+        or "wta finals" in name_text
+        or level_text in {"finals", "wtafinals"}
+    )
 
 
 def _canonicalize_player_names(players, source="", names_only=False):
