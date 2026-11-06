@@ -974,6 +974,7 @@
           {"round": 2, "match_num": 5, "winner_name": "M. Rapolu", "score": "67 60 62"},
           {"round": 2, "match_num": 6, "winner_name": "Z. Pawlikowska", "score": "62 62"},
           {"round": 2, "match_num": 7, "winner_name": "V. Rodriguez", "score": "76(5) 26 42 RET"},
+          {"round": 3, "match_num": 2, "winner_name": "M. Rapolu", "score": "75 36 63"},
           {"round": 3, "match_num": 3, "winner_name": "V. Rodriguez", "score": "75 62"}
         ],
         "round_labels": [
@@ -985,55 +986,6 @@
         ],
         "num_rounds": 5,
         "wtn_gm": 13.7779
-      }
-    }
-  },
-  "https://www.wtatennis.com/tournaments/808/wta-finals/2026/player-list":
-  {
-    "meta":
-    {
-      "name": "WTA Finals",
-      "level": "Finals",
-      "week": "Week of November 9",
-      "startDate": "2026-11-08",
-      "endDate": "2026-11-15",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
-    },
-    "draws":
-    {
-      "MDS":
-      {
-        "tournament_name": "FAGE WTA Finals Indian Wells",
-        "location": "INDIAN WELLS, USA",
-        "dates": "November 8-15 2026",
-        "prize": "$ 10,000,000",
-        "surface": "Hard, Laykold",
-        "draw_size": 8,
-        "players": [
-          {"pos": 0, "name": "SABALENKA, Aryna", "wtn": "6.68"},
-          {"pos": 1, "name": "RYBAKINA, Elena", "wtn": "6.61"},
-          {"pos": 2, "name": "SABALENKA, Aryna", "wtn": "6.68"},
-          {"pos": 3, "name": "ANDREEVA, Mirra", "wtn": "7.01"},
-          {"pos": 4, "name": "GAUFF, Coco", "wtn": "6.66"},
-          {"pos": 5, "name": "PEGULA, Jessica", "wtn": "6.98"},
-          {"pos": 6, "name": "SVITOLINA, Elina", "wtn": "7.36"},
-          {"pos": 7, "name": "MUCHOVA, Karolina", "wtn": "7.03"},
-          {"pos": 8, "name": "NOSKOVA, Linda", "wtn": "6.84"}
-        ],
-        "wtn_gm": 6.8684
-      },
-      "MDD":
-      {
-        "tournament_name": "FAGE WTA Finals Indian Wells",
-        "location": "INDIAN WELLS, USA",
-        "dates": "November 8-15 2026",
-        "prize": "$ 10,000,000",
-        "surface": "Hard, Laykold",
-        "draw_size": 8,
-        "players": [
-          {"pos": 0, "name": "Kerrilyn Cramer,Donna Kelso", "wtn": "-"},
-          {"pos": 8, "name": "STEFANI, Luisa (BRA)", "wtn": "-"}
-        ]
       }
     }
   }
