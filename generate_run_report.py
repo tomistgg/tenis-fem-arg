@@ -486,6 +486,21 @@ def compute_report(before_dir, after_dir):
     report["main_draw_players_missing_wtn"] = load_json(
         os.path.join(after_dir, "main_draw_wtn_errors.json")
     ) or []
+    main_draw_archive = load_json(os.path.join(after_dir, "main_draw_wtn_gm.json")) or {}
+    today = madrid_today()
+
+    def tournament_is_current(group):
+        key = str(group.get("tournament_key") or "")
+        archived = main_draw_archive.get(key, {})
+        end_date = str(archived.get("endDate") or "")[:10]
+        try:
+            return not end_date or datetime.fromisoformat(end_date).date() >= today
+        except ValueError:
+            return True
+
+    report["main_draw_players_missing_wtn"] = [
+        group for group in report["main_draw_players_missing_wtn"] if tournament_is_current(group)
+    ]
 
     added_rows_by_csv = {}
 
@@ -507,7 +522,7 @@ def compute_report(before_dir, after_dir):
         resolver = _resolver_with_entry_cache_fallback(
             after_entry, load_json(os.path.join(after_dir, "itf_wtn_cache.json")) or {}, resolve_wtn_player,
         )
-        wtn_eligibility = SinglesRefreshEligibility(history.items(), madrid_today(), resolver)
+        wtn_eligibility = SinglesRefreshEligibility(history.items(), today, resolver)
         report["main_draw_players_missing_wtn"] = [
             {**group, "players": players}
             for group in report["main_draw_players_missing_wtn"]

@@ -4,6 +4,7 @@ import hashlib
 import json
 import math
 import re
+from datetime import date
 from pathlib import Path
 
 from draws import fetch_itf_tournament_draws, fetch_tournament_draws
@@ -38,6 +39,15 @@ def _player_name(player):
         family, given = name.split(",", 1)
         name = f"{given.strip()} {family.strip()}"
     return name
+
+
+def _tournament_is_current(tournament, today):
+    meta = tournament.get("meta") or tournament
+    end_date = str(meta.get("endDate") or "")[:10]
+    try:
+        return not end_date or date.fromisoformat(end_date) >= today
+    except ValueError:
+        return True
 
 
 def _positive_wtn(value):
@@ -306,7 +316,7 @@ def refresh_main_draw_wtn(
         }
         draw["wtn_gm"] = archive[key]["wtn_gm"]
         reportable = [player for player in missing if not player.get("refresh_skipped")]
-        if reportable:
+        if reportable and _tournament_is_current(tournament, today):
             errors.append({"tournament_key": key, "tournament_name": tournament.get("name", key),
                            "players": reportable})
             logger.warning(
