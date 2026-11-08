@@ -1,18 +1,18 @@
 {
   "files": {
     "wta_full_calendar_cache.json": {
-      "from": "2026-10-10",
+      "from": "2026-10-11",
       "to": "2027-12-31",
-      "fetchedAt": "2026-11-07T21:39:15Z",
-      "lastAttemptAt": "2026-11-07T21:39:15Z",
-      "fetchedRunId": "20261107T212310Z-02eebf668b",
-      "lastAttemptRunId": "20261107T212310Z-02eebf668b"
+      "fetchedAt": "2026-11-08T00:46:17Z",
+      "lastAttemptAt": "2026-11-08T00:46:17Z",
+      "fetchedRunId": "20261107T235041Z-6dbd91de55",
+      "lastAttemptRunId": "20261107T235041Z-6dbd91de55"
     },
     "itf_calendar_cache.json": {
       "year": 2026,
-      "count": 677,
+      "count": 647,
       "fetchedAt": "2026-11-07T21:25:42Z",
-      "lastAttemptAt": "2026-11-07T21:25:42Z",
+      "lastAttemptAt": "2026-11-07T23:54:08Z",
       "endYear": 2027
     }
   },
@@ -424,18 +424,6 @@
       "1100203860_M_0": {
         "fetchedAt": "2026-07-13T02:12:20Z"
       },
-      "1100205551_Q_0": {
-        "fetchedAt": "2026-10-24T22:37:25Z"
-      },
-      "1100205551_M_0": {
-        "fetchedAt": "2026-10-24T22:37:39Z"
-      },
-      "1100205052_Q_0": {
-        "fetchedAt": "2026-10-24T22:38:53Z"
-      },
-      "1100203588_M_0": {
-        "fetchedAt": "2026-10-24T23:57:35Z"
-      },
       "1100203964_Q_0": {
         "fetchedAt": "2026-10-25T02:55:57Z"
       },
@@ -603,6 +591,12 @@
       },
       "1100205484_M_0": {
         "fetchedAt": "2026-11-07T21:38:33Z"
+      },
+      "1100204165_Q_0": {
+        "fetchedAt": "2026-11-07T23:52:54Z"
+      },
+      "1100204753_Q_0": {
+        "fetchedAt": "2026-11-07T23:52:56Z"
       }
     },
     "draws_store_cache.json": {
@@ -1259,26 +1253,29 @@
         "completedAt": "2026-11-02T00:47:53Z"
       },
       "https://www.wtatennis.com/tournaments/1148/chennai/2026/player-list": {
-        "fetchedAt": "2026-11-07T21:32:49Z"
+        "fetchedAt": "2026-11-08T00:32:44Z"
       },
       "https://www.wtatennis.com/tournaments/1074/hong-kong/2026/player-list": {
-        "fetchedAt": "2026-11-07T21:32:49Z"
+        "fetchedAt": "2026-11-08T00:32:44Z"
       },
       "https://www.wtatennis.com/tournaments/1176/luanda-125/2026/player-list": {
-        "fetchedAt": "2026-11-07T21:32:49Z"
+        "fetchedAt": "2026-11-08T00:32:44Z"
       },
       "https://www.wtatennis.com/tournaments/1110/cali-125/2026/player-list": {
-        "fetchedAt": "2026-11-07T21:32:49Z",
-        "completedAt": "2026-11-07T21:32:49Z"
+        "fetchedAt": "2026-11-08T00:32:44Z",
+        "completedAt": "2026-11-08T00:32:44Z"
       },
       "w-itf-arg-2026-014": {
-        "fetchedAt": "2026-11-07T21:33:09Z"
+        "fetchedAt": "2026-11-08T00:32:44Z"
       },
       "w-itf-mex-2026-010": {
-        "fetchedAt": "2026-11-07T21:32:49Z"
+        "fetchedAt": "2026-11-08T00:33:00Z"
       },
       "https://www.wtatennis.com/tournaments/808/wta-finals/2026/player-list": {
         "fetchedAt": "2026-11-06T20:28:30Z"
+      },
+      "https://www.wtatennis.com/tournaments/1181/sopo-125/2026/player-list": {
+        "fetchedAt": "2026-11-08T00:32:44Z"
       }
     }
   }
