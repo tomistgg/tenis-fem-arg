@@ -153,6 +153,13 @@ per-tournament, cache, and retry diagnostics:
 python main.py --verbose
 ```
 
+Open ITF Entry Lists are checked on the first refresh of each day and again on
+the first refresh at or after 12:00 in `Europe/Madrid`, every day. The midday
+check runs even when the morning list changed. If the day's first refresh is
+after noon, it satisfies both checks. Failed fetches keep the saved list and
+count as an attempt for that polling window. Required withdrawal checks and
+explicit forced refreshes can also fetch an open list.
+
 Each live refresh also archives main-draw singles WTN geometric means in
 `data/main_draw_wtn_gm.json`, covering WTA and ITF tournaments regardless of
 Argentine participation or Draws-page visibility. On publication, every named

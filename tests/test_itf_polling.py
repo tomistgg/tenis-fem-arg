@@ -1,6 +1,6 @@
 import json
 import subprocess
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from types import SimpleNamespace
 
 import pandas as pd
@@ -165,6 +165,68 @@ def test_current_week_itf_tournaments_remain_grouped_without_current_wta(monkeyp
 
     assert list(monday_map) == ["2026-08-17", "2026-08-24", "2026-08-31", "2026-09-07"]
     assert "w-itf-bra-2026-011" in grouped[current_week]
+
+
+@pytest.mark.parametrize("day", ["2026-01-07", "2026-07-08", "2026-11-08", "2026-07-12"])
+@pytest.mark.parametrize("first_result", ["changed", "unchanged", "failed"])
+def test_itf_acceptance_polls_first_run_and_madrid_noon_every_day(monkeypatch, day, first_result):
+    start = datetime.fromisoformat(day).replace(tzinfo=main.MADRID)
+    tournament_start = (start + timedelta(days=14 - start.weekday())).date().isoformat()
+    key = "w-itf-arg-2026-fixture"
+    player = {"name": "Carla Markus", "country": "ARG", "type": "MAIN", "pos": "1", "pos_num": 1}
+    entry_cache = {key: [player]}
+    acceptance_state = {}
+    fetches = []
+    current_time = start
+    utils.save_json_file(main.ENTRY_WITHDRAWALS_FILE, {
+        key: {"withdrawals": [], "last_seen": {}, "last_checked_date": day},
+    })
+    monkeypatch.setattr(main, "utc_now", lambda: current_time.astimezone(UTC))
+    monkeypatch.setattr(main, "_load_acceptance_state", lambda: acceptance_state)
+    monkeypatch.setattr(main, "_save_acceptance_state", lambda state: None)
+    monkeypatch.setattr(main, "get_wta_rankings_cached", lambda *args, **kwargs: [])
+
+    def fetch_players(key, driver):
+        fetches.append(current_time)
+        if len(fetches) == 1 and first_result == "failed":
+            return []
+        return [{"entryClassificationCode": "MDA"}]
+
+    def parse_players(entries):
+        if not entries:
+            return []
+        position = 1 if len(fetches) == 1 and first_result == "unchanged" else 2
+        return [{**player, "pos": str(position), "pos_num": position}]
+
+    monkeypatch.setattr(main, "get_itf_players", fetch_players)
+    monkeypatch.setattr(main, "parse_itf_entry_list", parse_players)
+
+    # Repeated runs cover both windows, a day starting after noon, and local midnight.
+    for day_offset, hour, minute, expected_fetches in [
+        (0, 0, 5, 1),
+        (0, 9, 0, 1),
+        (0, 11, 59, 1),
+        (0, 12, 0, 2),
+        (0, 13, 0, 2),
+        (0, 18, 0, 2),
+        (0, 23, 59, 2),
+        (1, 13, 0, 3),
+        (1, 18, 0, 3),
+        (2, 0, 5, 4),
+    ]:
+        current_time = (start + timedelta(days=day_offset)).replace(hour=hour, minute=minute)
+        _, entry_cache = main.process_tournaments(
+            None,
+            {"Week": {key: {"name": "W15 Example", "level": "W15", "startDate": tournament_start}}},
+            {tournament_start: "Week"},
+            entry_cache,
+        )
+        assert len(fetches) == expected_fetches, current_time
+        assert acceptance_state[key]["last_fetched_date"] == current_time.date().isoformat()
+        if expected_fetches >= 2:
+            assert entry_cache[key][0]["pos_num"] == 2
+        if hour >= 12:
+            assert acceptance_state[key]["last_fetched_midday_date"] == current_time.date().isoformat()
 
 
 def test_current_week_acceptance_is_refetched_and_withdrawal_removed(monkeypatch):
