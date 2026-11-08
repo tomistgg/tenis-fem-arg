@@ -691,9 +691,10 @@ def country_flag_html(code, show_code=True):
 
 
 def _render_ao27_race_rows(data_dir, filename="ao27_md_race.json"):
+    is_main_draw = filename == "ao27_md_race.json"
     path = Path(data_dir) / filename
     if not path.exists():
-        return '<tr><td colspan="7">Race data not available.</td></tr>'
+        return '<tr><td colspan="10">Race data not available.</td></tr>'
     with path.open(encoding="utf-8") as source:
         race = json.load(source)
 
@@ -738,9 +739,19 @@ def _render_ao27_race_rows(data_dir, filename="ao27_md_race.json"):
             )
         return f'<span class="calendar-tournament {classes}">{label}</span>'
 
+    cutoff_player = "Solana Sierra" if is_main_draw else "Lourdes Carlé"
+    cutoff_rank = next(
+        (player["rank"] for player in race["rows"] if player["player"] == cutoff_player), None
+    )
     rows = []
     for player in race["rows"]:
-        row_class = ' class="race-argentine"' if player["country"] == "ARG" else ""
+        classes = ["race-argentine"] if player["country"] == "ARG" else []
+        if (
+            cutoff_rank is not None and player["rank"] > cutoff_rank
+            and not player["playing"] and not any(player["nextWeeks"])
+        ):
+            classes.append("race-no-last-week")
+        row_class = f' class="{" ".join(classes)}"' if classes else ""
         player_name = player_html(player["player"], player["country"], player.get("mobileName"))
         matchup = (
             '<span class="race-matchup" translate="no">vs '
@@ -748,22 +759,27 @@ def _render_ao27_race_rows(data_dir, filename="ao27_md_race.json"):
             f'{escape(player.get("opponentMobileName") or player["opponent"].rsplit(" ", 1)[-1])}</span>'
             if player["opponent"] else ""
         )
-        points_if_win = "" if player["pointsIfWin"] is None else str(player["pointsIfWin"])
-        next_weeks = "".join(
-            '<div class="race-week">'
-            + ('<span class="race-alternative">/</span>'.join(tournament_html(key) for key in week) or "-")
-            + "</div>"
-            for week in player["nextWeeks"]
-        )
+        result_cells = ""
+        highlight_points = cutoff_rank is not None and player["rank"] > cutoff_rank
+        for round_name in ("R16", "QF", "SF", "F", "W"):
+            points = player.get("roundPoints", {}).get(round_name)
+            cell_class = "race-points"
+            if (
+                highlight_points and points is not None
+                and (points > 730 if is_main_draw else points > 328)
+            ):
+                cell_class += " race-above-cutoff"
+            label = "" if points is None else escape(str(points))
+            result_cells += f'<td class="{cell_class}">{label}</td>'
         rows.append(
             f'<tr{row_class}>'
             f'<td class="race-rank">{escape(str(player["rank"]))}</td>'
             f'<td class="race-player">{player_name}</td>'
             f'<td class="race-points">{escape(str(player["points"]))}</td>'
+            f'{result_cells}'
             f'<td class="race-playing">{tournament_html(player["playing"])}{matchup}</td>'
             f'<td class="race-opponent">{player_html(player["opponent"], player["opponentCountry"], player.get("opponentMobileName"))}</td>'
-            f'<td class="race-points">{escape(points_if_win)}</td>'
-            f'<td class="race-next">{next_weeks}</td></tr>'
+            '</tr>'
         )
     return "".join(rows)
 

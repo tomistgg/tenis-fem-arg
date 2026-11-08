@@ -3705,6 +3705,20 @@
             .ao27-race-table .race-alternative { color: var(--c-text-subtle); }
             .ao27-race-table tr.race-argentine td { background: var(--c-arg-tint) !important; }
             .ao27-race-table tr.race-argentine .race-player { font-weight: 700; }
+            .ao27-race-table td.race-above-cutoff { color: #dc2626; font-weight: 700; }
+            .ao27-race-table .race-no-last-week td:nth-child(n + 4) { position: relative; }
+            .ao27-race-table .race-no-last-week td:nth-child(n + 4)::after {
+                content: "";
+                position: absolute;
+                top: 50%;
+                left: -1px;
+                right: -1px;
+                height: 2px;
+                background: #dc2626;
+                pointer-events: none;
+            }
+            .ao27-race-table .race-no-last-week td:nth-child(4)::after { left: 10px; }
+            .ao27-race-table .race-no-last-week td:last-child::after { right: 10px; }
             @media (max-width: 768px) {
                 .ao27-race-view .race-note-line { display: block; font-size: min(12px, 2.9cqi); }
                 html[lang="es"] .ao27-race-view .race-note-line { font-size: min(12px, 2.3cqi); }
@@ -3724,6 +3738,7 @@
                 .ao27-race-table .race-player-name img { width: 17px !important; height: 12px !important; }
                 .ao27-race-table .calendar-tournament img, .ao27-race-table .race-matchup img { width: 16px !important; height: 11px !important; }
                 .ao27-race-table .race-opponent { display: none; }
+                .ao27-race-table .race-no-last-week td.race-playing::after { right: 10px; }
                 .ao27-race-table .race-rank,
                 .ao27-race-table .race-points {
                     width: 1%;
