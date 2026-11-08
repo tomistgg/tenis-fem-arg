@@ -749,7 +749,7 @@
           {"pos": 5, "name": "MCGIFFIN, Tenika / OSBORNE, Alexandra", "country": "AUS", "members": [{"name": "MCGIFFIN, Tenika", "country": "AUS", "wtn": "-"}, {"name": "OSBORNE, Alexandra", "country": "AUS", "wtn": "14.86"}]},
           {"pos": 6, "entry": "WC", "name": "MEDIORREAL ARIAS, Valentina / PEREZ GARCIA, Maria Paulina", "country": "COL", "members": [{"name": "MEDIORREAL ARIAS, Valentina", "country": "COL", "wtn": "16.11"}, {"name": "PEREZ GARCIA, Maria Paulina", "country": "COL", "wtn": "-"}]},
           {"pos": 7, "name": "SAMSON, Laura / ZIDANSEK, Tamara", "country": "CZE", "members": [{"name": "SAMSON, Laura", "country": "CZE", "wtn": "9.83"}, {"name": "ZIDANSEK, Tamara", "country": "SLO", "wtn": "9.75"}]},
-          {"pos": 8, "seed": "2", "name": "ROGERS, Anna / ZAMARRIPA, Allura", "country": "USA", "members": [{"name": "ROGERS, Anna", "country": "USA", "wtn": "12.73"}, {"name": "ZAMARRIPA, Allura", "country": "USA", "wtn": "12.81"}]}
+          {"pos": 8, "seed": "2", "name": "ROGERS, Anna / ZAMARRIPA, Allura", "country": "USA", "members": [{"name": "ROGERS, Anna", "country": "USA", "wtn": "12.73"}, {"name": "ZAMARRIPA, Allura", "country": "USA", "wtn": "12.01"}]}
         ],
         "matches": [
           {"round": 1, "match_num": 0, "winner_name": "D. Jakupovic / N. Radisic", "score": "62 62"},
@@ -1113,6 +1113,66 @@
         ],
         "num_rounds": 5,
         "wtn_gm": 10.8786
+      }
+    }
+  },
+  "w-itf-bra-2026-019":
+  {
+    "meta":
+    {
+      "name": "W15 São Carlos",
+      "level": "W15",
+      "week": "Week of November 9",
+      "startDate": "2026-11-09T00:00:00",
+      "endDate": "2026-11-15T00:00:00",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "CINALLI, Luna Maria", "country": "ARG", "itf_id": "800644753", "wtn": "14.62"},
+          {"pos": 3, "name": "SAKADA DA COSTA, Sophia Tiemi", "country": "BRA", "itf_id": "800816577", "wtn": "27.28"},
+          {"pos": 4, "entry": "WC", "name": "KRUPEK SOCCOL, Barbara", "country": "BRA", "itf_id": "800837011", "wtn": "-"},
+          {"pos": 5, "seed": "2", "name": "SIGRIST, Isadora", "country": "BRA", "itf_id": "800625532", "wtn": "19.56"},
+          {"pos": 7, "name": "LOPES MISSATO, Larissa", "country": "BRA", "itf_id": "800797669", "wtn": "-"},
+          {"pos": 8, "name": "DIAMANTE, Alice", "country": "BRA", "itf_id": "800753802", "wtn": "28.07"},
+          {"pos": 9, "seed": "3", "name": "SANTOS, Sophia", "country": "BRA", "itf_id": "800656497", "wtn": "19.68"},
+          {"pos": 11, "name": "JORDANA VIDAL, LETICIA", "country": "BRA", "itf_id": "800722565", "wtn": "-"},
+          {"pos": 12, "entry": "WC", "name": "RODRIGUES, Kauany", "country": "BRA", "itf_id": "800755329", "wtn": "-"},
+          {"pos": 13, "seed": "4", "name": "MOREIRA KANADANI, Lara", "country": "BRA", "itf_id": "800738147", "wtn": "23.01"},
+          {"pos": 15, "name": "GOMES, Eduarda", "country": "BRA", "itf_id": "800756804", "wtn": "16.89"},
+          {"pos": 16, "name": "WILSON DONIZETE TOFOLI, Serena Jhulia Antonio Tofoli", "country": "BRA", "itf_id": "800841500", "wtn": "-"},
+          {"pos": 17, "seed": "5", "name": "JULIA CERQUEIRA CARVALHO FARIAS LIMA, Julia", "country": "BRA", "itf_id": "800757258", "wtn": "19.67"},
+          {"pos": 19, "name": "PORTELA BORGES, Laura Goncalves", "country": "BRA", "itf_id": "800718590", "wtn": "-"},
+          {"pos": 20, "name": "INSFRAN, Guisella", "country": "PAR", "itf_id": "800782960", "wtn": "28.79"},
+          {"pos": 21, "seed": "6", "name": "MERLOS CARDOSO, SOFIA", "country": "BRA", "itf_id": "800718967", "wtn": "-"},
+          {"pos": 23, "name": "SOUZA, Maria Clara", "country": "BRA", "itf_id": "800688507", "wtn": "-"},
+          {"pos": 24, "name": "GOMES FERREIRA, Giulia", "country": "BRA", "itf_id": "800715254", "wtn": "18.31"},
+          {"pos": 25, "seed": "7", "name": "SILVEIRA, Mariana de Jesus Ribeiro", "country": "BRA", "itf_id": "800711245", "wtn": "21.35"},
+          {"pos": 27, "name": "FERRANTE, Barbara", "country": "BRA", "itf_id": "800839425", "wtn": "-"},
+          {"pos": 28, "name": "LOBO ASSUMPCAO EUZEBIO, Lais", "country": "BRA", "itf_id": "800830103", "wtn": "-"},
+          {"pos": 29, "name": "ROMANHOLI, Dominiquea", "country": "BRA", "itf_id": "800793859", "wtn": "-"},
+          {"pos": 31, "entry": "WC", "name": "GIANNOTTI, Giovana", "country": "BRA", "itf_id": "800842701", "wtn": "-"},
+          {"pos": 32, "name": "PRETTI, Julia", "country": "BRA", "itf_id": "800676566", "wtn": "-"}
+        ],
+        "byes": [
+          2,
+          6,
+          10,
+          14,
+          18,
+          22,
+          26,
+          30
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16"
+        ],
+        "num_rounds": 2
       }
     }
   }
