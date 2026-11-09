@@ -1,41 +1,17 @@
 {
-  "from": "2026-10-10",
+  "from": "2026-10-12",
   "to": "2027-12-31",
-  "fetchedAt": "2026-11-07T10:09:11Z",
-  "lastAttemptAt": "2026-11-07T10:09:11Z",
-  "fetchedRunId": "20261107T094003Z-d05d36b35f",
-  "lastAttemptRunId": "20261107T094003Z-d05d36b35f",
+  "fetchedAt": "2026-11-09T09:01:29Z",
+  "lastAttemptAt": "2026-11-09T09:01:29Z",
+  "fetchedRunId": "20261109T085928Z-fb478b9954",
+  "lastAttemptRunId": "20261109T085928Z-fb478b9954",
   "items": [
     {
-      "tournamentGroup": { "id": 1020, "name": "BEIJING", "level": "WTA 1000" },
-      "year": 2026, "startDate": "2026-09-30", "endDate": "2026-10-11",
-      "title": "China Open - Beijing, CHN", "level": "WTA 1000",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "BEIJING", "country": "CHN",
-      "singlesDrawSize": 96
-    },
-    {
-      "tournamentGroup": { "id": 1147, "name": "SUZHOU 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-10-05", "endDate": "2026-10-11",
-      "title": "Suzhou Open - Suzhou, CHN", "level": "WTA 125",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "SUZHOU", "country": "CHN",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 1149, "name": "SAMSUN 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-10-05", "endDate": "2026-10-11",
-      "title": "Samsun Open - Samsun, TUR", "level": "WTA 125",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "SAMSUN", "country": "TUR",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 1128, "name": "MALLORCA 125", "level": "WTA 125" },
+      "tournamentGroup": { "id": 1168, "name": "LISBON 125", "level": "WTA 125" },
       "year": 2026, "startDate": "2026-10-12", "endDate": "2026-10-18",
-      "title": "Vanda Pharmaceuticals Mallorca Women's Championships - Mallorca, ESP", "level": "WTA 125",
+      "title": "Lisboa Belem Open - Lisbon, POR", "level": "WTA 125",
       "surface": "Clay", "inOutdoor": "O",
-      "city": "MALLORCA", "country": "ESP",
+      "city": "LISBON", "country": "POR",
       "singlesDrawSize": 32
     },
     {
@@ -47,28 +23,20 @@
       "singlesDrawSize": 32
     },
     {
+      "tournamentGroup": { "id": 1128, "name": "MALLORCA 125", "level": "WTA 125" },
+      "year": 2026, "startDate": "2026-10-12", "endDate": "2026-10-18",
+      "title": "Vanda Pharmaceuticals Mallorca Women's Championships - Mallorca, ESP", "level": "WTA 125",
+      "surface": "Clay", "inOutdoor": "O",
+      "city": "MALLORCA", "country": "ESP",
+      "singlesDrawSize": 32
+    },
+    {
       "tournamentGroup": { "id": 1075, "name": "WUHAN", "level": "WTA 1000" },
       "year": 2026, "startDate": "2026-10-12", "endDate": "2026-10-18",
       "title": "Dongfeng · Voyah Wuhan Open - Wuhan, CHN", "level": "WTA 1000",
       "surface": "Hard", "inOutdoor": "O",
       "city": "WUHAN", "country": "CHN",
       "singlesDrawSize": 56
-    },
-    {
-      "tournamentGroup": { "id": 1168, "name": "LISBON 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-10-12", "endDate": "2026-10-18",
-      "title": "Lisboa Belem Open - Lisbon, POR", "level": "WTA 125",
-      "surface": "Clay", "inOutdoor": "O",
-      "city": "LISBON", "country": "POR",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 405, "name": "OSAKA", "level": "WTA 250" },
-      "year": 2026, "startDate": "2026-10-19", "endDate": "2026-10-25",
-      "title": "Kinoshita Group Japan Open - Osaka, JPN", "level": "WTA 250",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "OSAKA", "country": "JPN",
-      "singlesDrawSize": 32
     },
     {
       "tournamentGroup": { "id": 1150, "name": "RIO DE JANEIRO 125", "level": "WTA 125", "metadata": {"cancelledSeasons": "2026"} },
@@ -87,12 +55,28 @@
       "singlesDrawSize": 28
     },
     {
+      "tournamentGroup": { "id": 405, "name": "OSAKA", "level": "WTA 250" },
+      "year": 2026, "startDate": "2026-10-19", "endDate": "2026-10-25",
+      "title": "Kinoshita Group Japan Open - Osaka, JPN", "level": "WTA 250",
+      "surface": "Hard", "inOutdoor": "O",
+      "city": "OSAKA", "country": "JPN",
+      "singlesDrawSize": 32
+    },
+    {
       "tournamentGroup": { "id": 1023, "name": "GUANGZHOU", "level": "WTA 250" },
       "year": 2026, "startDate": "2026-10-26", "endDate": "2026-11-01",
       "title": "Guangzhou Open - Guangzhou, CHN", "level": "WTA 250",
       "surface": "Hard", "inOutdoor": "O",
       "city": "GUANGZHOU", "country": "CHN",
       "singlesDrawSize": 32
+    },
+    {
+      "tournamentGroup": { "id": 1056, "name": "TOKYO", "level": "WTA 500" },
+      "year": 2026, "startDate": "2026-10-26", "endDate": "2026-11-01",
+      "title": "Toray Pan Pacific Open Tennis - Tokyo, JPN", "level": "WTA 500",
+      "surface": "Hard", "inOutdoor": "O",
+      "city": "TOKYO", "country": "JPN",
+      "singlesDrawSize": 28
     },
     {
       "tournamentGroup": { "id": 1145, "name": "QUERETARO 125", "level": "WTA 125" },
@@ -119,19 +103,11 @@
       "singlesDrawSize": 32
     },
     {
-      "tournamentGroup": { "id": 1056, "name": "TOKYO", "level": "WTA 500" },
-      "year": 2026, "startDate": "2026-10-26", "endDate": "2026-11-01",
-      "title": "Toray Pan Pacific Open Tennis - Tokyo, JPN", "level": "WTA 500",
+      "tournamentGroup": { "id": 1176, "name": "LUANDA 125", "level": "WTA 125" },
+      "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-08",
+      "title": "Angola Ladies Open - Luanda, ANG", "level": "WTA 125",
       "surface": "Hard", "inOutdoor": "O",
-      "city": "TOKYO", "country": "JPN",
-      "singlesDrawSize": 28
-    },
-    {
-      "tournamentGroup": { "id": 1110, "name": "CALI 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-07",
-      "title": "Reto Win Tennis Cali Open - Cali, COL", "level": "WTA 125",
-      "surface": "Clay", "inOutdoor": "O",
-      "city": "CALI", "country": "COL",
+      "city": "LUANDA", "country": "ANG",
       "singlesDrawSize": 32
     },
     {
@@ -140,6 +116,14 @@
       "title": "Prudential Hong Kong Tennis Open - Hong Kong, China", "level": "WTA 250",
       "surface": "Hard", "inOutdoor": "O",
       "city": "HONG KONG", "country": "HKG",
+      "singlesDrawSize": 32
+    },
+    {
+      "tournamentGroup": { "id": 1110, "name": "CALI 125", "level": "WTA 125" },
+      "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-07",
+      "title": "Reto Win Tennis Cali Open - Cali, COL", "level": "WTA 125",
+      "surface": "Clay", "inOutdoor": "O",
+      "city": "CALI", "country": "COL",
       "singlesDrawSize": 32
     },
     {
@@ -156,14 +140,6 @@
       "title": "American Tennis Open Miami - Miami, FL, USA", "level": "WTA 125",
       "surface": "Hard", "inOutdoor": "O",
       "city": "MIAMI", "country": "USA",
-      "singlesDrawSize": 32
-    },
-    {
-      "tournamentGroup": { "id": 1176, "name": "LUANDA 125", "level": "WTA 125" },
-      "year": 2026, "startDate": "2026-11-02", "endDate": "2026-11-08",
-      "title": "Angola Ladies Open - Luanda, ANG", "level": "WTA 125",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "LUANDA", "country": "ANG",
       "singlesDrawSize": 32
     },
     {
@@ -255,20 +231,20 @@
       "singlesDrawSize": 32
     },
     {
-      "tournamentGroup": { "id": 1050, "name": "HOBART", "level": "WTA 250" },
-      "year": 2027, "startDate": "2027-01-11", "endDate": "2027-01-16",
-      "title": "Hobart International - Hobart, AUS", "level": "WTA 250",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "HOBART", "country": "AUS",
-      "singlesDrawSize": 32
-    },
-    {
       "tournamentGroup": { "id": 2014, "name": "ADELAIDE", "level": "WTA 500" },
       "year": 2027, "startDate": "2027-01-11", "endDate": "2027-01-16",
       "title": "Adelaide International - Adelaide, AUS", "level": "WTA 500",
       "surface": "Hard", "inOutdoor": "O",
       "city": "ADELAIDE", "country": "AUS",
       "singlesDrawSize": 30
+    },
+    {
+      "tournamentGroup": { "id": 1050, "name": "HOBART", "level": "WTA 250" },
+      "year": 2027, "startDate": "2027-01-11", "endDate": "2027-01-16",
+      "title": "Hobart International - Hobart, AUS", "level": "WTA 250",
+      "surface": "Hard", "inOutdoor": "O",
+      "city": "HOBART", "country": "AUS",
+      "singlesDrawSize": 32
     },
     {
       "tournamentGroup": { "id": 901, "name": "AUSTRALIAN OPEN", "level": "Grand Slam" },
@@ -287,14 +263,6 @@
       "singlesDrawSize": 32
     },
     {
-      "tournamentGroup": { "id": 2050, "name": "CLUJ-NAPOCA", "level": "WTA 250" },
-      "year": 2027, "startDate": "2027-01-31", "endDate": "2027-02-06",
-      "title": "Transylvania Open powered by Kaufland - Cluj-Napoca, ROU", "level": "WTA 250",
-      "surface": "Hard", "inOutdoor": "I",
-      "city": "CLUJ-NAPOCA", "country": "ROU",
-      "singlesDrawSize": 0
-    },
-    {
       "tournamentGroup": { "id": 1154, "name": "OSTRAVA", "level": "WTA 250" },
       "year": 2027, "startDate": "2027-01-31", "endDate": "2027-02-06",
       "title": "Ostrava Open - Ostrava, CZE", "level": "WTA 250",
@@ -308,6 +276,14 @@
       "title": "Mubadala Abu Dhabi Open presented by Abu Dhabi Sports Council - Abu Dhabi, UAE", "level": "WTA 500",
       "surface": "Hard", "inOutdoor": "O",
       "city": "ABU DHABI", "country": "UAE",
+      "singlesDrawSize": 0
+    },
+    {
+      "tournamentGroup": { "id": 2050, "name": "CLUJ-NAPOCA", "level": "WTA 250" },
+      "year": 2027, "startDate": "2027-01-31", "endDate": "2027-02-06",
+      "title": "Transylvania Open powered by Kaufland - Cluj-Napoca, ROU", "level": "WTA 250",
+      "surface": "Hard", "inOutdoor": "I",
+      "city": "CLUJ-NAPOCA", "country": "ROU",
       "singlesDrawSize": 0
     },
     {
@@ -359,19 +335,19 @@
       "singlesDrawSize": 0
     },
     {
-      "tournamentGroup": { "id": 804, "name": "CHARLESTON", "level": "WTA 500" },
-      "year": 2027, "startDate": "2027-03-29", "endDate": "2027-04-04",
-      "title": "Credit One Charleston Open - Charleston, SC, USA", "level": "WTA 500",
-      "surface": "Clay", "inOutdoor": "O",
-      "city": "CHARLESTON", "country": "USA",
-      "singlesDrawSize": 0
-    },
-    {
       "tournamentGroup": { "id": 894, "name": "BOGOTA", "level": "WTA 250" },
       "year": 2027, "startDate": "2027-03-29", "endDate": "2027-04-04",
       "title": "Copa Colsanitas Colsubsidio - Bogota, COL", "level": "WTA 250",
       "surface": "Clay", "inOutdoor": "O",
       "city": "BOGOTA", "country": "COL",
+      "singlesDrawSize": 0
+    },
+    {
+      "tournamentGroup": { "id": 804, "name": "CHARLESTON", "level": "WTA 500" },
+      "year": 2027, "startDate": "2027-03-29", "endDate": "2027-04-04",
+      "title": "Credit One Charleston Open - Charleston, SC, USA", "level": "WTA 500",
+      "surface": "Clay", "inOutdoor": "O",
+      "city": "CHARLESTON", "country": "USA",
       "singlesDrawSize": 0
     },
     {
@@ -439,14 +415,6 @@
       "singlesDrawSize": 0
     },
     {
-      "tournamentGroup": { "id": 822, "name": "'S-HERTOGENBOSCH", "level": "WTA 250" },
-      "year": 2027, "startDate": "2027-06-07", "endDate": "2027-06-13",
-      "title": "Libéma Open - 's-Hertogenbosch, NED", "level": "WTA 250",
-      "surface": "Grass", "inOutdoor": "O",
-      "city": "'S-HERTOGENBOSCH", "country": "NED",
-      "singlesDrawSize": 0
-    },
-    {
       "tournamentGroup": { "id": 1111, "name": "QUEENS", "level": "WTA 500" },
       "year": 2027, "startDate": "2027-06-07", "endDate": "2027-06-13",
       "title": "HSBC Championships - London, GBR", "level": "WTA 500",
@@ -455,11 +423,11 @@
       "singlesDrawSize": 0
     },
     {
-      "tournamentGroup": { "id": 1080, "name": "NOTTINGHAM", "level": "WTA 250" },
-      "year": 2027, "startDate": "2027-06-14", "endDate": "2027-06-20",
-      "title": "Lexus Nottingham Open - Nottingham, GBR", "level": "WTA 250",
+      "tournamentGroup": { "id": 822, "name": "'S-HERTOGENBOSCH", "level": "WTA 250" },
+      "year": 2027, "startDate": "2027-06-07", "endDate": "2027-06-13",
+      "title": "Libéma Open - 's-Hertogenbosch, NED", "level": "WTA 250",
       "surface": "Grass", "inOutdoor": "O",
-      "city": "NOTTINGHAM", "country": "GBR",
+      "city": "'S-HERTOGENBOSCH", "country": "NED",
       "singlesDrawSize": 0
     },
     {
@@ -468,6 +436,14 @@
       "title": "VANDA Pharmaceuticals Berlin Tennis Open - Berlin, GER", "level": "WTA 500",
       "surface": "Grass", "inOutdoor": "O",
       "city": "BERLIN", "country": "GER",
+      "singlesDrawSize": 0
+    },
+    {
+      "tournamentGroup": { "id": 1080, "name": "NOTTINGHAM", "level": "WTA 250" },
+      "year": 2027, "startDate": "2027-06-14", "endDate": "2027-06-20",
+      "title": "Lexus Nottingham Open - Nottingham, GBR", "level": "WTA 250",
+      "surface": "Grass", "inOutdoor": "O",
+      "city": "NOTTINGHAM", "country": "GBR",
       "singlesDrawSize": 0
     },
     {
@@ -495,14 +471,6 @@
       "singlesDrawSize": 0
     },
     {
-      "tournamentGroup": { "id": 2042, "name": "HAMBURG", "level": "WTA 250" },
-      "year": 2027, "startDate": "2027-07-12", "endDate": "2027-07-18",
-      "title": "MSC Hamburg Ladies Open - Hamburg, GER", "level": "WTA 250",
-      "surface": "Clay", "inOutdoor": "O",
-      "city": "HAMBURG", "country": "GER",
-      "singlesDrawSize": 0
-    },
-    {
       "tournamentGroup": { "id": 1175, "name": "ATHENS", "level": "WTA 250" },
       "year": 2027, "startDate": "2027-07-12", "endDate": "2027-07-18",
       "title": "Vanda Pharmaceuticals Athens Open - Athens, GRE", "level": "WTA 250",
@@ -511,11 +479,11 @@
       "singlesDrawSize": 0
     },
     {
-      "tournamentGroup": { "id": 2063, "name": "IASI", "level": "WTA 250" },
-      "year": 2027, "startDate": "2027-07-19", "endDate": "2027-07-25",
-      "title": "UniCredit Iasi Open  - Iasi, ROU", "level": "WTA 250",
+      "tournamentGroup": { "id": 2042, "name": "HAMBURG", "level": "WTA 250" },
+      "year": 2027, "startDate": "2027-07-12", "endDate": "2027-07-18",
+      "title": "MSC Hamburg Ladies Open - Hamburg, GER", "level": "WTA 250",
       "surface": "Clay", "inOutdoor": "O",
-      "city": "IASI", "country": "ROU",
+      "city": "HAMBURG", "country": "GER",
       "singlesDrawSize": 0
     },
     {
@@ -524,6 +492,14 @@
       "title": "Livesport Prague Open - Prague, CZE", "level": "WTA 250",
       "surface": "Hard", "inOutdoor": "O",
       "city": "PRAGUE", "country": "CZE",
+      "singlesDrawSize": 0
+    },
+    {
+      "tournamentGroup": { "id": 2063, "name": "IASI", "level": "WTA 250" },
+      "year": 2027, "startDate": "2027-07-19", "endDate": "2027-07-25",
+      "title": "UniCredit Iasi Open  - Iasi, ROU", "level": "WTA 250",
+      "surface": "Clay", "inOutdoor": "O",
+      "city": "IASI", "country": "ROU",
       "singlesDrawSize": 0
     },
     {
@@ -591,19 +567,19 @@
       "singlesDrawSize": 0
     },
     {
-      "tournamentGroup": { "id": 1024, "name": "SEOUL", "level": "WTA 500" },
-      "year": 2027, "startDate": "2027-09-20", "endDate": "2027-09-26",
-      "title": "Korea Open - Seoul, KOR", "level": "WTA 250",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "SEOUL", "country": "KOR",
-      "singlesDrawSize": 0
-    },
-    {
       "tournamentGroup": { "id": 1152, "name": "SINGAPORE", "level": "WTA 500" },
       "year": 2027, "startDate": "2027-09-20", "endDate": "2027-09-26",
       "title": "Singapore Tennis Open - Singapore, SGP", "level": "WTA 500",
       "surface": "Hard", "inOutdoor": "I",
       "city": "SINGAPORE", "country": "SGP",
+      "singlesDrawSize": 0
+    },
+    {
+      "tournamentGroup": { "id": 1024, "name": "SEOUL", "level": "WTA 500" },
+      "year": 2027, "startDate": "2027-09-20", "endDate": "2027-09-26",
+      "title": "Korea Open - Seoul, KOR", "level": "WTA 250",
+      "surface": "Hard", "inOutdoor": "O",
+      "city": "SEOUL", "country": "KOR",
       "singlesDrawSize": 0
     },
     {
@@ -639,19 +615,19 @@
       "singlesDrawSize": 0
     },
     {
-      "tournamentGroup": { "id": 1056, "name": "TOKYO", "level": "WTA 500" },
-      "year": 2027, "startDate": "2027-10-25", "endDate": "2027-10-31",
-      "title": "Toray Pan Pacific Open Tennis - Tokyo, JPN", "level": "WTA 500",
-      "surface": "Hard", "inOutdoor": "O",
-      "city": "TOKYO", "country": "JPN",
-      "singlesDrawSize": 0
-    },
-    {
       "tournamentGroup": { "id": 1023, "name": "GUANGZHOU", "level": "WTA 250" },
       "year": 2027, "startDate": "2027-10-25", "endDate": "2027-10-31",
       "title": "Guangzhou Open - Guangzhou, CHN", "level": "WTA 250",
       "surface": "Hard", "inOutdoor": "O",
       "city": "GUANGZHOU", "country": "CHN",
+      "singlesDrawSize": 0
+    },
+    {
+      "tournamentGroup": { "id": 1056, "name": "TOKYO", "level": "WTA 500" },
+      "year": 2027, "startDate": "2027-10-25", "endDate": "2027-10-31",
+      "title": "Toray Pan Pacific Open Tennis - Tokyo, JPN", "level": "WTA 500",
+      "surface": "Hard", "inOutdoor": "O",
+      "city": "TOKYO", "country": "JPN",
       "singlesDrawSize": 0
     },
     {

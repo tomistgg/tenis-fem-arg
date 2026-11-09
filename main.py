@@ -1245,13 +1245,7 @@ def process_tournaments(
     _utc_now = utc_now()
     _now = _utc_now.astimezone(MADRID)
     today_str = _now.strftime("%Y-%m-%d")
-    # After noon UTC, give up re-fetching acceptance lists we already tried today
-    # without detecting a change. Pre-noon keeps retrying to catch morning updates.
-    _past_noon_utc = _utc_now.hour >= 12
-    # On Sat/Sun/Mon allow a second check after 6 pm Europe/Madrid time.
-    # ZoneInfo applies the real CET/CEST transition instants.
-    _past_6pm_spain = _now.hour >= 18
-    _is_double_check_day = _now.weekday() in (5, 6, 0)  # Sat, Sun, Mon
+    _past_noon_spain = _now.hour >= 12
     current_monday_str = (_now - timedelta(days=_now.weekday())).strftime("%Y-%m-%d")
     acceptance_state = _load_acceptance_state()
     acceptance_state_dirty = False
@@ -1459,11 +1453,8 @@ def process_tournaments(
                     state_entry["main_draw_available_date"] = today_str
                     acceptance_state_dirty = True
                     main_draw_available = True
-                already_updated_today = state_entry.get("last_changed_date") == today_str
-                fetched_today_no_change = (
-                    state_entry.get("last_fetched_date") == today_str and not already_updated_today
-                )
-                evening_already_fetched = state_entry.get("last_fetched_evening_date") == today_str
+                fetched_today = state_entry.get("last_fetched_date") == today_str
+                midday_already_fetched = state_entry.get("last_fetched_midday_date") == today_str
                 start_date_str = t_info.get("startDate", "")
                 list_available = _itf_acceptance_list_available(start_date_str, _now)
                 deadline = withdrawal_deadline(start_date_str)
@@ -1484,22 +1475,13 @@ def process_tournaments(
                     # showing the last cached list until the main draw replaces it.
                     logger.debug(f"  ITF qualifying draw published, acceptance list closed: {t_name}")
                     tourney_players_list = list(cached_players)
-                elif already_updated_today and not force_itf_acceptance and not withdrawals_need_refresh:
-                    logger.debug(f"  ITF acceptance list already updated today, skipping fetch: {t_name}")
-                    tourney_players_list = list(cached_players)
                 elif (
                     not force_itf_acceptance
                     and not withdrawals_need_refresh
-                    and fetched_today_no_change
-                    and _past_noon_utc
-                    and (not _is_double_check_day or not _past_6pm_spain or evening_already_fetched)
+                    and fetched_today
+                    and (not _past_noon_spain or midday_already_fetched)
                 ):
-                    if _is_double_check_day and not _past_6pm_spain:
-                        logger.debug(
-                            f"  ITF acceptance list unchanged this morning, will re-check after 6 pm Spain: {t_name}"
-                        )
-                    else:
-                        logger.debug(f"  ITF acceptance list unchanged through noon UTC, skipping: {t_name}")
+                    logger.debug(f"  ITF acceptance list already checked in this daily polling window: {t_name}")
                     tourney_players_list = list(cached_players)
                 elif not list_available:
                     # Entry list not published yet (before Friday 3 weeks prior)
@@ -1513,18 +1495,16 @@ def process_tournaments(
                         itf_entries = []
                     if fresh_players and fresh_itf_entry_lists is not None:
                         fresh_itf_entry_lists[key] = copy.deepcopy(fresh_players)
-                    # Record the fetch attempt (success or failure) so we can
-                    # stop retrying after noon UTC when nothing's changed.
+                    # Record attempts so each daily polling window runs once, even without changes.
                     state_entry = acceptance_state.setdefault(store_key, {})
                     if state_entry.get("last_fetched_date") != today_str:
                         state_entry["last_fetched_date"] = today_str
                         acceptance_state_dirty = True
                     if (
-                        _is_double_check_day
-                        and _past_6pm_spain
-                        and state_entry.get("last_fetched_evening_date") != today_str
+                        _past_noon_spain
+                        and state_entry.get("last_fetched_midday_date") != today_str
                     ):
-                        state_entry["last_fetched_evening_date"] = today_str
+                        state_entry["last_fetched_midday_date"] = today_str
                         acceptance_state_dirty = True
                     if fresh_players:
                         cached_fp = _acceptance_fingerprint(cached_players)

@@ -1,4 +1,4 @@
-﻿    <!DOCTYPE html>
+    <!DOCTYPE html>
     <html lang="en" class="app-booting">
     <head>
         <meta charset="UTF-8">
@@ -16,7 +16,7 @@
         <link href="assets/vendor/select2-4.1.0-rc.0.min.css" rel="stylesheet" />
         <script src="assets/vendor/jquery-3.6.0.min.js"></script>
         <script src="assets/vendor/select2-4.1.0-rc.0.min.js"></script>
-        <link rel="stylesheet" href="assets/app.css?v=20261105-race-content-widths">
+        <link rel="stylesheet" href="assets/app.css?v=20261108-race-column-order">
         <link rel="stylesheet" href="assets/planner.css?v=20261019-compact-breakdown">
         <link rel="stylesheet" href="assets/language.css?v=20261002-focus-contrast">
     </head>
@@ -201,19 +201,21 @@
                     <div class="header-row">
                         <h1>AO27 MD RACE</h1>
                     </div>
-                    <p id="ao27-race-note" class="race-ranking-note"><span class="race-note-line">This is a projected ranking for the week of November 16.</span> <span class="race-note-line">It differs from the weekly live rankings shown in most apps.</span></p>
                     <div class="content-card">
                         <div class="table-wrapper" tabindex="0" aria-label="AO27 main draw race table">
-                            <table id="ao27-race-table" class="ao27-race-table" aria-describedby="ao27-race-note">
+                            <table id="ao27-race-table" class="ao27-race-table">
                                 <thead>
                                     <tr>
                                         <th class="race-rank" scope="col">RK</th>
                                         <th class="race-player" scope="col">PLAYER</th>
-                                        <th class="race-points" scope="col">PTS <span class="race-points-detail">NOV 16</span></th>
+                                        <th class="race-points" scope="col">PTS</th>
+                                        <th class="race-points" scope="col">R16</th>
+                                        <th class="race-points" scope="col">QF</th>
+                                        <th class="race-points" scope="col">SF</th>
+                                        <th class="race-points" scope="col">F</th>
+                                        <th class="race-points" scope="col">W</th>
                                         <th class="race-playing" scope="col">PLAYING</th>
                                         <th class="race-opponent" scope="col">OPPONENT</th>
-                                        <th class="race-points" scope="col">PTS <span class="race-points-detail">IF WIN</span></th>
-                                        <th class="race-next" scope="col">LAST WEEK</th>
                                     </tr>
                                 </thead>
                                 <tbody>@@WTARG_AO27_RACE_ROWS@@</tbody>
@@ -226,19 +228,21 @@
                     <div class="header-row">
                         <h1>AO27 Q RACE</h1>
                     </div>
-                    <p id="ao27-q-race-note" class="race-ranking-note"><span class="race-note-line">This is a projected ranking for the week of November 16.</span> <span class="race-note-line">It differs from the weekly live rankings shown in most apps.</span></p>
                     <div class="content-card">
                         <div class="table-wrapper" tabindex="0" aria-label="AO27 qualifying race table">
-                            <table id="ao27-q-race-table" class="ao27-race-table" aria-describedby="ao27-q-race-note">
+                            <table id="ao27-q-race-table" class="ao27-race-table">
                                 <thead>
                                     <tr>
                                         <th class="race-rank" scope="col">RK</th>
                                         <th class="race-player" scope="col">PLAYER</th>
-                                        <th class="race-points" scope="col">PTS <span class="race-points-detail">NOV 16</span></th>
+                                        <th class="race-points" scope="col">PTS</th>
+                                        <th class="race-points" scope="col">R16</th>
+                                        <th class="race-points" scope="col">QF</th>
+                                        <th class="race-points" scope="col">SF</th>
+                                        <th class="race-points" scope="col">F</th>
+                                        <th class="race-points" scope="col">W</th>
                                         <th class="race-playing" scope="col">PLAYING</th>
                                         <th class="race-opponent" scope="col">OPPONENT</th>
-                                        <th class="race-points" scope="col">PTS <span class="race-points-detail">IF WIN</span></th>
-                                        <th class="race-next" scope="col">LAST WEEK</th>
                                     </tr>
                                 </thead>
                                 <tbody>@@WTARG_AO27_Q_RACE_ROWS@@</tbody>
