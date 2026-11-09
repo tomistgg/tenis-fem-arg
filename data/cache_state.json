@@ -1,18 +1,18 @@
 {
   "files": {
     "wta_full_calendar_cache.json": {
-      "from": "2026-10-11",
+      "from": "2026-10-12",
       "to": "2027-12-31",
-      "fetchedAt": "2026-11-08T21:45:11Z",
-      "lastAttemptAt": "2026-11-08T21:45:11Z",
-      "fetchedRunId": "20261108T205317Z-d5982842a9",
-      "lastAttemptRunId": "20261108T205317Z-d5982842a9"
+      "fetchedAt": "2026-11-09T00:48:13Z",
+      "lastAttemptAt": "2026-11-09T00:48:13Z",
+      "fetchedRunId": "20261109T004259Z-b0cfac503c",
+      "lastAttemptRunId": "20261109T004259Z-b0cfac503c"
     },
     "itf_calendar_cache.json": {
       "year": 2026,
-      "count": 644,
-      "fetchedAt": "2026-11-08T19:52:45Z",
-      "lastAttemptAt": "2026-11-08T20:56:24Z",
+      "count": 677,
+      "fetchedAt": "2026-11-09T00:48:12Z",
+      "lastAttemptAt": "2026-11-09T00:48:12Z",
       "endYear": 2027
     }
   },
@@ -600,6 +600,15 @@
       },
       "1100204592_Q_0": {
         "fetchedAt": "2026-11-08T14:30:49Z"
+      },
+      "1100205596_Q_0": {
+        "fetchedAt": "2026-11-09T00:44:01Z"
+      },
+      "1100205596_M_0": {
+        "fetchedAt": "2026-11-09T00:44:14Z"
+      },
+      "1100205484_Q_0": {
+        "fetchedAt": "2026-11-09T00:45:13Z"
       }
     },
     "draws_store_cache.json": {
@@ -1263,24 +1272,28 @@
       },
       "https://www.wtatennis.com/tournaments/1176/luanda-125/2026/player-list": {
         "fetchedAt": "2026-11-08T21:30:51Z",
-        "completedAt": "2026-11-08T21:30:51Z"
+        "completedAt": "2026-11-09T01:32:08Z"
       },
       "https://www.wtatennis.com/tournaments/1110/cali-125/2026/player-list": {
         "fetchedAt": "2026-11-08T21:30:51Z",
-        "completedAt": "2026-11-08T21:30:51Z"
+        "completedAt": "2026-11-09T01:32:08Z"
       },
       "w-itf-arg-2026-014": {
         "fetchedAt": "2026-11-08T16:41:08Z",
-        "completedAt": "2026-11-08T21:30:50Z"
+        "completedAt": "2026-11-09T01:32:08Z"
       },
       "w-itf-mex-2026-010": {
-        "fetchedAt": "2026-11-08T21:30:51Z"
+        "fetchedAt": "2026-11-08T21:30:51Z",
+        "completedAt": "2026-11-09T00:44:53Z"
       },
       "https://www.wtatennis.com/tournaments/808/wta-finals/2026/player-list": {
         "fetchedAt": "2026-11-06T20:28:30Z"
       },
       "https://www.wtatennis.com/tournaments/1181/sopo-125/2026/player-list": {
-        "fetchedAt": "2026-11-08T21:30:51Z"
+        "fetchedAt": "2026-11-09T01:32:09Z"
+      },
+      "w-itf-bra-2026-019": {
+        "fetchedAt": "2026-11-09T01:33:46Z"
       }
     }
   }
