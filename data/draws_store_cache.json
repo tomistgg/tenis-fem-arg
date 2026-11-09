@@ -158,66 +158,6 @@
       }
     }
   },
-  "w-itf-usa-2026-060":
-  {
-    "meta":
-    {
-      "name": "W15 Lincoln, NE",
-      "level": "W15",
-      "week": "Week of November 9",
-      "startDate": "2026-11-09T00:00:00",
-      "endDate": "2026-11-15T00:00:00",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
-    },
-    "draws":
-    {
-      "QS":
-      {
-        "draw_size": 32,
-        "players": [
-          {"pos": 1, "seed": "1", "entry": "WC", "name": "SHUMATE, Sara", "country": "USA", "itf_id": "800650997", "wtn": "16.2"},
-          {"pos": 4, "entry": "WC", "name": "Briana", "country": "USA", "itf_id": "800887293", "wtn": "-"},
-          {"pos": 5, "seed": "2", "name": "SUH, Sophie", "country": "USA", "itf_id": "800732660", "wtn": "13.15"},
-          {"pos": 8, "name": "ROWLEY, Meghan", "country": "USA", "itf_id": "800643066", "wtn": "17.86"},
-          {"pos": 9, "seed": "3", "name": "KYSELOVA, Aleksandra", "country": "UKR", "itf_id": "800704369", "wtn": "16.70"},
-          {"pos": 11, "name": "HSU, Ting-Ya", "country": "TPE", "itf_id": "800367120", "wtn": "17.09"},
-          {"pos": 12, "name": "KOCK, Katelynn", "country": "USA", "itf_id": "800881225", "wtn": "-"},
-          {"pos": 13, "seed": "4", "name": "RENNARD, Catherine", "country": "USA", "itf_id": "800730600", "wtn": "16.22"},
-          {"pos": 15, "entry": "WC", "name": "COE, Reya", "country": "USA", "itf_id": "800715099", "wtn": "-"},
-          {"pos": 16, "name": "IMMORDINO, Rachel", "country": "USA", "itf_id": "800866497", "wtn": "-"},
-          {"pos": 17, "seed": "5", "name": "BEDARD, Julie", "country": "USA", "itf_id": "800583604", "wtn": "16.74"},
-          {"pos": 19, "name": "MAUNUPAU, Olive", "country": "USA", "itf_id": "800577171", "wtn": "17.68"},
-          {"pos": 20, "name": "ESPOSITO COGAN, Ava", "country": "USA", "itf_id": "800652628", "wtn": "15.36"},
-          {"pos": 21, "seed": "6", "name": "OKUWAKI, Rinon", "country": "JPN", "itf_id": "800492360", "wtn": "13.88"},
-          {"pos": 23, "entry": "WC", "name": "RAHIMKHANI, Neda", "country": "CAN", "itf_id": "800678710", "wtn": "-"},
-          {"pos": 24, "name": "MAUNUPAU, Daisy", "country": "USA", "itf_id": "800577172", "wtn": "-"},
-          {"pos": 25, "seed": "7", "name": "GAGNON, Catherine", "country": "CAN", "itf_id": "800622867", "wtn": "-"},
-          {"pos": 28, "seed": "9", "name": "ROSSINI, Tiziana", "country": "ARG", "itf_id": "800546448", "wtn": "-"},
-          {"pos": 29, "seed": "8", "name": "SCHOCK, Karlin", "country": "USA", "itf_id": "800726353", "wtn": "15.55"},
-          {"pos": 32, "seed": "10", "name": "SCHUMANN, Abigail", "country": "USA", "itf_id": "800824446", "wtn": "22.88"}
-        ],
-        "byes": [
-          2,
-          3,
-          6,
-          7,
-          10,
-          14,
-          18,
-          22,
-          26,
-          27,
-          30,
-          31
-        ],
-        "round_labels": [
-          "Round of 32",
-          "Round of 16"
-        ],
-        "num_rounds": 2
-      }
-    }
-  },
   "w-itf-usa-2026-061":
   {
     "meta":
@@ -267,6 +207,66 @@
           {"pos": 30, "name": "NARTI, Charlotte", "country": "FRA", "itf_id": "800703185", "wtn": "14.45"},
           {"pos": 31, "name": "NAGORNAIA, Sofiia", "country": "ISR", "itf_id": "800569578", "wtn": "16.93"},
           {"pos": 32, "seed": "10", "name": "CCUNO, Romina", "country": "PER", "itf_id": "800492867", "wtn": "-"}
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16"
+        ],
+        "num_rounds": 2
+      }
+    }
+  },
+  "w-itf-usa-2026-060":
+  {
+    "meta":
+    {
+      "name": "W15 Lincoln, NE",
+      "level": "W15",
+      "week": "Week of November 9",
+      "startDate": "2026-11-09T00:00:00",
+      "endDate": "2026-11-15T00:00:00",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "entry": "WC", "name": "SHUMATE, Sara", "country": "USA", "itf_id": "800650997", "wtn": "16.2"},
+          {"pos": 4, "entry": "WC", "name": "RADEMACHER, Briana", "country": "USA", "itf_id": "800887293", "wtn": "-"},
+          {"pos": 5, "seed": "2", "name": "SUH, Sophie", "country": "USA", "itf_id": "800732660", "wtn": "13.15"},
+          {"pos": 8, "name": "ROWLEY, Meghan", "country": "USA", "itf_id": "800643066", "wtn": "17.86"},
+          {"pos": 9, "seed": "3", "name": "KYSELOVA, Aleksandra", "country": "UKR", "itf_id": "800704369", "wtn": "16.70"},
+          {"pos": 11, "name": "HSU, Ting-Ya", "country": "TPE", "itf_id": "800367120", "wtn": "17.09"},
+          {"pos": 12, "name": "KOCK, Katelynn", "country": "USA", "itf_id": "800881225", "wtn": "-"},
+          {"pos": 13, "seed": "4", "name": "RENNARD, Catherine", "country": "USA", "itf_id": "800730600", "wtn": "16.22"},
+          {"pos": 15, "entry": "WC", "name": "COE, Reya", "country": "USA", "itf_id": "800715099", "wtn": "-"},
+          {"pos": 16, "name": "IMMORDINO, Rachel", "country": "USA", "itf_id": "800866497", "wtn": "-"},
+          {"pos": 17, "seed": "5", "name": "BEDARD, Julie", "country": "USA", "itf_id": "800583604", "wtn": "16.74"},
+          {"pos": 19, "name": "MAUNUPAU, Olive", "country": "USA", "itf_id": "800577171", "wtn": "17.68"},
+          {"pos": 20, "name": "ESPOSITO COGAN, Ava", "country": "USA", "itf_id": "800652628", "wtn": "15.36"},
+          {"pos": 21, "seed": "6", "name": "OKUWAKI, Rinon", "country": "JPN", "itf_id": "800492360", "wtn": "13.88"},
+          {"pos": 23, "entry": "WC", "name": "RAHIMKHANI, Neda", "country": "CAN", "itf_id": "800678710", "wtn": "-"},
+          {"pos": 24, "name": "MAUNUPAU, Daisy", "country": "USA", "itf_id": "800577172", "wtn": "-"},
+          {"pos": 25, "seed": "7", "name": "GAGNON, Catherine", "country": "CAN", "itf_id": "800622867", "wtn": "-"},
+          {"pos": 28, "seed": "9", "name": "ROSSINI, Tiziana", "country": "ARG", "itf_id": "800546448", "wtn": "-"},
+          {"pos": 29, "seed": "8", "name": "SCHOCK, Karlin", "country": "USA", "itf_id": "800726353", "wtn": "15.55"},
+          {"pos": 32, "seed": "10", "name": "SCHUMANN, Abigail", "country": "USA", "itf_id": "800824446", "wtn": "22.88"}
+        ],
+        "byes": [
+          2,
+          3,
+          6,
+          7,
+          10,
+          14,
+          18,
+          22,
+          26,
+          27,
+          30,
+          31
         ],
         "round_labels": [
           "Round of 32",
