@@ -229,6 +229,7 @@ def _parse_page(text):
     lines = _rejoin_wrapped_scores(text).split("\n")
 
     players = []
+    lucky_loser_positions = set()
     byes = set()
     qualifiers = set()
     result_entries = []
@@ -315,6 +316,13 @@ def _parse_page(text):
                 current_pos = int(pos_match.group(1))
                 current_entry = pos_match.group(2) or ""
                 current_seed = ""
+                if current_entry == "LL":
+                    lucky_loser_positions.add(current_pos)
+                continue
+
+            if line == "LL" and current_pos is not None:
+                current_entry = "LL"
+                lucky_loser_positions.add(current_pos)
                 continue
 
             # Bye line
@@ -403,6 +411,11 @@ def _parse_page(text):
                     result_entries[-1]["score"] = token
             # Skip standalone numbers (seed annotations), country codes, etc.
 
+    named_positions = {player["pos"] for player in players}
+    players.extend(
+        {"pos": pos, "seed": "", "entry": "LL", "name": "", "country": ""}
+        for pos in sorted(lucky_loser_positions - named_positions)
+    )
     return players, byes, qualifiers, result_entries, round_labels
 
 

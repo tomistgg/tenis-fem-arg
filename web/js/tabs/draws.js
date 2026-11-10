@@ -300,13 +300,13 @@
                         seText = '<span class="seed">' + escapeHtml(player.seed) + '/' + '</span><span class="entry">' + escapeHtml(player.entry) + '</span>';
                     } else if (player.seed) {
                         seText = '<span class="seed">' + escapeHtml(player.seed) + '</span>';
-                    } else if (player.entry) {
+                    } else if (player.entry && player.name) {
                         seText = '<span class="entry">' + escapeHtml(player.entry) + '</span>';
                     }
                     seedEntry = '<span class="seed-entry">' + seText + '</span>';
                 }
                 let name = '';
-                if (player) name = formatDrawName(player.name);
+                if (player) name = player.name ? formatDrawName(player.name) : (player.entry || '');
                 else if (isBye) name = 'BYE';
                 else if (isQualifier) name = 'Qualifier';
                 const uiLabel = !player && (isBye || isQualifier) ? ' data-ui-label' : '';

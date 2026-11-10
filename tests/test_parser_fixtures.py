@@ -63,6 +63,40 @@ def test_saved_pdf_fixture_parser():
     assert parsed["matches"][0]["score"] == "64 63"
 
 
+@pytest.mark.parametrize("position", [16, 32])
+@pytest.mark.parametrize("entry", ["{pos} LL", "{pos}\nLL"])
+def test_wta_pdf_keeps_unnamed_lucky_loser_slots(position, entry):
+    lines = ["Fixture Open", "SOPO, COL", "November 9-14 2026 | 115,000 | Clay", "SINGLES MAIN DRAW"]
+    for pos in range(1, 33):
+        if pos == position:
+            lines.append(entry.format(pos=pos))
+        else:
+            lines.extend([str(pos), "ORTENZI, Jazmin" if pos == 31 else "PLAYER, Alice", "ARG"])
+    lines.extend(["Round of 32", "Round of 16", "Quarterfinals", "Semifinals", "Final", "WTA Supervisor"])
+    with fitz.open() as document:
+        page = document.new_page(width=600, height=1600)
+        page.insert_text((36, 36), "\n".join(lines), fontsize=10)
+        parsed = parse_draw_pdf(document.tobytes())
+
+    assert parsed["draw_size"] == 32
+    assert len(parsed["players"]) == 32
+    assert parsed["players"][position - 1] == {
+        "pos": position, "seed": "", "entry": "LL", "name": "", "country": "",
+    }
+    assert parsed["players"][30]["name"] == "ORTENZI, Jazmin"
+    assert parsed["byes"] == []
+    assert parsed["num_rounds"] == 5
+
+
+@pytest.mark.parametrize("entry", ["1 LL", "1\nLL"])
+def test_wta_pdf_named_lucky_loser_replaces_placeholder(entry):
+    players, *_ = _parse_page(f"{entry}\nPLAYER, Alice\nARG\nWTA Supervisor")
+
+    assert len(players) == 1
+    assert players[0]["name"] == "PLAYER, Alice"
+    assert players[0]["entry"] == "LL"
+
+
 @pytest.mark.parametrize("entry", ["4\n", "4 WC ", "4 WC 2 "])
 @pytest.mark.parametrize("country_suffix", ["BRA", " BRA", "\nBRA"])
 def test_wta_singles_pdf_extracts_country_from_name_line(entry, country_suffix):
