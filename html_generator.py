@@ -767,7 +767,7 @@ def _render_ao27_race_rows(data_dir, filename="ao27_md_race.json"):
             cell_class = "race-points"
             if (
                 highlight_points and points is not None
-                and (points > 730 if is_main_draw else points > 328)
+                and (points > 730 if is_main_draw else points > 339)
             ):
                 cell_class += " race-above-cutoff"
             label = "" if points is None else escape(str(points))
