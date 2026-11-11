@@ -13873,7 +13873,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183773638, "playStatusCode": "TP",
+                            "matchId": 1183773638, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "DA",
@@ -13899,14 +13899,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183773640, "playStatusCode": "TP",
+                            "matchId": 1183773640, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 6, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "seeding": 6, "entryStatus": "DA",
                                   "player": {"playerId":800576187,"nationality":"ROU","givenName":"Diana-Ioana","familyName":"Simionescu"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "scores": [0,1], "isWinner": false, "entryStatus": "Q",
                                   "player": {"playerId":800491279,"nationality":"ITA","givenName":"Denise","familyName":"Valente"}
                                 }
                             ]
@@ -13925,7 +13925,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183773642, "playStatusCode": "TP",
+                            "matchId": 1183773642, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "Q",
@@ -14030,7 +14030,8 @@
                             "matchId": 1183773626, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 6, "entryStatus": "DA",
+                                  "player": {"playerId":800576187,"nationality":"ROU","givenName":"Diana-Ioana","familyName":"Simionescu"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": null
@@ -14191,27 +14192,27 @@
                             ]
                           },
                           {
-                            "matchId": 1183773158, "playStatusCode": "IP",
+                            "matchId": 1183773158, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "scores": [4,6,6], "isWinner": true, "entryStatus": "Q",
                                   "player": {"playerId":800778567,"nationality":"CHN","givenName":"Ziyu","familyName":"Zhou"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "scores": [6,3,4], "isWinner": false, "entryStatus": "Q",
                                   "player": {"playerId":800740521,"nationality":"CHN","givenName":"Xiao","familyName":"Tang"}
                                 }
                             ]
                           },
                           {
-                            "matchId": 1183773159, "playStatusCode": "IP",
+                            "matchId": 1183773159, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [3,2], "isWinner": false, "entryStatus": "DA",
                                   "player": {"playerId":800280842,"nationality":"THA","givenName":"Peangtarn","familyName":"Plipuech"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 6, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "seeding": 6, "entryStatus": "DA",
                                   "player": {"playerId":800461572,"nationality":"RUS","givenName":"Alina","familyName":"Tikhonova"}
                                 }
                             ]
@@ -14243,7 +14244,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183773162, "playStatusCode": "TP",
+                            "matchId": 1183773162, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "WC",
@@ -14395,10 +14396,12 @@
                             "matchId": 1183773149, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "player": {"playerId":800778567,"nationality":"CHN","givenName":"Ziyu","familyName":"Zhou"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 6, "entryStatus": "DA",
+                                  "player": {"playerId":800461572,"nationality":"RUS","givenName":"Alina","familyName":"Tikhonova"}
                                 }
                             ]
                           },
@@ -15741,7 +15744,7 @@
                       "roundDesc": "1st Round", "roundNumber": 1,
                       "matches": [
                           {
-                            "matchId": 1183773864, "playStatusCode": "TP",
+                            "matchId": 1183773864, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
@@ -15754,7 +15757,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183773865, "playStatusCode": "TP",
+                            "matchId": 1183773865, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "DA",
@@ -15832,7 +15835,7 @@
                             ]
                           },
                           {
-                            "matchId": 1183773871, "playStatusCode": "TP",
+                            "matchId": 1183773871, "playStatusCode": "IP",
                             "teams": [
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "Q",
@@ -15858,14 +15861,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183773873, "playStatusCode": "TP",
+                            "matchId": 1183773873, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "scores": [2,4], "isWinner": false, "entryStatus": "Q",
                                   "player": {"playerId":800478777,"nationality":"BEL","givenName":"Vicky","familyName":"Van de Peer"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "JE",
+                                  "scores": [6,6], "isWinner": true, "entryStatus": "JE",
                                   "player": {"playerId":800598140,"nationality":"SRB","givenName":"Anastasija","familyName":"Cvetkovic"}
                                 }
                             ]
@@ -15936,14 +15939,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183773879, "playStatusCode": "TP",
+                            "matchId": 1183773879, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [1,1], "isWinner": false, "entryStatus": "DA",
                                   "player": {"playerId":800534864,"nationality":"KEN","givenName":"Angella","familyName":"Okutoyi"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 2, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "seeding": 2, "entryStatus": "DA",
                                   "player": {"playerId":800462323,"nationality":"ITA","givenName":"Jennifer","familyName":"Ruggeri"}
                                 }
                             ]
@@ -16005,7 +16008,8 @@
                                   "scores": [], "isWinner": false, "entryStatus": null
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "JE",
+                                  "player": {"playerId":800598140,"nationality":"SRB","givenName":"Anastasija","familyName":"Cvetkovic"}
                                 }
                             ]
                           },
@@ -16042,7 +16046,8 @@
                                   "player": {"playerId":800417377,"nationality":"ITA","givenName":"Matilde","familyName":"Paoletti"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 2, "entryStatus": "DA",
+                                  "player": {"playerId":800462323,"nationality":"ITA","givenName":"Jennifer","familyName":"Ruggeri"}
                                 }
                             ]
                           }
@@ -21634,14 +21639,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183775325, "playStatusCode": "TP",
+                            "matchId": 1183775325, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [6,6], "isWinner": true, "entryStatus": "DA",
                                   "player": {"playerId":800434497,"nationality":"JPN","givenName":"Naho","familyName":"Sato"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "WC",
+                                  "scores": [1,1], "isWinner": false, "entryStatus": "WC",
                                   "player": {"playerId":800433185,"nationality":"JPN","givenName":"Anri","familyName":"Nagata"}
                                 }
                             ]
@@ -21725,14 +21730,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183775332, "playStatusCode": "IP",
+                            "matchId": 1183775332, "playStatusCode": "PC", "resultStatusDesc": "Retired", "resultStatusCode": "RET",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 8, "entryStatus": "DA",
+                                  "scores": [6,5], "isWinner": true, "seeding": 8, "entryStatus": "DA",
                                   "player": {"playerId":800451879,"nationality":"JPN","givenName":"Rina","familyName":"Saigo"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "scores": [0,4], "isWinner": false, "entryStatus": "Q",
                                   "player": {"playerId":800625519,"nationality":"CHN","givenName":"JiaYi","familyName":"Wang"}
                                 }
                             ]
@@ -21764,14 +21769,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183775335, "playStatusCode": "IP",
+                            "matchId": 1183775335, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "scores": [6,0,3], "isWinner": false, "entryStatus": "Q",
                                   "player": {"playerId":800780931,"nationality":"JPN","givenName":"Sae","familyName":"Noguchi"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 4, "entryStatus": "DA",
+                                  "scores": [3,6,6], "isWinner": true, "seeding": 4, "entryStatus": "DA",
                                   "player": {"playerId":800569172,"nationality":"JPN","givenName":"Sara","familyName":"Saito"}
                                 }
                             ]
@@ -21790,14 +21795,14 @@
                             ]
                           },
                           {
-                            "matchId": 1183775337, "playStatusCode": "IP",
+                            "matchId": 1183775337, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "scores": [4,6,6], "isWinner": true, "entryStatus": "Q",
                                   "player": {"playerId":800687878,"nationality":"CHN","givenName":"Yuhan","familyName":"Wang"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "WC",
+                                  "scores": [6,3,4], "isWinner": false, "entryStatus": "WC",
                                   "player": {"playerId":800527539,"nationality":"JPN","givenName":"Sayaka","familyName":"Ishii"}
                                 }
                             ]
@@ -21842,7 +21847,8 @@
                                   "player": {"playerId":800454354,"nationality":"KOR","givenName":"Yeonwoo","familyName":"Ku"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "player": {"playerId":800434497,"nationality":"JPN","givenName":"Naho","familyName":"Sato"}
                                 }
                             ]
                           },
@@ -21889,7 +21895,8 @@
                             "matchId": 1183775320, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 8, "entryStatus": "DA",
+                                  "player": {"playerId":800451879,"nationality":"JPN","givenName":"Rina","familyName":"Saigo"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": "Q",
@@ -21905,7 +21912,8 @@
                                   "player": {"playerId":800415724,"nationality":"JPN","givenName":"Momoko","familyName":"Kobori"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 4, "entryStatus": "DA",
+                                  "player": {"playerId":800569172,"nationality":"JPN","givenName":"Sara","familyName":"Saito"}
                                 }
                             ]
                           },
@@ -21917,7 +21925,8 @@
                                   "player": {"playerId":800309592,"nationality":"JPN","givenName":"Kyoka","familyName":"Okamura"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "entryStatus": "Q",
+                                  "player": {"playerId":800687878,"nationality":"CHN","givenName":"Yuhan","familyName":"Wang"}
                                 }
                             ]
                           },
