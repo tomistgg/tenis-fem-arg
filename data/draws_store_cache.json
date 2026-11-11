@@ -113,6 +113,32 @@
         ],
         "num_rounds": 5,
         "wtn_gm": 11.0234
+      },
+      "MDD":
+      {
+        "tournament_name": "DIRECTV Open Presentado por Compesar",
+        "location": "SOPO, COL",
+        "dates": "November 9-14 2026",
+        "prize": "$ 115,000",
+        "surface": "Clay",
+        "draw_type": "DOUBLES MAIN DRAW",
+        "draw_size": 8,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "JAKUPOVIC, Dalila / RADISIC, Nika", "country": "SLO", "members": [{"name": "JAKUPOVIC, Dalila", "country": "SLO", "wtn": "11.7"}, {"name": "RADISIC, Nika", "country": "SLO", "wtn": "12.88"}]},
+          {"pos": 2, "name": "MONNET, Carole / PIGOSSI, Laura", "country": "FRA", "members": [{"name": "MONNET, Carole", "country": "FRA", "wtn": "10.52"}, {"name": "PIGOSSI, Laura", "country": "BRA", "wtn": "11.24"}]},
+          {"pos": 3, "name": "SAMSON, Laura / ZIDANSEK, Tamara", "country": "CZE", "members": [{"name": "SAMSON, Laura", "country": "CZE", "wtn": "9.83"}, {"name": "ZIDANSEK, Tamara", "country": "SLO", "wtn": "9.75"}]},
+          {"pos": 4, "entry": "WC", "name": "MEDIORREAL ARIAS, Valentina / PEREZ GARCIA, Maria Paulina", "country": "COL", "members": [{"name": "MEDIORREAL ARIAS, Valentina", "country": "COL", "wtn": "16.11"}, {"name": "PEREZ GARCIA, Maria Paulina", "country": "COL", "wtn": "16.55"}]},
+          {"pos": 5, "name": "ERJAVEC, Veronika / KULAMBAYEVA, Zhibek", "country": "SLO", "members": [{"name": "ERJAVEC, Veronika", "country": "SLO", "wtn": "10.58"}, {"name": "KULAMBAYEVA, Zhibek", "country": "KAZ", "wtn": "11.45"}]},
+          {"pos": 6, "name": "MCGIFFIN, Tenika / OSBORNE, Alexandra", "country": "AUS", "members": [{"name": "MCGIFFIN, Tenika", "country": "AUS", "wtn": "-"}, {"name": "OSBORNE, Alexandra", "country": "AUS", "wtn": "14.86"}]},
+          {"pos": 7, "name": "COSTOULAS, Sofia / ZAMARRIPA, Allura", "country": "BEL", "members": [{"name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "11.03"}, {"name": "ZAMARRIPA, Allura", "country": "USA", "wtn": "12.81"}]},
+          {"pos": 8, "seed": "2", "name": "MCADOO, Rasheeda / ROGERS, Anna", "country": "USA", "members": [{"name": "MCADOO, Rasheeda", "country": "USA", "wtn": "11.94"}, {"name": "ROGERS, Anna", "country": "USA", "wtn": "12.73"}]}
+        ],
+        "round_labels": [
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 3
       }
     }
   },
@@ -229,10 +255,16 @@
           {"pos": 32, "seed": "2", "name": "MI, Lan", "country": "CHN", "itf_id": "800557910", "wtn": "13.28"}
         ],
         "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "V. Bosio", "score": "61 63"},
+          {"round": 1, "match_num": 2, "winner_name": "L. Lobo Assumpcao Euzebio", "score": "63 61"},
           {"round": 1, "match_num": 4, "winner_name": "M. Mettraux", "score": "62 61"},
           {"round": 1, "match_num": 5, "winner_name": "C. Melleiro", "score": "67 64 64"},
           {"round": 1, "match_num": 6, "winner_name": "S. Meabe", "score": "64 64"},
-          {"round": 1, "match_num": 7, "winner_name": "L. Meyer auf der Heide", "score": "60 62"}
+          {"round": 1, "match_num": 7, "winner_name": "L. Meyer auf der Heide", "score": "60 62"},
+          {"round": 1, "match_num": 8, "winner_name": "L. Garcia Vidal", "score": "61 75"},
+          {"round": 1, "match_num": 9, "winner_name": "J. Julia Cerqueira Carvalho Farias Lima", "score": "63 61"},
+          {"round": 1, "match_num": 10, "winner_name": "I. Sigrist", "score": "63 26 62"},
+          {"round": 1, "match_num": 11, "winner_name": "M. Souza", "score": "60 64"}
         ],
         "round_labels": [
           "Round of 32",
