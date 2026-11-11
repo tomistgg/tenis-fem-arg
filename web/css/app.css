@@ -3747,8 +3747,9 @@
                     padding-right: 1px;
                     white-space: nowrap;
                 }
-                .ao27-race-table .race-player { width: max-content; }
-                .ao27-race-table .race-playing { width: 30%; }
+                .ao27-race-table .race-player { width: 33%; white-space: normal; }
+                .ao27-race-table .race-player .race-player-name { max-width: 100%; }
+                .ao27-race-table .race-playing { width: 27%; }
                 .ao27-race-table .race-next { width: 24%; }
                 .ao27-race-table th.race-next { white-space: normal; }
                 .ao27-race-table .race-week { flex-direction: column; gap: 2px; }
@@ -3771,7 +3772,7 @@
             @media (max-width: 380px) {
                 .ao27-race-view .ao27-race-table th, .ao27-race-view .ao27-race-table td { padding-left: 1px; padding-right: 1px; }
                 .ao27-race-view .ao27-race-table th { font-size: 8px; }
-                .ao27-race-table .race-playing { width: 27%; }
+                .ao27-race-table .race-playing { width: 25%; }
                 .ao27-race-table .race-next { width: 22%; }
                 .ao27-race-table .calendar-tournament { padding-left: 2px; padding-right: 2px; }
                 .ao27-race-table .calendar-tournament img, .ao27-race-table .race-matchup img { width: 12px !important; height: 8px !important; }
