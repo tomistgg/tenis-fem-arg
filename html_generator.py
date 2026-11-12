@@ -695,7 +695,7 @@ def _render_ao27_race_rows(data_dir, filename="ao27_md_race.json"):
     is_main_draw = filename == "ao27_md_race.json"
     path = Path(data_dir) / filename
     if not path.exists():
-        return '<tr><td colspan="9">Race data not available.</td></tr>'
+        return '<tr><td colspan="8">Race data not available.</td></tr>'
     with path.open(encoding="utf-8") as source:
         race = json.load(source)
 
@@ -762,7 +762,7 @@ def _render_ao27_race_rows(data_dir, filename="ao27_md_race.json"):
         )
         result_cells = ""
         highlight_points = cutoff_rank is not None and player["rank"] > cutoff_rank
-        for round_name in ("QF", "SF", "F", "W"):
+        for round_name in ("SF", "F", "W"):
             points = player.get("roundPoints", {}).get(round_name)
             cell_class = "race-points"
             if (

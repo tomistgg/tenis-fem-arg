@@ -3755,7 +3755,8 @@
                 .ao27-race-table .race-week { flex-direction: column; gap: 2px; }
                 .ao27-race-table .race-matchup { display: block; font-size: 9px; }
                 .ao27-race-table .race-points-detail { display: block; }
-                .ao27-race-table .race-player-name { flex-direction: column; gap: 2px; }
+                .ao27-race-table .race-player-name { flex-direction: row; align-items: center; gap: 3px; }
+                .ao27-race-table .race-player-name > span { min-width: 0; }
                 .ao27-race-table .schedule-tournament-heading { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; }
                 .ao27-race-table .schedule-tournament-name { display: block; white-space: nowrap; }
                 .ao27-race-table .calendar-tournament {
