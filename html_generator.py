@@ -762,7 +762,8 @@ def _render_ao27_race_rows(data_dir, filename="ao27_md_race.json"):
         )
         result_cells = ""
         highlight_points = cutoff_rank is not None and player["rank"] > cutoff_rank
-        for round_name in ("SF", "F", "W"):
+        rounds = ("F", "W") if is_main_draw else ("SF", "F", "W")
+        for round_name in rounds:
             points = player.get("roundPoints", {}).get(round_name)
             cell_class = "race-points"
             if (
