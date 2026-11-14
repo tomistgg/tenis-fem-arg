@@ -3,16 +3,16 @@
     "wta_full_calendar_cache.json": {
       "from": "2026-10-17",
       "to": "2027-12-31",
-      "fetchedAt": "2026-11-14T21:58:27Z",
-      "lastAttemptAt": "2026-11-14T21:58:27Z",
-      "fetchedRunId": "20261114T215640Z-7681b6d8bb",
-      "lastAttemptRunId": "20261114T215640Z-7681b6d8bb"
+      "fetchedAt": "2026-11-14T22:56:07Z",
+      "lastAttemptAt": "2026-11-14T22:56:07Z",
+      "fetchedRunId": "20261114T224632Z-b253591774",
+      "lastAttemptRunId": "20261114T224632Z-b253591774"
     },
     "itf_calendar_cache.json": {
       "year": 2026,
-      "count": 697,
+      "count": 664,
       "fetchedAt": "2026-11-14T21:59:08Z",
-      "lastAttemptAt": "2026-11-14T21:59:08Z",
+      "lastAttemptAt": "2026-11-14T22:48:28Z",
       "endYear": 2027
     }
   },
@@ -430,12 +430,6 @@
       "1100203860_M_0": {
         "fetchedAt": "2026-07-13T02:12:20Z"
       },
-      "1100205552_Q_0": {
-        "fetchedAt": "2026-10-31T22:24:17Z"
-      },
-      "1100205552_M_0": {
-        "fetchedAt": "2026-10-31T22:24:30Z"
-      },
       "1100204829_Q_0": {
         "fetchedAt": "2026-10-31T23:03:07Z"
       },
@@ -594,6 +588,12 @@
       },
       "1100203967_M_0": {
         "fetchedAt": "2026-11-14T22:11:43Z"
+      },
+      "1100205390_Q_0": {
+        "fetchedAt": "2026-11-14T22:47:41Z"
+      },
+      "1100205390_M_0": {
+        "fetchedAt": "2026-11-14T22:47:54Z"
       }
     },
     "draws_store_cache.json": {
@@ -1275,11 +1275,11 @@
         "fetchedAt": "2026-11-06T20:28:30Z"
       },
       "https://www.wtatennis.com/tournaments/1181/sopo-125/2026/player-list": {
-        "fetchedAt": "2026-11-14T22:05:38Z",
-        "completedAt": "2026-11-14T22:05:38Z"
+        "fetchedAt": "2026-11-14T22:50:08Z",
+        "completedAt": "2026-11-14T22:50:08Z"
       },
       "w-itf-bra-2026-019": {
-        "fetchedAt": "2026-11-14T22:07:11Z"
+        "fetchedAt": "2026-11-14T22:50:59Z"
       },
       "w-itf-usa-2026-061": {
         "fetchedAt": "2026-11-10T20:57:02Z",
@@ -1289,7 +1289,10 @@
         "fetchedAt": "2026-11-10T20:55:50Z"
       },
       "https://www.wtatennis.com/tournaments/2076/colina-125/2026/player-list": {
-        "fetchedAt": "2026-11-14T22:05:38Z"
+        "fetchedAt": "2026-11-14T22:50:08Z"
+      },
+      "w-itf-bra-2026-014": {
+        "fetchedAt": "2026-11-14T22:52:37Z"
       }
     }
   }
