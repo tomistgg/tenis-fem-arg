@@ -19807,14 +19807,14 @@
                       "roundDesc": "Semi-finals", "roundNumber": 4,
                       "matches": [
                           {
-                            "matchId": 1183775151, "playStatusCode": "TP",
+                            "matchId": 1183775151, "playStatusCode": "PC",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
+                                  "scores": [7,7], "isWinner": true, "seeding": 1, "entryStatus": "DA",
                                   "player": {"playerId":800516218,"nationality":"CAN","givenName":"Kayla","familyName":"Cross"}
                                 },
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": "DA",
+                                  "scores": [5,"6(3)"], "isWinner": false, "entryStatus": "DA",
                                   "player": {"playerId":800343371,"nationality":"MEX","givenName":"Jessica","familyName":"Hinojosa Gomez"}
                                 }
                             ]
@@ -19842,7 +19842,8 @@
                             "matchId": 1183775150, "playStatusCode": "TP",
                             "teams": [
                                 {
-                                  "scores": [], "isWinner": false, "entryStatus": null
+                                  "scores": [], "isWinner": false, "seeding": 1, "entryStatus": "DA",
+                                  "player": {"playerId":800516218,"nationality":"CAN","givenName":"Kayla","familyName":"Cross"}
                                 },
                                 {
                                   "scores": [], "isWinner": false, "entryStatus": null
