@@ -4,7 +4,7 @@
     var ANALYTICS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzPF0VRKkJawXA5bCfiu0122ku_X76g_-zAMvSXsa5hMNnLllpFPLN85HU3VN8BrWVT/exec';
     var COUNTRY_ENDPOINT = 'https://api.country.is/';
     var ANALYTICS_PAGES = new Set([
-        'home', 'upcoming', 'entrylists', 'draws', 'calendar', 'rankings', 'ao27mdrace', 'ao27qrace',
+        'home', 'upcoming', 'entrylists', 'draws', 'calendar', 'rankings',
         'roadtogs', 'history', 'fedbcup', 'tstrength', 'information', 'planner'
     ]);
     var ANALYTICS_FILTER_PARAMS = {
@@ -16,8 +16,6 @@
         draws: ['t', 'type', 'round', 'wtn'],
         calendar: ['level', 'continent', 'surface', 'changes'],
         rankings: ['q', 'scope', 'date'],
-        ao27mdrace: [],
-        ao27qrace: [],
         roadtogs: ['player', 'cutoff'],
         history: [
             'page', 'mcat', 'qualy', 'player', 'surface', 'round', 'result',

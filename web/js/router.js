@@ -6,8 +6,6 @@
                 'draws',
                 'calendar',
                 'rankings',
-                'ao27mdrace',
-                'ao27qrace',
                 'roadtogs',
                 'history',
                 'fedbcup',
@@ -97,7 +95,7 @@
                 }
                 try {
                     const saved = localStorage.getItem('lastTab');
-                    if (saved && VALID_TABS.has(saved) && saved !== 'home' && saved !== 'ao27mdrace' && saved !== 'ao27qrace') {
+                    if (saved && VALID_TABS.has(saved) && saved !== 'home') {
                         window.switchTab(saved);
                         return;
                     }

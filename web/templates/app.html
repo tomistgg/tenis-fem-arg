@@ -38,8 +38,6 @@
                 <a class="menu-item" id="btn-fedbcup" href="app.html#fedbcup" data-tab="fedbcup">Fed/BJK Cup</a>
                 <a class="menu-item" id="btn-tstrength" href="app.html#tstrength" data-tab="tstrength">WTA TRN STR</a>
                 <a class="menu-item" id="btn-information" href="app.html#information" data-tab="information">Firsts &amp; Points</a>
-                <a class="menu-item" id="btn-ao27mdrace" href="app.html#ao27mdrace" data-tab="ao27mdrace">AO27 MD RACE</a>
-                <a class="menu-item" id="btn-ao27qrace" href="app.html#ao27qrace" data-tab="ao27qrace">AO27 Q RACE</a>
             </nav>
 
             <div class="main-content">
@@ -86,14 +84,6 @@
                             <a class="home-btn" href="app.html#information" data-tab="information">
                                 <img class="home-icon-img" src="assets/podium.png" alt="Firsts and points icon" />
                                 <span class="home-label">Firsts &amp; Points</span>
-                            </a>
-                            <a class="home-btn" href="app.html#ao27mdrace" data-tab="ao27mdrace">
-                                <img class="home-icon-img" src="assets/ranking.png" alt="Ranking icon" />
-                                <span class="home-label">AO27 MD RACE</span>
-                            </a>
-                            <a class="home-btn" href="app.html#ao27qrace" data-tab="ao27qrace">
-                                <img class="home-icon-img" src="assets/ranking.png" alt="Ranking icon" />
-                                <span class="home-label">AO27 Q RACE</span>
                             </a>
                         </div>
                         <button class="home-dark-btn" id="home-dark-btn" onclick="toggleDarkMode()"><svg class="dm-icon dm-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" fill="currentColor"/></svg><svg class="dm-icon dm-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><span id="home-dark-label">Dark Mode</span></button>
@@ -192,54 +182,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="rankings-body">@@WTARG_RANKINGS_ROWS@@</tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="view-ao27mdrace" class="single-layout ao27-race-view" style="display: none;">
-                    <div class="header-row">
-                        <h1>AO27 MD RACE</h1>
-                    </div>
-                    <div class="content-card">
-                        <div class="table-wrapper" tabindex="0" aria-label="AO27 main draw race table">
-                            <table id="ao27-race-table" class="ao27-race-table">
-                                <thead>
-                                    <tr>
-                                        <th class="race-rank" scope="col">RK</th>
-                                        <th class="race-player" scope="col">PLAYER</th>
-                                        <th class="race-points" scope="col">PTS</th>
-                                        <th class="race-points" scope="col">F</th>
-                                        <th class="race-points" scope="col">W</th>
-                                        <th class="race-playing" scope="col">PLAYING</th>
-                                        <th class="race-opponent" scope="col">OPPONENT</th>
-                                    </tr>
-                                </thead>
-                                <tbody>@@WTARG_AO27_RACE_ROWS@@</tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="view-ao27qrace" class="single-layout ao27-race-view" style="display: none;">
-                    <div class="header-row">
-                        <h1>AO27 Q RACE</h1>
-                    </div>
-                    <div class="content-card">
-                        <div class="table-wrapper" tabindex="0" aria-label="AO27 qualifying race table">
-                            <table id="ao27-q-race-table" class="ao27-race-table">
-                                <thead>
-                                    <tr>
-                                        <th class="race-rank" scope="col">RK</th>
-                                        <th class="race-player" scope="col">PLAYER</th>
-                                        <th class="race-points" scope="col">PTS</th>
-                                        <th class="race-points" scope="col">F</th>
-                                        <th class="race-points" scope="col">W</th>
-                                        <th class="race-playing" scope="col">PLAYING</th>
-                                        <th class="race-opponent" scope="col">OPPONENT</th>
-                                    </tr>
-                                </thead>
-                                <tbody>@@WTARG_AO27_Q_RACE_ROWS@@</tbody>
                             </table>
                         </div>
                     </div>
@@ -735,15 +677,15 @@
         <script src="assets/js/data-loader.js"></script>
         <script src="assets/js/tabs/tstrength.js?v=20261011-wtn-gm"></script>
         <script src="data/player_aliases_wta_itf_bundle.js"></script>
-        <script src="assets/js/app.js?v=20261025-ao27-direct"></script>
+        <script src="assets/js/app.js?v=20261114"></script>
         <script src="assets/js/tabs/roadtogs.js?v=20261019-breakdown"></script>
         <script src="assets/js/tabs/planner-points.js?v=20261019-breakdown-rounds"></script>
         <script src="assets/js/tabs/planner.js?v=20261019-breakdown-badges"></script>
         <script src="assets/js/tabs/draws.js?v=20261110-lucky-loser-slot"></script>
-        <script src="assets/anonymous-analytics.js?v=20261025-ao27-race"></script>
-    <script src="assets/js/router.js?v=20261025-ao27-direct"></script>
-    <script src="assets/app-shell.js?v=20261026-ao27-last"></script>
-    <script src="assets/translations.js?v=20261026-ao27-projected-note"></script>
+        <script src="assets/anonymous-analytics.js?v=20261114"></script>
+    <script src="assets/js/router.js?v=20261114"></script>
+    <script src="assets/app-shell.js?v=20261114"></script>
+    <script src="assets/translations.js?v=20261114"></script>
     <script src="assets/language.js?v=20261018-entry"></script>
     </body>
     </html>

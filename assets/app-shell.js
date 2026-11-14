@@ -4,7 +4,7 @@
     'use strict';
 
     var PRIMARY_TABS = ['entrylists', 'roadtogs', 'calendar', 'upcoming'];
-    var SECONDARY_TABS = ['history', 'draws', 'rankings', 'tstrength', 'fedbcup', 'information', 'ao27mdrace', 'ao27qrace'];
+    var SECONDARY_TABS = ['history', 'draws', 'rankings', 'tstrength', 'fedbcup', 'information'];
     var TAB_LABELS = {
         home: 'Home',
         planner: 'Tour Planner',
@@ -15,11 +15,9 @@
         history: 'Match History',
         draws: 'Draws',
         rankings: 'WTA Rankings',
-        ao27mdrace: 'AO27 MD RACE',
         tstrength: 'WTA Tournament Strength',
         fedbcup: 'Fed / BJK Cup',
         information: 'Firsts & Points',
-        ao27qrace: 'AO27 Q RACE'
     };
     var TAB_ICONS = {
         entrylists: 'assets/files.png',
@@ -32,8 +30,6 @@
         tstrength: 'assets/score-board.png',
         fedbcup: 'assets/argentina.png',
         information: 'assets/podium.png',
-        ao27mdrace: 'assets/ranking.png',
-        ao27qrace: 'assets/ranking.png'
     };
 
     function tabButton(tab) {
@@ -164,10 +160,6 @@
     function currentTab() {
         var planner = document.getElementById('view-planner');
         if (planner && planner.style.display !== 'none') return 'planner';
-        var race = document.getElementById('view-ao27mdrace');
-        if (race && race.style.display !== 'none') return 'ao27mdrace';
-        var qRace = document.getElementById('view-ao27qrace');
-        if (qRace && qRace.style.display !== 'none') return 'ao27qrace';
         var active = document.querySelector('.menu-item.active');
         if (active && active.id) return active.id.replace(/^btn-/, '');
         return 'home';
