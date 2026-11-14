@@ -116,7 +116,8 @@
           {"round": 3, "match_num": 2, "winner_name": "L. Samson", "score": "75 63"},
           {"round": 3, "match_num": 3, "winner_name": "E. Mandlik", "score": "60 76(5)"},
           {"round": 4, "match_num": 0, "winner_name": "B. Andreescu", "score": "61 64"},
-          {"round": 4, "match_num": 1, "winner_name": "E. Mandlik", "score": "63 63"}
+          {"round": 4, "match_num": 1, "winner_name": "E. Mandlik", "score": "63 63"},
+          {"round": 5, "match_num": 0, "winner_name": "B. Andreescu", "score": "63 63"}
         ],
         "round_labels": [
           "Round of 32",
@@ -153,7 +154,8 @@
           {"round": 1, "match_num": 2, "winner_name": "V. Erjavec / Z. Kulambayeva", "score": "62 62"},
           {"round": 1, "match_num": 3, "winner_name": "R. McAdoo / A. Rogers", "score": "16 64 10-5"},
           {"round": 2, "match_num": 0, "winner_name": "L. Samson / T. Zidansek", "score": "36 64 10-6"},
-          {"round": 2, "match_num": 1, "winner_name": "V. Erjavec / Z. Kulambayeva", "score": "61 75"}
+          {"round": 2, "match_num": 1, "winner_name": "V. Erjavec / Z. Kulambayeva", "score": "61 75"},
+          {"round": 3, "match_num": 0, "winner_name": "V. Erjavec / Z. Kulambayeva", "score": "57 62 14-12"}
         ],
         "round_labels": [
           "Quarterfinals",
@@ -472,6 +474,45 @@
           "Round of 16"
         ],
         "num_rounds": 2
+      }
+    }
+  },
+  "https://www.wtatennis.com/tournaments/2076/colina-125/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 125 Colina",
+      "level": "WTA 125",
+      "week": "Week of November 16",
+      "startDate": "2026-11-16",
+      "endDate": "2026-11-22",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "LP Open by IND",
+        "location": "COLINA, CHI",
+        "dates": "November 16-22 2026",
+        "prize": "$ 115,000",
+        "surface": "Clay",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 8,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "GEERLINGS, Ariana", "country": "ESP", "wtn": "9.08"},
+          {"pos": 2, "entry": "WC", "name": "RODERO CONTRERAS, Camila", "country": "CHI", "wtn": "-"},
+          {"pos": 3, "seed": "2", "name": "TREVISAN, Martina", "country": "ITA", "wtn": "9.82"},
+          {"pos": 4, "entry": "WC", "name": "ALVAREZ, Samantha", "country": "CHI", "wtn": "-"},
+          {"pos": 5, "seed": "3", "name": "CHERUBINI, Diletta", "country": "ITA", "wtn": "11.42"},
+          {"pos": 6, "name": "OSBORNE, Alexandra", "country": "AUS", "wtn": "14.86"},
+          {"pos": 7, "seed": "4", "name": "KULAMBAYEVA, Zhibek", "country": "KAZ", "wtn": "11.45"},
+          {"pos": 8, "name": "STRAKHOVA, Valeriya", "country": "UKR", "wtn": "11.04"}
+        ],
+        "round_labels": [
+          "Q1"
+        ],
+        "num_rounds": 1
       }
     }
   }
