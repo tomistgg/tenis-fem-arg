@@ -3,16 +3,16 @@
     "wta_full_calendar_cache.json": {
       "from": "2026-10-17",
       "to": "2027-12-31",
-      "fetchedAt": "2026-11-14T17:00:53Z",
-      "lastAttemptAt": "2026-11-14T17:00:53Z",
-      "fetchedRunId": "20261114T164540Z-faa201a97f",
-      "lastAttemptRunId": "20261114T164540Z-faa201a97f"
+      "fetchedAt": "2026-11-14T21:58:27Z",
+      "lastAttemptAt": "2026-11-14T21:58:27Z",
+      "fetchedRunId": "20261114T215640Z-7681b6d8bb",
+      "lastAttemptRunId": "20261114T215640Z-7681b6d8bb"
     },
     "itf_calendar_cache.json": {
       "year": 2026,
-      "count": 664,
-      "fetchedAt": "2026-11-14T16:23:19Z",
-      "lastAttemptAt": "2026-11-14T16:47:15Z",
+      "count": 697,
+      "fetchedAt": "2026-11-14T21:59:08Z",
+      "lastAttemptAt": "2026-11-14T21:59:08Z",
       "endYear": 2027
     }
   },
@@ -430,27 +430,6 @@
       "1100203860_M_0": {
         "fetchedAt": "2026-07-13T02:12:20Z"
       },
-      "1100204801_M_0": {
-        "fetchedAt": "2026-10-31T18:49:09Z"
-      },
-      "1100204755_M_0": {
-        "fetchedAt": "2026-10-31T18:49:22Z"
-      },
-      "1100203965_M_0": {
-        "fetchedAt": "2026-10-31T18:49:48Z"
-      },
-      "1100205095_M_0": {
-        "fetchedAt": "2026-10-31T18:50:01Z"
-      },
-      "1100205162_M_0": {
-        "fetchedAt": "2026-10-31T18:50:14Z"
-      },
-      "1100205482_M_0": {
-        "fetchedAt": "2026-10-31T18:50:29Z"
-      },
-      "1100205060_M_0": {
-        "fetchedAt": "2026-10-31T19:54:31Z"
-      },
       "1100205552_Q_0": {
         "fetchedAt": "2026-10-31T22:24:17Z"
       },
@@ -594,6 +573,27 @@
       },
       "1100205164_M_0": {
         "fetchedAt": "2026-11-14T16:37:36Z"
+      },
+      "1100205140_Q_0": {
+        "fetchedAt": "2026-11-14T21:57:59Z"
+      },
+      "1100205140_M_0": {
+        "fetchedAt": "2026-11-14T21:58:12Z"
+      },
+      "1100204889_M_0": {
+        "fetchedAt": "2026-11-14T22:10:38Z"
+      },
+      "1100204752_M_0": {
+        "fetchedAt": "2026-11-14T22:10:50Z"
+      },
+      "1100205495_M_0": {
+        "fetchedAt": "2026-11-14T22:11:04Z"
+      },
+      "1100205096_M_0": {
+        "fetchedAt": "2026-11-14T22:11:30Z"
+      },
+      "1100203967_M_0": {
+        "fetchedAt": "2026-11-14T22:11:43Z"
       }
     },
     "draws_store_cache.json": {
@@ -1275,10 +1275,11 @@
         "fetchedAt": "2026-11-06T20:28:30Z"
       },
       "https://www.wtatennis.com/tournaments/1181/sopo-125/2026/player-list": {
-        "fetchedAt": "2026-11-14T16:55:57Z"
+        "fetchedAt": "2026-11-14T22:05:38Z",
+        "completedAt": "2026-11-14T22:05:38Z"
       },
       "w-itf-bra-2026-019": {
-        "fetchedAt": "2026-11-14T16:56:39Z"
+        "fetchedAt": "2026-11-14T22:07:11Z"
       },
       "w-itf-usa-2026-061": {
         "fetchedAt": "2026-11-10T20:57:02Z",
@@ -1286,6 +1287,9 @@
       },
       "w-itf-usa-2026-060": {
         "fetchedAt": "2026-11-10T20:55:50Z"
+      },
+      "https://www.wtatennis.com/tournaments/2076/colina-125/2026/player-list": {
+        "fetchedAt": "2026-11-14T22:05:38Z"
       }
     }
   }
