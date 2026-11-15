@@ -59,7 +59,7 @@
           {"pos": 4, "name": "RIERA, Julia", "country": "ARG", "wtn": "9.76"},
           {"pos": 5, "name": "HERCOG, Polona", "country": "SLO", "wtn": "10.85"},
           {"pos": 6, "name": "LEPCHENKO, Varvara", "country": "USA", "wtn": "10.37"},
-          {"pos": 7, "name": "MONNET, Carole", "country": "FRA", "wtn": "10.52"},
+          {"pos": 7, "name": "MONNET, Carole", "country": "FRA", "wtn": "10.31"},
           {"pos": 8, "seed": "7", "name": "ROMERO GORMAZ, Leyre", "country": "ESP", "wtn": "9.15"},
           {"pos": 9, "seed": "3", "name": "ANDREESCU, Bianca", "country": "CAN", "wtn": "8.04"},
           {"pos": 10, "name": "MASAROVA, Rebeka", "country": "SUI", "wtn": "10.21"},
@@ -73,7 +73,7 @@
           {"pos": 18, "entry": "Q", "name": "ALVES, Carolina", "country": "BRA", "wtn": "12.38"},
           {"pos": 19, "name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "11.23"},
           {"pos": 20, "entry": "WC", "name": "ESQUIVEL USECH, Antonella", "country": "COL", "wtn": "-"},
-          {"pos": 21, "name": "BURILLO, Irene", "country": "ESP", "wtn": "10.2"},
+          {"pos": 21, "name": "BURILLO, Irene", "country": "ESP", "wtn": "10.25"},
           {"pos": 22, "entry": "WC", "name": "LIZARAZO, Yuliana", "country": "COL", "wtn": "13.75"},
           {"pos": 23, "name": "ZIDANSEK, Tamara", "country": "SLO", "wtn": "9.89"},
           {"pos": 24, "seed": "4", "name": "GRABHER, Julia", "country": "AUT", "wtn": "9.54"},
@@ -127,7 +127,7 @@
           "Final"
         ],
         "num_rounds": 5,
-        "wtn_gm": 11.0237
+        "wtn_gm": 12.0478
       },
       "MDD":
       {
@@ -140,10 +140,10 @@
         "draw_size": 8,
         "players": [
           {"pos": 1, "seed": "1", "name": "JAKUPOVIC, Dalila / RADISIC, Nika", "country": "SLO", "members": [{"name": "JAKUPOVIC, Dalila", "country": "SLO", "wtn": "11.7"}, {"name": "RADISIC, Nika", "country": "SLO", "wtn": "12.88"}]},
-          {"pos": 2, "name": "MONNET, Carole / PIGOSSI, Laura", "country": "FRA", "members": [{"name": "MONNET, Carole", "country": "FRA", "wtn": "10.52"}, {"name": "PIGOSSI, Laura", "country": "BRA", "wtn": "10.95"}]},
+          {"pos": 2, "name": "MONNET, Carole / PIGOSSI, Laura", "country": "FRA", "members": [{"name": "MONNET, Carole", "country": "FRA", "wtn": "10.31"}, {"name": "PIGOSSI, Laura", "country": "BRA", "wtn": "10.95"}]},
           {"pos": 3, "name": "SAMSON, Laura / ZIDANSEK, Tamara", "country": "CZE", "members": [{"name": "SAMSON, Laura", "country": "CZE", "wtn": "9.9"}, {"name": "ZIDANSEK, Tamara", "country": "SLO", "wtn": "9.89"}]},
           {"pos": 4, "entry": "WC", "name": "MEDIORREAL ARIAS, Valentina / PEREZ GARCIA, Maria Paulina", "country": "COL", "members": [{"name": "MEDIORREAL ARIAS, Valentina", "country": "COL", "wtn": "16.11"}, {"name": "PEREZ GARCIA, Maria Paulina", "country": "COL", "wtn": "16.55"}]},
-          {"pos": 5, "name": "ERJAVEC, Veronika / KULAMBAYEVA, Zhibek", "country": "SLO", "members": [{"name": "ERJAVEC, Veronika", "country": "SLO", "wtn": "10.58"}, {"name": "KULAMBAYEVA, Zhibek", "country": "KAZ", "wtn": "11.45"}]},
+          {"pos": 5, "name": "ERJAVEC, Veronika / KULAMBAYEVA, Zhibek", "country": "SLO", "members": [{"name": "ERJAVEC, Veronika", "country": "SLO", "wtn": "10.58"}, {"name": "KULAMBAYEVA, Zhibek", "country": "KAZ", "wtn": "10.97"}]},
           {"pos": 6, "name": "MCGIFFIN, Tenika / OSBORNE, Alexandra", "country": "AUS", "members": [{"name": "MCGIFFIN, Tenika", "country": "AUS", "wtn": "-"}, {"name": "OSBORNE, Alexandra", "country": "AUS", "wtn": "14.86"}]},
           {"pos": 7, "name": "COSTOULAS, Sofia / ZAMARRIPA, Allura", "country": "BEL", "members": [{"name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "11.23"}, {"name": "ZAMARRIPA, Allura", "country": "USA", "wtn": "12.81"}]},
           {"pos": 8, "seed": "2", "name": "MCADOO, Rasheeda / ROGERS, Anna", "country": "USA", "members": [{"name": "MCADOO, Rasheeda", "country": "USA", "wtn": "11.94"}, {"name": "ROGERS, Anna", "country": "USA", "wtn": "12.73"}]}
@@ -486,7 +486,7 @@
       "week": "Week of November 16",
       "startDate": "2026-11-16",
       "endDate": "2026-11-22",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":false,"has_arg_any":false}
+      "arg_visibility": {"has_arg_main":true,"has_arg_qual":false,"has_arg_any":true}
     },
     "draws":
     {
@@ -500,19 +500,73 @@
         "draw_type": "SINGLES QUALIFYING DRAW",
         "draw_size": 8,
         "players": [
-          {"pos": 1, "seed": "1", "name": "GEERLINGS, Ariana", "country": "ESP", "wtn": "9.08"},
+          {"pos": 1, "seed": "1", "name": "GEERLINGS, Ariana", "country": "ESP", "wtn": "9.44"},
           {"pos": 2, "entry": "WC", "name": "RODERO CONTRERAS, Camila", "country": "CHI", "wtn": "-"},
           {"pos": 3, "seed": "2", "name": "TREVISAN, Martina", "country": "ITA", "wtn": "9.82"},
           {"pos": 4, "entry": "WC", "name": "ALVAREZ, Samantha", "country": "CHI", "wtn": "-"},
           {"pos": 5, "seed": "3", "name": "CHERUBINI, Diletta", "country": "ITA", "wtn": "11.42"},
           {"pos": 6, "name": "OSBORNE, Alexandra", "country": "AUS", "wtn": "14.86"},
-          {"pos": 7, "seed": "4", "name": "KULAMBAYEVA, Zhibek", "country": "KAZ", "wtn": "11.45"},
+          {"pos": 7, "seed": "4", "name": "KULAMBAYEVA, Zhibek", "country": "KAZ", "wtn": "10.97"},
           {"pos": 8, "name": "STRAKHOVA, Valeriya", "country": "UKR", "wtn": "11.04"}
         ],
         "round_labels": [
           "Q1"
         ],
         "num_rounds": 1
+      },
+      "MDS":
+      {
+        "tournament_name": "LP Open by IND",
+        "location": "COLINA, CHI",
+        "dates": "November 16-22 2026",
+        "prize": "$ 115,000",
+        "surface": "Clay",
+        "draw_type": "SINGLES MAIN DRAW",
+        "draw_size": 32,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "ROMERO GORMAZ, Leyre", "country": "ESP", "wtn": "9.15"},
+          {"pos": 2, "name": "OZ, Ipek", "country": "TUR", "wtn": "10.16"},
+          {"pos": 3, "name": "PODOROSKA, Nadia", "country": "ARG", "wtn": "9.71"},
+          {"pos": 4, "name": "LEPCHENKO, Varvara", "country": "USA", "wtn": "10.37"},
+          {"pos": 5, "name": "SCOTT, Katrina", "country": "USA", "wtn": "12.33"},
+          {"pos": 6, "name": "ZOLOTAREVA, Anastasia", "wtn": "-"},
+          {"pos": 7, "name": "BURILLO, Irene", "country": "ESP", "wtn": "10.25"},
+          {"pos": 8, "seed": "8", "name": "SEMENISTAJA, Darja", "country": "LAT", "wtn": "10.48"},
+          {"pos": 9, "seed": "3", "name": "BRONZETTI, Lucia", "country": "ITA", "wtn": "10.46"},
+          {"pos": 10, "name": "HERRERO LINANA, Alicia", "country": "ESP", "wtn": "9.85"},
+          {"pos": 11, "name": "JIMENEZ KASINTSEVA, Victoria", "country": "AND", "wtn": "11.46"},
+          {"pos": 12, "name": "MONNET, Carole", "country": "FRA", "wtn": "10.31"},
+          {"pos": 14, "name": "TIKHONOVA, Anastasia", "wtn": "9.99"},
+          {"pos": 15, "name": "CARLE, Maria Lourdes", "country": "ARG", "wtn": "11.14"},
+          {"pos": 16, "seed": "7", "name": "ERJAVEC, Veronika", "country": "SLO", "wtn": "10.58"},
+          {"pos": 17, "seed": "5", "name": "MARISTANY ZULETA DE REALES, Guiomar", "country": "ESP", "wtn": "9.52"},
+          {"pos": 19, "name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "11.23"},
+          {"pos": 20, "name": "BRANCACCIO, Nuria", "country": "ITA", "wtn": "10.12"},
+          {"pos": 21, "entry": "WC", "name": "LABRANA, Fernanda", "country": "CHI", "wtn": "14.06"},
+          {"pos": 22, "entry": "WC", "name": "VERGARA RIVERA, Antonia", "country": "CHI", "wtn": "12.63"},
+          {"pos": 23, "entry": "WC", "name": "GATICA, Barbara", "country": "CHI", "wtn": "11.31"},
+          {"pos": 24, "seed": "4", "name": "LAZARO GARCIA, Andrea", "country": "ESP", "wtn": "9.73"},
+          {"pos": 25, "seed": "6", "name": "MASAROVA, Rebeka", "country": "SUI", "wtn": "10.21"},
+          {"pos": 27, "name": "HERCOG, Polona", "country": "SLO", "wtn": "10.85"},
+          {"pos": 28, "entry": "WC", "name": "BULGARU, Miriam", "country": "ROU", "wtn": "12.23"},
+          {"pos": 29, "name": "GIOVANNINI, Luisina", "country": "ARG", "wtn": "10.59"},
+          {"pos": 31, "name": "PAPAMICHAIL, Despina", "country": "GRE", "wtn": "12.1"},
+          {"pos": 32, "seed": "2", "name": "SAMSON, Laura", "country": "CZE", "wtn": "9.9"}
+        ],
+        "qualifiers": [
+          13,
+          18,
+          26,
+          30
+        ],
+        "round_labels": [
+          "Round of 32",
+          "Round of 16",
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 5
       }
     }
   },
