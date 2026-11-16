@@ -1,483 +1,4 @@
 {
-  "https://www.wtatennis.com/tournaments/1181/sopo-125/2026/player-list":
-  {
-    "meta":
-    {
-      "name": "WTA 125 Sopo",
-      "level": "WTA 125",
-      "week": "Week of November 9",
-      "startDate": "2026-11-09",
-      "endDate": "2026-11-14",
-      "arg_visibility": {"has_arg_main":true,"has_arg_qual":false,"has_arg_any":true}
-    },
-    "draws":
-    {
-      "QS":
-      {
-        "tournament_name": "DIRECTV Open Presentado por Compesar",
-        "location": "SOPO, COL",
-        "dates": "November 9-14 2026",
-        "prize": "$ 115,000",
-        "surface": "Clay",
-        "draw_type": "SINGLES QUALIFYING DRAW",
-        "draw_size": 8,
-        "players": [
-          {"pos": 1, "seed": "1", "name": "ALVES, Carolina", "country": "BRA", "wtn": "12.38"},
-          {"pos": 2, "entry": "WC", "name": "LOZANO AVELLANEDA, Sara", "wtn": "-"},
-          {"pos": 3, "seed": "2", "name": "SCOTT, Katrina", "country": "USA", "wtn": "12.33"},
-          {"pos": 4, "name": "TORRES MURCIA, Maria", "country": "COL", "wtn": "15.59"},
-          {"pos": 5, "seed": "3", "name": "JAKUPOVIC, Dalila", "country": "SLO", "wtn": "11.7"},
-          {"pos": 6, "entry": "WC", "name": "COLLAZOS, Isabella", "country": "COL", "wtn": "-"},
-          {"pos": 7, "seed": "4", "name": "HERAZO, Maria", "country": "COL", "wtn": "12.84"},
-          {"pos": 8, "name": "SANCHEZ URIBE, Maria Jose", "country": "COL", "wtn": "15.82"}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 0, "winner_name": "C. Alves", "score": "60 60"},
-          {"round": 1, "match_num": 1, "winner_name": "K. Scott", "score": "62 64"},
-          {"round": 1, "match_num": 2, "winner_name": "D. Jakupovic", "score": "61 61"},
-          {"round": 1, "match_num": 3, "winner_name": "M. Herazo", "score": "61 62"}
-        ],
-        "round_labels": [
-          "Q1",
-          "Qualifier"
-        ],
-        "num_rounds": 2
-      },
-      "MDS":
-      {
-        "tournament_name": "DIRECTV Open Presentado por Compesar",
-        "location": "SOPO, COL",
-        "dates": "November 9-14 2026",
-        "prize": "$ 115,000",
-        "surface": "Clay",
-        "draw_type": "SINGLES MAIN DRAW",
-        "draw_size": 32,
-        "players": [
-          {"pos": 1, "seed": "1", "name": "MARIA, Tatjana", "country": "GER", "wtn": "8.12"},
-          {"pos": 2, "name": "GIOVANNINI, Luisina", "country": "ARG", "wtn": "10.59"},
-          {"pos": 3, "name": "TUBELLO, Alice", "country": "FRA", "wtn": "8.97"},
-          {"pos": 4, "name": "RIERA, Julia", "country": "ARG", "wtn": "9.76"},
-          {"pos": 5, "name": "HERCOG, Polona", "country": "SLO", "wtn": "10.85"},
-          {"pos": 6, "name": "LEPCHENKO, Varvara", "country": "USA", "wtn": "10.37"},
-          {"pos": 7, "name": "MONNET, Carole", "country": "FRA", "wtn": "10.31"},
-          {"pos": 8, "seed": "7", "name": "ROMERO GORMAZ, Leyre", "country": "ESP", "wtn": "9.15"},
-          {"pos": 9, "seed": "3", "name": "ANDREESCU, Bianca", "country": "CAN", "wtn": "8.04"},
-          {"pos": 10, "name": "MASAROVA, Rebeka", "country": "SUI", "wtn": "10.21"},
-          {"pos": 11, "name": "PIGOSSI, Laura", "country": "BRA", "wtn": "10.95"},
-          {"pos": 12, "entry": "Q", "name": "JAKUPOVIC, Dalila", "country": "SLO", "wtn": "11.7"},
-          {"pos": 13, "name": "CARLE, Maria Lourdes", "country": "ARG", "wtn": "11.14"},
-          {"pos": 14, "entry": "WC", "name": "MEDIORREAL ARIAS, Valentina", "country": "COL", "wtn": "16.11"},
-          {"pos": 15, "entry": "Q", "name": "HERAZO, Maria", "country": "COL", "wtn": "12.84"},
-          {"pos": 16, "seed": "6", "name": "BASSOLS RIBERA, Marina", "country": "ESP", "wtn": "9.78"},
-          {"pos": 17, "seed": "5", "name": "SAMSON, Laura", "country": "CZE", "wtn": "9.9"},
-          {"pos": 18, "entry": "Q", "name": "ALVES, Carolina", "country": "BRA", "wtn": "12.38"},
-          {"pos": 19, "name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "11.23"},
-          {"pos": 20, "entry": "WC", "name": "ESQUIVEL USECH, Antonella", "country": "COL", "wtn": "-"},
-          {"pos": 21, "name": "BURILLO, Irene", "country": "ESP", "wtn": "10.25"},
-          {"pos": 22, "entry": "WC", "name": "LIZARAZO, Yuliana", "country": "COL", "wtn": "13.76"},
-          {"pos": 23, "name": "ZIDANSEK, Tamara", "country": "SLO", "wtn": "9.89"},
-          {"pos": 24, "seed": "4", "name": "GRABHER, Julia", "country": "AUT", "wtn": "9.54"},
-          {"pos": 25, "seed": "8", "name": "BRONZETTI, Lucia", "country": "ITA", "wtn": "10.46"},
-          {"pos": 26, "entry": "WC", "name": "PAREJA, Julieta", "country": "USA", "wtn": "9.11"},
-          {"pos": 27, "name": "MANDLIK, Elizabeth", "country": "USA", "wtn": "10.71"},
-          {"pos": 28, "name": "ERJAVEC, Veronika", "country": "SLO", "wtn": "10.58"},
-          {"pos": 29, "entry": "Q", "name": "SCOTT, Katrina", "country": "USA", "wtn": "12.33"},
-          {"pos": 30, "name": "LAZARO GARCIA, Andrea", "country": "ESP", "wtn": "9.73"},
-          {"pos": 31, "name": "ORTENZI, Jazmin", "country": "ARG", "wtn": "10.12"},
-          {"pos": 32, "entry": "LL", "name": "TORRES MURCIA, Maria", "country": "COL", "wtn": "15.59"}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 0, "winner_name": "T. Maria", "score": "46 75 75"},
-          {"round": 1, "match_num": 1, "winner_name": "A. Tubello", "score": "76(7) 62"},
-          {"round": 1, "match_num": 2, "winner_name": "P. Hercog", "score": "62 76(3)"},
-          {"round": 1, "match_num": 3, "winner_name": "C. Monnet", "score": "64 76(2)"},
-          {"round": 1, "match_num": 4, "winner_name": "B. Andreescu", "score": "36 63 64"},
-          {"round": 1, "match_num": 5, "winner_name": "L. Pigossi", "score": "63 63"},
-          {"round": 1, "match_num": 6, "winner_name": "M. L. Carle", "score": "63 46 62"},
-          {"round": 1, "match_num": 7, "winner_name": "M. Bassols Ribera", "score": "61 64"},
-          {"round": 1, "match_num": 8, "winner_name": "L. Samson", "score": "67(3) 76(5) 61"},
-          {"round": 1, "match_num": 9, "winner_name": "S. Costoulas", "score": "60 61"},
-          {"round": 1, "match_num": 10, "winner_name": "I. Burillo", "score": "62 62"},
-          {"round": 1, "match_num": 11, "winner_name": "J. Grabher", "score": "62 64"},
-          {"round": 1, "match_num": 12, "winner_name": "L. Bronzetti", "score": "63 46 63"},
-          {"round": 1, "match_num": 13, "winner_name": "E. Mandlik", "score": "63 46 62"},
-          {"round": 1, "match_num": 14, "winner_name": "A. Lazaro Garcia", "score": "67(3) 75 64"},
-          {"round": 1, "match_num": 15, "winner_name": "J. Ortenzi", "score": "62 63"},
-          {"round": 2, "match_num": 0, "winner_name": "A. Tubello", "score": "75 64"},
-          {"round": 2, "match_num": 1, "winner_name": "P. Hercog", "score": "63 60"},
-          {"round": 2, "match_num": 2, "winner_name": "B. Andreescu", "score": "61 75"},
-          {"round": 2, "match_num": 3, "winner_name": "M. Bassols Ribera", "score": "75 62"},
-          {"round": 2, "match_num": 4, "winner_name": "L. Samson", "score": "62 62"},
-          {"round": 2, "match_num": 5, "winner_name": "I. Burillo", "score": "75 76(4)"},
-          {"round": 2, "match_num": 6, "winner_name": "E. Mandlik", "score": "76(5) 63"},
-          {"round": 2, "match_num": 7, "winner_name": "A. Lazaro Garcia", "score": "26 64 64"},
-          {"round": 3, "match_num": 0, "winner_name": "P. Hercog", "score": "62 63"},
-          {"round": 3, "match_num": 1, "winner_name": "B. Andreescu", "score": "64 42 RET"},
-          {"round": 3, "match_num": 2, "winner_name": "L. Samson", "score": "75 63"},
-          {"round": 3, "match_num": 3, "winner_name": "E. Mandlik", "score": "60 76(5)"},
-          {"round": 4, "match_num": 0, "winner_name": "B. Andreescu", "score": "61 64"},
-          {"round": 4, "match_num": 1, "winner_name": "E. Mandlik", "score": "63 63"},
-          {"round": 5, "match_num": 0, "winner_name": "B. Andreescu", "score": "63 63"}
-        ],
-        "round_labels": [
-          "Round of 32",
-          "Round of 16",
-          "Quarterfinals",
-          "Semifinals",
-          "Final"
-        ],
-        "num_rounds": 5,
-        "wtn_gm": 13.5527
-      },
-      "MDD":
-      {
-        "tournament_name": "DIRECTV Open Presentado por Compesar",
-        "location": "SOPO, COL",
-        "dates": "November 9-14 2026",
-        "prize": "$ 115,000",
-        "surface": "Clay",
-        "draw_type": "DOUBLES MAIN DRAW",
-        "draw_size": 8,
-        "players": [
-          {"pos": 1, "seed": "1", "name": "JAKUPOVIC, Dalila / RADISIC, Nika", "country": "SLO", "members": [{"name": "JAKUPOVIC, Dalila", "country": "SLO", "wtn": "11.7"}, {"name": "RADISIC, Nika", "country": "SLO", "wtn": "12.88"}]},
-          {"pos": 2, "name": "MONNET, Carole / PIGOSSI, Laura", "country": "FRA", "members": [{"name": "MONNET, Carole", "country": "FRA", "wtn": "10.31"}, {"name": "PIGOSSI, Laura", "country": "BRA", "wtn": "10.95"}]},
-          {"pos": 3, "name": "SAMSON, Laura / ZIDANSEK, Tamara", "country": "CZE", "members": [{"name": "SAMSON, Laura", "country": "CZE", "wtn": "9.9"}, {"name": "ZIDANSEK, Tamara", "country": "SLO", "wtn": "9.89"}]},
-          {"pos": 4, "entry": "WC", "name": "MEDIORREAL ARIAS, Valentina / PEREZ GARCIA, Maria Paulina", "country": "COL", "members": [{"name": "MEDIORREAL ARIAS, Valentina", "country": "COL", "wtn": "16.11"}, {"name": "PEREZ GARCIA, Maria Paulina", "country": "COL", "wtn": "16.55"}]},
-          {"pos": 5, "name": "ERJAVEC, Veronika / KULAMBAYEVA, Zhibek", "country": "SLO", "members": [{"name": "ERJAVEC, Veronika", "country": "SLO", "wtn": "10.58"}, {"name": "KULAMBAYEVA, Zhibek", "country": "KAZ", "wtn": "10.97"}]},
-          {"pos": 6, "name": "MCGIFFIN, Tenika / OSBORNE, Alexandra", "country": "AUS", "members": [{"name": "MCGIFFIN, Tenika", "country": "AUS", "wtn": "-"}, {"name": "OSBORNE, Alexandra", "country": "AUS", "wtn": "14.86"}]},
-          {"pos": 7, "name": "COSTOULAS, Sofia / ZAMARRIPA, Allura", "country": "BEL", "members": [{"name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "11.23"}, {"name": "ZAMARRIPA, Allura", "country": "USA", "wtn": "12.81"}]},
-          {"pos": 8, "seed": "2", "name": "MCADOO, Rasheeda / ROGERS, Anna", "country": "USA", "members": [{"name": "MCADOO, Rasheeda", "country": "USA", "wtn": "11.94"}, {"name": "ROGERS, Anna", "country": "USA", "wtn": "12.73"}]}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 0, "winner_name": "C. Monnet / L. Pigossi", "score": "63 75"},
-          {"round": 1, "match_num": 1, "winner_name": "L. Samson / T. Zidansek", "score": "61 75"},
-          {"round": 1, "match_num": 2, "winner_name": "V. Erjavec / Z. Kulambayeva", "score": "62 62"},
-          {"round": 1, "match_num": 3, "winner_name": "R. McAdoo / A. Rogers", "score": "16 64 10-5"},
-          {"round": 2, "match_num": 0, "winner_name": "L. Samson / T. Zidansek", "score": "36 64 10-6"},
-          {"round": 2, "match_num": 1, "winner_name": "V. Erjavec / Z. Kulambayeva", "score": "61 75"},
-          {"round": 3, "match_num": 0, "winner_name": "V. Erjavec / Z. Kulambayeva", "score": "57 62 14-12"}
-        ],
-        "round_labels": [
-          "Quarterfinals",
-          "Semifinals",
-          "Final"
-        ],
-        "num_rounds": 3
-      }
-    }
-  },
-  "w-itf-bra-2026-019":
-  {
-    "meta":
-    {
-      "name": "W15 São Carlos",
-      "level": "W15",
-      "week": "Week of November 9",
-      "startDate": "2026-11-09T00:00:00",
-      "endDate": "2026-11-15T00:00:00",
-      "arg_visibility": {"has_arg_main":true,"has_arg_qual":true,"has_arg_any":true}
-    },
-    "draws":
-    {
-      "QS":
-      {
-        "draw_size": 32,
-        "players": [
-          {"pos": 1, "seed": "1", "name": "CINALLI, Luna Maria", "country": "ARG", "itf_id": "800644753", "wtn": "14.62"},
-          {"pos": 3, "name": "SAKADA DA COSTA, Sophia Tiemi", "country": "BRA", "itf_id": "800816577", "wtn": "27.28"},
-          {"pos": 4, "entry": "WC", "name": "KRUPEK SOCCOL, Barbara", "country": "BRA", "itf_id": "800837011", "wtn": "-"},
-          {"pos": 5, "seed": "2", "name": "SIGRIST, Isadora", "country": "BRA", "itf_id": "800625532", "wtn": "19.56"},
-          {"pos": 7, "name": "LOPES MISSATO, Larissa", "country": "BRA", "itf_id": "800797669", "wtn": "-"},
-          {"pos": 8, "name": "DIAMANTE, Alice", "country": "BRA", "itf_id": "800753802", "wtn": "28.07"},
-          {"pos": 9, "seed": "3", "name": "SANTOS, Sophia", "country": "BRA", "itf_id": "800656497", "wtn": "19.68"},
-          {"pos": 11, "name": "JORDANA VIDAL, LETICIA", "country": "BRA", "itf_id": "800722565", "wtn": "-"},
-          {"pos": 12, "entry": "WC", "name": "RODRIGUES, Kauany", "country": "BRA", "itf_id": "800755329", "wtn": "-"},
-          {"pos": 13, "seed": "4", "name": "MOREIRA KANADANI, Lara", "country": "BRA", "itf_id": "800738147", "wtn": "23.01"},
-          {"pos": 15, "name": "GOMES, Eduarda", "country": "BRA", "itf_id": "800756804", "wtn": "16.89"},
-          {"pos": 16, "name": "WILSON DONIZETE TOFOLI, Serena Jhulia Antonio Tofoli", "country": "BRA", "itf_id": "800841500", "wtn": "-"},
-          {"pos": 17, "seed": "5", "name": "JULIA CERQUEIRA CARVALHO FARIAS LIMA, Julia", "country": "BRA", "itf_id": "800757258", "wtn": "19.67"},
-          {"pos": 19, "name": "PORTELA BORGES, Laura Goncalves", "country": "BRA", "itf_id": "800718590", "wtn": "-"},
-          {"pos": 20, "name": "INSFRAN, Guisella", "country": "PAR", "itf_id": "800782960", "wtn": "28.79"},
-          {"pos": 21, "seed": "6", "name": "MERLOS CARDOSO, SOFIA", "country": "BRA", "itf_id": "800718967", "wtn": "-"},
-          {"pos": 23, "name": "SOUZA, Maria Clara", "country": "BRA", "itf_id": "800688507", "wtn": "-"},
-          {"pos": 24, "name": "GOMES FERREIRA, Giulia", "country": "BRA", "itf_id": "800715254", "wtn": "18.31"},
-          {"pos": 25, "seed": "7", "name": "SILVEIRA, Mariana de Jesus Ribeiro", "country": "BRA", "itf_id": "800711245", "wtn": "21.35"},
-          {"pos": 27, "name": "FERRANTE, Barbara", "country": "BRA", "itf_id": "800839425", "wtn": "-"},
-          {"pos": 28, "name": "LOBO ASSUMPCAO EUZEBIO, Lais", "country": "BRA", "itf_id": "800830103", "wtn": "-"},
-          {"pos": 29, "name": "ROMANHOLI, Dominiquea", "country": "BRA", "itf_id": "800793859", "wtn": "-"},
-          {"pos": 31, "entry": "WC", "name": "GIANNOTTI, Giovana", "country": "BRA", "itf_id": "800842701", "wtn": "-"},
-          {"pos": 32, "name": "PRETTI, Julia", "country": "BRA", "itf_id": "800676566", "wtn": "-"}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 1, "winner_name": "B. Krupek Soccol", "score": "62 63"},
-          {"round": 1, "match_num": 3, "winner_name": "L. Lopes Missato", "score": "63 36 10-3"},
-          {"round": 1, "match_num": 5, "winner_name": "K. Rodrigues", "score": "61 60"},
-          {"round": 1, "match_num": 7, "winner_name": "E. Gomes", "score": "60 64"},
-          {"round": 1, "match_num": 9, "winner_name": "L. Portela Borges", "score": "62 62"},
-          {"round": 1, "match_num": 11, "winner_name": "G. Gomes Ferreira", "score": "60 61"},
-          {"round": 1, "match_num": 13, "winner_name": "L. Lobo Assumpcao Euzebio", "score": "64 62"},
-          {"round": 1, "match_num": 15, "winner_name": "J. Pretti", "score": "63 61"},
-          {"round": 2, "match_num": 0, "winner_name": "L. Cinalli", "score": "61 60"},
-          {"round": 2, "match_num": 1, "winner_name": "I. Sigrist", "score": "62 60"},
-          {"round": 2, "match_num": 2, "winner_name": "K. Rodrigues", "score": "63 63"},
-          {"round": 2, "match_num": 3, "winner_name": "E. Gomes", "score": "61 60"},
-          {"round": 2, "match_num": 4, "winner_name": "J. Julia Cerqueira Carvalho Farias Lima", "score": "60 60"},
-          {"round": 2, "match_num": 6, "winner_name": "L. Lobo Assumpcao Euzebio", "score": "67 61 10-8"},
-          {"round": 2, "match_num": 7, "winner_name": "J. Pretti", "score": "63 64"}
-        ],
-        "byes": [
-          2,
-          6,
-          10,
-          14,
-          18,
-          22,
-          26,
-          30
-        ],
-        "round_labels": [
-          "Round of 32",
-          "Round of 16"
-        ],
-        "num_rounds": 2
-      },
-      "MDS":
-      {
-        "draw_size": 32,
-        "players": [
-          {"pos": 1, "seed": "1", "name": "BOSIO, Victoria", "country": "ARG", "itf_id": "800158403", "wtn": "13.01"},
-          {"pos": 2, "entry": "Q", "name": "GOMES, Eduarda", "country": "BRA", "itf_id": "800756804", "wtn": "16.89"},
-          {"pos": 3, "name": "PLAZA, Luana", "country": "BRA", "itf_id": "800509519", "wtn": "17.92"},
-          {"pos": 4, "entry": "Q", "name": "GOMES FERREIRA, Giulia", "country": "BRA", "itf_id": "800715254", "wtn": "18.31"},
-          {"pos": 5, "entry": "Q", "name": "PRETTI, Julia", "country": "BRA", "itf_id": "800676566", "wtn": "-"},
-          {"pos": 6, "entry": "Q", "name": "LOBO ASSUMPCAO EUZEBIO, Lais", "country": "BRA", "itf_id": "800830103", "wtn": "-"},
-          {"pos": 7, "name": "MARKUS, Camila", "country": "ARG", "itf_id": "800659813", "wtn": "18.07"},
-          {"pos": 8, "seed": "5", "name": "KONISHI CAMARGO SILVA, Julia", "country": "BRA", "itf_id": "800462980", "wtn": "16.27"},
-          {"pos": 9, "seed": "3", "name": "METTRAUX, Marie", "country": "SUI", "itf_id": "800466246", "wtn": "12.16"},
-          {"pos": 10, "name": "KAWANO CHO, Gabriela", "country": "BRA", "itf_id": "800595741", "wtn": "17.97"},
-          {"pos": 11, "name": "MELLEIRO, Catarina", "country": "BRA", "itf_id": "800637122", "wtn": "18.09"},
-          {"pos": 12, "name": "DIAS, Sabrina", "country": "BRA", "itf_id": "800156544", "wtn": "16.49"},
-          {"pos": 13, "name": "BOYDEN, Melissa", "country": "GBR", "itf_id": "800478425", "wtn": "16.72"},
-          {"pos": 14, "name": "MEABE, Sofia", "country": "ARG", "itf_id": "800595363", "wtn": "15.18"},
-          {"pos": 15, "name": "PEREIRA, Rebeca", "country": "BRA", "itf_id": "800307527", "wtn": "17.18"},
-          {"pos": 16, "seed": "6", "name": "MEYER AUF DER HEIDE, Luisa", "country": "GER", "itf_id": "800391172", "wtn": "13.19"},
-          {"pos": 17, "seed": "7", "name": "GARCIA VIDAL, Leticia", "country": "BRA", "itf_id": "800694681", "wtn": "15.78"},
-          {"pos": 18, "entry": "WC", "name": "ALBIERI, sofia omati", "country": "BRA", "itf_id": "800655936", "wtn": "18.59"},
-          {"pos": 19, "entry": "Q", "name": "JULIA CERQUEIRA CARVALHO FARIAS LIMA, Julia", "country": "BRA", "itf_id": "800757258", "wtn": "19.67"},
-          {"pos": 20, "entry": "WC", "name": "SARTORI, Ana Julia", "country": "BRA", "itf_id": "800719179", "wtn": "18.56"},
-          {"pos": 21, "entry": "Q", "name": "SIGRIST, Isadora", "country": "BRA", "itf_id": "800625532", "wtn": "19.56"},
-          {"pos": 22, "name": "RODRIGUEZ, Juliana", "country": "URU", "itf_id": "800534107", "wtn": "18.94"},
-          {"pos": 23, "name": "BERNARDES, Bianca", "country": "BRA", "itf_id": "800592365", "wtn": "18.16"},
-          {"pos": 24, "seed": "4", "name": "SOUZA, Marjorie", "country": "BRA", "itf_id": "800547501", "wtn": "14.75"},
-          {"pos": 25, "seed": "8", "entry": "WC", "name": "GATICA, Barbara", "country": "CHI", "itf_id": "800363038", "wtn": "11.31"},
-          {"pos": 26, "name": "SCHINCARIOL DELATORRE BARBOSA, Giovana", "country": "BRA", "itf_id": "800635389", "wtn": "16.85"},
-          {"pos": 27, "name": "HRDA, Luisa", "country": "GER", "itf_id": "800350275", "wtn": "16.79"},
-          {"pos": 28, "entry": "Q", "name": "RODRIGUES, Kauany", "country": "BRA", "itf_id": "800755329", "wtn": "-"},
-          {"pos": 29, "entry": "Q", "name": "CINALLI, Luna Maria", "country": "ARG", "itf_id": "800644753", "wtn": "14.62"},
-          {"pos": 30, "entry": "WC", "name": "MAIA CITOLINO, Manuela", "country": "BRA", "itf_id": "800765760", "wtn": "22.72"},
-          {"pos": 31, "name": "DOURADO, Jennifer Rosa", "country": "BRA", "itf_id": "800362731", "wtn": "17.49"},
-          {"pos": 32, "seed": "2", "name": "MI, Lan", "country": "CHN", "itf_id": "800557910", "wtn": "13.28"}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 0, "winner_name": "V. Bosio", "score": "61 63"},
-          {"round": 1, "match_num": 1, "winner_name": "G. Gomes Ferreira", "score": "46 76(7) 63"},
-          {"round": 1, "match_num": 2, "winner_name": "L. Lobo Assumpcao Euzebio", "score": "63 61"},
-          {"round": 1, "match_num": 3, "winner_name": "J. Konishi Camargo Silva", "score": "60 63"},
-          {"round": 1, "match_num": 4, "winner_name": "M. Mettraux", "score": "62 61"},
-          {"round": 1, "match_num": 5, "winner_name": "C. Melleiro", "score": "67 64 64"},
-          {"round": 1, "match_num": 6, "winner_name": "S. Meabe", "score": "64 64"},
-          {"round": 1, "match_num": 7, "winner_name": "L. Meyer auf der Heide", "score": "60 62"},
-          {"round": 1, "match_num": 8, "winner_name": "L. Garcia Vidal", "score": "61 75"},
-          {"round": 1, "match_num": 9, "winner_name": "J. Julia Cerqueira Carvalho Farias Lima", "score": "63 61"},
-          {"round": 1, "match_num": 10, "winner_name": "I. Sigrist", "score": "63 26 62"},
-          {"round": 1, "match_num": 11, "winner_name": "M. Souza", "score": "60 64"},
-          {"round": 1, "match_num": 12, "winner_name": "B. Gatica", "score": "61 63"},
-          {"round": 1, "match_num": 13, "winner_name": "L. Hrda", "score": "61 62"},
-          {"round": 1, "match_num": 14, "winner_name": "L. Cinalli", "score": "60 60"},
-          {"round": 1, "match_num": 15, "winner_name": "L. Mi", "score": "61 61"},
-          {"round": 2, "match_num": 0, "winner_name": "V. Bosio", "score": "62 61"},
-          {"round": 2, "match_num": 1, "winner_name": "J. Konishi Camargo Silva", "score": "62 62"},
-          {"round": 2, "match_num": 2, "winner_name": "M. Mettraux", "score": "63 61"},
-          {"round": 2, "match_num": 3, "winner_name": "S. Meabe", "score": "62 16 64"},
-          {"round": 2, "match_num": 4, "winner_name": "L. Garcia Vidal", "score": "60 60"},
-          {"round": 2, "match_num": 5, "winner_name": "M. Souza", "score": "62 63"},
-          {"round": 2, "match_num": 6, "winner_name": "B. Gatica", "score": "61 61"},
-          {"round": 2, "match_num": 7, "winner_name": "L. Mi", "score": "64 60"},
-          {"round": 3, "match_num": 0, "winner_name": "V. Bosio", "score": "76(4) 61"},
-          {"round": 3, "match_num": 1, "winner_name": "M. Mettraux", "score": "57 60 62"},
-          {"round": 3, "match_num": 2, "winner_name": "M. Souza", "score": "75 62"},
-          {"round": 3, "match_num": 3, "winner_name": "B. Gatica", "score": "62 61"},
-          {"round": 4, "match_num": 0, "winner_name": "M. Mettraux", "score": "75 57 61"},
-          {"round": 4, "match_num": 1, "winner_name": "B. Gatica", "score": "64 62"},
-          {"round": 5, "match_num": 0, "winner_name": "M. Mettraux", "score": "57 61 63"}
-        ],
-        "round_labels": [
-          "Round of 32",
-          "Round of 16",
-          "Quarterfinals",
-          "Semifinals",
-          "Final"
-        ],
-        "num_rounds": 5,
-        "wtn_gm": 27.2125
-      }
-    }
-  },
-  "w-itf-usa-2026-061":
-  {
-    "meta":
-    {
-      "name": "W35 Weston, FL",
-      "level": "W35",
-      "week": "Week of November 9",
-      "startDate": "2026-11-09T00:00:00",
-      "endDate": "2026-11-15T00:00:00",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
-    },
-    "draws":
-    {
-      "QS":
-      {
-        "draw_size": 32,
-        "players": [
-          {"pos": 1, "seed": "1", "name": "HOSSAM SALAH, Jana", "country": "EGY", "itf_id": "800649504", "wtn": "13.14"},
-          {"pos": 2, "name": "ELIZAROVA, Amaliia", "country": "USA", "itf_id": "800765354", "wtn": "17.25"},
-          {"pos": 3, "entry": "WC", "name": "ATTURU, Shria", "country": "USA", "itf_id": "800556783", "wtn": "18.42"},
-          {"pos": 4, "seed": "11", "name": "ORMAECHEA, Paula", "country": "ARG", "itf_id": "800283071", "wtn": "13.37"},
-          {"pos": 5, "entry": "A", "name": "SKEGRO, Marina", "country": "CRO", "itf_id": "800480266", "wtn": "15.28"},
-          {"pos": 6, "name": "SOHNS, Margaret", "country": "USA", "itf_id": "800737952", "wtn": "15.05"},
-          {"pos": 7, "name": "ROWINSKA, Malwina", "country": "POL", "itf_id": "800514466", "wtn": "14.1"},
-          {"pos": 8, "seed": "12", "name": "HUI, Katherine", "country": "USA", "itf_id": "800567635", "wtn": "14.18"},
-          {"pos": 9, "seed": "3", "name": "REED, Lexington", "country": "USA", "itf_id": "800594686", "wtn": "12.14"},
-          {"pos": 10, "name": "KALER, Havah Kaur", "country": "CAN", "itf_id": "800777462", "wtn": "-"},
-          {"pos": 11, "name": "KALER, Nalah", "country": "CAN", "itf_id": "800818846", "wtn": "25.87"},
-          {"pos": 12, "seed": "9", "name": "GAILIS, Rachel", "country": "USA", "itf_id": "800462806", "wtn": "13.77"},
-          {"pos": 13, "seed": "4", "name": "REAMI, Adriana", "country": "USA", "itf_id": "800349299", "wtn": "12.77"},
-          {"pos": 14, "entry": "WC", "name": "HARDING, Ciara", "country": "USA", "itf_id": "800700177", "wtn": "14.57"},
-          {"pos": 15, "name": "BARTHA, Panna", "country": "HUN", "itf_id": "800475600", "wtn": "14.96"},
-          {"pos": 16, "seed": "16", "name": "ALLEN, Kolie", "country": "USA", "itf_id": "800431909", "wtn": "-"},
-          {"pos": 17, "seed": "5", "name": "SAHDIIEVA, Anita", "country": "UKR", "itf_id": "800513778", "wtn": "14.08"},
-          {"pos": 18, "name": "MARTINEZ, Violeta", "country": "USA", "itf_id": "800571061", "wtn": "13.54"},
-          {"pos": 19, "name": "ELIZAROVA, Serafima", "country": "USA", "itf_id": "800765352", "wtn": "15.66"},
-          {"pos": 20, "seed": "13", "name": "CATANZARITE, Ava", "country": "USA", "itf_id": "800479511", "wtn": "14.41"},
-          {"pos": 21, "seed": "6", "name": "FETECAU, Irina", "country": "ROU", "itf_id": "800329696", "wtn": "14.01"},
-          {"pos": 22, "name": "TAHIRI, Mirabelle", "country": "USA", "itf_id": "800585859", "wtn": "17.81"},
-          {"pos": 23, "entry": "WC", "name": "NASK, Juliette", "country": "USA", "itf_id": "800558911", "wtn": "17.10"},
-          {"pos": 24, "seed": "15", "name": "GOMEZ, Carolina", "country": "ESP", "itf_id": "800522807", "wtn": "14.29"},
-          {"pos": 25, "seed": "7", "name": "PLEKHANOVA, Dasha", "country": "CAN", "itf_id": "800501976", "wtn": "12.99"},
-          {"pos": 26, "name": "PULCHARTOVA, Laetitia", "country": "CZE", "itf_id": "800367147", "wtn": "16.01"},
-          {"pos": 27, "name": "ILIE, Diana Maria", "country": "USA", "itf_id": "800541940", "wtn": "16.82"},
-          {"pos": 28, "seed": "14", "name": "PODHAJECKA, Dominika", "country": "POL", "itf_id": "800572105", "wtn": "15.76"},
-          {"pos": 29, "seed": "8", "name": "BLACK, Brooke", "country": "GBR", "itf_id": "800646853", "wtn": "12.53"},
-          {"pos": 30, "name": "NARTI, Charlotte", "country": "FRA", "itf_id": "800703185", "wtn": "14.29"},
-          {"pos": 31, "name": "NAGORNAIA, Sofiia", "country": "ISR", "itf_id": "800569578", "wtn": "16.93"},
-          {"pos": 32, "seed": "10", "name": "CCUNO, Romina", "country": "PER", "itf_id": "800492867", "wtn": "-"}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 0, "winner_name": "J. Hossam Salah", "score": "62 60"},
-          {"round": 1, "match_num": 1, "winner_name": "P. Ormaechea", "score": "64 60"},
-          {"round": 1, "match_num": 2, "winner_name": "M. Sohns", "score": "60 62"},
-          {"round": 1, "match_num": 3, "winner_name": "M. Rowinska", "score": "61 75"},
-          {"round": 1, "match_num": 4, "winner_name": "L. Reed", "score": "60 60"},
-          {"round": 1, "match_num": 5, "winner_name": "R. Gailis", "score": "60 60"},
-          {"round": 1, "match_num": 6, "winner_name": "A. Reami", "score": "63 60"},
-          {"round": 1, "match_num": 7, "winner_name": "K. Allen", "score": "63 67 10-8"},
-          {"round": 1, "match_num": 8, "winner_name": "A. Sahdiieva", "score": "64 62"},
-          {"round": 1, "match_num": 9, "winner_name": "A. Catanzarite", "score": "62 61"},
-          {"round": 1, "match_num": 10, "winner_name": "I. Fetecau", "score": "63 61"},
-          {"round": 1, "match_num": 11, "winner_name": "C. Gomez", "score": "26 75 10-8"},
-          {"round": 1, "match_num": 12, "winner_name": "D. Plekhanova", "score": "26 64 10-6"},
-          {"round": 1, "match_num": 13, "winner_name": "D. Podhajecka", "score": "63 64"},
-          {"round": 1, "match_num": 14, "winner_name": "B. Black", "score": "36 62 11-9"},
-          {"round": 1, "match_num": 15, "winner_name": "R. Ccuno", "score": "16 60 10-6"},
-          {"round": 2, "match_num": 0, "winner_name": "J. Hossam Salah", "score": "62 62"},
-          {"round": 2, "match_num": 1, "winner_name": "M. Rowinska", "score": "63 36 10-2"},
-          {"round": 2, "match_num": 2, "winner_name": "R. Gailis", "score": "62 63"},
-          {"round": 2, "match_num": 3, "winner_name": "A. Reami", "score": "76(7) 63"},
-          {"round": 2, "match_num": 4, "winner_name": "A. Catanzarite", "score": "62 63"},
-          {"round": 2, "match_num": 5, "winner_name": "C. Gomez", "score": "64 63"},
-          {"round": 2, "match_num": 6, "winner_name": "D. Plekhanova", "score": "60 64"},
-          {"round": 2, "match_num": 7, "winner_name": "B. Black", "score": "62 60"}
-        ],
-        "round_labels": [
-          "Round of 32",
-          "Round of 16"
-        ],
-        "num_rounds": 2
-      }
-    }
-  },
-  "w-itf-usa-2026-060":
-  {
-    "meta":
-    {
-      "name": "W15 Lincoln, NE",
-      "level": "W15",
-      "week": "Week of November 9",
-      "startDate": "2026-11-09T00:00:00",
-      "endDate": "2026-11-15T00:00:00",
-      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
-    },
-    "draws":
-    {
-      "QS":
-      {
-        "draw_size": 32,
-        "players": [
-          {"pos": 1, "seed": "1", "entry": "WC", "name": "SHUMATE, Sara", "country": "USA", "itf_id": "800650997", "wtn": "15.91"},
-          {"pos": 4, "entry": "WC", "name": "RADEMACHER, Briana", "country": "USA", "itf_id": "800887293", "wtn": "-"},
-          {"pos": 5, "seed": "2", "name": "SUH, Sophie", "country": "USA", "itf_id": "800732660", "wtn": "13.15"},
-          {"pos": 8, "name": "ROWLEY, Meghan", "country": "USA", "itf_id": "800643066", "wtn": "17.86"},
-          {"pos": 9, "seed": "3", "name": "KYSELOVA, Aleksandra", "country": "UKR", "itf_id": "800704369", "wtn": "16.70"},
-          {"pos": 11, "name": "HSU, Ting-Ya", "country": "TPE", "itf_id": "800367120", "wtn": "17.09"},
-          {"pos": 12, "name": "KOCK, Katelynn", "country": "USA", "itf_id": "800881225", "wtn": "-"},
-          {"pos": 13, "seed": "4", "name": "RENNARD, Catherine", "country": "USA", "itf_id": "800730600", "wtn": "16.22"},
-          {"pos": 15, "entry": "WC", "name": "COE, Reya", "country": "USA", "itf_id": "800715099", "wtn": "-"},
-          {"pos": 16, "name": "IMMORDINO, Rachel", "country": "USA", "itf_id": "800866497", "wtn": "-"},
-          {"pos": 17, "seed": "5", "name": "BEDARD, Julie", "country": "USA", "itf_id": "800583604", "wtn": "16.74"},
-          {"pos": 19, "name": "MAUNUPAU, Olive", "country": "USA", "itf_id": "800577171", "wtn": "17.03"},
-          {"pos": 20, "name": "ESPOSITO COGAN, Ava", "country": "USA", "itf_id": "800652628", "wtn": "15.36"},
-          {"pos": 21, "seed": "6", "name": "OKUWAKI, Rinon", "country": "JPN", "itf_id": "800492360", "wtn": "13.88"},
-          {"pos": 23, "entry": "WC", "name": "RAHIMKHANI, Neda", "country": "CAN", "itf_id": "800678710", "wtn": "-"},
-          {"pos": 24, "name": "MAUNUPAU, Daisy", "country": "USA", "itf_id": "800577172", "wtn": "-"},
-          {"pos": 25, "seed": "7", "name": "GAGNON, Catherine", "country": "CAN", "itf_id": "800622867", "wtn": "-"},
-          {"pos": 28, "seed": "9", "name": "ROSSINI, Tiziana", "country": "ARG", "itf_id": "800546448", "wtn": "-"},
-          {"pos": 29, "seed": "8", "name": "SCHOCK, Karlin", "country": "USA", "itf_id": "800726353", "wtn": "15.55"},
-          {"pos": 32, "seed": "10", "name": "SCHUMANN, Abigail", "country": "USA", "itf_id": "800824446", "wtn": "22.88"}
-        ],
-        "matches": [
-          {"round": 1, "match_num": 5, "winner_name": "K. Kock", "score": "75 61"},
-          {"round": 1, "match_num": 7, "winner_name": "R. Coe", "score": "64 63"},
-          {"round": 1, "match_num": 9, "winner_name": "A. Esposito Cogan", "score": "63 36 10-7"},
-          {"round": 1, "match_num": 11, "winner_name": "N. Rahimkhani", "score": "61 61"},
-          {"round": 2, "match_num": 0, "winner_name": "B. Rademacher", "score": "W/O"},
-          {"round": 2, "match_num": 1, "winner_name": "S. Suh", "score": "61 62"},
-          {"round": 2, "match_num": 3, "winner_name": "C. Rennard", "score": "60 36 11-9"},
-          {"round": 2, "match_num": 5, "winner_name": "N. Rahimkhani", "score": "W/O"},
-          {"round": 2, "match_num": 7, "winner_name": "K. Schock", "score": "60 61"}
-        ],
-        "byes": [
-          2,
-          3,
-          6,
-          7,
-          10,
-          14,
-          18,
-          22,
-          26,
-          27,
-          30,
-          31
-        ],
-        "round_labels": [
-          "Round of 32",
-          "Round of 16"
-        ],
-        "num_rounds": 2
-      }
-    }
-  },
   "https://www.wtatennis.com/tournaments/2076/colina-125/2026/player-list":
   {
     "meta":
@@ -535,9 +56,9 @@
           {"pos": 1, "seed": "1", "name": "ROMERO GORMAZ, Leyre", "country": "ESP", "wtn": "9.15"},
           {"pos": 2, "name": "OZ, Ipek", "country": "TUR", "wtn": "10.16"},
           {"pos": 3, "name": "PODOROSKA, Nadia", "country": "ARG", "wtn": "9.71"},
-          {"pos": 4, "name": "LEPCHENKO, Varvara", "country": "USA", "wtn": "10.37"},
+          {"pos": 4, "name": "LEPCHENKO, Varvara", "country": "USA", "wtn": "10.28"},
           {"pos": 5, "name": "SCOTT, Katrina", "country": "USA", "wtn": "12.33"},
-          {"pos": 6, "name": "ZOLOTAREVA, Anastasia", "wtn": "-"},
+          {"pos": 6, "name": "ZOLOTAREVA, Anastasia", "wtn": "11.86"},
           {"pos": 7, "name": "BURILLO, Irene", "country": "ESP", "wtn": "10.25"},
           {"pos": 8, "seed": "8", "name": "SEMENISTAJA, Darja", "country": "LAT", "wtn": "10.48"},
           {"pos": 9, "seed": "3", "name": "BRONZETTI, Lucia", "country": "ITA", "wtn": "10.46"},
@@ -547,7 +68,7 @@
           {"pos": 13, "entry": "Q", "name": "STRAKHOVA, Valeriya", "country": "UKR", "wtn": "11.04"},
           {"pos": 14, "name": "TIKHONOVA, Anastasia", "wtn": "9.99"},
           {"pos": 15, "name": "CARLE, Maria Lourdes", "country": "ARG", "wtn": "11.14"},
-          {"pos": 16, "seed": "7", "name": "ERJAVEC, Veronika", "country": "SLO", "wtn": "10.58"},
+          {"pos": 16, "seed": "7", "name": "ERJAVEC, Veronika", "country": "SLO", "wtn": "10.47"},
           {"pos": 17, "seed": "5", "name": "MARISTANY ZULETA DE REALES, Guiomar", "country": "ESP", "wtn": "9.52"},
           {"pos": 18, "entry": "Q", "name": "TREVISAN, Martina", "country": "ITA", "wtn": "9.82"},
           {"pos": 19, "name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "11.23"},
@@ -555,7 +76,7 @@
           {"pos": 21, "entry": "WC", "name": "LABRANA, Fernanda", "country": "CHI", "wtn": "14.06"},
           {"pos": 22, "entry": "WC", "name": "VERGARA RIVERA, Antonia", "country": "CHI", "wtn": "12.63"},
           {"pos": 23, "entry": "WC", "name": "GATICA, Barbara", "country": "CHI", "wtn": "11.31"},
-          {"pos": 24, "seed": "4", "name": "LAZARO GARCIA, Andrea", "country": "ESP", "wtn": "9.73"},
+          {"pos": 24, "seed": "4", "name": "LAZARO GARCIA, Andrea", "country": "ESP", "wtn": "9.54"},
           {"pos": 25, "seed": "6", "name": "MASAROVA, Rebeka", "country": "SUI", "wtn": "10.21"},
           {"pos": 26, "entry": "Q", "name": "CHERUBINI, Diletta", "country": "ITA", "wtn": "11.42"},
           {"pos": 27, "name": "HERCOG, Polona", "country": "SLO", "wtn": "10.85"},
@@ -573,7 +94,7 @@
           "Final"
         ],
         "num_rounds": 5,
-        "wtn_gm": 12.5726
+        "wtn_gm": 10.6959
       }
     }
   },
@@ -611,21 +132,32 @@
           {"pos": 15, "name": "SHIBATA, Lais Mika", "country": "BRA", "itf_id": "800656014", "wtn": "19.22"},
           {"pos": 16, "seed": "16", "name": "TEODORO SOUZA, Daniela", "country": "BRA", "itf_id": "800625688", "wtn": "20.11"},
           {"pos": 17, "seed": "5", "name": "MELLEIRO, Catarina", "country": "BRA", "itf_id": "800637122", "wtn": "18.09"},
-          {"pos": 18, "name": "LOPES MISSATO, Larissa", "country": "BRA", "itf_id": "800797669", "wtn": "-"},
+          {"pos": 18, "name": "LOPES MISSATO, Larissa", "country": "BRA", "itf_id": "800797669", "wtn": "24.83"},
           {"pos": 19, "name": "SIGRIST, Isadora", "country": "BRA", "itf_id": "800625532", "wtn": "19.56"},
           {"pos": 20, "seed": "15", "name": "MAIA CITOLINO, Manuela", "country": "BRA", "itf_id": "800765760", "wtn": "22.72"},
           {"pos": 21, "seed": "6", "name": "GOMEZ PEZUELA CANO, Marian", "country": "MEX", "itf_id": "800508339", "wtn": "16.82"},
-          {"pos": 22, "name": "PRETTI, Julia", "country": "BRA", "itf_id": "800676566", "wtn": "-"},
+          {"pos": 22, "name": "PRETTI, Julia", "country": "BRA", "itf_id": "800676566", "wtn": "20.56"},
           {"pos": 23, "name": "ALBIERI, sofia omati", "country": "BRA", "itf_id": "800655936", "wtn": "18.59"},
-          {"pos": 24, "seed": "12", "name": "RODRIGUEZ, Juliana", "country": "URU", "itf_id": "800534107", "wtn": "18.94"},
-          {"pos": 25, "seed": "7", "name": "HRDA, Luisa", "country": "GER", "itf_id": "800350275", "wtn": "16.79"},
-          {"pos": 26, "entry": "WC", "name": "ROMANHOLI, Dominiquea", "country": "BRA", "itf_id": "800793859", "wtn": "-"},
+          {"pos": 24, "seed": "12", "name": "RODRIGUEZ, Juliana", "country": "URU", "itf_id": "800534107", "wtn": "18.87"},
+          {"pos": 25, "seed": "7", "name": "HRDA, Luisa", "country": "GER", "itf_id": "800350275", "wtn": "16.8"},
+          {"pos": 26, "entry": "WC", "name": "ROMANHOLI, Dominiquea", "country": "BRA", "itf_id": "800793859", "wtn": "18.76"},
           {"pos": 27, "name": "ZUCCON, Vitoria", "country": "BRA", "itf_id": "800763901", "wtn": "18.24"},
           {"pos": 28, "seed": "13", "name": "BERNARDES, Bianca", "country": "BRA", "itf_id": "800592365", "wtn": "18.16"},
           {"pos": 29, "seed": "8", "name": "BOYDEN, Melissa", "country": "GBR", "itf_id": "800478425", "wtn": "16.72"},
           {"pos": 30, "entry": "WC", "name": "CERVEIRA DE CARVALHO, Luisa", "country": "BRA", "itf_id": "800717854", "wtn": "-"},
           {"pos": 31, "name": "HUANG, Valentina", "country": "BRA", "itf_id": "800713338", "wtn": "19.17"},
-          {"pos": 32, "seed": "9", "name": "SCHINCARIOL DELATORRE BARBOSA, Giovana", "country": "BRA", "itf_id": "800635389", "wtn": "16.85"}
+          {"pos": 32, "seed": "9", "name": "SCHINCARIOL DELATORRE BARBOSA, Giovana", "country": "BRA", "itf_id": "800635389", "wtn": "16.84"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "E. Gomes", "score": "62 53 RET"},
+          {"round": 1, "match_num": 1, "winner_name": "G. Kawano Cho", "score": "62 60"},
+          {"round": 1, "match_num": 2, "winner_name": "L. Meyer auf der Heide", "score": "62 60"},
+          {"round": 1, "match_num": 3, "winner_name": "A. Reichel", "score": "62 62"},
+          {"round": 1, "match_num": 4, "winner_name": "M. Torres Murcia", "score": "61 60"},
+          {"round": 1, "match_num": 5, "winner_name": "M. Ferreira Turchetto", "score": "61 60"},
+          {"round": 1, "match_num": 6, "winner_name": "S. Meabe", "score": "60 60"},
+          {"round": 1, "match_num": 10, "winner_name": "J. Pretti", "score": "64 06 10-7"},
+          {"round": 1, "match_num": 11, "winner_name": "s. albieri", "score": "61 61"}
         ],
         "round_labels": [
           "Round of 32",
