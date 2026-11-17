@@ -86,6 +86,16 @@
           {"pos": 31, "name": "PAPAMICHAIL, Despina", "country": "GRE", "wtn": "12.1"},
           {"pos": 32, "seed": "2", "name": "SAMSON, Laura", "country": "CZE", "wtn": "9.9"}
         ],
+        "matches": [
+          {"round": 1, "match_num": 0, "winner_name": "L. Romero Gormaz", "score": "26 75 61"},
+          {"round": 1, "match_num": 2, "winner_name": "A. Zolotareva", "score": "62 64"},
+          {"round": 1, "match_num": 5, "winner_name": "C. Monnet", "score": "75 36 60"},
+          {"round": 1, "match_num": 6, "winner_name": "V. Strakhova", "score": "62 46 64"},
+          {"round": 1, "match_num": 8, "winner_name": "G. Maristany Zulet...", "score": "62 63"},
+          {"round": 1, "match_num": 9, "winner_name": "S. Costoulas", "score": "62 64"},
+          {"round": 1, "match_num": 12, "winner_name": "R. Masarova", "score": "75 63"},
+          {"round": 1, "match_num": 14, "winner_name": "A. Geerlings", "score": "64 60"}
+        ],
         "round_labels": [
           "Round of 32",
           "Round of 16",
@@ -95,6 +105,31 @@
         ],
         "num_rounds": 5,
         "wtn_gm": 10.6959
+      },
+      "MDD":
+      {
+        "tournament_name": "LP Open by IND",
+        "location": "COLINA, CHI",
+        "dates": "November 16-22 2026",
+        "prize": "$ 115,000",
+        "surface": "Clay",
+        "draw_type": "DOUBLES MAIN DRAW",
+        "draw_size": 8,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "STRAKHOVA, Valeriya / TIKHONOVA, Anastasia", "country": "UKR", "members": [{"name": "STRAKHOVA, Valeriya", "country": "UKR", "wtn": "11.04"}, {"name": "TIKHONOVA, Anastasia", "wtn": "9.99"}]},
+          {"pos": 2, "name": "BURILLO, Irene / ZOLOTAREVA, Anastasia", "country": "ESP", "members": [{"name": "BURILLO, Irene", "country": "ESP", "wtn": "10.25"}, {"name": "ZOLOTAREVA, Anastasia", "wtn": "11.86"}]},
+          {"pos": 4, "name": "COSTOULAS, Sofia / SEMENISTAJA, Darja", "country": "BEL", "members": [{"name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "11.23"}, {"name": "SEMENISTAJA, Darja", "country": "LAT", "wtn": "10.48"}]},
+          {"pos": 5, "entry": "WC", "name": "LABRANA, Fernanda / VERGARA RIVERA, Antonia", "country": "CHI", "members": [{"name": "LABRANA, Fernanda", "country": "CHI", "wtn": "14.06"}, {"name": "VERGARA RIVERA, Antonia", "country": "CHI", "wtn": "12.63"}]},
+          {"pos": 6, "name": "MCGIFFIN, Tenika / OSBORNE, Alexandra", "country": "AUS", "members": [{"name": "MCGIFFIN, Tenika", "country": "AUS", "wtn": "-"}, {"name": "OSBORNE, Alexandra", "country": "AUS", "wtn": "14.86"}]},
+          {"pos": 7, "name": "OZ, Ipek / PAPAMICHAIL, Despina", "country": "TUR", "members": [{"name": "OZ, Ipek", "country": "TUR", "wtn": "10.16"}, {"name": "PAPAMICHAIL, Despina", "country": "GRE", "wtn": "12.1"}]},
+          {"pos": 8, "seed": "2", "name": "ERJAVEC, Veronika / KULAMBAYEVA, Zhibek", "country": "SLO", "members": [{"name": "ERJAVEC, Veronika", "country": "SLO", "wtn": "10.47"}, {"name": "KULAMBAYEVA, Zhibek", "country": "KAZ", "wtn": "10.97"}]}
+        ],
+        "round_labels": [
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 3
       }
     }
   },
