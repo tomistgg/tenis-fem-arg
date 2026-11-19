@@ -66,7 +66,7 @@
           {"pos": 11, "name": "JIMENEZ KASINTSEVA, Victoria", "country": "AND", "wtn": "11.46"},
           {"pos": 12, "name": "MONNET, Carole", "country": "FRA", "wtn": "10.31"},
           {"pos": 13, "entry": "Q", "name": "STRAKHOVA, Valeriya", "country": "UKR", "wtn": "11.04"},
-          {"pos": 14, "name": "TIKHONOVA, Anastasia", "wtn": "9.99"},
+          {"pos": 14, "name": "TIKHONOVA, Anastasia", "wtn": "10.22"},
           {"pos": 15, "name": "CARLE, Maria Lourdes", "country": "ARG", "wtn": "11.14"},
           {"pos": 16, "seed": "7", "name": "ERJAVEC, Veronika", "country": "SLO", "wtn": "10.47"},
           {"pos": 17, "seed": "5", "name": "MARISTANY ZULETA DE REALES, Guiomar", "country": "ESP", "wtn": "9.52"},
@@ -102,7 +102,11 @@
           {"round": 1, "match_num": 12, "winner_name": "R. Masarova", "score": "75 63"},
           {"round": 1, "match_num": 13, "winner_name": "P. Hercog", "score": "76(4) 64"},
           {"round": 1, "match_num": 14, "winner_name": "A. Geerlings", "score": "64 60"},
-          {"round": 1, "match_num": 15, "winner_name": "L. Samson", "score": "36 63 64"}
+          {"round": 1, "match_num": 15, "winner_name": "L. Samson", "score": "36 63 64"},
+          {"round": 2, "match_num": 0, "winner_name": "L. Romero Gormaz", "score": "63 64"},
+          {"round": 2, "match_num": 4, "winner_name": "G. Maristany Zulet...", "score": "75 63"},
+          {"round": 2, "match_num": 6, "winner_name": "R. Masarova", "score": "64 64"},
+          {"round": 2, "match_num": 7, "winner_name": "L. Samson", "score": "63 26 60"}
         ],
         "round_labels": [
           "Round of 32",
@@ -124,7 +128,7 @@
         "draw_type": "DOUBLES MAIN DRAW",
         "draw_size": 8,
         "players": [
-          {"pos": 1, "seed": "1", "name": "STRAKHOVA, Valeriya / TIKHONOVA, Anastasia", "country": "UKR", "members": [{"name": "STRAKHOVA, Valeriya", "country": "UKR", "wtn": "11.04"}, {"name": "TIKHONOVA, Anastasia", "wtn": "9.99"}]},
+          {"pos": 1, "seed": "1", "name": "STRAKHOVA, Valeriya / TIKHONOVA, Anastasia", "country": "UKR", "members": [{"name": "STRAKHOVA, Valeriya", "country": "UKR", "wtn": "11.04"}, {"name": "TIKHONOVA, Anastasia", "wtn": "10.22"}]},
           {"pos": 2, "name": "BURILLO, Irene / ZOLOTAREVA, Anastasia", "country": "ESP", "members": [{"name": "BURILLO, Irene", "country": "ESP", "wtn": "10.25"}, {"name": "ZOLOTAREVA, Anastasia", "wtn": "11.86"}]},
           {"pos": 4, "name": "COSTOULAS, Sofia / SEMENISTAJA, Darja", "country": "BEL", "members": [{"name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "11.23"}, {"name": "SEMENISTAJA, Darja", "country": "LAT", "wtn": "10.48"}]},
           {"pos": 5, "entry": "ALT", "name": "JIMENEZ KASINTSEVA, Victoria / LEPCHENKO, Varvara", "country": "AND", "members": [{"name": "JIMENEZ KASINTSEVA, Victoria", "country": "AND", "wtn": "11.46"}, {"name": "LEPCHENKO, Varvara", "country": "USA", "wtn": "10.28"}]},
@@ -133,7 +137,9 @@
           {"pos": 8, "seed": "2", "name": "ERJAVEC, Veronika / KULAMBAYEVA, Zhibek", "country": "SLO", "members": [{"name": "ERJAVEC, Veronika", "country": "SLO", "wtn": "10.47"}, {"name": "KULAMBAYEVA, Zhibek", "country": "KAZ", "wtn": "10.97"}]}
         ],
         "matches": [
-          {"round": 1, "match_num": 0, "winner_name": "V. Strakhova / A. Tikhonova", "score": "61 64"}
+          {"round": 1, "match_num": 0, "winner_name": "V. Strakhova / A. Tikhonova", "score": "61 64"},
+          {"round": 1, "match_num": 2, "winner_name": "T. McGiffin / A. Osborne", "score": "75 75"},
+          {"round": 1, "match_num": 3, "winner_name": "V. Erjavec / Z. Kulambayeva", "score": "60 62"}
         ],
         "round_labels": [
           "Quarterfinals",
@@ -259,7 +265,7 @@
           {"pos": 27, "name": "ESTEVEZ, Josefina", "country": "ARG", "itf_id": "800602639", "wtn": "14.33"},
           {"pos": 28, "entry": "Q", "name": "MELLEIRO, Catarina", "country": "BRA", "itf_id": "800637122", "wtn": "18.09"},
           {"pos": 29, "entry": "WC", "name": "RIVOLI, Pietra", "country": "BRA", "itf_id": "800655734", "wtn": "15.26"},
-          {"pos": 30, "name": "BOHRER MARTINS, Carolina", "country": "BRA", "itf_id": "800667459", "wtn": "14.07"},
+          {"pos": 30, "name": "BOHRER MARTINS, Carolina", "country": "BRA", "itf_id": "800667459", "wtn": "14.43"},
           {"pos": 31, "entry": "WC", "name": "DOURADO, Jennifer Rosa", "country": "BRA", "itf_id": "800362731", "wtn": "17.49"},
           {"pos": 32, "seed": "2", "name": "BOSIO, Victoria", "country": "ARG", "itf_id": "800158403", "wtn": "13.01"}
         ],
@@ -292,7 +298,7 @@
           "Final"
         ],
         "num_rounds": 5,
-        "wtn_gm": 14.759
+        "wtn_gm": 14.7707
       }
     }
   }
