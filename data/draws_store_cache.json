@@ -320,5 +320,44 @@
         "wtn_gm": 14.6922
       }
     }
+  },
+  "https://www.wtatennis.com/tournaments/2052/buenos-aires-125/2026/player-list":
+  {
+    "meta":
+    {
+      "name": "WTA 125 Buenos Aires",
+      "level": "WTA 125",
+      "week": "Week of November 23",
+      "startDate": "2026-11-23",
+      "endDate": "2026-11-29",
+      "arg_visibility": {"has_arg_main":false,"has_arg_qual":true,"has_arg_any":true}
+    },
+    "draws":
+    {
+      "QS":
+      {
+        "tournament_name": "IEB+ Argentina Open",
+        "location": "BUENOS AIRES, ARG",
+        "dates": "November 22-29 2026",
+        "prize": "$ 115,000",
+        "surface": "Clay",
+        "draw_type": "SINGLES QUALIFYING DRAW",
+        "draw_size": 8,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "KULAMBAYEVA, Zhibek", "country": "KAZ", "wtn": "10.97"},
+          {"pos": 2, "entry": "WC", "name": "RONDINONI, Guadalupe", "wtn": "20.18"},
+          {"pos": 3, "seed": "2", "entry": "WC", "name": "AYALA, Lourdes", "country": "ARG", "wtn": "15.66"},
+          {"pos": 4, "name": "BULBARELLA, Marina", "country": "ARG", "wtn": "18.33"},
+          {"pos": 5, "seed": "3", "name": "ESTEVEZ, Josefina", "country": "ARG", "wtn": "14.33"},
+          {"pos": 6, "name": "MARKUS, Camila", "country": "ARG", "wtn": "18.19"},
+          {"pos": 7, "seed": "4", "name": "RENCHELI, Abigail", "country": "USA", "wtn": "14.55"},
+          {"pos": 8, "name": "OSBORNE, Alexandra", "country": "AUS", "wtn": "14.86"}
+        ],
+        "round_labels": [
+          "Q1"
+        ],
+        "num_rounds": 1
+      }
+    }
   }
 }
