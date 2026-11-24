@@ -104,6 +104,32 @@
         ],
         "num_rounds": 5,
         "wtn_gm": 11.3356
+      },
+      "MDD":
+      {
+        "tournament_name": "IEB+ Argentina Open",
+        "location": "BUENOS AIRES, ARG",
+        "dates": "November 22-29 2026",
+        "prize": "$ 115,000",
+        "surface": "Clay",
+        "draw_type": "DOUBLES MAIN DRAW",
+        "draw_size": 8,
+        "players": [
+          {"pos": 1, "seed": "1", "name": "KULAMBAYEVA, Zhibek / MONNET, Carole", "country": "KAZ", "members": [{"name": "KULAMBAYEVA, Zhibek", "country": "KAZ", "wtn": "10.97"}, {"name": "MONNET, Carole", "country": "FRA", "wtn": "10.28"}]},
+          {"pos": 2, "name": "BRANCACCIO, Nuria / OZ, Ipek", "country": "ITA", "members": [{"name": "BRANCACCIO, Nuria", "country": "ITA", "wtn": "10.12"}, {"name": "OZ, Ipek", "country": "TUR", "wtn": "10.43"}]},
+          {"pos": 3, "name": "MCGIFFIN, Tenika / OSBORNE, Alexandra", "country": "AUS", "members": [{"name": "MCGIFFIN, Tenika", "country": "AUS", "wtn": "-"}, {"name": "OSBORNE, Alexandra", "country": "AUS", "wtn": "15.07"}]},
+          {"pos": 4, "name": "CARLE, Maria Lourdes / RIERA, Julia", "country": "ARG", "members": [{"name": "CARLE, Maria Lourdes", "country": "ARG", "wtn": "11.61"}, {"name": "RIERA, Julia", "country": "ARG", "wtn": "9.94"}]},
+          {"pos": 5, "entry": "WC", "name": "AYALA, Lourdes / LARRAYA GUIDI, Sol Ailin", "country": "ARG", "members": [{"name": "AYALA, Lourdes", "country": "ARG", "wtn": "14.92"}, {"name": "LARRAYA GUIDI, Sol Ailin", "country": "ARG", "wtn": "14.72"}]},
+          {"pos": 6, "name": "LEPCHENKO, Varvara / ZOLOTAREVA, Anastasia", "country": "USA", "members": [{"name": "LEPCHENKO, Varvara", "country": "USA", "wtn": "10.57"}, {"name": "ZOLOTAREVA, Anastasia", "wtn": "12.25"}]},
+          {"pos": 7, "name": "AKLI, Ayana / RENCHELI, Abigail", "country": "USA", "members": [{"name": "AKLI, Ayana", "country": "USA", "wtn": "10.9"}, {"name": "RENCHELI, Abigail", "country": "USA", "wtn": "14.55"}]},
+          {"pos": 8, "seed": "2", "name": "COSTOULAS, Sofia / PAPAMICHAIL, Despina", "country": "BEL", "members": [{"name": "COSTOULAS, Sofia", "country": "BEL", "wtn": "11.35"}, {"name": "PAPAMICHAIL, Despina", "country": "GRE", "wtn": "12.25"}]}
+        ],
+        "round_labels": [
+          "Quarterfinals",
+          "Semifinals",
+          "Final"
+        ],
+        "num_rounds": 3
       }
     }
   },
@@ -156,6 +182,13 @@
           {"pos": 30, "entry": "Q", "name": "TRAN, Demi", "country": "NED", "itf_id": "800365266", "wtn": "14.38"},
           {"pos": 31, "entry": "WC", "name": "SOUZA, Marjorie", "country": "BRA", "itf_id": "800547501", "wtn": "14.75"},
           {"pos": 32, "seed": "2", "name": "PIGOSSI, Laura", "country": "BRA", "itf_id": "800294513", "wtn": "10.83"}
+        ],
+        "matches": [
+          {"round": 1, "match_num": 4, "winner_name": "D. Egorova", "score": "61 61"},
+          {"round": 1, "match_num": 5, "winner_name": "F. Labrana", "score": "64 76(3)"},
+          {"round": 1, "match_num": 6, "winner_name": "V. Rodriguez", "score": "62 61"},
+          {"round": 1, "match_num": 8, "winner_name": "M. Bulgaru", "score": "60 61"},
+          {"round": 1, "match_num": 9, "winner_name": "M. Carbone dos Santos", "score": "64 64"}
         ],
         "round_labels": [
           "Round of 32",
