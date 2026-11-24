@@ -1184,6 +1184,44 @@ def test_itf_event_filters_classify_after_navigation(monkeypatch, tmp_path, reco
     assert load_run_state(status_path)["status"] == expected_status
 
 
+def test_itf_event_filter_ids_for_next_week_are_deferred_on_weekdays(monkeypatch, tmp_path):
+    status_path = tmp_path / "run.json"
+    initialize_run_state(status_path, "test-run", tmp_path / "stage")
+    monkeypatch.setenv("WTARG_RUN_STATUS_PATH", str(status_path))
+    monkeypatch.setattr(itf, "madrid_today", lambda: date(2026, 8, 11))
+    monkeypatch.setattr(itf, "_fetch_itf_calendar_raw", lambda driver: [{
+        "tournamentKey": "w-next-week",
+        "tournamentName": "W35 Example",
+        "startDate": "2026-08-17",
+    }])
+    monkeypatch.setattr(itf, "_load_itf_event_filters_cache", lambda: {})
+    monkeypatch.setattr(itf, "_fetch_itf_json", lambda *args, **kwargs: pytest.fail("unexpected event-filter request"))
+
+    result = itf.get_draws_itf_tournament_list(driver=None, include_next_week=True)
+    tournament = next(iter(next(iter(result.values())).values()))
+
+    assert tournament["tournamentId"] is None
+    assert load_run_state(status_path)["status"] == "running"
+    assert load_run_state(status_path)["issues"] == []
+
+
+def test_itf_event_filter_ids_for_next_week_are_fetched_on_weekends(monkeypatch):
+    monkeypatch.setattr(itf, "madrid_today", lambda: date(2026, 8, 15))
+    monkeypatch.setattr(itf, "_fetch_itf_calendar_raw", lambda driver: [{
+        "tournamentKey": "w-next-week",
+        "tournamentName": "W35 Example",
+        "startDate": "2026-08-17",
+    }])
+    monkeypatch.setattr(itf, "_load_itf_event_filters_cache", lambda: {})
+    monkeypatch.setattr(itf, "_save_itf_event_filters_cache", lambda cache: None)
+    monkeypatch.setattr(itf, "_fetch_itf_json", lambda *args, **kwargs: {"tournamentId": 123})
+    monkeypatch.setattr(itf.time, "sleep", lambda seconds: None)
+
+    result = itf.get_draws_itf_tournament_list(driver=None, include_next_week=True)
+
+    assert next(iter(next(iter(result.values())).values()))["tournamentId"] == 123
+
+
 def test_itf_event_filter_cache_normalizes_ids_and_drops_invalid_values(monkeypatch, tmp_path):
     cache_path = tmp_path / "event-filters.json"
     cache_path.write_text(

@@ -1198,6 +1198,7 @@ def get_draws_itf_tournament_list(driver, *, include_next_week=False):
             if not (monday < two_weeks_later):
                 continue
         item["_is_multiweek"] = is_multiweek
+        item["_defer_id_lookup"] = monday > current_monday and today.weekday() < 5
         tournaments.append(item)
 
     _number_duplicate_itf_names(
@@ -1222,6 +1223,10 @@ def get_draws_itf_tournament_list(driver, *, include_next_week=False):
         cached_tid = event_filters_cache.get(key)
         if isinstance(cached_tid, int) and cached_tid > 0:
             item["_tid"] = cached_tid
+            continue
+        if item.get("_defer_id_lookup"):
+            logger.debug("Deferring ITF tournament ID lookup until the weekend: %s", key)
+            item["_tid"] = None
             continue
         api_url = f"{ITF_BASE_URL}/tennis/api/TournamentApi/GetEventFilters?tournamentKey={key}"
         try:
