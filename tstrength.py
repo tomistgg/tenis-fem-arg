@@ -152,6 +152,7 @@ _REGION_MAP = {
     "AUS": "Oceania",
     "NZL": "Oceania",
     # Africa
+    "ANG": "Africa",
     "RSA": "Africa",
     "MAR": "Africa",
     "TUN": "Africa",
@@ -424,6 +425,11 @@ def build_tstrength_data(from_year=None, full_backfill=False):
                 if draw in {"QUALY", "QUAL", "Q"}:
                     draw = "Q"
                 entry["draw"] = draw
+                country = str(entry.get("country") or "").strip().upper()
+                region = _REGION_MAP.get(country)
+                if region and entry.get("region") != region:
+                    entry["region"] = region
+                    cache_schema_changed = True
                 if "wtn_hm" not in entry:
                     entry["wtn_hm"] = 0
                     cache_schema_changed = True
@@ -539,7 +545,7 @@ def build_tstrength_data(from_year=None, full_backfill=False):
 
             surface = t.get("surface", "")
             country = t.get("country", "")
-            region = _REGION_MAP.get(country, country)
+            region = _REGION_MAP.get(str(country).strip().upper(), country)
 
             for draw in ("MD", "Q"):
                 if draw not in needs:

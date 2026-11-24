@@ -578,6 +578,7 @@ IOC_TO_ISO2 = {
     "PRT": "pt",
     "PRY": "py",
     "PUR": "pr",
+    "PYF": "pf",
     "QAT": "qa",
     "ROC": "ru",
     "ROM": "ro",
